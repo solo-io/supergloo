@@ -35,11 +35,9 @@ message Mesh {
     TargetMesh target_mesh = 2;
 
     Routing routing = 1;
+    Encryption encryption = 98;
 
 //    MeshMetadata mesh_metadata = 99;
-    Encryption encryption = 98;
-//    Ingress ingress = 80;
-//    repeated Route routes = 40;
 }
 
 message TargetMesh {
