@@ -17,10 +17,10 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	"k8s.io/client-go/tools/clientcmd"
 
-	. "github.com/solo-io/supergloo/pkg/translator"
+	. "github.com/solo-io/supergloo/pkg/translator/istio
 )
 
-var _ = Describe("Syncer", func() {
+var _ = Describe("RoutingSyncer", func() {
 	It("works", func() {
 		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
