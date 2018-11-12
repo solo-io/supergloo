@@ -43,7 +43,7 @@ func (x MeshType) String() string {
 	return proto.EnumName(MeshType_name, int32(x))
 }
 func (MeshType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_7426223a1bcb82bd, []int{0}
+	return fileDescriptor_mesh_3cb56dcfd26eb040, []int{0}
 }
 
 //
@@ -63,21 +63,20 @@ type Mesh struct {
 	// Status is read-only by clients, and set by gloo during validation
 	Status core.Status `protobuf:"bytes,6,opt,name=status" json:"status" testdiff:"ignore"`
 	// Metadata contains the object metadata for this resource
-	Metadata   core.Metadata `protobuf:"bytes,7,opt,name=metadata" json:"metadata"`
-	TargetMesh *TargetMesh   `protobuf:"bytes,2,opt,name=target_mesh,json=targetMesh" json:"target_mesh,omitempty"`
-	Routing    *Routing      `protobuf:"bytes,1,opt,name=routing" json:"routing,omitempty"`
-	//    MeshMetadata mesh_metadata = 99;
-	Encryption           *Encryption `protobuf:"bytes,98,opt,name=encryption" json:"encryption,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	Metadata             core.Metadata `protobuf:"bytes,7,opt,name=metadata" json:"metadata"`
+	TargetMesh           *TargetMesh   `protobuf:"bytes,2,opt,name=target_mesh,json=targetMesh" json:"target_mesh,omitempty"`
+	Routing              *Routing      `protobuf:"bytes,1,opt,name=routing" json:"routing,omitempty"`
+	Encryption           *Encryption   `protobuf:"bytes,98,opt,name=encryption" json:"encryption,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
 }
 
 func (m *Mesh) Reset()         { *m = Mesh{} }
 func (m *Mesh) String() string { return proto.CompactTextString(m) }
 func (*Mesh) ProtoMessage()    {}
 func (*Mesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_7426223a1bcb82bd, []int{0}
+	return fileDescriptor_mesh_3cb56dcfd26eb040, []int{0}
 }
 func (m *Mesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Mesh.Unmarshal(m, b)
@@ -146,7 +145,7 @@ func (m *TargetMesh) Reset()         { *m = TargetMesh{} }
 func (m *TargetMesh) String() string { return proto.CompactTextString(m) }
 func (*TargetMesh) ProtoMessage()    {}
 func (*TargetMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_7426223a1bcb82bd, []int{1}
+	return fileDescriptor_mesh_3cb56dcfd26eb040, []int{1}
 }
 func (m *TargetMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TargetMesh.Unmarshal(m, b)
@@ -266,7 +265,7 @@ func (m *KubeLocation) Reset()         { *m = KubeLocation{} }
 func (m *KubeLocation) String() string { return proto.CompactTextString(m) }
 func (*KubeLocation) ProtoMessage()    {}
 func (*KubeLocation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_7426223a1bcb82bd, []int{2}
+	return fileDescriptor_mesh_3cb56dcfd26eb040, []int{2}
 }
 func (m *KubeLocation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_KubeLocation.Unmarshal(m, b)
@@ -332,7 +331,7 @@ func (m *Encryption) Reset()         { *m = Encryption{} }
 func (m *Encryption) String() string { return proto.CompactTextString(m) }
 func (*Encryption) ProtoMessage()    {}
 func (*Encryption) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_7426223a1bcb82bd, []int{3}
+	return fileDescriptor_mesh_3cb56dcfd26eb040, []int{3}
 }
 func (m *Encryption) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Encryption.Unmarshal(m, b)
@@ -536,9 +535,9 @@ func (this *Encryption) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("mesh.proto", fileDescriptor_mesh_7426223a1bcb82bd) }
+func init() { proto.RegisterFile("mesh.proto", fileDescriptor_mesh_3cb56dcfd26eb040) }
 
-var fileDescriptor_mesh_7426223a1bcb82bd = []byte{
+var fileDescriptor_mesh_3cb56dcfd26eb040 = []byte{
 	// 532 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0x51, 0x6f, 0xd3, 0x30,
 	0x10, 0x80, 0xd7, 0x31, 0xba, 0xf6, 0xd6, 0x4e, 0x9b, 0x19, 0x28, 0x2b, 0xb0, 0xa2, 0x20, 0x04,

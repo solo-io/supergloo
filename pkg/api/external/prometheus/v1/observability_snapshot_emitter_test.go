@@ -8,18 +8,17 @@ import (
 	"path/filepath"
 	"time"
 
-	
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/test/helpers"
-	"github.com/solo-io/solo-kit/test/services"
 	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/solo-kit/test/helpers"
+	"github.com/solo-io/solo-projects/test/services"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/kubernetes"
 )
 
 var _ = Describe("V1Emitter", func() {
@@ -28,10 +27,10 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1          string
-		namespace2          string
-		cfg                *rest.Config
-		emitter            ObservabilityEmitter
+		namespace1   string
+		namespace2   string
+		cfg          *rest.Config
+		emitter      ObservabilityEmitter
 		configClient ConfigClient
 	)
 
@@ -68,7 +67,7 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		snapshots, errs, err := emitter.Snapshots([]string{namespace1, namespace2}, clients.WatchOpts{
-			Ctx: ctx,
+			Ctx:         ctx,
 			RefreshRate: time.Second,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -78,7 +77,7 @@ var _ = Describe("V1Emitter", func() {
 		/*
 			Config
 		*/
-		
+
 		assertSnapshotPrometheusconfigs := func(expectPrometheusconfigs ConfigList, unexpectPrometheusconfigs ConfigList) {
 		drain:
 			for {
@@ -105,36 +104,34 @@ var _ = Describe("V1Emitter", func() {
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
-		}	
-
+		}
 
 		config1a, err := configClient.Write(NewConfig(namespace1, "angela"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		config1b, err := configClient.Write(NewConfig(namespace2, "angela"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(ConfigList{ config1a, config1b }, nil)
+		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b}, nil)
 
 		config2a, err := configClient.Write(NewConfig(namespace1, "bob"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		config2b, err := configClient.Write(NewConfig(namespace2, "bob"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(ConfigList{ config1a, config1b,  config2a, config2b  }, nil)
+		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b, config2a, config2b}, nil)
 
 		err = configClient.Delete(config2a.Metadata.Namespace, config2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configClient.Delete(config2b.Metadata.Namespace, config2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(ConfigList{ config1a, config1b }, ConfigList{ config2a, config2b })
+		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b}, ConfigList{config2a, config2b})
 
 		err = configClient.Delete(config1a.Metadata.Namespace, config1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configClient.Delete(config1b.Metadata.Namespace, config1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(nil, ConfigList{ config1a, config1b, config2a, config2b })
+		assertSnapshotPrometheusconfigs(nil, ConfigList{config1a, config1b, config2a, config2b})
 	})
 })
-

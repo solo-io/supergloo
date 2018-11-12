@@ -3,11 +3,10 @@
 package v1
 
 import (
-	
-	"go.uber.org/zap"
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"go.uber.org/zap"
 )
 
 type ObservabilitySnapshot struct {
@@ -33,23 +32,21 @@ func (s ObservabilitySnapshot) snapshotToHash() ObservabilitySnapshot {
 
 func (s ObservabilitySnapshot) Hash() uint64 {
 	return s.hashStruct(s.snapshotToHash())
- }
+}
 
- func (s ObservabilitySnapshot) HashFields() []zap.Field {
+func (s ObservabilitySnapshot) HashFields() []zap.Field {
 	snapshotForHashing := s.snapshotToHash()
 	var fields []zap.Field
 	prometheusconfigs := s.hashStruct(snapshotForHashing.Prometheusconfigs.List())
-	fields = append(fields, zap.Uint64("prometheusconfigs", prometheusconfigs ))
+	fields = append(fields, zap.Uint64("prometheusconfigs", prometheusconfigs))
 
-	return append(fields, zap.Uint64("snapshotHash",  s.hashStruct(snapshotForHashing)))
- }
- 
+	return append(fields, zap.Uint64("snapshotHash", s.hashStruct(snapshotForHashing)))
+}
+
 func (s ObservabilitySnapshot) hashStruct(v interface{}) uint64 {
 	h, err := hashstructure.Hash(v, nil)
-	 if err != nil {
-		 panic(err)
-	 }
-	 return h
- }
-
-
+	if err != nil {
+		panic(err)
+	}
+	return h
+}

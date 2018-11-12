@@ -44,14 +44,12 @@ func (list ConfigList) Find(namespace, name string) (*Config, error) {
 }
 
 func (list ConfigList) AsResources() resources.ResourceList {
-	var ress resources.ResourceList 
+	var ress resources.ResourceList
 	for _, config := range list {
 		ress = append(ress, config)
 	}
 	return ress
 }
-
-
 
 func (list ConfigList) Names() []string {
 	var names []string
@@ -64,7 +62,7 @@ func (list ConfigList) Names() []string {
 func (list ConfigList) NamespacesDotNames() []string {
 	var names []string
 	for _, config := range list {
-		names = append(names, config.Metadata.Namespace + "." + config.Metadata.Name)
+		names = append(names, config.Metadata.Namespace+"."+config.Metadata.Name)
 	}
 	return names
 }
@@ -81,7 +79,7 @@ func (list ConfigList) Clone() ConfigList {
 	for _, config := range list {
 		configList = append(configList, proto.Clone(config).(*Config))
 	}
-	return configList 
+	return configList
 }
 
 func (list ConfigList) ByNamespace() PrometheusconfigsByNamespace {
@@ -92,7 +90,7 @@ func (list ConfigList) ByNamespace() PrometheusconfigsByNamespace {
 	return byNamespace
 }
 
-func (byNamespace PrometheusconfigsByNamespace) Add(config ... *Config) {
+func (byNamespace PrometheusconfigsByNamespace) Add(config ...*Config) {
 	for _, item := range config {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
 	}

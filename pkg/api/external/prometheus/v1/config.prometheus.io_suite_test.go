@@ -13,8 +13,3 @@ func TestConfigprometheusio(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Configprometheusio Suite")
 }
-
-
-
-
-

@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	gloov1 "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1"
+	gloov1 "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )

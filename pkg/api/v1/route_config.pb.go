@@ -9,7 +9,7 @@ import math "math"
 import _ "github.com/gogo/protobuf/gogoproto"
 import types "github.com/gogo/protobuf/types"
 import wrappers "github.com/golang/protobuf/ptypes/wrappers"
-import v1 "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1"
+import v1 "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
 
 import bytes "bytes"
 

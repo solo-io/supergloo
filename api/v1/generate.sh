@@ -4,7 +4,7 @@ set -ex
 
 ROOT=${GOPATH}/src
 
-PROJECTS=${ROOT}/github.com/solo-io/solo-kit/projects
+PROJECTS=${ROOT}/github.com/solo-io/solo-projects/projects
 SUPERGLOO=${ROOT}/github.com/solo-io/supergloo
 
 OUT=${SUPERGLOO}/pkg/api/v1/
@@ -17,7 +17,7 @@ SUPERGLOO_IN=${SUPERGLOO}/api/v1/
 
 IMPORTS="-I=${GLOO_IN} \
     -I=${SUPERGLOO_IN} \
-    -I=${ROOT}/github.com/solo-io/solo-kit/projects/gloo/api/v1 \
+    -I=${ROOT}/github.com/solo-io/solo-projects/projects/gloo/api/v1 \
     -I=${ROOT} \
     -I=${ROOT}/github.com/solo-io/solo-kit/api/external/proto"
 

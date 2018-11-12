@@ -6,7 +6,7 @@ import (
 	"context"
 	"time"
 
-	gloo_solo_io "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1"
+	gloo_solo_io "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

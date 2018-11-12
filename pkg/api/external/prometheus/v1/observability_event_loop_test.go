@@ -6,7 +6,6 @@ import (
 	"context"
 	"time"
 
-	
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -17,7 +16,7 @@ import (
 var _ = Describe("ObservabilityEventLoop", func() {
 	var (
 		namespace string
-		emitter     ObservabilityEmitter
+		emitter   ObservabilityEmitter
 		err       error
 	)
 

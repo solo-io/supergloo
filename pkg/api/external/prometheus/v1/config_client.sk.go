@@ -30,7 +30,7 @@ func NewConfigClient(rcFactory factory.ResourceClientFactory) (ConfigClient, err
 func NewConfigClientWithToken(rcFactory factory.ResourceClientFactory, token string) (ConfigClient, error) {
 	rc, err := rcFactory.NewResourceClient(factory.NewResourceClientParams{
 		ResourceType: &Config{},
-		Token: token,
+		Token:        token,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating base Config resource client")
@@ -108,4 +108,3 @@ func convertToConfig(resources resources.ResourceList) ConfigList {
 	}
 	return configList
 }
-

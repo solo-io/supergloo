@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	gloo_solo_io "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1"
+	gloo_solo_io "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +17,7 @@ import (
 	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
-	"github.com/solo-io/solo-kit/test/services"
+	"github.com/solo-io/solo-projects/test/services"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
