@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	"github.com/prometheus/prometheus/config"
 	"sort"
 
 	"github.com/gogo/protobuf/proto"
@@ -15,14 +16,22 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-type RoutingSyncer struct {
-	WriteSelector             map[string]string // for reconciling only our resources
-	WriteNamespace            string
-	DestinationRuleReconciler v1alpha3.DestinationRuleReconciler
-	VirtualServiceReconciler  v1alpha3.VirtualServiceReconciler
+type PrometheusSyncer struct {
+	ArtifactClient            gloov1.ArtifactClient // for reading/writing configmaps
 }
 
-func (s *RoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*config.Config, error) {
+	prometheusConfigArtifact, err := s.ArtifactClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{
+		Ctx: ctx,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "reading artifact %v", ref)
+	}
+	prometheusConfigStr := prometheusConfigArtifact.Data["prometheus.yml"]
+}
+
+func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	config.Config{}
 	destinationRules := createDestinationRules(false, snap.Upstreams.List())
 	virtualServices, err := createVirtualServices(snap.Meshes.List(), snap.Upstreams.List())
 	if err != nil {
@@ -58,7 +67,7 @@ func (s *RoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) e
 	return s.writeIstioCrds(ctx, destinationRules, virtualServices)
 }
 
-func (s *RoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules v1alpha3.DestinationRuleList, virtualServices v1alpha3.VirtualServiceList) error {
+func (s *PrometheusSyncer) writeIstioCrds(ctx context.Context, destinationRules v1alpha3.DestinationRuleList, virtualServices v1alpha3.VirtualServiceList) error {
 	opts := clients.ListOpts{
 		Ctx:      ctx,
 		Selector: s.WriteSelector,
