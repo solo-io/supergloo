@@ -10,15 +10,14 @@
   version = "v0.32.0"
 
 [[projects]]
-  digest = "1:e4e0dd3da3e36d69c4314484f6233da7c6a7552bbbc65199970f0f9181823529"
+  digest = "1:253580c3e9e495538385a96f276a0e06f3ba90c73421df1258de8a8375ff4b09"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "arm/compute",
     "arm/network",
   ]
   pruneopts = "UT"
-  revision = "21b68149ccf7c16b3f028bb4c7fd0ab458fe308f"
-  version = "v12.5.0-beta"
+  revision = "bd73d950fa4440dae889bd9917bff7cef539f86e"
 
 [[projects]]
   digest = "1:4de52b53e6cb28235e4a5d8f85dedeede9ab52b400e77f32d5171f8593bc4a33"

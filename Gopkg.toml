@@ -28,29 +28,9 @@
   go-tests = true
   unused-packages = true
 
-# used for older sqoop, remove if upgrading to 99designs
 [[constraint]]
   branch = "master"
   name = "github.com/solo-io/solo-kit"
-
-# used for older sqoop, remove if upgrading to 99designs
-[[constraint]]
-  revision = "6b3b338d5f9c8b5a80ad4ea1e2e37aa58677ea9d"
-  name = "github.com/vektah/gqlgen"
-
-# this must match the version of the gqlgen binary we depend on
-
-[[constraint]]
-  version = "v0.6.0"
-  name = "github.com/99designs/gqlgen"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/bxcodec/faker"
-
-[[constraint]]
-  revision = "676016db8193d83324a507a986a78cd3642ad713"
-  name = "github.com/envoyproxy/go-control-plane"
 
 [[constraint]]
   version = "1.1.1"
@@ -64,25 +44,6 @@
   branch = "master"
   name = "github.com/golang/protobuf"
 
-#[[constraint]]
-#  revision = "e9c5d9645c437ab1b204cff969a2c0fb16cd4276"
-#  name = "github.com/grpc-ecosystem/go-grpc-middleware"
-#
-#[[constraint]]
-#  branch = "master"
-#  name = "k8s.io/apiextensions-apiserver"
-#
-#[[constraint]]
-#  branch = "master"
-#  name = "k8s.io/apimachinery"
-#
-#[[constraint]]
-#  name = "k8s.io/client-go"
-#  branch = "master"
-
-
-[[constraint]]
-  name = "github.com/solo-io/envoy-operator"
-  revision = "c71f318a203bca8433268be67336086379a2bf9f"
-
-
+[[override]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  revision = "bd73d950fa4440dae889bd9917bff7cef539f86e"
