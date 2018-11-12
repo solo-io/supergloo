@@ -7,7 +7,6 @@ import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import _ "github.com/gogo/protobuf/gogoproto"
-import types "github.com/gogo/protobuf/types"
 import core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 import bytes "bytes"
@@ -31,7 +30,7 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 // Prometheus Config
 type Config struct {
 	// jsontag is used to refer to the common kubernetes configmap key
-	Prometheus *types.Struct `protobuf:"bytes,1,opt,name=prometheus.yml" json:"prometheus,omitempty"`
+	Prometheus *PrometheusConfig `protobuf:"bytes,1,opt,name=prometheus.yml" json:"prometheus,omitempty"`
 	// Metadata contains the object metadata for this resource
 	Metadata             core.Metadata `protobuf:"bytes,7,opt,name=metadata" json:"metadata"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
@@ -43,7 +42,7 @@ func (m *Config) Reset()         { *m = Config{} }
 func (m *Config) String() string { return proto.CompactTextString(m) }
 func (*Config) ProtoMessage()    {}
 func (*Config) Descriptor() ([]byte, []int) {
-	return fileDescriptor_config_99a07a01ec2c06d8, []int{0}
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{0}
 }
 func (m *Config) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Config.Unmarshal(m, b)
@@ -63,7 +62,7 @@ func (m *Config) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Config proto.InternalMessageInfo
 
-func (m *Config) GetPrometheus() *types.Struct {
+func (m *Config) GetPrometheus() *PrometheusConfig {
 	if m != nil {
 		return m.Prometheus
 	}
@@ -77,8 +76,432 @@ func (m *Config) GetMetadata() core.Metadata {
 	return core.Metadata{}
 }
 
+type PrometheusConfig struct {
+	Global               *Global         `protobuf:"bytes,1,opt,name=global" json:"global,omitempty"`
+	ScrapeConfigs        []*ScrapeConfig `protobuf:"bytes,2,rep,name=scrape_configs,json=scrapeConfigs" json:"scrape_configs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *PrometheusConfig) Reset()         { *m = PrometheusConfig{} }
+func (m *PrometheusConfig) String() string { return proto.CompactTextString(m) }
+func (*PrometheusConfig) ProtoMessage()    {}
+func (*PrometheusConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{1}
+}
+func (m *PrometheusConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PrometheusConfig.Unmarshal(m, b)
+}
+func (m *PrometheusConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PrometheusConfig.Marshal(b, m, deterministic)
+}
+func (dst *PrometheusConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrometheusConfig.Merge(dst, src)
+}
+func (m *PrometheusConfig) XXX_Size() int {
+	return xxx_messageInfo_PrometheusConfig.Size(m)
+}
+func (m *PrometheusConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_PrometheusConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PrometheusConfig proto.InternalMessageInfo
+
+func (m *PrometheusConfig) GetGlobal() *Global {
+	if m != nil {
+		return m.Global
+	}
+	return nil
+}
+
+func (m *PrometheusConfig) GetScrapeConfigs() []*ScrapeConfig {
+	if m != nil {
+		return m.ScrapeConfigs
+	}
+	return nil
+}
+
+type Global struct {
+	ScrapeInterval       string   `protobuf:"bytes,1,opt,name=scrape_interval,json=scrapeInterval,proto3" json:"scrape_interval,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Global) Reset()         { *m = Global{} }
+func (m *Global) String() string { return proto.CompactTextString(m) }
+func (*Global) ProtoMessage()    {}
+func (*Global) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{2}
+}
+func (m *Global) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Global.Unmarshal(m, b)
+}
+func (m *Global) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Global.Marshal(b, m, deterministic)
+}
+func (dst *Global) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Global.Merge(dst, src)
+}
+func (m *Global) XXX_Size() int {
+	return xxx_messageInfo_Global.Size(m)
+}
+func (m *Global) XXX_DiscardUnknown() {
+	xxx_messageInfo_Global.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Global proto.InternalMessageInfo
+
+func (m *Global) GetScrapeInterval() string {
+	if m != nil {
+		return m.ScrapeInterval
+	}
+	return ""
+}
+
+type KubernetesSdConfig struct {
+	Namespaces           *Namespaces `protobuf:"bytes,1,opt,name=namespaces" json:"namespaces,omitempty"`
+	Role                 string      `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *KubernetesSdConfig) Reset()         { *m = KubernetesSdConfig{} }
+func (m *KubernetesSdConfig) String() string { return proto.CompactTextString(m) }
+func (*KubernetesSdConfig) ProtoMessage()    {}
+func (*KubernetesSdConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{3}
+}
+func (m *KubernetesSdConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_KubernetesSdConfig.Unmarshal(m, b)
+}
+func (m *KubernetesSdConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_KubernetesSdConfig.Marshal(b, m, deterministic)
+}
+func (dst *KubernetesSdConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_KubernetesSdConfig.Merge(dst, src)
+}
+func (m *KubernetesSdConfig) XXX_Size() int {
+	return xxx_messageInfo_KubernetesSdConfig.Size(m)
+}
+func (m *KubernetesSdConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_KubernetesSdConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_KubernetesSdConfig proto.InternalMessageInfo
+
+func (m *KubernetesSdConfig) GetNamespaces() *Namespaces {
+	if m != nil {
+		return m.Namespaces
+	}
+	return nil
+}
+
+func (m *KubernetesSdConfig) GetRole() string {
+	if m != nil {
+		return m.Role
+	}
+	return ""
+}
+
+type MetricRelabelConfig struct {
+	Action               string   `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	Regex                string   `protobuf:"bytes,2,opt,name=regex,proto3" json:"regex,omitempty"`
+	SourceLabels         []string `protobuf:"bytes,3,rep,name=source_labels,json=sourceLabels" json:"source_labels,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MetricRelabelConfig) Reset()         { *m = MetricRelabelConfig{} }
+func (m *MetricRelabelConfig) String() string { return proto.CompactTextString(m) }
+func (*MetricRelabelConfig) ProtoMessage()    {}
+func (*MetricRelabelConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{4}
+}
+func (m *MetricRelabelConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MetricRelabelConfig.Unmarshal(m, b)
+}
+func (m *MetricRelabelConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MetricRelabelConfig.Marshal(b, m, deterministic)
+}
+func (dst *MetricRelabelConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MetricRelabelConfig.Merge(dst, src)
+}
+func (m *MetricRelabelConfig) XXX_Size() int {
+	return xxx_messageInfo_MetricRelabelConfig.Size(m)
+}
+func (m *MetricRelabelConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_MetricRelabelConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MetricRelabelConfig proto.InternalMessageInfo
+
+func (m *MetricRelabelConfig) GetAction() string {
+	if m != nil {
+		return m.Action
+	}
+	return ""
+}
+
+func (m *MetricRelabelConfig) GetRegex() string {
+	if m != nil {
+		return m.Regex
+	}
+	return ""
+}
+
+func (m *MetricRelabelConfig) GetSourceLabels() []string {
+	if m != nil {
+		return m.SourceLabels
+	}
+	return nil
+}
+
+type Namespaces struct {
+	Names                []string `protobuf:"bytes,1,rep,name=names" json:"names,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Namespaces) Reset()         { *m = Namespaces{} }
+func (m *Namespaces) String() string { return proto.CompactTextString(m) }
+func (*Namespaces) ProtoMessage()    {}
+func (*Namespaces) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{5}
+}
+func (m *Namespaces) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Namespaces.Unmarshal(m, b)
+}
+func (m *Namespaces) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Namespaces.Marshal(b, m, deterministic)
+}
+func (dst *Namespaces) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Namespaces.Merge(dst, src)
+}
+func (m *Namespaces) XXX_Size() int {
+	return xxx_messageInfo_Namespaces.Size(m)
+}
+func (m *Namespaces) XXX_DiscardUnknown() {
+	xxx_messageInfo_Namespaces.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Namespaces proto.InternalMessageInfo
+
+func (m *Namespaces) GetNames() []string {
+	if m != nil {
+		return m.Names
+	}
+	return nil
+}
+
+type RelabelConfig struct {
+	Action               string   `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	Regex                string   `protobuf:"bytes,2,opt,name=regex,proto3" json:"regex,omitempty"`
+	SourceLabels         []string `protobuf:"bytes,3,rep,name=source_labels,json=sourceLabels" json:"source_labels,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RelabelConfig) Reset()         { *m = RelabelConfig{} }
+func (m *RelabelConfig) String() string { return proto.CompactTextString(m) }
+func (*RelabelConfig) ProtoMessage()    {}
+func (*RelabelConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{6}
+}
+func (m *RelabelConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RelabelConfig.Unmarshal(m, b)
+}
+func (m *RelabelConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RelabelConfig.Marshal(b, m, deterministic)
+}
+func (dst *RelabelConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RelabelConfig.Merge(dst, src)
+}
+func (m *RelabelConfig) XXX_Size() int {
+	return xxx_messageInfo_RelabelConfig.Size(m)
+}
+func (m *RelabelConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_RelabelConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RelabelConfig proto.InternalMessageInfo
+
+func (m *RelabelConfig) GetAction() string {
+	if m != nil {
+		return m.Action
+	}
+	return ""
+}
+
+func (m *RelabelConfig) GetRegex() string {
+	if m != nil {
+		return m.Regex
+	}
+	return ""
+}
+
+func (m *RelabelConfig) GetSourceLabels() []string {
+	if m != nil {
+		return m.SourceLabels
+	}
+	return nil
+}
+
+type ScrapeConfig struct {
+	JobName              string                 `protobuf:"bytes,1,opt,name=job_name,json=jobName,proto3" json:"job_name,omitempty"`
+	KubernetesSdConfigs  []*KubernetesSdConfig  `protobuf:"bytes,2,rep,name=kubernetes_sd_configs,json=kubernetesSdConfigs" json:"kubernetes_sd_configs,omitempty"`
+	RelabelConfigs       []*RelabelConfig       `protobuf:"bytes,3,rep,name=relabel_configs,json=relabelConfigs" json:"relabel_configs,omitempty"`
+	ScrapeInterval       string                 `protobuf:"bytes,4,opt,name=scrape_interval,json=scrapeInterval,proto3" json:"scrape_interval,omitempty"`
+	MetricRelabelConfigs []*MetricRelabelConfig `protobuf:"bytes,5,rep,name=metric_relabel_configs,json=metricRelabelConfigs" json:"metric_relabel_configs,omitempty"`
+	MetricsPath          string                 `protobuf:"bytes,6,opt,name=metrics_path,json=metricsPath,proto3" json:"metrics_path,omitempty"`
+	BearerTokenFile      string                 `protobuf:"bytes,7,opt,name=bearer_token_file,json=bearerTokenFile,proto3" json:"bearer_token_file,omitempty"`
+	Scheme               string                 `protobuf:"bytes,8,opt,name=scheme,proto3" json:"scheme,omitempty"`
+	TLSConfig            *TLSConfig             `protobuf:"bytes,9,opt,name=tlsconfig" json:"tlsconfig,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *ScrapeConfig) Reset()         { *m = ScrapeConfig{} }
+func (m *ScrapeConfig) String() string { return proto.CompactTextString(m) }
+func (*ScrapeConfig) ProtoMessage()    {}
+func (*ScrapeConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{7}
+}
+func (m *ScrapeConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ScrapeConfig.Unmarshal(m, b)
+}
+func (m *ScrapeConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ScrapeConfig.Marshal(b, m, deterministic)
+}
+func (dst *ScrapeConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScrapeConfig.Merge(dst, src)
+}
+func (m *ScrapeConfig) XXX_Size() int {
+	return xxx_messageInfo_ScrapeConfig.Size(m)
+}
+func (m *ScrapeConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_ScrapeConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ScrapeConfig proto.InternalMessageInfo
+
+func (m *ScrapeConfig) GetJobName() string {
+	if m != nil {
+		return m.JobName
+	}
+	return ""
+}
+
+func (m *ScrapeConfig) GetKubernetesSdConfigs() []*KubernetesSdConfig {
+	if m != nil {
+		return m.KubernetesSdConfigs
+	}
+	return nil
+}
+
+func (m *ScrapeConfig) GetRelabelConfigs() []*RelabelConfig {
+	if m != nil {
+		return m.RelabelConfigs
+	}
+	return nil
+}
+
+func (m *ScrapeConfig) GetScrapeInterval() string {
+	if m != nil {
+		return m.ScrapeInterval
+	}
+	return ""
+}
+
+func (m *ScrapeConfig) GetMetricRelabelConfigs() []*MetricRelabelConfig {
+	if m != nil {
+		return m.MetricRelabelConfigs
+	}
+	return nil
+}
+
+func (m *ScrapeConfig) GetMetricsPath() string {
+	if m != nil {
+		return m.MetricsPath
+	}
+	return ""
+}
+
+func (m *ScrapeConfig) GetBearerTokenFile() string {
+	if m != nil {
+		return m.BearerTokenFile
+	}
+	return ""
+}
+
+func (m *ScrapeConfig) GetScheme() string {
+	if m != nil {
+		return m.Scheme
+	}
+	return ""
+}
+
+func (m *ScrapeConfig) GetTLSConfig() *TLSConfig {
+	if m != nil {
+		return m.TLSConfig
+	}
+	return nil
+}
+
+type TLSConfig struct {
+	CaFile               string   `protobuf:"bytes,1,opt,name=ca_file,json=caFile,proto3" json:"ca_file,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TLSConfig) Reset()         { *m = TLSConfig{} }
+func (m *TLSConfig) String() string { return proto.CompactTextString(m) }
+func (*TLSConfig) ProtoMessage()    {}
+func (*TLSConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_config_6df6a5e1d40d09af, []int{8}
+}
+func (m *TLSConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLSConfig.Unmarshal(m, b)
+}
+func (m *TLSConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLSConfig.Marshal(b, m, deterministic)
+}
+func (dst *TLSConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLSConfig.Merge(dst, src)
+}
+func (m *TLSConfig) XXX_Size() int {
+	return xxx_messageInfo_TLSConfig.Size(m)
+}
+func (m *TLSConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLSConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLSConfig proto.InternalMessageInfo
+
+func (m *TLSConfig) GetCaFile() string {
+	if m != nil {
+		return m.CaFile
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*Config)(nil), "config.prometheus.io.Config")
+	proto.RegisterType((*PrometheusConfig)(nil), "config.prometheus.io.PrometheusConfig")
+	proto.RegisterType((*Global)(nil), "config.prometheus.io.Global")
+	proto.RegisterType((*KubernetesSdConfig)(nil), "config.prometheus.io.KubernetesSdConfig")
+	proto.RegisterType((*MetricRelabelConfig)(nil), "config.prometheus.io.MetricRelabelConfig")
+	proto.RegisterType((*Namespaces)(nil), "config.prometheus.io.Namespaces")
+	proto.RegisterType((*RelabelConfig)(nil), "config.prometheus.io.RelabelConfig")
+	proto.RegisterType((*ScrapeConfig)(nil), "config.prometheus.io.ScrapeConfig")
+	proto.RegisterType((*TLSConfig)(nil), "config.prometheus.io.TLSConfig")
 }
 func (this *Config) Equal(that interface{}) bool {
 	if that == nil {
@@ -110,25 +533,343 @@ func (this *Config) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *PrometheusConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
 
-func init() { proto.RegisterFile("config.proto", fileDescriptor_config_99a07a01ec2c06d8) }
+	that1, ok := that.(*PrometheusConfig)
+	if !ok {
+		that2, ok := that.(PrometheusConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Global.Equal(that1.Global) {
+		return false
+	}
+	if len(this.ScrapeConfigs) != len(that1.ScrapeConfigs) {
+		return false
+	}
+	for i := range this.ScrapeConfigs {
+		if !this.ScrapeConfigs[i].Equal(that1.ScrapeConfigs[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *Global) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
 
-var fileDescriptor_config_99a07a01ec2c06d8 = []byte{
-	// 256 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0xce, 0xcf, 0x4b,
-	0xcb, 0x4c, 0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x41, 0xf0, 0x72, 0x53, 0x4b, 0x32,
-	0x52, 0x4b, 0x8b, 0xf5, 0x32, 0xf3, 0xa5, 0x44, 0xd2, 0xf3, 0xd3, 0xf3, 0xc1, 0x0a, 0xf4, 0x41,
-	0x2c, 0x88, 0x5a, 0x29, 0x99, 0xf4, 0xfc, 0xfc, 0xf4, 0x9c, 0x54, 0x7d, 0x30, 0x2f, 0xa9, 0x34,
-	0x4d, 0xbf, 0xb8, 0xa4, 0xa8, 0x34, 0xb9, 0x04, 0x2a, 0x6b, 0x98, 0x9e, 0x59, 0x92, 0x51, 0x9a,
-	0xa4, 0x97, 0x9c, 0x9f, 0xab, 0x5f, 0x9c, 0x9f, 0x93, 0xaf, 0x9b, 0x99, 0x0f, 0xa1, 0xb3, 0x33,
-	0x4b, 0xf4, 0x13, 0x0b, 0x32, 0xf5, 0xcb, 0x0c, 0xf5, 0x73, 0x53, 0x4b, 0x12, 0x53, 0x12, 0x4b,
-	0x12, 0x21, 0x5a, 0x94, 0xfa, 0x19, 0xb9, 0xd8, 0x9c, 0xc1, 0xf6, 0x0b, 0x79, 0x73, 0x71, 0x21,
-	0x9c, 0x20, 0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x6d, 0x24, 0xae, 0x07, 0xb1, 0x50, 0x0f, 0x66, 0xa1,
-	0x5e, 0x30, 0xd8, 0x42, 0x27, 0xa1, 0x55, 0xf7, 0xe5, 0xf9, 0x90, 0x5c, 0x5c, 0x99, 0x9b, 0x13,
-	0x84, 0xa4, 0x5d, 0xc8, 0x82, 0x8b, 0x03, 0x66, 0x93, 0x04, 0x3b, 0xd8, 0x28, 0x31, 0xbd, 0xe4,
-	0xfc, 0xa2, 0x54, 0x3d, 0x90, 0x7b, 0xf4, 0x32, 0xf3, 0xf5, 0x7c, 0xa1, 0xb2, 0x4e, 0x2c, 0x27,
-	0xee, 0xc9, 0x33, 0x04, 0xc1, 0x55, 0x3b, 0x39, 0xae, 0x78, 0x24, 0xc7, 0x18, 0x65, 0x8d, 0xcd,
-	0x2b, 0xa5, 0x05, 0xa9, 0x45, 0xe9, 0x39, 0xf9, 0xf9, 0xfa, 0x05, 0xd9, 0xe9, 0x60, 0xff, 0xa4,
-	0x56, 0x94, 0xa4, 0x16, 0xe5, 0x25, 0xe6, 0xe8, 0x23, 0x6c, 0xd6, 0x2f, 0x33, 0x4c, 0x62, 0x03,
-	0xbb, 0xd6, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x53, 0x3a, 0xf2, 0xff, 0x68, 0x01, 0x00, 0x00,
+	that1, ok := that.(*Global)
+	if !ok {
+		that2, ok := that.(Global)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ScrapeInterval != that1.ScrapeInterval {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *KubernetesSdConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*KubernetesSdConfig)
+	if !ok {
+		that2, ok := that.(KubernetesSdConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Namespaces.Equal(that1.Namespaces) {
+		return false
+	}
+	if this.Role != that1.Role {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MetricRelabelConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MetricRelabelConfig)
+	if !ok {
+		that2, ok := that.(MetricRelabelConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Action != that1.Action {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if len(this.SourceLabels) != len(that1.SourceLabels) {
+		return false
+	}
+	for i := range this.SourceLabels {
+		if this.SourceLabels[i] != that1.SourceLabels[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *Namespaces) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Namespaces)
+	if !ok {
+		that2, ok := that.(Namespaces)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Names) != len(that1.Names) {
+		return false
+	}
+	for i := range this.Names {
+		if this.Names[i] != that1.Names[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *RelabelConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RelabelConfig)
+	if !ok {
+		that2, ok := that.(RelabelConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Action != that1.Action {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if len(this.SourceLabels) != len(that1.SourceLabels) {
+		return false
+	}
+	for i := range this.SourceLabels {
+		if this.SourceLabels[i] != that1.SourceLabels[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *ScrapeConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ScrapeConfig)
+	if !ok {
+		that2, ok := that.(ScrapeConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.JobName != that1.JobName {
+		return false
+	}
+	if len(this.KubernetesSdConfigs) != len(that1.KubernetesSdConfigs) {
+		return false
+	}
+	for i := range this.KubernetesSdConfigs {
+		if !this.KubernetesSdConfigs[i].Equal(that1.KubernetesSdConfigs[i]) {
+			return false
+		}
+	}
+	if len(this.RelabelConfigs) != len(that1.RelabelConfigs) {
+		return false
+	}
+	for i := range this.RelabelConfigs {
+		if !this.RelabelConfigs[i].Equal(that1.RelabelConfigs[i]) {
+			return false
+		}
+	}
+	if this.ScrapeInterval != that1.ScrapeInterval {
+		return false
+	}
+	if len(this.MetricRelabelConfigs) != len(that1.MetricRelabelConfigs) {
+		return false
+	}
+	for i := range this.MetricRelabelConfigs {
+		if !this.MetricRelabelConfigs[i].Equal(that1.MetricRelabelConfigs[i]) {
+			return false
+		}
+	}
+	if this.MetricsPath != that1.MetricsPath {
+		return false
+	}
+	if this.BearerTokenFile != that1.BearerTokenFile {
+		return false
+	}
+	if this.Scheme != that1.Scheme {
+		return false
+	}
+	if !this.TLSConfig.Equal(that1.TLSConfig) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TLSConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TLSConfig)
+	if !ok {
+		that2, ok := that.(TLSConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.CaFile != that1.CaFile {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+
+func init() { proto.RegisterFile("config.proto", fileDescriptor_config_6df6a5e1d40d09af) }
+
+var fileDescriptor_config_6df6a5e1d40d09af = []byte{
+	// 645 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x54, 0x41, 0x6f, 0xd3, 0x30,
+	0x18, 0xa5, 0x6b, 0xd7, 0xad, 0xdf, 0xda, 0x0d, 0xbc, 0x32, 0xc2, 0x84, 0x68, 0xc9, 0x10, 0x14,
+	0x24, 0x1a, 0x75, 0x70, 0x40, 0xe2, 0x02, 0x43, 0x02, 0x4d, 0x74, 0x68, 0xf2, 0x76, 0x9a, 0x90,
+	0x22, 0x27, 0xfb, 0x96, 0x66, 0x4d, 0xe2, 0xc8, 0x76, 0xa7, 0xf1, 0x3b, 0xe0, 0xcc, 0x19, 0xf1,
+	0x4b, 0xf8, 0x15, 0x43, 0xda, 0x2f, 0x41, 0xb1, 0xbd, 0xb6, 0x6c, 0xb9, 0x72, 0x6a, 0xdf, 0xcb,
+	0xf3, 0x7b, 0x2f, 0xf6, 0x17, 0x43, 0x33, 0xe4, 0xd9, 0x49, 0x1c, 0xf5, 0x73, 0xc1, 0x15, 0x27,
+	0xed, 0x19, 0x4a, 0x51, 0x8d, 0x70, 0x22, 0xfb, 0x31, 0xdf, 0x6c, 0x47, 0x3c, 0xe2, 0x5a, 0xe0,
+	0x15, 0xff, 0x8c, 0x76, 0x73, 0x10, 0xc5, 0x6a, 0x34, 0x09, 0xfa, 0x21, 0x4f, 0x3d, 0xc9, 0x13,
+	0xfe, 0x22, 0xe6, 0xe6, 0x77, 0x1c, 0x2b, 0x8f, 0xe5, 0xb1, 0x77, 0x36, 0xf0, 0x52, 0x54, 0xec,
+	0x98, 0x29, 0x66, 0x96, 0xb8, 0x3f, 0x2a, 0x50, 0x7f, 0xaf, 0x13, 0xc8, 0x11, 0xc0, 0x2c, 0xc4,
+	0xa9, 0x74, 0x2b, 0xbd, 0x95, 0xed, 0x27, 0xfd, 0xb2, 0xf8, 0xfe, 0xfe, 0x14, 0x99, 0xb5, 0x3b,
+	0xe4, 0xd7, 0x9f, 0xce, 0xea, 0x9c, 0xe6, 0x6b, 0x9a, 0xd0, 0x39, 0x37, 0xf2, 0x1a, 0x96, 0xaf,
+	0x82, 0x9d, 0x25, 0xed, 0xbc, 0xd1, 0x0f, 0xb9, 0xc0, 0x7e, 0x51, 0xaf, 0x70, 0xdc, 0xb3, 0x4f,
+	0x77, 0x6a, 0xbf, 0x2f, 0x3a, 0xb7, 0xe8, 0x54, 0xed, 0x7e, 0xab, 0xc0, 0xed, 0xeb, 0x71, 0xe4,
+	0x15, 0xd4, 0xa3, 0x84, 0x07, 0x2c, 0xb1, 0x35, 0x1f, 0x94, 0xd7, 0xfc, 0xa8, 0x35, 0xd4, 0x6a,
+	0xc9, 0x2e, 0xac, 0xca, 0x50, 0xb0, 0x1c, 0x7d, 0xa3, 0x96, 0xce, 0x42, 0xb7, 0xda, 0x5b, 0xd9,
+	0x76, 0xcb, 0x57, 0x1f, 0x68, 0xad, 0x49, 0xa4, 0x2d, 0x39, 0x87, 0xa4, 0x3b, 0x80, 0xba, 0x31,
+	0x27, 0x4f, 0x61, 0xcd, 0x9a, 0xc6, 0x99, 0x42, 0x71, 0x66, 0x3b, 0x35, 0xa8, 0xcd, 0xda, 0xb5,
+	0xac, 0x7b, 0x0a, 0xe4, 0xd3, 0x24, 0x40, 0x91, 0xa1, 0x42, 0x79, 0x70, 0x6c, 0xdf, 0xe4, 0x2d,
+	0x40, 0xc6, 0x52, 0x94, 0x39, 0x0b, 0xf1, 0x6a, 0xd3, 0xbb, 0xe5, 0x7d, 0x3e, 0x4f, 0x75, 0x74,
+	0x6e, 0x0d, 0x21, 0x50, 0x13, 0x3c, 0x41, 0x67, 0x41, 0xa7, 0xea, 0xff, 0xee, 0x08, 0xd6, 0xf7,
+	0x50, 0x89, 0x38, 0xa4, 0x98, 0xb0, 0x00, 0x13, 0x1b, 0xb6, 0x01, 0x75, 0x16, 0xaa, 0x98, 0x67,
+	0xb6, 0xa2, 0x45, 0xa4, 0x0d, 0x8b, 0x02, 0x23, 0x3c, 0xb7, 0x1e, 0x06, 0x90, 0x2d, 0x68, 0x49,
+	0x3e, 0x11, 0x21, 0xfa, 0xda, 0x43, 0x3a, 0xd5, 0x6e, 0xb5, 0xd7, 0xa0, 0x4d, 0x43, 0x0e, 0x35,
+	0xe7, 0xba, 0x00, 0xb3, 0x5e, 0x85, 0x91, 0x6e, 0xe6, 0x54, 0xb4, 0xd4, 0x00, 0x37, 0x80, 0xd6,
+	0x7f, 0xef, 0xf1, 0xbd, 0x06, 0xcd, 0xf9, 0x03, 0x23, 0xf7, 0x61, 0xf9, 0x94, 0x07, 0x7e, 0xd1,
+	0xc0, 0xa6, 0x2c, 0x9d, 0xf2, 0xa0, 0xe8, 0x4a, 0xbe, 0xc0, 0xdd, 0xf1, 0xf4, 0x24, 0x7c, 0x79,
+	0x7c, 0x6d, 0x1c, 0x7a, 0xe5, 0xdb, 0x7f, 0xf3, 0xf0, 0xe8, 0xfa, 0xf8, 0x06, 0x27, 0xc9, 0x10,
+	0xd6, 0x84, 0x79, 0xdb, 0xa9, 0x6f, 0x55, 0xfb, 0x6e, 0x95, 0xfb, 0xfe, 0xb3, 0x35, 0x74, 0x55,
+	0xcc, 0x43, 0x59, 0x36, 0x5e, 0xb5, 0xb2, 0xf1, 0x22, 0x3e, 0x6c, 0xa4, 0xfa, 0xc8, 0xfd, 0xeb,
+	0xe9, 0x8b, 0x3a, 0xfd, 0x59, 0x79, 0x7a, 0xc9, 0x98, 0xd0, 0x76, 0x7a, 0x93, 0x94, 0xe4, 0x11,
+	0x34, 0x0d, 0x2f, 0xfd, 0x9c, 0xa9, 0x91, 0x53, 0xd7, 0x35, 0x56, 0x2c, 0xb7, 0xcf, 0xd4, 0x88,
+	0x3c, 0x87, 0x3b, 0x01, 0x32, 0x81, 0xc2, 0x57, 0x7c, 0x8c, 0x99, 0x7f, 0x12, 0x27, 0xa8, 0x3f,
+	0xf7, 0x06, 0x5d, 0x33, 0x0f, 0x0e, 0x0b, 0xfe, 0x43, 0x9c, 0x60, 0x31, 0x03, 0x32, 0x1c, 0x61,
+	0x8a, 0xce, 0xb2, 0x99, 0x01, 0x83, 0xc8, 0x10, 0x1a, 0x2a, 0x91, 0xa6, 0xab, 0xd3, 0xd0, 0xdf,
+	0x43, 0xa7, 0xbc, 0xfa, 0xe1, 0xf0, 0xc0, 0xde, 0x3e, 0xad, 0xcb, 0x8b, 0x4e, 0x63, 0x0a, 0xe9,
+	0xcc, 0xc0, 0x7d, 0x0c, 0x33, 0x9e, 0xdc, 0x83, 0xa5, 0x90, 0x99, 0x52, 0x76, 0xee, 0x42, 0x56,
+	0x74, 0xd9, 0x79, 0xf7, 0xf3, 0xf2, 0x61, 0xe5, 0xe8, 0x4d, 0xd9, 0xed, 0x39, 0xc9, 0x51, 0x44,
+	0x09, 0xe7, 0x5e, 0x3e, 0x8e, 0xf4, 0x15, 0x8a, 0xe7, 0x0a, 0x45, 0xc6, 0x12, 0x6f, 0x56, 0xc6,
+	0x3b, 0x1b, 0x04, 0x75, 0x7d, 0x9d, 0xbe, 0xfc, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x88, 0xcf, 0x50,
+	0xc3, 0xbd, 0x05, 0x00, 0x00,
 }

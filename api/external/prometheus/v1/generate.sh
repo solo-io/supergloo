@@ -26,3 +26,9 @@ protoc ${IMPORTS} \
     ${SOLO_KIT_FLAG} \
     ${INPUT_PROTOS}
 
+
+# currently unused in automation:
+# proteus gen command
+# used to construct part of config.proto semi-automatically
+# proteus proto -f ${GOPATH}/pkg/api/external/prometheus/v1 -p github.com/solo-io/supergloo/api/external/prometheus/v1
+
