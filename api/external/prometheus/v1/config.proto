@@ -3,7 +3,6 @@ package config.prometheus.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/struct.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
@@ -17,8 +16,21 @@ Prometheus Config
  */
 message Config {
     // jsontag is used to refer to the common kubernetes configmap key
-    google.protobuf.Struct prometheus = 1 [(gogoproto.customprotoname) = "prometheus.yml"];
+    Prometheus prometheus = 1 [(gogoproto.customprotoname) = "prometheus.yml" , (gogoproto.customtype) = "github.com/solo-io/supergloo/pkg/api/external/prometheus.Config"];
 
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
 }
+
+message Prometheus {
+//    GlobalConfig   global = 1;
+//    AlertingConfig alerting = 2;
+//    repeated string rule_files = 3;
+//    reeated ScrapeConfig scrape_configs = 4;
+//
+//    repeated RemoteWriteConfig remote_write = 5;
+//    repeated RemoteReadConfig  remote_read= 6;
+    string Field = 1;
+}
+//
+//message
