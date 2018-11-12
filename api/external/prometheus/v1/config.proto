@@ -22,49 +22,71 @@ message Config {
     core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
 }
 
+
+message AlertingConfig {
+    repeated RelabelConfig alert_relabel_configs = 1;
+    repeated AlertmanagerConfig alertmanager_configs = 2;
+}
+
+message AlertmanagerConfig {
+    string scheme = 1;
+    string path_prefix = 2;
+    repeated RelabelConfig relabel_configs = 3;
+}
+
 message PrometheusConfig {
-    Global global = 1;
-    repeated ScrapeConfig scrape_configs = 2;
+    GlobalConfig global_config = 1 [(gogoproto.nullable) = false];
+    AlertingConfig alerting_config = 2 [(gogoproto.nullable) = false];
+    repeated string rule_files = 3;
+    repeated ScrapeConfig scrape_configs = 4;
+    repeated RemoteWriteConfig remote_write_configs = 5;
+    repeated RemoteReadConfig remote_read_configs = 6;
 }
 
-message Global {
-    string scrape_interval = 1;
+message GlobalConfig {
 }
 
-message KubernetesSdConfig {
-    Namespaces namespaces = 1;
-    string role = 2;
+// QueueConfig is the configuration for the queue used to write to remote
+// storage.
+message QueueConfig {
+    int64 capacity = 1 [(gogoproto.casttype) = "int"];
+    int64 max_shards = 2 [(gogoproto.casttype) = "int"];
+    int64 max_samples_per_send = 3 [(gogoproto.casttype) = "int"];
+    int64 max_retries = 4 [(gogoproto.casttype) = "int"];
 }
 
-message MetricRelabelConfig {
-    string action = 1;
-    string regex = 2;
-    repeated string source_labels = 3;
+// Regexp encapsulates a regexp.Regexp and makes it YAML marshallable.
+message Regexp {
 }
 
-message Namespaces {
-    repeated string names = 1;
-}
-
+// RelabelConfig is the configuration for relabeling of target label sets.
 message RelabelConfig {
-    string action = 1;
-    string regex = 2;
-    repeated string source_labels = 3;
+    string separator = 1;
+    Regexp regex = 2 [(gogoproto.nullable) = false];
+    uint64 modulus = 3;
+    string target_label = 4;
+    string replacement = 5;
+    string action = 6 [(gogoproto.casttype) = "RelabelAction"];
+}
+
+// RemoteReadConfig is the configuration for reading from remote storage.
+message RemoteReadConfig {
+    bool read_recent = 1;
+}
+
+// RemoteWriteConfig is the configuration for writing to remote storage.
+message RemoteWriteConfig {
+    repeated RelabelConfig write_relabel_configs = 1;
+    QueueConfig queue_config = 2 [(gogoproto.nullable) = false];
 }
 
 message ScrapeConfig {
     string job_name = 1;
-    repeated KubernetesSdConfig kubernetes_sd_configs = 2;
-    repeated RelabelConfig relabel_configs = 3;
-    string scrape_interval = 4;
-    repeated MetricRelabelConfig metric_relabel_configs = 5;
-    string metrics_path = 6;
-    string bearer_token_file = 7;
-    string scheme = 8;
-    TLSConfig tlsconfig = 9 [(gogoproto.customname) = "TLSConfig"];
-}
-
-message TLSConfig {
-    string ca_file = 1;
+    bool honor_labels = 2;
+    string metrics_path = 3;
+    string scheme = 4;
+    uint64 sample_limit = 5 [(gogoproto.casttype) = "uint"];
+    repeated RelabelConfig relabel_configs = 6;
+    repeated RelabelConfig metric_relabel_configs = 7;
 }
 
