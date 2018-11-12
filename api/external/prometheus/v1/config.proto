@@ -1,0 +1,24 @@
+syntax = "proto3";
+package config.prometheus.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/struct.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+
+/*
+@solo-kit:resource.short_name=pcf
+@solo-kit:resource.plural_name=prometheusconfigs
+@solo-kit:resource.resource_groups=observability.config.prometheus.io
+
+Prometheus Config
+ */
+message Config {
+    // jsontag is used to refer to the common kubernetes configmap key
+    google.protobuf.Struct prometheus = 1 [(gogoproto.jsontag) = "prometheus.yml"];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
+}
