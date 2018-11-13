@@ -3,15 +3,22 @@
 
 package v1 // import "github.com/solo-io/supergloo/pkg/api/v1"
 
-import proto "github.com/gogo/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import _ "github.com/gogo/protobuf/gogoproto"
-import types "github.com/gogo/protobuf/types"
-import wrappers "github.com/golang/protobuf/ptypes/wrappers"
-import v1 "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
+import (
+	fmt "fmt"
 
-import bytes "bytes"
+	proto "github.com/gogo/protobuf/proto"
+	v1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+
+	math "math"
+
+	_ "github.com/gogo/protobuf/gogoproto"
+
+	types "github.com/gogo/protobuf/types"
+
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+
+	bytes "bytes"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

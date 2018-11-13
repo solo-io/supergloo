@@ -888,14 +888,6 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:f7f7da71a6c6474b75fd41b6c3eab9785938355434b56186a20a20f623d7476f"
-  name = "github.com/solo-io/gloo"
-  packages = ["pkg/log"]
-  pruneopts = "UT"
-  revision = "e96b8261627ae550413094e59cf914a6ed0657c6"
-  version = "v1"
-
-[[projects]]
   branch = "master"
   digest = "1:898faa8b0ea3e2a812fb293db0d9d3359c15669559f7128f15d11e597012fdee"
   name = "github.com/solo-io/kubecontroller"
@@ -1525,42 +1517,52 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/envoyproxy/go-control-plane/envoy/api/v2",
+    "github.com/envoyproxy/go-control-plane/envoy/api/v2/core",
     "github.com/gogo/protobuf/gogoproto",
+    "github.com/gogo/protobuf/jsonpb",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/hashicorp/go-multierror",
+    "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mitchellh/hashstructure",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
+    "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
+    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/cache",
+    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/client",
+    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/server",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources/core",
     "github.com/solo-io/solo-kit/pkg/errors",
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
-    "github.com/solo-io/solo-kit/pkg/utils/log",
-    "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1",
-    "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1/plugins/kubernetes",
+    "github.com/solo-io/solo-kit/pkg/utils/protoutils",
     "github.com/solo-io/solo-kit/test/helpers",
     "github.com/solo-io/solo-kit/test/tests/typed",
-    "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1",
-    "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1/plugins/kubernetes",
-    "github.com/solo-io/solo-projects/test/services",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
     "go.opencensus.io/trace",
     "go.uber.org/zap",
+    "golang.org/x/net/context",
+    "google.golang.org/genproto/googleapis/api/annotations",
+    "google.golang.org/grpc",
+    "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/status",
+    "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/client-go/rest",
+    "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/tools/clientcmd",
   ]
   solver-name = "gps-cdcl"
