@@ -36,7 +36,7 @@ steps:
     path: /root/.ssh
 
 - name: 'gcr.io/cloud-builders/go'
-  args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo']
+  args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo/cmd']
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
 
 
