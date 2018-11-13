@@ -3,27 +3,23 @@ package prometheus
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	"github.com/prometheus/common/model"
-
-	// TODO(ilackarms): cleanup
-	//config_util "github.com/prometheus/common/config"
-	//"github.com/prometheus/common/model"
-	//sd_config "github.com/prometheus/prometheus/discovery/config"
-	//"net/url"
-	//"time"
 )
 
-func ConfigFromStruct(cfg *types.Struct) (*JsonConfig, error) {
+func ConfigFromResource(cfg *v1.Config) (*PrometheusConfig, error) {
+	if cfg == nil {
+		return nil, nil
+	}
 	buf := &bytes.Buffer{}
-	if err := (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, cfg); err != nil {
+	if err := (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, cfg.Prometheus); err != nil {
 		return nil, errors.Wrapf(err, "failed to marshal proto struct")
 	}
-	var c JsonConfig
+	var c PrometheusConfig
 	str := string(buf.String())
 	if err := json.Unmarshal([]byte(str), &c); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal raw json to prometheus config")
@@ -31,7 +27,10 @@ func ConfigFromStruct(cfg *types.Struct) (*JsonConfig, error) {
 	return &c, nil
 }
 
-func ConfigToStruct(cfg *JsonConfig) (*types.Struct, error) {
+func ConfigToResource(cfg *PrometheusConfig) (*v1.Config, error) {
+	if cfg == nil {
+		return nil, nil
+	}
 	jsn, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "marshalling cfg")
@@ -40,21 +39,55 @@ func ConfigToStruct(cfg *JsonConfig) (*types.Struct, error) {
 	if err := jsonpb.Unmarshal(bytes.NewBuffer(jsn), &s); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal jsn to proto struct")
 	}
-	return &s, nil
+	return &v1.Config{Prometheus: &s}, nil
 }
 
-type RelabelAction string
-type Regexp interface{}
+type PrometheusConfig struct {
+	Global        Global         `json:"global,omitempty"`
+	ScrapeConfigs []ScrapeConfig `json:"scrape_configs,omitempty"`
+}
+
+type Global struct {
+	ScrapeInterval Duration `json:"scrape_interval,omitempty"`
+}
+type ScrapeConfig struct {
+	JobName              string               `json:"job_name,omitempty"`
+	KubernetesSdConfigs  []KubernetesSdConfig `json:"kubernetes_sd_configs,omitempty"`
+	RelabelConfigs       []RelabelConfig      `json:"relabel_configs,omitempty"`
+	ScrapeInterval       string               `json:"scrape_interval,omitempty"`
+	MetricRelabelConfigs []RelabelConfig      `json:"metric_relabel_configs,omitempty,omitempty"`
+	MetricsPath          string               `json:"metrics_path,omitempty"`
+	BearerTokenFile      string               `json:"bearer_token_file,omitempty"`
+	Scheme               string               `json:"scheme,omitempty"`
+	TLSConfig            *TLSConfig           `json:"tls_config,omitempty"`
+}
+
+type TLSConfig struct {
+	CaFile             string `json:"ca_file,omitempty"`
+	CertFile           string `json:"cert_file,omitempty"`
+	InsecureSkipVerify bool   `json:"insecure_skip_verify,omitempty"`
+	KeyFile            string `json:"key_file,omitempty"`
+}
+
+type KubernetesSdConfig struct {
+	Namespaces *Namespaces `json:"namespaces,omitempty"`
+	Role       string      `json:"role,omitempty"`
+}
+
+type Namespaces struct {
+	Names []string `json:"names,omitempty"`
+}
 
 // RelabelConfig is the configuration for relabeling of target label sets.
 type RelabelConfig struct {
 	// A list of labels from which values are taken and concatenated
 	// with the configured separator in order.
-	SourceLabels model.LabelNames `json:"source_labels,flow,omitempty"`
+	SourceLabels []string `json:"source_labels,flow,omitempty"`
 	// Separator is the string between concatenated values from the source labels.
 	Separator string `json:"separator,omitempty"`
 	// Regex against which the concatenation is matched.
-	Regex Regexp `json:"regex,omitempty"`
+	// interface because prometheus decided it could be bool OR string ???
+	Regex interface{} `json:"regex,omitempty"`
 	// Modulus to take of the hash of concatenated values from the source labels.
 	Modulus uint64 `json:"modulus,omitempty"`
 	// TargetLabel is the label to which the resulting string is written in a replacement.
@@ -63,7 +96,7 @@ type RelabelConfig struct {
 	// Replacement is the regex replacement pattern to be used.
 	Replacement string `json:"replacement,omitempty"`
 	// Action is the action to be performed for the relabeling.
-	Action RelabelAction `json:"action,omitempty"`
+	Action string `json:"action,omitempty"`
 }
 
 type Duration struct {
@@ -95,38 +128,6 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 	}
 }
 
-type JsonConfig struct {
-	Global struct {
-		ScrapeInterval Duration `json:"scrape_interval,omitempty"`
-	} `json:"global,omitempty"`
-	ScrapeConfigs []struct {
-		JobName             string `json:"job_name,omitempty"`
-		KubernetesSdConfigs []struct {
-			Namespaces *struct {
-				Names []string `json:"names,omitempty"`
-			} `json:"namespaces,omitempty"`
-			Role string `json:"role,omitempty"`
-		} `json:"kubernetes_sd_configs,omitempty"`
-		RelabelConfigs       []RelabelConfig `json:"relabel_configs,omitempty"`
-		ScrapeInterval       string          `json:"scrape_interval,omitempty"`
-		MetricRelabelConfigs []struct {
-			Action       string      `json:"action,omitempty"`
-			Regex        interface{} `json:"regex,omitempty"`
-			SourceLabels []string    `json:"source_labels,omitempty"`
-		} `json:"metric_relabel_configs,omitempty,omitempty"`
-		MetricsPath     string `json:"metrics_path,omitempty"`
-		BearerTokenFile string `json:"bearer_token_file,omitempty"`
-		Scheme          string `json:"scheme,omitempty"`
-		TLSConfig       *struct {
-			CaFile             string `json:"ca_file,omitempty"`
-			CertFile           string `json:"cert_file,omitempty"`
-			InsecureSkipVerify bool   `json:"insecure_skip_verify,omitempty"`
-			KeyFile            string `json:"key_file,omitempty"`
-		} `json:"tls_config,omitempty"`
-	} `json:"scrape_configs,omitempty"`
-}
-
-// TODO(ilackarms): cleanup
 //type Config struct {
 //	GlobalConfig   GlobalConfig    `json:"global"`
 //	AlertingConfig AlertingConfig  `json:"alerting,omitempty"`
