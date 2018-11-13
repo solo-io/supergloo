@@ -3,12 +3,12 @@ package prometheus
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+	"github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 )
 
 func ConfigFromResource(cfg *v1.Config) (*PrometheusConfig, error) {

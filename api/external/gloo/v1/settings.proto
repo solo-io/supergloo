@@ -1,0 +1,67 @@
+syntax = "proto3";
+package gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "google/protobuf/duration.proto";
+
+/*
+@solo-kit:resource.short_name=st
+@solo-kit:resource.plural_name=settings
+@solo-kit:resource.resource_groups=setup.gloo.solo.io
+*/
+message Settings {
+    // namespace to write discovered data
+    string discovery_namespace = 1;
+    // namespaces to watch for user config as well as services
+    // TODO(ilackarms): split out watch_namespaces and service_discovery_namespaces...
+    repeated string watch_namespaces = 2;
+
+    // where to read user config (upstream, proxy) from
+    // if nil, use only in memory config
+    oneof config_source {
+        KubernetesCrds kubernetes_config_source = 4;
+        Directory directory_config_source = 5;
+    };
+
+    // where to read secrets from (vault, k8s)
+    oneof secret_source {
+        KubernetesSecrets kubernetes_secret_source = 6;
+        VaultSecrets vault_secret_source = 7;
+        Directory directory_secret_source = 8;
+    };
+
+    // where to read artifacts from (configmap, file)
+    oneof artifact_source {
+        KubernetesConfigmaps kubernetes_artifact_source = 9;
+        Directory directory_artifact_source = 10;
+    };
+
+    // where the gloo xds server should bind (should not need configuration by user)
+    string bind_addr = 11;
+    // how frequently to resync watches, etc
+    google.protobuf.Duration refresh_rate = 12;
+    // enable serving debug data on port 9090
+    bool DevMode = 13;
+
+
+    // ilackarms(todo: make sure these are configurable)
+    message KubernetesCrds{} // watch kubernetes Crds
+    message KubernetesSecrets{} // watch kube secrets
+    message VaultSecrets{} // watch vault secrets
+    message KubernetesConfigmaps{}
+    message Directory{
+        string directory = 1;
+    } // watch a directory
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 14 [(gogoproto.nullable) = false];
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by gloo during validation
+    core.solo.io.Status status = 15 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+}

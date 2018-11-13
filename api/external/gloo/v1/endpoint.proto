@@ -1,0 +1,28 @@
+syntax = "proto3";
+package gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+
+/*
+@solo-kit:resource.short_name=ep
+@solo-kit:resource.plural_name=endpoints
+@solo-kit:resource.resource_groups=api.gloo.solo.io
+
+Endpoints represent dynamically discovered address/ports where an upstream service is listening
+ */
+message Endpoint {
+    // List of the upstreams the endpoint belongs to
+    repeated core.solo.io.ResourceRef upstreams = 1;
+    // Address of the endpoint (ip or hostname)
+    string address = 2;
+    // listening port for the endpoint
+    uint32 port = 3;
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
+}

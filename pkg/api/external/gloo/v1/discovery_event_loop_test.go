@@ -6,8 +6,6 @@ import (
 	"context"
 	"time"
 
-	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -15,47 +13,47 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 )
 
-var _ = Describe("TranslatorEventLoop", func() {
+var _ = Describe("DiscoveryEventLoop", func() {
 	var (
 		namespace string
-		emitter   TranslatorEmitter
+		emitter   DiscoveryEmitter
 		err       error
 	)
 
 	BeforeEach(func() {
 
-		meshClientFactory := &factory.MemoryResourceClientFactory{
+		secretClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		meshClient, err := NewMeshClient(meshClientFactory)
+		secretClient, err := NewSecretClient(secretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		upstreamClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
+		upstreamClient, err := NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewTranslatorEmitter(meshClient, upstreamClient)
+		emitter = NewDiscoveryEmitter(secretClient, upstreamClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Secret().Write(NewSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Upstream().Write(NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		sync := &mockTranslatorSyncer{}
-		el := NewTranslatorEventLoop(emitter, sync)
+		sync := &mockDiscoverySyncer{}
+		el := NewDiscoveryEventLoop(emitter, sync)
 		_, err := el.Run([]string{namespace}, clients.WatchOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(func() bool { return sync.synced }, time.Second).Should(BeTrue())
 	})
 })
 
-type mockTranslatorSyncer struct {
+type mockDiscoverySyncer struct {
 	synced bool
 }
 
-func (s *mockTranslatorSyncer) Sync(ctx context.Context, snap *TranslatorSnapshot) error {
+func (s *mockDiscoverySyncer) Sync(ctx context.Context, snap *DiscoverySnapshot) error {
 	s.synced = true
 	return nil
 }

@@ -3,33 +3,30 @@
 package v1
 
 import (
-	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"go.uber.org/zap"
 )
 
-type TranslatorSnapshot struct {
-	Meshes    MeshesByNamespace
-	Upstreams gloo_solo_io.UpstreamsByNamespace
+type DiscoverySnapshot struct {
+	Secrets   SecretsByNamespace
+	Upstreams UpstreamsByNamespace
 }
 
-func (s TranslatorSnapshot) Clone() TranslatorSnapshot {
-	return TranslatorSnapshot{
-		Meshes:    s.Meshes.Clone(),
+func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
+	return DiscoverySnapshot{
+		Secrets:   s.Secrets.Clone(),
 		Upstreams: s.Upstreams.Clone(),
 	}
 }
 
-func (s TranslatorSnapshot) snapshotToHash() TranslatorSnapshot {
+func (s DiscoverySnapshot) snapshotToHash() DiscoverySnapshot {
 	snapshotForHashing := s.Clone()
-	for _, mesh := range snapshotForHashing.Meshes.List() {
-		resources.UpdateMetadata(mesh, func(meta *core.Metadata) {
+	for _, secret := range snapshotForHashing.Secrets.List() {
+		resources.UpdateMetadata(secret, func(meta *core.Metadata) {
 			meta.ResourceVersion = ""
 		})
-		mesh.SetStatus(core.Status{})
 	}
 	for _, upstream := range snapshotForHashing.Upstreams.List() {
 		resources.UpdateMetadata(upstream, func(meta *core.Metadata) {
@@ -41,22 +38,22 @@ func (s TranslatorSnapshot) snapshotToHash() TranslatorSnapshot {
 	return snapshotForHashing
 }
 
-func (s TranslatorSnapshot) Hash() uint64 {
+func (s DiscoverySnapshot) Hash() uint64 {
 	return s.hashStruct(s.snapshotToHash())
 }
 
-func (s TranslatorSnapshot) HashFields() []zap.Field {
+func (s DiscoverySnapshot) HashFields() []zap.Field {
 	snapshotForHashing := s.snapshotToHash()
 	var fields []zap.Field
-	meshes := s.hashStruct(snapshotForHashing.Meshes.List())
-	fields = append(fields, zap.Uint64("meshes", meshes))
+	secrets := s.hashStruct(snapshotForHashing.Secrets.List())
+	fields = append(fields, zap.Uint64("secrets", secrets))
 	upstreams := s.hashStruct(snapshotForHashing.Upstreams.List())
 	fields = append(fields, zap.Uint64("upstreams", upstreams))
 
 	return append(fields, zap.Uint64("snapshotHash", s.hashStruct(snapshotForHashing)))
 }
 
-func (s TranslatorSnapshot) hashStruct(v interface{}) uint64 {
+func (s DiscoverySnapshot) hashStruct(v interface{}) uint64 {
 	h, err := hashstructure.Hash(v, nil)
 	if err != nil {
 		panic(err)

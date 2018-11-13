@@ -1,0 +1,25 @@
+syntax = "proto3";
+package ratelimit.plugins.gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1/plugins/ratelimit";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+message RateLimit {
+    enum Unit {
+        UNKNOWN = 0;
+        SECOND = 1;
+        MINUTE = 2;
+        HOUR = 3;
+        DAY = 4;
+    }
+    Unit unit = 1;
+    uint32 requests_per_unit = 2;
+}
+
+message IngressRateLimit {
+    
+    string authrorized_header = 1;
+    RateLimit authorized_limits = 2;
+    RateLimit anonymous_limits = 3;
+}

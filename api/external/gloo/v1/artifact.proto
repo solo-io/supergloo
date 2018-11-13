@@ -1,0 +1,30 @@
+syntax = "proto3";
+package gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+
+/*
+@solo-kit:resource.short_name=art
+@solo-kit:resource.plural_name=artifacts
+@solo-kit:resource.resource_groups=api.gloo.solo.io
+
+Gloo Artifacts are used by Gloo to store small bits of binary or file data.
+
+Certain plugins such as the gRPC plugin read and write artifacts to one of Gloo's configured
+storage layer.
+
+Artifacts can be backed by files on disk, Kubernetes ConfigMaps, and Consul Key/Value pairs.
+
+Supported artifact backends can be selected in Gloo's boostrap options.
+ */
+message Artifact {
+    // Raw data data being stored
+    string data = 1;
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
+}

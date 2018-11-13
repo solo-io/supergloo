@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -18,19 +16,19 @@ import (
 )
 
 var (
-	mTranslatorSnapshotIn  = stats.Int64("translator.supergloo.solo.io/snap_emitter/snap_in", "The number of snapshots in", "1")
-	mTranslatorSnapshotOut = stats.Int64("translator.supergloo.solo.io/snap_emitter/snap_out", "The number of snapshots out", "1")
+	mDiscoverySnapshotIn  = stats.Int64("discovery.gloo.solo.io/snap_emitter/snap_in", "The number of snapshots in", "1")
+	mDiscoverySnapshotOut = stats.Int64("discovery.gloo.solo.io/snap_emitter/snap_out", "The number of snapshots out", "1")
 
-	translatorsnapshotInView = &view.View{
-		Name:        "translator.supergloo.solo.io_snap_emitter/snap_in",
-		Measure:     mTranslatorSnapshotIn,
+	discoverysnapshotInView = &view.View{
+		Name:        "discovery.gloo.solo.io_snap_emitter/snap_in",
+		Measure:     mDiscoverySnapshotIn,
 		Description: "The number of snapshots updates coming in",
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{},
 	}
-	translatorsnapshotOutView = &view.View{
-		Name:        "translator.supergloo.solo.io/snap_emitter/snap_out",
-		Measure:     mTranslatorSnapshotOut,
+	discoverysnapshotOutView = &view.View{
+		Name:        "discovery.gloo.solo.io/snap_emitter/snap_out",
+		Measure:     mDiscoverySnapshotOut,
 		Description: "The number of snapshots updates going out",
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{},
@@ -38,36 +36,36 @@ var (
 )
 
 func init() {
-	view.Register(translatorsnapshotInView, translatorsnapshotOutView)
+	view.Register(discoverysnapshotInView, discoverysnapshotOutView)
 }
 
-type TranslatorEmitter interface {
+type DiscoveryEmitter interface {
 	Register() error
-	Mesh() MeshClient
-	Upstream() gloo_solo_io.UpstreamClient
-	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error)
+	Secret() SecretClient
+	Upstream() UpstreamClient
+	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewTranslatorEmitter(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient) TranslatorEmitter {
-	return NewTranslatorEmitterWithEmit(meshClient, upstreamClient, make(chan struct{}))
+func NewDiscoveryEmitter(secretClient SecretClient, upstreamClient UpstreamClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(secretClient, upstreamClient, make(chan struct{}))
 }
 
-func NewTranslatorEmitterWithEmit(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) TranslatorEmitter {
-	return &translatorEmitter{
-		mesh:      meshClient,
+func NewDiscoveryEmitterWithEmit(secretClient SecretClient, upstreamClient UpstreamClient, emit <-chan struct{}) DiscoveryEmitter {
+	return &discoveryEmitter{
+		secret:    secretClient,
 		upstream:  upstreamClient,
 		forceEmit: emit,
 	}
 }
 
-type translatorEmitter struct {
+type discoveryEmitter struct {
 	forceEmit <-chan struct{}
-	mesh      MeshClient
-	upstream  gloo_solo_io.UpstreamClient
+	secret    SecretClient
+	upstream  UpstreamClient
 }
 
-func (c *translatorEmitter) Register() error {
-	if err := c.mesh.Register(); err != nil {
+func (c *discoveryEmitter) Register() error {
+	if err := c.secret.Register(); err != nil {
 		return err
 	}
 	if err := c.upstream.Register(); err != nil {
@@ -76,42 +74,42 @@ func (c *translatorEmitter) Register() error {
 	return nil
 }
 
-func (c *translatorEmitter) Mesh() MeshClient {
-	return c.mesh
+func (c *discoveryEmitter) Secret() SecretClient {
+	return c.secret
 }
 
-func (c *translatorEmitter) Upstream() gloo_solo_io.UpstreamClient {
+func (c *discoveryEmitter) Upstream() UpstreamClient {
 	return c.upstream
 }
 
-func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error) {
+func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for Mesh */
-	type meshListWithNamespace struct {
-		list      MeshList
+	/* Create channel for Secret */
+	type secretListWithNamespace struct {
+		list      SecretList
 		namespace string
 	}
-	meshChan := make(chan meshListWithNamespace)
+	secretChan := make(chan secretListWithNamespace)
 	/* Create channel for Upstream */
 	type upstreamListWithNamespace struct {
-		list      gloo_solo_io.UpstreamList
+		list      UpstreamList
 		namespace string
 	}
 	upstreamChan := make(chan upstreamListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup watch for Mesh */
-		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
+		/* Setup watch for Secret */
+		secretNamespacesChan, secretErrs, err := c.secret.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Mesh watch")
+			return nil, nil, errors.Wrapf(err, "starting Secret watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
+			errutils.AggregateErrs(ctx, errs, secretErrs, namespace+"-secrets")
 		}(namespace)
 		/* Setup watch for Upstream */
 		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
@@ -131,11 +129,11 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 				select {
 				case <-ctx.Done():
 					return
-				case meshList := <-meshNamespacesChan:
+				case secretList := <-secretNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					case secretChan <- secretListWithNamespace{list: secretList, namespace: namespace}:
 					}
 				case upstreamList := <-upstreamNamespacesChan:
 					select {
@@ -148,9 +146,9 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		}(namespace)
 	}
 
-	snapshots := make(chan *TranslatorSnapshot)
+	snapshots := make(chan *DiscoverySnapshot)
 	go func() {
-		originalSnapshot := TranslatorSnapshot{}
+		originalSnapshot := DiscoverySnapshot{}
 		currentSnapshot := originalSnapshot.Clone()
 		timer := time.NewTicker(time.Second * 1)
 		sync := func() {
@@ -158,7 +156,7 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 				return
 			}
 
-			stats.Record(ctx, mTranslatorSnapshotOut.M(1))
+			stats.Record(ctx, mDiscoverySnapshotOut.M(1))
 			originalSnapshot = currentSnapshot.Clone()
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
@@ -168,10 +166,10 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		   		// construct the first snapshot from all the configs that are currently there
 		   		// that guarantees that the first snapshot contains all the data.
 		   		for range watchNamespaces {
-		      meshNamespacedList := <- meshChan
-		      currentSnapshot.Meshes.Clear(meshNamespacedList.namespace)
-		      meshList := meshNamespacedList.list
-		   	currentSnapshot.Meshes.Add(meshList...)
+		      secretNamespacedList := <- secretChan
+		      currentSnapshot.Secrets.Clear(secretNamespacedList.namespace)
+		      secretList := secretNamespacedList.list
+		   	currentSnapshot.Secrets.Add(secretList...)
 		      upstreamNamespacedList := <- upstreamChan
 		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
 		      upstreamList := upstreamNamespacedList.list
@@ -180,7 +178,7 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		*/
 
 		for {
-			record := func() { stats.Record(ctx, mTranslatorSnapshotIn.M(1)) }
+			record := func() { stats.Record(ctx, mDiscoverySnapshotIn.M(1)) }
 
 			select {
 			case <-timer.C:
@@ -193,14 +191,14 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case meshNamespacedList := <-meshChan:
+			case secretNamespacedList := <-secretChan:
 				record()
 
-				namespace := meshNamespacedList.namespace
-				meshList := meshNamespacedList.list
+				namespace := secretNamespacedList.namespace
+				secretList := secretNamespacedList.list
 
-				currentSnapshot.Meshes.Clear(namespace)
-				currentSnapshot.Meshes.Add(meshList...)
+				currentSnapshot.Secrets.Clear(namespace)
+				currentSnapshot.Secrets.Add(secretList...)
 			case upstreamNamespacedList := <-upstreamChan:
 				record()
 

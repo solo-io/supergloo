@@ -1,0 +1,42 @@
+syntax = "proto3";
+package gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+
+import "plugins.proto";
+
+/*
+@solo-kit:resource.short_name=us
+@solo-kit:resource.plural_name=upstreams
+@solo-kit:resource.resource_groups=api.gloo.solo.io,discovery.gloo.solo.io,translator.supergloo.solo.io
+
+ * Upstreams represent destination for routing HTTP requests. Upstreams can be compared to
+ * [clusters](https://www.envoyproxy.io/docs/envoy/latest/api-v1/cluster_manager/cluster.html?highlight=cluster) in Envoy terminology.
+ * Each upstream in Gloo has a type. Supported types include `static`, `kubernetes`, `aws`, `consul`, and more.
+ * Each upstream type is handled by a corresponding Gloo plugin.
+ */
+message Upstream {
+    // Type-specific configuration. Examples include static, kubernetes, and aws.
+    // The type-specific config for the upstream is called a spec.
+    UpstreamSpec upstream_spec = 2;
+
+    // Status indicates the validation status of the resource. Status is read-only by clients, and set by gloo during validation
+    core.solo.io.Status status = 6 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
+
+    // Upstreams and their configuration can be automatically by Gloo Discovery
+    // if this upstream is created or modified by Discovery, metadata about the operation will be placed here.
+    DiscoveryMetadata discovery_metadata = 8;
+}
+
+// created by discovery services
+message DiscoveryMetadata {
+    
+}

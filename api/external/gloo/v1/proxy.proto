@@ -1,0 +1,366 @@
+syntax = "proto3";
+package gloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+
+import "plugins.proto";
+
+/*
+@solo-kit:resource.short_name=px
+@solo-kit:resource.plural_name=proxies
+@solo-kit:resource.resource_groups=api.gloo.solo.io
+
+A Proxy is a container for the entire set of configuration that will to be applied to one or more Proxy instances.
+Proxies can be understood as a set of listeners, represents a different bind address/port where the proxy will listen
+for connections. Each listener has its own set of configuration.
+
+If any of the subresources within a listener is declared invalid (e.g. due to invalid user configuration), the
+proxy will be marked invalid by Gloo.
+
+Proxy instances that register with Gloo are assigned the proxy configuration corresponding with
+a proxy-specific identifier.
+* In the case of Envoy, proxy instances are identified by their Node ID. Node IDs must match a existing Proxy
+* Node ID can be specified in Envoy with the `--service-node` flag, or in the Envoy instance's bootstrap config.
+*/
+message Proxy {
+    // Define here each listener the proxy should create.
+    // Listeners define the a set of behaviors for a single bind address/port where the proxy will listen
+    // If no listeners are specified, the instances configured with the proxy resource will not accept connections.
+    repeated Listener listeners = 2;
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by gloo during validation
+    core.solo.io.Status status = 6 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
+}
+
+// Listeners define the address:port where the proxy will listen for incoming connections
+// A Listener accepts connections (currently only HTTP is supported) and apply user-defined behavior for those connections,
+// e.g. performing SSL termination, HTTP retries, and rate limiting.
+message Listener {
+    // the name of the listener. names must be unique for each listener within a proxy
+    string name = 1;
+
+    // the bind address for the listener.
+    // both ipv4 and ipv6 formats are supported
+    string bind_address = 2;
+
+    // the port to bind on
+    // ports numbers must be unique for listeners within a proxy
+    uint32 bind_port = 3;
+
+    // Listeners can listen for HTTP, TCP (unsupported), and UDP (unsupported) connections
+    oneof ListenerType {
+        // The HTTP Listener is currently the only supported listener type.
+        // It contains configuration options for GLoo's HTTP-level features including request-based routing
+        HttpListener http_listener = 4;
+    }
+
+    // SSL Config is optional for the listener. If provided, the listener will serve TLS for connections on this port
+    // Multiple SslConfigs are supported for the pupose of SNI. Be aware that the SNI domain provided in the SSL Config
+    // must match a domain in virtual host
+    // TODO(ilackarms): ensure that ssl configs without a matching virtual host are errored
+    repeated SslConfig ssl_configuations = 5;
+}
+
+// Use this listener to configure proxy behavior for any HTTP-level features including defining routes (via virtualservices).
+// HttpListeners also contain plugin configuration that applies globally across all virtaul hosts on the listener.
+// Some plugins can be configured to work both on the listener and virtual host level (such as the rate limit plugin)
+message HttpListener {
+    // the set of virtual hosts that will be accessible by clients connecting to this listener.
+    // at least one virtual host must be specified for this listener to be active (else connections will be refused)
+    // the set of domains for each virtual host must be unique, or the config will be considered invalid
+    repeated VirtualHost virtual_hosts = 1;
+
+    // Plugins contains top-level plugin configuration to be applied to a listener
+    // Listener config is applied to all HTTP traffic that
+    // connects to this listener. Some configuration here can be overridden in
+    // Virtual Host Plugin configuration or Route Plugin configuration
+    //
+    // Plugins should be specified here in the form of
+    //   `"plugin_name": {..//plugin_config...}`
+    // to allow specifying multiple plugins.
+    ListenerPlugins listener_plugins = 2;
+}
+
+/*
+ * Virtual Hosts group an ordered list of routes under one or more domains.
+ * Each Virtual Host has a logical name, which must be unique for the listener.
+ * An HTTP request is first matched to a virtual host based on its host header, then to a route within the virtual host.
+ * If a request is not matched to any virtual host or a route therein, the target proxy will reply with a 404.
+ */
+message VirtualHost {
+    // the logical name of the virtual host. names must be unique for each virtual host within a listener
+    string name = 1;
+
+    // The list of domains (i.e.: matching the `Host` header of a request) that belong to this virtual host.
+    // Note that the wildcard will not match the empty string. e.g. “*-bar.foo.com” will match “baz-bar.foo.com”
+    // but not “-bar.foo.com”. Additionally, a special entry “*” is allowed which will match any host/authority header.
+    // Only a single virtual host in the entire route configuration can match on “*”. A domain must be unique across all
+    // virtual hosts or the config will be invalidated by Gloo
+    // Domains on virtual hosts obey the same rules as [Envoy Virtual Hosts](https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto)
+    repeated string domains = 2;
+
+    // The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
+    // this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
+    // If the list of routes is empty, the virtual host will be ignored by Gloo.
+    repeated Route routes = 3;
+
+    // Plugins contains top-level plugin configuration to be applied to a listener
+    // Listener config is applied to all HTTP traffic that
+    // connects to this listener. Some configuration here can be overridden in
+    // Virtual Host Plugin configuration or Route Plugin configuration
+    //
+    // Plugins should be specified here in the form of
+    //   `"plugin_name": {..//plugin_config...}`
+    // to allow specifying multiple plugins.
+    VirtualHostPlugins virtual_host_plugins = 4;
+}
+
+/**
+ * Routes declare the entrypoints on virtual hosts and the action to take for matched requests.
+ */
+message Route {
+    // The matcher contains parameters for matching requests (i.e.: based on HTTP path, headers, etc.)
+    Matcher matcher = 1;
+
+    // The Route Action Defines what action the proxy should take when a request matches the route.
+    oneof action {
+        // This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
+        // route requests to an upstream.
+        RouteAction route_action = 2;
+
+        // Redirect actions tell the proxy to return a redirect response to the downstream client
+        RedirectAction redirect_action = 3;
+
+        // Return an arbitrary HTTP response directly, without proxying.
+        DirectResponseAction direct_response_action = 4;
+    }
+
+    // Route Plugins extend the behavior of routes.
+    // Route plugins include configuration such as retries,
+    // rate limiting, and request/resonse transformation.
+    //
+    // Plugins should be specified here in the form of
+    //   `"plugin_name": {..//plugin_config...}`
+    // to allow specifying multiple plugins.
+    RoutePlugins route_plugins = 5;
+}
+
+// Parameters for matching routes to requests received by a Gloo-managed proxy
+message Matcher {
+    oneof path_specifier {
+        // If specified, the route is a prefix rule meaning that the prefix must
+        // match the beginning of the *:path* header.
+        string prefix = 1;
+
+        // If specified, the route is an exact path rule meaning that the path must
+        // exactly match the *:path* header once the query string is removed.
+        string exact = 2;
+
+        // If specified, the route is a regular expression rule meaning that the
+        // regex must match the *:path* header once the query string is removed. The entire path
+        // (without the query string) must match the regex. The rule will not match if only a
+        // subsequence of the *:path* header matches the regex. The regex grammar is defined `here
+        // <http://en.cppreference.com/w/cpp/regex/ecmascript>`_.
+        //
+        // Examples:
+        //
+        // * The regex */b[io]t* matches the path */bit*
+        // * The regex */b[io]t* matches the path */bot*
+        // * The regex */b[io]t* does not match the path */bite*
+        // * The regex */b[io]t* does not match the path */bit/bot*
+        string regex = 3;
+    }
+
+    // Specifies a set of headers that the route should match on. The router will
+    // check the request’s headers against all the specified headers in the route
+    // config. A match will happen if all the headers in the route are present in
+    // the request with the same values (or based on presence if the value field
+    // is not in the config).
+    repeated HeaderMatcher headers = 6;
+
+    // Specifies a set of URL query parameters on which the route should
+    // match. The router will check the query string from the *path* header
+    // against all the specified query parameters. If the number of specified
+    // query parameters is nonzero, they all must match the *path* header's
+    // query string for a match to occur.
+    repeated QueryParameterMatcher query_parameters = 7;
+
+    // HTTP Method/Verb(s) to match on. If none specified, the matcher will ignore the HTTP Method
+    repeated string methods = 8;
+}
+
+//   Internally, Gloo always uses the HTTP/2 *:authority* header to represent the HTTP/1 *Host*
+//   header. Thus, if attempting to match on *Host*, match on *:authority* instead.
+//
+//   In the absence of any header match specifier, match will default to `present_match`
+//   i.e, a request that has the `name` header will match, regardless of the header's
+//   value.
+message HeaderMatcher {
+    // Specifies the name of the header in the request.
+    string name = 1;
+
+    // Specifies the value of the header. If the value is absent a request that
+    // has the name header will match, regardless of the header’s value.
+    string value = 2;
+
+    // Specifies whether the header value should be treated as regex or not.
+    bool regex = 3;
+}
+
+// Query parameter matching treats the query string of a request's :path header
+// as an ampersand-separated list of keys and/or key=value elements.
+message QueryParameterMatcher {
+    // Specifies the name of a key that must be present in the requested
+    // *path*'s query string.
+    string name = 1;
+
+    // Specifies the value of the key. If the value is absent, a request
+    // that contains the key in its query string will match, whether the
+    // key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
+    string value = 2;
+
+    // Specifies whether the query parameter value is a regular expression.
+    // Defaults to false. The entire query parameter value (i.e., the part to
+    // the right of the equals sign in "key=value") must match the regex.
+    // E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
+    bool regex = 3;
+}
+
+// RouteActions are used to route matched requests to upstreams.
+message RouteAction {
+    // Defines the destination upstream for routing
+    // Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name
+    // to be specified).
+    oneof destination {
+        // Use SingleDestination to route to a single upstream
+        Destination single = 1;
+        // Use MultiDestination to load balance requests between multiple upstreams (by weight)
+        MultiDestination multi = 2;
+    };
+}
+
+// Destinations define routable destinations for proxied requests
+message Destination {
+    // The upstream to route requests to
+    core.solo.io.ResourceRef upstream = 1 [(gogoproto.nullable) = false];
+
+    // Some upstreams utilize plugins which require or permit additional configuration on routes targeting them.
+    // gRPC upstreams, for example, allow specifying REST-style parameters for JSON-to-gRPC transcoding in the
+    // destination config. If the destination config is required for the upstream and not provided by the user,
+    // Gloo will invalidate the destination and its parent resources.
+    DestinationSpec destination_spec = 2;
+}
+
+// MultiDestination is a container for a set of weighted destinations. Gloo will load balance traffic for a single
+// route across multiple destinations according to their specified weights.
+message MultiDestination {
+    // This list must contain at least one destination or the listener housing this route will be invalid,
+    // causing Gloo to error the parent proxy resource.
+    repeated WeightedDestination destinations = 1;
+}
+
+// WeightedDestination attaches a weight to a single destination.
+message WeightedDestination {
+    Destination destination = 1;
+
+    // Weight must be greater than zero
+    // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route
+    uint32 weight = 2;
+}
+
+// TODO(ilackarms): evaluate how much to differentiate (or if even to include) RedirectAction
+// Notice: RedirectAction is copioed directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
+message RedirectAction {
+    // The host portion of the URL will be swapped with this value.
+    string host_redirect = 1;
+
+    oneof path_rewrite_specifier {
+        // The path portion of the URL will be swapped with this value.
+        string path_redirect = 2;
+
+        // Indicates that during redirection, the matched prefix (or path)
+        // should be swapped with this value. This option allows redirect URLs be dynamically created
+        // based on the request.
+        //
+        //   Pay attention to the use of trailing slashes as mentioned in
+        //   `RouteAction`'s `prefix_rewrite`.
+        string prefix_rewrite = 5;
+    }
+
+    enum RedirectResponseCode {
+        // Moved Permanently HTTP Status Code - 301.
+        MOVED_PERMANENTLY = 0;
+
+        // Found HTTP Status Code - 302.
+        FOUND = 1;
+
+        // See Other HTTP Status Code - 303.
+        SEE_OTHER = 2;
+
+        // Temporary Redirect HTTP Status Code - 307.
+        TEMPORARY_REDIRECT = 3;
+
+        // Permanent Redirect HTTP Status Code - 308.
+        PERMANENT_REDIRECT = 4;
+    }
+
+    // The HTTP status code to use in the redirect response. The default response
+    // code is MOVED_PERMANENTLY (301).
+    RedirectResponseCode response_code = 3;
+
+    // The scheme portion of the URL will be swapped with "https".
+    bool https_redirect = 4;
+
+    // Indicates that during redirection, the query portion of the URL will
+    // be removed. Default value is false.
+    bool strip_query = 6;
+}
+
+// TODO(ilackarms): evaluate how much to differentiate (or if even to include) DirectResponseAction
+// DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
+message DirectResponseAction {
+    // Specifies the HTTP response status to be returned.
+    uint32 status = 1;
+
+    // Specifies the content of the response body. If this setting is omitted,
+    // no body is included in the generated response.
+    //
+    //   Note: Headers can be specified using the Header Modification plugin in the enclosing
+    //   Route, Virtual Host, or Listener.
+    string body = 2;
+}
+
+// SslConfig contains the options necessary to configure a virtual host or listener to use TLS
+message SslConfig {
+    oneof ssl_secrets {
+        /** SecretRef contains the secret ref to a gloo secret containing the following structure:
+        {
+            "tls.crt": <ca chain data...>,
+            "tls.key": <private key data...>
+        }
+        */
+        core.solo.io.ResourceRef secret_ref = 1;
+        // SSLFiles reference paths to certificates which are local to the proxy
+        SSLFiles ssl_files = 2;
+    }
+    // optional. the SNI domains that should be considered for TLS connections
+    repeated string sni_domains = 3;
+}
+
+// SSLFiles reference paths to certificates which can be read by the proxy off of its local filesystem
+message SSLFiles {
+    string tls_cert = 1;
+    string tls_key = 2;
+    // for client cert validation. optional
+    string root_ca = 3;
+}
