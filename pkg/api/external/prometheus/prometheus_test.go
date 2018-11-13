@@ -3,9 +3,9 @@ package prometheus_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/gloo/pkg/protoutil"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
+	"github.com/solo-io/solo-kit/pkg/utils/protoutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
@@ -66,9 +66,9 @@ func testPrometheusSerializer(namespace string, kube kubernetes.Interface, clien
 	Expect(err).NotTo(HaveOccurred())
 	expected.SetMetadata(read.Metadata)
 	Expect(expected).To(Equal(read))
-	jsn1, err := protoutil.Marshal(read.Prometheus)
+	jsn1, err := protoutils.MarshalBytes(read.Prometheus)
 	Expect(err).NotTo(HaveOccurred())
-	jsn2, err := protoutil.Marshal(expected.Prometheus)
+	jsn2, err := protoutils.MarshalBytes(expected.Prometheus)
 	Expect(err).NotTo(HaveOccurred())
 	str1 := string(jsn1)
 	str2 := string(jsn2)
