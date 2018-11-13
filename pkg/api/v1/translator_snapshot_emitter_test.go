@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -34,6 +35,7 @@ var _ = Describe("V1Emitter", func() {
 		emitter        TranslatorEmitter
 		meshClient     MeshClient
 		upstreamClient gloo_solo_io.UpstreamClient
+		secretClient   gloo_solo_io.SecretClient
 	)
 
 	BeforeEach(func() {
@@ -65,7 +67,17 @@ var _ = Describe("V1Emitter", func() {
 		}
 		upstreamClient, err = gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewTranslatorEmitter(meshClient, upstreamClient)
+
+		// Secret Constructor
+
+		kube, err = kubernetes.NewForConfig(cfg)
+		Expect(err).NotTo(HaveOccurred())
+		secretClientFactory := &factory.KubeSecretClientFactory{
+			Clientset: kube,
+		}
+		secretClient, err = gloo_solo_io.NewSecretClient(secretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewTranslatorEmitter(meshClient, upstreamClient, secretClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -203,5 +215,65 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotUpstreams(nil, gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b})
+
+		/*
+			Secret
+		*/
+
+		assertSnapshotSecrets := func(expectSecrets gloo_solo_io.SecretList, unexpectSecrets gloo_solo_io.SecretList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectSecrets {
+						if _, err := snap.Secrets.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectSecrets {
+						if _, err := snap.Secrets.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := secretClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := secretClient.List(namespace2, clients.ListOpts{})
+					combined := nsList1.ByNamespace()
+					combined.Add(nsList2...)
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+
+		secret1a, err := secretClient.Write(gloo_solo_io.NewSecret(namespace1, "angela"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		secret1b, err := secretClient.Write(gloo_solo_io.NewSecret(namespace2, "angela"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b}, nil)
+
+		secret2a, err := secretClient.Write(gloo_solo_io.NewSecret(namespace1, "bob"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		secret2b, err := secretClient.Write(gloo_solo_io.NewSecret(namespace2, "bob"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b, secret2a, secret2b}, nil)
+
+		err = secretClient.Delete(secret2a.Metadata.Namespace, secret2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = secretClient.Delete(secret2b.Metadata.Namespace, secret2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b}, gloo_solo_io.SecretList{secret2a, secret2b})
+
+		err = secretClient.Delete(secret1a.Metadata.Namespace, secret1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = secretClient.Delete(secret1b.Metadata.Namespace, secret1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotSecrets(nil, gloo_solo_io.SecretList{secret1a, secret1b, secret2a, secret2b})
 	})
 })
