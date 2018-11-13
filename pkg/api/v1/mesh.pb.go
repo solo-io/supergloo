@@ -22,7 +22,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
-// TODO: Eventually we want to plug in new meshes easier, but for now it's useful to enumerate in the config
 type MeshType int32
 
 const (
@@ -49,21 +48,13 @@ func (x MeshType) String() string {
 	return proto.EnumName(MeshType_name, int32(x))
 }
 func (MeshType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_6f2f02b80172eb4f, []int{0}
+	return fileDescriptor_mesh_5e5ee9525cc4b02c, []int{0}
 }
 
 //
 // @solo-kit:resource.short_name=mesh
 // @solo-kit:resource.plural_name=meshes
 // @solo-kit:resource.resource_groups=translator.supergloo.solo.io
-//
-//
-// // Initial API thoughts based on potential user workflows: https://github.com/solo-io/supergloo/wiki/User-Workflows
-// // Notes on what Itsio and Linkerd1 support on wiki: https://github.com/solo-io/supergloo/wiki
-//
-// // Any user-configurable settings for a service mesh
-// // This isn't meant to cover install or initial configuration of the mesh
-// // The supergloo server would apply CRUD on MeshConfigs
 type Mesh struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by gloo during validation
@@ -83,7 +74,7 @@ func (m *Mesh) Reset()         { *m = Mesh{} }
 func (m *Mesh) String() string { return proto.CompactTextString(m) }
 func (*Mesh) ProtoMessage()    {}
 func (*Mesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_6f2f02b80172eb4f, []int{0}
+	return fileDescriptor_mesh_5e5ee9525cc4b02c, []int{0}
 }
 func (m *Mesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Mesh.Unmarshal(m, b)
@@ -159,7 +150,7 @@ func (m *TargetMesh) Reset()         { *m = TargetMesh{} }
 func (m *TargetMesh) String() string { return proto.CompactTextString(m) }
 func (*TargetMesh) ProtoMessage()    {}
 func (*TargetMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_6f2f02b80172eb4f, []int{1}
+	return fileDescriptor_mesh_5e5ee9525cc4b02c, []int{1}
 }
 func (m *TargetMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TargetMesh.Unmarshal(m, b)
@@ -279,7 +270,7 @@ func (m *KubeLocation) Reset()         { *m = KubeLocation{} }
 func (m *KubeLocation) String() string { return proto.CompactTextString(m) }
 func (*KubeLocation) ProtoMessage()    {}
 func (*KubeLocation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_6f2f02b80172eb4f, []int{2}
+	return fileDescriptor_mesh_5e5ee9525cc4b02c, []int{2}
 }
 func (m *KubeLocation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_KubeLocation.Unmarshal(m, b)
@@ -320,14 +311,6 @@ func (m *KubeLocation) GetNamespace() string {
 	return ""
 }
 
-// message MeshMetadata {
-//    string name = 1;
-//    MeshType meshType = 2;
-// }
-//
-// // Defines mesh-level configuration for encryption. Supports communication within a mesh and through ingress.
-// // Communicating between TLS and non-TLS enabled services is not supported. TODO: Is this ok?
-// // TODO: What do we need to support communication across mesh?
 type Encryption struct {
 	// If set to true, TLS is enabled across the entire mesh.
 	TlsEnabled bool `protobuf:"varint,1,opt,name=tlsEnabled,proto3" json:"tlsEnabled,omitempty"`
@@ -345,7 +328,7 @@ func (m *Encryption) Reset()         { *m = Encryption{} }
 func (m *Encryption) String() string { return proto.CompactTextString(m) }
 func (*Encryption) ProtoMessage()    {}
 func (*Encryption) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_6f2f02b80172eb4f, []int{3}
+	return fileDescriptor_mesh_5e5ee9525cc4b02c, []int{3}
 }
 func (m *Encryption) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Encryption.Unmarshal(m, b)
@@ -552,9 +535,9 @@ func (this *Encryption) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("mesh.proto", fileDescriptor_mesh_6f2f02b80172eb4f) }
+func init() { proto.RegisterFile("mesh.proto", fileDescriptor_mesh_5e5ee9525cc4b02c) }
 
-var fileDescriptor_mesh_6f2f02b80172eb4f = []byte{
+var fileDescriptor_mesh_5e5ee9525cc4b02c = []byte{
 	// 578 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0xdf, 0x6e, 0xd3, 0x30,
 	0x14, 0xc6, 0xd7, 0x6d, 0x74, 0xed, 0xd9, 0x1f, 0x75, 0xde, 0x40, 0xd9, 0x80, 0x6d, 0x8a, 0x84,
