@@ -938,59 +938,6 @@
   revision = "6b7ba3516d824e1526d024fe6ae88559344d380a"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e248f6cdde310a60eb98edd18c09a485800cdc30c0dd28018af503a7616eb567"
-  name = "github.com/solo-io/solo-projects"
-  packages = [
-    "projects/discovery/pkg/fds",
-    "projects/discovery/pkg/fds/discoveries/aws",
-    "projects/discovery/pkg/fds/discoveries/grpc",
-    "projects/discovery/pkg/fds/discoveries/sqoop",
-    "projects/discovery/pkg/fds/discoveries/swagger",
-    "projects/discovery/pkg/fds/syncer",
-    "projects/gateway/pkg/api/v1",
-    "projects/gateway/pkg/defaults",
-    "projects/gateway/pkg/propagator",
-    "projects/gateway/pkg/syncer",
-    "projects/gateway/pkg/translator",
-    "projects/gloo/pkg/api/v1",
-    "projects/gloo/pkg/api/v1/plugins",
-    "projects/gloo/pkg/api/v1/plugins/aws",
-    "projects/gloo/pkg/api/v1/plugins/azure",
-    "projects/gloo/pkg/api/v1/plugins/faultinjection",
-    "projects/gloo/pkg/api/v1/plugins/grpc",
-    "projects/gloo/pkg/api/v1/plugins/kubernetes",
-    "projects/gloo/pkg/api/v1/plugins/ratelimit",
-    "projects/gloo/pkg/api/v1/plugins/rest",
-    "projects/gloo/pkg/api/v1/plugins/sqoop",
-    "projects/gloo/pkg/api/v1/plugins/static",
-    "projects/gloo/pkg/api/v1/plugins/transformation",
-    "projects/gloo/pkg/bootstrap",
-    "projects/gloo/pkg/defaults",
-    "projects/gloo/pkg/discovery",
-    "projects/gloo/pkg/plugins",
-    "projects/gloo/pkg/plugins/aws",
-    "projects/gloo/pkg/plugins/azure",
-    "projects/gloo/pkg/plugins/faultinjection",
-    "projects/gloo/pkg/plugins/grpc",
-    "projects/gloo/pkg/plugins/kubernetes",
-    "projects/gloo/pkg/plugins/pluginutils",
-    "projects/gloo/pkg/plugins/ratelimit",
-    "projects/gloo/pkg/plugins/registry",
-    "projects/gloo/pkg/plugins/rest",
-    "projects/gloo/pkg/plugins/static",
-    "projects/gloo/pkg/plugins/transformation",
-    "projects/gloo/pkg/syncer",
-    "projects/gloo/pkg/translator",
-    "projects/gloo/pkg/xds",
-    "projects/sqoop/pkg/api/v1",
-    "projects/sqoop/pkg/todo",
-    "test/services",
-  ]
-  pruneopts = "UT"
-  revision = "a38c772e60db602364ce309853e220eab927cf0b"
-
-[[projects]]
   digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
   name = "github.com/spf13/pflag"
   packages = ["."]
