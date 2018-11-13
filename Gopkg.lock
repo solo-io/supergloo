@@ -257,7 +257,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bc5428c2f966023755ec3ab5e5d84e060ac6d40dbdb96fac8cbd9b55d9326421"
+  digest = "1:cb754b98df17bd4de6e39a7fff4abf9ff8cd66e70269b9dbac375ad076f490e5"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
@@ -268,6 +268,7 @@
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "93b26e6a70e37abb14f2f88194949312b0592a84"
@@ -1374,11 +1375,15 @@
   input-imports = [
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/types",
+    "github.com/golang/protobuf/ptypes/wrappers",
+    "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/hashstructure",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
+    "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
@@ -1388,6 +1393,8 @@
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
+    "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1",
+    "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/solo-kit/test/helpers",
     "github.com/solo-io/solo-kit/test/services",
     "github.com/solo-io/solo-kit/test/tests/typed",
@@ -1398,7 +1405,6 @@
     "go.uber.org/zap",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
   ]
