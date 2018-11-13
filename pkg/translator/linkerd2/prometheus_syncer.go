@@ -3,21 +3,22 @@ package istio
 import (
 	"context"
 	"fmt"
-	"github.com/prometheus/prometheus/config"
 	"sort"
+
+	"github.com/prometheus/prometheus/config"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	gloov1 "github.com/solo-io/solo-kit/projects/gloo/pkg/api/v1"
+	gloov1 "github.com/solo-io/solo-projects/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 type PrometheusSyncer struct {
-	ArtifactClient            gloov1.ArtifactClient // for reading/writing configmaps
+	ArtifactClient gloov1.ArtifactClient // for reading/writing configmaps
 }
 
 func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*config.Config, error) {
@@ -27,11 +28,9 @@ func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.Res
 	if err != nil {
 		return nil, errors.Wrapf(err, "reading artifact %v", ref)
 	}
-	prometheusConfigStr := prometheusConfigArtifact.Data["prometheus.yml"]
 }
 
 func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
-	config.Config{}
 	destinationRules := createDestinationRules(false, snap.Upstreams.List())
 	virtualServices, err := createVirtualServices(snap.Meshes.List(), snap.Upstreams.List())
 	if err != nil {
