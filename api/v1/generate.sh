@@ -26,7 +26,7 @@ protoc ${IMPORTS} \
 
 # Run protoc once for solo kit
 SOLO_KIT_FLAG="--plugin=protoc-gen-solo-kit=${GOPATH}/bin/protoc-gen-solo-kit --solo-kit_out=${PWD}/project.json:${OUT}"
-INPUT_PROTOS="${SUPERGLOO_IN}/*.proto ${GLOO_IN}/upstream.proto"
+INPUT_PROTOS="${SUPERGLOO_IN}/*.proto ${GLOO_IN}/upstream.proto ${GLOO_IN}/secret.proto"
 
 protoc ${IMPORTS} \
     ${SOLO_KIT_FLAG} \
