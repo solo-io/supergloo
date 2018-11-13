@@ -47,6 +47,26 @@ type PrometheusConfig struct {
 	ScrapeConfigs []ScrapeConfig `json:"scrape_configs,omitempty"`
 }
 
+// returns true if changed
+func (cfg * PrometheusConfig) AddScrapeConfigs(scrapeConfigs []ScrapeConfig) bool {
+	var updated bool
+	for _, desiredScrapeConfig := range scrapeConfigs {
+		var found bool
+		for _, sc := range cfg.ScrapeConfigs {
+			if sc.JobName == desiredScrapeConfig.JobName {
+				found = true
+				break
+			}
+		}
+		if found {
+			continue
+		}
+		cfg.ScrapeConfigs = append(cfg.ScrapeConfigs, desiredScrapeConfig)
+		updated = true
+	}
+	return updated
+}
+
 type Global struct {
 	ScrapeInterval Duration `json:"scrape_interval,omitempty"`
 }

@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"sort"
 
 	"github.com/gogo/protobuf/proto"
@@ -23,6 +24,13 @@ type RoutingSyncer struct {
 }
 
 func (s *RoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	ctx = contextutils.WithLogger(ctx, "prometheus-syncer")
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
+		len(snap.Meshes), len(snap.Upstreams))
+	defer logger.Infof("end sync %v", snap.Hash())
+	logger.Debugf("%v", snap)
+
 	destinationRules := createDestinationRules(false, snap.Upstreams.List())
 	virtualServices, err := createVirtualServices(snap.Meshes.List(), snap.Upstreams.List())
 	if err != nil {
@@ -63,9 +71,11 @@ func (s *RoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules v1a
 		Ctx:      ctx,
 		Selector: s.WriteSelector,
 	}
+	contextutils.LoggerFrom(ctx).Infof("reconciling %v destination rules", len(destinationRules))
 	if err := s.DestinationRuleReconciler.Reconcile(s.WriteNamespace, destinationRules, preserveDestinationRule, opts); err != nil {
 		return errors.Wrapf(err, "reconciling destination rules")
 	}
+	contextutils.LoggerFrom(ctx).Infof("reconciling %v virtual services", len(virtualServices))
 	if err := s.VirtualServiceReconciler.Reconcile(s.WriteNamespace, virtualServices, preserveVirtualService, opts); err != nil {
 		return errors.Wrapf(err, "reconciling virtual services")
 	}

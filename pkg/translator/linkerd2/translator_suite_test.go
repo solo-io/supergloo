@@ -1,4 +1,4 @@
-package istio_test
+package linkerd2_test
 
 import (
 	"testing"
