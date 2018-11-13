@@ -22,4 +22,4 @@ git config --global url."ssh://git@github.com/solo-io".insteadOf https://github.
 . /builder/prepare_workspace.inc
 prepare_workspace || exit
 echo "Running: dep $@"
-exec dep "$@"
+exec dep -v "$@"
