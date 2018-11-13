@@ -30,21 +30,17 @@ steps:
 
 - name: 'soloio/dep'
   args: ['ensure']
-  env: ['PROJECT_ROOT=github.com/solo-io/solo-kit']
+  env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
   volumes:
   - name: 'ssh'
     path: /root/.ssh
 
 - name: 'gcr.io/cloud-builders/go'
-  args: ['build', '-o', 'sqoop-linux-amd64', 'github.com/solo-io/solo-kit/projects/sqoop/cmd']
-  env: ['PROJECT_ROOT=github.com/solo-io/solo-kit']
-
-- name: 'gcr.io/cloud-builders/go'
-  args: ['build', '-o', 'hypergloo', 'github.com/solo-io/solo-kit/projects/hypergloo']
-  env: ['PROJECT_ROOT=github.com/solo-io/solo-kit']
+  args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo']
+  env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
 
 
 artifacts:
   objects:
     location: 'gs://artifacts.solo.io/'
-    paths: ['sqoop-linux-amd64', 'hypergloo']
+    paths: ['supergloo']
