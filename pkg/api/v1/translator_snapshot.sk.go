@@ -14,12 +14,14 @@ import (
 type TranslatorSnapshot struct {
 	Meshes    MeshesByNamespace
 	Upstreams gloo_solo_io.UpstreamsByNamespace
+	Secrets   gloo_solo_io.SecretsByNamespace
 }
 
 func (s TranslatorSnapshot) Clone() TranslatorSnapshot {
 	return TranslatorSnapshot{
 		Meshes:    s.Meshes.Clone(),
 		Upstreams: s.Upstreams.Clone(),
+		Secrets:   s.Secrets.Clone(),
 	}
 }
 
@@ -37,6 +39,11 @@ func (s TranslatorSnapshot) snapshotToHash() TranslatorSnapshot {
 		})
 		upstream.SetStatus(core.Status{})
 	}
+	for _, secret := range snapshotForHashing.Secrets.List() {
+		resources.UpdateMetadata(secret, func(meta *core.Metadata) {
+			meta.ResourceVersion = ""
+		})
+	}
 
 	return snapshotForHashing
 }
@@ -52,6 +59,8 @@ func (s TranslatorSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("meshes", meshes))
 	upstreams := s.hashStruct(snapshotForHashing.Upstreams.List())
 	fields = append(fields, zap.Uint64("upstreams", upstreams))
+	secrets := s.hashStruct(snapshotForHashing.Secrets.List())
+	fields = append(fields, zap.Uint64("secrets", secrets))
 
 	return append(fields, zap.Uint64("snapshotHash", s.hashStruct(snapshotForHashing)))
 }

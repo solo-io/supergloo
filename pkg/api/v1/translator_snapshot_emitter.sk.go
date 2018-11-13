@@ -45,17 +45,19 @@ type TranslatorEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Upstream() gloo_solo_io.UpstreamClient
+	Secret() gloo_solo_io.SecretClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error)
 }
 
-func NewTranslatorEmitter(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient) TranslatorEmitter {
-	return NewTranslatorEmitterWithEmit(meshClient, upstreamClient, make(chan struct{}))
+func NewTranslatorEmitter(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient) TranslatorEmitter {
+	return NewTranslatorEmitterWithEmit(meshClient, upstreamClient, secretClient, make(chan struct{}))
 }
 
-func NewTranslatorEmitterWithEmit(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) TranslatorEmitter {
+func NewTranslatorEmitterWithEmit(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient, emit <-chan struct{}) TranslatorEmitter {
 	return &translatorEmitter{
 		mesh:      meshClient,
 		upstream:  upstreamClient,
+		secret:    secretClient,
 		forceEmit: emit,
 	}
 }
@@ -64,6 +66,7 @@ type translatorEmitter struct {
 	forceEmit <-chan struct{}
 	mesh      MeshClient
 	upstream  gloo_solo_io.UpstreamClient
+	secret    gloo_solo_io.SecretClient
 }
 
 func (c *translatorEmitter) Register() error {
@@ -71,6 +74,9 @@ func (c *translatorEmitter) Register() error {
 		return err
 	}
 	if err := c.upstream.Register(); err != nil {
+		return err
+	}
+	if err := c.secret.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -82,6 +88,10 @@ func (c *translatorEmitter) Mesh() MeshClient {
 
 func (c *translatorEmitter) Upstream() gloo_solo_io.UpstreamClient {
 	return c.upstream
+}
+
+func (c *translatorEmitter) Secret() gloo_solo_io.SecretClient {
+	return c.secret
 }
 
 func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error) {
@@ -100,6 +110,12 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		namespace string
 	}
 	upstreamChan := make(chan upstreamListWithNamespace)
+	/* Create channel for Secret */
+	type secretListWithNamespace struct {
+		list      gloo_solo_io.SecretList
+		namespace string
+	}
+	secretChan := make(chan secretListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup watch for Mesh */
@@ -124,6 +140,17 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
 		}(namespace)
+		/* Setup watch for Secret */
+		secretNamespacesChan, secretErrs, err := c.secret.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Secret watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, secretErrs, namespace+"-secrets")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -142,6 +169,12 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 					case <-ctx.Done():
 						return
 					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
+					}
+				case secretList := <-secretNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case secretChan <- secretListWithNamespace{list: secretList, namespace: namespace}:
 					}
 				}
 			}
@@ -176,6 +209,10 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
 		      upstreamList := upstreamNamespacedList.list
 		   	currentSnapshot.Upstreams.Add(upstreamList...)
+		      secretNamespacedList := <- secretChan
+		      currentSnapshot.Secrets.Clear(secretNamespacedList.namespace)
+		      secretList := secretNamespacedList.list
+		   	currentSnapshot.Secrets.Add(secretList...)
 		   		}
 		*/
 
@@ -209,6 +246,14 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 
 				currentSnapshot.Upstreams.Clear(namespace)
 				currentSnapshot.Upstreams.Add(upstreamList...)
+			case secretNamespacedList := <-secretChan:
+				record()
+
+				namespace := secretNamespacedList.namespace
+				secretList := secretNamespacedList.list
+
+				currentSnapshot.Secrets.Clear(namespace)
+				currentSnapshot.Secrets.Add(secretList...)
 			}
 		}
 	}()

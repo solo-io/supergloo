@@ -31,7 +31,7 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 // Prometheus Config
 type Config struct {
 	// jsontag is used to refer to the common kubernetes configmap key
-	Prometheus *types.Struct `protobuf:"bytes,1,opt,name=prometheus.yml" json:"prometheus.yml"`
+	Prometheus *types.Struct `protobuf:"bytes,1,opt,name=prometheus" json:"prometheus.yml"`
 	// Metadata contains the object metadata for this resource
 	Metadata             core.Metadata `protobuf:"bytes,7,opt,name=metadata" json:"metadata"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
