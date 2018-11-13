@@ -5,16 +5,16 @@ option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/aws/aws.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/rest/rest.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/grpc/grpc.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/azure/azure.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/kubernetes/kubernetes.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/sqoop/sqoop.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/static/static.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/transformation/transformation.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/faultinjection/fault.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/ratelimit/ratelimit.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/aws/aws.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/rest/rest.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/grpc/grpc.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/azure/azure.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/kubernetes/kubernetes.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/sqoop/sqoop.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/static/static.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/transformation/transformation.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/faultinjection/fault.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/ratelimit/ratelimit.proto";
 
 // Plugin-specific configuration that lives on listeners
 // Each ListenerPlugin object contains configuration for a specific plugin

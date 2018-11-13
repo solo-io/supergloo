@@ -7,7 +7,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/proxy.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/proxy.proto";
 
 // global routing config for a single mesh
 message Routing {

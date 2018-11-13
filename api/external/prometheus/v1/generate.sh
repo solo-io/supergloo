@@ -11,7 +11,7 @@ mkdir -p ${OUT}
 PROMETHEUS_IN=${PROJECTS}/supergloo/api/external/prometheus/v1/
 
 IMPORTS="-I=${PROMETHEUS_IN} \
-    -I=${GOPATH}/src/github.com/solo-io/solo-projects/projects/gloo/api/v1 \
+    -I=${GOPATH}/src/github.com/solo-io/supergloo/api/external/gloo/v1 \
     -I=${GOPATH}/src \
     -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external/proto"
 

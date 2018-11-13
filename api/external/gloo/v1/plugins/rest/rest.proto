@@ -6,8 +6,8 @@ option go_package = "github.com/solo-io/supergloo/pkg/api/external/gloo/v1/plugi
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/transformation/transformation.proto";
-import "github.com/solo-io/solo-projects/projects/gloo/api/v1/plugins/transformation/parameters.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/transformation/transformation.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/transformation/parameters.proto";
 
 message ServiceSpec {
     map<string, transformation.plugins.gloo.solo.io.TransformationTemplate> transformations = 1;
