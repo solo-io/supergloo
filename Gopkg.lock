@@ -897,11 +897,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dea5143f6437b99c1ef3860c669e634992d69fccc310668cdf571d144446b40a"
+  digest = "1:898faa8b0ea3e2a812fb293db0d9d3359c15669559f7128f15d11e597012fdee"
   name = "github.com/solo-io/kubecontroller"
   packages = ["."]
   pruneopts = "UT"
-  revision = "421003c15226e9ad2c16066c5c898f94a4688fae"
+  revision = "241bc627d5400a0794853220df4fdefeeb2af0e0"
 
 [[projects]]
   branch = "master"
@@ -943,7 +943,7 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "fdfd535529b2b4e33f501f62f63954ff9b641c48"
+  revision = "6b7ba3516d824e1526d024fe6ae88559344d380a"
 
 [[projects]]
   branch = "master"
@@ -996,7 +996,7 @@
     "test/services",
   ]
   pruneopts = "UT"
-  revision = "55bb230f08420447ab63b5c9d3fff4b93c8c88c2"
+  revision = "a38c772e60db602364ce309853e220eab927cf0b"
 
 [[projects]]
   digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
