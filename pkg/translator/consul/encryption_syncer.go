@@ -42,6 +42,7 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 
 func (s *EncryptionSyncer) sync(ctx context.Context, secret *v12.TlsSecret) error {
 	// TODO: This should be configured using the mesh location from the CRD
+	// TODO: This requires port forwarding, ingress, or running inside the cluster
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		return errors.Errorf("error creating consul client %v", err)
