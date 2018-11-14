@@ -2,6 +2,7 @@ package linkerd2
 
 import (
 	"context"
+	"go.uber.org/multierr"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -32,14 +33,15 @@ func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 
+	var errs error
 	for _, mesh := range snap.Meshes.List() {
 		logger.Infof("syncing mesh %v", mesh.Metadata.Ref())
 		if err := s.syncMesh(ctx, mesh); err != nil {
-			logger.Errorf("syncing mesh %v failed: %v", mesh.Metadata.Ref())
+			errs = multierr.Append(errs, errors.Wrapf(err, "syncing mesh %v failed", mesh.Metadata.Ref()))
 			continue
 		}
 	}
-	return nil
+	return errs
 }
 
 func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
