@@ -2,23 +2,17 @@ package linkerd2_test
 
 import (
 	"context"
-	"os"
-	"path/filepath"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/translator/linkerd2"
 	"github.com/solo-io/supergloo/test/utils"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/solo-io/solo-kit/test/helpers"
 )
 
 var _ = Describe("PrometheusSyncer", func() {
@@ -39,13 +33,8 @@ var _ = Describe("PrometheusSyncer", func() {
 	It("works", func() {
 		err := utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 		Expect(err).NotTo(HaveOccurred())
-		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-		Expect(err).NotTo(HaveOccurred())
-		prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeResourceClientFactory{
-			Crd:         prometheusv1.ConfigCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(),
+		prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
+			Clientset: kube,
 		})
 		Expect(err).NotTo(HaveOccurred())
 		err = prometheusClient.Register()
