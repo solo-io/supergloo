@@ -15,7 +15,7 @@ func render(tmpl *template.Template, data interface{}) (string, error) {
 }
 
 
-// prometheus deployment
+// basic prometheus deployment
 func BasicPrometheusDeployment(namespace, name, configmapName string) (string, error) {
 	data := struct {
 		Namespace, Name, ConfigmapName string
@@ -67,6 +67,7 @@ spec:
 `
 
 
+// basic prometheus service
 
 func BasicPrometheusService(namespace, name string) (string, error) {
 	data := struct {
@@ -100,4 +101,153 @@ spec:
     - port: 8080
       targetPort: 9090 
       nodePort: 30000
+`
+
+
+// istio prometheus deployment
+// not currently working
+func IstioPrometheusDeployment(namespace, name, configmapName string) (string, error) {
+	data := struct {
+		Namespace, Name, ConfigmapName string
+	}{
+		Namespace:     namespace,
+		Name:          name,
+		ConfigmapName: configmapName,
+	}
+	return render(istioPrometheusDeploymentTemplate, data)
+}
+
+var istioPrometheusDeploymentTemplate = template.Must(template.New("").Parse(istioPrometheusDeployment))
+
+const istioPrometheusDeployment = `
+ Source: istio/charts/prometheus/templates/deployment.yaml
+# TODO: the original template has service account, roles, etc
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: istio-system
+  labels:
+    app: prometheus
+    chart: prometheus-1.0.3
+    release: istio
+    heritage: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+      annotations:
+        sidecar.istio.io/inject: "false"
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+    spec:
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: "docker.io/prom/prometheus:v2.3.1"
+        imagePullPolicy: IfNotPresent
+        args:
+        - '--storage.tsdb.retention=6h'
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        ports:
+        - containerPort: 9090
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+        resources:
+          requests:
+            cpu: 10m
+
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus
+        - mountPath: /etc/istio-certs
+          name: istio-certs
+      volumes:
+      - name: config-volume
+        configMap:
+          name: prometheus
+      - name: istio-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio.default
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - ppc64le
+                - s390x
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 2
+            preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+          - weight: 2
+            preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - ppc64le
+          - weight: 2
+            preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - s390x
+`
+
+
+// istio prometheus service
+
+func IstioPrometheusService(namespace, name string) (string, error) {
+	data := struct {
+		Namespace, Name, ConfigmapName string
+	}{
+		Namespace:     namespace,
+		Name:          name,
+	}
+	return render(istioPrometheusServiceTemplate, data)
+}
+
+var istioPrometheusServiceTemplate = template.Must(template.New("").Parse(istioPrometheusService))
+
+const istioPrometheusService = `
+# Source: istio/charts/prometheus/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: istio-system
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    name: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - name: http-prometheus
+    protocol: TCP
+    port: 9090
 `
