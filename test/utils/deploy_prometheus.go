@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
-	"github.com/solo-io/gloo/pkg/log"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

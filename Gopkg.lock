@@ -97,7 +97,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2948bade009479c10f9ea436545945d34b107e1d9d744914f56382bf679c043b"
+  digest = "1:49423818ec67651d03b2fbb29faa55b0428135fae5733604b4a35ddcf45a49a3"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -106,7 +106,6 @@
     "ptypes/any",
     "ptypes/duration",
     "ptypes/timestamp",
-    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "93b26e6a70e37abb14f2f88194949312b0592a84"
@@ -466,7 +465,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b76733cfc7a478c91625f3fb7698378a39abe5bb6082f87f0418bf15a25f92ee"
+  digest = "1:3c7ff8fb63442fde9629cf1eceb998c36b36dc56c2eb43ce700c84cc3ebeda45"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -488,6 +487,7 @@
     "pkg/api/v1/control-plane/log",
     "pkg/api/v1/control-plane/server",
     "pkg/api/v1/reconcile",
+    "pkg/api/v1/reporter",
     "pkg/api/v1/resources",
     "pkg/api/v1/resources/core",
     "pkg/errors",
@@ -911,7 +911,7 @@
     "github.com/gogo/protobuf/jsonpb",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
-    "github.com/golang/protobuf/ptypes/wrappers",
+    "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mitchellh/hashstructure",
@@ -927,11 +927,13 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/client",
     "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/server",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
+    "github.com/solo-io/solo-kit/pkg/api/v1/reporter",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources/core",
     "github.com/solo-io/solo-kit/pkg/errors",
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
+    "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
     "github.com/solo-io/solo-kit/pkg/utils/protoutils",
     "github.com/solo-io/solo-kit/test/helpers",
@@ -941,6 +943,7 @@
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
     "go.opencensus.io/trace",
+    "go.uber.org/multierr",
     "go.uber.org/zap",
     "golang.org/x/net/context",
     "google.golang.org/genproto/googleapis/api/annotations",
@@ -948,7 +951,9 @@
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/status",
     "k8s.io/api/core/v1",
+    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/client-go/kubernetes",

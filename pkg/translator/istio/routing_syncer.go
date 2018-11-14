@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"sort"
 
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
@@ -22,6 +23,7 @@ type RoutingSyncer struct {
 	WriteNamespace            string
 	DestinationRuleReconciler v1alpha3.DestinationRuleReconciler
 	VirtualServiceReconciler  v1alpha3.VirtualServiceReconciler
+	Reporter                  reporter.Reporter
 }
 
 func (s *RoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
