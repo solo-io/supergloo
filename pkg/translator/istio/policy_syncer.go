@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/hashicorp/go-multierror"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
@@ -24,21 +26,27 @@ type PolicySyncer struct {
 }
 
 func (s *PolicySyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	var multiErr *multierror.Error
 
 	for _, mesh := range snap.Meshes.List() {
 		switch mesh.TargetMesh.MeshType {
 		case v1.MeshType_ISTIO:
 			policy := mesh.Policy
 			if policy == nil {
-				s.removePolicy(ctx)
+				err := s.removePolicy(ctx)
+				if err != nil {
+					multiErr = multierror.Append(multiErr, err)
+				}
 				continue
 			}
 
-			// TODO: use resource error to be able to report errors.
-			s.syncPolicy(ctx, policy)
+			err := s.syncPolicy(ctx, policy)
+			if err != nil {
+				multiErr = multierror.Append(multiErr, err)
+			}
 		}
 	}
-	return nil
+	return multiErr.ErrorOrNil()
 }
 
 func (s *PolicySyncer) removePolicy(ctx context.Context) error {
@@ -48,9 +56,21 @@ func (s *PolicySyncer) removePolicy(ctx context.Context) error {
 	}
 
 	// delete everything!
-	s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRoleBinding, opts)
-	s.serviceRoleReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRole, opts)
-	s.rbacConfigReconciler.Reconcile(s.WriteNamespace, nil, preserveRbacConfig, opts)
+	err := s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRoleBinding, opts)
+	if err != nil {
+		return err
+	}
+
+	err = s.serviceRoleReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRole, opts)
+	if err != nil {
+		return err
+	}
+
+	err = s.rbacConfigReconciler.Reconcile(s.WriteNamespace, nil, preserveRbacConfig, opts)
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }
@@ -76,10 +96,18 @@ func (s *PolicySyncer) syncPolicy(ctx context.Context, p *v1.Policy) error {
 		resources.UpdateMetadata(res, s.updateMetadata)
 	}
 
-	// TODO: check error
-	s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, srb, preserveServiceRoleBinding, opts)
-	s.serviceRoleReconciler.Reconcile(s.WriteNamespace, sr, preserveServiceRole, opts)
-	s.rbacConfigReconciler.Reconcile(s.WriteNamespace, rcfgs, preserveRbacConfig, opts)
+	err := s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, srb, preserveServiceRoleBinding, opts)
+	if err != nil {
+		return err
+	}
+	err = s.serviceRoleReconciler.Reconcile(s.WriteNamespace, sr, preserveServiceRole, opts)
+	if err != nil {
+		return err
+	}
+	err = s.rbacConfigReconciler.Reconcile(s.WriteNamespace, rcfgs, preserveRbacConfig, opts)
+	if err != nil {
+		return err
+	}
 	return nil
 
 }
