@@ -1,3 +1,4 @@
 # IDEA files
 .idea
 vendor/
+_output/

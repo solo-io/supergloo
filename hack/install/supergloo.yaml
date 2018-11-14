@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: supergloo-system
+
+---
+
+### Deployment
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: supergloo
+  namespace: supergloo-system
+  labels:
+    gloo: supergloo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      gloo: supergloo
+  template:
+    metadata:
+      labels:
+        gloo: supergloo
+    spec:
+      #TODO: remove before open source
+      imagePullSecrets:
+      - name: solo-bot-docker-hub # ${IMAGE_PULL_SECRET}
+      containers:
+      - name: supergloo
+        image: soloio/supergloo:dev
+        imagePullPolicy: IfNotPresent
