@@ -13,7 +13,7 @@ ISTIO_IN=${PROJECTS}/supergloo/api/external/istio/networking/v1alpha3/
 IMPORTS="-I=${ISTIO_IN} \
     -I=${GOPATH}/src/github.com/solo-io/supergloo/api/external/gloo/v1 \
     -I=${GOPATH}/src \
-    -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external/proto"
+    -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external"
 
 # Run protoc once for gogo
 GOGO_FLAG="--gogo_out=Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:${GOPATH}/src/"

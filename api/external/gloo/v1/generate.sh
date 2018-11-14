@@ -18,7 +18,7 @@ SOLO_KIT_FLAG="--plugin=protoc-gen-solo-kit=${GOPATH}/bin/protoc-gen-solo-kit --
 mkdir -p ${GLOO_OUT}/plugins
 
 PROTOC_FLAGS="-I=${GOPATH}/src \
-    -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external/proto \
+    -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external \
     ${GOGO_OUT_FLAG} \
     ${SOLO_KIT_FLAG}"
 
