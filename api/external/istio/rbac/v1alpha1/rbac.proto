@@ -86,6 +86,7 @@ option go_package="github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1al
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 // ServiceRole specification contains a list of access rules (permissions).
 // This represent the "Spec" part of the ServiceRole object. The name and namespace
