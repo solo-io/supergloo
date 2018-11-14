@@ -1,28 +1,34 @@
 package utils
 
 import (
+	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"github.com/solo-io/gloo/pkg/log"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
+/*
 
-func DeployPrometheus(namespace, deploymentName, configmapName string, kube kubernetes.Interface) error {
+
+ */
+func DeployPrometheus(namespace, deploymentName, configmapName string, port uint32, kube kubernetes.Interface) error {
 	deploymentYaml, err := BasicPrometheusDeployment(namespace, deploymentName, configmapName)
 	if err != nil {
 		return errors.Wrapf(err, "internal error") // should never happen
 	}
+	log.Printf(deploymentYaml)
 	var prometheusDeployment v1beta1.Deployment
 	if err := yaml.Unmarshal([]byte(deploymentYaml), &prometheusDeployment); err != nil {
 		return errors.Wrapf(err, "internal error") // should never happen
 	}
 	prometheusDeployment.Namespace = namespace
+	prometheusDeployment.Name = deploymentName
 	if _, err := kube.ExtensionsV1beta1().Deployments(namespace).Create(&prometheusDeployment); err != nil {
 		return err
 	}
-	serviceYaml, err := BasicPrometheusService(namespace, deploymentName)
+	serviceYaml, err := BasicPrometheusService(namespace, deploymentName, port)
 	if err != nil {
 		return errors.Wrapf(err, "internal error") // should never happen
 	}
@@ -31,6 +37,7 @@ func DeployPrometheus(namespace, deploymentName, configmapName string, kube kube
 		return errors.Wrapf(err, "internal error") // should never happen
 	}
 	prometheusService.Namespace = namespace
+	prometheusService.Name = deploymentName
 	if _, err := kube.CoreV1().Services(namespace).Create(&prometheusService); err != nil {
 		return err
 	}

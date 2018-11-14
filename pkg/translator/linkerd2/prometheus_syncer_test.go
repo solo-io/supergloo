@@ -33,7 +33,7 @@ var _ = Describe("PrometheusSyncer", func() {
 		test.Teardown(namespace)
 	})
 	It("works", func() {
-		err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, kube)
+		err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, 32000, kube)
 		Expect(err).NotTo(HaveOccurred())
 		err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 		Expect(err).NotTo(HaveOccurred())

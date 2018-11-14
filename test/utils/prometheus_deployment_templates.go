@@ -14,7 +14,6 @@ func render(tmpl *template.Template, data interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-
 // basic prometheus deployment
 func BasicPrometheusDeployment(namespace, name, configmapName string) (string, error) {
 	data := struct {
@@ -31,6 +30,7 @@ var basicPrometheusDeploymentTemplate = template.Must(template.New("").Parse(bas
 
 const basicPrometheusDeployment = `
 # Source: https://raw.githubusercontent.com/bibinwilson/kubernetes-prometheus/master/prometheus-deployment.yaml
+# with fixes
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -38,6 +38,9 @@ metadata:
   namespace: {{ .Namespace }}
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
   template:
     metadata:
       labels:
@@ -66,15 +69,16 @@ spec:
           emptyDir: {}
 `
 
-
 // basic prometheus service
 
-func BasicPrometheusService(namespace, name string) (string, error) {
+func BasicPrometheusService(namespace, name string, port uint32) (string, error) {
 	data := struct {
 		Namespace, Name, ConfigmapName string
+		Port                           uint32
 	}{
-		Namespace:     namespace,
-		Name:          name,
+		Namespace: namespace,
+		Name:      name,
+		Port:      port,
 	}
 	return render(basicPrometheusServiceTemplate, data)
 }
@@ -100,9 +104,8 @@ spec:
   ports:
     - port: 8080
       targetPort: 9090 
-      nodePort: 30000
+      nodePort: {{ .Port }}
 `
-
 
 // istio prometheus deployment
 // not currently working
@@ -217,15 +220,14 @@ spec:
                 - s390x
 `
 
-
 // istio prometheus service
 
 func IstioPrometheusService(namespace, name string) (string, error) {
 	data := struct {
 		Namespace, Name, ConfigmapName string
 	}{
-		Namespace:     namespace,
-		Name:          name,
+		Namespace: namespace,
+		Name:      name,
 	}
 	return render(istioPrometheusServiceTemplate, data)
 }
