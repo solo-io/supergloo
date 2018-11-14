@@ -2,31 +2,50 @@ package linkerd2_test
 
 import (
 	"context"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-	"github.com/solo-io/supergloo/pkg/api/external/gloo/v1/plugins/kubernetes"
-	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"path/filepath"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
+	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/test/tests/typed"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	"github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/translator/linkerd2"
+	"github.com/solo-io/supergloo/test/utils"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/solo-io/solo-kit/test/helpers"
 )
 
 var _ = Describe("PrometheusSyncer", func() {
+	test := &typed.KubeConfigMapRcTester{}
+	var (
+		namespace            string
+		kube                 kubernetes.Interface
+		prometheusConfigName = "prometheus-config"
+	)
+	BeforeEach(func() {
+		namespace = helpers.RandString(6)
+		fact := test.Setup(namespace)
+		kube = fact.(*factory.KubeConfigMapClientFactory).Clientset
+	})
+	AfterEach(func() {
+		test.Teardown(namespace)
+	})
 	It("works", func() {
+		err := utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
+		Expect(err).NotTo(HaveOccurred())
 		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 		Expect(err).NotTo(HaveOccurred())
 		prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeResourceClientFactory{
 			Crd:         prometheusv1.ConfigCrd,
 			Cfg:         cfg,
-			SharedCache: kube.NewKubeCache(),
+			SharedCache: kuberc.NewKubeCache(),
 		})
 		Expect(err).NotTo(HaveOccurred())
 		err = prometheusClient.Register()
@@ -40,55 +59,12 @@ var _ = Describe("PrometheusSyncer", func() {
 					Observability: &v1.Observability{
 						Prometheus: &v1.Prometheus{
 							PrometheusConfigMap: &core.ResourceRef{
-								Namespace:,
-								Name:,
-							},
-						},
-						DestinationRules: []*v1.DestinationRule{
-							{
-								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Name:      "default-reviews-9080",
-										Namespace: "gloo-system",
-									},
-								},
-								MeshHttpRules: []*v1.HTTPRule{
-									{
-										Route: []*v1.HTTPRouteDestination{
-											{
-												AlternateDestination: &gloov1.Destination{
-													Upstream: core.ResourceRef{
-														Name:      "default-reviews-9080",
-														Namespace: "gloo-system",
-													},
-												},
-											},
-										},
-									},
-								},
+								Namespace: namespace,
+								Name:      prometheusConfigName,
 							},
 						},
 					},
 				}},
-			},
-			Upstreams: map[string]gloov1.UpstreamList{
-				"also gets ignored": {
-					{
-						Metadata: core.Metadata{
-							Name:      "default-reviews-9080",
-							Namespace: "gloo-system",
-						},
-						UpstreamSpec: &gloov1.UpstreamSpec{
-							UpstreamType: &gloov1.UpstreamSpec_Kube{
-								Kube: &kubernetes.UpstreamSpec{
-									ServiceName:      "reviews",
-									ServiceNamespace: "default",
-									ServicePort:      9080,
-								},
-							},
-						},
-					},
-				},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
