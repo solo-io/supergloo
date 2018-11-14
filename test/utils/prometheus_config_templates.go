@@ -1,61 +1,6 @@
 package utils
 
-const BasicPrometheusDeployment = `
-# Source: istio/charts/prometheus/templates/deployment.yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: TODO
-  namespace: TODO
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: prometheus-server
-    spec:
-      containers:
-        - name: prometheus
-          image: prom/prometheus:v2.2.1
-          args:
-            - "--config.file=/etc/prometheus/prometheus.yml"
-            - "--storage.tsdb.path=/prometheus/"
-          ports:
-            - containerPort: 9090
-          volumeMounts:
-            - name: prometheus-config-volume
-              mountPath: /etc/prometheus/
-            - name: prometheus-storage-volume
-              mountPath: /prometheus/
-      volumes:
-        - name: prometheus-config-volume
-          configMap:
-            defaultMode: 420
-            name: prometheus-server-conf
-  
-        - name: prometheus-storage-volume
-          emptyDir: {}
-`
-
-const IstioPrometheusService = `
-# Source: istio/charts/prometheus/templates/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: TODO
-  namespace: TODO
-  annotations:
-    prometheus.io/scrape: 'true'
-  labels:
-    name: prometheus
-spec:
-  selector:
-    app: prometheus
-  ports:
-  - name: http-prometheus
-    protocol: TCP
-    port: 9090
-`
+// prometheus configs
 
 const BasicPrometheusConfig = `  prometheus.yml: |
     # A scrape configuration for running Prometheus on a Kubernetes cluster.

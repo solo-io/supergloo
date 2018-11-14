@@ -21,7 +21,8 @@ var _ = Describe("PrometheusSyncer", func() {
 	var (
 		namespace            string
 		kube                 kubernetes.Interface
-		prometheusConfigName = "prometheus-config"
+		prometheusConfigName = "prometheus"
+		prometheusDeploymentName = "prometheus"
 	)
 	BeforeEach(func() {
 		namespace = helpers.RandString(6)
@@ -32,7 +33,9 @@ var _ = Describe("PrometheusSyncer", func() {
 		test.Teardown(namespace)
 	})
 	It("works", func() {
-		err := utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
+		err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, kube)
+		Expect(err).NotTo(HaveOccurred())
+		err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 		Expect(err).NotTo(HaveOccurred())
 		prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
 			Clientset: kube,
@@ -51,6 +54,9 @@ var _ = Describe("PrometheusSyncer", func() {
 							PrometheusConfigMap: &core.ResourceRef{
 								Namespace: namespace,
 								Name:      prometheusConfigName,
+							},
+							PodLabels: map[string]string{
+								"app": "prometheus-server",
 							},
 						},
 					},
