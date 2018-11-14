@@ -2,6 +2,7 @@ package linkerd2
 
 import (
 	"context"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
@@ -34,8 +35,46 @@ func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 }
 
 func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
+	if mesh.TargetMesh == nil {
+		// ilackarms (todo): reporting for this error
+		return errors.Errorf("invalid mesh %v: target_mesh required", mesh.Metadata.Ref())
+	}
+	if mesh.TargetMesh.MeshType != v1.MeshType_LINKERD2 {
+		return nil
+	}
+	if mesh.Observability == nil {
+		return nil
+	}
+	if mesh.Observability.Prometheus == nil {
+		return nil
+	}
+	if !mesh.Observability.Prometheus.EnableMetrics {
+		return nil
+	}
+	if mesh.Observability.Prometheus.PrometheusConfigMap == nil {
+		// ilackarms (todo): reporting for this error
+		return errors.Errorf("invalid mesh %v: must provide a reference to the target prometheus config map", mesh.Metadata.Ref())
+	}
+	configMap := *mesh.Observability.Prometheus.PrometheusConfigMap
+	prometheusConfig, err := s.getPrometheusConfig(ctx, configMap)
+	if err != nil {
+		return errors.Wrapf(err, "retrieving existing prometheus config")
+	}
 
+	// TODO (ilackarms): make this syncer take scrape configs as an argument
+	changed := prometheusConfig.AddScrapeConfigs(linkerdScrapeConfigs)
+	if !changed {
+		return nil
+	}
+
+	contextutils.LoggerFrom(ctx).Infof("syncing prometheus config for mesh %v", mesh.Metadata.Ref())
+
+	return s.writePrometheusConfig(ctx, configMap, prometheusConfig)
 }
+
+//toodo:
+//	- get gopkg working
+//	- setup, main, etc
 
 func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*prometheus.PrometheusConfig, error) {
 	cfg, err := s.PrometheusClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{

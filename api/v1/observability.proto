@@ -18,11 +18,6 @@ message Observability {
 
 //
 message Prometheus {
-    core.solo.io.ResourceRef prometheus_config_map = 1 [(gogoproto.nullable) = false]; // target configmap
-    EnableMetricsForMesh enable_metrics_for_mesh = 3; // enable metrics for various mesh resources
-}
-
-message EnableMetricsForMesh {
-    bool istio = 1; // unimplemented
-    bool linkerd2 = 2; // enable metrics for linkerd2
+    core.solo.io.ResourceRef prometheus_config_map = 1 ; // target configmap
+    bool enable_metrics = 3; // enable prometheus scraping for metrics of this mesh type
 }

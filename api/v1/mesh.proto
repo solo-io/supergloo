@@ -59,6 +59,7 @@ message KubeLocation {
 enum MeshType {
     ISTIO = 0;
     LINKERD1 = 1;
+    LINKERD2 = 2;
 }
 
 //message MeshMetadata {

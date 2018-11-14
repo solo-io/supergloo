@@ -48,7 +48,7 @@ type PrometheusConfig struct {
 }
 
 // returns true if changed
-func (cfg * PrometheusConfig) AddScrapeConfigs(scrapeConfigs []ScrapeConfig) bool {
+func (cfg *PrometheusConfig) AddScrapeConfigs(scrapeConfigs []ScrapeConfig) bool {
 	var updated bool
 	for _, desiredScrapeConfig := range scrapeConfigs {
 		var found bool

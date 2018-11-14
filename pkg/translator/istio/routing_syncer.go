@@ -3,8 +3,9 @@ package istio
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"sort"
+
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
