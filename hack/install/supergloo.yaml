@@ -4,6 +4,21 @@ kind: Namespace
 metadata:
   name: supergloo-system
 
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: cluster-admin-supergloo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: supergloo-system
+
 ---
 
 ### Deployment
