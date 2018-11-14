@@ -140,16 +140,13 @@ func Main() error {
 
 	logger := contextutils.LoggerFrom(watchOpts.Ctx)
 
-	go func() {
-		for {
-			select {
-			case err := <-writeErrs:
-				logger.Errorf("error: %v", err)
-			case <-watchOpts.Ctx.Done():
-				close(writeErrs)
-				return
-			}
+	for {
+		select {
+		case err := <-writeErrs:
+			logger.Errorf("error: %v", err)
+		case <-watchOpts.Ctx.Done():
+			close(writeErrs)
+			return nil
 		}
-	}()
-	return nil
+	}
 }
