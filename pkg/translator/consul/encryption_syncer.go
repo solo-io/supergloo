@@ -31,8 +31,7 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 			}
 			tlsSecret := secret.GetTls()
 			if tlsSecret == nil {
-				errors.Errorf("missing tls secret")
-				return nil
+				return errors.Errorf("missing tls secret")
 			}
 
 			s.sync(ctx, tlsSecret)
@@ -45,22 +44,18 @@ func (s *EncryptionSyncer) sync(ctx context.Context, secret *v12.TlsSecret) erro
 	// TODO: This should be configured using the mesh location from the CRD
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
-		errors.Errorf("error creating consul client %v", err)
-		return err
+		return errors.Errorf("error creating consul client %v", err)
 	}
 
 	if secret.RootCa == "" {
-		errors.Errorf("Root cert is missing.")
-		return nil
+		return errors.Errorf("Root cert is missing.")
 	}
 	if secret.PrivateKey == "" {
-		errors.Errorf("Private key is missing.")
-		return nil
+		return errors.Errorf("Private key is missing.")
 	}
 	// TODO: This should be supported
 	if secret.CertChain != "" {
-		errors.Errorf("Updating the root with a cert chain is not supported")
-		return nil
+		return errors.Errorf("Updating the root with a cert chain is not supported")
 	}
 
 	innerConfig := make(map[string]interface{})
@@ -79,8 +74,7 @@ func (s *EncryptionSyncer) sync(ctx context.Context, secret *v12.TlsSecret) erro
 	var writeOpts api.WriteOptions
 	_, err = client.Connect().CASetConfig(conf, &writeOpts)
 	if err != nil {
-		errors.Errorf("Error updating consul root certificate %v.")
-		return err
+		return errors.Errorf("Error updating consul root certificate %v.")
 	}
 	return nil
 }

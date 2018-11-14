@@ -31,8 +31,7 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 			}
 			tlsSecret := secret.GetTls()
 			if tlsSecret == nil {
-				errors.Errorf("missing tls secret")
-				return nil
+				return errors.Errorf("missing tls secret")
 			}
 
 			s.sync(ctx, tlsSecret)
