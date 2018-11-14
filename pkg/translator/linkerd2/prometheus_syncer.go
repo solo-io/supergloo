@@ -72,7 +72,7 @@ func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
 	}
 
 	// TODO (ilackarms): make this syncer take scrape configs as an argument
-	changed := prometheusConfig.AddScrapeConfigs(linkerdScrapeConfigs)
+	changed := prometheusConfig.AddScrapeConfigs(LinkerdScrapeConfigs)
 	if !changed {
 		return nil
 	}

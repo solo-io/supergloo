@@ -5,10 +5,10 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 )
 
-var linkerdScrapeConfigs []prometheus.ScrapeConfig
+var LinkerdScrapeConfigs []prometheus.ScrapeConfig
 
 func init() {
-	err := yaml.Unmarshal([]byte(linkerd2ScrapeConfigsYaml), &linkerdScrapeConfigs)
+	err := yaml.Unmarshal([]byte(linkerd2ScrapeConfigsYaml), &LinkerdScrapeConfigs)
 	if err != nil {
 		panic("failed to parse linkerd2ScrapeConfigsYaml: " + err.Error())
 	}

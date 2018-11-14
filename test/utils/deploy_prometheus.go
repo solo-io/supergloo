@@ -49,8 +49,10 @@ func DeployPrometheusConfigmap(namespace, name string, kube kubernetes.Interface
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
+			// Required by Solo-Kit; TODO: consider removing this requirement
+			Annotations: map[string]string{"resource_kind": "*v1.Config"},
 		},
-		Data: map[string]string{"prometheus.yaml": BasicPrometheusConfig},
+		Data: map[string]string{"prometheus.yml": BasicPrometheusConfig},
 	})
 	return err
 }
