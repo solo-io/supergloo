@@ -7,10 +7,10 @@ option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
-import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 
 import "routing.proto";
 import "observability.proto";
+import "encryption.proto";
 
 /*
 @solo-kit:resource.short_name=mesh
@@ -50,14 +50,4 @@ enum MeshType {
     LINKERD1 = 1;
     LINKERD2 = 2;
     CONSUL = 3;
-}
-
-message Encryption {
-    // If set to true, TLS is enabled across the entire mesh.
-    bool tlsEnabled = 1;
-    // If TLS is enabled, this is the name of the secret containing the certs.
-    // When using Istio, this should either be "istio.default", meaning Istio is using the default Citadel cert
-    // generation, or "cacert", which is a custom-uploaded Kubernetes secret containing all the cert files.
-    // When using Linkerd, this is the name of a secret that will be mounted into the linkerd Kubernetes DaemonSet.
-    core.solo.io.ResourceRef secret = 2;
 }
