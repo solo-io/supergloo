@@ -50,6 +50,9 @@ var _ = Describe("RoutingSyncer", func() {
 		err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
 			Meshes: map[string]v1.MeshList{
 				"ignored-at-this-point": {{
+					TargetMesh: &v1.TargetMesh{
+						MeshType: v1.MeshType_ISTIO,
+					},
 					Routing: &v1.Routing{
 						DestinationRules: []*v1.DestinationRule{
 							{
