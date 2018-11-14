@@ -58,7 +58,7 @@ func testPrometheusSerializer(namespace string, kube kubernetes.Interface, clien
 		Data: map[string]string{"prometheus.yaml": demoIstioPrometheusConfig},
 	})
 	Expect(err).NotTo(HaveOccurred())
-	read, err := client.Read("istio-system", "prometheus", clients.ReadOpts{})
+	read, err := client.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	cfg, err := prometheus.ConfigFromResource(read)
 	Expect(err).NotTo(HaveOccurred())
