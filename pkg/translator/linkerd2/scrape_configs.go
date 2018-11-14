@@ -8,7 +8,7 @@ import (
 var linkerdScrapeConfigs []prometheus.ScrapeConfig
 
 func init() {
-	err := yaml.Unmarshal([]byte(linkerd2ScrapeConfigsYaml), linkerdScrapeConfigs)
+	err := yaml.Unmarshal([]byte(linkerd2ScrapeConfigsYaml), &linkerdScrapeConfigs)
 	if err != nil {
 		panic("failed to parse linkerd2ScrapeConfigsYaml: " + err.Error())
 	}
