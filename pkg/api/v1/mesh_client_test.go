@@ -72,6 +72,7 @@ func MeshClientTest(namespace string, client MeshClient) {
 	Expect(r1.TargetMesh).To(Equal(input.TargetMesh))
 	Expect(r1.Routing).To(Equal(input.Routing))
 	Expect(r1.Encryption).To(Equal(input.Encryption))
+	Expect(r1.Observability).To(Equal(input.Observability))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

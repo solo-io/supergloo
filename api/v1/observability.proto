@@ -1,0 +1,28 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+option (gogoproto.equal_all) = true;
+
+import "gloo/v1/proxy.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+
+// observability config for the mesh
+message Observability {
+    // mesh configuration for prometheus
+    Prometheus prometheus = 1;
+}
+
+//
+message Prometheus {
+    core.solo.io.ResourceRef prometheus_config_map = 1 [(gogoproto.nullable) = false]; // target configmap
+    EnableMetricsForMesh enable_metrics_for_mesh = 3; // enable metrics for various mesh resources
+}
+
+message EnableMetricsForMesh {
+    bool istio = 1; // unimplemented
+    bool linkerd2 = 2; // enable metrics for linkerd2
+}
