@@ -1,19 +1,27 @@
-package consul
+package istio
 
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/hashicorp/consul/api"
 	v12 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+type IstioSyncer struct {
+	Kube kubernetes.Interface
+}
+
 func Sync(_ context.Context, snap *v1.TranslatorSnapshot) error {
 	for _, mesh := range snap.Meshes.List() {
 		switch mesh.TargetMesh.MeshType {
-		case v1.MeshType_CONSUL:
+		case v1.MeshType_ISTIO:
 			encryption := mesh.Encryption
 			if encryption == nil {
 				continue
@@ -22,17 +30,42 @@ func Sync(_ context.Context, snap *v1.TranslatorSnapshot) error {
 			if encryptionSecret == nil {
 				continue
 			}
-			secret, err := snap.Secrets.List().Find(encryptionSecret.Namespace, encryptionSecret.Name)
+			secretList := snap.Secrets.List()
+			secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
 			if err != nil {
-				return err
+				return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
+					encryptionSecret.Namespace, encryptionSecret.Name, err)
 			}
-			tlsSecret := secret.GetTls()
-			if tlsSecret == nil {
+			tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
+			if tlsSecretFromMeshConfig == nil {
 				return errors.Errorf("missing tls secret")
 			}
 
+			// this is where custom root certs will live
+			istioCacerts, _ := secretList.Find("istio-system", "cacerts")
+			istioCacerts.GetOpaque()
+
 			syncSecret(tlsSecret)
 		}
+	}
+	return nil
+}
+
+func (s *IstioSyncer) restartCitadel(ctx context.Context) error {
+	selector := make(map[string]string)
+	selector["istio"] = "citadel"
+	return s.restartPods(ctx, "istio-system", selector)
+}
+
+func (s *IstioSyncer) restartPods(ctx context.Context, namespace string, selector map[string]string) error {
+	if s.Kube == nil {
+		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
+			" for utilizing pod restarts")
+	}
+	if err := s.Kube.CoreV1().Pods(namespace).DeleteCollection(nil, metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(selector).String(),
+	}); err != nil {
+		return errors.Wrapf(err, "restarting pods with selector %v", selector)
 	}
 	return nil
 }
@@ -51,23 +84,8 @@ func validateTlsSecret(secret *v12.TlsSecret) error {
 	return nil
 }
 
-func getConsulInnerConfigMap(secret *v12.TlsSecret) map[string]interface{} {
-	innerConfig := make(map[string]interface{})
-	innerConfig["LeafCertTTL"] = "72h"
-	innerConfig["PrivateKey"] = secret.PrivateKey
-	innerConfig["RootCert"] = secret.RootCa
-	innerConfig["RotationPeriod"] = "2160h"
-	return innerConfig
-}
-
-func getConsulConfigMap(secret *v12.TlsSecret) *api.CAConfig {
-	return &api.CAConfig{
-		Provider: "consul",
-		Config:   getConsulInnerConfigMap(secret),
-	}
-}
-
-func shouldUpdateCurrentCert(client *api.Client, secret *v12.TlsSecret) (bool, error) {
+func (s *IstioSyncer) shouldUpdateCurrentCert(secret *v12.TlsSecret) (bool, error) {
+	s.Kube.CoreV1().Secrets("istio-system").Get()
 	var queryOpts api.QueryOptions
 	currentConfig, _, err := client.Connect().CAGetConfig(&queryOpts)
 	if err != nil {
@@ -81,7 +99,7 @@ func shouldUpdateCurrentCert(client *api.Client, secret *v12.TlsSecret) (bool, e
 	return true, nil
 }
 
-func syncSecret(secret *v12.TlsSecret) error {
+func syncSecret(tlsSecretFromMeshConfig *v12.TlsSecret, currentCacerts *v12.Secret) error {
 	// TODO: This should be configured using the mesh location from the CRD
 	// TODO: This requires port forwarding, ingress, or running inside the cluster
 	client, err := api.NewClient(api.DefaultConfig())
