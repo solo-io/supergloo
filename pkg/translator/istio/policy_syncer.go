@@ -5,21 +5,88 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/gogo/protobuf/proto"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	"github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 type PolicySyncer struct {
+	WriteSelector  map[string]string // for reconciling only our resources
+	WriteNamespace string
+
+	serviceRoleBindingReconciler v1alpha1.ServiceRoleBindingReconciler
+	serviceRoleReconciler        v1alpha1.ServiceRoleReconciler
+	rbacConfigReconciler         v1alpha1.RbacConfigReconciler
 }
 
 func (s *PolicySyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 
+	for _, mesh := range snap.Meshes.List() {
+		switch mesh.TargetMesh.MeshType {
+		case v1.MeshType_ISTIO:
+			policy := mesh.Policy
+			if policy == nil {
+				s.removePolicy(ctx)
+				continue
+			}
+
+			// TODO: use resource error to be able to report errors.
+			s.syncPolicy(ctx, policy)
+		}
+	}
+	return nil
 }
 
-func c() {
-	rcfg := &v1alpha1.RbacConfig{
-		Mode:            v1alpha1.RbacConfig_Mode,
+func (s *PolicySyncer) removePolicy(ctx context.Context) error {
+	opts := clients.ListOpts{
+		Ctx:      ctx,
+		Selector: s.WriteSelector,
+	}
+
+	// delete everything!
+	s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRoleBinding, opts)
+	s.serviceRoleReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRole, opts)
+	s.rbacConfigReconciler.Reconcile(s.WriteNamespace, nil, preserveRbacConfig, opts)
+	return nil
+
+}
+
+func (s *PolicySyncer) syncPolicy(ctx context.Context, p *v1.Policy) error {
+	opts := clients.ListOpts{
+		Ctx:      ctx,
+		Selector: s.WriteSelector,
+	}
+
+	// we have a policy, write a global config
+	rcfg := globalConfig()
+	var rcfgs v1alpha1.RbacConfigList
+	rcfgs = append(rcfgs, rcfg)
+
+	sr, srb := toIstio(p)
+
+	resources.UpdateMetadata(rcfg, s.updateMetadata)
+	for _, res := range sr {
+		resources.UpdateMetadata(res, s.updateMetadata)
+	}
+	for _, res := range srb {
+		resources.UpdateMetadata(res, s.updateMetadata)
+	}
+
+	// TODO: check error
+	s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, srb, preserveServiceRoleBinding, opts)
+	s.serviceRoleReconciler.Reconcile(s.WriteNamespace, sr, preserveServiceRole, opts)
+	s.rbacConfigReconciler.Reconcile(s.WriteNamespace, rcfgs, preserveRbacConfig, opts)
+	return nil
+
+}
+
+func globalConfig() *v1alpha1.RbacConfig {
+	return &v1alpha1.RbacConfig{
+		Mode:            v1alpha1.RbacConfig_ON,
 		EnforcementMode: v1alpha1.EnforcementMode_ENFORCED,
 	}
 }
@@ -30,20 +97,28 @@ func toIstio(p *v1.Policy) ([]*v1alpha1.ServiceRole, []*v1alpha1.ServiceRoleBind
 
 	rulesByDest := map[core.ResourceRef][]*v1.Rule{}
 	for _, rule := range p.Rules {
-		rulesByDest[rule.Destination] = append(rulesByDest[rule.Destination], rule)
+		if rule.Source == nil {
+			// TODO: should we return error instead?
+			continue
+		}
+		if rule.Destination == nil {
+			// TODO: should we return error instead?
+			continue
+		}
+		rulesByDest[*rule.Destination] = append(rulesByDest[*rule.Destination], rule)
 	}
 	// sort for idempotency
 	for _, rule := range p.Rules {
-		dests := rulesByDest[rule.Destination]
+		dests := rulesByDest[*rule.Destination]
 		sort.Slice(dests, func(i, j int) bool {
 			return dests[i].Source.String() > dests[j].Source.String()
 		})
 	}
 
 	for dest, rules := range rulesByDest {
-		ns := rule.Destination.Metadata.Namespace
+		ns := dest.Namespace
 		// create an istio service role and binding:
-		name := "access-" + rule.Destination.Metadata.Namespace + "-" + rule.Destination.Metadata.Name
+		name := "access-" + dest.Namespace + "-" + dest.Name
 		// create service role:
 		sr := &v1alpha1.ServiceRole{
 			Metadata: core.Metadata{
@@ -53,20 +128,20 @@ func toIstio(p *v1.Policy) ([]*v1alpha1.ServiceRole, []*v1alpha1.ServiceRoleBind
 			Rules: []*v1alpha1.AccessRule{
 				{
 					Services: []string{
-						svcname(rule.Destination),
+						svcname(dest),
 					},
 				},
 			},
 		}
 		var subjects []*v1alpha1.Subject
 		for _, rule := range rules {
-			subjects = append(subjects, *v1alpha1.Subject{
+			subjects = append(subjects, &v1alpha1.Subject{
 				Properties: map[string]string{
-					"source.principal", principalame(rule.Source),
+					"source.principal": principalame(*rule.Source),
 				},
 			})
 		}
-		name = "bind-" + rule.Destination.Metadata.Namespace + "-" + rule.Destination.Metadata.Name
+		name = "bind-" + dest.Namespace + "-" + dest.Name
 		srb := &v1alpha1.ServiceRoleBinding{
 			Metadata: core.Metadata{
 				Name:      name,
@@ -83,9 +158,36 @@ func toIstio(p *v1.Policy) ([]*v1alpha1.ServiceRole, []*v1alpha1.ServiceRoleBind
 	return roles, bindings
 }
 
+func (s *PolicySyncer) updateMetadata(meta *core.Metadata) {
+	meta.Namespace = s.WriteNamespace
+	if meta.Annotations == nil {
+		meta.Annotations = make(map[string]string)
+	}
+	meta.Annotations["created_by"] = "supergloo"
+	for k, v := range s.WriteSelector {
+		meta.Labels[k] = v
+	}
+}
+
 func svcname(s core.ResourceRef) string {
 	return fmt.Sprintf("%s.%s.svc.cluster.local", s.Name, s.Namespace)
 }
 func principalame(s core.ResourceRef) string {
 	return fmt.Sprintf("cluster.local/ns/%s/sa/%s", s.Namespace, s.Name)
+}
+
+func preserveServiceRoleBinding(original, desired *v1alpha1.ServiceRoleBinding) (bool, error) {
+	original.Metadata = desired.Metadata
+	original.Status = desired.Status
+	return !proto.Equal(original, desired), nil
+}
+func preserveServiceRole(original, desired *v1alpha1.ServiceRole) (bool, error) {
+	original.Metadata = desired.Metadata
+	original.Status = desired.Status
+	return !proto.Equal(original, desired), nil
+}
+func preserveRbacConfig(original, desired *v1alpha1.RbacConfig) (bool, error) {
+	original.Metadata = desired.Metadata
+	original.Status = desired.Status
+	return !proto.Equal(original, desired), nil
 }
