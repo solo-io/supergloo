@@ -97,10 +97,6 @@ func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
 	return nil
 }
 
-//toodo:
-//	- get gopkg working
-//	- setup, main, etc
-
 func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*prometheus.PrometheusConfig, error) {
 	cfg, err := s.PrometheusClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{
 		Ctx: ctx,
