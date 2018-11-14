@@ -1,0 +1,3 @@
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "gogoproto/gogo.proto";

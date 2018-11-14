@@ -11,6 +11,7 @@ import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "routing.proto";
 import "observability.proto";
 import "encryption.proto";
+import "policy.proto";
 
 /*
 @solo-kit:resource.short_name=mesh
@@ -30,6 +31,9 @@ message Mesh {
     Routing routing = 1;
     Encryption encryption = 98;
     Observability observability = 99;
+    Policy policy = 100;
+
+//    MeshMetadata mesh_metadata = 99;
 }
 
 message TargetMesh {
