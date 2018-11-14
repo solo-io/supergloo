@@ -1,13 +1,69 @@
 package utils
 
+const BasicPrometheusDeployment = `
+# Source: istio/charts/prometheus/templates/deployment.yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: TODO
+  namespace: TODO
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.2.1
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus/"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus/
+            - name: prometheus-storage-volume
+              mountPath: /prometheus/
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            defaultMode: 420
+            name: prometheus-server-conf
+  
+        - name: prometheus-storage-volume
+          emptyDir: {}
+`
 
-const demoBasicPrometheusConfig = `  prometheus.yml: |
+const IstioPrometheusService = `
+# Source: istio/charts/prometheus/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: TODO
+  namespace: TODO
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    name: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - name: http-prometheus
+    protocol: TCP
+    port: 9090
+`
+
+const BasicPrometheusConfig = `  prometheus.yml: |
     # A scrape configuration for running Prometheus on a Kubernetes cluster.
     # This uses separate scrape configs for cluster components (i.e. API server, node)
     # and services to allow each to use different authentication configs.
     #
     # Kubernetes labels will be added as Prometheus labels on metrics via the
-    # `+`labelmap`+` relabeling action.
+    # ` + `labelmap` + ` relabeling action.
     #
     # If you are using Kubernetes 1.7.2 or earlier, please take note of the comments
     # for the kubernetes-cadvisor job; you will need to edit or remove this job.
@@ -15,9 +71,9 @@ const demoBasicPrometheusConfig = `  prometheus.yml: |
     # Scrape config for API servers.
     #
     # Kubernetes exposes API servers as endpoints to the default/kubernetes
-    # service so this uses `+`endpoints`+` role and uses relabelling to only keep
+    # service so this uses ` + `endpoints` + ` role and uses relabelling to only keep
     # the endpoints associated with the default/kubernetes service using the
-    # default named port `+`https`+`. This works for single API server deployments as
+    # default named port ` + `https` + `. This works for single API server deployments as
     # well as HA API server deployments.
     scrape_configs:
     - job_name: 'kubernetes-apiservers'
@@ -26,7 +82,7 @@ const demoBasicPrometheusConfig = `  prometheus.yml: |
       - role: endpoints
     
       # Default to scraping over https. If required, just disable this or change to
-      # `+`http`+`.
+      # ` + `http` + `.
       scheme: https
     
       # This TLS & bearer token file config is used to connect to the actual scrape
@@ -63,7 +119,7 @@ const demoBasicPrometheusConfig = `  prometheus.yml: |
     - job_name: 'kubernetes-nodes'
     
       # Default to scraping over https. If required, just disable this or change to
-      # `+`http`+`.
+      # ` + `http` + `.
       scheme: https
     
       # This TLS & bearer token file config is used to connect to the actual scrape
@@ -106,7 +162,7 @@ const demoBasicPrometheusConfig = `  prometheus.yml: |
     - job_name: 'kubernetes-cadvisor'
     
       # Default to scraping over https. If required, just disable this or change to
-      # `+`http`+`.
+      # ` + `http` + `.
       scheme: https
     
       # This TLS & bearer token file config is used to connect to the actual scrape
@@ -286,7 +342,7 @@ const demoBasicPrometheusConfig = `  prometheus.yml: |
 
 `
 
-const demoIstioPrometheusConfig = `  prometheus.yml: |-
+const IstioPrometheusConfig = `  prometheus.yml: |-
     global:
       scrape_interval: 15s
     scrape_configs:
