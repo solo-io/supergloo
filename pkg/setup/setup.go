@@ -112,15 +112,14 @@ func Main() error {
 		WriteNamespace:            "supergloo-system",
 	}
 
-	linkerd2PrometheusSyncer := &linkerd2.PrometheusSyncer{
-		Kube:             kubeClient,
-		PrometheusClient: prometheusClient,
-	}
+	linkerd2PrometheusSyncer := linkerd2.NewPrometheusSyncer(kubeClient, prometheusClient)
+	istioPrometheusSyncer := istio.NewPrometheusSyncer(kubeClient, prometheusClient)
 
 	// TODO (rickducott: add consul syncer here)
 
 	syncers := v1.TranslatorSyncers{
 		istioRoutingSyncer,
+		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
 	}
 
