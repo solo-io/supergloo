@@ -5,8 +5,6 @@ import (
 
 	"go.uber.org/multierr"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -16,6 +14,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/kube"
 )
 
 type PrometheusSyncer struct {
@@ -94,16 +93,12 @@ func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
 	selector := mesh.Observability.Prometheus.PodLabels
 
 	// got this far, it means we're on kube and they want us to restart pods
-	if err := s.restartPods(ctx, configMap.Namespace, selector); err != nil {
+	if err := kube.RestartPods(s.Kube, configMap.Namespace, selector); err != nil {
 		return errors.Wrapf(err, "restarting prometheus pods")
 	}
 
 	return nil
 }
-
-//toodo:
-//	- get gopkg working
-//	- setup, main, etc
 
 func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*prometheus.PrometheusConfig, error) {
 	cfg, err := s.PrometheusClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{
@@ -133,21 +128,6 @@ func (s *PrometheusSyncer) writePrometheusConfig(ctx context.Context, ref core.R
 	desiredCfg.SetMetadata(originalCfg.Metadata)
 	if _, err := s.PrometheusClient.Write(desiredCfg, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
 		return errors.Wrapf(err, "updating prometheus configmap")
-	}
-	return nil
-}
-
-// TODO (ilackarms / rickducott): generalize this function
-
-func (s *PrometheusSyncer) restartPods(ctx context.Context, namespace string, selector map[string]string) error {
-	if s.Kube == nil {
-		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
-			" for utilizing pod restarts")
-	}
-	if err := s.Kube.CoreV1().Pods(namespace).DeleteCollection(nil, metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(selector).String(),
-	}); err != nil {
-		return errors.Wrapf(err, "restarting pods with selector %v", selector)
 	}
 	return nil
 }
