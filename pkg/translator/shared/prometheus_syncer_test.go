@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
+	"github.com/solo-io/supergloo/pkg/translator/istio"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 
 	. "github.com/onsi/ginkgo"
@@ -35,55 +36,70 @@ var _ = Describe("PrometheusSyncer", func() {
 	AfterEach(func() {
 		test.Teardown(namespace)
 	})
-	It("works", func() {
-		err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, 31001, kube)
-		Expect(err).NotTo(HaveOccurred())
-		err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
-		Expect(err).NotTo(HaveOccurred())
-		prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
-			Clientset: kube,
-		})
-		Expect(err).NotTo(HaveOccurred())
-		err = prometheusClient.Register()
-		Expect(err).NotTo(HaveOccurred())
-		s := &PrometheusSyncer{
-			PrometheusClient:     prometheusClient,
-			Kube:                 kube,
-			DesiredScrapeConfigs: linkerd2.LinkerdScrapeConfigs,
-			MeshType:             v1.MeshType_LINKERD2,
-		}
-		original := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
-		for _, sc := range s.DesiredScrapeConfigs {
-			Expect(original.ScrapeConfigs).NotTo(ContainElement(sc))
-		}
+	for _, test := range []struct {
+		meshType      v1.MeshType
+		scrapeConfigs []prometheus.ScrapeConfig
+	}{
+		{
+			meshType:      v1.MeshType_ISTIO,
+			scrapeConfigs: istio.IstioScrapeConfigs,
+		},
+		{
+			meshType:      v1.MeshType_LINKERD2,
+			scrapeConfigs: linkerd2.LinkerdScrapeConfigs,
+		},
+	} {
 
-		err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
-			Meshes: map[string]v1.MeshList{
-				"ignored-at-this-point": {{
-					TargetMesh: &v1.TargetMesh{
-						MeshType: v1.MeshType_LINKERD2,
-					},
-					Observability: &v1.Observability{
-						Prometheus: &v1.Prometheus{
-							EnableMetrics: true,
-							PrometheusConfigMap: &core.ResourceRef{
-								Namespace: namespace,
-								Name:      prometheusConfigName,
-							},
-							PodLabels: map[string]string{
-								"app": "prometheus-server",
+		It("works", func() {
+			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, 31001, kube)
+			Expect(err).NotTo(HaveOccurred())
+			err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
+			Expect(err).NotTo(HaveOccurred())
+			prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
+				Clientset: kube,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			err = prometheusClient.Register()
+			Expect(err).NotTo(HaveOccurred())
+			s := &PrometheusSyncer{
+				PrometheusClient:     prometheusClient,
+				Kube:                 kube,
+				DesiredScrapeConfigs: test.scrapeConfigs,
+				MeshType:             test.meshType,
+			}
+			original := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
+			for _, sc := range s.DesiredScrapeConfigs {
+				Expect(original.ScrapeConfigs).NotTo(ContainElement(sc))
+			}
+
+			err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
+				Meshes: map[string]v1.MeshList{
+					"ignored-at-this-point": {{
+						TargetMesh: &v1.TargetMesh{
+							MeshType: v1.MeshType_LINKERD2,
+						},
+						Observability: &v1.Observability{
+							Prometheus: &v1.Prometheus{
+								EnableMetrics: true,
+								PrometheusConfigMap: &core.ResourceRef{
+									Namespace: namespace,
+									Name:      prometheusConfigName,
+								},
+								PodLabels: map[string]string{
+									"app": "prometheus-server",
+								},
 							},
 						},
-					},
-				}},
-			},
+					}},
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+			updated := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
+			for _, sc := range s.DesiredScrapeConfigs {
+				Expect(updated.ScrapeConfigs).To(ContainElement(sc))
+			}
 		})
-		Expect(err).NotTo(HaveOccurred())
-		updated := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
-		for _, sc := range s.DesiredScrapeConfigs {
-			Expect(updated.ScrapeConfigs).To(ContainElement(sc))
-		}
-	})
+	}
 })
 
 func getPrometheusConfig(promClient prometheusv1.ConfigClient, namespace, name string) *prometheus.PrometheusConfig {
