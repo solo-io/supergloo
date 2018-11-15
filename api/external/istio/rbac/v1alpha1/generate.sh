@@ -2,13 +2,13 @@
 
 set -ex
 
-PROJECTS="$( cd -P "$( dirname "$PROJECTS" )" >/dev/null && pwd )"/../../../../../..
+BASE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && cd ../../../../../.. >/dev/null && pwd )
 
-OUT=${PROJECTS}/supergloo/pkg/api/external/istio/rbac/v1alpha1/
+OUT=${BASE_DIR}/supergloo/pkg/api/external/istio/rbac/v1alpha1/
 
 mkdir -p ${OUT}
 
-ISTIO_IN=${PROJECTS}/supergloo/api/external/istio/rbac/v1alpha1/
+ISTIO_IN=${BASE_DIR}/supergloo/api/external/istio/rbac/v1alpha1/
 
 IMPORTS="-I=${ISTIO_IN} \
     -I=${GOPATH}/src/github.com/solo-io/solo-kit/projects/gloo/api/v1 \
