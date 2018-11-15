@@ -71,7 +71,7 @@ func SecretClientTest(namespace string, client SecretClient) {
 	Expect(r1.Aws).To(Equal(input.Aws))
 	Expect(r1.Azure).To(Equal(input.Azure))
 	Expect(r1.Tls).To(Equal(input.Tls))
-	Expect(r1.Opaque).To(Equal(input.Opaque))
+	Expect(r1.Cacerts).To(Equal(input.Cacerts))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

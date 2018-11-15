@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/consul"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 	"k8s.io/client-go/kubernetes"
@@ -116,12 +117,18 @@ func Main() error {
 	linkerd2PrometheusSyncer := linkerd2.NewPrometheusSyncer(kubeClient, prometheusClient)
 	istioPrometheusSyncer := istio.NewPrometheusSyncer(kubeClient, prometheusClient)
 
-	// TODO (rickducott: add consul syncer here)
+	consulEncryptionSyncer := &consul.ConsulSyncer{}
+	istioEncryptionSyncer := &istio.EncryptionSyncer{
+		Kube:         kubeClient,
+		SecretClient: secretClient,
+	}
 
 	syncers := v1.TranslatorSyncers{
 		istioRoutingSyncer,
 		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
+		consulEncryptionSyncer,
+		istioEncryptionSyncer,
 	}
 
 	eventLoop := v1.NewTranslatorEventLoop(emitter, syncers)

@@ -3,74 +3,92 @@ package istio
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/labels"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/hashicorp/consul/api"
-	v12 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/kube"
 )
 
-type IstioSyncer struct {
-	Kube kubernetes.Interface
+type EncryptionSyncer struct {
+	Kube         kubernetes.Interface
+	SecretClient gloov1.SecretClient
+	ctx          context.Context
 }
 
-func Sync(_ context.Context, snap *v1.TranslatorSnapshot) error {
+func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	s.ctx = ctx
 	for _, mesh := range snap.Meshes.List() {
-		switch mesh.TargetMesh.MeshType {
-		case v1.MeshType_ISTIO:
-			encryption := mesh.Encryption
-			if encryption == nil {
-				continue
-			}
-			encryptionSecret := encryption.Secret
-			if encryptionSecret == nil {
-				continue
-			}
-			secretList := snap.Secrets.List()
-			secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
-			if err != nil {
-				return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
-					encryptionSecret.Namespace, encryptionSecret.Name, err)
-			}
-			tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
-			if tlsSecretFromMeshConfig == nil {
-				return errors.Errorf("missing tls secret")
-			}
-
-			// this is where custom root certs will live
-			istioCacerts, _ := secretList.Find("istio-system", "cacerts")
-			istioCacerts.GetOpaque()
-
-			syncSecret(tlsSecret)
+		if err := s.syncMesh(mesh, snap); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func (s *IstioSyncer) restartCitadel(ctx context.Context) error {
-	selector := make(map[string]string)
-	selector["istio"] = "citadel"
-	return s.restartPods(ctx, "istio-system", selector)
-}
+func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+	switch mesh.TargetMesh.MeshType {
+	case v1.MeshType_ISTIO:
+		encryption := mesh.Encryption
+		if encryption == nil {
+			return nil
+		}
+		encryptionSecret := encryption.Secret
+		if encryptionSecret == nil {
+			return nil
+		}
+		secretList := snap.Secrets.List()
+		secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
+		if err != nil {
+			return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
+				encryptionSecret.Namespace, encryptionSecret.Name, err)
+		}
+		tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
+		if tlsSecretFromMeshConfig == nil {
+			return errors.Errorf("missing tls secret")
+		}
 
-func (s *IstioSyncer) restartPods(ctx context.Context, namespace string, selector map[string]string) error {
-	if s.Kube == nil {
-		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
-			" for utilizing pod restarts")
-	}
-	if err := s.Kube.CoreV1().Pods(namespace).DeleteCollection(nil, metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(selector).String(),
-	}); err != nil {
-		return errors.Wrapf(err, "restarting pods with selector %v", selector)
+		// this is where custom root certs will live
+		istioCacerts, _ := secretList.Find("istio-system", "cacerts")
+
+		return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
 	}
 	return nil
 }
 
-func validateTlsSecret(secret *v12.TlsSecret) error {
+func (s *EncryptionSyncer) syncSecret(tlsSecretFromMeshConfig *gloov1.TlsSecret, currentCacerts *gloov1.Secret) error {
+	if err := validateTlsSecret(tlsSecretFromMeshConfig); err != nil {
+		return err
+	}
+
+	cacertsSecret := convertToCacerts(tlsSecretFromMeshConfig)
+	if !cacertsSecret.Equal(currentCacerts) {
+		if err := s.writeCacerts(cacertsSecret); err != nil {
+			return err
+		}
+		// now we need to ensure istio changes to use this cert:
+		// make sure istio.default is deleted, and restart citadel
+		if err := s.deleteIstioDefaultSecret(); err != nil {
+			return err
+		}
+		return s.restartCitadel()
+	} else {
+		return nil
+	}
+}
+
+func (s *EncryptionSyncer) writeCacerts(secret *gloov1.Secret) error {
+	_, err := s.SecretClient.Write(secret, clients.WriteOpts{})
+	return err
+}
+
+func validateTlsSecret(secret *gloov1.TlsSecret) error {
 	if secret.RootCa == "" {
 		return errors.Errorf("Root cert is missing.")
 	}
@@ -84,46 +102,33 @@ func validateTlsSecret(secret *v12.TlsSecret) error {
 	return nil
 }
 
-func (s *IstioSyncer) shouldUpdateCurrentCert(secret *v12.TlsSecret) (bool, error) {
-	s.Kube.CoreV1().Secrets("istio-system").Get()
-	var queryOpts api.QueryOptions
-	currentConfig, _, err := client.Connect().CAGetConfig(&queryOpts)
-	if err != nil {
-		return false, errors.Errorf("Error getting current root certificate: %v", err)
+func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *gloov1.Secret {
+	cacerts := gloov1.IstioCacertsSecret{
+		CaKey:     tlsSecretFromMeshConfig.PrivateKey,
+		CaCert:    tlsSecretFromMeshConfig.RootCa,
+		CertChain: tlsSecretFromMeshConfig.CertChain,
+		RootCert:  tlsSecretFromMeshConfig.RootCa,
 	}
-	currentRoot := currentConfig.Config["RootCert"]
-	if currentRoot == secret.RootCa {
-		// Root certificate already set
-		return false, nil
+	cacertsWrapper := gloov1.Secret_Cacerts{
+		Cacerts: &cacerts,
 	}
-	return true, nil
+	secret := gloov1.Secret{
+		Kind: &cacertsWrapper,
+		Metadata: core.Metadata{
+			Namespace: "istio-system",
+			Name:      "cacerts",
+		},
+	}
+	return &secret
 }
 
-func syncSecret(tlsSecretFromMeshConfig *v12.TlsSecret, currentCacerts *v12.Secret) error {
-	// TODO: This should be configured using the mesh location from the CRD
-	// TODO: This requires port forwarding, ingress, or running inside the cluster
-	client, err := api.NewClient(api.DefaultConfig())
-	if err != nil {
-		return errors.Errorf("error creating consul client %v", err)
-	}
-	if err = validateTlsSecret(secret); err != nil {
-		return err
-	}
-	shouldUpdate, err := shouldUpdateCurrentCert(client, secret)
-	if err != nil {
-		return err
-	}
-	if !shouldUpdate {
-		return nil
-	}
+func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
+	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
+	return s.Kube.CoreV1().Secrets("istio-system").Delete("istio.default", &metav1.DeleteOptions{})
+}
 
-	conf := getConsulConfigMap(secret)
-
-	// TODO: Even if this succeeds, Consul will still get into a bad state if this is an RSA cert
-	// Need to verify the cert was generated with EC
-	var writeOpts api.WriteOptions
-	if _, err = client.Connect().CASetConfig(conf, &writeOpts); err != nil {
-		return errors.Errorf("Error updating consul root certificate %v.")
-	}
-	return nil
+func (s *EncryptionSyncer) restartCitadel() error {
+	selector := make(map[string]string)
+	selector["istio"] = "citadel"
+	return kube.RestartPods(s.Kube, "istio-system", selector)
 }

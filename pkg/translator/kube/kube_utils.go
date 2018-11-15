@@ -1,0 +1,21 @@
+package kube
+
+import (
+	"github.com/solo-io/solo-kit/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
+)
+
+func RestartPods(kube kubernetes.Interface, namespace string, selector map[string]string) error {
+	if kube == nil {
+		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
+			" for utilizing pod restarts")
+	}
+	if err := kube.CoreV1().Pods(namespace).DeleteCollection(nil, metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(selector).String(),
+	}); err != nil {
+		return errors.Wrapf(err, "restarting pods with selector %v", selector)
+	}
+	return nil
+}
