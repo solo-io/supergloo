@@ -108,7 +108,7 @@ func Main() error {
 		DestinationRuleReconciler: v1alpha3.NewDestinationRuleReconciler(destinationRuleClient),
 		VirtualServiceReconciler:  v1alpha3.NewVirtualServiceReconciler(virtualServiceClient),
 		Reporter:                  rpt,
-		WriteSelector:             map[string]string{"supergloo.istio.routing": "configured"},
+		WriteSelector:             map[string]string{"reconciler.solo.io": "supergloo.istio.routing"},
 		WriteNamespace:            "supergloo-system",
 	}
 
