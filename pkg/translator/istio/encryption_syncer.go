@@ -22,6 +22,14 @@ type EncryptionSyncer struct {
 	ctx          context.Context
 }
 
+const (
+	defaultIstioNamespace            = "istio-system"
+	customRootCertificateSecretName  = "cacerts"
+	defaultRootCertificateSecretName = "istio.default"
+	istioLabelKey                    = "istio"
+	citadelLabelValue                = "citadel"
+)
+
 func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	s.ctx = ctx
 	for _, mesh := range snap.Meshes.List() {
@@ -55,7 +63,7 @@ func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) 
 		}
 
 		// this is where custom root certs will live once configured, if not found istioCacerts will be nil
-		istioCacerts, _ := secretList.Find("istio-system", "cacerts")
+		istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
 
 		return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
 	}
@@ -115,8 +123,8 @@ func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *gloov1.Secret 
 	secret := gloov1.Secret{
 		Kind: &cacertsWrapper,
 		Metadata: core.Metadata{
-			Namespace: "istio-system",
-			Name:      "cacerts",
+			Namespace: defaultIstioNamespace,
+			Name:      customRootCertificateSecretName,
 		},
 	}
 	return &secret
@@ -124,11 +132,11 @@ func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *gloov1.Secret 
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
 	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
-	return s.Kube.CoreV1().Secrets("istio-system").Delete("istio.default", &metav1.DeleteOptions{})
+	return s.Kube.CoreV1().Secrets(defaultIstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
 }
 
 func (s *EncryptionSyncer) restartCitadel() error {
 	selector := make(map[string]string)
-	selector["istio"] = "citadel"
-	return kube.RestartPods(s.Kube, "istio-system", selector)
+	selector[istioLabelKey] = citadelLabelValue
+	return kube.RestartPods(s.Kube, defaultIstioNamespace, selector)
 }

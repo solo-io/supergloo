@@ -7,6 +7,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// Note: This assumes the pod will get restarted automatically due to the kubernetes deployment spec
 func RestartPods(kube kubernetes.Interface, namespace string, selector map[string]string) error {
 	if kube == nil {
 		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
