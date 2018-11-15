@@ -4,9 +4,6 @@
 
 set -ex
 
-BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
-# won't work for ui...
-# need to modify ui make target
-make -C ${BASEDIR}/../.. supergloo-docker
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"/../..
+make -C ${BASEDIR} supergloo-docker
 docker save soloio/supergloo:dev | ( eval $(minikube docker-env) && docker load)
