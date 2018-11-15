@@ -1,9 +1,10 @@
-package linkerd2_test
+package shared_test
 
 import (
 	"context"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
+	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,7 +14,7 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
-	. "github.com/solo-io/supergloo/pkg/translator/linkerd2"
+	. "github.com/solo-io/supergloo/pkg/translator/shared"
 	"github.com/solo-io/supergloo/test/utils"
 	"k8s.io/client-go/kubernetes"
 )
@@ -46,11 +47,13 @@ var _ = Describe("PrometheusSyncer", func() {
 		err = prometheusClient.Register()
 		Expect(err).NotTo(HaveOccurred())
 		s := &PrometheusSyncer{
-			PrometheusClient: prometheusClient,
-			Kube:             kube,
+			PrometheusClient:     prometheusClient,
+			Kube:                 kube,
+			DesiredScrapeConfigs: linkerd2.LinkerdScrapeConfigs,
+			MeshType:             v1.MeshType_LINKERD2,
 		}
 		original := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
-		for _, sc := range LinkerdScrapeConfigs {
+		for _, sc := range s.DesiredScrapeConfigs {
 			Expect(original.ScrapeConfigs).NotTo(ContainElement(sc))
 		}
 
@@ -77,7 +80,7 @@ var _ = Describe("PrometheusSyncer", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		updated := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
-		for _, sc := range LinkerdScrapeConfigs {
+		for _, sc := range s.DesiredScrapeConfigs {
 			Expect(updated.ScrapeConfigs).To(ContainElement(sc))
 		}
 	})

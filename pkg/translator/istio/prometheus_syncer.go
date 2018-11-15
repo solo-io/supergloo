@@ -1,4 +1,4 @@
-package linkerd2
+package istio
 
 import (
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
@@ -11,7 +11,7 @@ func NewPrometheusSyncer(kube kubernetes.Interface, prometheusClient prometheusv
 	return &shared.PrometheusSyncer{
 		Kube:                 kube,
 		PrometheusClient:     prometheusClient,
-		DesiredScrapeConfigs: LinkerdScrapeConfigs,
-		MeshType:             v1.MeshType_LINKERD2,
+		DesiredScrapeConfigs: IstioScrapeConfigs,
+		MeshType:             v1.MeshType_ISTIO,
 	}
 }

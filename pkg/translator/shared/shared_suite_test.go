@@ -1,4 +1,4 @@
-package linkerd2_test
+package shared_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestTranslator(t *testing.T) {
+func TestShared(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Translator Suite")
+	RunSpecs(t, "Shared Suite")
 }
