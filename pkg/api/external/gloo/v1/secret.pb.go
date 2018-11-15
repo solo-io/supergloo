@@ -55,7 +55,7 @@ func (m *Secret) Reset()         { *m = Secret{} }
 func (m *Secret) String() string { return proto.CompactTextString(m) }
 func (*Secret) ProtoMessage()    {}
 func (*Secret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_953ee7b7c8b4ae6c, []int{0}
+	return fileDescriptor_secret_ab614d07c9ef3898, []int{0}
 }
 func (m *Secret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Secret.Unmarshal(m, b)
@@ -264,7 +264,7 @@ func (m *AwsSecret) Reset()         { *m = AwsSecret{} }
 func (m *AwsSecret) String() string { return proto.CompactTextString(m) }
 func (*AwsSecret) ProtoMessage()    {}
 func (*AwsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_953ee7b7c8b4ae6c, []int{1}
+	return fileDescriptor_secret_ab614d07c9ef3898, []int{1}
 }
 func (m *AwsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AwsSecret.Unmarshal(m, b)
@@ -309,7 +309,7 @@ func (m *AzureSecret) Reset()         { *m = AzureSecret{} }
 func (m *AzureSecret) String() string { return proto.CompactTextString(m) }
 func (*AzureSecret) ProtoMessage()    {}
 func (*AzureSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_953ee7b7c8b4ae6c, []int{2}
+	return fileDescriptor_secret_ab614d07c9ef3898, []int{2}
 }
 func (m *AzureSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AzureSecret.Unmarshal(m, b)
@@ -349,7 +349,7 @@ func (m *TlsSecret) Reset()         { *m = TlsSecret{} }
 func (m *TlsSecret) String() string { return proto.CompactTextString(m) }
 func (*TlsSecret) ProtoMessage()    {}
 func (*TlsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_953ee7b7c8b4ae6c, []int{3}
+	return fileDescriptor_secret_ab614d07c9ef3898, []int{3}
 }
 func (m *TlsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TlsSecret.Unmarshal(m, b)
@@ -390,6 +390,7 @@ func (m *TlsSecret) GetRootCa() string {
 	return ""
 }
 
+// Specifically structured cert that istio uses for non-default root certificates
 type IstioCacertsSecret struct {
 	RootCert             string   `protobuf:"bytes,1,opt,name=root_cert,json=root-cert.pem,proto3" json:"root_cert,omitempty"`
 	CertChain            string   `protobuf:"bytes,2,opt,name=cert_chain,json=cert-chain.pem,proto3" json:"cert_chain,omitempty"`
@@ -404,7 +405,7 @@ func (m *IstioCacertsSecret) Reset()         { *m = IstioCacertsSecret{} }
 func (m *IstioCacertsSecret) String() string { return proto.CompactTextString(m) }
 func (*IstioCacertsSecret) ProtoMessage()    {}
 func (*IstioCacertsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_953ee7b7c8b4ae6c, []int{4}
+	return fileDescriptor_secret_ab614d07c9ef3898, []int{4}
 }
 func (m *IstioCacertsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioCacertsSecret.Unmarshal(m, b)
@@ -724,9 +725,9 @@ func (this *IstioCacertsSecret) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("secret.proto", fileDescriptor_secret_953ee7b7c8b4ae6c) }
+func init() { proto.RegisterFile("secret.proto", fileDescriptor_secret_ab614d07c9ef3898) }
 
-var fileDescriptor_secret_953ee7b7c8b4ae6c = []byte{
+var fileDescriptor_secret_ab614d07c9ef3898 = []byte{
 	// 506 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0xcf, 0x6e, 0xd3, 0x30,
 	0x18, 0x5f, 0xda, 0xae, 0x5d, 0xbe, 0x16, 0x84, 0xac, 0x89, 0x85, 0x0a, 0x58, 0x95, 0x03, 0x9a,

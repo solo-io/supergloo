@@ -30,7 +30,7 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 //
 // Prometheus Config
 type Config struct {
-	// jsontag is used to refer to the common kubernetes configmap key
+	// json_name must refer to the data key in the configmap we expect
 	Prometheus *types.Struct `protobuf:"bytes,1,opt,name=prometheus,json=prometheus.yml" json:"prometheus,omitempty"`
 	// Metadata contains the object metadata for this resource
 	Metadata             core.Metadata `protobuf:"bytes,7,opt,name=metadata" json:"metadata"`
@@ -43,7 +43,7 @@ func (m *Config) Reset()         { *m = Config{} }
 func (m *Config) String() string { return proto.CompactTextString(m) }
 func (*Config) ProtoMessage()    {}
 func (*Config) Descriptor() ([]byte, []int) {
-	return fileDescriptor_config_e9abeb49b8c1006c, []int{0}
+	return fileDescriptor_config_4b7dae0abbf0659f, []int{0}
 }
 func (m *Config) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Config.Unmarshal(m, b)
@@ -111,9 +111,9 @@ func (this *Config) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("config.proto", fileDescriptor_config_e9abeb49b8c1006c) }
+func init() { proto.RegisterFile("config.proto", fileDescriptor_config_4b7dae0abbf0659f) }
 
-var fileDescriptor_config_e9abeb49b8c1006c = []byte{
+var fileDescriptor_config_4b7dae0abbf0659f = []byte{
 	// 247 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x8e, 0xb1, 0x4e, 0xc3, 0x30,
 	0x10, 0x86, 0x89, 0x84, 0x0a, 0x32, 0x88, 0x21, 0xaa, 0xa0, 0xaa, 0x10, 0x20, 0x26, 0x16, 0xee,
