@@ -2,6 +2,7 @@ package shared_test
 
 import (
 	"context"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
@@ -36,7 +37,7 @@ var _ = Describe("PrometheusSyncer", func() {
 	AfterEach(func() {
 		test.Teardown(namespace)
 	})
-	for _, test := range []struct {
+	for i, test := range []struct {
 		meshType      v1.MeshType
 		scrapeConfigs []prometheus.ScrapeConfig
 	}{
@@ -51,7 +52,7 @@ var _ = Describe("PrometheusSyncer", func() {
 	} {
 
 		It("works", func() {
-			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, 31001, kube)
+			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, uint32(31000+i), kube)
 			Expect(err).NotTo(HaveOccurred())
 			err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 			Expect(err).NotTo(HaveOccurred())
@@ -76,7 +77,7 @@ var _ = Describe("PrometheusSyncer", func() {
 				Meshes: map[string]v1.MeshList{
 					"ignored-at-this-point": {{
 						TargetMesh: &v1.TargetMesh{
-							MeshType: v1.MeshType_LINKERD2,
+							MeshType: test.meshType,
 						},
 						Observability: &v1.Observability{
 							Prometheus: &v1.Prometheus{

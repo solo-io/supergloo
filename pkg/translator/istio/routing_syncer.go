@@ -3,8 +3,9 @@ package istio
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"sort"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 

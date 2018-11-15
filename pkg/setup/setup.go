@@ -2,6 +2,8 @@ package setup
 
 import (
 	"context"
+	"time"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -16,7 +18,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 	"k8s.io/client-go/kubernetes"
-	"time"
 )
 
 func Main() error {

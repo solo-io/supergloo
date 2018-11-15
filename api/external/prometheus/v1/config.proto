@@ -16,8 +16,8 @@ import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 Prometheus Config
  */
 message Config {
-    // jsontag is used to refer to the common kubernetes configmap key
-    google.protobuf.Struct prometheus = 1 [(gogoproto.customprotoname) = "prometheus.yml", (gogoproto.jsontag) = "prometheus.yml"];
+    // json_name must refer to the data key in the configmap we expect
+    google.protobuf.Struct prometheus = 1 [json_name="prometheus.yml"];
 
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 7 [(gogoproto.nullable) = false];
