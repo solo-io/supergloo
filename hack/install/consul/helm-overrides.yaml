@@ -1,0 +1,23 @@
+global:
+  # Change this to specify a version of consul.
+  # soloio/consul:latest was just published to provide a 1.4 container
+  # consul:1.3.0 is the latest container on docker hub from consul
+  image: "soloio/consul:latest"
+  imageK8S: "hashicorp/consul-k8s:0.2.1"
+
+server:
+  replicas: 1
+  bootstrapExpect: 1
+  connect: true
+  disruptionBudget: 
+    enabled: false
+    maxUnavailable: null
+
+connectInject:
+  enabled: true
+
+ui:
+  service:
+    enabled: true
+
+
