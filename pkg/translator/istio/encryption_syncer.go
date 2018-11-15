@@ -54,7 +54,7 @@ func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) 
 			return errors.Errorf("missing tls secret")
 		}
 
-		// this is where custom root certs will live
+		// this is where custom root certs will live once configured, if not found istioCacerts will be nil
 		istioCacerts, _ := secretList.Find("istio-system", "cacerts")
 
 		return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
