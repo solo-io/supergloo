@@ -2,27 +2,31 @@ package shared_test
 
 import (
 	"context"
-
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
-	"github.com/solo-io/supergloo/pkg/translator/istio"
-	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
-
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/tests/typed"
+	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/istio"
+	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 	. "github.com/solo-io/supergloo/pkg/translator/shared"
 	"github.com/solo-io/supergloo/test/utils"
 	"k8s.io/client-go/kubernetes"
 )
 
 var _ = Describe("PrometheusSyncer", func() {
-	test := &typed.KubeConfigMapRcTester{}
+	type test struct {
+		meshType      v1.MeshType
+		scrapeConfigs []prometheus.ScrapeConfig
+	}
+
+	tester := &typed.KubeConfigMapRcTester{}
 	var (
 		namespace                string
 		kube                     kubernetes.Interface
@@ -31,28 +35,18 @@ var _ = Describe("PrometheusSyncer", func() {
 	)
 	BeforeEach(func() {
 		namespace = helpers.RandString(6)
-		fact := test.Setup(namespace)
+		fact := tester.Setup(namespace)
 		kube = fact.(*factory.KubeConfigMapClientFactory).Clientset
 	})
 	AfterEach(func() {
-		test.Teardown(namespace)
+		tester.Teardown(namespace)
 	})
-	for i, test := range []struct {
-		meshType      v1.MeshType
-		scrapeConfigs []prometheus.ScrapeConfig
-	}{
-		{
-			meshType:      v1.MeshType_ISTIO,
-			scrapeConfigs: istio.IstioScrapeConfigs,
-		},
-		{
-			meshType:      v1.MeshType_LINKERD2,
-			scrapeConfigs: linkerd2.LinkerdScrapeConfigs,
-		},
-	} {
-
-		It("works", func() {
-			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, uint32(31000+i), kube)
+	table.DescribeTable("prometheus tests for various meshes",
+		func(port int, test struct {
+			meshType      v1.MeshType
+			scrapeConfigs []prometheus.ScrapeConfig
+		}) {
+			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, uint32(port), kube)
 			Expect(err).NotTo(HaveOccurred())
 			err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 			Expect(err).NotTo(HaveOccurred())
@@ -99,8 +93,16 @@ var _ = Describe("PrometheusSyncer", func() {
 			for _, sc := range s.DesiredScrapeConfigs {
 				Expect(updated.ScrapeConfigs).To(ContainElement(sc))
 			}
-		})
-	}
+		},
+		table.Entry("istio", 31000, test{
+			meshType:      v1.MeshType_ISTIO,
+			scrapeConfigs: istio.IstioScrapeConfigs,
+		}),
+		table.Entry("istio", 31001, test{
+			meshType:      v1.MeshType_LINKERD2,
+			scrapeConfigs: linkerd2.LinkerdScrapeConfigs,
+		}),
+	)
 })
 
 func getPrometheusConfig(promClient prometheusv1.ConfigClient, namespace, name string) *prometheus.PrometheusConfig {
