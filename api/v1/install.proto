@@ -1,0 +1,31 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+
+import "encryption.proto";
+
+/*
+@solo-kit:resource.short_name=install
+@solo-kit:resource.plural_name=installs
+@solo-kit:resource.resource_groups=install.supergloo.solo.io
+*/
+message Install {
+    IstioInstall istio = 1;
+    ConsulInstall consul = 2;
+    Encryption encryption = 3;
+}
+
+message IstioInstall {
+    string version = 1;
+}
+
+message ConsulInstall {
+    string version = 1;
+}
+
