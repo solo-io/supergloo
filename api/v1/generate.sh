@@ -5,11 +5,14 @@ set -ex
 ROOT=${GOPATH}/src
 SUPERGLOO=${ROOT}/github.com/solo-io/supergloo
 GLOO_IN=${SUPERGLOO}/api/external/gloo/v1/
+ISTIO_ENCRYPTION_IN=${SUPERGLOO}/api/external/istio/encryption/v1/
 
 IN=${SUPERGLOO}/api/v1/
 OUT=${SUPERGLOO}/pkg/api/v1/
 
-IMPORTS="-I=${GLOO_IN} \
+IMPORTS="\
+    -I=${ISTIO_ENCRYPTION_IN} \
+    -I=${GLOO_IN} \
     -I=${IN} \
     -I=${SUPERGLOO}/api/external \
     -I=${ROOT}/github.com/solo-io/solo-kit/api/external \
@@ -27,7 +30,7 @@ protoc ${IMPORTS} \
 
 # Run protoc once for solo kit
 SOLO_KIT_FLAG="--plugin=protoc-gen-solo-kit=${GOPATH}/bin/protoc-gen-solo-kit --solo-kit_out=${PWD}/project.json:${OUT}"
-INPUT_PROTOS="${IN}/*.proto ${GLOO_IN}/upstream.proto ${GLOO_IN}/secret.proto"
+INPUT_PROTOS="${IN}/*.proto ${GLOO_IN}/upstream.proto ${ISTIO_ENCRYPTION_IN}/secret.proto"
 
 protoc ${IMPORTS} \
     ${SOLO_KIT_FLAG} \
