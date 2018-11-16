@@ -16,9 +16,16 @@ import "encryption.proto";
 @solo-kit:resource.resource_groups=install.supergloo.solo.io
 */
 message Install {
-    IstioInstall istio = 1;
-    ConsulInstall consul = 2;
-    Encryption encryption = 3;
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by gloo during validation
+    core.solo.io.Status status = 1 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
+
+    IstioInstall istio = 3;
+    ConsulInstall consul = 4;
+    Encryption encryption = 5;
 }
 
 message IstioInstall {
