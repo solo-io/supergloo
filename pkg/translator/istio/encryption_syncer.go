@@ -3,22 +3,19 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
-	"k8s.io/client-go/kubernetes"
-
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/errors"
+	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/kube"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 type EncryptionSyncer struct {
 	Kube         kubernetes.Interface
-	SecretClient gloov1.SecretClient
+	SecretClient istiov1.IstioCacertsSecretClient
 	ctx          context.Context
 }
 
@@ -57,15 +54,10 @@ func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) 
 			return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
 				encryptionSecret.Namespace, encryptionSecret.Name, err)
 		}
-		tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
-		if tlsSecretFromMeshConfig == nil {
-			return errors.Errorf("missing tls secret")
-		}
-
 		// this is where custom root certs will live once configured, if not found istioCacerts will be nil
 		istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
 
-		return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
+		return s.syncSecret(secretInMeshConfig, istioCacerts)
 	}
 	return nil
 }
@@ -110,24 +102,13 @@ func validateTlsSecret(secret *gloov1.TlsSecret) error {
 	return nil
 }
 
-func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *gloov1.Secret {
-	cacerts := gloov1.IstioCacertsSecret{
+func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *istiov1.IstioCacertsSecret {
+	return &istiov1.IstioCacertsSecret{
 		CaKey:     tlsSecretFromMeshConfig.PrivateKey,
 		CaCert:    tlsSecretFromMeshConfig.RootCa,
 		CertChain: tlsSecretFromMeshConfig.CertChain,
 		RootCert:  tlsSecretFromMeshConfig.RootCa,
 	}
-	cacertsWrapper := gloov1.Secret_Cacerts{
-		Cacerts: &cacerts,
-	}
-	secret := gloov1.Secret{
-		Kind: &cacertsWrapper,
-		Metadata: core.Metadata{
-			Namespace: defaultIstioNamespace,
-			Name:      customRootCertificateSecretName,
-		},
-	}
-	return &secret
 }
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
