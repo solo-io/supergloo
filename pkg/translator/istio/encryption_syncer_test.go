@@ -1,8 +1,9 @@
 package istio_test
 
 import (
-	"path/filepath"
-
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/test/helpers"
+	"github.com/solo-io/solo-kit/test/tests/typed"
 	. "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -11,25 +12,34 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"os"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var _ = Describe("EncryptionSyncer", func() {
+	tester := &typed.KubeConfigMapRcTester{}
+	var (
+		namespace string
+		kube      kubernetes.Interface
+	)
+	BeforeEach(func() {
+		namespace = helpers.RandString(6)
+		fact := tester.Setup(namespace)
+		kube = fact.(*factory.KubeConfigMapClientFactory).Clientset
+	})
+	AfterEach(func() {
+		tester.Teardown(namespace)
+	})
 	FIt("works", func() {
-		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-		Expect(err).NotTo(HaveOccurred())
-		kubeClient, err := kubernetes.NewForConfig(cfg)
-		Expect(err).NotTo(HaveOccurred())
 		secretClient, err := NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
-			Clientset: kubeClient,
+			Clientset: kube,
 		})
 		Expect(err).NotTo(HaveOccurred())
 
 		istioSecret := IstioCacertsSecret{
+			Metadata: core.Metadata{
+				Name:      "mysecret",
+				Namespace: namespace,
+			},
 			RootCert:  "foo",
 			CertChain: "",
 			CaCert:    "foo",
