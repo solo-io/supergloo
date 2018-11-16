@@ -2,10 +2,12 @@ package istio
 
 import (
 	"context"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/kube"
@@ -28,87 +30,97 @@ const (
 )
 
 func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	ctx = contextutils.WithLogger(ctx, "istio-encryption-syncer")
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("begin sync %v (%v meshes, %v certs)", snap.Hash(),
+		len(snap.Meshes), len(snap.Istiocerts))
+	defer logger.Infof("end sync %v", snap.Hash())
+	logger.Debugf("%v", snap)
+
 	s.ctx = ctx
 	for _, mesh := range snap.Meshes.List() {
-		if err := s.syncMesh(mesh, snap); err != nil {
+		if err := s.syncMesh(ctx, mesh, snap); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
-	switch mesh.TargetMesh.MeshType {
-	case v1.MeshType_ISTIO:
-		encryption := mesh.Encryption
-		if encryption == nil {
-			return nil
-		}
-		encryptionSecret := encryption.Secret
-		if encryptionSecret == nil {
-			return nil
-		}
-		secretList := snap.Secrets.List()
-		secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
-		if err != nil {
-			return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
-				encryptionSecret.Namespace, encryptionSecret.Name, err)
-		}
-		// this is where custom root certs will live once configured, if not found istioCacerts will be nil
-		istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
-
-		return s.syncSecret(secretInMeshConfig, istioCacerts)
+func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+	if mesh.TargetMesh == nil {
+		// ilackarms (todo): reporting for this error
+		return errors.Errorf("invalid mesh %v: target_mesh required", mesh.Metadata.Ref())
 	}
-	return nil
-}
-
-func (s *EncryptionSyncer) syncSecret(tlsSecretFromMeshConfig *gloov1.TlsSecret, currentCacerts *gloov1.Secret) error {
-	if err := validateTlsSecret(tlsSecretFromMeshConfig); err != nil {
-		return err
-	}
-
-	cacertsSecret := convertToCacerts(tlsSecretFromMeshConfig)
-	if !cacertsSecret.Equal(currentCacerts) {
-		if err := s.writeCacerts(cacertsSecret); err != nil {
-			return err
-		}
-		// now we need to ensure istio changes to use this cert:
-		// make sure istio.default is deleted, and restart citadel
-		if err := s.deleteIstioDefaultSecret(); err != nil {
-			return err
-		}
-		return s.restartCitadel()
-	} else {
+	if mesh.TargetMesh.MeshType != v1.MeshType_ISTIO {
 		return nil
 	}
+	encryption := mesh.Encryption
+	if encryption == nil {
+		return nil
+	}
+	encryptionSecret := encryption.Secret
+	if encryptionSecret == nil {
+		return nil
+	}
+	secretList := snap.Istiocerts.List()
+	sourceSecret, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
+	if err != nil {
+		return errors.Wrapf(err, "Error finding secret referenced in mesh config (%s:%s)",
+			encryptionSecret.Namespace, encryptionSecret.Name)
+	}
+	// this is where custom root certs will live once configured, if not found existingSecret will be nil
+	existingSecret, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
+
+	return s.syncSecret(ctx, sourceSecret, existingSecret)
 }
 
-func (s *EncryptionSyncer) writeCacerts(secret *gloov1.Secret) error {
-	_, err := s.SecretClient.Write(secret, clients.WriteOpts{})
-	return err
-}
+func (s *EncryptionSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret) error {
+	if err := validateTlsSecret(sourceSecret); err != nil {
+		return errors.Wrapf(err, "invalid secret %v", sourceSecret.Metadata.Ref())
+	}
+	istioSecret := resources.Clone(sourceSecret).(*istiov1.IstioCacertsSecret)
+	if existingSecret == nil {
+		istioSecret.Metadata = core.Metadata{
+			Namespace: defaultIstioNamespace,
+			Name:      defaultRootCertificateSecretName,
+		}
+		if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
+			Ctx: ctx,
+		}); err != nil {
+			return errors.Wrapf(err, "creating tool tls secret %v for istio", istioSecret.Metadata.Ref())
+		}
+		return nil
+	}
 
-func validateTlsSecret(secret *gloov1.TlsSecret) error {
-	if secret.RootCa == "" {
-		return errors.Errorf("Root cert is missing.")
+	// move secret over to destination name/namespace
+	istioSecret.SetMetadata(existingSecret.Metadata)
+	istioSecret.Metadata.Annotations["created_by"] = "supergloo"
+	// nothing to do
+	if istioSecret.Equal(existingSecret) {
+		return nil
 	}
-	if secret.PrivateKey == "" {
-		return errors.Errorf("Private key is missing.")
-	}
-	// TODO: This should be supported
-	if secret.CertChain != "" {
-		return errors.Errorf("Updating the root with a cert chain is not supported")
+	if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
+		Ctx: ctx,
+	}); err != nil {
+		return errors.Wrapf(err, "updating tool tls secret %v for istio", istioSecret.Metadata.Ref())
 	}
 	return nil
 }
 
-func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *istiov1.IstioCacertsSecret {
-	return &istiov1.IstioCacertsSecret{
-		CaKey:     tlsSecretFromMeshConfig.PrivateKey,
-		CaCert:    tlsSecretFromMeshConfig.RootCa,
-		CertChain: tlsSecretFromMeshConfig.CertChain,
-		RootCert:  tlsSecretFromMeshConfig.RootCa,
+func validateTlsSecret(secret *istiov1.IstioCacertsSecret) error {
+	if secret.RootCert == "" {
+		return errors.Errorf("Root cert is missing.")
 	}
+	if secret.CaKey == "" {
+		return errors.Errorf("Private key is missing.")
+	}
+	if secret.CertChain == "" {
+		return errors.Errorf("Cert Chain is missing.")
+	}
+	if secret.CaCert == "" {
+		return errors.Errorf("Cert Chain is missing.")
+	}
+	return nil
 }
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
