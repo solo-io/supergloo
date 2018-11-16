@@ -16,7 +16,6 @@ syntax = "proto3";
 package networking.istio.io;
 
 import "google/protobuf/duration.proto";
-import "virtual_service.proto";
 import "gogoproto/gogo.proto";
 
 option (gogoproto.equal_all) = true;
@@ -25,6 +24,8 @@ option go_package = "github.com/solo-io/supergloo/pkg/api/external/istio/network
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
+
+import "virtual_service.proto";
 
 //@solo-kit:resource.short_name=destinationrule
 //@solo-kit:resource.plural_name=destinationrules

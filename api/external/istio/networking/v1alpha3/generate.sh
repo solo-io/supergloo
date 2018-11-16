@@ -32,10 +32,11 @@ set -ex
 
 ROOT=${GOPATH}/src
 SUPERGLOO=${ROOT}/github.com/solo-io/supergloo
-IN=${SUPERGLOO}/api/external/api/external/istio/networking/v1alpha3/
-OUT=${SUPERGLOO}/pkg/api/external/api/external/istio/networking/v1alpha3/
+IN=${SUPERGLOO}/api/external/istio/networking/v1alpha3/
+OUT=${SUPERGLOO}/pkg/api/external/istio/networking/v1alpha3/
 
 IMPORTS="\
+    -I=${IN} \
     -I=${SUPERGLOO}/api/external \
     -I=${ROOT}/github.com/solo-io/solo-kit/api/external \
     -I=${ROOT} \

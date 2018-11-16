@@ -8,6 +8,7 @@ IN=${SUPERGLOO}/api/external/istio/encryption/v1/
 OUT=${SUPERGLOO}/pkg/api/external/istio/encryption/v1/
 
 IMPORTS="\
+    -I=${IN} \
     -I=${SUPERGLOO}/api/external \
     -I=${ROOT}/github.com/solo-io/solo-kit/api/external \
     -I=${ROOT} \
