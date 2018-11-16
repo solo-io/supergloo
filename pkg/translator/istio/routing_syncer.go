@@ -28,7 +28,7 @@ type RoutingSyncer struct {
 }
 
 func (s *RoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, "prometheus-syncer")
+	ctx = contextutils.WithLogger(ctx, "istio-routing-syncer")
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
 		len(snap.Meshes), len(snap.Upstreams))
