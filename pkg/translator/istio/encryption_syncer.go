@@ -16,13 +16,12 @@ import (
 )
 
 type EncryptionSyncer struct {
-	Kube         kubernetes.Interface
-	SecretClient istiov1.IstioCacertsSecretClient
-	ctx          context.Context
+	IstioNamespace string
+	Kube           kubernetes.Interface
+	SecretClient   istiov1.IstioCacertsSecretClient
 }
 
 const (
-	defaultIstioNamespace            = "istio-system"
 	customRootCertificateSecretName  = "cacerts"
 	defaultRootCertificateSecretName = "istio.default"
 	istioLabelKey                    = "istio"
@@ -37,7 +36,6 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 
-	s.ctx = ctx
 	for _, mesh := range snap.Meshes.List() {
 		if err := s.syncMesh(ctx, mesh, snap); err != nil {
 			return err
@@ -58,6 +56,9 @@ func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1
 	if encryption == nil {
 		return nil
 	}
+	if !encryption.TlsEnabled {
+		return nil
+	}
 	encryptionSecret := encryption.Secret
 	if encryptionSecret == nil {
 		return nil
@@ -69,7 +70,7 @@ func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1
 			encryptionSecret.Namespace, encryptionSecret.Name)
 	}
 	// this is where custom root certs will live once configured, if not found existingSecret will be nil
-	existingSecret, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
+	existingSecret, _ := secretList.Find(s.IstioNamespace, customRootCertificateSecretName)
 
 	return s.syncSecret(ctx, sourceSecret, existingSecret)
 }
@@ -81,8 +82,8 @@ func (s *EncryptionSyncer) syncSecret(ctx context.Context, sourceSecret, existin
 	istioSecret := resources.Clone(sourceSecret).(*istiov1.IstioCacertsSecret)
 	if existingSecret == nil {
 		istioSecret.Metadata = core.Metadata{
-			Namespace: defaultIstioNamespace,
-			Name:      defaultRootCertificateSecretName,
+			Namespace: s.IstioNamespace,
+			Name:      customRootCertificateSecretName,
 		}
 		if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
 			Ctx: ctx,
@@ -114,22 +115,16 @@ func validateTlsSecret(secret *istiov1.IstioCacertsSecret) error {
 	if secret.CaKey == "" {
 		return errors.Errorf("Private key is missing.")
 	}
-	if secret.CertChain == "" {
-		return errors.Errorf("Cert Chain is missing.")
-	}
-	if secret.CaCert == "" {
-		return errors.Errorf("Cert Chain is missing.")
-	}
 	return nil
 }
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
 	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
-	return s.Kube.CoreV1().Secrets(defaultIstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
+	return s.Kube.CoreV1().Secrets(s.IstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
 }
 
 func (s *EncryptionSyncer) restartCitadel() error {
 	selector := make(map[string]string)
 	selector[istioLabelKey] = citadelLabelValue
-	return kube.RestartPods(s.Kube, defaultIstioNamespace, selector)
+	return kube.RestartPods(s.Kube, s.IstioNamespace, selector)
 }
