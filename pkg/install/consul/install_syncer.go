@@ -22,6 +22,13 @@ import (
 type ConsulInstallSyncer struct{}
 
 func (c *ConsulInstallSyncer) Sync(_ context.Context, snap *v1.InstallSnapshot) error {
+
+	// See hack/install/consul/install-on... for steps
+	// 1. Create a namespace / project for consul (this step should go away and we use provided namespace)
+	// 2. Set up ClusterRoleBinding for consul in that namespace (not currently done)
+	// 3. Install Consul via helm chart
+	// 4. Fix incorrect configuration -> webhook service looking for wrong adapter config name (this should move into an override)
+
 	for _, install := range snap.Installs.List() {
 		if install.Consul != nil {
 			// helm install
@@ -33,6 +40,7 @@ func (c *ConsulInstallSyncer) Sync(_ context.Context, snap *v1.InstallSnapshot) 
 
 			namespace := "consul"
 
+			// TODO: just provide these in code
 			overrideFiles := []string{"/Users/rick/code/src/github.com/solo-io/supergloo/hack/install/consul/helm-overrides.yaml"}
 
 			strs := []string{}
@@ -47,7 +55,6 @@ func (c *ConsulInstallSyncer) Sync(_ context.Context, snap *v1.InstallSnapshot) 
 			response, err := helmClient.InstallRelease(
 				install.Consul.Path,
 				namespace,
-				helmlib.InstallDryRun(true),
 				helmlib.ValueOverrides(overrides))
 
 			fmt.Printf("Response from helm installation: %v", response)
