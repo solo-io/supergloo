@@ -25,7 +25,7 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 //
 // @solo-kit:resource.short_name=sec
 // @solo-kit:resource.plural_name=secrets
-// @solo-kit:resource.resource_groups=api.gloo.solo.io,discovery.gloo.solo.io,translator.supergloo.solo.io
+// @solo-kit:resource.resource_groups=api.gloo.solo.io,discovery.gloo.solo.io
 //
 // Certain plugins such as the AWS Lambda Plugin require the use of secrets for authentication, configuration of SSL Certificates, and other data that should not be stored in plaintext configuration.
 //
@@ -54,7 +54,7 @@ func (m *Secret) Reset()         { *m = Secret{} }
 func (m *Secret) String() string { return proto.CompactTextString(m) }
 func (*Secret) ProtoMessage()    {}
 func (*Secret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_9410924efab08af4, []int{0}
+	return fileDescriptor_secret_b821b94c63e096b6, []int{0}
 }
 func (m *Secret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Secret.Unmarshal(m, b)
@@ -233,7 +233,7 @@ func (m *AwsSecret) Reset()         { *m = AwsSecret{} }
 func (m *AwsSecret) String() string { return proto.CompactTextString(m) }
 func (*AwsSecret) ProtoMessage()    {}
 func (*AwsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_9410924efab08af4, []int{1}
+	return fileDescriptor_secret_b821b94c63e096b6, []int{1}
 }
 func (m *AwsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AwsSecret.Unmarshal(m, b)
@@ -278,7 +278,7 @@ func (m *AzureSecret) Reset()         { *m = AzureSecret{} }
 func (m *AzureSecret) String() string { return proto.CompactTextString(m) }
 func (*AzureSecret) ProtoMessage()    {}
 func (*AzureSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_9410924efab08af4, []int{2}
+	return fileDescriptor_secret_b821b94c63e096b6, []int{2}
 }
 func (m *AzureSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AzureSecret.Unmarshal(m, b)
@@ -318,7 +318,7 @@ func (m *TlsSecret) Reset()         { *m = TlsSecret{} }
 func (m *TlsSecret) String() string { return proto.CompactTextString(m) }
 func (*TlsSecret) ProtoMessage()    {}
 func (*TlsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secret_9410924efab08af4, []int{3}
+	return fileDescriptor_secret_b821b94c63e096b6, []int{3}
 }
 func (m *TlsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TlsSecret.Unmarshal(m, b)
@@ -570,9 +570,9 @@ func (this *TlsSecret) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("secret.proto", fileDescriptor_secret_9410924efab08af4) }
+func init() { proto.RegisterFile("secret.proto", fileDescriptor_secret_b821b94c63e096b6) }
 
-var fileDescriptor_secret_9410924efab08af4 = []byte{
+var fileDescriptor_secret_b821b94c63e096b6 = []byte{
 	// 424 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0xc1, 0x6e, 0xd4, 0x30,
 	0x10, 0x6d, 0x76, 0xdb, 0xdd, 0x66, 0x76, 0x0f, 0xc8, 0xaa, 0x68, 0x58, 0x09, 0x8a, 0x72, 0x40,
