@@ -1,4 +1,4 @@
-package consul
+package helm
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestTranslator(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Consul Install Suite")
+	RunSpecs(t, "Helm Suite")
 }
