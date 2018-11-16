@@ -10,7 +10,7 @@ import (
 
 var _ = Describe("Parse", func() {
 	It("works", func(){
-		out, err := ParseKubeManifest(context.TODO(), IstioYaml)
+		out, err := ParseKubeManifest(context.TODO(), Linkerd1Yaml)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(out).NotTo(HaveOccurred())
 	})
