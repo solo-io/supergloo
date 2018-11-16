@@ -7,8 +7,9 @@ curl -sSL https://raw.githubusercontent.com/istio/api/7b94541b038b4dcc78e99a2426
 # add imports 
 
 sed -i -e 's$go_package="istio.io/api/rbac/v1alpha1"$go_package="github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"$' rbac.proto
+sed -i -e 's/istio.rbac.v1alpha1/rbac.istio.io' rbac.proto
 sed -i -e "/option go_package/r imports.txt" rbac.proto
-# inject fields to ServiceRole and ServiceRoleBinding 
+# inject fields to ServiceRole and ServiceRoleBinding
 sed -i -e "/message ServiceRole/r fields.txt" rbac.proto
 # inject fields to RbacConfig
 sed -i -e "/message RbacConfig/r fields.txt" rbac.proto
