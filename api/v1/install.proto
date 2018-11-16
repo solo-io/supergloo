@@ -24,10 +24,12 @@ message Install {
     core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
 
     ConsulInstall consul = 4;
+
     Encryption encryption = 5;
 }
 
 message ConsulInstall {
+    // This is a path to the helm chart (a .tar.gz archive) on the filesystem of the machine running supergloo)
     string path = 1;
 }
 

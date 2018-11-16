@@ -43,7 +43,7 @@ func (m *Install) Reset()         { *m = Install{} }
 func (m *Install) String() string { return proto.CompactTextString(m) }
 func (*Install) ProtoMessage()    {}
 func (*Install) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_2c36f8c5f18d21d6, []int{0}
+	return fileDescriptor_install_83c62bbb6e2c9392, []int{0}
 }
 func (m *Install) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Install.Unmarshal(m, b)
@@ -92,6 +92,7 @@ func (m *Install) GetEncryption() *Encryption {
 }
 
 type ConsulInstall struct {
+	// This is a path to the helm chart (a .tar.gz archive) on the filesystem of the machine running supergloo)
 	Path                 string   `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -102,7 +103,7 @@ func (m *ConsulInstall) Reset()         { *m = ConsulInstall{} }
 func (m *ConsulInstall) String() string { return proto.CompactTextString(m) }
 func (*ConsulInstall) ProtoMessage()    {}
 func (*ConsulInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_2c36f8c5f18d21d6, []int{1}
+	return fileDescriptor_install_83c62bbb6e2c9392, []int{1}
 }
 func (m *ConsulInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConsulInstall.Unmarshal(m, b)
@@ -197,9 +198,9 @@ func (this *ConsulInstall) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("install.proto", fileDescriptor_install_2c36f8c5f18d21d6) }
+func init() { proto.RegisterFile("install.proto", fileDescriptor_install_83c62bbb6e2c9392) }
 
-var fileDescriptor_install_2c36f8c5f18d21d6 = []byte{
+var fileDescriptor_install_83c62bbb6e2c9392 = []byte{
 	// 315 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x90, 0xc1, 0x4e, 0x32, 0x31,
 	0x14, 0x85, 0x7f, 0x08, 0x3f, 0x6a, 0x0d, 0x89, 0x34, 0xc4, 0x8c, 0x24, 0x0a, 0x19, 0x17, 0xba,
