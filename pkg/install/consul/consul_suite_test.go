@@ -1,4 +1,4 @@
-package helm
+package consul
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestHelm(t *testing.T) {
+func TestConsulInstall(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Helm Suite")
+	RunSpecs(t, "Consul Suite")
 }

@@ -501,6 +501,17 @@
   version = "v0.10.4"
 
 [[projects]]
+  digest = "1:ccec456580dd2998f7d4ae6c3171e37fc579454c990f456fa8016fc810130568"
+  name = "github.com/helm/helm"
+  packages = [
+    "pkg/getter",
+    "pkg/strvals",
+  ]
+  pruneopts = "UT"
+  revision = "2e55dbe1fdb5fdb96b75ff144a339489417b146b"
+  version = "v2.11.0"
+
+[[projects]]
   branch = "master"
   digest = "1:59392ed8afb901aab4287d4894df8191722e34f3957716f4350c8c133ce99046"
   name = "github.com/hpcloud/tail"
@@ -1343,7 +1354,7 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:4ced26224a7447ea343259f8f2041028b0390f20c983de45e8547df03d688454"
+  digest = "1:7f8a18e9b1f92fe9c8b787f639a258f1b448be3fe32b7cafd59dd2d9a0dc8e7e"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1355,6 +1366,7 @@
     "pkg/ignore",
     "pkg/kube",
     "pkg/manifest",
+    "pkg/plugin",
     "pkg/proto/hapi/chart",
     "pkg/proto/hapi/release",
     "pkg/proto/hapi/services",
@@ -1363,6 +1375,8 @@
     "pkg/renderutil",
     "pkg/storage/errors",
     "pkg/sympath",
+    "pkg/tlsutil",
+    "pkg/urlutil",
     "pkg/version",
   ]
   pruneopts = "UT"
@@ -1558,6 +1572,8 @@
     "github.com/gogo/protobuf/types",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
+    "github.com/helm/helm/pkg/getter",
+    "github.com/helm/helm/pkg/strvals",
     "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mitchellh/hashstructure",
     "github.com/onsi/ginkgo",
@@ -1587,6 +1603,7 @@
     "github.com/solo-io/solo-kit/test/setup",
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
+    "github.com/spf13/pflag",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",

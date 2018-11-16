@@ -21,7 +21,7 @@ func GetHelmClient() (*helm.Client, error) {
 	if err := setupConnection(); err != nil {
 		return nil, err
 	}
-	options := []helm.Option{helm.Host(settings.TillerHost), helm.ConnectTimeout(settings.TillerConnectionTimeout)}
+	options := []helm.Option{helm.Host(Settings.TillerHost), helm.ConnectTimeout(Settings.TillerConnectionTimeout)}
 	helmClient := helm.NewClient(options...)
 	if err := helmClient.PingTiller(); err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func GetHelmClient() (*helm.Client, error) {
 
 var (
 	tillerTunnel *kube.Tunnel
-	settings     helm_env.EnvSettings
+	Settings     helm_env.EnvSettings
 )
 
 func Teardown() {
@@ -64,26 +64,26 @@ func getKubeClient(context string, kubeconfig string) (*rest.Config, kubernetes.
 
 func setupConnection() error {
 	var flagSet pflag.FlagSet
-	settings.AddFlags(&flagSet)
-	if settings.TillerHost == "" {
-		config, client, err := getKubeClient(settings.KubeContext, settings.KubeConfig)
+	Settings.AddFlags(&flagSet)
+	if Settings.TillerHost == "" {
+		config, client, err := getKubeClient(Settings.KubeContext, Settings.KubeConfig)
 		if err != nil {
 			return err
 		}
 
-		tillerTunnel, err = portforwarder.New(settings.TillerNamespace, client, config)
+		tillerTunnel, err = portforwarder.New(Settings.TillerNamespace, client, config)
 		if err != nil {
 			return err
 		}
 
-		settings.TillerHost = fmt.Sprintf("127.0.0.1:%d", tillerTunnel.Local)
+		Settings.TillerHost = fmt.Sprintf("127.0.0.1:%d", tillerTunnel.Local)
 		//TODO: remove me
 		fmt.Printf("Created tunnel using local port: '%d'\n", tillerTunnel.Local)
 	}
 
 	// Set up the gRPC config.
 	// TODO: remove me
-	fmt.Printf("SERVER: %q\n", settings.TillerHost)
+	fmt.Printf("SERVER: %q\n", Settings.TillerHost)
 
 	// Plugin support.
 	return nil

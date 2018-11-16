@@ -23,16 +23,11 @@ message Install {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
 
-    IstioInstall istio = 3;
     ConsulInstall consul = 4;
     Encryption encryption = 5;
 }
 
-message IstioInstall {
-    string version = 1;
-}
-
 message ConsulInstall {
-    string version = 1;
+    string path = 1;
 }
 
