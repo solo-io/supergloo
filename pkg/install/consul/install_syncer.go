@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/pflag"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -73,6 +75,8 @@ func getKubeClient(context string, kubeconfig string) (*rest.Config, kubernetes.
 }
 
 func setupConnection() error {
+	var flagSet pflag.FlagSet
+	settings.AddFlags(&flagSet)
 	if settings.TillerHost == "" {
 		config, client, err := getKubeClient(settings.KubeContext, settings.KubeConfig)
 		if err != nil {
