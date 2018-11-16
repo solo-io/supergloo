@@ -29,7 +29,7 @@
   unused-packages = true
 
 [[constraint]]
-  branch = "master"
+  revision = "87eea1cad4cc48afc2d7186a8b9cbe703bd4dff4"
   name = "github.com/solo-io/solo-kit"
 
 [[override]]

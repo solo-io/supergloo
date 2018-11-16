@@ -465,8 +465,7 @@
   revision = "241bc627d5400a0794853220df4fdefeeb2af0e0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:3c7ff8fb63442fde9629cf1eceb998c36b36dc56c2eb43ce700c84cc3ebeda45"
+  digest = "1:706e41d54526264a28f21c396163fa8869ffcaf9cc6ad2cce53ae20546078c0f"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -503,7 +502,7 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "be5abcd0136c0426ced477799e974551d9a1230e"
+  revision = "87eea1cad4cc48afc2d7186a8b9cbe703bd4dff4"
 
 [[projects]]
   digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
@@ -952,9 +951,6 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/status",
-    "gopkg.in/yaml.v2",
-    "k8s.io/api/apps/v1beta1",
-    "k8s.io/api/apps/v1beta2",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
