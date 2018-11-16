@@ -2,8 +2,6 @@
 
 set -ex
 
-set -ex
-
 ROOT=${GOPATH}/src
 SUPERGLOO=${ROOT}/github.com/solo-io/supergloo
 IN=${SUPERGLOO}/api/external/istio/encryption/v1/
