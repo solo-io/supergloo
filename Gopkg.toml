@@ -42,10 +42,6 @@
 
 [[override]]
   branch = "master"
-  name = "k8s.io/api"
-
-[[override]]
-  branch = "master"
   name = "github.com/golang/protobuf"
 
 [[override]]
@@ -57,9 +53,49 @@
   version = "0.0.3"
 
 [[constraint]]
-  name = "github.com/helm/helm"
-  version = "1.999.0"
-
-[[constraint]]
   name = "k8s.io/helm"
-  version = "2.11.0"
+  revision = "3a8a797eab0e1d02456c7944bf41631546ee2e47"
+
+[[override]]
+  name = "k8s.io/api"
+  revision = "fd83cbc87e7632ccd8bbab63d2b673d4e0c631cc"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  revision = "05e89e265cc594459a3d33a63e779d94e6614c63"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  revision = "6dd46049f39503a1fc8d65de4bd566829e95faff"
+
+[[override]]
+  name = "k8s.io/apiserver"
+  revision = "e85ad7b666fef0476185731329f4cff1536efff8"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  revision = "79bf4e0b64544d8c490247abae089bea572ddae6"
+
+[[override]]
+  name = "k8s.io/client-go"
+  revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
+
+[[override]]
+  name = "k8s.io/kube-openapi"
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  revision = "54a352dda957bce0f88e49b65a6ee8bba8c0ba74"
+
+[[override]]
+  name = "k8s.io/utils"
+  revision = "66066c83e385e385ccc3c964b44fd7dcd413d0ed"
+
+[[override]]
+  name = "github.com/docker/distribution"
+  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"

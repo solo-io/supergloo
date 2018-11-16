@@ -9,6 +9,7 @@ import (
 var _ = Describe("ConsulInstallSyncer", func() {
 	FIt("Can get helm client", func() {
 		_, err := consul.GetHelmClient()
+		consul.Teardown()
 		Expect(err).NotTo(HaveOccurred())
 	})
 })
