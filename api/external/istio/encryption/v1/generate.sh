@@ -2,31 +2,26 @@
 
 set -ex
 
-PROJECTS="$( cd -P "$( dirname "$PROJECTS" )" >/dev/null && pwd )"/../../../../..
+set -ex
 
-OUT=${PROJECTS}/supergloo/pkg/api/external/istio/encryption/v1/
+ROOT=${GOPATH}/src
+SUPERGLOO=${ROOT}/github.com/solo-io/supergloo
+IN=${SUPERGLOO}/api/external/istio/encryption/v1/
+OUT=${SUPERGLOO}/pkg/api/external/istio/encryption/v1/
 
-mkdir -p ${OUT}
+IMPORTS="\
+    -I=${SUPERGLOO}/api/external \
+    -I=${ROOT}/github.com/solo-io/solo-kit/api/external \
+    -I=${ROOT} \
+    "
 
-IN=${PROJECTS}/supergloo/api/external/istio/encryption/v1/
-
-IMPORTS="-I=${IN} \
-    -I=${GOPATH}/src \
-    -I=${GOPATH}/src/github.com/solo-io/solo-kit/api/external"
-
-# Run protoc once for gogo
 GOGO_FLAG="--gogo_out=Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:${GOPATH}/src/"
 SOLO_KIT_FLAG="--plugin=protoc-gen-solo-kit=${GOPATH}/bin/protoc-gen-solo-kit --solo-kit_out=${PWD}/project.json:${OUT}"
-
 INPUT_PROTOS="${IN}/*.proto"
 
+mkdir -p ${OUT}
 protoc ${IMPORTS} \
     ${GOGO_FLAG} \
     ${SOLO_KIT_FLAG} \
     ${INPUT_PROTOS}
-
-# currently unused in automation:
-# proteus gen command
-# used to construct part of config.proto semi-automatically
-# proteus proto -f ${GOPATH}/pkg/api/external/istio/encryption/v1 -p github.com/solo-io/supergloo/api/external/istio/encryption/v1
 
