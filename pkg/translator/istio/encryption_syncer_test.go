@@ -18,7 +18,7 @@ import (
 )
 
 var _ = Describe("EncryptionSyncer", func() {
-	FIt("works", func() {
+	It("works", func() {
 		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 		Expect(err).NotTo(HaveOccurred())
