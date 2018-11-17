@@ -474,14 +474,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4afb42529a975315518bf294f76321df6011b90195d28091a27da840eaf3e58c"
-  name = "github.com/solo-io/go-checkpoint"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "69104b1493dcf66693f3832c9641cc38631bc129"
-
-[[projects]]
-  branch = "master"
   digest = "1:898faa8b0ea3e2a812fb293db0d9d3359c15669559f7128f15d11e597012fdee"
   name = "github.com/solo-io/kubecontroller"
   packages = ["."]
@@ -985,8 +977,16 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/status",
+    "gopkg.in/yaml.v2",
+    "k8s.io/api/admissionregistration/v1beta1",
+    "k8s.io/api/apps/v1beta2",
+    "k8s.io/api/autoscaling/v1",
+    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
+    "k8s.io/api/rbac/v1",
+    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",

@@ -51,3 +51,7 @@
 [[override]]
   name = "github.com/Azure/azure-sdk-for-go"
   revision = "bd73d950fa4440dae889bd9917bff7cef539f86e"
+
+[[constraint]]
+  name = "github.com/solo-io/go-checkpoint"
+  version = "0.0.3"
