@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -30,7 +32,9 @@ clean up all resources created. This will take about 45 seconds with mTLS, and 2
 */
 var _ = Describe("ConsulInstallSyncer", func() {
 
-	namespace := "consul"
+	installNamespace := "consul"
+	superglooNamespace := "supergloo-system" // this needs to be made before running tests
+	meshName := "test-consul-mesh"
 
 	getKubeConfig := func() *rest.Config {
 		kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
@@ -52,12 +56,12 @@ var _ = Describe("ConsulInstallSyncer", func() {
 				"not_used": v1.InstallList{
 					&v1.Install{
 						Metadata: core.Metadata{
-							Namespace: "supergloo-system",
-							Name:      "test-consul-mesh",
+							Namespace: superglooNamespace,
+							Name:      meshName,
 						},
 						Consul: &v1.ConsulInstall{
 							Path:      "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
-							Namespace: namespace,
+							Namespace: installNamespace,
 						},
 						Encryption: &v1.Encryption{
 							TlsEnabled: mtls,
@@ -70,9 +74,9 @@ var _ = Describe("ConsulInstallSyncer", func() {
 
 	terminateNamespaceBlocking := func() {
 		client := getKubeClient()
-		client.CoreV1().Namespaces().Delete(namespace, &kubemeta.DeleteOptions{})
+		client.CoreV1().Namespaces().Delete(installNamespace, &kubemeta.DeleteOptions{})
 		Eventually(func() error {
-			_, err := client.CoreV1().Namespaces().Get(namespace, kubemeta.GetOptions{})
+			_, err := client.CoreV1().Namespaces().Get(installNamespace, kubemeta.GetOptions{})
 			return err
 		}, "60s", "1s").ShouldNot(BeNil()) // will be non-nil when NS is gone
 	}
@@ -80,7 +84,7 @@ var _ = Describe("ConsulInstallSyncer", func() {
 	waitForAvailablePods := func() {
 		client := getKubeClient()
 		Eventually(func() bool {
-			podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
+			podList, err := client.CoreV1().Pods(installNamespace).List(kubemeta.ListOptions{})
 			Expect(err).To(BeNil())
 			done := true
 			for _, pod := range podList.Items {
@@ -119,33 +123,41 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(consul.WebhookCfg, &kubemeta.DeleteOptions{})
 	}
 
+	deleteMesh := func(meshClient v1.MeshClient) {
+		err := meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})
+		Expect(err).To(BeNil())
+	}
+
 	AfterEach(func() {
 		deleteWebhookConfigIfExists()
 		deleteCrb()
 		terminateNamespaceBlocking()
-		// delete meshes
 	})
 
 	It("Can install consul with mtls enabled", func() {
+		meshClient := getMeshClient(getKubeConfig())
 		syncer := consul.ConsulInstallSyncer{
 			Kube:       getKubeClient(),
-			MeshClient: getMeshClient(getKubeConfig()),
+			MeshClient: meshClient,
 		}
 		snap := getSnapshot(true)
 		err := syncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())
 		waitForAvailablePods()
+		deleteMesh(meshClient)
 	})
 
 	It("Can install consul without mtls enabled", func() {
+		meshClient := getMeshClient(getKubeConfig())
 		syncer := consul.ConsulInstallSyncer{
 			Kube:       getKubeClient(),
-			MeshClient: getMeshClient(getKubeConfig()),
+			MeshClient: meshClient,
 		}
 		snap := getSnapshot(false)
 		err := syncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())
 		waitForAvailablePods()
+		deleteMesh(meshClient)
 	})
 
 })
