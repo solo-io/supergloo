@@ -5,6 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	kubecore "k8s.io/api/core/v1"
 
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,9 +24,9 @@ import (
 
 /*
 End to end tests for consul installs with and without mTLS enabled.
-Tests assume you already have a Kubernetes environment with Helm / Tiller set up.
+Tests assume you already have a Kubernetes environment with Helm / Tiller set up, and with a "supergloo-system" namespace.
 The tests will install Consul and get it configured and validate all services up and running, then tear down and
-clean up all resources created.
+clean up all resources created. This will take about 45 seconds with mTLS, and 20 seconds without.
 */
 var _ = Describe("ConsulInstallSyncer", func() {
 
@@ -48,9 +51,12 @@ var _ = Describe("ConsulInstallSyncer", func() {
 			Installs: v1.InstallsByNamespace{
 				"not_used": v1.InstallList{
 					&v1.Install{
+						Metadata: core.Metadata{
+							Namespace: "supergloo-system",
+							Name:      "test-consul-mesh",
+						},
 						Consul: &v1.ConsulInstall{
-							// TODO: This can't be an absolute path to my helm cache...
-							Path:      "/Users/rick/.helm/cache/archive/v0.3.0.tar.gz",
+							Path:      "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
 							Namespace: namespace,
 						},
 						Encryption: &v1.Encryption{
@@ -88,6 +94,20 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		}, "60s", "1s").Should(BeTrue())
 	}
 
+	kubeCache := kube.NewKubeCache()
+
+	getMeshClient := func(restConfig *rest.Config) v1.MeshClient {
+		meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
+			Crd:         v1.MeshCrd,
+			Cfg:         restConfig,
+			SharedCache: kubeCache,
+		})
+		Expect(err).Should(BeNil())
+		err = meshClient.Register()
+		Expect(err).Should(BeNil())
+		return meshClient
+	}
+
 	deleteCrb := func() {
 		client := getKubeClient()
 		err := client.RbacV1().ClusterRoleBindings().Delete(consul.CrbName, &kubemeta.DeleteOptions{})
@@ -103,11 +123,13 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		deleteWebhookConfigIfExists()
 		deleteCrb()
 		terminateNamespaceBlocking()
+		// delete meshes
 	})
 
 	It("Can install consul with mtls enabled", func() {
 		syncer := consul.ConsulInstallSyncer{
-			Kube: getKubeClient(),
+			Kube:       getKubeClient(),
+			MeshClient: getMeshClient(getKubeConfig()),
 		}
 		snap := getSnapshot(true)
 		err := syncer.Sync(context.TODO(), snap)
@@ -117,7 +139,8 @@ var _ = Describe("ConsulInstallSyncer", func() {
 
 	It("Can install consul without mtls enabled", func() {
 		syncer := consul.ConsulInstallSyncer{
-			Kube: getKubeClient(),
+			Kube:       getKubeClient(),
+			MeshClient: getMeshClient(getKubeConfig()),
 		}
 		snap := getSnapshot(false)
 		err := syncer.Sync(context.TODO(), snap)

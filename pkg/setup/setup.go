@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	consul2 "github.com/solo-io/supergloo/pkg/install/consul"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -145,7 +147,13 @@ func Main() error {
 		istioEncryptionSyncer,
 	}
 
-	installSyncers := v1.InstallSyncers{}
+	consulInstallSyncer := &consul2.ConsulInstallSyncer{
+		Kube:       kubeClient,
+		MeshClient: meshClient,
+	}
+	installSyncers := v1.InstallSyncers{
+		consulInstallSyncer,
+	}
 
 	translatorEventLoop := v1.NewTranslatorEventLoop(translatorEmitter, translatorSyncers)
 	installEventLoop := v1.NewInstallEventLoop(installEmitter, installSyncers)

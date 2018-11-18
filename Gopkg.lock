@@ -501,12 +501,9 @@
   version = "v0.10.4"
 
 [[projects]]
-  digest = "1:ccec456580dd2998f7d4ae6c3171e37fc579454c990f456fa8016fc810130568"
+  digest = "1:0e1266ffce079a4441e178ae703d50cec29f4c264de8ff3ccef5060b1de9f2b4"
   name = "github.com/helm/helm"
-  packages = [
-    "pkg/getter",
-    "pkg/strvals",
-  ]
+  packages = ["pkg/getter"]
   pruneopts = "UT"
   revision = "2e55dbe1fdb5fdb96b75ff144a339489417b146b"
   version = "v2.11.0"
@@ -909,11 +906,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:28c92854b02898c94c1d983db50970fb7d9b3ee31c3ae02b1c6afc665abcc46e"
+  digest = "1:d6d961ab02cfbc8920df1d5f6aff8cd388240d619b3947e53390d83283761047"
   name = "golang.org/x/crypto"
   packages = [
+    "cast5",
     "ed25519",
     "ed25519/internal/edwards25519",
+    "openpgp",
+    "openpgp/armor",
+    "openpgp/clearsign",
+    "openpgp/elgamal",
+    "openpgp/errors",
+    "openpgp/packet",
+    "openpgp/s2k",
     "pbkdf2",
     "scrypt",
     "ssh/terminal",
@@ -1354,11 +1359,13 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:7f8a18e9b1f92fe9c8b787f639a258f1b448be3fe32b7cafd59dd2d9a0dc8e7e"
+  digest = "1:e36775d8427af40412a6877aa3f2991431914ab9461f536d1da4395932219e35"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
+    "pkg/downloader",
     "pkg/engine",
+    "pkg/getter",
     "pkg/helm",
     "pkg/helm/environment",
     "pkg/helm/helmpath",
@@ -1371,8 +1378,11 @@
     "pkg/proto/hapi/release",
     "pkg/proto/hapi/services",
     "pkg/proto/hapi/version",
+    "pkg/provenance",
     "pkg/releaseutil",
     "pkg/renderutil",
+    "pkg/repo",
+    "pkg/resolver",
     "pkg/storage/errors",
     "pkg/sympath",
     "pkg/tlsutil",
@@ -1573,7 +1583,6 @@
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/helm/helm/pkg/getter",
-    "github.com/helm/helm/pkg/strvals",
     "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mitchellh/hashstructure",
     "github.com/onsi/ginkgo",
@@ -1633,10 +1642,12 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/helm/pkg/downloader",
     "k8s.io/helm/pkg/helm",
     "k8s.io/helm/pkg/helm/environment",
     "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
+    "k8s.io/helm/pkg/repo",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"k8s.io/api/admissionregistration/v1beta1"
 
 	"github.com/pkg/errors"
@@ -27,7 +29,8 @@ const (
 )
 
 type ConsulInstallSyncer struct {
-	Kube *kubernetes.Clientset
+	Kube       *kubernetes.Clientset
+	MeshClient v1.MeshClient
 }
 
 func (c *ConsulInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
@@ -73,9 +76,7 @@ func (c *ConsulInstallSyncer) SyncInstall(_ context.Context, install *v1.Install
 		}
 	}
 
-	// TODO: create mesh crd
-
-	return nil
+	return c.createMesh(install)
 }
 
 func getInstallNamespace(consul *v1.ConsulInstall) string {
@@ -143,8 +144,12 @@ func helmInstall(encryption *v1.Encryption, consul *v1.ConsulInstall, installNam
 		return "", err
 	}
 
+	installPath, err := helm.LocateChartPathDefault(consul.Path)
+	if err != nil {
+		return "", err
+	}
 	response, err := helmClient.InstallRelease(
-		consul.Path,
+		installPath,
 		installNamespace,
 		helmlib.ValueOverrides(overrides))
 	helm.Teardown()
@@ -206,4 +211,23 @@ func getFixedWebhookAdapter(input *v1beta1.MutatingWebhookConfiguration) *v1beta
 	fixed.Name = WebhookCfg
 	fixed.ResourceVersion = ""
 	return fixed
+}
+
+func (c *ConsulInstallSyncer) createMesh(install *v1.Install) error {
+	mesh := getMeshObject(install)
+	_, err := c.MeshClient.Write(mesh, clients.WriteOpts{})
+	return err
+}
+
+func getMeshObject(install *v1.Install) *v1.Mesh {
+	return &v1.Mesh{
+		Metadata: core.Metadata{
+			Name:      install.Metadata.Name,
+			Namespace: install.Metadata.Namespace,
+		},
+		TargetMesh: &v1.TargetMesh{
+			MeshType: v1.MeshType_CONSUL,
+		},
+		Encryption: install.Encryption,
+	}
 }
