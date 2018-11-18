@@ -42,6 +42,7 @@ func faultInjection(opts *options.Options) *cobra.Command {
 			fmt.Println("this feature will be available in 2019")
 		},
 	}
+	linkMeshToolFlags(cmd, opts)
 	return cmd
 }
 
@@ -54,6 +55,7 @@ func loadBalancing(opts *options.Options) *cobra.Command {
 			fmt.Println("this feature will be available in 2019")
 		},
 	}
+	linkMeshToolFlags(cmd, opts)
 	return cmd
 }
 
@@ -63,8 +65,19 @@ func retries(opts *options.Options) *cobra.Command {
 		Short: `configure retry parameters`,
 		Long:  `configure retry parameters`,
 		Run: func(c *cobra.Command, args []string) {
-			fmt.Println("this feature will be available in 2019")
+			meshToolPlaceholder(opts)
 		},
 	}
+	linkMeshToolFlags(cmd, opts)
 	return cmd
+}
+
+func linkMeshToolFlags(cmd *cobra.Command, opts *options.Options) {
+	pflags := cmd.PersistentFlags()
+	pflags.StringVar(&opts.MeshTool.MeshId, "meshid", "", "mesh to modify")
+	pflags.StringVar(&opts.MeshTool.ServiceId, "serviceid", "", "service to modify")
+}
+
+func meshToolPlaceholder(opts *options.Options) {
+	fmt.Println("this feature will be available in 2019")
 }
