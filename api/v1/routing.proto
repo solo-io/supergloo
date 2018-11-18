@@ -18,12 +18,6 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 message Target {
     // the mesh we want to target. this rule will only be applied to pods within that mesh
     core.solo.io.ResourceRef target_mesh = 1;
-    // source pods to apply the rule to
-    map<string, string> source_selector = 2;
-    map<string, string> destination_selector = 3;
-
-    // if specified, this rule will only apply to http requests in the mesh matching these parameters
-    repeated gloo.solo.io.Matcher request_matchers = 4;
 }
 
 //@solo-kit:resource.short_name=rr
@@ -39,19 +33,28 @@ message RoutingRule {
     core.solo.io.Metadata metadata = 99 [(gogoproto.nullable) = false];
 
     // target where we apply this rule
-    Target target = 1;
+    core.solo.io.ResourceRef target_mesh = 1;
+
+    // source pods to apply the rule to. if empty, applies to all sources
+    map<string, string> source_selector = 2;
+
+    // destinations for which this rule applies. if empty, applies to all destinations
+    map<string, string> destination_selector = 3;
+
+    // if specified, this rule will only apply to http requests in the mesh matching these parameters
+    repeated gloo.solo.io.Matcher request_matchers = 4;
 
     // configuration to enable traffic splitting, e.g. by percentage, for this rule
-    TrafficSplitting traffic_splitting = 3;
+    TrafficSplitting traffic_splitting = 5;
 
     // configuration to enable fault injection for this rule
-    FaultInjection fault_injection = 2;
+    FaultInjection fault_injection = 6;
 
     // Timeout for this rule
-    google.protobuf.Duration timeout = 6;
+    google.protobuf.Duration timeout = 7;
 
     // Retry policy for for this rule
-    HTTPRetry retries = 7;
+    HTTPRetry retries = 8;
 
     // Cross-Origin Resource Sharing policy (CORS) for this rule. Refer to
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
