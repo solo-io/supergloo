@@ -2,8 +2,11 @@ package consul
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"k8s.io/api/admissionregistration/v1beta1"
 
 	"github.com/pkg/errors"
 	kubecore "k8s.io/api/core/v1"
@@ -18,8 +21,9 @@ import (
 )
 
 const (
-	crbName          = "consul-crb"
+	CrbName          = "consul-crb"
 	defaultNamespace = "consul"
+	WebhookCfg       = "consul-connect-injector-cfg"
 )
 
 type ConsulInstallSyncer struct {
@@ -28,40 +32,48 @@ type ConsulInstallSyncer struct {
 
 func (c *ConsulInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	for _, install := range snap.Installs.List() {
-		c.SyncInstall(ctx, install)
+		err := c.SyncInstall(ctx, install)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (c *ConsulInstallSyncer) SyncInstall(_ context.Context, install *v1.Install) error {
-	// See hack/install/consul/install-on... for steps
-	// 1. Create a namespace / project for consul (this step should go away and we use provided namespace)
-	// 2. Set up ClusterRoleBinding for consul in that namespace (not currently done)
-	// 3. Install Consul via helm chart
-	// 4. Fix incorrect configuration -> webhook service looking for wrong adapter config name (this should move into an override)
 	if install.Consul == nil {
 		return nil
 	}
 
+	// 1. Create a namespace
 	installNamespace := getInstallNamespace(install.Consul)
-
 	err := c.createNamespaceIfNotExist(installNamespace) // extract to CRD
 	if err != nil {
 		return errors.Wrap(err, "Error setting up namespace")
 	}
 
+	// 2. Set up ClusterRoleBinding for consul in that namespace
+	// This is not cleaned up when deleting namespace so it may already exist on the system, don't fail
 	err = c.createCrbIfNotExist(installNamespace)
 	if err != nil {
 		return errors.Wrap(err, "Error setting up CRB")
 	}
 
-	err = helmInstall(install.Encryption, install.Consul, installNamespace)
+	// 3. Install Consul via helm chart
+	releaseName, err := helmInstall(install.Encryption, install.Consul, installNamespace)
 	if err != nil {
 		return errors.Wrap(err, "Error installing Consul helm chart")
 	}
 
-	// TODO: Fix incorrect webhook configuration
-	// TODO: Create Mesh CRD
+	// 4. If mtls enabled, fix incorrect configuration name in chart
+	if install.Encryption.TlsEnabled {
+		err = c.updateMutatingWebhookAdapter(releaseName)
+		if err != nil {
+			return errors.Wrap(err, "Error setting up webhook")
+		}
+	}
+
+	// TODO: create mesh crd
 
 	return nil
 }
@@ -93,7 +105,7 @@ func getNamespace(namespaceName string) *kubecore.Namespace {
 }
 
 func (c *ConsulInstallSyncer) createCrbIfNotExist(namespaceName string) error {
-	_, err := c.Kube.RbacV1().ClusterRoleBindings().Get(crbName, kubemeta.GetOptions{})
+	_, err := c.Kube.RbacV1().ClusterRoleBindings().Get(CrbName, kubemeta.GetOptions{})
 	if err == nil {
 		// crb already exists
 		return nil
@@ -123,20 +135,24 @@ func getCrb(namespaceName string) *kuberbac.ClusterRoleBinding {
 	}
 }
 
-func helmInstall(encryption *v1.Encryption, consul *v1.ConsulInstall, installNamespace string) error {
+func helmInstall(encryption *v1.Encryption, consul *v1.ConsulInstall, installNamespace string) (string, error) {
 	overrides := []byte(getOverrides(encryption))
 	// helm install
 	helmClient, err := helm.GetHelmClient()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = helmClient.InstallRelease(
+	response, err := helmClient.InstallRelease(
 		consul.Path,
 		installNamespace,
 		helmlib.ValueOverrides(overrides))
 	helm.Teardown()
-	return err
+	if err != nil {
+		return "", err
+	} else {
+		return response.Release.Name, nil
+	}
 }
 
 func getOverrides(encryption *v1.Encryption) string {
@@ -167,3 +183,27 @@ server:
 connectInject:
   enabled: @@MTLS_ENABLED@@
 `
+
+// The webhook config is created with the wrong name
+// Grab it, recreate with correct name, and delete the old one
+func (c *ConsulInstallSyncer) updateMutatingWebhookAdapter(releaseName string) error {
+	name := fmt.Sprintf("%s-%s", releaseName, WebhookCfg)
+	cfg, err := c.Kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, kubemeta.GetOptions{})
+	if err != nil {
+		return err
+	}
+	fixedCfg := getFixedWebhookAdapter(cfg)
+	_, err = c.Kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(fixedCfg)
+	if err != nil {
+		return err
+	}
+	err = c.Kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(name, &kubemeta.DeleteOptions{})
+	return err
+}
+
+func getFixedWebhookAdapter(input *v1beta1.MutatingWebhookConfiguration) *v1beta1.MutatingWebhookConfiguration {
+	fixed := input.DeepCopy()
+	fixed.Name = WebhookCfg
+	fixed.ResourceVersion = ""
+	return fixed
+}

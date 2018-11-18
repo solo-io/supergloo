@@ -81,7 +81,21 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		}, "60s", "1s").Should(BeTrue())
 	}
 
+	deleteCrb := func() {
+		client := getKubeClient()
+		err := client.RbacV1().ClusterRoleBindings().Delete(consul.CrbName, &kubemeta.DeleteOptions{})
+		Expect(err).Should(BeNil())
+	}
+
+	deleteWebhookConfigIfExists := func() {
+		client := getKubeClient()
+		err := client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(consul.WebhookCfg, &kubemeta.DeleteOptions{})
+		Expect(err).Should(BeNil())
+	}
+
 	AfterEach(func() {
+		deleteWebhookConfigIfExists()
+		deleteCrb()
 		terminateNamespaceBlocking()
 	})
 
