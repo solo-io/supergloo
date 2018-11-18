@@ -6,8 +6,7 @@ type Options struct {
 }
 
 type Top struct {
-	Static    bool
-	StaticStr string
+	Static bool
 }
 
 type Install struct {
