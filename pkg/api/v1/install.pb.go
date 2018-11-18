@@ -43,7 +43,7 @@ func (m *Install) Reset()         { *m = Install{} }
 func (m *Install) String() string { return proto.CompactTextString(m) }
 func (*Install) ProtoMessage()    {}
 func (*Install) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_dfd96cef8076a356, []int{0}
+	return fileDescriptor_install_57c18a0eb554c83e, []int{0}
 }
 func (m *Install) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Install.Unmarshal(m, b)
@@ -92,7 +92,8 @@ func (m *Install) GetEncryption() *Encryption {
 }
 
 type ConsulInstall struct {
-	// This is a path to the helm chart (a .tar.gz archive) on the filesystem of the machine running supergloo)
+	// This is a path to the helm chart. This can be any path that the helm CLI would accept, including
+	// local filesystem paths to archives or directories, or a URL to the archive
 	Path                 string   `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	Namespace            string   `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -104,7 +105,7 @@ func (m *ConsulInstall) Reset()         { *m = ConsulInstall{} }
 func (m *ConsulInstall) String() string { return proto.CompactTextString(m) }
 func (*ConsulInstall) ProtoMessage()    {}
 func (*ConsulInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_dfd96cef8076a356, []int{1}
+	return fileDescriptor_install_57c18a0eb554c83e, []int{1}
 }
 func (m *ConsulInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConsulInstall.Unmarshal(m, b)
@@ -209,9 +210,9 @@ func (this *ConsulInstall) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("install.proto", fileDescriptor_install_dfd96cef8076a356) }
+func init() { proto.RegisterFile("install.proto", fileDescriptor_install_57c18a0eb554c83e) }
 
-var fileDescriptor_install_dfd96cef8076a356 = []byte{
+var fileDescriptor_install_57c18a0eb554c83e = []byte{
 	// 329 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0xc1, 0x4e, 0x02, 0x31,
 	0x10, 0x86, 0x85, 0x20, 0x4a, 0x0d, 0x89, 0x34, 0xc4, 0xac, 0x44, 0x85, 0xec, 0x45, 0x2f, 0xb4,

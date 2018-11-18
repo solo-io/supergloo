@@ -29,7 +29,8 @@ message Install {
 }
 
 message ConsulInstall {
-    // This is a path to the helm chart (a .tar.gz archive) on the filesystem of the machine running supergloo)
+    // This is a path to the helm chart. This can be any path that the helm CLI would accept, including
+    // local filesystem paths to archives or directories, or a URL to the archive
     string path = 1;
 
     string namespace = 2;
