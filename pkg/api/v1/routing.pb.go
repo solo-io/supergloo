@@ -8,6 +8,7 @@ import fmt "fmt"
 import math "math"
 import _ "github.com/gogo/protobuf/gogoproto"
 import types "github.com/gogo/protobuf/types"
+import core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 import v1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 
 import bytes "bytes"
@@ -23,178 +24,698 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
-// global routing config for a single mesh
-type Routing struct {
-	// all of the http/routing config for each destination is contained here
-	DestinationRules     []*DestinationRule `protobuf:"bytes,1,rep,name=destination_rules,json=destinationRules" json:"destination_rules,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+// All rules have a target
+// This describes the sidecars
+type Target struct {
+	// the mesh we want to target. this rule will only be applied to pods within that mesh
+	TargetMesh *core.ResourceRef `protobuf:"bytes,1,opt,name=target_mesh,json=targetMesh" json:"target_mesh,omitempty"`
+	// source pods to apply the rule to
+	SourceSelector      map[string]string `protobuf:"bytes,2,rep,name=source_selector,json=sourceSelector" json:"source_selector,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DestinationSelector map[string]string `protobuf:"bytes,3,rep,name=destination_selector,json=destinationSelector" json:"destination_selector,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// if specified, this rule will only apply to http requests in the mesh matching these parameters
+	RequestMatchers      []*v1.Matcher `protobuf:"bytes,4,rep,name=request_matchers,json=requestMatchers" json:"request_matchers,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
 }
 
-func (m *Routing) Reset()         { *m = Routing{} }
-func (m *Routing) String() string { return proto.CompactTextString(m) }
-func (*Routing) ProtoMessage()    {}
-func (*Routing) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{0}
+func (m *Target) Reset()         { *m = Target{} }
+func (m *Target) String() string { return proto.CompactTextString(m) }
+func (*Target) ProtoMessage()    {}
+func (*Target) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{0}
 }
-func (m *Routing) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Routing.Unmarshal(m, b)
+func (m *Target) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Target.Unmarshal(m, b)
 }
-func (m *Routing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Routing.Marshal(b, m, deterministic)
+func (m *Target) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Target.Marshal(b, m, deterministic)
 }
-func (dst *Routing) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Routing.Merge(dst, src)
+func (dst *Target) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Target.Merge(dst, src)
 }
-func (m *Routing) XXX_Size() int {
-	return xxx_messageInfo_Routing.Size(m)
+func (m *Target) XXX_Size() int {
+	return xxx_messageInfo_Target.Size(m)
 }
-func (m *Routing) XXX_DiscardUnknown() {
-	xxx_messageInfo_Routing.DiscardUnknown(m)
+func (m *Target) XXX_DiscardUnknown() {
+	xxx_messageInfo_Target.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Routing proto.InternalMessageInfo
+var xxx_messageInfo_Target proto.InternalMessageInfo
 
-func (m *Routing) GetDestinationRules() []*DestinationRule {
+func (m *Target) GetTargetMesh() *core.ResourceRef {
 	if m != nil {
-		return m.DestinationRules
+		return m.TargetMesh
 	}
 	return nil
 }
 
-// Rules for traffic to a particular destination. Applied to any traffic regardless of source,
-// as long as the destination matches
-type DestinationRule struct {
-	// the destination to which these http rules are applied
-	Destination *v1.Destination `protobuf:"bytes,3,opt,name=destination" json:"destination,omitempty"`
-	// Route Rules applied to In-Mesh-Service-to-Destination traffic
-	MeshHttpRules []*HTTPRule `protobuf:"bytes,2,rep,name=mesh_http_rules,json=meshHttpRules" json:"mesh_http_rules,omitempty"`
-	// Route Rules applied to Ingress-to-Destination traffic
-	IngressHttpRules     []*HTTPRule `protobuf:"bytes,1,rep,name=ingress_http_rules,json=ingressHttpRules" json:"ingress_http_rules,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *DestinationRule) Reset()         { *m = DestinationRule{} }
-func (m *DestinationRule) String() string { return proto.CompactTextString(m) }
-func (*DestinationRule) ProtoMessage()    {}
-func (*DestinationRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{1}
-}
-func (m *DestinationRule) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DestinationRule.Unmarshal(m, b)
-}
-func (m *DestinationRule) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DestinationRule.Marshal(b, m, deterministic)
-}
-func (dst *DestinationRule) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DestinationRule.Merge(dst, src)
-}
-func (m *DestinationRule) XXX_Size() int {
-	return xxx_messageInfo_DestinationRule.Size(m)
-}
-func (m *DestinationRule) XXX_DiscardUnknown() {
-	xxx_messageInfo_DestinationRule.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DestinationRule proto.InternalMessageInfo
-
-func (m *DestinationRule) GetDestination() *v1.Destination {
+func (m *Target) GetSourceSelector() map[string]string {
 	if m != nil {
-		return m.Destination
+		return m.SourceSelector
 	}
 	return nil
 }
 
-func (m *DestinationRule) GetMeshHttpRules() []*HTTPRule {
+func (m *Target) GetDestinationSelector() map[string]string {
 	if m != nil {
-		return m.MeshHttpRules
+		return m.DestinationSelector
 	}
 	return nil
 }
 
-func (m *DestinationRule) GetIngressHttpRules() []*HTTPRule {
+func (m *Target) GetRequestMatchers() []*v1.Matcher {
 	if m != nil {
-		return m.IngressHttpRules
+		return m.RequestMatchers
 	}
 	return nil
 }
 
-// origin of a request. typically a pod in the mesh
-type Source struct {
-	Name                 string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+// @solo-kit:resource.short_name=rr
+// @solo-kit:resource.plural_name=routingrules
+// @solo-kit:resource.resource_groups=translator.supergloo.solo.io
+// rules to add features such as Fault Injection and Retries to a mesh
+type RoutingRule struct {
+	// Status indicates the validation status of this resource.
+	// Status is read-only by clients, and set by gloo during validation
+	Status core.Status `protobuf:"bytes,100,opt,name=status" json:"status" testdiff:"ignore"`
+	// Metadata contains the object metadata for this resource
+	Metadata core.Metadata `protobuf:"bytes,99,opt,name=metadata" json:"metadata"`
+	// target where we apply this rule
+	Target *Target `protobuf:"bytes,1,opt,name=target" json:"target,omitempty"`
+	// configuration to enable traffic splitting, e.g. by percentage, for this rule
+	TrafficSplitting *TrafficSplitting `protobuf:"bytes,3,opt,name=traffic_splitting,json=trafficSplitting" json:"traffic_splitting,omitempty"`
+	// configuration to enable fault injection for this rule
+	FaultInjection *FaultInjection `protobuf:"bytes,2,opt,name=fault_injection,json=faultInjection" json:"fault_injection,omitempty"`
+	// Timeout for this rule
+	Timeout *types.Duration `protobuf:"bytes,6,opt,name=timeout" json:"timeout,omitempty"`
+	// Retry policy for for this rule
+	Retries *HTTPRetry `protobuf:"bytes,7,opt,name=retries" json:"retries,omitempty"`
+	// Cross-Origin Resource Sharing policy (CORS) for this rule. Refer to
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+	// for further details about cross origin resource sharing.
+	CorsPolicy *CorsPolicy `protobuf:"bytes,10,opt,name=cors_policy,json=corsPolicy" json:"cors_policy,omitempty"`
+	// Mirror HTTP traffic to a another destination for this rule. Traffic will still be sent
+	// to its original destination as normal.
+	Mirror *v1.Destination `protobuf:"bytes,9,opt,name=mirror" json:"mirror,omitempty"`
+	// manipulate request and response headers for this rule
+	HeaderManipulaition  *HeaderManipulation `protobuf:"bytes,12,opt,name=header_manipulaition,json=headerManipulaition" json:"header_manipulaition,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *RoutingRule) Reset()         { *m = RoutingRule{} }
+func (m *RoutingRule) String() string { return proto.CompactTextString(m) }
+func (*RoutingRule) ProtoMessage()    {}
+func (*RoutingRule) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{1}
+}
+func (m *RoutingRule) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RoutingRule.Unmarshal(m, b)
+}
+func (m *RoutingRule) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RoutingRule.Marshal(b, m, deterministic)
+}
+func (dst *RoutingRule) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RoutingRule.Merge(dst, src)
+}
+func (m *RoutingRule) XXX_Size() int {
+	return xxx_messageInfo_RoutingRule.Size(m)
+}
+func (m *RoutingRule) XXX_DiscardUnknown() {
+	xxx_messageInfo_RoutingRule.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RoutingRule proto.InternalMessageInfo
+
+func (m *RoutingRule) GetStatus() core.Status {
+	if m != nil {
+		return m.Status
+	}
+	return core.Status{}
+}
+
+func (m *RoutingRule) GetMetadata() core.Metadata {
+	if m != nil {
+		return m.Metadata
+	}
+	return core.Metadata{}
+}
+
+func (m *RoutingRule) GetTarget() *Target {
+	if m != nil {
+		return m.Target
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetTrafficSplitting() *TrafficSplitting {
+	if m != nil {
+		return m.TrafficSplitting
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetFaultInjection() *FaultInjection {
+	if m != nil {
+		return m.FaultInjection
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetTimeout() *types.Duration {
+	if m != nil {
+		return m.Timeout
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetRetries() *HTTPRetry {
+	if m != nil {
+		return m.Retries
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetCorsPolicy() *CorsPolicy {
+	if m != nil {
+		return m.CorsPolicy
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetMirror() *v1.Destination {
+	if m != nil {
+		return m.Mirror
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetHeaderManipulaition() *HeaderManipulation {
+	if m != nil {
+		return m.HeaderManipulaition
+	}
+	return nil
+}
+
+// configure traffic splitting for any http requests sent to one of the destination pods
+type TrafficSplitting struct {
+	// split traffic between these subsets based on their weights
+	// weights should add to 100
+	Subsets              []*Subset `protobuf:"bytes,1,rep,name=subsets" json:"subsets,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *TrafficSplitting) Reset()         { *m = TrafficSplitting{} }
+func (m *TrafficSplitting) String() string { return proto.CompactTextString(m) }
+func (*TrafficSplitting) ProtoMessage()    {}
+func (*TrafficSplitting) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{2}
+}
+func (m *TrafficSplitting) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficSplitting.Unmarshal(m, b)
+}
+func (m *TrafficSplitting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficSplitting.Marshal(b, m, deterministic)
+}
+func (dst *TrafficSplitting) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficSplitting.Merge(dst, src)
+}
+func (m *TrafficSplitting) XXX_Size() int {
+	return xxx_messageInfo_TrafficSplitting.Size(m)
+}
+func (m *TrafficSplitting) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficSplitting.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficSplitting proto.InternalMessageInfo
+
+func (m *TrafficSplitting) GetSubsets() []*Subset {
+	if m != nil {
+		return m.Subsets
+	}
+	return nil
+}
+
+// a subset of the pods the comprise an application in the mesh
+type Subset struct {
+	// The proportion of traffic to be forwarded to the subset. (0-100).
+	Weight *Percent `protobuf:"bytes,1,opt,name=weight" json:"weight,omitempty"`
+	// Selector for the labels on the pods that will constitute this subset
 	Selector             map[string]string `protobuf:"bytes,2,rep,name=selector" json:"selector,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
 	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *Source) Reset()         { *m = Source{} }
-func (m *Source) String() string { return proto.CompactTextString(m) }
-func (*Source) ProtoMessage()    {}
-func (*Source) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{2}
+func (m *Subset) Reset()         { *m = Subset{} }
+func (m *Subset) String() string { return proto.CompactTextString(m) }
+func (*Subset) ProtoMessage()    {}
+func (*Subset) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{3}
 }
-func (m *Source) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Source.Unmarshal(m, b)
+func (m *Subset) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Subset.Unmarshal(m, b)
 }
-func (m *Source) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Source.Marshal(b, m, deterministic)
+func (m *Subset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Subset.Marshal(b, m, deterministic)
 }
-func (dst *Source) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Source.Merge(dst, src)
+func (dst *Subset) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Subset.Merge(dst, src)
 }
-func (m *Source) XXX_Size() int {
-	return xxx_messageInfo_Source.Size(m)
+func (m *Subset) XXX_Size() int {
+	return xxx_messageInfo_Subset.Size(m)
 }
-func (m *Source) XXX_DiscardUnknown() {
-	xxx_messageInfo_Source.DiscardUnknown(m)
+func (m *Subset) XXX_DiscardUnknown() {
+	xxx_messageInfo_Subset.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Source proto.InternalMessageInfo
+var xxx_messageInfo_Subset proto.InternalMessageInfo
 
-func (m *Source) GetName() string {
+func (m *Subset) GetWeight() *Percent {
 	if m != nil {
-		return m.Name
+		return m.Weight
 	}
-	return ""
+	return nil
 }
 
-func (m *Source) GetSelector() map[string]string {
+func (m *Subset) GetSelector() map[string]string {
 	if m != nil {
 		return m.Selector
 	}
 	return nil
 }
 
-// Describes match conditions and actions for routing HTTP/1.1, HTTP2, and
-// gRPC traffic. See VirtualService for usage examples.
-type HTTPRule struct {
-	// the sources to which this rule will be applied
-	Sources []*Source               `protobuf:"bytes,75,rep,name=sources" json:"sources,omitempty"`
-	Match   []*HTTPMatchRequest     `protobuf:"bytes,1,rep,name=match" json:"match,omitempty"`
-	Route   []*HTTPRouteDestination `protobuf:"bytes,2,rep,name=route" json:"route,omitempty"`
-	// Timeout for HTTP requests.
-	Timeout *types.Duration `protobuf:"bytes,6,opt,name=timeout" json:"timeout,omitempty"`
-	// Retry policy for HTTP requests.
-	Retries *HTTPRetry `protobuf:"bytes,7,opt,name=retries" json:"retries,omitempty"`
-	// Fault injection policy to apply on HTTP traffic at the client side.
-	// Note that timeouts or retries will not be enabled when faults are
-	// enabled on the client side.
-	Fault *HTTPFaultInjection `protobuf:"bytes,8,opt,name=fault" json:"fault,omitempty"`
-	// Mirror HTTP traffic to a another destination in addition to forwarding
-	// the requests to the intended destination. Mirrored traffic is on a
-	// best effort basis where the sidecar/gateway will not wait for the
-	// mirrored cluster to respond before returning the response from the
-	// original destination.  Statistics will be generated for the mirrored
-	// destination.
-	Mirror *v1.Destination `protobuf:"bytes,9,opt,name=mirror" json:"mirror,omitempty"`
-	// Cross-Origin Resource Sharing policy (CORS). Refer to
-	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-	// for further details about cross origin resource sharing.
-	CorsPolicy *CorsPolicy `protobuf:"bytes,10,opt,name=cors_policy,json=corsPolicy" json:"cors_policy,omitempty"`
+type FaultInjection struct {
+	// Delay requests before forwarding, emulating various failures such as
+	// network issues, overloaded upstream service, etc.
+	Delay *FaultInjection_Delay `protobuf:"bytes,1,opt,name=delay" json:"delay,omitempty"`
+	// Abort Http request attempts and return error codes back to downstream
+	// service, giving the impression that the upstream service is faulty.
+	Abort                *FaultInjection_Abort `protobuf:"bytes,2,opt,name=abort" json:"abort,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *FaultInjection) Reset()         { *m = FaultInjection{} }
+func (m *FaultInjection) String() string { return proto.CompactTextString(m) }
+func (*FaultInjection) ProtoMessage()    {}
+func (*FaultInjection) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{4}
+}
+func (m *FaultInjection) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FaultInjection.Unmarshal(m, b)
+}
+func (m *FaultInjection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FaultInjection.Marshal(b, m, deterministic)
+}
+func (dst *FaultInjection) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FaultInjection.Merge(dst, src)
+}
+func (m *FaultInjection) XXX_Size() int {
+	return xxx_messageInfo_FaultInjection.Size(m)
+}
+func (m *FaultInjection) XXX_DiscardUnknown() {
+	xxx_messageInfo_FaultInjection.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FaultInjection proto.InternalMessageInfo
+
+func (m *FaultInjection) GetDelay() *FaultInjection_Delay {
+	if m != nil {
+		return m.Delay
+	}
+	return nil
+}
+
+func (m *FaultInjection) GetAbort() *FaultInjection_Abort {
+	if m != nil {
+		return m.Abort
+	}
+	return nil
+}
+
+// Delay specification is used to inject latency into the request
+// forwarding path. The following example will introduce a 5 second delay
+// in 1 out of every 1000 requests to the "v1" version of the "reviews"
+// service from all pods with label env: prod
+// The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+// The optional _percentage_ field can be used to only delay a certain
+// percentage of requests. If left unspecified, all request will be delayed.
+type FaultInjection_Delay struct {
+	// Percentage of requests on which the delay will be injected (0-100).
+	// Use of integer `percent` value is deprecated. Use the double `percentage`
+	// field instead.
+	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
+	// Types that are valid to be assigned to HttpDelayType:
+	//	*FaultInjection_Delay_FixedDelay
+	//	*FaultInjection_Delay_ExponentialDelay
+	HttpDelayType isFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
+	// Percentage of requests on which the delay will be injected.
+	Percentage           *Percent `protobuf:"bytes,5,opt,name=percentage" json:"percentage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FaultInjection_Delay) Reset()         { *m = FaultInjection_Delay{} }
+func (m *FaultInjection_Delay) String() string { return proto.CompactTextString(m) }
+func (*FaultInjection_Delay) ProtoMessage()    {}
+func (*FaultInjection_Delay) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{4, 0}
+}
+func (m *FaultInjection_Delay) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FaultInjection_Delay.Unmarshal(m, b)
+}
+func (m *FaultInjection_Delay) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FaultInjection_Delay.Marshal(b, m, deterministic)
+}
+func (dst *FaultInjection_Delay) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FaultInjection_Delay.Merge(dst, src)
+}
+func (m *FaultInjection_Delay) XXX_Size() int {
+	return xxx_messageInfo_FaultInjection_Delay.Size(m)
+}
+func (m *FaultInjection_Delay) XXX_DiscardUnknown() {
+	xxx_messageInfo_FaultInjection_Delay.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FaultInjection_Delay proto.InternalMessageInfo
+
+type isFaultInjection_Delay_HttpDelayType interface {
+	isFaultInjection_Delay_HttpDelayType()
+	Equal(interface{}) bool
+}
+
+type FaultInjection_Delay_FixedDelay struct {
+	FixedDelay *types.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,oneof"`
+}
+type FaultInjection_Delay_ExponentialDelay struct {
+	ExponentialDelay *types.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,oneof"`
+}
+
+func (*FaultInjection_Delay_FixedDelay) isFaultInjection_Delay_HttpDelayType()       {}
+func (*FaultInjection_Delay_ExponentialDelay) isFaultInjection_Delay_HttpDelayType() {}
+
+func (m *FaultInjection_Delay) GetHttpDelayType() isFaultInjection_Delay_HttpDelayType {
+	if m != nil {
+		return m.HttpDelayType
+	}
+	return nil
+}
+
+// Deprecated: Do not use.
+func (m *FaultInjection_Delay) GetPercent() int32 {
+	if m != nil {
+		return m.Percent
+	}
+	return 0
+}
+
+func (m *FaultInjection_Delay) GetFixedDelay() *types.Duration {
+	if x, ok := m.GetHttpDelayType().(*FaultInjection_Delay_FixedDelay); ok {
+		return x.FixedDelay
+	}
+	return nil
+}
+
+func (m *FaultInjection_Delay) GetExponentialDelay() *types.Duration {
+	if x, ok := m.GetHttpDelayType().(*FaultInjection_Delay_ExponentialDelay); ok {
+		return x.ExponentialDelay
+	}
+	return nil
+}
+
+func (m *FaultInjection_Delay) GetPercentage() *Percent {
+	if m != nil {
+		return m.Percentage
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*FaultInjection_Delay) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _FaultInjection_Delay_OneofMarshaler, _FaultInjection_Delay_OneofUnmarshaler, _FaultInjection_Delay_OneofSizer, []interface{}{
+		(*FaultInjection_Delay_FixedDelay)(nil),
+		(*FaultInjection_Delay_ExponentialDelay)(nil),
+	}
+}
+
+func _FaultInjection_Delay_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*FaultInjection_Delay)
+	// http_delay_type
+	switch x := m.HttpDelayType.(type) {
+	case *FaultInjection_Delay_FixedDelay:
+		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.FixedDelay); err != nil {
+			return err
+		}
+	case *FaultInjection_Delay_ExponentialDelay:
+		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.ExponentialDelay); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("FaultInjection_Delay.HttpDelayType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _FaultInjection_Delay_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*FaultInjection_Delay)
+	switch tag {
+	case 2: // http_delay_type.fixed_delay
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(types.Duration)
+		err := b.DecodeMessage(msg)
+		m.HttpDelayType = &FaultInjection_Delay_FixedDelay{msg}
+		return true, err
+	case 3: // http_delay_type.exponential_delay
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(types.Duration)
+		err := b.DecodeMessage(msg)
+		m.HttpDelayType = &FaultInjection_Delay_ExponentialDelay{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _FaultInjection_Delay_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*FaultInjection_Delay)
+	// http_delay_type
+	switch x := m.HttpDelayType.(type) {
+	case *FaultInjection_Delay_FixedDelay:
+		s := proto.Size(x.FixedDelay)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *FaultInjection_Delay_ExponentialDelay:
+		s := proto.Size(x.ExponentialDelay)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+type FaultInjection_Abort struct {
+	// Percentage of requests to be aborted with the error code provided (0-100).
+	// Use of integer `percent` value is deprecated. Use the double `percentage`
+	// field instead.
+	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
+	// Types that are valid to be assigned to ErrorType:
+	//	*FaultInjection_Abort_HttpStatus
+	//	*FaultInjection_Abort_GrpcStatus
+	//	*FaultInjection_Abort_Http2Error
+	ErrorType isFaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
+	// Percentage of requests to be aborted with the error code provided.
+	Percentage           *Percent `protobuf:"bytes,5,opt,name=percentage" json:"percentage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *FaultInjection_Abort) Reset()         { *m = FaultInjection_Abort{} }
+func (m *FaultInjection_Abort) String() string { return proto.CompactTextString(m) }
+func (*FaultInjection_Abort) ProtoMessage()    {}
+func (*FaultInjection_Abort) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{4, 1}
+}
+func (m *FaultInjection_Abort) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FaultInjection_Abort.Unmarshal(m, b)
+}
+func (m *FaultInjection_Abort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FaultInjection_Abort.Marshal(b, m, deterministic)
+}
+func (dst *FaultInjection_Abort) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FaultInjection_Abort.Merge(dst, src)
+}
+func (m *FaultInjection_Abort) XXX_Size() int {
+	return xxx_messageInfo_FaultInjection_Abort.Size(m)
+}
+func (m *FaultInjection_Abort) XXX_DiscardUnknown() {
+	xxx_messageInfo_FaultInjection_Abort.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FaultInjection_Abort proto.InternalMessageInfo
+
+type isFaultInjection_Abort_ErrorType interface {
+	isFaultInjection_Abort_ErrorType()
+	Equal(interface{}) bool
+}
+
+type FaultInjection_Abort_HttpStatus struct {
+	HttpStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof"`
+}
+type FaultInjection_Abort_GrpcStatus struct {
+	GrpcStatus string `protobuf:"bytes,3,opt,name=grpc_status,json=grpcStatus,proto3,oneof"`
+}
+type FaultInjection_Abort_Http2Error struct {
+	Http2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof"`
+}
+
+func (*FaultInjection_Abort_HttpStatus) isFaultInjection_Abort_ErrorType() {}
+func (*FaultInjection_Abort_GrpcStatus) isFaultInjection_Abort_ErrorType() {}
+func (*FaultInjection_Abort_Http2Error) isFaultInjection_Abort_ErrorType() {}
+
+func (m *FaultInjection_Abort) GetErrorType() isFaultInjection_Abort_ErrorType {
+	if m != nil {
+		return m.ErrorType
+	}
+	return nil
+}
+
+// Deprecated: Do not use.
+func (m *FaultInjection_Abort) GetPercent() int32 {
+	if m != nil {
+		return m.Percent
+	}
+	return 0
+}
+
+func (m *FaultInjection_Abort) GetHttpStatus() int32 {
+	if x, ok := m.GetErrorType().(*FaultInjection_Abort_HttpStatus); ok {
+		return x.HttpStatus
+	}
+	return 0
+}
+
+func (m *FaultInjection_Abort) GetGrpcStatus() string {
+	if x, ok := m.GetErrorType().(*FaultInjection_Abort_GrpcStatus); ok {
+		return x.GrpcStatus
+	}
+	return ""
+}
+
+func (m *FaultInjection_Abort) GetHttp2Error() string {
+	if x, ok := m.GetErrorType().(*FaultInjection_Abort_Http2Error); ok {
+		return x.Http2Error
+	}
+	return ""
+}
+
+func (m *FaultInjection_Abort) GetPercentage() *Percent {
+	if m != nil {
+		return m.Percentage
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*FaultInjection_Abort) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _FaultInjection_Abort_OneofMarshaler, _FaultInjection_Abort_OneofUnmarshaler, _FaultInjection_Abort_OneofSizer, []interface{}{
+		(*FaultInjection_Abort_HttpStatus)(nil),
+		(*FaultInjection_Abort_GrpcStatus)(nil),
+		(*FaultInjection_Abort_Http2Error)(nil),
+	}
+}
+
+func _FaultInjection_Abort_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*FaultInjection_Abort)
+	// error_type
+	switch x := m.ErrorType.(type) {
+	case *FaultInjection_Abort_HttpStatus:
+		_ = b.EncodeVarint(2<<3 | proto.WireVarint)
+		_ = b.EncodeVarint(uint64(x.HttpStatus))
+	case *FaultInjection_Abort_GrpcStatus:
+		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
+		_ = b.EncodeStringBytes(x.GrpcStatus)
+	case *FaultInjection_Abort_Http2Error:
+		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
+		_ = b.EncodeStringBytes(x.Http2Error)
+	case nil:
+	default:
+		return fmt.Errorf("FaultInjection_Abort.ErrorType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _FaultInjection_Abort_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*FaultInjection_Abort)
+	switch tag {
+	case 2: // error_type.http_status
+		if wire != proto.WireVarint {
+			return true, proto.ErrInternalBadWireType
+		}
+		x, err := b.DecodeVarint()
+		m.ErrorType = &FaultInjection_Abort_HttpStatus{int32(x)}
+		return true, err
+	case 3: // error_type.grpc_status
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		x, err := b.DecodeStringBytes()
+		m.ErrorType = &FaultInjection_Abort_GrpcStatus{x}
+		return true, err
+	case 4: // error_type.http2_error
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		x, err := b.DecodeStringBytes()
+		m.ErrorType = &FaultInjection_Abort_Http2Error{x}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _FaultInjection_Abort_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*FaultInjection_Abort)
+	// error_type
+	switch x := m.ErrorType.(type) {
+	case *FaultInjection_Abort_HttpStatus:
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(x.HttpStatus))
+	case *FaultInjection_Abort_GrpcStatus:
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(len(x.GrpcStatus)))
+		n += len(x.GrpcStatus)
+	case *FaultInjection_Abort_Http2Error:
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(len(x.Http2Error)))
+		n += len(x.Http2Error)
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+// manipulate request and response headers
+type HeaderManipulation struct {
 	// HTTP headers to remove before returning a response to the caller.
 	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders" json:"remove_response_headers,omitempty"`
 	// Additional HTTP headers to add before returning a response to the
@@ -211,957 +732,61 @@ type HTTPRule struct {
 	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *HTTPRule) Reset()         { *m = HTTPRule{} }
-func (m *HTTPRule) String() string { return proto.CompactTextString(m) }
-func (*HTTPRule) ProtoMessage()    {}
-func (*HTTPRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{3}
+func (m *HeaderManipulation) Reset()         { *m = HeaderManipulation{} }
+func (m *HeaderManipulation) String() string { return proto.CompactTextString(m) }
+func (*HeaderManipulation) ProtoMessage()    {}
+func (*HeaderManipulation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{5}
 }
-func (m *HTTPRule) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPRule.Unmarshal(m, b)
+func (m *HeaderManipulation) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HeaderManipulation.Unmarshal(m, b)
 }
-func (m *HTTPRule) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPRule.Marshal(b, m, deterministic)
+func (m *HeaderManipulation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HeaderManipulation.Marshal(b, m, deterministic)
 }
-func (dst *HTTPRule) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPRule.Merge(dst, src)
+func (dst *HeaderManipulation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeaderManipulation.Merge(dst, src)
 }
-func (m *HTTPRule) XXX_Size() int {
-	return xxx_messageInfo_HTTPRule.Size(m)
+func (m *HeaderManipulation) XXX_Size() int {
+	return xxx_messageInfo_HeaderManipulation.Size(m)
 }
-func (m *HTTPRule) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPRule.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPRule proto.InternalMessageInfo
-
-func (m *HTTPRule) GetSources() []*Source {
-	if m != nil {
-		return m.Sources
-	}
-	return nil
+func (m *HeaderManipulation) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeaderManipulation.DiscardUnknown(m)
 }
 
-func (m *HTTPRule) GetMatch() []*HTTPMatchRequest {
-	if m != nil {
-		return m.Match
-	}
-	return nil
-}
+var xxx_messageInfo_HeaderManipulation proto.InternalMessageInfo
 
-func (m *HTTPRule) GetRoute() []*HTTPRouteDestination {
-	if m != nil {
-		return m.Route
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetTimeout() *types.Duration {
-	if m != nil {
-		return m.Timeout
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetRetries() *HTTPRetry {
-	if m != nil {
-		return m.Retries
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetFault() *HTTPFaultInjection {
-	if m != nil {
-		return m.Fault
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetMirror() *v1.Destination {
-	if m != nil {
-		return m.Mirror
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetCorsPolicy() *CorsPolicy {
-	if m != nil {
-		return m.CorsPolicy
-	}
-	return nil
-}
-
-func (m *HTTPRule) GetRemoveResponseHeaders() []string {
+func (m *HeaderManipulation) GetRemoveResponseHeaders() []string {
 	if m != nil {
 		return m.RemoveResponseHeaders
 	}
 	return nil
 }
 
-func (m *HTTPRule) GetAppendResponseHeaders() map[string]string {
+func (m *HeaderManipulation) GetAppendResponseHeaders() map[string]string {
 	if m != nil {
 		return m.AppendResponseHeaders
 	}
 	return nil
 }
 
-func (m *HTTPRule) GetRemoveRequestHeaders() []string {
+func (m *HeaderManipulation) GetRemoveRequestHeaders() []string {
 	if m != nil {
 		return m.RemoveRequestHeaders
 	}
 	return nil
 }
 
-func (m *HTTPRule) GetAppendRequestHeaders() map[string]string {
+func (m *HeaderManipulation) GetAppendRequestHeaders() map[string]string {
 	if m != nil {
 		return m.AppendRequestHeaders
 	}
 	return nil
-}
-
-// HttpMatchRequest specifies a set of criterion to be met in order for the
-// rule to be applied to the HTTP request. For example, the following
-// restricts the rule to match only requests where the URL path
-// starts with /ratings/v2/ and the request contains a custom `end-user` header
-// with value `jason`.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - headers:
-//         end-user:
-//           exact: jason
-//       uri:
-//         prefix: "/ratings/v2/"
-//     route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-// ```
-//
-// HTTPMatchRequest CANNOT be empty.
-type HTTPMatchRequest struct {
-	// URI to match
-	// values are case-sensitive and formatted as follows:
-	//
-	// - `exact: "value"` for exact string match
-	//
-	// - `prefix: "value"` for prefix-based match
-	//
-	// - `regex: "value"` for ECMAscript style regex-based match
-	//
-	Uri *StringMatch `protobuf:"bytes,1,opt,name=uri" json:"uri,omitempty"`
-	// HTTP Method
-	// values are case-sensitive and formatted as follows:
-	//
-	// - `exact: "value"` for exact string match
-	//
-	// - `prefix: "value"` for prefix-based match
-	//
-	// - `regex: "value"` for ECMAscript style regex-based match
-	//
-	Method *StringMatch `protobuf:"bytes,3,opt,name=method" json:"method,omitempty"`
-	// The header keys must be lowercase and use hyphen as the separator,
-	// e.g. _x-request-id_.
-	//
-	// Header values are case-sensitive and formatted as follows:
-	//
-	// - `exact: "value"` for exact string match
-	//
-	// - `prefix: "value"` for prefix-based match
-	//
-	// - `regex: "value"` for ECMAscript style regex-based match
-	//
-	// **Note:** The keys `uri`, `scheme`, `method`, and `authority` will be ignored.
-	Headers              map[string]*StringMatch `protobuf:"bytes,5,rep,name=headers" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
-}
-
-func (m *HTTPMatchRequest) Reset()         { *m = HTTPMatchRequest{} }
-func (m *HTTPMatchRequest) String() string { return proto.CompactTextString(m) }
-func (*HTTPMatchRequest) ProtoMessage()    {}
-func (*HTTPMatchRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{4}
-}
-func (m *HTTPMatchRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPMatchRequest.Unmarshal(m, b)
-}
-func (m *HTTPMatchRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPMatchRequest.Marshal(b, m, deterministic)
-}
-func (dst *HTTPMatchRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPMatchRequest.Merge(dst, src)
-}
-func (m *HTTPMatchRequest) XXX_Size() int {
-	return xxx_messageInfo_HTTPMatchRequest.Size(m)
-}
-func (m *HTTPMatchRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPMatchRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPMatchRequest proto.InternalMessageInfo
-
-func (m *HTTPMatchRequest) GetUri() *StringMatch {
-	if m != nil {
-		return m.Uri
-	}
-	return nil
-}
-
-func (m *HTTPMatchRequest) GetMethod() *StringMatch {
-	if m != nil {
-		return m.Method
-	}
-	return nil
-}
-
-func (m *HTTPMatchRequest) GetHeaders() map[string]*StringMatch {
-	if m != nil {
-		return m.Headers
-	}
-	return nil
-}
-
-// Each routing rule is associated with one or more service versions (see
-// glossary in beginning of document). Weights associated with the version
-// determine the proportion of traffic it receives. For example, the
-// following rule will route 25% of traffic for the "reviews" service to
-// instances with the "v2" tag and the remaining traffic (i.e., 75%) to
-// "v1".
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: reviews-route
-// spec:
-//   hosts:
-//   - reviews.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: reviews.prod.svc.cluster.local
-//         subset: v2
-//       weight: 25
-//     - destination:
-//         host: reviews.prod.svc.cluster.local
-//         subset: v1
-//       weight: 75
-// ```
-//
-// And the associated DestinationRule
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: DestinationRule
-// metadata:
-//   name: reviews-destination
-// spec:
-//   host: reviews.prod.svc.cluster.local
-//   subsets:
-//   - name: v1
-//     labels:
-//       version: v1
-//   - name: v2
-//     labels:
-//       version: v2
-// ```
-//
-// Traffic can also be split across two entirely different services without
-// having to define new subsets. For example, the following rule forwards 25% of
-// traffic to reviews.com to dev.reviews.com
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: reviews-route-two-domains
-// spec:
-//   hosts:
-//   - reviews.com
-//   http:
-//   - route:
-//     - destination:
-//         host: dev.reviews.com
-//       weight: 25
-//     - destination:
-//         host: reviews.com
-//       weight: 75
-// ```
-type HTTPRouteDestination struct {
-	// optional. use if the destination for this route should be other
-	// than the original destination specified on the root Destination Rule
-	AlternateDestination *v1.Destination `protobuf:"bytes,1,opt,name=alternate_destination,json=alternateDestination" json:"alternate_destination,omitempty"`
-	// REQUIRED. The proportion of traffic to be forwarded to the service
-	// version. (0-100). Sum of weights across destinations SHOULD BE == 100.
-	// If there is only one destination in a rule, the weight value is assumed to
-	// be 100.
-	Weight int32 `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
-	// HTTP headers to remove before returning a response to the caller.
-	RemoveResponseHeaders []string `protobuf:"bytes,3,rep,name=remove_response_headers,json=removeResponseHeaders" json:"remove_response_headers,omitempty"`
-	// Additional HTTP headers to add before returning a response to the
-	// caller.
-	AppendResponseHeaders map[string]string `protobuf:"bytes,4,rep,name=append_response_headers,json=appendResponseHeaders" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// HTTP headers to remove before forwarding a request to the
-	// destination service.
-	RemoveRequestHeaders []string `protobuf:"bytes,5,rep,name=remove_request_headers,json=removeRequestHeaders" json:"remove_request_headers,omitempty"`
-	// Additional HTTP headers to add before forwarding a request to the
-	// destination service.
-	AppendRequestHeaders map[string]string `protobuf:"bytes,6,rep,name=append_request_headers,json=appendRequestHeaders" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *HTTPRouteDestination) Reset()         { *m = HTTPRouteDestination{} }
-func (m *HTTPRouteDestination) String() string { return proto.CompactTextString(m) }
-func (*HTTPRouteDestination) ProtoMessage()    {}
-func (*HTTPRouteDestination) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{5}
-}
-func (m *HTTPRouteDestination) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPRouteDestination.Unmarshal(m, b)
-}
-func (m *HTTPRouteDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPRouteDestination.Marshal(b, m, deterministic)
-}
-func (dst *HTTPRouteDestination) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPRouteDestination.Merge(dst, src)
-}
-func (m *HTTPRouteDestination) XXX_Size() int {
-	return xxx_messageInfo_HTTPRouteDestination.Size(m)
-}
-func (m *HTTPRouteDestination) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPRouteDestination.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPRouteDestination proto.InternalMessageInfo
-
-func (m *HTTPRouteDestination) GetAlternateDestination() *v1.Destination {
-	if m != nil {
-		return m.AlternateDestination
-	}
-	return nil
-}
-
-func (m *HTTPRouteDestination) GetWeight() int32 {
-	if m != nil {
-		return m.Weight
-	}
-	return 0
-}
-
-func (m *HTTPRouteDestination) GetRemoveResponseHeaders() []string {
-	if m != nil {
-		return m.RemoveResponseHeaders
-	}
-	return nil
-}
-
-func (m *HTTPRouteDestination) GetAppendResponseHeaders() map[string]string {
-	if m != nil {
-		return m.AppendResponseHeaders
-	}
-	return nil
-}
-
-func (m *HTTPRouteDestination) GetRemoveRequestHeaders() []string {
-	if m != nil {
-		return m.RemoveRequestHeaders
-	}
-	return nil
-}
-
-func (m *HTTPRouteDestination) GetAppendRequestHeaders() map[string]string {
-	if m != nil {
-		return m.AppendRequestHeaders
-	}
-	return nil
-}
-
-// L4 routing rule weighted destination.
-type RouteDestination struct {
-	// REQUIRED. Destination uniquely identifies the instances of a service
-	// to which the request/connection should be forwarded to.
-	Destination *v1.Destination `protobuf:"bytes,1,opt,name=destination" json:"destination,omitempty"`
-	// REQUIRED. The proportion of traffic to be forwarded to the service
-	// version. If there is only one destination in a rule, all traffic will be
-	// routed to it irrespective of the weight.
-	Weight               int32    `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *RouteDestination) Reset()         { *m = RouteDestination{} }
-func (m *RouteDestination) String() string { return proto.CompactTextString(m) }
-func (*RouteDestination) ProtoMessage()    {}
-func (*RouteDestination) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{6}
-}
-func (m *RouteDestination) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RouteDestination.Unmarshal(m, b)
-}
-func (m *RouteDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RouteDestination.Marshal(b, m, deterministic)
-}
-func (dst *RouteDestination) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RouteDestination.Merge(dst, src)
-}
-func (m *RouteDestination) XXX_Size() int {
-	return xxx_messageInfo_RouteDestination.Size(m)
-}
-func (m *RouteDestination) XXX_DiscardUnknown() {
-	xxx_messageInfo_RouteDestination.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RouteDestination proto.InternalMessageInfo
-
-func (m *RouteDestination) GetDestination() *v1.Destination {
-	if m != nil {
-		return m.Destination
-	}
-	return nil
-}
-
-func (m *RouteDestination) GetWeight() int32 {
-	if m != nil {
-		return m.Weight
-	}
-	return 0
-}
-
-// L4 connection match attributes. Note that L4 connection matching support
-// is incomplete.
-type L4MatchAttributes struct {
-	// IPv4 or IPv6 ip addresses of destination with optional subnet.  E.g.,
-	// a.b.c.d/xx form or just a.b.c.d.
-	DestinationSubnets []string `protobuf:"bytes,1,rep,name=destination_subnets,json=destinationSubnets" json:"destination_subnets,omitempty"`
-	// Specifies the port on the host that is being addressed. Many services
-	// only expose a single port or label ports with the protocols they support,
-	// in these cases it is not required to explicitly select the port.
-	Port uint32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
-	// IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx
-	// form or just a.b.c.d
-	// $hide_from_docs
-	SourceSubnet string `protobuf:"bytes,3,opt,name=source_subnet,json=sourceSubnet,proto3" json:"source_subnet,omitempty"`
-	// One or more labels that constrain the applicability of a rule to
-	// workloads with the given labels. If the VirtualService has a list of
-	// gateways specified at the top, it should include the reserved gateway
-	// `mesh` in order for this field to be applicable.
-	SourceLabels map[string]string `protobuf:"bytes,4,rep,name=source_labels,json=sourceLabels" json:"source_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Names of gateways where the rule should be applied to. Gateway names
-	// at the top of the VirtualService (if any) are overridden. The gateway
-	// match is independent of sourceLabels.
-	Gateways             []string `protobuf:"bytes,5,rep,name=gateways" json:"gateways,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *L4MatchAttributes) Reset()         { *m = L4MatchAttributes{} }
-func (m *L4MatchAttributes) String() string { return proto.CompactTextString(m) }
-func (*L4MatchAttributes) ProtoMessage()    {}
-func (*L4MatchAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{7}
-}
-func (m *L4MatchAttributes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_L4MatchAttributes.Unmarshal(m, b)
-}
-func (m *L4MatchAttributes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_L4MatchAttributes.Marshal(b, m, deterministic)
-}
-func (dst *L4MatchAttributes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_L4MatchAttributes.Merge(dst, src)
-}
-func (m *L4MatchAttributes) XXX_Size() int {
-	return xxx_messageInfo_L4MatchAttributes.Size(m)
-}
-func (m *L4MatchAttributes) XXX_DiscardUnknown() {
-	xxx_messageInfo_L4MatchAttributes.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_L4MatchAttributes proto.InternalMessageInfo
-
-func (m *L4MatchAttributes) GetDestinationSubnets() []string {
-	if m != nil {
-		return m.DestinationSubnets
-	}
-	return nil
-}
-
-func (m *L4MatchAttributes) GetPort() uint32 {
-	if m != nil {
-		return m.Port
-	}
-	return 0
-}
-
-func (m *L4MatchAttributes) GetSourceSubnet() string {
-	if m != nil {
-		return m.SourceSubnet
-	}
-	return ""
-}
-
-func (m *L4MatchAttributes) GetSourceLabels() map[string]string {
-	if m != nil {
-		return m.SourceLabels
-	}
-	return nil
-}
-
-func (m *L4MatchAttributes) GetGateways() []string {
-	if m != nil {
-		return m.Gateways
-	}
-	return nil
-}
-
-// TLS connection match attributes.
-type TLSMatchAttributes struct {
-	// REQUIRED. SNI (server name indicator) to match on. Wildcard prefixes
-	// can be used in the SNI value, e.g., *.com will match foo.example.com
-	// as well as example.com. An SNI value must be a subset (i.e., fall
-	// within the domain) of the corresponding virtual serivce's hosts.
-	SniHosts []string `protobuf:"bytes,1,rep,name=sni_hosts,json=sniHosts" json:"sni_hosts,omitempty"`
-	// IPv4 or IPv6 ip addresses of destination with optional subnet.  E.g.,
-	// a.b.c.d/xx form or just a.b.c.d.
-	DestinationSubnets []string `protobuf:"bytes,2,rep,name=destination_subnets,json=destinationSubnets" json:"destination_subnets,omitempty"`
-	// Specifies the port on the host that is being addressed. Many services
-	// only expose a single port or label ports with the protocols they
-	// support, in these cases it is not required to explicitly select the
-	// port.
-	Port uint32 `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
-	// IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx
-	// form or just a.b.c.d
-	// $hide_from_docs
-	SourceSubnet string `protobuf:"bytes,4,opt,name=source_subnet,json=sourceSubnet,proto3" json:"source_subnet,omitempty"`
-	// One or more labels that constrain the applicability of a rule to
-	// workloads with the given labels. If the VirtualService has a list of
-	// gateways specified at the top, it should include the reserved gateway
-	// `mesh` in order for this field to be applicable.
-	SourceLabels map[string]string `protobuf:"bytes,5,rep,name=source_labels,json=sourceLabels" json:"source_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Names of gateways where the rule should be applied to. Gateway names
-	// at the top of the VirtualService (if any) are overridden. The gateway
-	// match is independent of sourceLabels.
-	Gateways             []string `protobuf:"bytes,6,rep,name=gateways" json:"gateways,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TLSMatchAttributes) Reset()         { *m = TLSMatchAttributes{} }
-func (m *TLSMatchAttributes) String() string { return proto.CompactTextString(m) }
-func (*TLSMatchAttributes) ProtoMessage()    {}
-func (*TLSMatchAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{8}
-}
-func (m *TLSMatchAttributes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TLSMatchAttributes.Unmarshal(m, b)
-}
-func (m *TLSMatchAttributes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TLSMatchAttributes.Marshal(b, m, deterministic)
-}
-func (dst *TLSMatchAttributes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TLSMatchAttributes.Merge(dst, src)
-}
-func (m *TLSMatchAttributes) XXX_Size() int {
-	return xxx_messageInfo_TLSMatchAttributes.Size(m)
-}
-func (m *TLSMatchAttributes) XXX_DiscardUnknown() {
-	xxx_messageInfo_TLSMatchAttributes.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TLSMatchAttributes proto.InternalMessageInfo
-
-func (m *TLSMatchAttributes) GetSniHosts() []string {
-	if m != nil {
-		return m.SniHosts
-	}
-	return nil
-}
-
-func (m *TLSMatchAttributes) GetDestinationSubnets() []string {
-	if m != nil {
-		return m.DestinationSubnets
-	}
-	return nil
-}
-
-func (m *TLSMatchAttributes) GetPort() uint32 {
-	if m != nil {
-		return m.Port
-	}
-	return 0
-}
-
-func (m *TLSMatchAttributes) GetSourceSubnet() string {
-	if m != nil {
-		return m.SourceSubnet
-	}
-	return ""
-}
-
-func (m *TLSMatchAttributes) GetSourceLabels() map[string]string {
-	if m != nil {
-		return m.SourceLabels
-	}
-	return nil
-}
-
-func (m *TLSMatchAttributes) GetGateways() []string {
-	if m != nil {
-		return m.Gateways
-	}
-	return nil
-}
-
-// HTTPRedirect can be used to send a 301 redirect response to the caller,
-// where the Authority/Host and the URI in the response can be swapped with
-// the specified values. For example, the following rule redirects
-// requests for /v1/getProductRatings API on the ratings service to
-// /v1/bookRatings provided by the bookratings service.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - uri:
-//         exact: /v1/getProductRatings
-//   redirect:
-//     uri: /v1/bookRatings
-//     authority: newratings.default.svc.cluster.local
-//   ...
-// ```
-type HTTPRedirect struct {
-	// On a redirect, overwrite the Path portion of the URL with this
-	// value. Note that the entire path will be replaced, irrespective of the
-	// request URI being matched as an exact path or prefix.
-	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	// On a redirect, overwrite the Authority/Host portion of the URL with
-	// this value.
-	Authority            string   `protobuf:"bytes,2,opt,name=authority,proto3" json:"authority,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *HTTPRedirect) Reset()         { *m = HTTPRedirect{} }
-func (m *HTTPRedirect) String() string { return proto.CompactTextString(m) }
-func (*HTTPRedirect) ProtoMessage()    {}
-func (*HTTPRedirect) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{9}
-}
-func (m *HTTPRedirect) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPRedirect.Unmarshal(m, b)
-}
-func (m *HTTPRedirect) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPRedirect.Marshal(b, m, deterministic)
-}
-func (dst *HTTPRedirect) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPRedirect.Merge(dst, src)
-}
-func (m *HTTPRedirect) XXX_Size() int {
-	return xxx_messageInfo_HTTPRedirect.Size(m)
-}
-func (m *HTTPRedirect) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPRedirect.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPRedirect proto.InternalMessageInfo
-
-func (m *HTTPRedirect) GetUri() string {
-	if m != nil {
-		return m.Uri
-	}
-	return ""
-}
-
-func (m *HTTPRedirect) GetAuthority() string {
-	if m != nil {
-		return m.Authority
-	}
-	return ""
-}
-
-// HTTPRewrite can be used to rewrite specific parts of a HTTP request
-// before forwarding the request to the destination. Rewrite primitive can
-// be used only with HTTPRouteDestination. The following example
-// demonstrates how to rewrite the URL prefix for api call (/ratings) to
-// ratings service before making the actual API call.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - uri:
-//         prefix: /ratings
-//     rewrite:
-//       uri: /v1/bookRatings
-//     route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-// ```
-//
-type HTTPRewrite struct {
-	// rewrite the path (or the prefix) portion of the URI with this
-	// value. If the original URI was matched based on prefix, the value
-	// provided in this field will replace the corresponding matched prefix.
-	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	// rewrite the Authority/Host header with this value.
-	Authority            string   `protobuf:"bytes,2,opt,name=authority,proto3" json:"authority,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *HTTPRewrite) Reset()         { *m = HTTPRewrite{} }
-func (m *HTTPRewrite) String() string { return proto.CompactTextString(m) }
-func (*HTTPRewrite) ProtoMessage()    {}
-func (*HTTPRewrite) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{10}
-}
-func (m *HTTPRewrite) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPRewrite.Unmarshal(m, b)
-}
-func (m *HTTPRewrite) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPRewrite.Marshal(b, m, deterministic)
-}
-func (dst *HTTPRewrite) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPRewrite.Merge(dst, src)
-}
-func (m *HTTPRewrite) XXX_Size() int {
-	return xxx_messageInfo_HTTPRewrite.Size(m)
-}
-func (m *HTTPRewrite) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPRewrite.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPRewrite proto.InternalMessageInfo
-
-func (m *HTTPRewrite) GetUri() string {
-	if m != nil {
-		return m.Uri
-	}
-	return ""
-}
-
-func (m *HTTPRewrite) GetAuthority() string {
-	if m != nil {
-		return m.Authority
-	}
-	return ""
-}
-
-// Describes how to match a given string in HTTP headers. Match is
-// case-sensitive.
-type StringMatch struct {
-	// Types that are valid to be assigned to MatchType:
-	//	*StringMatch_Exact
-	//	*StringMatch_Prefix
-	//	*StringMatch_Regex
-	MatchType            isStringMatch_MatchType `protobuf_oneof:"match_type"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
-}
-
-func (m *StringMatch) Reset()         { *m = StringMatch{} }
-func (m *StringMatch) String() string { return proto.CompactTextString(m) }
-func (*StringMatch) ProtoMessage()    {}
-func (*StringMatch) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{11}
-}
-func (m *StringMatch) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StringMatch.Unmarshal(m, b)
-}
-func (m *StringMatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StringMatch.Marshal(b, m, deterministic)
-}
-func (dst *StringMatch) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StringMatch.Merge(dst, src)
-}
-func (m *StringMatch) XXX_Size() int {
-	return xxx_messageInfo_StringMatch.Size(m)
-}
-func (m *StringMatch) XXX_DiscardUnknown() {
-	xxx_messageInfo_StringMatch.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StringMatch proto.InternalMessageInfo
-
-type isStringMatch_MatchType interface {
-	isStringMatch_MatchType()
-	Equal(interface{}) bool
-}
-
-type StringMatch_Exact struct {
-	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof"`
-}
-type StringMatch_Prefix struct {
-	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof"`
-}
-type StringMatch_Regex struct {
-	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof"`
-}
-
-func (*StringMatch_Exact) isStringMatch_MatchType()  {}
-func (*StringMatch_Prefix) isStringMatch_MatchType() {}
-func (*StringMatch_Regex) isStringMatch_MatchType()  {}
-
-func (m *StringMatch) GetMatchType() isStringMatch_MatchType {
-	if m != nil {
-		return m.MatchType
-	}
-	return nil
-}
-
-func (m *StringMatch) GetExact() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Exact); ok {
-		return x.Exact
-	}
-	return ""
-}
-
-func (m *StringMatch) GetPrefix() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Prefix); ok {
-		return x.Prefix
-	}
-	return ""
-}
-
-func (m *StringMatch) GetRegex() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Regex); ok {
-		return x.Regex
-	}
-	return ""
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*StringMatch) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _StringMatch_OneofMarshaler, _StringMatch_OneofUnmarshaler, _StringMatch_OneofSizer, []interface{}{
-		(*StringMatch_Exact)(nil),
-		(*StringMatch_Prefix)(nil),
-		(*StringMatch_Regex)(nil),
-	}
-}
-
-func _StringMatch_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Exact)
-	case *StringMatch_Prefix:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Prefix)
-	case *StringMatch_Regex:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Regex)
-	case nil:
-	default:
-		return fmt.Errorf("StringMatch.MatchType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _StringMatch_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*StringMatch)
-	switch tag {
-	case 1: // match_type.exact
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Exact{x}
-		return true, err
-	case 2: // match_type.prefix
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Prefix{x}
-		return true, err
-	case 3: // match_type.regex
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Regex{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _StringMatch_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Exact)))
-		n += len(x.Exact)
-	case *StringMatch_Prefix:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Prefix)))
-		n += len(x.Prefix)
-	case *StringMatch_Regex:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Regex)))
-		n += len(x.Regex)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Describes the retry policy to use when a HTTP request fails. For
 // example, the following rule sets the maximum number of retries to 3 when
 // calling ratings:v1 service, with a 2s timeout per retry attempt.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-//     retries:
-//       attempts: 3
-//       perTryTimeout: 2s
-// ```
-//
 type HTTPRetry struct {
 	// REQUIRED. Number of retries for a given request. The interval
 	// between retries will be determined automatically (25ms+). Actual
@@ -1178,7 +803,7 @@ func (m *HTTPRetry) Reset()         { *m = HTTPRetry{} }
 func (m *HTTPRetry) String() string { return proto.CompactTextString(m) }
 func (*HTTPRetry) ProtoMessage()    {}
 func (*HTTPRetry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{12}
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{6}
 }
 func (m *HTTPRetry) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HTTPRetry.Unmarshal(m, b)
@@ -1220,32 +845,6 @@ func (m *HTTPRetry) GetPerTryTimeout() *types.Duration {
 // from example.com domain using HTTP POST/GET, and sets the
 // Access-Control-Allow-Credentials header to false. In addition, it only
 // exposes X-Foo-bar header and sets an expiry period of 1 day.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-//     corsPolicy:
-//       allowOrigin:
-//       - example.com
-//       allowMethods:
-//       - POST
-//       - GET
-//       allowCredentials: false
-//       allowHeaders:
-//       - X-Foo-Bar
-//       maxAge: "1d"
-// ```
-//
 type CorsPolicy struct {
 	// The list of origins that are allowed to perform CORS requests. The
 	// content will be serialized into the Access-Control-Allow-Origin
@@ -1276,7 +875,7 @@ func (m *CorsPolicy) Reset()         { *m = CorsPolicy{} }
 func (m *CorsPolicy) String() string { return proto.CompactTextString(m) }
 func (*CorsPolicy) ProtoMessage()    {}
 func (*CorsPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{13}
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{7}
 }
 func (m *CorsPolicy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CorsPolicy.Unmarshal(m, b)
@@ -1338,608 +937,6 @@ func (m *CorsPolicy) GetAllowCredentials() *types.BoolValue {
 	return nil
 }
 
-// HTTPFaultInjection can be used to specify one or more faults to inject
-// while forwarding http requests to the destination specified in a route.
-// Fault specification is part of a VirtualService rule. Faults include
-// aborting the Http request from downstream service, and/or delaying
-// proxying of requests. A fault rule MUST HAVE delay or abort or both.
-//
-// *Note:* Delay and abort faults are independent of one another, even if
-// both are specified simultaneously.
-type HTTPFaultInjection struct {
-	// Delay requests before forwarding, emulating various failures such as
-	// network issues, overloaded upstream service, etc.
-	Delay *HTTPFaultInjection_Delay `protobuf:"bytes,1,opt,name=delay" json:"delay,omitempty"`
-	// Abort Http request attempts and return error codes back to downstream
-	// service, giving the impression that the upstream service is faulty.
-	Abort                *HTTPFaultInjection_Abort `protobuf:"bytes,2,opt,name=abort" json:"abort,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
-}
-
-func (m *HTTPFaultInjection) Reset()         { *m = HTTPFaultInjection{} }
-func (m *HTTPFaultInjection) String() string { return proto.CompactTextString(m) }
-func (*HTTPFaultInjection) ProtoMessage()    {}
-func (*HTTPFaultInjection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{14}
-}
-func (m *HTTPFaultInjection) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPFaultInjection.Unmarshal(m, b)
-}
-func (m *HTTPFaultInjection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPFaultInjection.Marshal(b, m, deterministic)
-}
-func (dst *HTTPFaultInjection) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPFaultInjection.Merge(dst, src)
-}
-func (m *HTTPFaultInjection) XXX_Size() int {
-	return xxx_messageInfo_HTTPFaultInjection.Size(m)
-}
-func (m *HTTPFaultInjection) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPFaultInjection.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPFaultInjection proto.InternalMessageInfo
-
-func (m *HTTPFaultInjection) GetDelay() *HTTPFaultInjection_Delay {
-	if m != nil {
-		return m.Delay
-	}
-	return nil
-}
-
-func (m *HTTPFaultInjection) GetAbort() *HTTPFaultInjection_Abort {
-	if m != nil {
-		return m.Abort
-	}
-	return nil
-}
-
-// Delay specification is used to inject latency into the request
-// forwarding path. The following example will introduce a 5 second delay
-// in 1 out of every 1000 requests to the "v1" version of the "reviews"
-// service from all pods with label env: prod
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: reviews-route
-// spec:
-//   hosts:
-//   - reviews.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - sourceLabels:
-//         env: prod
-//     route:
-//     - destination:
-//         host: reviews.prod.svc.cluster.local
-//         subset: v1
-//     fault:
-//       delay:
-//         percentage:
-//           value: 0.001
-//         fixedDelay: 5s
-// ```
-//
-// The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-// The optional _percentage_ field can be used to only delay a certain
-// percentage of requests. If left unspecified, all request will be delayed.
-type HTTPFaultInjection_Delay struct {
-	// Percentage of requests on which the delay will be injected (0-100).
-	// Use of integer `percent` value is deprecated. Use the double `percentage`
-	// field instead.
-	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
-	// Types that are valid to be assigned to HttpDelayType:
-	//	*HTTPFaultInjection_Delay_FixedDelay
-	//	*HTTPFaultInjection_Delay_ExponentialDelay
-	HttpDelayType isHTTPFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
-	// Percentage of requests on which the delay will be injected.
-	Percentage           *Percent `protobuf:"bytes,5,opt,name=percentage" json:"percentage,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *HTTPFaultInjection_Delay) Reset()         { *m = HTTPFaultInjection_Delay{} }
-func (m *HTTPFaultInjection_Delay) String() string { return proto.CompactTextString(m) }
-func (*HTTPFaultInjection_Delay) ProtoMessage()    {}
-func (*HTTPFaultInjection_Delay) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{14, 0}
-}
-func (m *HTTPFaultInjection_Delay) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPFaultInjection_Delay.Unmarshal(m, b)
-}
-func (m *HTTPFaultInjection_Delay) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPFaultInjection_Delay.Marshal(b, m, deterministic)
-}
-func (dst *HTTPFaultInjection_Delay) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPFaultInjection_Delay.Merge(dst, src)
-}
-func (m *HTTPFaultInjection_Delay) XXX_Size() int {
-	return xxx_messageInfo_HTTPFaultInjection_Delay.Size(m)
-}
-func (m *HTTPFaultInjection_Delay) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPFaultInjection_Delay.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPFaultInjection_Delay proto.InternalMessageInfo
-
-type isHTTPFaultInjection_Delay_HttpDelayType interface {
-	isHTTPFaultInjection_Delay_HttpDelayType()
-	Equal(interface{}) bool
-}
-
-type HTTPFaultInjection_Delay_FixedDelay struct {
-	FixedDelay *types.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,oneof"`
-}
-type HTTPFaultInjection_Delay_ExponentialDelay struct {
-	ExponentialDelay *types.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,oneof"`
-}
-
-func (*HTTPFaultInjection_Delay_FixedDelay) isHTTPFaultInjection_Delay_HttpDelayType()       {}
-func (*HTTPFaultInjection_Delay_ExponentialDelay) isHTTPFaultInjection_Delay_HttpDelayType() {}
-
-func (m *HTTPFaultInjection_Delay) GetHttpDelayType() isHTTPFaultInjection_Delay_HttpDelayType {
-	if m != nil {
-		return m.HttpDelayType
-	}
-	return nil
-}
-
-// Deprecated: Do not use.
-func (m *HTTPFaultInjection_Delay) GetPercent() int32 {
-	if m != nil {
-		return m.Percent
-	}
-	return 0
-}
-
-func (m *HTTPFaultInjection_Delay) GetFixedDelay() *types.Duration {
-	if x, ok := m.GetHttpDelayType().(*HTTPFaultInjection_Delay_FixedDelay); ok {
-		return x.FixedDelay
-	}
-	return nil
-}
-
-func (m *HTTPFaultInjection_Delay) GetExponentialDelay() *types.Duration {
-	if x, ok := m.GetHttpDelayType().(*HTTPFaultInjection_Delay_ExponentialDelay); ok {
-		return x.ExponentialDelay
-	}
-	return nil
-}
-
-func (m *HTTPFaultInjection_Delay) GetPercentage() *Percent {
-	if m != nil {
-		return m.Percentage
-	}
-	return nil
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*HTTPFaultInjection_Delay) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _HTTPFaultInjection_Delay_OneofMarshaler, _HTTPFaultInjection_Delay_OneofUnmarshaler, _HTTPFaultInjection_Delay_OneofSizer, []interface{}{
-		(*HTTPFaultInjection_Delay_FixedDelay)(nil),
-		(*HTTPFaultInjection_Delay_ExponentialDelay)(nil),
-	}
-}
-
-func _HTTPFaultInjection_Delay_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*HTTPFaultInjection_Delay)
-	// http_delay_type
-	switch x := m.HttpDelayType.(type) {
-	case *HTTPFaultInjection_Delay_FixedDelay:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.FixedDelay); err != nil {
-			return err
-		}
-	case *HTTPFaultInjection_Delay_ExponentialDelay:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ExponentialDelay); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("HTTPFaultInjection_Delay.HttpDelayType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _HTTPFaultInjection_Delay_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*HTTPFaultInjection_Delay)
-	switch tag {
-	case 2: // http_delay_type.fixed_delay
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(types.Duration)
-		err := b.DecodeMessage(msg)
-		m.HttpDelayType = &HTTPFaultInjection_Delay_FixedDelay{msg}
-		return true, err
-	case 3: // http_delay_type.exponential_delay
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(types.Duration)
-		err := b.DecodeMessage(msg)
-		m.HttpDelayType = &HTTPFaultInjection_Delay_ExponentialDelay{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _HTTPFaultInjection_Delay_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*HTTPFaultInjection_Delay)
-	// http_delay_type
-	switch x := m.HttpDelayType.(type) {
-	case *HTTPFaultInjection_Delay_FixedDelay:
-		s := proto.Size(x.FixedDelay)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *HTTPFaultInjection_Delay_ExponentialDelay:
-		s := proto.Size(x.ExponentialDelay)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
-// Abort specification is used to prematurely abort a request with a
-// pre-specified error code. The following example will return an HTTP 400
-// error code for 1 out of every 1000 requests to the "ratings" service "v1".
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-//     fault:
-//       abort:
-//         percentage:
-//           value: 0.001
-//         httpStatus: 400
-// ```
-//
-// The _httpStatus_ field is used to indicate the HTTP status code to
-// return to the caller. The optional _percentage_ field can be used to only
-// abort a certain percentage of requests. If not specified, all requests are
-// aborted.
-type HTTPFaultInjection_Abort struct {
-	// Percentage of requests to be aborted with the error code provided (0-100).
-	// Use of integer `percent` value is deprecated. Use the double `percentage`
-	// field instead.
-	Percent int32 `protobuf:"varint,1,opt,name=percent,proto3" json:"percent,omitempty"` // Deprecated: Do not use.
-	// Types that are valid to be assigned to ErrorType:
-	//	*HTTPFaultInjection_Abort_HttpStatus
-	//	*HTTPFaultInjection_Abort_GrpcStatus
-	//	*HTTPFaultInjection_Abort_Http2Error
-	ErrorType isHTTPFaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
-	// Percentage of requests to be aborted with the error code provided.
-	Percentage           *Percent `protobuf:"bytes,5,opt,name=percentage" json:"percentage,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *HTTPFaultInjection_Abort) Reset()         { *m = HTTPFaultInjection_Abort{} }
-func (m *HTTPFaultInjection_Abort) String() string { return proto.CompactTextString(m) }
-func (*HTTPFaultInjection_Abort) ProtoMessage()    {}
-func (*HTTPFaultInjection_Abort) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{14, 1}
-}
-func (m *HTTPFaultInjection_Abort) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HTTPFaultInjection_Abort.Unmarshal(m, b)
-}
-func (m *HTTPFaultInjection_Abort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HTTPFaultInjection_Abort.Marshal(b, m, deterministic)
-}
-func (dst *HTTPFaultInjection_Abort) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HTTPFaultInjection_Abort.Merge(dst, src)
-}
-func (m *HTTPFaultInjection_Abort) XXX_Size() int {
-	return xxx_messageInfo_HTTPFaultInjection_Abort.Size(m)
-}
-func (m *HTTPFaultInjection_Abort) XXX_DiscardUnknown() {
-	xxx_messageInfo_HTTPFaultInjection_Abort.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HTTPFaultInjection_Abort proto.InternalMessageInfo
-
-type isHTTPFaultInjection_Abort_ErrorType interface {
-	isHTTPFaultInjection_Abort_ErrorType()
-	Equal(interface{}) bool
-}
-
-type HTTPFaultInjection_Abort_HttpStatus struct {
-	HttpStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof"`
-}
-type HTTPFaultInjection_Abort_GrpcStatus struct {
-	GrpcStatus string `protobuf:"bytes,3,opt,name=grpc_status,json=grpcStatus,proto3,oneof"`
-}
-type HTTPFaultInjection_Abort_Http2Error struct {
-	Http2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof"`
-}
-
-func (*HTTPFaultInjection_Abort_HttpStatus) isHTTPFaultInjection_Abort_ErrorType() {}
-func (*HTTPFaultInjection_Abort_GrpcStatus) isHTTPFaultInjection_Abort_ErrorType() {}
-func (*HTTPFaultInjection_Abort_Http2Error) isHTTPFaultInjection_Abort_ErrorType() {}
-
-func (m *HTTPFaultInjection_Abort) GetErrorType() isHTTPFaultInjection_Abort_ErrorType {
-	if m != nil {
-		return m.ErrorType
-	}
-	return nil
-}
-
-// Deprecated: Do not use.
-func (m *HTTPFaultInjection_Abort) GetPercent() int32 {
-	if m != nil {
-		return m.Percent
-	}
-	return 0
-}
-
-func (m *HTTPFaultInjection_Abort) GetHttpStatus() int32 {
-	if x, ok := m.GetErrorType().(*HTTPFaultInjection_Abort_HttpStatus); ok {
-		return x.HttpStatus
-	}
-	return 0
-}
-
-func (m *HTTPFaultInjection_Abort) GetGrpcStatus() string {
-	if x, ok := m.GetErrorType().(*HTTPFaultInjection_Abort_GrpcStatus); ok {
-		return x.GrpcStatus
-	}
-	return ""
-}
-
-func (m *HTTPFaultInjection_Abort) GetHttp2Error() string {
-	if x, ok := m.GetErrorType().(*HTTPFaultInjection_Abort_Http2Error); ok {
-		return x.Http2Error
-	}
-	return ""
-}
-
-func (m *HTTPFaultInjection_Abort) GetPercentage() *Percent {
-	if m != nil {
-		return m.Percentage
-	}
-	return nil
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*HTTPFaultInjection_Abort) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _HTTPFaultInjection_Abort_OneofMarshaler, _HTTPFaultInjection_Abort_OneofUnmarshaler, _HTTPFaultInjection_Abort_OneofSizer, []interface{}{
-		(*HTTPFaultInjection_Abort_HttpStatus)(nil),
-		(*HTTPFaultInjection_Abort_GrpcStatus)(nil),
-		(*HTTPFaultInjection_Abort_Http2Error)(nil),
-	}
-}
-
-func _HTTPFaultInjection_Abort_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*HTTPFaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *HTTPFaultInjection_Abort_HttpStatus:
-		_ = b.EncodeVarint(2<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.HttpStatus))
-	case *HTTPFaultInjection_Abort_GrpcStatus:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.GrpcStatus)
-	case *HTTPFaultInjection_Abort_Http2Error:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Http2Error)
-	case nil:
-	default:
-		return fmt.Errorf("HTTPFaultInjection_Abort.ErrorType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _HTTPFaultInjection_Abort_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*HTTPFaultInjection_Abort)
-	switch tag {
-	case 2: // error_type.http_status
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.ErrorType = &HTTPFaultInjection_Abort_HttpStatus{int32(x)}
-		return true, err
-	case 3: // error_type.grpc_status
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.ErrorType = &HTTPFaultInjection_Abort_GrpcStatus{x}
-		return true, err
-	case 4: // error_type.http2_error
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.ErrorType = &HTTPFaultInjection_Abort_Http2Error{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _HTTPFaultInjection_Abort_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*HTTPFaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *HTTPFaultInjection_Abort_HttpStatus:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.HttpStatus))
-	case *HTTPFaultInjection_Abort_GrpcStatus:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.GrpcStatus)))
-		n += len(x.GrpcStatus)
-	case *HTTPFaultInjection_Abort_Http2Error:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Http2Error)))
-		n += len(x.Http2Error)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
-// PortSelector specifies the number of a port to be used for
-// matching or selection for final routing.
-type PortSelector struct {
-	// Types that are valid to be assigned to Port:
-	//	*PortSelector_Number
-	//	*PortSelector_Name
-	Port                 isPortSelector_Port `protobuf_oneof:"port"`
-	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
-	XXX_unrecognized     []byte              `json:"-"`
-	XXX_sizecache        int32               `json:"-"`
-}
-
-func (m *PortSelector) Reset()         { *m = PortSelector{} }
-func (m *PortSelector) String() string { return proto.CompactTextString(m) }
-func (*PortSelector) ProtoMessage()    {}
-func (*PortSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{15}
-}
-func (m *PortSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PortSelector.Unmarshal(m, b)
-}
-func (m *PortSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PortSelector.Marshal(b, m, deterministic)
-}
-func (dst *PortSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PortSelector.Merge(dst, src)
-}
-func (m *PortSelector) XXX_Size() int {
-	return xxx_messageInfo_PortSelector.Size(m)
-}
-func (m *PortSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_PortSelector.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PortSelector proto.InternalMessageInfo
-
-type isPortSelector_Port interface {
-	isPortSelector_Port()
-	Equal(interface{}) bool
-}
-
-type PortSelector_Number struct {
-	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof"`
-}
-type PortSelector_Name struct {
-	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
-}
-
-func (*PortSelector_Number) isPortSelector_Port() {}
-func (*PortSelector_Name) isPortSelector_Port()   {}
-
-func (m *PortSelector) GetPort() isPortSelector_Port {
-	if m != nil {
-		return m.Port
-	}
-	return nil
-}
-
-func (m *PortSelector) GetNumber() uint32 {
-	if x, ok := m.GetPort().(*PortSelector_Number); ok {
-		return x.Number
-	}
-	return 0
-}
-
-func (m *PortSelector) GetName() string {
-	if x, ok := m.GetPort().(*PortSelector_Name); ok {
-		return x.Name
-	}
-	return ""
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PortSelector) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PortSelector_OneofMarshaler, _PortSelector_OneofUnmarshaler, _PortSelector_OneofSizer, []interface{}{
-		(*PortSelector_Number)(nil),
-		(*PortSelector_Name)(nil),
-	}
-}
-
-func _PortSelector_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		_ = b.EncodeVarint(1<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Name)
-	case nil:
-	default:
-		return fmt.Errorf("PortSelector.Port has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PortSelector_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PortSelector)
-	switch tag {
-	case 1: // port.number
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Port = &PortSelector_Number{uint32(x)}
-		return true, err
-	case 2: // port.name
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Port = &PortSelector_Name{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PortSelector_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Name)))
-		n += len(x.Name)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
 // Percent specifies a percentage in the range of [0.0, 100.0].
 type Percent struct {
 	Value                float64  `protobuf:"fixed64,1,opt,name=value,proto3" json:"value,omitempty"`
@@ -1952,7 +949,7 @@ func (m *Percent) Reset()         { *m = Percent{} }
 func (m *Percent) String() string { return proto.CompactTextString(m) }
 func (*Percent) ProtoMessage()    {}
 func (*Percent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_3b2d5f62a71d6149, []int{16}
+	return fileDescriptor_routing_3c683c633dc0cb3d, []int{8}
 }
 func (m *Percent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Percent.Unmarshal(m, b)
@@ -1980,42 +977,31 @@ func (m *Percent) GetValue() float64 {
 }
 
 func init() {
-	proto.RegisterType((*Routing)(nil), "supergloo.solo.io.Routing")
-	proto.RegisterType((*DestinationRule)(nil), "supergloo.solo.io.DestinationRule")
-	proto.RegisterType((*Source)(nil), "supergloo.solo.io.Source")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.Source.SelectorEntry")
-	proto.RegisterType((*HTTPRule)(nil), "supergloo.solo.io.HTTPRule")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HTTPRule.AppendRequestHeadersEntry")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HTTPRule.AppendResponseHeadersEntry")
-	proto.RegisterType((*HTTPMatchRequest)(nil), "supergloo.solo.io.HTTPMatchRequest")
-	proto.RegisterMapType((map[string]*StringMatch)(nil), "supergloo.solo.io.HTTPMatchRequest.HeadersEntry")
-	proto.RegisterType((*HTTPRouteDestination)(nil), "supergloo.solo.io.HTTPRouteDestination")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HTTPRouteDestination.AppendRequestHeadersEntry")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HTTPRouteDestination.AppendResponseHeadersEntry")
-	proto.RegisterType((*RouteDestination)(nil), "supergloo.solo.io.RouteDestination")
-	proto.RegisterType((*L4MatchAttributes)(nil), "supergloo.solo.io.L4MatchAttributes")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.L4MatchAttributes.SourceLabelsEntry")
-	proto.RegisterType((*TLSMatchAttributes)(nil), "supergloo.solo.io.TLSMatchAttributes")
-	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.TLSMatchAttributes.SourceLabelsEntry")
-	proto.RegisterType((*HTTPRedirect)(nil), "supergloo.solo.io.HTTPRedirect")
-	proto.RegisterType((*HTTPRewrite)(nil), "supergloo.solo.io.HTTPRewrite")
-	proto.RegisterType((*StringMatch)(nil), "supergloo.solo.io.StringMatch")
+	proto.RegisterType((*Target)(nil), "supergloo.solo.io.Target")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.Target.DestinationSelectorEntry")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.Target.SourceSelectorEntry")
+	proto.RegisterType((*RoutingRule)(nil), "supergloo.solo.io.RoutingRule")
+	proto.RegisterType((*TrafficSplitting)(nil), "supergloo.solo.io.TrafficSplitting")
+	proto.RegisterType((*Subset)(nil), "supergloo.solo.io.Subset")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.Subset.SelectorEntry")
+	proto.RegisterType((*FaultInjection)(nil), "supergloo.solo.io.FaultInjection")
+	proto.RegisterType((*FaultInjection_Delay)(nil), "supergloo.solo.io.FaultInjection.Delay")
+	proto.RegisterType((*FaultInjection_Abort)(nil), "supergloo.solo.io.FaultInjection.Abort")
+	proto.RegisterType((*HeaderManipulation)(nil), "supergloo.solo.io.HeaderManipulation")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HeaderManipulation.AppendRequestHeadersEntry")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HeaderManipulation.AppendResponseHeadersEntry")
 	proto.RegisterType((*HTTPRetry)(nil), "supergloo.solo.io.HTTPRetry")
 	proto.RegisterType((*CorsPolicy)(nil), "supergloo.solo.io.CorsPolicy")
-	proto.RegisterType((*HTTPFaultInjection)(nil), "supergloo.solo.io.HTTPFaultInjection")
-	proto.RegisterType((*HTTPFaultInjection_Delay)(nil), "supergloo.solo.io.HTTPFaultInjection.Delay")
-	proto.RegisterType((*HTTPFaultInjection_Abort)(nil), "supergloo.solo.io.HTTPFaultInjection.Abort")
-	proto.RegisterType((*PortSelector)(nil), "supergloo.solo.io.PortSelector")
 	proto.RegisterType((*Percent)(nil), "supergloo.solo.io.Percent")
 }
-func (this *Routing) Equal(that interface{}) bool {
+func (this *Target) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Routing)
+	that1, ok := that.(*Target)
 	if !ok {
-		that2, ok := that.(Routing)
+		that2, ok := that.(Target)
 		if ok {
 			that1 = &that2
 		} else {
@@ -2027,11 +1013,30 @@ func (this *Routing) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if len(this.DestinationRules) != len(that1.DestinationRules) {
+	if !this.TargetMesh.Equal(that1.TargetMesh) {
 		return false
 	}
-	for i := range this.DestinationRules {
-		if !this.DestinationRules[i].Equal(that1.DestinationRules[i]) {
+	if len(this.SourceSelector) != len(that1.SourceSelector) {
+		return false
+	}
+	for i := range this.SourceSelector {
+		if this.SourceSelector[i] != that1.SourceSelector[i] {
+			return false
+		}
+	}
+	if len(this.DestinationSelector) != len(that1.DestinationSelector) {
+		return false
+	}
+	for i := range this.DestinationSelector {
+		if this.DestinationSelector[i] != that1.DestinationSelector[i] {
+			return false
+		}
+	}
+	if len(this.RequestMatchers) != len(that1.RequestMatchers) {
+		return false
+	}
+	for i := range this.RequestMatchers {
+		if !this.RequestMatchers[i].Equal(that1.RequestMatchers[i]) {
 			return false
 		}
 	}
@@ -2040,14 +1045,14 @@ func (this *Routing) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *DestinationRule) Equal(that interface{}) bool {
+func (this *RoutingRule) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*DestinationRule)
+	that1, ok := that.(*RoutingRule)
 	if !ok {
-		that2, ok := that.(DestinationRule)
+		that2, ok := that.(RoutingRule)
 		if ok {
 			that1 = &that2
 		} else {
@@ -2059,22 +1064,65 @@ func (this *DestinationRule) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.Destination.Equal(that1.Destination) {
+	if !this.Status.Equal(&that1.Status) {
 		return false
 	}
-	if len(this.MeshHttpRules) != len(that1.MeshHttpRules) {
+	if !this.Metadata.Equal(&that1.Metadata) {
 		return false
 	}
-	for i := range this.MeshHttpRules {
-		if !this.MeshHttpRules[i].Equal(that1.MeshHttpRules[i]) {
+	if !this.Target.Equal(that1.Target) {
+		return false
+	}
+	if !this.TrafficSplitting.Equal(that1.TrafficSplitting) {
+		return false
+	}
+	if !this.FaultInjection.Equal(that1.FaultInjection) {
+		return false
+	}
+	if !this.Timeout.Equal(that1.Timeout) {
+		return false
+	}
+	if !this.Retries.Equal(that1.Retries) {
+		return false
+	}
+	if !this.CorsPolicy.Equal(that1.CorsPolicy) {
+		return false
+	}
+	if !this.Mirror.Equal(that1.Mirror) {
+		return false
+	}
+	if !this.HeaderManipulaition.Equal(that1.HeaderManipulaition) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficSplitting) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficSplitting)
+	if !ok {
+		that2, ok := that.(TrafficSplitting)
+		if ok {
+			that1 = &that2
+		} else {
 			return false
 		}
 	}
-	if len(this.IngressHttpRules) != len(that1.IngressHttpRules) {
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
-	for i := range this.IngressHttpRules {
-		if !this.IngressHttpRules[i].Equal(that1.IngressHttpRules[i]) {
+	if len(this.Subsets) != len(that1.Subsets) {
+		return false
+	}
+	for i := range this.Subsets {
+		if !this.Subsets[i].Equal(that1.Subsets[i]) {
 			return false
 		}
 	}
@@ -2083,14 +1131,14 @@ func (this *DestinationRule) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *Source) Equal(that interface{}) bool {
+func (this *Subset) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Source)
+	that1, ok := that.(*Subset)
 	if !ok {
-		that2, ok := that.(Source)
+		that2, ok := that.(Subset)
 		if ok {
 			that1 = &that2
 		} else {
@@ -2102,7 +1150,7 @@ func (this *Source) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Name != that1.Name {
+	if !this.Weight.Equal(that1.Weight) {
 		return false
 	}
 	if len(this.Selector) != len(that1.Selector) {
@@ -2118,14 +1166,14 @@ func (this *Source) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *HTTPRule) Equal(that interface{}) bool {
+func (this *FaultInjection) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*HTTPRule)
+	that1, ok := that.(*FaultInjection)
 	if !ok {
-		that2, ok := that.(HTTPRule)
+		that2, ok := that.(FaultInjection)
 		if ok {
 			that1 = &that2
 		} else {
@@ -2137,43 +1185,232 @@ func (this *HTTPRule) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if len(this.Sources) != len(that1.Sources) {
+	if !this.Delay.Equal(that1.Delay) {
 		return false
 	}
-	for i := range this.Sources {
-		if !this.Sources[i].Equal(that1.Sources[i]) {
+	if !this.Abort.Equal(that1.Abort) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay)
+		if ok {
+			that1 = &that2
+		} else {
 			return false
 		}
 	}
-	if len(this.Match) != len(that1.Match) {
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
-	for i := range this.Match {
-		if !this.Match[i].Equal(that1.Match[i]) {
+	if this.Percent != that1.Percent {
+		return false
+	}
+	if that1.HttpDelayType == nil {
+		if this.HttpDelayType != nil {
+			return false
+		}
+	} else if this.HttpDelayType == nil {
+		return false
+	} else if !this.HttpDelayType.Equal(that1.HttpDelayType) {
+		return false
+	}
+	if !this.Percentage.Equal(that1.Percentage) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay_FixedDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay_FixedDelay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay_FixedDelay)
+		if ok {
+			that1 = &that2
+		} else {
 			return false
 		}
 	}
-	if len(this.Route) != len(that1.Route) {
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
-	for i := range this.Route {
-		if !this.Route[i].Equal(that1.Route[i]) {
+	if !this.FixedDelay.Equal(that1.FixedDelay) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay_ExponentialDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay_ExponentialDelay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay_ExponentialDelay)
+		if ok {
+			that1 = &that2
+		} else {
 			return false
 		}
 	}
-	if !this.Timeout.Equal(that1.Timeout) {
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
-	if !this.Retries.Equal(that1.Retries) {
+	if !this.ExponentialDelay.Equal(that1.ExponentialDelay) {
 		return false
 	}
-	if !this.Fault.Equal(that1.Fault) {
+	return true
+}
+func (this *FaultInjection_Abort) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
-	if !this.Mirror.Equal(that1.Mirror) {
+	if this.Percent != that1.Percent {
 		return false
 	}
-	if !this.CorsPolicy.Equal(that1.CorsPolicy) {
+	if that1.ErrorType == nil {
+		if this.ErrorType != nil {
+			return false
+		}
+	} else if this.ErrorType == nil {
+		return false
+	} else if !this.ErrorType.Equal(that1.ErrorType) {
+		return false
+	}
+	if !this.Percentage.Equal(that1.Percentage) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort_HttpStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort_HttpStatus)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort_HttpStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.HttpStatus != that1.HttpStatus {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort_GrpcStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort_GrpcStatus)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort_GrpcStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.GrpcStatus != that1.GrpcStatus {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort_Http2Error) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort_Http2Error)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort_Http2Error)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Http2Error != that1.Http2Error {
+		return false
+	}
+	return true
+}
+func (this *HeaderManipulation) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HeaderManipulation)
+	if !ok {
+		that2, ok := that.(HeaderManipulation)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
 	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
@@ -2209,417 +1446,6 @@ func (this *HTTPRule) Equal(that interface{}) bool {
 		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPMatchRequest) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPMatchRequest)
-	if !ok {
-		that2, ok := that.(HTTPMatchRequest)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Uri.Equal(that1.Uri) {
-		return false
-	}
-	if !this.Method.Equal(that1.Method) {
-		return false
-	}
-	if len(this.Headers) != len(that1.Headers) {
-		return false
-	}
-	for i := range this.Headers {
-		if !this.Headers[i].Equal(that1.Headers[i]) {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPRouteDestination) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPRouteDestination)
-	if !ok {
-		that2, ok := that.(HTTPRouteDestination)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.AlternateDestination.Equal(that1.AlternateDestination) {
-		return false
-	}
-	if this.Weight != that1.Weight {
-		return false
-	}
-	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
-		return false
-	}
-	for i := range this.RemoveResponseHeaders {
-		if this.RemoveResponseHeaders[i] != that1.RemoveResponseHeaders[i] {
-			return false
-		}
-	}
-	if len(this.AppendResponseHeaders) != len(that1.AppendResponseHeaders) {
-		return false
-	}
-	for i := range this.AppendResponseHeaders {
-		if this.AppendResponseHeaders[i] != that1.AppendResponseHeaders[i] {
-			return false
-		}
-	}
-	if len(this.RemoveRequestHeaders) != len(that1.RemoveRequestHeaders) {
-		return false
-	}
-	for i := range this.RemoveRequestHeaders {
-		if this.RemoveRequestHeaders[i] != that1.RemoveRequestHeaders[i] {
-			return false
-		}
-	}
-	if len(this.AppendRequestHeaders) != len(that1.AppendRequestHeaders) {
-		return false
-	}
-	for i := range this.AppendRequestHeaders {
-		if this.AppendRequestHeaders[i] != that1.AppendRequestHeaders[i] {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *RouteDestination) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*RouteDestination)
-	if !ok {
-		that2, ok := that.(RouteDestination)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Destination.Equal(that1.Destination) {
-		return false
-	}
-	if this.Weight != that1.Weight {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *L4MatchAttributes) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*L4MatchAttributes)
-	if !ok {
-		that2, ok := that.(L4MatchAttributes)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.DestinationSubnets) != len(that1.DestinationSubnets) {
-		return false
-	}
-	for i := range this.DestinationSubnets {
-		if this.DestinationSubnets[i] != that1.DestinationSubnets[i] {
-			return false
-		}
-	}
-	if this.Port != that1.Port {
-		return false
-	}
-	if this.SourceSubnet != that1.SourceSubnet {
-		return false
-	}
-	if len(this.SourceLabels) != len(that1.SourceLabels) {
-		return false
-	}
-	for i := range this.SourceLabels {
-		if this.SourceLabels[i] != that1.SourceLabels[i] {
-			return false
-		}
-	}
-	if len(this.Gateways) != len(that1.Gateways) {
-		return false
-	}
-	for i := range this.Gateways {
-		if this.Gateways[i] != that1.Gateways[i] {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *TLSMatchAttributes) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*TLSMatchAttributes)
-	if !ok {
-		that2, ok := that.(TLSMatchAttributes)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.SniHosts) != len(that1.SniHosts) {
-		return false
-	}
-	for i := range this.SniHosts {
-		if this.SniHosts[i] != that1.SniHosts[i] {
-			return false
-		}
-	}
-	if len(this.DestinationSubnets) != len(that1.DestinationSubnets) {
-		return false
-	}
-	for i := range this.DestinationSubnets {
-		if this.DestinationSubnets[i] != that1.DestinationSubnets[i] {
-			return false
-		}
-	}
-	if this.Port != that1.Port {
-		return false
-	}
-	if this.SourceSubnet != that1.SourceSubnet {
-		return false
-	}
-	if len(this.SourceLabels) != len(that1.SourceLabels) {
-		return false
-	}
-	for i := range this.SourceLabels {
-		if this.SourceLabels[i] != that1.SourceLabels[i] {
-			return false
-		}
-	}
-	if len(this.Gateways) != len(that1.Gateways) {
-		return false
-	}
-	for i := range this.Gateways {
-		if this.Gateways[i] != that1.Gateways[i] {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPRedirect) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPRedirect)
-	if !ok {
-		that2, ok := that.(HTTPRedirect)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Uri != that1.Uri {
-		return false
-	}
-	if this.Authority != that1.Authority {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPRewrite) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPRewrite)
-	if !ok {
-		that2, ok := that.(HTTPRewrite)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Uri != that1.Uri {
-		return false
-	}
-	if this.Authority != that1.Authority {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *StringMatch) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch)
-	if !ok {
-		that2, ok := that.(StringMatch)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.MatchType == nil {
-		if this.MatchType != nil {
-			return false
-		}
-	} else if this.MatchType == nil {
-		return false
-	} else if !this.MatchType.Equal(that1.MatchType) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Exact) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Exact)
-	if !ok {
-		that2, ok := that.(StringMatch_Exact)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Exact != that1.Exact {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Prefix) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Prefix)
-	if !ok {
-		that2, ok := that.(StringMatch_Prefix)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Prefix != that1.Prefix {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Regex) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Regex)
-	if !ok {
-		that2, ok := that.(StringMatch_Regex)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Regex != that1.Regex {
 		return false
 	}
 	return true
@@ -2716,315 +1542,6 @@ func (this *CorsPolicy) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *HTTPFaultInjection) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Delay.Equal(that1.Delay) {
-		return false
-	}
-	if !this.Abort.Equal(that1.Abort) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Delay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Delay)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Delay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Percent != that1.Percent {
-		return false
-	}
-	if that1.HttpDelayType == nil {
-		if this.HttpDelayType != nil {
-			return false
-		}
-	} else if this.HttpDelayType == nil {
-		return false
-	} else if !this.HttpDelayType.Equal(that1.HttpDelayType) {
-		return false
-	}
-	if !this.Percentage.Equal(that1.Percentage) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Delay_FixedDelay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Delay_FixedDelay)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Delay_FixedDelay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.FixedDelay.Equal(that1.FixedDelay) {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Delay_ExponentialDelay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Delay_ExponentialDelay)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Delay_ExponentialDelay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.ExponentialDelay.Equal(that1.ExponentialDelay) {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Abort) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Abort)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Abort)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Percent != that1.Percent {
-		return false
-	}
-	if that1.ErrorType == nil {
-		if this.ErrorType != nil {
-			return false
-		}
-	} else if this.ErrorType == nil {
-		return false
-	} else if !this.ErrorType.Equal(that1.ErrorType) {
-		return false
-	}
-	if !this.Percentage.Equal(that1.Percentage) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Abort_HttpStatus) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Abort_HttpStatus)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Abort_HttpStatus)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.HttpStatus != that1.HttpStatus {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Abort_GrpcStatus) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Abort_GrpcStatus)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Abort_GrpcStatus)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.GrpcStatus != that1.GrpcStatus {
-		return false
-	}
-	return true
-}
-func (this *HTTPFaultInjection_Abort_Http2Error) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HTTPFaultInjection_Abort_Http2Error)
-	if !ok {
-		that2, ok := that.(HTTPFaultInjection_Abort_Http2Error)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Http2Error != that1.Http2Error {
-		return false
-	}
-	return true
-}
-func (this *PortSelector) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*PortSelector)
-	if !ok {
-		that2, ok := that.(PortSelector)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.Port == nil {
-		if this.Port != nil {
-			return false
-		}
-	} else if this.Port == nil {
-		return false
-	} else if !this.Port.Equal(that1.Port) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *PortSelector_Number) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*PortSelector_Number)
-	if !ok {
-		that2, ok := that.(PortSelector_Number)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Number != that1.Number {
-		return false
-	}
-	return true
-}
-func (this *PortSelector_Name) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*PortSelector_Name)
-	if !ok {
-		that2, ok := that.(PortSelector_Name)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Name != that1.Name {
-		return false
-	}
-	return true
-}
 func (this *Percent) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -3053,101 +1570,86 @@ func (this *Percent) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("routing.proto", fileDescriptor_routing_3b2d5f62a71d6149) }
+func init() { proto.RegisterFile("routing.proto", fileDescriptor_routing_3c683c633dc0cb3d) }
 
-var fileDescriptor_routing_3b2d5f62a71d6149 = []byte{
-	// 1484 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x57, 0xcd, 0x6e, 0xdb, 0x46,
-	0x10, 0x0e, 0x25, 0x4b, 0xb2, 0x46, 0x52, 0x6c, 0x6f, 0x1c, 0x87, 0x51, 0xd2, 0xd4, 0x51, 0x10,
-	0xc4, 0x40, 0x11, 0x29, 0x71, 0x52, 0xb7, 0x4d, 0x9a, 0x14, 0x92, 0xf3, 0xa3, 0xb4, 0x49, 0x63,
-	0xd0, 0x46, 0x0f, 0x69, 0x01, 0x82, 0x92, 0xc6, 0x14, 0x13, 0x8a, 0xcb, 0x2e, 0x97, 0xb6, 0xd4,
-	0x77, 0x69, 0x4f, 0x3d, 0xf4, 0x01, 0x0a, 0xf4, 0x4d, 0x8a, 0x9e, 0x7a, 0xe8, 0x33, 0xf4, 0xd8,
-	0x43, 0xb1, 0xbb, 0xa4, 0x44, 0xeb, 0xc7, 0xb2, 0xd0, 0x5c, 0x7a, 0xe3, 0xee, 0x7e, 0xdf, 0xec,
-	0xb7, 0xb3, 0x33, 0xb3, 0x43, 0x28, 0x31, 0x1a, 0x72, 0xc7, 0xb3, 0xab, 0x3e, 0xa3, 0x9c, 0x92,
-	0xb5, 0x20, 0xf4, 0x91, 0xd9, 0x2e, 0xa5, 0xd5, 0x80, 0xba, 0xb4, 0xea, 0xd0, 0xf2, 0xba, 0x4d,
-	0x6d, 0x2a, 0x57, 0x6b, 0xe2, 0x4b, 0x01, 0xcb, 0xd7, 0x6c, 0x4a, 0x6d, 0x17, 0x6b, 0x72, 0xd4,
-	0x0a, 0x0f, 0x6b, 0x9d, 0x90, 0x59, 0xdc, 0xa1, 0xde, 0xac, 0xf5, 0x63, 0x66, 0xf9, 0x3e, 0xb2,
-	0x20, 0x5a, 0xbf, 0x20, 0xf6, 0xa8, 0x1d, 0xdd, 0x15, 0x80, 0xfe, 0x40, 0x4d, 0x56, 0xde, 0x40,
-	0xce, 0x50, 0x72, 0xc8, 0x6b, 0x58, 0xeb, 0x60, 0xc0, 0x1d, 0x4f, 0x1a, 0x35, 0x59, 0xe8, 0x62,
-	0xa0, 0x6b, 0x9b, 0xe9, 0xad, 0xc2, 0x76, 0xa5, 0x3a, 0x21, 0xb2, 0xfa, 0x64, 0x84, 0x35, 0x42,
-	0x17, 0x8d, 0xd5, 0xce, 0xc9, 0x89, 0xa0, 0xf2, 0xa7, 0x06, 0x2b, 0x63, 0x28, 0xf2, 0x10, 0x0a,
-	0x09, 0x9c, 0x9e, 0xde, 0xd4, 0xb6, 0x0a, 0xdb, 0x97, 0xab, 0x33, 0x2d, 0x27, 0xd1, 0x64, 0x17,
-	0x56, 0x7a, 0x18, 0x74, 0xcd, 0x2e, 0xe7, 0x7e, 0xa4, 0x2f, 0x25, 0xf5, 0x5d, 0x99, 0xa2, 0xaf,
-	0x79, 0x70, 0xb0, 0x27, 0x85, 0x95, 0x04, 0xa7, 0xc9, 0xb9, 0x2f, 0x55, 0x91, 0x17, 0x40, 0x1c,
-	0xcf, 0x66, 0x18, 0x04, 0x49, 0x3b, 0xda, 0x7c, 0x3b, 0xab, 0x11, 0x6d, 0x68, 0xaa, 0xf2, 0x93,
-	0x06, 0xd9, 0x7d, 0x1a, 0xb2, 0x36, 0x12, 0x02, 0x4b, 0x9e, 0xd5, 0x43, 0x5d, 0xdb, 0xd4, 0xb6,
-	0xf2, 0x86, 0xfc, 0x26, 0xbb, 0xb0, 0x1c, 0xa0, 0x8b, 0x6d, 0x4e, 0x59, 0xa4, 0xf3, 0xd6, 0x14,
-	0xfb, 0xca, 0x40, 0x75, 0x3f, 0x42, 0x3e, 0xf5, 0x38, 0x1b, 0x18, 0x43, 0x62, 0xf9, 0x21, 0x94,
-	0x4e, 0x2c, 0x91, 0x55, 0x48, 0xbf, 0xc3, 0x41, 0xb4, 0x91, 0xf8, 0x24, 0xeb, 0x90, 0x39, 0xb2,
-	0xdc, 0x10, 0xf5, 0x94, 0x9c, 0x53, 0x83, 0x07, 0xa9, 0x4f, 0xb5, 0xca, 0xaf, 0x39, 0x58, 0x8e,
-	0xf5, 0x93, 0x7b, 0x90, 0x0b, 0xe4, 0x5e, 0x81, 0xfe, 0x95, 0x54, 0x73, 0x79, 0xa6, 0x1a, 0x23,
-	0x46, 0x92, 0xcf, 0x20, 0xd3, 0xb3, 0x78, 0xbb, 0x1b, 0x39, 0xe8, 0xc6, 0x0c, 0x07, 0xbd, 0x12,
-	0x18, 0x03, 0xbf, 0x0f, 0x31, 0xe0, 0x86, 0x62, 0x90, 0x47, 0x90, 0x11, 0x91, 0x8e, 0xa7, 0x9c,
-	0x5d, 0x6a, 0x13, 0x98, 0xe4, 0x95, 0x2b, 0x96, 0x90, 0xcb, 0x9d, 0x1e, 0xd2, 0x90, 0xeb, 0xd9,
-	0x38, 0x4a, 0x64, 0x80, 0x57, 0xe3, 0x00, 0xaf, 0x3e, 0x89, 0x12, 0xc0, 0x88, 0x91, 0x64, 0x07,
-	0x72, 0x0c, 0x39, 0x73, 0x30, 0xd0, 0x73, 0x92, 0x74, 0x75, 0xd6, 0xae, 0x28, 0xdc, 0x1c, 0x83,
-	0xc9, 0x43, 0xc8, 0x1c, 0x5a, 0xa1, 0xcb, 0xf5, 0x65, 0xc9, 0xba, 0x39, 0x83, 0xf5, 0x4c, 0x60,
-	0x5e, 0x78, 0x6f, 0xb1, 0xad, 0x94, 0x4a, 0x0e, 0xb9, 0x0b, 0xd9, 0x9e, 0xc3, 0x18, 0x65, 0x7a,
-	0x7e, 0x5e, 0x38, 0x47, 0x40, 0xf2, 0x18, 0x0a, 0x6d, 0xca, 0x02, 0xd3, 0xa7, 0xae, 0xd3, 0x1e,
-	0xe8, 0x20, 0x79, 0x1f, 0x4c, 0xd9, 0x75, 0x97, 0xb2, 0x60, 0x4f, 0x82, 0x0c, 0x68, 0x0f, 0xbf,
-	0xc9, 0x0e, 0x5c, 0x62, 0xd8, 0xa3, 0x47, 0x68, 0x32, 0x0c, 0x7c, 0xea, 0x05, 0x68, 0x76, 0xd1,
-	0xea, 0x20, 0x0b, 0xf4, 0xe2, 0x66, 0x7a, 0x2b, 0x6f, 0x5c, 0x54, 0xcb, 0x46, 0xb4, 0xda, 0x54,
-	0x8b, 0xc4, 0x83, 0x4b, 0xa2, 0x26, 0x78, 0x9d, 0x49, 0x5e, 0x49, 0xde, 0xd2, 0xce, 0x29, 0x19,
-	0x50, 0xad, 0x4b, 0xea, 0x98, 0x4d, 0x15, 0xb0, 0x17, 0xad, 0x69, 0x6b, 0xe4, 0x3e, 0x6c, 0x0c,
-	0x75, 0xca, 0xe0, 0x18, 0x6e, 0x77, 0x5e, 0xca, 0x5c, 0x8f, 0x65, 0xca, 0xc5, 0x98, 0xf5, 0x0e,
-	0x36, 0x86, 0x2a, 0x4f, 0xb2, 0x56, 0xa4, 0xc8, 0x8f, 0xcf, 0x22, 0x32, 0x69, 0x51, 0x69, 0x5c,
-	0xb7, 0xa6, 0x2c, 0x95, 0x9b, 0x50, 0x9e, 0x7d, 0xae, 0x45, 0xb2, 0xad, 0xfc, 0x1c, 0x2e, 0xcf,
-	0xdc, 0x7c, 0xa1, 0xb4, 0xfd, 0x39, 0x05, 0xab, 0xe3, 0x59, 0x45, 0xee, 0x40, 0x3a, 0x64, 0x8e,
-	0x34, 0x50, 0xd8, 0xbe, 0x36, 0x2d, 0x75, 0x39, 0x73, 0x3c, 0x5b, 0x71, 0x04, 0x94, 0xec, 0x40,
-	0xb6, 0x87, 0xbc, 0x4b, 0x3b, 0x51, 0x99, 0x9d, 0x47, 0x8a, 0xd0, 0xe4, 0x4b, 0xc8, 0xc5, 0xfe,
-	0xce, 0x48, 0x7f, 0xdf, 0x39, 0x43, 0xd6, 0x57, 0x4f, 0xb8, 0x3a, 0x36, 0x50, 0x7e, 0x03, 0xc5,
-	0x39, 0x6e, 0xb8, 0x9f, 0x74, 0xc3, 0x7c, 0x91, 0x09, 0x37, 0xfd, 0xbd, 0x04, 0xeb, 0xd3, 0x2a,
-	0x08, 0xf9, 0x1a, 0x2e, 0x5a, 0x2e, 0x47, 0xe6, 0x59, 0x1c, 0xcd, 0xe4, 0x73, 0xa3, 0xcd, 0xcb,
-	0xcf, 0xf5, 0x21, 0x2f, 0x69, 0x6f, 0x03, 0xb2, 0xc7, 0xe8, 0xd8, 0x5d, 0x2e, 0x35, 0x66, 0x8c,
-	0x68, 0x74, 0x5a, 0x16, 0xa6, 0x4f, 0xcb, 0xc2, 0x1f, 0x66, 0x67, 0xe1, 0x92, 0x74, 0x78, 0xe3,
-	0x8c, 0xb5, 0xf2, 0xbd, 0x66, 0x64, 0xe6, 0x94, 0x8c, 0x3c, 0x9e, 0x99, 0x91, 0x59, 0x29, 0xb8,
-	0xbe, 0xa8, 0xe0, 0xff, 0x71, 0x76, 0xda, 0xb0, 0x3a, 0x11, 0x71, 0x63, 0x6d, 0x8d, 0xb6, 0x50,
-	0x5b, 0x33, 0x23, 0xbc, 0x2a, 0xbf, 0xa5, 0x60, 0xed, 0xe5, 0x7d, 0x19, 0xf6, 0x75, 0xce, 0x99,
-	0xd3, 0x0a, 0x39, 0x06, 0xa4, 0x06, 0x17, 0x92, 0x6d, 0x5a, 0x10, 0xb6, 0x3c, 0xe4, 0xaa, 0x81,
-	0xc9, 0x1b, 0x24, 0xb1, 0xb4, 0xaf, 0x56, 0x44, 0x6b, 0xe2, 0x53, 0xa6, 0x8c, 0x97, 0x0c, 0xf9,
-	0x4d, 0x6e, 0x40, 0x49, 0xbd, 0xf0, 0x11, 0x5f, 0x56, 0x88, 0xbc, 0x51, 0x54, 0x93, 0x8a, 0x49,
-	0xbe, 0x1d, 0x82, 0x5c, 0xab, 0x85, 0x6e, 0x1c, 0x9c, 0xd3, 0x9e, 0x88, 0x09, 0x99, 0x51, 0x23,
-	0xf1, 0x52, 0x12, 0xd5, 0x05, 0x47, 0xc6, 0xd5, 0x14, 0x29, 0xc3, 0xb2, 0x6d, 0x71, 0x3c, 0xb6,
-	0x06, 0x71, 0xe4, 0x0d, 0xc7, 0xe5, 0x2f, 0x60, 0x6d, 0x82, 0xbe, 0xd0, 0x15, 0xfd, 0x9e, 0x02,
-	0x72, 0xf0, 0x72, 0x7f, 0xdc, 0x75, 0x57, 0x20, 0x1f, 0x78, 0x8e, 0xd9, 0xa5, 0xc1, 0xd0, 0x61,
-	0xcb, 0x81, 0xe7, 0x34, 0xc5, 0x78, 0x96, 0x5f, 0x53, 0x73, 0xfd, 0x9a, 0x3e, 0xcd, 0xaf, 0x4b,
-	0x53, 0xfc, 0xfa, 0xdd, 0xb8, 0x5f, 0x55, 0x95, 0xfd, 0x64, 0x8a, 0x5f, 0x27, 0x0f, 0xb1, 0x90,
-	0x63, 0xb3, 0xef, 0xdb, 0xb1, 0x8f, 0xa1, 0xa8, 0xba, 0xa7, 0x8e, 0xc3, 0xb0, 0xcd, 0x05, 0x37,
-	0x7e, 0x94, 0xf2, 0xea, 0xd1, 0xb9, 0x0a, 0x79, 0x2b, 0xe4, 0x5d, 0xca, 0x1c, 0x3e, 0x88, 0xf8,
-	0xa3, 0x89, 0xca, 0x23, 0x28, 0x28, 0xfe, 0x31, 0x73, 0x38, 0x2e, 0x4c, 0x47, 0x28, 0x24, 0xde,
-	0x02, 0xb2, 0x01, 0x19, 0xec, 0x5b, 0x6d, 0xae, 0x0c, 0x34, 0xcf, 0x19, 0x6a, 0x48, 0x74, 0xc8,
-	0xfa, 0x0c, 0x0f, 0x9d, 0xbe, 0xb2, 0xd0, 0x3c, 0x67, 0x44, 0x63, 0xc1, 0x60, 0x68, 0x63, 0x5f,
-	0xc5, 0xbb, 0x60, 0xc8, 0x61, 0xa3, 0x08, 0x20, 0x9b, 0x56, 0x93, 0x0f, 0x7c, 0xac, 0xbc, 0x85,
-	0xfc, 0xb0, 0x47, 0x14, 0xfe, 0xb4, 0x38, 0xc7, 0x9e, 0x2f, 0x63, 0x46, 0xe4, 0xe7, 0x70, 0x4c,
-	0xea, 0xb0, 0xe2, 0x23, 0x33, 0x39, 0x1b, 0x98, 0x71, 0xaf, 0x9a, 0x9a, 0xd7, 0xab, 0x96, 0x7c,
-	0x64, 0x07, 0x6c, 0x70, 0xa0, 0xf0, 0x95, 0x1f, 0x53, 0x00, 0xa3, 0x26, 0x8f, 0x5c, 0x87, 0xa2,
-	0xe5, 0xba, 0xf4, 0xd8, 0xa4, 0xcc, 0xb1, 0x1d, 0x2f, 0x8a, 0xd2, 0x82, 0x9c, 0x7b, 0x2d, 0xa7,
-	0x44, 0x8c, 0x29, 0x88, 0x7a, 0xae, 0xe3, 0x10, 0x55, 0xbc, 0x57, 0x6a, 0x6e, 0x04, 0x3a, 0xf9,
-	0x20, 0x29, 0x50, 0x5c, 0xd5, 0x6f, 0xc2, 0x79, 0xec, 0xfb, 0x74, 0xec, 0xf9, 0xc9, 0x1b, 0x25,
-	0x35, 0x1b, 0xc3, 0xb6, 0x21, 0xd7, 0xb3, 0xfa, 0xa6, 0x65, 0xa3, 0x9e, 0x99, 0x77, 0xba, 0x6c,
-	0xcf, 0xea, 0xd7, 0x6d, 0x24, 0xcf, 0x61, 0x4d, 0xed, 0xdf, 0x66, 0xd8, 0x41, 0x8f, 0x3b, 0x96,
-	0x1b, 0x44, 0x7d, 0x7c, 0x79, 0x82, 0xdd, 0xa0, 0xd4, 0xfd, 0x46, 0xc4, 0x98, 0xb1, 0x2a, 0x49,
-	0xbb, 0x23, 0x8e, 0x78, 0xe4, 0xc9, 0x64, 0xeb, 0x4d, 0xea, 0x90, 0xe9, 0xa0, 0x6b, 0x0d, 0xa2,
-	0x52, 0xfb, 0xd1, 0x99, 0x1a, 0xf6, 0xea, 0x13, 0x41, 0x31, 0x14, 0x53, 0x98, 0xb0, 0x5a, 0x71,
-	0x61, 0x3c, 0xb3, 0x89, 0xba, 0xa0, 0x18, 0x8a, 0x59, 0xfe, 0x47, 0x83, 0x8c, 0xb4, 0x49, 0xae,
-	0x42, 0xce, 0x47, 0xd6, 0x46, 0x4f, 0x05, 0x63, 0xa6, 0x91, 0xd2, 0x35, 0x23, 0x9e, 0x22, 0x9f,
-	0x43, 0xe1, 0xd0, 0xe9, 0x63, 0xc7, 0x54, 0x9a, 0xe7, 0xc5, 0x48, 0xf3, 0x9c, 0x01, 0x12, 0xaf,
-	0x6c, 0x37, 0x61, 0x4d, 0x5c, 0x88, 0xa7, 0x5c, 0x12, 0xd9, 0x48, 0xcf, 0xb7, 0xb1, 0x9a, 0x60,
-	0x29, 0x4b, 0x0f, 0x00, 0x22, 0x49, 0xa3, 0xcb, 0x2c, 0x4f, 0x39, 0xf7, 0x9e, 0x02, 0x19, 0x09,
-	0x74, 0x63, 0x0d, 0x56, 0xe4, 0xff, 0xb2, 0xdc, 0x5e, 0xe6, 0x49, 0xf9, 0x0f, 0x0d, 0x32, 0xd2,
-	0x1f, 0x73, 0x8e, 0x7f, 0x1d, 0x0a, 0x92, 0x1a, 0x70, 0x8b, 0x87, 0x81, 0x7a, 0xe5, 0xc4, 0x19,
-	0xc5, 0xe4, 0xbe, 0x9c, 0x13, 0x10, 0x9b, 0xf9, 0xed, 0x18, 0x12, 0xa7, 0x27, 0x88, 0xc9, 0x11,
-	0x44, 0x10, 0xb6, 0x4d, 0x94, 0xff, 0x5a, 0x4b, 0x31, 0x44, 0x4e, 0x3e, 0x95, 0xbf, 0x55, 0xff,
-	0xe5, 0x7c, 0x45, 0x00, 0x69, 0x58, 0x95, 0x80, 0x67, 0x50, 0xdc, 0xa3, 0x8c, 0xc7, 0xbf, 0xde,
-	0xa2, 0xa4, 0x78, 0x61, 0xaf, 0x85, 0x4c, 0x9e, 0xaf, 0x24, 0x4a, 0x8a, 0x1a, 0x93, 0xf5, 0xe8,
-	0xcf, 0x3f, 0x2e, 0x35, 0x72, 0xd4, 0xc8, 0xaa, 0xc7, 0xa1, 0xf2, 0x21, 0xe4, 0xa2, 0xcd, 0x46,
-	0x55, 0x55, 0x58, 0xd0, 0xa2, 0xaa, 0xda, 0xb8, 0xfd, 0xcb, 0x5f, 0xd7, 0xb4, 0x37, 0xb7, 0x6c,
-	0x87, 0x77, 0xc3, 0x56, 0xb5, 0x4d, 0x7b, 0x35, 0x21, 0xf2, 0xb6, 0x43, 0x6b, 0x43, 0xd9, 0x35,
-	0xff, 0x9d, 0x5d, 0xb3, 0x7c, 0xa7, 0x76, 0x74, 0xb7, 0x95, 0x95, 0x17, 0x7d, 0xef, 0xdf, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0x5b, 0x22, 0x4b, 0xd6, 0x45, 0x12, 0x00, 0x00,
+var fileDescriptor_routing_3c683c633dc0cb3d = []byte{
+	// 1236 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0x4b, 0x6f, 0xdb, 0x46,
+	0x10, 0x8e, 0x2c, 0x4b, 0x8e, 0x46, 0x7e, 0xae, 0x95, 0x84, 0x11, 0xd2, 0x3c, 0x14, 0x04, 0xf1,
+	0xa1, 0xa1, 0x10, 0xa5, 0x08, 0x02, 0xf7, 0x15, 0x3b, 0x2f, 0xb7, 0x80, 0x51, 0x63, 0x6d, 0x04,
+	0x45, 0x2f, 0xc4, 0x9a, 0x1a, 0x51, 0x4c, 0x48, 0x2e, 0xbb, 0xbb, 0x4c, 0xac, 0x3f, 0xd0, 0x3f,
+	0x51, 0xf4, 0xde, 0x5f, 0xd1, 0x73, 0x8f, 0x3d, 0xf6, 0x94, 0x43, 0x4f, 0x3d, 0xf7, 0xdc, 0x43,
+	0xb1, 0xbb, 0xa4, 0x1e, 0xb6, 0x54, 0xd9, 0xed, 0x49, 0xda, 0x99, 0xef, 0x9b, 0xd7, 0xce, 0x0c,
+	0x17, 0x56, 0x04, 0xcf, 0x54, 0x98, 0x04, 0x6e, 0x2a, 0xb8, 0xe2, 0x64, 0x43, 0x66, 0x29, 0x8a,
+	0x20, 0xe2, 0xdc, 0x95, 0x3c, 0xe2, 0x6e, 0xc8, 0x9b, 0x8d, 0x80, 0x07, 0xdc, 0x68, 0xdb, 0xfa,
+	0x9f, 0x05, 0x36, 0x6f, 0x06, 0x9c, 0x07, 0x11, 0xb6, 0xcd, 0xe9, 0x38, 0xeb, 0xb5, 0xbb, 0x99,
+	0x60, 0x2a, 0xe4, 0xc9, 0x2c, 0xfd, 0x7b, 0xc1, 0xd2, 0x14, 0x85, 0xcc, 0xf5, 0x9b, 0xda, 0x47,
+	0xfb, 0xdd, 0x43, 0x0d, 0x38, 0x19, 0xe4, 0xc2, 0x87, 0x41, 0xa8, 0xfa, 0xd9, 0xb1, 0xeb, 0xf3,
+	0xb8, 0xad, 0xdd, 0x3f, 0x08, 0xb9, 0xfd, 0x7d, 0x1b, 0xaa, 0x36, 0x4b, 0x43, 0x8d, 0x8f, 0x51,
+	0xb1, 0x2e, 0x53, 0x2c, 0xa7, 0xb4, 0xcf, 0x41, 0x91, 0x8a, 0xa9, 0xac, 0x70, 0xfc, 0xf1, 0x39,
+	0x08, 0x02, 0x7b, 0x16, 0xdd, 0xfa, 0xad, 0x0c, 0xd5, 0x23, 0x26, 0x02, 0x54, 0x64, 0x1b, 0xea,
+	0xca, 0xfc, 0xf3, 0x62, 0x94, 0x7d, 0xa7, 0x74, 0xbb, 0xb4, 0x55, 0xef, 0x5c, 0x77, 0x7d, 0x2e,
+	0xb0, 0xa8, 0x95, 0x4b, 0x51, 0xf2, 0x4c, 0xf8, 0x48, 0xb1, 0x47, 0xc1, 0xa2, 0xf7, 0x51, 0xf6,
+	0xc9, 0x6b, 0x58, 0xb3, 0x0a, 0x4f, 0x62, 0x84, 0xbe, 0xe2, 0xc2, 0x59, 0xb8, 0x5d, 0xde, 0xaa,
+	0x77, 0x1e, 0xb8, 0x67, 0x0a, 0xee, 0x5a, 0x7f, 0xee, 0xa1, 0x21, 0x1c, 0xe6, 0xf8, 0x17, 0x89,
+	0x12, 0x03, 0xba, 0x2a, 0x27, 0x84, 0x04, 0xa1, 0xd1, 0x45, 0xa9, 0xc2, 0xc4, 0x94, 0x7e, 0x64,
+	0xbc, 0x6c, 0x8c, 0x77, 0x66, 0x1b, 0x7f, 0x3e, 0x62, 0x4d, 0x7a, 0xd8, 0xec, 0x9e, 0xd5, 0x90,
+	0xa7, 0xb0, 0x2e, 0xf0, 0xfb, 0x0c, 0xa5, 0xf2, 0x62, 0xa6, 0xfc, 0x3e, 0x0a, 0xe9, 0x2c, 0x1a,
+	0x17, 0x57, 0xdc, 0x09, 0xeb, 0xfb, 0x56, 0x4b, 0xd7, 0x72, 0x78, 0x7e, 0x96, 0xcd, 0x1d, 0xd8,
+	0x9c, 0x92, 0x0f, 0x59, 0x87, 0xf2, 0x5b, 0x1c, 0x98, 0x5a, 0xd6, 0xa8, 0xfe, 0x4b, 0x1a, 0x50,
+	0x79, 0xc7, 0xa2, 0x0c, 0x9d, 0x05, 0x23, 0xb3, 0x87, 0xed, 0x85, 0x27, 0xa5, 0xe6, 0x4b, 0x70,
+	0x66, 0x45, 0x7d, 0x11, 0x3b, 0xad, 0x1f, 0x2b, 0x50, 0xa7, 0xb6, 0xe9, 0x69, 0x16, 0x21, 0x79,
+	0x05, 0x55, 0xdb, 0x20, 0x4e, 0xd7, 0x5c, 0x69, 0x63, 0xf2, 0x4a, 0x0f, 0x8d, 0x6e, 0xf7, 0xfa,
+	0xaf, 0x1f, 0x6e, 0x5d, 0xfa, 0xeb, 0xc3, 0xad, 0x0d, 0x85, 0x52, 0x75, 0xc3, 0x5e, 0x6f, 0xbb,
+	0x15, 0x06, 0x09, 0x17, 0xd8, 0xa2, 0x39, 0x9d, 0x3c, 0x81, 0xcb, 0x45, 0x73, 0x3a, 0xbe, 0x31,
+	0x75, 0x75, 0xd2, 0xd4, 0x7e, 0xae, 0xdd, 0x5d, 0xd4, 0xc6, 0xe8, 0x10, 0x4d, 0x1e, 0x42, 0xd5,
+	0x36, 0xcb, 0xb0, 0xab, 0x66, 0x5d, 0x1c, 0xcd, 0x81, 0xe4, 0x00, 0x36, 0x94, 0x60, 0xbd, 0x5e,
+	0xe8, 0x7b, 0x32, 0x8d, 0x42, 0xa5, 0xd3, 0x71, 0xca, 0x86, 0x7d, 0x77, 0x1a, 0xdb, 0x62, 0x0f,
+	0x0b, 0x28, 0x5d, 0x57, 0xa7, 0x24, 0xe4, 0x6b, 0x58, 0xeb, 0xb1, 0x2c, 0x52, 0x5e, 0x98, 0xbc,
+	0x41, 0x5f, 0xd7, 0xd8, 0xd4, 0xae, 0xde, 0xb9, 0x33, 0xc5, 0xde, 0x4b, 0x8d, 0xfc, 0xaa, 0x00,
+	0xd2, 0xd5, 0xde, 0xc4, 0x99, 0x3c, 0x82, 0x25, 0x15, 0xc6, 0xc8, 0x33, 0xe5, 0x54, 0xf3, 0x8c,
+	0xec, 0x3e, 0x70, 0x8b, 0x7d, 0xe0, 0x3e, 0xcf, 0xf7, 0x05, 0x2d, 0x90, 0xe4, 0x31, 0x2c, 0x09,
+	0x54, 0x22, 0x44, 0xe9, 0x2c, 0x19, 0xd2, 0x8d, 0x29, 0x8e, 0xf7, 0x8e, 0x8e, 0x0e, 0x28, 0xea,
+	0x4e, 0x2d, 0xc0, 0xe4, 0x0b, 0xa8, 0xfb, 0x5c, 0x48, 0x2f, 0xe5, 0x51, 0xe8, 0x0f, 0x1c, 0x30,
+	0xdc, 0x8f, 0xa6, 0x70, 0x9f, 0x71, 0x21, 0x0f, 0x0c, 0x88, 0x82, 0x3f, 0xfc, 0xaf, 0xab, 0x1f,
+	0x87, 0x42, 0x70, 0xe1, 0xd4, 0x8a, 0x58, 0xc7, 0x59, 0x63, 0x4d, 0x47, 0x73, 0x20, 0xf9, 0x16,
+	0x1a, 0x7d, 0x64, 0x5d, 0x14, 0x5e, 0xcc, 0x92, 0x30, 0xcd, 0x22, 0x16, 0x9a, 0x82, 0x2d, 0x1b,
+	0x03, 0xf7, 0xa6, 0xc5, 0x6d, 0xe0, 0xfb, 0x39, 0xda, 0x18, 0xdb, 0xec, 0x4f, 0xc8, 0x8c, 0x85,
+	0xd6, 0x2b, 0x58, 0x3f, 0x7d, 0x57, 0xba, 0x9a, 0x32, 0x3b, 0x96, 0xa8, 0xa4, 0x53, 0x32, 0x53,
+	0x37, 0xad, 0x3f, 0x0e, 0x0d, 0x82, 0x16, 0xc8, 0xd6, 0x2f, 0x25, 0xa8, 0x5a, 0x19, 0xe9, 0x40,
+	0xf5, 0x3d, 0x86, 0x41, 0xbf, 0x68, 0xaf, 0xe6, 0x14, 0xfa, 0x01, 0x0a, 0x1f, 0x13, 0x45, 0x73,
+	0x24, 0x79, 0x06, 0x97, 0x4f, 0xad, 0xaa, 0xfb, 0x33, 0x9d, 0xba, 0x93, 0x2b, 0x64, 0x48, 0x6c,
+	0x7e, 0x0a, 0x2b, 0xff, 0x7d, 0x4e, 0xff, 0x5c, 0x84, 0xd5, 0xc9, 0x36, 0x23, 0x9f, 0x43, 0xa5,
+	0x8b, 0x11, 0x1b, 0xe4, 0x79, 0xdc, 0x9f, 0xdb, 0x98, 0xee, 0x73, 0x0d, 0xa7, 0x96, 0xa5, 0xe9,
+	0xec, 0x98, 0x0b, 0x95, 0xf7, 0xf5, 0x39, 0xe8, 0x3b, 0x1a, 0x4e, 0x2d, 0xab, 0xf9, 0x77, 0x09,
+	0x2a, 0xc6, 0x1e, 0xb9, 0x01, 0x4b, 0xa9, 0xad, 0x97, 0x89, 0xa4, 0xb2, 0xbb, 0xe0, 0x94, 0x68,
+	0x21, 0x22, 0x9f, 0x41, 0xbd, 0x17, 0x9e, 0x60, 0xd7, 0xb3, 0xb1, 0x2e, 0xcc, 0x19, 0x80, 0xbd,
+	0x4b, 0x14, 0x0c, 0xde, 0xda, 0xde, 0x83, 0x0d, 0x3c, 0x49, 0x79, 0x82, 0x89, 0x0a, 0x59, 0x94,
+	0xdb, 0x28, 0xcf, 0xb7, 0xb1, 0x3e, 0xc6, 0xb2, 0x96, 0xb6, 0x01, 0xf2, 0x90, 0x58, 0x80, 0x4e,
+	0x65, 0xee, 0xd5, 0x8f, 0xa1, 0x77, 0x37, 0x60, 0xad, 0xaf, 0x54, 0x6a, 0xdd, 0x7b, 0x6a, 0x90,
+	0x62, 0xf3, 0xf7, 0x12, 0x54, 0x4c, 0x3d, 0xe6, 0xa4, 0x7f, 0x07, 0xea, 0x86, 0x9a, 0x2f, 0x55,
+	0x9d, 0x7e, 0x45, 0xe7, 0xa8, 0x85, 0x76, 0x99, 0x6a, 0x48, 0x20, 0x52, 0xbf, 0x80, 0xe8, 0xec,
+	0x6a, 0x1a, 0xa2, 0x85, 0x23, 0x88, 0x26, 0x74, 0x3c, 0x34, 0x93, 0xb9, 0x58, 0x40, 0x8c, 0xf0,
+	0x85, 0x19, 0xc2, 0xff, 0x93, 0xdf, 0x32, 0x80, 0x31, 0x6c, 0x52, 0x6b, 0xfd, 0xb0, 0x08, 0xe4,
+	0xec, 0x80, 0x92, 0xc7, 0x70, 0x4d, 0x60, 0xcc, 0xdf, 0xa1, 0x27, 0x50, 0xa6, 0x3c, 0x91, 0xe8,
+	0xd9, 0x91, 0x95, 0xce, 0xf2, 0xed, 0xf2, 0x56, 0x8d, 0x5e, 0xb1, 0x6a, 0x9a, 0x6b, 0xad, 0x09,
+	0x49, 0x4e, 0xe0, 0x9a, 0x7e, 0xeb, 0x24, 0xdd, 0xb3, 0xbc, 0x15, 0x33, 0x4a, 0x4f, 0xcf, 0xb5,
+	0x20, 0xdc, 0x1d, 0x63, 0xe4, 0x94, 0x75, 0x3b, 0x63, 0x57, 0xd8, 0x34, 0x1d, 0xf9, 0x04, 0xae,
+	0x0e, 0x23, 0xb6, 0xdf, 0xeb, 0xc2, 0xf1, 0xaa, 0x09, 0xb8, 0x51, 0x04, 0x6c, 0x94, 0x05, 0x2b,
+	0x83, 0xab, 0xc3, 0x78, 0x27, 0x59, 0x6b, 0x26, 0xdc, 0x2f, 0x2f, 0x16, 0xee, 0xb8, 0x6d, 0x1b,
+	0x6d, 0x83, 0x4d, 0x51, 0x35, 0xf7, 0xa0, 0x39, 0x3b, 0xc3, 0x0b, 0x3d, 0x0d, 0x5e, 0xc1, 0xf5,
+	0x99, 0xce, 0x2f, 0xb4, 0x73, 0xde, 0x40, 0x6d, 0xf8, 0x81, 0x21, 0x4d, 0xb8, 0xcc, 0x94, 0xc2,
+	0x38, 0x35, 0x7b, 0xb7, 0xb4, 0x55, 0xa1, 0xc3, 0x33, 0xd9, 0x81, 0xb5, 0x14, 0x85, 0xa7, 0xc4,
+	0xc0, 0x2b, 0x3e, 0x74, 0xf3, 0xe6, 0x9c, 0xae, 0xa4, 0x28, 0x8e, 0xc4, 0xe0, 0xc8, 0xe2, 0x5b,
+	0x3f, 0x2d, 0x00, 0x8c, 0xbe, 0x48, 0xe4, 0x0e, 0x2c, 0xb3, 0x28, 0xe2, 0xef, 0x3d, 0x2e, 0xc2,
+	0x20, 0x4c, 0xcc, 0xa6, 0xaf, 0xd1, 0xba, 0x91, 0x7d, 0x63, 0x44, 0xe4, 0x2e, 0xac, 0x58, 0x48,
+	0x8c, 0xaa, 0xcf, 0xbb, 0xd2, 0x2c, 0xe6, 0x1a, 0xb5, 0xbc, 0x7d, 0x2b, 0x1b, 0x81, 0x8a, 0x3b,
+	0x2c, 0x8f, 0x81, 0x8a, 0x1b, 0xbf, 0x07, 0xab, 0x7a, 0x5d, 0x8c, 0x35, 0xe6, 0xa2, 0x41, 0xad,
+	0x58, 0x69, 0x01, 0xeb, 0xc0, 0x52, 0xcc, 0x4e, 0xbc, 0xd1, 0x78, 0xfd, 0x4b, 0x76, 0xd5, 0x98,
+	0x9d, 0xec, 0x04, 0xfa, 0x39, 0xb5, 0x61, 0xfd, 0xfb, 0x02, 0xbb, 0x76, 0x1d, 0xc9, 0xfc, 0x11,
+	0xd0, 0x3c, 0xc3, 0xde, 0xe5, 0x3c, 0x7a, 0xad, 0xab, 0x4f, 0xd7, 0x0d, 0xe9, 0xd9, 0x88, 0xd3,
+	0xba, 0x05, 0x4b, 0xf9, 0xe4, 0x8e, 0x2e, 0x4c, 0x5f, 0x43, 0x29, 0xbf, 0xb0, 0xdd, 0x07, 0x3f,
+	0xff, 0x71, 0xb3, 0xf4, 0xdd, 0xfd, 0x69, 0xef, 0xf9, 0xa2, 0x5d, 0xdb, 0xe9, 0xdb, 0x20, 0x7f,
+	0xd4, 0x1f, 0x57, 0x8d, 0xd7, 0x47, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff, 0x94, 0xe3, 0x74, 0x66,
+	0xf2, 0x0c, 0x00, 0x00,
 }

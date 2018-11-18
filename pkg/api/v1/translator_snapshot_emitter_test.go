@@ -29,13 +29,14 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1     string
-		namespace2     string
-		cfg            *rest.Config
-		emitter        TranslatorEmitter
-		meshClient     MeshClient
-		upstreamClient gloo_solo_io.UpstreamClient
-		secretClient   gloo_solo_io.SecretClient
+		namespace1        string
+		namespace2        string
+		cfg               *rest.Config
+		emitter           TranslatorEmitter
+		meshClient        MeshClient
+		routingRuleClient RoutingRuleClient
+		upstreamClient    gloo_solo_io.UpstreamClient
+		secretClient      gloo_solo_io.SecretClient
 	)
 
 	BeforeEach(func() {
@@ -59,6 +60,15 @@ var _ = Describe("V1Emitter", func() {
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
+		// RoutingRule Constructor
+		routingRuleClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         RoutingRuleCrd,
+			Cfg:         cfg,
+			SharedCache: cache,
+		}
+		routingRuleClient, err = NewRoutingRuleClient(routingRuleClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
 		// Upstream Constructor
 		upstreamClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         gloo_solo_io.UpstreamCrd,
@@ -77,7 +87,7 @@ var _ = Describe("V1Emitter", func() {
 		}
 		secretClient, err = gloo_solo_io.NewSecretClient(secretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewTranslatorEmitter(meshClient, upstreamClient, secretClient)
+		emitter = NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -155,6 +165,66 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
+
+		/*
+			RoutingRule
+		*/
+
+		assertSnapshotRoutingrules := func(expectRoutingrules RoutingRuleList, unexpectRoutingrules RoutingRuleList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectRoutingrules {
+						if _, err := snap.Routingrules.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectRoutingrules {
+						if _, err := snap.Routingrules.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := routingRuleClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := routingRuleClient.List(namespace2, clients.ListOpts{})
+					combined := nsList1.ByNamespace()
+					combined.Add(nsList2...)
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+
+		routingRule1a, err := routingRuleClient.Write(NewRoutingRule(namespace1, "angela"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		routingRule1b, err := routingRuleClient.Write(NewRoutingRule(namespace2, "angela"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotRoutingrules(RoutingRuleList{routingRule1a, routingRule1b}, nil)
+
+		routingRule2a, err := routingRuleClient.Write(NewRoutingRule(namespace1, "bob"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		routingRule2b, err := routingRuleClient.Write(NewRoutingRule(namespace2, "bob"), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotRoutingrules(RoutingRuleList{routingRule1a, routingRule1b, routingRule2a, routingRule2b}, nil)
+
+		err = routingRuleClient.Delete(routingRule2a.Metadata.Namespace, routingRule2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = routingRuleClient.Delete(routingRule2b.Metadata.Namespace, routingRule2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotRoutingrules(RoutingRuleList{routingRule1a, routingRule1b}, RoutingRuleList{routingRule2a, routingRule2b})
+
+		err = routingRuleClient.Delete(routingRule1a.Metadata.Namespace, routingRule1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = routingRuleClient.Delete(routingRule1b.Metadata.Namespace, routingRule1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotRoutingrules(nil, RoutingRuleList{routingRule1a, routingRule1b, routingRule2a, routingRule2b})
 
 		/*
 			Upstream

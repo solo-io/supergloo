@@ -15,12 +15,12 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("MeshClient", func() {
+var _ = Describe("RoutingRuleClient", func() {
 	var (
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: MeshCrd},
+		&typed.KubeRcTester{Crd: RoutingRuleCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -30,31 +30,31 @@ var _ = Describe("MeshClient", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client MeshClient
+				client RoutingRuleClient
 				err    error
 			)
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				factory := test.Setup(namespace)
-				client, err = NewMeshClient(factory)
+				client, err = NewRoutingRuleClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
-			It("CRUDs Meshs", func() {
-				MeshClientTest(namespace, client)
+			It("CRUDs RoutingRules", func() {
+				RoutingRuleClientTest(namespace, client)
 			})
 		})
 	}
 })
 
-func MeshClientTest(namespace string, client MeshClient) {
+func RoutingRuleClientTest(namespace string, client RoutingRuleClient) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := "foo"
-	input := NewMesh(namespace, name)
+	input := NewRoutingRule(namespace, name)
 	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -63,18 +63,20 @@ func MeshClientTest(namespace string, client MeshClient) {
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&Mesh{}))
+	Expect(r1).To(BeAssignableToTypeOf(&RoutingRule{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.Istio).To(Equal(input.Istio))
-	Expect(r1.Linkerd2).To(Equal(input.Linkerd2))
-	Expect(r1.Consul).To(Equal(input.Consul))
-	Expect(r1.Encryption).To(Equal(input.Encryption))
-	Expect(r1.Observability).To(Equal(input.Observability))
-	Expect(r1.Policy).To(Equal(input.Policy))
+	Expect(r1.Target).To(Equal(input.Target))
+	Expect(r1.TrafficSplitting).To(Equal(input.TrafficSplitting))
+	Expect(r1.FaultInjection).To(Equal(input.FaultInjection))
+	Expect(r1.Timeout).To(Equal(input.Timeout))
+	Expect(r1.Retries).To(Equal(input.Retries))
+	Expect(r1.CorsPolicy).To(Equal(input.CorsPolicy))
+	Expect(r1.Mirror).To(Equal(input.Mirror))
+	Expect(r1.HeaderManipulaition).To(Equal(input.HeaderManipulaition))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
@@ -96,7 +98,7 @@ func MeshClientTest(namespace string, client MeshClient) {
 	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = "boo"
-	input = &Mesh{}
+	input = &RoutingRule{}
 
 	input.Metadata = core.Metadata{
 		Name:      name,
@@ -145,7 +147,7 @@ func MeshClientTest(namespace string, client MeshClient) {
 		Expect(err).NotTo(HaveOccurred())
 
 		name = "goo"
-		input = &Mesh{}
+		input = &RoutingRule{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
 			Name:      name,

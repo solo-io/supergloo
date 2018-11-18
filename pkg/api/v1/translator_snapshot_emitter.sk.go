@@ -44,33 +44,39 @@ func init() {
 type TranslatorEmitter interface {
 	Register() error
 	Mesh() MeshClient
+	RoutingRule() RoutingRuleClient
 	Upstream() gloo_solo_io.UpstreamClient
 	Secret() gloo_solo_io.SecretClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error)
 }
 
-func NewTranslatorEmitter(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient) TranslatorEmitter {
-	return NewTranslatorEmitterWithEmit(meshClient, upstreamClient, secretClient, make(chan struct{}))
+func NewTranslatorEmitter(meshClient MeshClient, routingRuleClient RoutingRuleClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient) TranslatorEmitter {
+	return NewTranslatorEmitterWithEmit(meshClient, routingRuleClient, upstreamClient, secretClient, make(chan struct{}))
 }
 
-func NewTranslatorEmitterWithEmit(meshClient MeshClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient, emit <-chan struct{}) TranslatorEmitter {
+func NewTranslatorEmitterWithEmit(meshClient MeshClient, routingRuleClient RoutingRuleClient, upstreamClient gloo_solo_io.UpstreamClient, secretClient gloo_solo_io.SecretClient, emit <-chan struct{}) TranslatorEmitter {
 	return &translatorEmitter{
-		mesh:      meshClient,
-		upstream:  upstreamClient,
-		secret:    secretClient,
-		forceEmit: emit,
+		mesh:        meshClient,
+		routingRule: routingRuleClient,
+		upstream:    upstreamClient,
+		secret:      secretClient,
+		forceEmit:   emit,
 	}
 }
 
 type translatorEmitter struct {
-	forceEmit <-chan struct{}
-	mesh      MeshClient
-	upstream  gloo_solo_io.UpstreamClient
-	secret    gloo_solo_io.SecretClient
+	forceEmit   <-chan struct{}
+	mesh        MeshClient
+	routingRule RoutingRuleClient
+	upstream    gloo_solo_io.UpstreamClient
+	secret      gloo_solo_io.SecretClient
 }
 
 func (c *translatorEmitter) Register() error {
 	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.routingRule.Register(); err != nil {
 		return err
 	}
 	if err := c.upstream.Register(); err != nil {
@@ -84,6 +90,10 @@ func (c *translatorEmitter) Register() error {
 
 func (c *translatorEmitter) Mesh() MeshClient {
 	return c.mesh
+}
+
+func (c *translatorEmitter) RoutingRule() RoutingRuleClient {
+	return c.routingRule
 }
 
 func (c *translatorEmitter) Upstream() gloo_solo_io.UpstreamClient {
@@ -104,6 +114,12 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
+	/* Create channel for RoutingRule */
+	type routingRuleListWithNamespace struct {
+		list      RoutingRuleList
+		namespace string
+	}
+	routingRuleChan := make(chan routingRuleListWithNamespace)
 	/* Create channel for Upstream */
 	type upstreamListWithNamespace struct {
 		list      gloo_solo_io.UpstreamList
@@ -128,6 +144,17 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
+		}(namespace)
+		/* Setup watch for RoutingRule */
+		routingRuleNamespacesChan, routingRuleErrs, err := c.routingRule.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting RoutingRule watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, routingRuleErrs, namespace+"-routingrules")
 		}(namespace)
 		/* Setup watch for Upstream */
 		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
@@ -163,6 +190,12 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 					case <-ctx.Done():
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					}
+				case routingRuleList := <-routingRuleNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case routingRuleChan <- routingRuleListWithNamespace{list: routingRuleList, namespace: namespace}:
 					}
 				case upstreamList := <-upstreamNamespacesChan:
 					select {
@@ -205,6 +238,10 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		      currentSnapshot.Meshes.Clear(meshNamespacedList.namespace)
 		      meshList := meshNamespacedList.list
 		   	currentSnapshot.Meshes.Add(meshList...)
+		      routingRuleNamespacedList := <- routingRuleChan
+		      currentSnapshot.Routingrules.Clear(routingRuleNamespacedList.namespace)
+		      routingRuleList := routingRuleNamespacedList.list
+		   	currentSnapshot.Routingrules.Add(routingRuleList...)
 		      upstreamNamespacedList := <- upstreamChan
 		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
 		      upstreamList := upstreamNamespacedList.list
@@ -238,6 +275,14 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 
 				currentSnapshot.Meshes.Clear(namespace)
 				currentSnapshot.Meshes.Add(meshList...)
+			case routingRuleNamespacedList := <-routingRuleChan:
+				record()
+
+				namespace := routingRuleNamespacedList.namespace
+				routingRuleList := routingRuleNamespacedList.list
+
+				currentSnapshot.Routingrules.Clear(namespace)
+				currentSnapshot.Routingrules.Add(routingRuleList...)
 			case upstreamNamespacedList := <-upstreamChan:
 				record()
 
