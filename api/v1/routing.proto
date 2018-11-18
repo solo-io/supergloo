@@ -9,65 +9,142 @@ option (gogoproto.equal_all) = true;
 
 import "gloo/v1/proxy.proto";
 
-// global routing config for a single mesh
-message Routing {
-    // all of the http/routing config for each destination is contained here
-    repeated DestinationRule destination_rules = 1;
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+
+// All rules have a target
+// This describes the sidecars
+message Target {
+    // the mesh we want to target. this rule will only be applied to pods within that mesh
+    core.solo.io.ResourceRef target_mesh = 1;
+    // source pods to apply the rule to
+    map<string, string> source_selector = 2;
+    map<string, string> destination_selector = 3;
+
+    // if specified, this rule will only apply to http requests in the mesh matching these parameters
+    repeated gloo.solo.io.Matcher request_matchers = 4;
 }
 
-// Rules for traffic to a particular destination. Applied to any traffic regardless of source,
-// as long as the destination matches
-message DestinationRule {
-    // the destination to which these http rules are applied
-    gloo.solo.io.Destination destination = 3;
+//@solo-kit:resource.short_name=rr
+//@solo-kit:resource.plural_name=routingrules
+//@solo-kit:resource.resource_groups=translator.supergloo.solo.io
+// rules to add features such as Fault Injection and Retries to a mesh
+message RoutingRule {
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by gloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
 
-    // Route Rules applied to In-Mesh-Service-to-Destination traffic
-    repeated HTTPRule mesh_http_rules = 2;
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 99 [(gogoproto.nullable) = false];
 
-    // Route Rules applied to Ingress-to-Destination traffic
-    repeated HTTPRule ingress_http_rules = 1; // ignored
-}
+    // target where we apply this rule
+    Target target = 1;
 
-// origin of a request. typically a pod in the mesh
-message Source {
-    string name = 1;
-    map<string,string> selector = 2;
-}
+    // configuration to enable traffic splitting, e.g. by percentage, for this rule
+    TrafficSplitting traffic_splitting = 3;
 
-// Describes match conditions and actions for routing HTTP/1.1, HTTP2, and
-// gRPC traffic. See VirtualService for usage examples.
-message HTTPRule {
-    // the sources to which this rule will be applied
-    repeated Source sources = 75;
+    // configuration to enable fault injection for this rule
+    FaultInjection fault_injection = 2;
 
-    repeated HTTPMatchRequest match = 1;
-
-    repeated HTTPRouteDestination route = 2;
-
-    // Timeout for HTTP requests.
+    // Timeout for this rule
     google.protobuf.Duration timeout = 6;
 
-    // Retry policy for HTTP requests.
+    // Retry policy for for this rule
     HTTPRetry retries = 7;
 
-    // Fault injection policy to apply on HTTP traffic at the client side.
-    // Note that timeouts or retries will not be enabled when faults are
-    // enabled on the client side.
-    HTTPFaultInjection fault = 8;
-
-    // Mirror HTTP traffic to a another destination in addition to forwarding
-    // the requests to the intended destination. Mirrored traffic is on a
-    // best effort basis where the sidecar/gateway will not wait for the
-    // mirrored cluster to respond before returning the response from the
-    // original destination.  Statistics will be generated for the mirrored
-    // destination.
-    gloo.solo.io.Destination mirror = 9;
-
-    // Cross-Origin Resource Sharing policy (CORS). Refer to
+    // Cross-Origin Resource Sharing policy (CORS) for this rule. Refer to
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
     // for further details about cross origin resource sharing.
     CorsPolicy cors_policy = 10;
 
+    // Mirror HTTP traffic to a another destination for this rule. Traffic will still be sent
+    // to its original destination as normal.
+    gloo.solo.io.Destination mirror = 9;
+
+    // manipulate request and response headers for this rule
+    HeaderManipulation header_manipulaition = 12;
+
+    // TODO:
+    // - outlier detection (for destination) -> must become part of an istio destinationrule
+    // - mirror
+    // - cors
+}
+
+// configure traffic splitting for any http requests sent to one of the destination pods
+message TrafficSplitting {
+    // split traffic between these subsets based on their weights
+    // weights should add to 100
+    repeated Subset subsets = 1;
+}
+
+// a subset of the pods the comprise an application in the mesh
+message Subset {
+    // The proportion of traffic to be forwarded to the subset. (0-100).
+    Percent weight = 1;
+    // Selector for the labels on the pods that will constitute this subset
+    map<string, string> selector = 2;
+}
+
+message FaultInjection {
+    // Delay requests before forwarding, emulating various failures such as
+    // network issues, overloaded upstream service, etc.
+    Delay delay = 1;
+
+    // Abort Http request attempts and return error codes back to downstream
+    // service, giving the impression that the upstream service is faulty.
+    Abort abort = 2;
+
+    // Delay specification is used to inject latency into the request
+    // forwarding path. The following example will introduce a 5 second delay
+    // in 1 out of every 1000 requests to the "v1" version of the "reviews"
+    // service from all pods with label env: prod
+    // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+    // The optional _percentage_ field can be used to only delay a certain
+    // percentage of requests. If left unspecified, all request will be delayed.
+    message Delay {
+        // Percentage of requests on which the delay will be injected (0-100).
+        // Use of integer `percent` value is deprecated. Use the double `percentage`
+        // field instead.
+        int32 percent = 1 [deprecated = true];
+
+        oneof http_delay_type {
+            // REQUIRED. Add a fixed delay before forwarding the request. Format:
+            // 1h/1m/1s/1ms. MUST be >=1ms.
+            google.protobuf.Duration fixed_delay = 2;
+
+            // $hide_from_docs
+            google.protobuf.Duration exponential_delay = 3;
+        }
+
+        // Percentage of requests on which the delay will be injected.
+        Percent percentage = 5;
+    }
+
+    message Abort {
+        // Percentage of requests to be aborted with the error code provided (0-100).
+        // Use of integer `percent` value is deprecated. Use the double `percentage`
+        // field instead.
+        int32 percent = 1 [deprecated = true];
+
+        oneof error_type {
+            // REQUIRED. HTTP status code to use to abort the Http request.
+            int32 http_status = 2;
+
+            // $hide_from_docs
+            string grpc_status = 3;
+
+            // $hide_from_docs
+            string http2_error = 4;
+        }
+
+        // Percentage of requests to be aborted with the error code provided.
+        Percent percentage = 5;
+    }
+}
+
+// manipulate request and response headers
+message HeaderManipulation {
     // HTTP headers to remove before returning a response to the caller.
     repeated string remove_response_headers = 12;
 
@@ -84,348 +161,9 @@ message HTTPRule {
     map<string, string> append_request_headers = 15;
 }
 
-// HttpMatchRequest specifies a set of criterion to be met in order for the
-// rule to be applied to the HTTP request. For example, the following
-// restricts the rule to match only requests where the URL path
-// starts with /ratings/v2/ and the request contains a custom `end-user` header
-// with value `jason`.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - headers:
-//         end-user:
-//           exact: jason
-//       uri:
-//         prefix: "/ratings/v2/"
-//     route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-// ```
-//
-// HTTPMatchRequest CANNOT be empty.
-message HTTPMatchRequest {
-    // URI to match
-    // values are case-sensitive and formatted as follows:
-    //
-    // - `exact: "value"` for exact string match
-    //
-    // - `prefix: "value"` for prefix-based match
-    //
-    // - `regex: "value"` for ECMAscript style regex-based match
-    //
-    StringMatch uri = 1;
-
-    // HTTP Method
-    // values are case-sensitive and formatted as follows:
-    //
-    // - `exact: "value"` for exact string match
-    //
-    // - `prefix: "value"` for prefix-based match
-    //
-    // - `regex: "value"` for ECMAscript style regex-based match
-    //
-    StringMatch method = 3;
-
-    // The header keys must be lowercase and use hyphen as the separator,
-    // e.g. _x-request-id_.
-    //
-    // Header values are case-sensitive and formatted as follows:
-    //
-    // - `exact: "value"` for exact string match
-    //
-    // - `prefix: "value"` for prefix-based match
-    //
-    // - `regex: "value"` for ECMAscript style regex-based match
-    //
-    // **Note:** The keys `uri`, `scheme`, `method`, and `authority` will be ignored.
-    map<string, StringMatch> headers = 5;
-}
-
-// Each routing rule is associated with one or more service versions (see
-// glossary in beginning of document). Weights associated with the version
-// determine the proportion of traffic it receives. For example, the
-// following rule will route 25% of traffic for the "reviews" service to
-// instances with the "v2" tag and the remaining traffic (i.e., 75%) to
-// "v1".
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: reviews-route
-// spec:
-//   hosts:
-//   - reviews.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: reviews.prod.svc.cluster.local
-//         subset: v2
-//       weight: 25
-//     - destination:
-//         host: reviews.prod.svc.cluster.local
-//         subset: v1
-//       weight: 75
-// ```
-//
-// And the associated DestinationRule
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: DestinationRule
-// metadata:
-//   name: reviews-destination
-// spec:
-//   host: reviews.prod.svc.cluster.local
-//   subsets:
-//   - name: v1
-//     labels:
-//       version: v1
-//   - name: v2
-//     labels:
-//       version: v2
-// ```
-//
-// Traffic can also be split across two entirely different services without
-// having to define new subsets. For example, the following rule forwards 25% of
-// traffic to reviews.com to dev.reviews.com
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: reviews-route-two-domains
-// spec:
-//   hosts:
-//   - reviews.com
-//   http:
-//   - route:
-//     - destination:
-//         host: dev.reviews.com
-//       weight: 25
-//     - destination:
-//         host: reviews.com
-//       weight: 75
-// ```
-message HTTPRouteDestination {
-    // optional. use if the destination for this route should be other
-    // than the original destination specified on the root Destination Rule
-    gloo.solo.io.Destination alternate_destination = 1;
-
-    // REQUIRED. The proportion of traffic to be forwarded to the service
-    // version. (0-100). Sum of weights across destinations SHOULD BE == 100.
-    // If there is only one destination in a rule, the weight value is assumed to
-    // be 100.
-    int32 weight = 2;
-
-    // HTTP headers to remove before returning a response to the caller.
-    repeated string remove_response_headers = 3;
-
-    // Additional HTTP headers to add before returning a response to the
-    // caller.
-    map<string, string> append_response_headers = 4;
-
-    // HTTP headers to remove before forwarding a request to the
-    // destination service.
-    repeated string remove_request_headers = 5;
-
-    // Additional HTTP headers to add before forwarding a request to the
-    // destination service.
-    map<string, string> append_request_headers = 6;
-}
-
-// L4 routing rule weighted destination.
-message RouteDestination {
-    // REQUIRED. Destination uniquely identifies the instances of a service
-    // to which the request/connection should be forwarded to.
-    gloo.solo.io.Destination destination = 1;
-
-    // REQUIRED. The proportion of traffic to be forwarded to the service
-    // version. If there is only one destination in a rule, all traffic will be
-    // routed to it irrespective of the weight.
-    int32 weight = 2;
-}
-
-// L4 connection match attributes. Note that L4 connection matching support
-// is incomplete.
-message L4MatchAttributes {
-    // IPv4 or IPv6 ip addresses of destination with optional subnet.  E.g.,
-    // a.b.c.d/xx form or just a.b.c.d.
-    repeated string destination_subnets = 1;
-
-    // Specifies the port on the host that is being addressed. Many services
-    // only expose a single port or label ports with the protocols they support,
-    // in these cases it is not required to explicitly select the port.
-    uint32 port = 2;
-
-    // IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx
-    // form or just a.b.c.d
-    // $hide_from_docs
-    string source_subnet = 3;
-
-    // One or more labels that constrain the applicability of a rule to
-    // workloads with the given labels. If the VirtualService has a list of
-    // gateways specified at the top, it should include the reserved gateway
-    // `mesh` in order for this field to be applicable.
-    map<string, string> source_labels = 4;
-
-    // Names of gateways where the rule should be applied to. Gateway names
-    // at the top of the VirtualService (if any) are overridden. The gateway
-    // match is independent of sourceLabels.
-    repeated string gateways = 5;
-}
-
-// TLS connection match attributes.
-message TLSMatchAttributes {
-    // REQUIRED. SNI (server name indicator) to match on. Wildcard prefixes
-    // can be used in the SNI value, e.g., *.com will match foo.example.com
-    // as well as example.com. An SNI value must be a subset (i.e., fall
-    // within the domain) of the corresponding virtual serivce's hosts.
-    repeated string sni_hosts = 1;
-
-    // IPv4 or IPv6 ip addresses of destination with optional subnet.  E.g.,
-    // a.b.c.d/xx form or just a.b.c.d.
-    repeated string destination_subnets = 2;
-
-    // Specifies the port on the host that is being addressed. Many services
-    // only expose a single port or label ports with the protocols they
-    // support, in these cases it is not required to explicitly select the
-    // port.
-    uint32 port = 3;
-
-    // IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx
-    // form or just a.b.c.d
-    // $hide_from_docs
-    string source_subnet = 4;
-
-    // One or more labels that constrain the applicability of a rule to
-    // workloads with the given labels. If the VirtualService has a list of
-    // gateways specified at the top, it should include the reserved gateway
-    // `mesh` in order for this field to be applicable.
-    map<string, string> source_labels = 5;
-
-    // Names of gateways where the rule should be applied to. Gateway names
-    // at the top of the VirtualService (if any) are overridden. The gateway
-    // match is independent of sourceLabels.
-    repeated string gateways = 6;
-}
-
-// HTTPRedirect can be used to send a 301 redirect response to the caller,
-// where the Authority/Host and the URI in the response can be swapped with
-// the specified values. For example, the following rule redirects
-// requests for /v1/getProductRatings API on the ratings service to
-// /v1/bookRatings provided by the bookratings service.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - uri:
-//         exact: /v1/getProductRatings
-//   redirect:
-//     uri: /v1/bookRatings
-//     authority: newratings.default.svc.cluster.local
-//   ...
-// ```
-message HTTPRedirect {
-    // On a redirect, overwrite the Path portion of the URL with this
-    // value. Note that the entire path will be replaced, irrespective of the
-    // request URI being matched as an exact path or prefix.
-    string uri = 1;
-
-    // On a redirect, overwrite the Authority/Host portion of the URL with
-    // this value.
-    string authority = 2;
-}
-
-// HTTPRewrite can be used to rewrite specific parts of a HTTP request
-// before forwarding the request to the destination. Rewrite primitive can
-// be used only with HTTPRouteDestination. The following example
-// demonstrates how to rewrite the URL prefix for api call (/ratings) to
-// ratings service before making the actual API call.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - match:
-//     - uri:
-//         prefix: /ratings
-//     rewrite:
-//       uri: /v1/bookRatings
-//     route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-// ```
-//
-message HTTPRewrite {
-    // rewrite the path (or the prefix) portion of the URI with this
-    // value. If the original URI was matched based on prefix, the value
-    // provided in this field will replace the corresponding matched prefix.
-    string uri = 1;
-
-    // rewrite the Authority/Host header with this value.
-    string authority = 2;
-}
-
-// Describes how to match a given string in HTTP headers. Match is
-// case-sensitive.
-message StringMatch {
-    oneof match_type {
-
-        // exact string match
-        string exact = 1;
-
-        // prefix-based match
-        string prefix = 2;
-
-        // ECMAscript style regex-based match
-        string regex = 3;
-    }
-}
-
 // Describes the retry policy to use when a HTTP request fails. For
 // example, the following rule sets the maximum number of retries to 3 when
 // calling ratings:v1 service, with a 2s timeout per retry attempt.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-//     retries:
-//       attempts: 3
-//       perTryTimeout: 2s
-// ```
-//
 message HTTPRetry {
     // REQUIRED. Number of retries for a given request. The interval
     // between retries will be determined automatically (25ms+). Actual
@@ -444,32 +182,6 @@ message HTTPRetry {
 // from example.com domain using HTTP POST/GET, and sets the
 // Access-Control-Allow-Credentials header to false. In addition, it only
 // exposes X-Foo-bar header and sets an expiry period of 1 day.
-//
-// ```yaml
-// apiVersion: networking.istio.io/v1alpha3
-// kind: VirtualService
-// metadata:
-//   name: ratings-route
-// spec:
-//   hosts:
-//   - ratings.prod.svc.cluster.local
-//   http:
-//   - route:
-//     - destination:
-//         host: ratings.prod.svc.cluster.local
-//         subset: v1
-//     corsPolicy:
-//       allowOrigin:
-//       - example.com
-//       allowMethods:
-//       - POST
-//       - GET
-//       allowCredentials: false
-//       allowHeaders:
-//       - X-Foo-Bar
-//       maxAge: "1d"
-// ```
-//
 message CorsPolicy {
     // The list of origins that are allowed to perform CORS requests. The
     // content will be serialized into the Access-Control-Allow-Origin
@@ -496,134 +208,6 @@ message CorsPolicy {
     // (not the preflight) using credentials. Translates to
     // Access-Control-Allow-Credentials header.
     google.protobuf.BoolValue allow_credentials = 6;
-}
-
-// HTTPFaultInjection can be used to specify one or more faults to inject
-// while forwarding http requests to the destination specified in a route.
-// Fault specification is part of a VirtualService rule. Faults include
-// aborting the Http request from downstream service, and/or delaying
-// proxying of requests. A fault rule MUST HAVE delay or abort or both.
-//
-// *Note:* Delay and abort faults are independent of one another, even if
-// both are specified simultaneously.
-message HTTPFaultInjection {
-    // Delay requests before forwarding, emulating various failures such as
-    // network issues, overloaded upstream service, etc.
-    Delay delay = 1;
-
-    // Abort Http request attempts and return error codes back to downstream
-    // service, giving the impression that the upstream service is faulty.
-    Abort abort = 2;
-
-    // Delay specification is used to inject latency into the request
-    // forwarding path. The following example will introduce a 5 second delay
-    // in 1 out of every 1000 requests to the "v1" version of the "reviews"
-    // service from all pods with label env: prod
-    //
-    // ```yaml
-    // apiVersion: networking.istio.io/v1alpha3
-    // kind: VirtualService
-    // metadata:
-    //   name: reviews-route
-    // spec:
-    //   hosts:
-    //   - reviews.prod.svc.cluster.local
-    //   http:
-    //   - match:
-    //     - sourceLabels:
-    //         env: prod
-    //     route:
-    //     - destination:
-    //         host: reviews.prod.svc.cluster.local
-    //         subset: v1
-    //     fault:
-    //       delay:
-    //         percentage:
-    //           value: 0.001
-    //         fixedDelay: 5s
-    // ```
-    //
-    // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-    // The optional _percentage_ field can be used to only delay a certain
-    // percentage of requests. If left unspecified, all request will be delayed.
-    message Delay {
-        // Percentage of requests on which the delay will be injected (0-100).
-        // Use of integer `percent` value is deprecated. Use the double `percentage`
-        // field instead.
-        int32 percent = 1 [deprecated=true];
-
-        oneof http_delay_type {
-            // REQUIRED. Add a fixed delay before forwarding the request. Format:
-            // 1h/1m/1s/1ms. MUST be >=1ms.
-            google.protobuf.Duration fixed_delay = 2;
-
-            // $hide_from_docs
-            google.protobuf.Duration exponential_delay = 3 ;
-        }
-
-        // Percentage of requests on which the delay will be injected.
-        Percent percentage = 5;
-    }
-
-    // Abort specification is used to prematurely abort a request with a
-    // pre-specified error code. The following example will return an HTTP 400
-    // error code for 1 out of every 1000 requests to the "ratings" service "v1".
-    //
-    // ```yaml
-    // apiVersion: networking.istio.io/v1alpha3
-    // kind: VirtualService
-    // metadata:
-    //   name: ratings-route
-    // spec:
-    //   hosts:
-    //   - ratings.prod.svc.cluster.local
-    //   http:
-    //   - route:
-    //     - destination:
-    //         host: ratings.prod.svc.cluster.local
-    //         subset: v1
-    //     fault:
-    //       abort:
-    //         percentage:
-    //           value: 0.001
-    //         httpStatus: 400
-    // ```
-    //
-    // The _httpStatus_ field is used to indicate the HTTP status code to
-    // return to the caller. The optional _percentage_ field can be used to only
-    // abort a certain percentage of requests. If not specified, all requests are
-    // aborted.
-    message Abort {
-        // Percentage of requests to be aborted with the error code provided (0-100).
-        // Use of integer `percent` value is deprecated. Use the double `percentage`
-        // field instead.
-        int32 percent = 1 [deprecated=true];
-
-        oneof error_type {
-            // REQUIRED. HTTP status code to use to abort the Http request.
-            int32 http_status = 2;
-
-            // $hide_from_docs
-            string grpc_status = 3;
-
-            // $hide_from_docs
-            string http2_error = 4;
-        }
-
-        // Percentage of requests to be aborted with the error code provided.
-        Percent percentage = 5;
-    }
-}
-
-// PortSelector specifies the number of a port to be used for
-// matching or selection for final routing.
-message PortSelector {
-    oneof port {
-        // Valid port number
-        uint32 number = 1;
-        // $hide_from_docs
-        string name = 2;
-    }
 }
 
 // Percent specifies a percentage in the range of [0.0, 100.0].
