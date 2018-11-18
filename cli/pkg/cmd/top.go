@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
 )
+
+var opts options.Options
 
 func App(version string) *cobra.Command {
 	app := &cobra.Command{
@@ -14,10 +17,13 @@ func App(version string) *cobra.Command {
 		Version: version,
 		// BashCompletionFunction: bashCompletion,
 	}
+	pflags := app.PersistentFlags()
+	pflags.BoolVarP(&opts.Top.Static, "static", "s", false, "disable interactive mode")
+	pflags.StringVarP(&opts.Top.StaticStr, "staticstr", "k", "abc", "disable interactive mode")
 
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
-		install.Cmd(),
+		install.Cmd(&opts),
 	)
 
 	return app

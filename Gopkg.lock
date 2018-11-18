@@ -320,6 +320,14 @@
   version = "v2.3.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:400e113a367b511b9b09ca642ee11d9885485a93838526d697033af334a2fdde"
+  name = "github.com/kballard/go-shellquote"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "95032a82bc518f77982ea72343cc1ade730072f0"
+
+[[projects]]
   digest = "1:2e4fcf2595948ff177e421bf0b722bf6e729d0be9521c986891ed773225aeebb"
   name = "github.com/lyft/protoc-gen-validate"
   packages = ["validate"]
@@ -342,6 +350,14 @@
   pruneopts = "UT"
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
+
+[[projects]]
+  branch = "master"
+  digest = "1:2b32af4d2a529083275afc192d1067d8126b578c7a9613b26600e4df9c735155"
+  name = "github.com/mgutz/ansi"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9520e82c474b0a04dd04f8a40959027271bab992"
 
 [[projects]]
   branch = "master"
@@ -471,6 +487,14 @@
   pruneopts = "UT"
   revision = "572520ed46dbddaed19ea3d9541bdd0494163693"
   version = "v0.1"
+
+[[projects]]
+  digest = "1:d2631be1cb671b8a86338ecb2c194c3ad5be9b346e0b1a169beff38c8cdb1601"
+  name = "github.com/solo-io/go-checkpoint"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bdea1405611a5bbc025564545ce100bb10b684b8"
+  version = "0.0.3"
 
 [[projects]]
   branch = "master"
@@ -712,6 +736,18 @@
   pruneopts = "UT"
   revision = "2e463a05d100327ca47ac218281906921038fd95"
   version = "v1.16.0"
+
+[[projects]]
+  digest = "1:8aebecf08fbcb288d879a0e21de4636389c2bc58ab45789a05d7f7e94577482f"
+  name = "gopkg.in/AlecAivazis/survey.v1"
+  packages = [
+    ".",
+    "core",
+    "terminal",
+  ]
+  pruneopts = "UT"
+  revision = "fb519f89e19299d852ffdd9b734af122d2dcbd30"
+  version = "v1.7.0"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -977,6 +1013,7 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/status",
+    "gopkg.in/AlecAivazis/survey.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1beta2",
