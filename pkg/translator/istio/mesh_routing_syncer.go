@@ -27,20 +27,13 @@ type MeshRoutingSyncer struct {
 	Reporter                  reporter.Reporter
 }
 
-func findMesh(target *v1.Target, meshes v1.MeshList) (*v1.Mesh, error) {
-	if target == nil {
-		return nil, errors.Errorf("target required")
-	}
-	if target.TargetMesh == nil {
-		return nil, errors.Errorf("target.target_mesh required")
-	}
-	return meshes.Find(target.TargetMesh.Namespace, target.TargetMesh.Name)
-}
-
 func processRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1alpha3.VirtualService, error) {
-	mesh, err := findMesh(rule.Target, meshes)
+	if rule.TargetMesh == nil {
+		return nil, errors.Errorf("target_mesh required")
+	}
+	mesh, err := meshes.Find(rule.TargetMesh.Namespace, rule.TargetMesh.Name)
 	if err != nil {
-		return nil, errors.Wrapf(err, "finding target mesh %v", rule.Target)
+		return nil, errors.Wrapf(err, "finding target mesh %v", rule.TargetMesh)
 	}
 	istioMesh, ok := mesh.MeshType.(*v1.Mesh_Istio)
 	if !ok {
@@ -78,13 +71,12 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1alpha3.VirtualSer
 		},
 	}}
 	// override for default istioMatcher
-	if requestMatchers := rule.Target.RequestMatchers; requestMatchers != nil {
+	if requestMatchers := rule.RequestMatchers; requestMatchers != nil {
 		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, match := range requestMatchers {
-			istioMatcher = append(istioMatcher, convertMatcher(rule.Target.SourceSelector, match))
+			istioMatcher = append(istioMatcher, convertMatcher(rule.SourceSelector, match))
 		}
 	}
-	rule.Target.DestinationSelector
 	return &v1alpha3.VirtualService{
 		Metadata: core.Metadata{
 			Name:      "supergloo-" + rule.Metadata.Name,

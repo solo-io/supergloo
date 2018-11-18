@@ -13,13 +13,6 @@ import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 
-// All rules have a target
-// This describes the sidecars
-message Target {
-    // the mesh we want to target. this rule will only be applied to pods within that mesh
-    core.solo.io.ResourceRef target_mesh = 1;
-}
-
 //@solo-kit:resource.short_name=rr
 //@solo-kit:resource.plural_name=routingrules
 //@solo-kit:resource.resource_groups=translator.supergloo.solo.io
