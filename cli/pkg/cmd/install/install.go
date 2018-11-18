@@ -17,11 +17,11 @@ func Cmd(opts *options.Options) *cobra.Command {
 			install(opts)
 		},
 	}
-	o := &opts.Install
+	iop := &opts.Install
 	pflags := cmd.PersistentFlags()
-	pflags.StringVarP(&o.Filename, "filename", "f", "", "filename to create resources from")
-	pflags.StringVarP(&o.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd")
-	pflags.StringVarP(&o.Namespace, "namespace", "n", "", "namespace to use")
+	pflags.StringVarP(&iop.Filename, "filename", "f", "", "filename to create resources from")
+	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd")
+	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to use")
 	return cmd
 }
 
