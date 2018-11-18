@@ -2,6 +2,7 @@ package consul
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/consul/api"
 	v12 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
@@ -10,7 +11,9 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-type ConsulSyncer struct{}
+type ConsulSyncer struct {
+	LocalPort int
+}
 
 func (c *ConsulSyncer) Sync(_ context.Context, snap *v1.TranslatorSnapshot) error {
 	for _, mesh := range snap.Meshes.List() {
@@ -33,7 +36,11 @@ func (c *ConsulSyncer) Sync(_ context.Context, snap *v1.TranslatorSnapshot) erro
 				return errors.Errorf("missing tls secret")
 			}
 
-			syncSecret(tlsSecret)
+			port := c.LocalPort
+			if port <= 0 {
+				port = 8500
+			}
+			syncSecret(tlsSecret, port)
 		}
 	}
 	return nil
@@ -83,10 +90,13 @@ func shouldUpdateCurrentCert(client *api.Client, secret *v12.TlsSecret) (bool, e
 	return true, nil
 }
 
-func syncSecret(secret *v12.TlsSecret) error {
+func syncSecret(secret *v12.TlsSecret, port int) error {
 	// TODO: This should be configured using the mesh location from the CRD
 	// TODO: This requires port forwarding, ingress, or running inside the cluster
-	client, err := api.NewClient(api.DefaultConfig())
+	consulCfg := &api.Config{
+		Address: fmt.Sprintf("127.0.0.1:%d", port),
+	}
+	client, err := api.NewClient(consulCfg)
 	if err != nil {
 		return errors.Errorf("error creating consul client %v", err)
 	}

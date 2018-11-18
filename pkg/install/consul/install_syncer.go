@@ -189,7 +189,7 @@ connectInject:
   enabled: @@MTLS_ENABLED@@
 `
 
-// The webhook config is created with the wrong name
+// The webhook config is created with the wrong name by the chart
 // Grab it, recreate with correct name, and delete the old one
 func (c *ConsulInstallSyncer) updateMutatingWebhookAdapter(releaseName string) error {
 	name := fmt.Sprintf("%s-%s", releaseName, WebhookCfg)
