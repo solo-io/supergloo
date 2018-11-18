@@ -1,9 +1,10 @@
 package options
 
 type Options struct {
-	Top      Top
-	Install  Install
-	MeshTool MeshTool
+	Top         Top
+	Install     Install
+	MeshTool    MeshTool
+	IngressTool IngressTool
 }
 
 type Top struct {
@@ -20,4 +21,9 @@ type Install struct {
 type MeshTool struct {
 	MeshId    string
 	ServiceId string
+}
+
+type IngressTool struct {
+	IngressId string
+	RouteId   string
 }
