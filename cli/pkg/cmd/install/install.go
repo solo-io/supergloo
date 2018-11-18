@@ -37,7 +37,7 @@ func install(opts *options.Options) {
 
 func qualifyFlags(opts *options.Options) error {
 	top := opts.Top
-	iop := opts.Install
+	iop := &opts.Install
 
 	// we always need a filename
 	if iop.Filename == "" {

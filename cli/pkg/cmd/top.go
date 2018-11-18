@@ -19,7 +19,6 @@ func App(version string) *cobra.Command {
 	}
 	pflags := app.PersistentFlags()
 	pflags.BoolVarP(&opts.Top.Static, "static", "s", false, "disable interactive mode")
-	pflags.StringVarP(&opts.Top.StaticStr, "staticstr", "k", "abc", "disable interactive mode")
 
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
