@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,7 @@ func App(version string) *cobra.Command {
 	app.AddCommand(
 		dummySubCommand("sampleCmd"),
 		dummySubCommand("anotherCmd"),
+		install.Cmd(),
 	)
 
 	return app
