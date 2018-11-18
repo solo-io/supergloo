@@ -19,6 +19,12 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/consul"
 )
 
+/*
+End to end tests for consul installs with and without mTLS enabled.
+Tests assume you already have a Kubernetes environment with Helm / Tiller set up.
+The tests will install Consul and get it configured and validate all services up and running, then tear down and
+clean up all resources created.
+*/
 var _ = Describe("ConsulInstallSyncer", func() {
 
 	namespace := "consul"
@@ -43,6 +49,7 @@ var _ = Describe("ConsulInstallSyncer", func() {
 				"not_used": v1.InstallList{
 					&v1.Install{
 						Consul: &v1.ConsulInstall{
+							// TODO: This can't be an absolute path to my helm cache...
 							Path:      "/Users/rick/.helm/cache/archive/v0.3.0.tar.gz",
 							Namespace: namespace,
 						},
@@ -89,8 +96,7 @@ var _ = Describe("ConsulInstallSyncer", func() {
 
 	deleteWebhookConfigIfExists := func() {
 		client := getKubeClient()
-		err := client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(consul.WebhookCfg, &kubemeta.DeleteOptions{})
-		Expect(err).Should(BeNil())
+		client.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(consul.WebhookCfg, &kubemeta.DeleteOptions{})
 	}
 
 	AfterEach(func() {
