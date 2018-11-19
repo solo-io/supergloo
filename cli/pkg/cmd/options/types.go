@@ -17,6 +17,11 @@ type Install struct {
 	MeshType  string
 	Namespace string
 	Mtls      bool
+	Consul    ConsulArgs
+}
+
+type ConsulArgs struct {
+	Namespace string
 }
 
 type MeshTool struct {

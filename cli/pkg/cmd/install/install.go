@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/util"
 	"github.com/spf13/cobra"
-	"gopkg.in/AlecAivazis/survey.v1"
+	survey "gopkg.in/AlecAivazis/survey.v1"
 )
 
 func Cmd(opts *options.Options) *cobra.Command {
@@ -22,6 +23,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	pflags.StringVarP(&iop.Filename, "filename", "f", "", "filename to create resources from")
 	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd")
 	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to use")
+	pflags.BoolVar(&iop.Mtls, "mtls", false, "use MTLS")
 	return cmd
 }
 
@@ -32,7 +34,25 @@ func install(opts *options.Options) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("installing %v in namespace %v from %v\n", opts.Install.MeshType, opts.Install.Namespace, opts.Install.Filename)
+
+	iop := &opts.Install
+	switch iop.MeshType {
+	case "consul":
+		fmt.Println("consul")
+		installConsul(opts)
+		return
+	case "istio":
+		fmt.Println("istio")
+		return
+	case "linkerd":
+		fmt.Println("ld")
+		return
+	default:
+		// should not get here
+		fmt.Println("Please choose a valid mesh")
+		return
+	}
+
 }
 
 func qualifyFlags(opts *options.Options) error {
@@ -111,4 +131,12 @@ func chooseNamespace() (string, error) {
 	}
 
 	return choice, nil
+}
+
+func installationSummaryMessage(opts *options.Options) string {
+	return fmt.Sprintf("installing %v in namespace %v from %v\n", opts.Install.MeshType, opts.Install.Namespace, opts.Install.Filename)
+}
+
+func getNewInstallName(opts *options.Options) string {
+	return fmt.Sprintf("%v-%v", opts.Install.MeshType, util.RandStringBytes(6))
 }
