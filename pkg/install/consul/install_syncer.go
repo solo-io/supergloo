@@ -1,12 +1,9 @@
 package consul
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/solo-io/supergloo/pkg/install"
 
 	"k8s.io/api/admissionregistration/v1beta1"
 
@@ -23,39 +20,27 @@ const (
 	WebhookCfg       = "consul-connect-injector-cfg"
 )
 
-func SyncInstall(_ context.Context, install *v1.Install, syncer *install.InstallSyncer) error {
-	if install.MeshType != v1.MeshType_CONSUL {
-		return errors.Errorf("Expected mesh type consul")
-	}
+type ConsulInstaller struct{}
 
-	// 1. Create a namespace
-	installNamespace, err := syncer.SetupInstallNamespace(install, defaultNamespace)
-	if err != nil {
-		return err
-	}
+func (c *ConsulInstaller) GetDefaultNamespace() string {
+	return defaultNamespace
+}
 
-	// 2. Set up ClusterRoleBinding for consul in that namespace
-	// This is not cleaned up when deleting namespace so it may already exist on the system, don't fail
-	err = syncer.CreateCrbIfNotExist(CrbName, installNamespace)
-	if err != nil {
-		return err
-	}
+func (c *ConsulInstaller) GetCrbName() string {
+	return CrbName
+}
 
-	// 3. Install Consul via helm chart
-	releaseName, err := syncer.HelmInstall(install.ChartLocator, installNamespace, getOverrides(install.Encryption))
-	if err != nil {
-		// TODO: Wrap this one level deeper
-		return errors.Wrap(err, "Error installing Consul helm chart")
-	}
+func (c *ConsulInstaller) GetOverridesYaml(install *v1.Install) string {
+	return getOverrides(install.Encryption)
+}
 
-	// 4. If mtls enabled, fix incorrect configuration name in chart
+func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
 	if install.Encryption.TlsEnabled {
-		err = updateMutatingWebhookAdapter(syncer.Kube, releaseName)
+		err := updateMutatingWebhookAdapter(kube, releaseName)
 		if err != nil {
 			return errors.Wrap(err, "Error setting up webhook")
 		}
 	}
-
 	return nil
 }
 

@@ -3,6 +3,8 @@ package e2e
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install"
+
 	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	"github.com/solo-io/supergloo/test/util"
 
@@ -44,9 +46,14 @@ var _ = Describe("ConsulInstallSyncer", func() {
 							Namespace: superglooNamespace,
 							Name:      meshName,
 						},
-						Consul: &v1.ConsulInstall{
-							Path:      "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
-							Namespace: installNamespace,
+						MeshType:         v1.MeshType_CONSUL,
+						InstallNamespace: installNamespace,
+						ChartLocator: &v1.HelmChartLocator{
+							Kind: &v1.HelmChartLocator_ChartPath{
+								ChartPath: &v1.HelmChartPath{
+									Path: "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
+								},
+							},
 						},
 						Encryption: &v1.Encryption{
 							TlsEnabled: mtls,
@@ -80,12 +87,12 @@ var _ = Describe("ConsulInstallSyncer", func() {
 	var tunnel *helmkube.Tunnel
 	var meshClient v1.MeshClient
 	var secretClient gloo.SecretClient
-	var installSyncer consul.ConsulInstallSyncer
+	var installSyncer install.InstallSyncer
 
 	BeforeEach(func() {
 		meshClient = util.GetMeshClient(kubeCache)
 		secretClient = util.GetSecretClient()
-		installSyncer = consul.ConsulInstallSyncer{
+		installSyncer = install.InstallSyncer{
 			Kube:       util.GetKubeClient(),
 			MeshClient: meshClient,
 		}

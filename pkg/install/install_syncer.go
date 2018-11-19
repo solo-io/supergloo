@@ -22,6 +22,13 @@ type InstallSyncer struct {
 	MeshClient v1.MeshClient
 }
 
+type MeshInstaller interface {
+	GetDefaultNamespace() string
+	GetCrbName() string
+	GetOverridesYaml(install *v1.Install) string
+	DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error
+}
+
 func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	for _, install := range snap.Installs.List() {
 		err := syncer.SyncInstall(ctx, install)
@@ -33,14 +40,45 @@ func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot)
 }
 
 func (syncer *InstallSyncer) SyncInstall(ctx context.Context, install *v1.Install) error {
+	var meshInstaller MeshInstaller
 	switch install.MeshType {
 	case v1.MeshType_CONSUL:
-		if err := consul.SyncInstall(ctx, install, syncer); err != nil {
+		meshInstaller = &consul.ConsulInstaller{}
+	default:
+		return errors.Errorf("Unsupported mesh type %v", install.MeshType)
+	}
+
+	if err := syncer.SyncInstallImpl(ctx, install, meshInstaller); err != nil {
+		return err
+	}
+	return syncer.createMesh(install)
+}
+
+func (syncer *InstallSyncer) SyncInstallImpl(_ context.Context, install *v1.Install, installer MeshInstaller) error {
+	// 1. Setup namespace
+	installNamespace, err := syncer.SetupInstallNamespace(install, installer.GetDefaultNamespace())
+	if err != nil {
+		return err
+	}
+
+	// 2. Set up ClusterRoleBinding for that namespace
+	// This is not cleaned up when deleting namespace so it may already exist on the system, don't fail
+	crbName := installer.GetCrbName()
+	if crbName != "" {
+		err = syncer.CreateCrbIfNotExist(crbName, installNamespace)
+		if err != nil {
 			return err
 		}
 	}
 
-	return syncer.createMesh(install)
+	// 3. Install Consul via helm chart
+	releaseName, err := syncer.HelmInstall(install.ChartLocator, installNamespace, installer.GetOverridesYaml(install))
+	if err != nil {
+		return errors.Wrap(err, "Error installing helm chart")
+	}
+
+	// 4. Do any additional steps
+	return installer.DoPostHelmInstall(install, syncer.Kube, releaseName)
 }
 
 func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, defaultNamespace string) (string, error) {
