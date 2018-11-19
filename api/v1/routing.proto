@@ -37,8 +37,8 @@ message RoutingRule {
     // if specified, this rule will only apply to http requests in the mesh matching these parameters
     repeated gloo.solo.io.Matcher request_matchers = 4;
 
-    // configuration to enable traffic splitting, e.g. by percentage, for this rule
-    TrafficSplitting traffic_splitting = 5;
+    // configuration to enable traffic shifting, e.g. by percentage or for alternate destinations
+    TrafficShifting traffic_shifting = 5;
 
     // configuration to enable fault injection for this rule
     FaultInjection fault_injection = 6;
@@ -67,11 +67,20 @@ message RoutingRule {
     // - cors
 }
 
-// configure traffic splitting for any http requests sent to one of the destination pods
-message TrafficSplitting {
+// enable traffic shifting for any http requests sent to one of the destinations on this rule
+message TrafficShifting {
     // split traffic between these subsets based on their weights
     // weights should add to 100
-    repeated Subset subsets = 1;
+    repeated WeightedDestination destinations = 1;
+}
+
+// WeightedDestination attaches a weight to a single destination.
+message WeightedDestination {
+    core.solo.io.ResourceRef upstream = 1;
+
+    // Weight must be greater than zero
+    // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route
+    uint32 weight = 2;
 }
 
 // a subset of the pods the comprise an application in the mesh

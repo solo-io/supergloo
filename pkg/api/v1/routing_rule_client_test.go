@@ -73,7 +73,7 @@ func RoutingRuleClientTest(namespace string, client RoutingRuleClient) {
 	Expect(r1.Sources).To(Equal(input.Sources))
 	Expect(r1.Destinations).To(Equal(input.Destinations))
 	Expect(r1.RequestMatchers).To(Equal(input.RequestMatchers))
-	Expect(r1.TrafficSplitting).To(Equal(input.TrafficSplitting))
+	Expect(r1.TrafficShifting).To(Equal(input.TrafficShifting))
 	Expect(r1.FaultInjection).To(Equal(input.FaultInjection))
 	Expect(r1.Timeout).To(Equal(input.Timeout))
 	Expect(r1.Retries).To(Equal(input.Retries))
