@@ -307,6 +307,18 @@ func createIstioDestinations(rule *v1.RoutingRule, upstreams gloov1.UpstreamList
 	}
 }
 
+func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
+	var virtualServices v1alpha3.VirtualServiceList
+	for _, rule := range rules {
+		vs, err := virtualServiceForRule(rule, meshes, upstreams)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating virtual service for rule %v", rule)
+		}
+		virtualServices = append(virtualServices, vs)
+	}
+	return virtualServices, nil
+}
+
 // TODO: if mesh has tls enabled (istio), set tls config on destination rule to istio_mutual
 
 func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
@@ -317,25 +329,16 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 
-	var virtualServices v1alpha3.VirtualServiceList
-
-	reporterErrs := make(reporter.ResourceErrors)
-
 	meshes := snap.Meshes.List()
 	upstreams := snap.Upstreams.List()
-	destinationRules, err := upstreams
+	rules := snap.Routingrules.List()
 
-	for _, rule := range snap.Routingrules.List() {
-		vs, err := virtualServiceForRule(rule, meshes, upstreams)
-		if err != nil {
-			logger.Warnf("error in rule %v: %v", rule.Metadata.Ref(), err)
-			reporterErrs.AddError(rule, err)
-		}
-		virtualServices = append(virtualServices, vs)
+	destinationRules, err := subsetsForUpstreams(rules, meshes, upstreams)
+	if err != nil {
+		return errors.Wrapf(err, "creating subsets from snapshot")
 	}
 
-	destinationRules := createDestinationRules(false, snap.Upstreams.List())
-	virtualServices, err := createVirtualServices(snap.Meshes.List(), snap.Upstreams.List())
+	virtualServices, err := virtualServicesForRules(rules, meshes, upstreams)
 	if err != nil {
 		return errors.Wrapf(err, "creating virtual services from snapshot")
 	}
