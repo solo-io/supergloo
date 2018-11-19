@@ -41,7 +41,7 @@ var _ = Describe("RoutingSyncer", func() {
 		err = drClient.Register()
 		Expect(err).NotTo(HaveOccurred())
 		drReconciler := v1alpha3.NewDestinationRuleReconciler(drClient)
-		s := &RoutingSyncer{
+		s := &MeshRoutingSyncer{
 			WriteSelector:             map[string]string{"creatd_by": "syncer"},
 			WriteNamespace:            "gloo-system",
 			VirtualServiceReconciler:  vsReconciler,
@@ -50,35 +50,13 @@ var _ = Describe("RoutingSyncer", func() {
 		err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
 			Meshes: map[string]v1.MeshList{
 				"ignored-at-this-point": {{
-					TargetMesh: &v1.TargetMesh{
-						MeshType: v1.MeshType_ISTIO,
-					},
-					Routing: &v1.Routing{
-						DestinationRules: []*v1.DestinationRule{
-							{
-								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Name:      "default-reviews-9080",
-										Namespace: "gloo-system",
-									},
-								},
-								MeshHttpRules: []*v1.HTTPRule{
-									{
-										Route: []*v1.HTTPRouteDestination{
-											{
-												AlternateDestination: &gloov1.Destination{
-													Upstream: core.ResourceRef{
-														Name:      "default-reviews-9080",
-														Namespace: "gloo-system",
-													},
-												},
-											},
-										},
-									},
-								},
-							},
+					Metadata: core.Metadata{Name: "name", Namespace: "namespace"},
+					MeshType: &v1.Mesh_Istio{
+						Istio: &v1.Istio{
+							WatchNamespaces: []string{"namespace"},
 						},
 					},
+					Encryption: &v1.Encryption{TlsEnabled: true},
 				}},
 			},
 			Upstreams: map[string]gloov1.UpstreamList{
@@ -94,11 +72,42 @@ var _ = Describe("RoutingSyncer", func() {
 									ServiceName:      "reviews",
 									ServiceNamespace: "default",
 									ServicePort:      9080,
+									Selector:         map[string]string{"app": "reviews"},
+								},
+							},
+						},
+					},
+					{
+						Metadata: core.Metadata{
+							Name:      "default-reviews-9080-version-v2",
+							Namespace: "gloo-system",
+						},
+						UpstreamSpec: &gloov1.UpstreamSpec{
+							UpstreamType: &gloov1.UpstreamSpec_Kube{
+								Kube: &kubernetes.UpstreamSpec{
+									ServiceName:      "reviews",
+									ServiceNamespace: "default",
+									ServicePort:      9080,
+									Selector:         map[string]string{"app": "reviews", "version": "v1"},
 								},
 							},
 						},
 					},
 				},
+			},
+			Routingrules: map[string]v1.RoutingRuleList{
+				"hi": {{
+					FaultInjection: &v1alpha3.HTTPFaultInjection{
+						Abort: &v1alpha3.HTTPFaultInjection_Abort{
+							ErrorType: &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
+								HttpStatus: 566,
+							},
+							Percentage: &v1alpha3.Percent{
+								Value: 100,
+							},
+						},
+					},
+				}},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
