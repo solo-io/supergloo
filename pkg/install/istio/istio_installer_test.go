@@ -42,7 +42,8 @@ var _ = Describe("Istio Installer", func() {
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{
 									// Use a local path for testing to save a lot of time...
-									Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
+									// Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
+									Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio",
 								},
 							},
 						},
@@ -76,6 +77,7 @@ var _ = Describe("Istio Installer", func() {
 		util.TryDeleteIstioCrds()
 		util.UninstallHelmRelease(meshName)
 		util.DeleteCrb(istio.CrbName)
+		// TODO: istio namespace can get stuck during termination. this will only block for 60 seconds and will not propagate an error if it gets stuck
 		util.TerminateNamespaceBlocking(installNamespace)
 		meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})
 	})
