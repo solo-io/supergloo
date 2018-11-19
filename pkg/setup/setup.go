@@ -93,6 +93,18 @@ func Main() error {
 		return err
 	}
 
+	routingRuleClient, err := v1.NewRoutingRuleClient(&factory.KubeResourceClientFactory{
+		Crd:         v1.RoutingRuleCrd,
+		Cfg:         restConfig,
+		SharedCache: kubeCache,
+	})
+	if err != nil {
+		return err
+	}
+		if err := routingRuleClient.Register(); err != nil {
+		return err
+	}
+
 	upstreamClient, err := gloov1.NewUpstreamClient(&factory.KubeResourceClientFactory{
 		Crd:         gloov1.UpstreamCrd,
 		Cfg:         restConfig,
@@ -117,12 +129,12 @@ func Main() error {
 
 	installEmitter := v1.NewInstallEmitter(installClient)
 
-	translatorEmitter := v1.NewTranslatorEmitter(meshClient, upstreamClient, secretClient)
+	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
 
 	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)
 
-	istioRoutingSyncer := &istio.RoutingSyncer{
+	istioRoutingSyncer := &istio.MeshRoutingSyncer{
 		DestinationRuleReconciler: v1alpha3.NewDestinationRuleReconciler(destinationRuleClient),
 		VirtualServiceReconciler:  v1alpha3.NewVirtualServiceReconciler(virtualServiceClient),
 		Reporter:                  rpt,

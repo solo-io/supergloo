@@ -17,30 +17,34 @@ type ConsulSyncer struct {
 
 func (c *ConsulSyncer) Sync(_ context.Context, snap *v1.TranslatorSnapshot) error {
 	for _, mesh := range snap.Meshes.List() {
-		switch mesh.TargetMesh.MeshType {
-		case v1.MeshType_CONSUL:
-			encryption := mesh.Encryption
-			if encryption == nil {
-				continue
-			}
-			encryptionSecret := encryption.Secret
-			if encryptionSecret == nil {
-				continue
-			}
-			secret, err := snap.Secrets.List().Find(encryptionSecret.Namespace, encryptionSecret.Name)
-			if err != nil {
-				return err
-			}
-			tlsSecret := secret.GetTls()
-			if tlsSecret == nil {
-				return errors.Errorf("missing tls secret")
-			}
+		_, ok := mesh.MeshType.(*v1.Mesh_Consul)
+		if !ok {
+			// not our mesh, we don't care
+			continue
+		}
+		encryption := mesh.Encryption
+		if encryption == nil {
+			continue
+		}
+		encryptionSecret := encryption.Secret
+		if encryptionSecret == nil {
+			continue
+		}
+		secret, err := snap.Secrets.List().Find(encryptionSecret.Namespace, encryptionSecret.Name)
+		if err != nil {
+			return err
+		}
+		tlsSecret := secret.GetTls()
+		if tlsSecret == nil {
+			return errors.Errorf("missing tls secret")
+		}
 
-			port := c.LocalPort
-			if port <= 0 {
-				port = 8500
-			}
-			syncSecret(tlsSecret, port)
+		port := c.LocalPort
+		if port <= 0 {
+			port = 8500
+		}
+		if err := syncSecret(tlsSecret, port); err != nil {
+			return err
 		}
 	}
 	return nil
