@@ -21,9 +21,10 @@ func Cmd(opts *options.Options) *cobra.Command {
 	}
 	iop := &opts.Install
 	pflags := cmd.PersistentFlags()
+	// TODO(mitchdraft) - remove filename or apply it to something
 	pflags.StringVarP(&iop.Filename, "filename", "f", "", "filename to create resources from")
 	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd")
-	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to use")
+	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace install mesh into")
 	pflags.BoolVar(&iop.Mtls, "mtls", false, "use MTLS")
 	return cmd
 }
@@ -58,11 +59,6 @@ func install(opts *options.Options) {
 func qualifyFlags(opts *options.Options) error {
 	top := opts.Top
 	iop := &opts.Install
-
-	// we always need a filename TODO -remove this restriction/field
-	if iop.Filename == "" {
-		return fmt.Errorf("please provide a filename")
-	}
 
 	// if they are using static mode, they must pass all params
 	if top.Static {
@@ -131,7 +127,7 @@ func chooseNamespace() (string, error) {
 }
 
 func installationSummaryMessage(opts *options.Options) {
-	fmt.Printf("Installing %v in namespace %v from %v\n", opts.Install.MeshType, opts.Install.Namespace, opts.Install.Filename)
+	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
 	return
 }
 
