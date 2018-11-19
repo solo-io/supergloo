@@ -69,7 +69,9 @@ func InstallClientTest(namespace string, client InstallClient) {
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.Consul).To(Equal(input.Consul))
+	Expect(r1.InstallNamespace).To(Equal(input.InstallNamespace))
+	Expect(r1.MeshType).To(Equal(input.MeshType))
+	Expect(r1.ChartLocator).To(Equal(input.ChartLocator))
 	Expect(r1.Encryption).To(Equal(input.Encryption))
 
 	_, err = client.Write(input, clients.WriteOpts{
