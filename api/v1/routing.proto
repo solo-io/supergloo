@@ -8,6 +8,7 @@ import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
 import "gloo/v1/proxy.proto";
+import "istio/networking/v1alpha3/virtual_service.proto";
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
@@ -41,18 +42,18 @@ message RoutingRule {
     TrafficShifting traffic_shifting = 5;
 
     // configuration to enable fault injection for this rule
-    FaultInjection fault_injection = 6;
+    networking.istio.io.HTTPFaultInjection fault_injection = 6;
 
     // Timeout for this rule
     google.protobuf.Duration timeout = 7;
 
     // Retry policy for for this rule
-    HTTPRetry retries = 8;
+    networking.istio.io.HTTPRetry retries = 8;
 
     // Cross-Origin Resource Sharing policy (CORS) for this rule. Refer to
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
     // for further details about cross origin resource sharing.
-    CorsPolicy cors_policy = 10;
+    networking.istio.io.CorsPolicy cors_policy = 10;
 
     // Mirror HTTP traffic to a another destination for this rule. Traffic will still be sent
     // to its original destination as normal.
@@ -83,71 +84,6 @@ message WeightedDestination {
     uint32 weight = 2;
 }
 
-// a subset of the pods the comprise an application in the mesh
-message Subset {
-    // The proportion of traffic to be forwarded to the subset. (0-100).
-    Percent weight = 1;
-    // Selector for the labels on the pods that will constitute this subset
-    map<string, string> selector = 2;
-}
-
-message FaultInjection {
-    // Delay requests before forwarding, emulating various failures such as
-    // network issues, overloaded upstream service, etc.
-    Delay delay = 1;
-
-    // Abort Http request attempts and return error codes back to downstream
-    // service, giving the impression that the upstream service is faulty.
-    Abort abort = 2;
-
-    // Delay specification is used to inject latency into the request
-    // forwarding path. The following example will introduce a 5 second delay
-    // in 1 out of every 1000 requests to the "v1" version of the "reviews"
-    // service from all pods with label env: prod
-    // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-    // The optional _percentage_ field can be used to only delay a certain
-    // percentage of requests. If left unspecified, all request will be delayed.
-    message Delay {
-        // Percentage of requests on which the delay will be injected (0-100).
-        // Use of integer `percent` value is deprecated. Use the double `percentage`
-        // field instead.
-        int32 percent = 1 [deprecated = true];
-
-        oneof http_delay_type {
-            // REQUIRED. Add a fixed delay before forwarding the request. Format:
-            // 1h/1m/1s/1ms. MUST be >=1ms.
-            google.protobuf.Duration fixed_delay = 2;
-
-            // $hide_from_docs
-            google.protobuf.Duration exponential_delay = 3;
-        }
-
-        // Percentage of requests on which the delay will be injected.
-        Percent percentage = 5;
-    }
-
-    message Abort {
-        // Percentage of requests to be aborted with the error code provided (0-100).
-        // Use of integer `percent` value is deprecated. Use the double `percentage`
-        // field instead.
-        int32 percent = 1 [deprecated = true];
-
-        oneof error_type {
-            // REQUIRED. HTTP status code to use to abort the Http request.
-            int32 http_status = 2;
-
-            // $hide_from_docs
-            string grpc_status = 3;
-
-            // $hide_from_docs
-            string http2_error = 4;
-        }
-
-        // Percentage of requests to be aborted with the error code provided.
-        Percent percentage = 5;
-    }
-}
-
 // manipulate request and response headers
 message HeaderManipulation {
     // HTTP headers to remove before returning a response to the caller.
@@ -164,55 +100,6 @@ message HeaderManipulation {
     // Additional HTTP headers to add before forwarding a request to the
     // destination service.
     map<string, string> append_request_headers = 15;
-}
-
-// Describes the retry policy to use when a HTTP request fails. For
-// example, the following rule sets the maximum number of retries to 3 when
-// calling ratings:v1 service, with a 2s timeout per retry attempt.
-message HTTPRetry {
-    // REQUIRED. Number of retries for a given request. The interval
-    // between retries will be determined automatically (25ms+). Actual
-    // number of retries attempted depends on the httpReqTimeout.
-    int32 attempts = 1;
-
-    // Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
-    google.protobuf.Duration per_try_timeout = 2;
-}
-
-// Describes the Cross-Origin Resource Sharing (CORS) policy, for a given
-// service. Refer to
-// https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-// for further details about cross origin resource sharing. For example,
-// the following rule restricts cross origin requests to those originating
-// from example.com domain using HTTP POST/GET, and sets the
-// Access-Control-Allow-Credentials header to false. In addition, it only
-// exposes X-Foo-bar header and sets an expiry period of 1 day.
-message CorsPolicy {
-    // The list of origins that are allowed to perform CORS requests. The
-    // content will be serialized into the Access-Control-Allow-Origin
-    // header. Wildcard * will allow all origins.
-    repeated string allow_origin = 1;
-
-    // List of HTTP methods allowed to access the resource. The content will
-    // be serialized into the Access-Control-Allow-Methods header.
-    repeated string allow_methods = 2;
-
-    // List of HTTP headers that can be used when requesting the
-    // resource. Serialized to Access-Control-Allow-Headers header.
-    repeated string allow_headers = 3;
-
-    // A white list of HTTP headers that the browsers are allowed to
-    // access. Serialized into Access-Control-Expose-Headers header.
-    repeated string expose_headers = 4;
-
-    // Specifies how long the the results of a preflight request can be
-    // cached. Translates to the Access-Control-Max-Age header.
-    google.protobuf.Duration max_age = 5;
-
-    // Indicates whether the caller is allowed to send the actual request
-    // (not the preflight) using credentials. Translates to
-    // Access-Control-Allow-Credentials header.
-    google.protobuf.BoolValue allow_credentials = 6;
 }
 
 // Percent specifies a percentage in the range of [0.0, 100.0].
