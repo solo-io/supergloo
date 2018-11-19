@@ -18,8 +18,8 @@ message Observability {
 
 //
 message Prometheus {
-    core.solo.io.ResourceRef prometheus_config_map = 1 ; // target configmap
     // kubernetes only. if specified, pods with these labels in the namespace will be restarted by supergloo
     map<string, string> pod_labels = 2;
-    bool enable_metrics = 3; // enable prometheus scraping for metrics of this mesh type
+    // enable prometheus scraping for metrics of this mesh type
+    bool enable_metrics = 3;
 }
