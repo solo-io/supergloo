@@ -29,21 +29,23 @@ func (s *PolicySyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) er
 	var multiErr *multierror.Error
 
 	for _, mesh := range snap.Meshes.List() {
-		switch mesh.TargetMesh.MeshType {
-		case v1.MeshType_ISTIO:
-			policy := mesh.Policy
-			if policy == nil {
-				err := s.removePolicy(ctx)
-				if err != nil {
-					multiErr = multierror.Append(multiErr, err)
-				}
-				continue
-			}
-
-			err := s.syncPolicy(ctx, policy)
+		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		if !ok {
+			// not our mesh, we don't care
+			continue
+		}
+		policy := mesh.Policy
+		if policy == nil {
+			err := s.removePolicy(ctx)
 			if err != nil {
 				multiErr = multierror.Append(multiErr, err)
 			}
+			continue
+		}
+
+		err := s.syncPolicy(ctx, policy)
+		if err != nil {
+			multiErr = multierror.Append(multiErr, err)
 		}
 	}
 	return multiErr.ErrorOrNil()

@@ -41,33 +41,34 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 }
 
 func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
-	switch mesh.TargetMesh.MeshType {
-	case v1.MeshType_ISTIO:
-		encryption := mesh.Encryption
-		if encryption == nil {
-			return nil
-		}
-		encryptionSecret := encryption.Secret
-		if encryptionSecret == nil {
-			return nil
-		}
-		secretList := snap.Secrets.List()
-		secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
-		if err != nil {
-			return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
-				encryptionSecret.Namespace, encryptionSecret.Name, err)
-		}
-		tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
-		if tlsSecretFromMeshConfig == nil {
-			return errors.Errorf("missing tls secret")
-		}
-
-		// this is where custom root certs will live once configured, if not found istioCacerts will be nil
-		istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
-
-		return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
+	_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+	if !ok {
+		// not our mesh, we don't care
+		return nil
 	}
-	return nil
+	encryption := mesh.Encryption
+	if encryption == nil {
+		return nil
+	}
+	encryptionSecret := encryption.Secret
+	if encryptionSecret == nil {
+		return nil
+	}
+	secretList := snap.Secrets.List()
+	secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
+	if err != nil {
+		return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
+			encryptionSecret.Namespace, encryptionSecret.Name, err)
+	}
+	tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
+	if tlsSecretFromMeshConfig == nil {
+		return errors.Errorf("missing tls secret")
+	}
+
+	// this is where custom root certs will live once configured, if not found istioCacerts will be nil
+	istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
+
+	return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
 }
 
 func (s *EncryptionSyncer) syncSecret(tlsSecretFromMeshConfig *gloov1.TlsSecret, currentCacerts *gloov1.Secret) error {

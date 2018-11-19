@@ -21,9 +21,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+const (
+	istioMeshType    = "istio"
+	linkerd2MeshType = "linkerd2"
+)
+
 var _ = Describe("PrometheusSyncer", func() {
 	type test struct {
-		meshType      v1.MeshType
+		meshType      string
 		scrapeConfigs []prometheus.ScrapeConfig
 	}
 
@@ -44,7 +49,6 @@ var _ = Describe("PrometheusSyncer", func() {
 	})
 	table.DescribeTable("prometheus tests for various meshes",
 		func(port int, test struct {
-			meshType      v1.MeshType
 			scrapeConfigs []prometheus.ScrapeConfig
 		}) {
 			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, uint32(port), kube)
@@ -61,7 +65,12 @@ var _ = Describe("PrometheusSyncer", func() {
 				PrometheusClient:     prometheusClient,
 				Kube:                 kube,
 				DesiredScrapeConfigs: test.scrapeConfigs,
-				MeshType:             test.meshType,
+				GetConfigMap: func(mesh *v1.Mesh) *core.ResourceRef {
+					return &core.ResourceRef{
+						Namespace: namespace,
+						Name:      prometheusConfigName,
+					}
+				},
 			}
 			original := getPrometheusConfig(prometheusClient, namespace, prometheusConfigName)
 			for _, sc := range s.DesiredScrapeConfigs {
@@ -71,16 +80,9 @@ var _ = Describe("PrometheusSyncer", func() {
 			err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
 				Meshes: map[string]v1.MeshList{
 					"ignored-at-this-point": {{
-						TargetMesh: &v1.TargetMesh{
-							MeshType: test.meshType,
-						},
 						Observability: &v1.Observability{
 							Prometheus: &v1.Prometheus{
 								EnableMetrics: true,
-								PrometheusConfigMap: &core.ResourceRef{
-									Namespace: namespace,
-									Name:      prometheusConfigName,
-								},
 								PodLabels: map[string]string{
 									"app": "prometheus-server",
 								},
@@ -96,11 +98,9 @@ var _ = Describe("PrometheusSyncer", func() {
 			}
 		},
 		table.Entry("istio", 31000, test{
-			meshType:      v1.MeshType_ISTIO,
 			scrapeConfigs: istio.IstioScrapeConfigs,
 		}),
 		table.Entry("linkerd2", 31001, test{
-			meshType:      v1.MeshType_LINKERD2,
 			scrapeConfigs: linkerd2.LinkerdScrapeConfigs,
 		}),
 	)

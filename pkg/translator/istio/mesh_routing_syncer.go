@@ -3,22 +3,19 @@ package istio
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/gogo/protobuf/proto"
-
-	"github.com/solo-io/envoy-gloo/bazel-envoy-gloo/external/go_sdk/src/strings"
-	"github.com/solo-io/supergloo/pkg/defaults"
-
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-
-	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/defaults"
 )
 
 type MeshRoutingSyncer struct {
