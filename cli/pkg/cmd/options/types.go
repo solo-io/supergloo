@@ -16,7 +16,7 @@ type Install struct {
 	Filename  string
 	MeshType  string
 	Namespace string
-	TopOpts   Top
+	Mtls      bool
 }
 
 type MeshTool struct {
