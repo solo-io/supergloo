@@ -27,7 +27,16 @@ type MeshRoutingSyncer struct {
 	Reporter                  reporter.Reporter
 }
 
-func processRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1alpha3.VirtualService, error) {
+func getLabelsForUpstream(us *gloov1.Upstream) map[string]string {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Kube:
+		return specType.Kube.Selector
+	}
+	// default to using the labels from the upstream
+	return us.Metadata.Labels
+}
+
+func processRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (*v1alpha3.VirtualService, error) {
 	if rule.TargetMesh == nil {
 		return nil, errors.Errorf("target_mesh required")
 	}
@@ -62,21 +71,11 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1alpha3.VirtualSer
 			rule.Metadata.Ref(), mesh.Metadata.Ref())
 	}
 
-	// default, catch-all istioMatcher:
-	istioMatcher := []*v1alpha3.HTTPMatchRequest{{
-		Uri: &v1alpha3.StringMatch{
-			MatchType: &v1alpha3.StringMatch_Prefix{
-				Prefix: "/",
-			},
-		},
-	}}
-	// override for default istioMatcher
-	if requestMatchers := rule.RequestMatchers; requestMatchers != nil {
-		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
-		for _, match := range requestMatchers {
-			istioMatcher = append(istioMatcher, convertMatcher(rule.SourceSelector, match))
-		}
+	istioMatcher, err := createIstioMatcher(rule, upstreams)
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating istio matcher")
 	}
+
 	return &v1alpha3.VirtualService{
 		Metadata: core.Metadata{
 			Name:      "supergloo-" + rule.Metadata.Name,
@@ -88,6 +87,63 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1alpha3.VirtualSer
 			Route: istioRoute,
 		}},
 	}, nil
+}
+
+func createIstioMatcher(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPMatchRequest, error) {
+	var sourceLabelSets []map[string]string
+	for _, src := range rule.Sources {
+		upstream, err := upstreams.Find(src.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid source %v", src)
+		}
+		labels := getLabelsForUpstream(upstream)
+		sourceLabelSets = append(sourceLabelSets, labels)
+	}
+
+	var istioMatcher []*v1alpha3.HTTPMatchRequest
+
+	// override for default istioMatcher
+	requestMatchers := rule.RequestMatchers
+	switch {
+	case requestMatchers == nil && len(sourceLabelSets) == 0:
+
+		// default, catch-all istioMatcher:
+		istioMatcher = []*v1alpha3.HTTPMatchRequest{{
+			Uri: &v1alpha3.StringMatch{
+				MatchType: &v1alpha3.StringMatch_Prefix{
+					Prefix: "/",
+				},
+			},
+		}}
+	case requestMatchers == nil && len(sourceLabelSets) > 0:
+		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
+		for _, sourceLabels := range sourceLabelSets {
+			istioMatcher = append(istioMatcher, convertMatcher(sourceLabels, &gloov1.Matcher{
+				PathSpecifier: &gloov1.Matcher_Prefix{
+					Prefix: "/",
+				},
+			}))
+		}
+	case requestMatchers != nil && len(sourceLabelSets) == 0:
+		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
+		for _, match := range requestMatchers {
+			istioMatcher = append(istioMatcher, convertMatcher(nil, match))
+		}
+	case requestMatchers != nil && len(sourceLabelSets) > 0:
+		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
+		for _, match := range requestMatchers {
+			for _, source := range sourceLabelSets {
+				istioMatcher = append(istioMatcher, convertMatcher(source, match))
+			}
+		}
+	}
+	return istioMatcher, nil
+}
+
+func createDestinations(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) []*v1alpha3.HTTPRouteDestination {
+	if len(rule.DestinationSelector) == 0 {
+		return []*v1alpha3.HTTPRouteDestination{{}}
+	}
 }
 
 func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1alpha3.HTTPMatchRequest {

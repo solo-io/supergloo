@@ -28,11 +28,11 @@ message RoutingRule {
     // target where we apply this rule
     core.solo.io.ResourceRef target_mesh = 1;
 
-    // source pods to apply the rule to. if empty, applies to all sources
-    map<string, string> source_selector = 2;
+    // source upstreams to apply the rule to. if empty, applies to all sources.
+    repeated core.solo.io.ResourceRef sources = 2;
 
-    // destinations for which this rule applies. if empty, applies to all destinations
-    map<string, string> destination_selector = 3;
+    // destination upstreams for which this rule applies. if empty, applies to all destinations
+    repeated core.solo.io.ResourceRef destinations = 3;
 
     // if specified, this rule will only apply to http requests in the mesh matching these parameters
     repeated gloo.solo.io.Matcher request_matchers = 4;
