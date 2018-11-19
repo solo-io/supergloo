@@ -8,7 +8,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
@@ -26,6 +25,20 @@ type MeshRoutingSyncer struct {
 	Reporter                  reporter.Reporter
 }
 
+func updateMetadataForWriting(meta *core.Metadata, writeNamespace string, writeSelector map[string]string) {
+	meta.Namespace = writeNamespace
+	if meta.Annotations == nil {
+		meta.Annotations = make(map[string]string)
+	}
+	meta.Annotations["created_by"] = "supergloo"
+	if meta.Labels == nil && len(writeSelector) > 0 {
+		meta.Labels = make(map[string]string)
+	}
+	for k, v := range writeSelector {
+		meta.Labels[k] = v
+	}
+}
+
 func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-routing-syncer")
 	logger := contextutils.LoggerFrom(ctx)
@@ -38,7 +51,7 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	upstreams := snap.Upstreams.List()
 	rules := snap.Routingrules.List()
 
-	destinationRules, err := subsetsForUpstreams(rules, meshes, upstreams)
+	destinationRules, err := destinationRulesForUpstreams(rules, meshes, upstreams)
 	if err != nil {
 		return errors.Wrapf(err, "creating subsets from snapshot")
 	}
@@ -48,31 +61,10 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 		return errors.Wrapf(err, "creating virtual services from snapshot")
 	}
 	for _, res := range destinationRules {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			meta.Namespace = s.WriteNamespace
-			if meta.Annotations == nil {
-				meta.Annotations = make(map[string]string)
-			}
-			meta.Annotations["created_by"] = "supergloo"
-			for k, v := range s.WriteSelector {
-				meta.Labels[k] = v
-			}
-		})
+		updateMetadataForWriting(&res.Metadata, s.WriteNamespace, s.WriteSelector)
 	}
 	for _, res := range virtualServices {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			meta.Namespace = s.WriteNamespace
-			if meta.Annotations == nil {
-				meta.Annotations = make(map[string]string)
-			}
-			if meta.Labels == nil {
-				meta.Labels = make(map[string]string)
-			}
-			meta.Annotations["created_by"] = "supergloo"
-			for k, v := range s.WriteSelector {
-				meta.Labels[k] = v
-			}
-		})
+		updateMetadataForWriting(&res.Metadata, s.WriteNamespace, s.WriteSelector)
 	}
 	return s.writeIstioCrds(ctx, destinationRules, virtualServices)
 }
@@ -101,7 +93,7 @@ func subsetName(host string, labels map[string]string) string {
 }
 
 // destinationrules
-func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.DestinationRuleList, error) {
+func destinationRulesForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.DestinationRuleList, error) {
 	var meshesWithRouteRules v1.MeshList
 	for _, rule := range rules {
 		mesh, err := meshes.Find(rule.TargetMesh.Namespace, rule.TargetMesh.Name)
@@ -238,7 +230,7 @@ func virtualServicesForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams 
 		}
 		vs := &v1alpha3.VirtualService{
 			Metadata: core.Metadata{
-				Name:      "supergloo-" + host + "-" + rule.Metadata.Name,
+				Name:      us.Metadata.Name + "-" + rule.Metadata.Name,
 				Namespace: rule.Metadata.Namespace,
 			},
 			Hosts: []string{host},
