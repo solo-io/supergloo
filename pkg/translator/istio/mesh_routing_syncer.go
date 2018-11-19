@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/solo-io/envoy-gloo/bazel-envoy-gloo/external/go_sdk/src/strings"
 	"github.com/solo-io/supergloo/pkg/defaults"
@@ -28,13 +29,55 @@ type MeshRoutingSyncer struct {
 	Reporter                  reporter.Reporter
 }
 
-func getLabelsForUpstream(us *gloov1.Upstream) map[string]string {
-	switch specType := us.UpstreamSpec.UpstreamType.(type) {
-	case *gloov1.UpstreamSpec_Kube:
-		return specType.Kube.Selector
+func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+	ctx = contextutils.WithLogger(ctx, "mesh-routing-syncer")
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
+		len(snap.Meshes), len(snap.Upstreams))
+	defer logger.Infof("end sync %v", snap.Hash())
+	logger.Debugf("%v", snap)
+
+	meshes := snap.Meshes.List()
+	upstreams := snap.Upstreams.List()
+	rules := snap.Routingrules.List()
+
+	destinationRules, err := subsetsForUpstreams(rules, meshes, upstreams)
+	if err != nil {
+		return errors.Wrapf(err, "creating subsets from snapshot")
 	}
-	// default to using the labels from the upstream
-	return us.Metadata.Labels
+
+	virtualServices, err := virtualServicesForRules(rules, meshes, upstreams)
+	if err != nil {
+		return errors.Wrapf(err, "creating virtual services from snapshot")
+	}
+	for _, res := range destinationRules {
+		resources.UpdateMetadata(res, func(meta *core.Metadata) {
+			meta.Namespace = s.WriteNamespace
+			if meta.Annotations == nil {
+				meta.Annotations = make(map[string]string)
+			}
+			meta.Annotations["created_by"] = "supergloo"
+			for k, v := range s.WriteSelector {
+				meta.Labels[k] = v
+			}
+		})
+	}
+	for _, res := range virtualServices {
+		resources.UpdateMetadata(res, func(meta *core.Metadata) {
+			meta.Namespace = s.WriteNamespace
+			if meta.Annotations == nil {
+				meta.Annotations = make(map[string]string)
+			}
+			if meta.Labels == nil {
+				meta.Labels = make(map[string]string)
+			}
+			meta.Annotations["created_by"] = "supergloo"
+			for k, v := range s.WriteSelector {
+				meta.Labels[k] = v
+			}
+		})
+	}
+	return s.writeIstioCrds(ctx, destinationRules, virtualServices)
 }
 
 func getIstioMeshForRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1.Istio, error) {
@@ -60,7 +103,8 @@ func subsetName(host string, labels map[string]string) string {
 	return fmt.Sprintf("%v-%+v", host, labels)
 }
 
-func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) ([]*v1alpha3.DestinationRule, error) {
+// destinationrules
+func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.DestinationRuleList, error) {
 	var meshesWithRouteRules v1.MeshList
 	for _, rule := range rules {
 		mesh, err := meshes.Find(rule.TargetMesh.Namespace, rule.TargetMesh.Name)
@@ -85,7 +129,7 @@ func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams
 		return nil, nil
 	}
 
-	var subsets []*v1alpha3.DestinationRule
+	var destinationRules v1alpha3.DestinationRuleList
 	for _, mesh := range meshesWithRouteRules {
 		mtlsEnabled := mesh.Encryption != nil && mesh.Encryption.TlsEnabled
 		labelsByHost := make(map[string][]map[string]string)
@@ -97,7 +141,6 @@ func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams
 			}
 			labelsByHost[host] = append(labelsByHost[host], labels)
 		}
-		var destinationRules []*v1alpha3.DestinationRule
 		for host, labelSets := range labelsByHost {
 			var subsets []*v1alpha3.Subset
 			for _, labels := range labelSets {
@@ -126,7 +169,20 @@ func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams
 		}
 	}
 
-	return subsets, nil
+	return destinationRules.Sort(), nil
+}
+
+// virtualservices
+func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
+	var virtualServices v1alpha3.VirtualServiceList
+	for _, rule := range rules {
+		vs, err := virtualServicesForRule(rule, meshes, upstreams)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating virtual service for rule %v", rule)
+		}
+		virtualServices = append(virtualServices, vs...)
+	}
+	return virtualServices, nil
 }
 
 func virtualServicesForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
@@ -183,7 +239,7 @@ func virtualServicesForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams 
 		if err != nil {
 			return nil, errors.Wrapf(err, "creating istio destinations")
 		}
-		virtualServices = append(virtualServices, &v1alpha3.VirtualService{
+		vs := &v1alpha3.VirtualService{
 			Metadata: core.Metadata{
 				Name:      "supergloo-" + host + "-" + rule.Metadata.Name,
 				Namespace: rule.Metadata.Namespace,
@@ -197,16 +253,14 @@ func virtualServicesForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams 
 				Match: istioMatcher,
 				Route: destinations,
 			}},
-		})
+		}
+		if err := addHttpFeatures(rule, vs, upstreams); err != nil {
+			return nil, errors.Wrapf(err, "failed to add http features to virtual service")
+		}
+		virtualServices = append(virtualServices, vs)
 	}
 
 	return virtualServices, nil
-}
-
-func virtualServiceForUpstream() {}
-
-func addHttpFeatures(rule *v1.RoutingRule) {
-
 }
 
 func createIstioMatcher(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPMatchRequest, error) {
@@ -319,17 +373,17 @@ func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1
 	}
 }
 
-func createIstioDestinations(host string, baseLabels map[string]string, rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
-	if rule.TrafficSplitting == nil || len(rule.TrafficSplitting.Destinations) == 0 {
+func createIstioDestinations(orinalHost string, originalLabels map[string]string, rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
+	if rule.TrafficShifting == nil || len(rule.TrafficShifting.Destinations) == 0 {
 		return []*v1alpha3.HTTPRouteDestination{{
 			Destination: &v1alpha3.Destination{
-				Host:   host,
-				Subset: subsetName(host, baseLabels),
+				Host:   orinalHost,
+				Subset: subsetName(orinalHost, originalLabels),
 			},
 		}}, nil
 	}
 	var istioDestinations []*v1alpha3.HTTPRouteDestination
-	for _, dest := range rule.TrafficSplitting.Destinations {
+	for _, dest := range rule.TrafficShifting.Destinations {
 		upstream, err := upstreams.Find(dest.Upstream.Strings())
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid destination %v", dest)
@@ -360,94 +414,34 @@ func createIstioDestinations(host string, baseLabels map[string]string, rule *v1
 	return istioDestinations, nil
 }
 
-func convertRout2e(originalDestination *gloov1.Destination, route []*v1.HTTPRouteDestination, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
-	var istioMatch []*v1alpha3.HTTPRouteDestination
-	for _, m := range route {
-		destination := originalDestination
-		if m.AlternateDestination != nil {
-			destination = m.AlternateDestination
+func addHttpFeatures(rule *v1.RoutingRule, virtualService *v1alpha3.VirtualService, upstreams gloov1.UpstreamList) error {
+	for _, http := range virtualService.Http {
+		http.CorsPolicy = rule.CorsPolicy
+		http.Retries = rule.Retries
+		http.Timeout = rule.Timeout
+		if rule.Mirror != nil {
+			us, err := upstreams.Find(rule.Mirror.Upstream.Strings())
+			labels := getLabelsForUpstream(us)
+			host, err := getHostForUpstream(us)
+			if err != nil {
+				return errors.Wrapf(err, "getting host for upstream")
+			}
+			http.Mirror = &v1alpha3.Destination{
+				Host:   host,
+				Subset: subsetName(host, labels),
+			}
 		}
-		istioDestination, err := convertDestination(destination, upstreams)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to convert destination %v", destination)
+		if rule.HeaderManipulaition != nil {
+			http.RemoveRequestHeaders = rule.HeaderManipulaition.RemoveRequestHeaders
+			http.AppendRequestHeaders = rule.HeaderManipulaition.AppendRequestHeaders
+			http.RemoveResponseHeaders = rule.HeaderManipulaition.RemoveResponseHeaders
+			http.AppendResponseHeaders = rule.HeaderManipulaition.AppendResponseHeaders
 		}
-		istioMatch = append(istioMatch, &v1alpha3.HTTPRouteDestination{
-			Destination:           istioDestination,
-			Weight:                m.Weight,
-			RemoveRequestHeaders:  m.RemoveRequestHeaders,
-			RemoveResponseHeaders: m.RemoveResponseHeaders,
-			AppendRequestHeaders:  m.AppendRequestHeaders,
-			AppendResponseHeaders: m.AppendResponseHeaders,
-		})
 	}
-	return istioMatch, nil
+	return nil
 }
 
-func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
-	var virtualServices v1alpha3.VirtualServiceList
-	for _, rule := range rules {
-		vs, err := virtualServiceForRule(rule, meshes, upstreams)
-		if err != nil {
-			return nil, errors.Wrapf(err, "creating virtual service for rule %v", rule)
-		}
-		virtualServices = append(virtualServices, vs)
-	}
-	return virtualServices, nil
-}
-
-// TODO: if mesh has tls enabled (istio), set tls config on destination rule to istio_mutual
-
-func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, "mesh-routing-syncer")
-	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
-		len(snap.Meshes), len(snap.Upstreams))
-	defer logger.Infof("end sync %v", snap.Hash())
-	logger.Debugf("%v", snap)
-
-	meshes := snap.Meshes.List()
-	upstreams := snap.Upstreams.List()
-	rules := snap.Routingrules.List()
-
-	destinationRules, err := subsetsForUpstreams(rules, meshes, upstreams)
-	if err != nil {
-		return errors.Wrapf(err, "creating subsets from snapshot")
-	}
-
-	virtualServices, err := virtualServicesForRules(rules, meshes, upstreams)
-	if err != nil {
-		return errors.Wrapf(err, "creating virtual services from snapshot")
-	}
-	for _, res := range destinationRules {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			meta.Namespace = s.WriteNamespace
-			if meta.Annotations == nil {
-				meta.Annotations = make(map[string]string)
-			}
-			meta.Annotations["created_by"] = "supergloo"
-			for k, v := range s.WriteSelector {
-				meta.Labels[k] = v
-			}
-		})
-	}
-	for _, res := range virtualServices {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			meta.Namespace = s.WriteNamespace
-			if meta.Annotations == nil {
-				meta.Annotations = make(map[string]string)
-			}
-			if meta.Labels == nil {
-				meta.Labels = make(map[string]string)
-			}
-			meta.Annotations["created_by"] = "supergloo"
-			for k, v := range s.WriteSelector {
-				meta.Labels[k] = v
-			}
-		})
-	}
-	return s.writeIstioCrds(ctx, destinationRules, virtualServices)
-}
-
+// util functions
 func (s *MeshRoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules v1alpha3.DestinationRuleList, virtualServices v1alpha3.VirtualServiceList) error {
 	opts := clients.ListOpts{
 		Ctx:      ctx,
@@ -462,4 +456,75 @@ func (s *MeshRoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules
 		return errors.Wrapf(err, "reconciling virtual services")
 	}
 	return nil
+}
+
+func preserveDestinationRule(original, desired *v1alpha3.DestinationRule) (bool, error) {
+	original.Metadata = desired.Metadata
+	original.Status = desired.Status
+	return !proto.Equal(original, desired), nil
+}
+
+func preserveVirtualService(original, desired *v1alpha3.VirtualService) (bool, error) {
+	original.Metadata = desired.Metadata
+	original.Status = desired.Status
+	return !proto.Equal(original, desired), nil
+}
+
+func getLabelsForUpstream(us *gloov1.Upstream) map[string]string {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Kube:
+		return specType.Kube.Selector
+	}
+	// default to using the labels from the upstream
+	return us.Metadata.Labels
+}
+
+func getHostForUpstream(us *gloov1.Upstream) (string, error) {
+	hosts, err := getHostsForUpstream(us)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to get hosts for upstream")
+	}
+	if len(hosts) < 1 {
+		return "", errors.Errorf("failed to get hosts for upstream")
+	}
+	return hosts[0], nil
+}
+
+func getHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Aws:
+		return nil, errors.Errorf("aws not implemented")
+	case *gloov1.UpstreamSpec_Azure:
+		return nil, errors.Errorf("azure not implemented")
+	case *gloov1.UpstreamSpec_Kube:
+		return []string{
+			fmt.Sprintf("%v.%v.svc.cluster.local", specType.Kube.ServiceName, specType.Kube.ServiceNamespace),
+			specType.Kube.ServiceName,
+		}, nil
+	case *gloov1.UpstreamSpec_Static:
+		var hosts []string
+		for _, h := range specType.Static.Hosts {
+			hosts = append(hosts, h.Addr)
+		}
+		return hosts, nil
+	}
+	return nil, errors.Errorf("unsupported upstream type %v", us)
+}
+
+func getPortForUpstream(us *gloov1.Upstream) (uint32, error) {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Aws:
+		return 0, errors.Errorf("aws not implemented")
+	case *gloov1.UpstreamSpec_Azure:
+		return 0, errors.Errorf("azure not implemented")
+	case *gloov1.UpstreamSpec_Kube:
+		return specType.Kube.ServicePort, nil
+	case *gloov1.UpstreamSpec_Static:
+		// TODO(ilackarms): handle cases where port changes between hosts
+		for _, h := range specType.Static.Hosts {
+			return h.Port, nil
+		}
+		return 0, errors.Errorf("no hosts found on static upstream")
+	}
+	return 0, errors.Errorf("unknown upstream type")
 }
