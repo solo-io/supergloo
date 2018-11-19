@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"context"
-	"fmt"
 
 	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	"github.com/solo-io/supergloo/test/util"
@@ -130,7 +129,6 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		err = meshSyncer.Sync(context.TODO(), syncSnapshot)
 		Expect(err).NotTo(HaveOccurred())
 
-		fmt.Printf("Validating cert got updated\n")
 		util.CheckCertMatches(tunnel.Local, util.TestRoot)
 	})
 

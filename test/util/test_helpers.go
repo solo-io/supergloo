@@ -104,8 +104,7 @@ func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {
 
 func DeleteCrb(crbName string) {
 	client := GetKubeClient()
-	err := client.RbacV1().ClusterRoleBindings().Delete(crbName, &kubemeta.DeleteOptions{})
-	Expect(err).Should(BeNil())
+	client.RbacV1().ClusterRoleBindings().Delete(crbName, &kubemeta.DeleteOptions{})
 }
 
 func DeleteWebhookConfigIfExists(webhookName string) {

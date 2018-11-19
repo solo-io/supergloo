@@ -29,7 +29,7 @@ var _ = Describe("ConsulInstallSyncer", func() {
 	getSnapshot := func(mtls bool) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
 			Installs: v1.InstallsByNamespace{
-				"not_used": v1.InstallList{
+				superglooNamespace: v1.InstallList{
 					&v1.Install{
 						Metadata: core.Metadata{
 							Namespace: superglooNamespace,
@@ -76,10 +76,6 @@ var _ = Describe("ConsulInstallSyncer", func() {
 	})
 
 	It("Can install consul without mtls enabled", func() {
-		syncer := consul.ConsulInstallSyncer{
-			Kube:       util.GetKubeClient(),
-			MeshClient: meshClient,
-		}
 		snap := getSnapshot(false)
 		err := syncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())
