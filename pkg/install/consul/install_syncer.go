@@ -225,9 +225,17 @@ func getMeshObject(install *v1.Install) *v1.Mesh {
 			Name:      install.Metadata.Name,
 			Namespace: install.Metadata.Namespace,
 		},
-		TargetMesh: &v1.TargetMesh{
-			MeshType: v1.MeshType_CONSUL,
+		MeshType: &v1.Mesh_Consul{
+			Consul: &v1.Consul{
+				InstallationNamespace: install.Consul.Namespace,
+				ServerAddress: consulServerAddress(install),
+			},
 		},
 		Encryption: install.Encryption,
 	}
+}
+
+// TODO (ilackarms / rickducott): implement
+func consulServerAddress(install *v1.Install) string {
+	return ""
 }
