@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/solo-io/envoy-gloo/bazel-envoy-gloo/external/go_sdk/src/strings"
 	"github.com/solo-io/supergloo/pkg/defaults"
@@ -36,7 +37,7 @@ func getLabelsForUpstream(us *gloov1.Upstream) map[string]string {
 	return us.Metadata.Labels
 }
 
-func processRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (*v1alpha3.VirtualService, error) {
+func getIstioMeshForRule(rule *v1.RoutingRule, meshes v1.MeshList) (*v1.Istio, error) {
 	if rule.TargetMesh == nil {
 		return nil, errors.Errorf("target_mesh required")
 	}
@@ -52,10 +53,91 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.Upst
 	if istioMesh.Istio == nil {
 		return nil, errors.Errorf("target istio mesh is invalid")
 	}
+	return istioMesh.Istio, nil
+}
+
+func subsetName(host string, labels map[string]string) string {
+	return fmt.Sprintf("%v-%+v", host, labels)
+}
+
+func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) ([]*v1alpha3.DestinationRule, error) {
+	var meshesWithRouteRules v1.MeshList
+	for _, rule := range rules {
+		mesh, err := meshes.Find(rule.TargetMesh.Namespace, rule.TargetMesh.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "finding target mesh %v", rule.TargetMesh)
+		}
+		if _, err := getIstioMeshForRule(rule, meshes); err != nil {
+			return nil, err
+		}
+		var found bool
+		for _, addedMesh := range meshesWithRouteRules {
+			if mesh == addedMesh {
+				found = true
+				break
+			}
+		}
+		if !found {
+			meshesWithRouteRules = append(meshesWithRouteRules, mesh)
+		}
+	}
+	if len(meshesWithRouteRules) == 0 {
+		return nil, nil
+	}
+
+	var subsets []*v1alpha3.DestinationRule
+	for _, mesh := range meshesWithRouteRules {
+		mtlsEnabled := mesh.Encryption != nil && mesh.Encryption.TlsEnabled
+		labelsByHost := make(map[string][]map[string]string)
+		for _, us := range upstreams {
+			labels := getLabelsForUpstream(us)
+			host, err := getHostForUpstream(us)
+			if err != nil {
+				return nil, errors.Wrapf(err, "getting host for upstream")
+			}
+			labelsByHost[host] = append(labelsByHost[host], labels)
+		}
+		var destinationRules []*v1alpha3.DestinationRule
+		for host, labelSets := range labelsByHost {
+			var subsets []*v1alpha3.Subset
+			for _, labels := range labelSets {
+				subsets = append(subsets, &v1alpha3.Subset{
+					Name:   subsetName(host, labels),
+					Labels: labels,
+				})
+			}
+			var trafficPolicy *v1alpha3.TrafficPolicy
+			if mtlsEnabled {
+				trafficPolicy = &v1alpha3.TrafficPolicy{
+					Tls: &v1alpha3.TLSSettings{
+						Mode: v1alpha3.TLSSettings_ISTIO_MUTUAL,
+					},
+				}
+			}
+			destinationRules = append(destinationRules, &v1alpha3.DestinationRule{
+				Metadata: core.Metadata{
+					Namespace: mesh.Metadata.Namespace,
+					Name:      mesh.Metadata.Name + "-" + host,
+				},
+				Host:          host,
+				TrafficPolicy: trafficPolicy,
+				Subsets:       subsets,
+			})
+		}
+	}
+
+	return subsets, nil
+}
+
+func virtualServiceForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (*v1alpha3.VirtualService, error) {
+	istioMesh, err := getIstioMeshForRule(rule, meshes)
+	if err != nil {
+		return nil, err
+	}
 	// we can only write our crds to a namespace istio watches
 	// just pick the first one for now
 	// if empty, it defaults to supergloo-system & default
-	validNamespaces := istioMesh.Istio.WatchNamespaces
+	validNamespaces := istioMesh.WatchNamespaces
 	if len(validNamespaces) == 0 {
 		validNamespaces = []string{defaults.Namespace, "default"}
 	}
@@ -67,8 +149,8 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.Upst
 		}
 	}
 	if !found {
-		return nil, errors.Errorf("routing rule %v is not in a namespace that belongs to target mesh %v",
-			rule.Metadata.Ref(), mesh.Metadata.Ref())
+		return nil, errors.Errorf("routing rule %v is not in a namespace that belongs to target mesh",
+			rule.Metadata.Ref())
 	}
 
 	istioMatcher, err := createIstioMatcher(rule, upstreams)
@@ -81,6 +163,9 @@ func processRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.Upst
 			Name:      "supergloo-" + rule.Metadata.Name,
 			Namespace: rule.Metadata.Namespace,
 		},
+		// in istio api, this is equivalent to []string{"mesh"}
+		// which includes all pods in the mesh, with no selectors
+		// and no ingresses
 		Gateways: []string{"mesh"},
 		Http: []*v1alpha3.HTTPRoute{{
 			Match: istioMatcher,
@@ -138,12 +223,6 @@ func createIstioMatcher(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]
 		}
 	}
 	return istioMatcher, nil
-}
-
-func createDestinations(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) []*v1alpha3.HTTPRouteDestination {
-	if len(rule.DestinationSelector) == 0 {
-		return []*v1alpha3.HTTPRouteDestination{{}}
-	}
 }
 
 func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1alpha3.HTTPMatchRequest {
@@ -205,6 +284,29 @@ func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1
 	}
 }
 
+func createIstioDestinations(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
+	var istioDestinations []*v1alpha3.HTTPRouteDestination
+	switch {
+	case len(rule.Destinations) == 0:
+	case len(rule.Destinations) > 0:
+		for _, dest := range rule.Destinations {
+			upstream, err := upstreams.Find(dest.Strings())
+			if err != nil {
+				return nil, errors.Wrapf(err, "invalid destination %v", dest)
+			}
+			host, err := getHostForUpstream(upstream)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to get host for upstream")
+			}
+			istioDestinations = append(istioDestinations, &v1alpha3.HTTPRouteDestination{
+				Destination: &v1alpha3.Destination{
+					Host: host,
+				},
+			})
+		}
+	}
+}
+
 // TODO: if mesh has tls enabled (istio), set tls config on destination rule to istio_mutual
 
 func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
@@ -220,19 +322,14 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	reporterErrs := make(reporter.ResourceErrors)
 
 	meshes := snap.Meshes.List()
+	upstreams := snap.Upstreams.List()
+	destinationRules, err := upstreams
+
 	for _, rule := range snap.Routingrules.List() {
-		vs, err := processRule(rule, meshes)
+		vs, err := virtualServiceForRule(rule, meshes, upstreams)
 		if err != nil {
 			logger.Warnf("error in rule %v: %v", rule.Metadata.Ref(), err)
 			reporterErrs.AddError(rule, err)
-		}
-		vs := &v1alpha3.VirtualService{
-			// in istio api, this is equivalent to []string{"mesh"}
-			// which includes all pods in the mesh, with no selectors
-			// and no ingresses
-			Gateways: []string{},
-			Hosts:    hosts,
-			Http:     routes,
 		}
 		virtualServices = append(virtualServices, vs)
 	}

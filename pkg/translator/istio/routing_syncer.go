@@ -142,6 +142,17 @@ func createDestinationRules(enableTls bool, upstreams gloov1.UpstreamList) v1alp
 	return destinationRules
 }
 
+func getHostForUpstream(us *gloov1.Upstream) (string, error) {
+	hosts, err := getHostsForUpstream(us)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to get hosts for upstream")
+	}
+	if len(hosts) < 1 {
+		return "", errors.Errorf("failed to get hosts for upstream")
+	}
+	return hosts[0], nil
+}
+
 func getHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
 	switch specType := us.UpstreamSpec.UpstreamType.(type) {
 	case *gloov1.UpstreamSpec_Aws:
