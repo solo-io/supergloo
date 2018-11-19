@@ -32,7 +32,7 @@ func installConsul(opts *options.Options) {
 			Namespace: constants.SuperGlooNamespace,
 		},
 		Consul: &v1.ConsulInstall{
-			Path:      "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
+			Path:      constants.ConsulInstallPath,
 			Namespace: opts.Install.Namespace,
 		}}, clients.WriteOpts{})
 	if err != nil {

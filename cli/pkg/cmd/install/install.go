@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/util"
+	"github.com/solo-io/supergloo/pkg/constants"
 	"github.com/spf13/cobra"
 	survey "gopkg.in/AlecAivazis/survey.v1"
 )
@@ -38,14 +39,13 @@ func install(opts *options.Options) {
 	iop := &opts.Install
 	switch iop.MeshType {
 	case "consul":
-		fmt.Println("consul")
 		installConsul(opts)
 		return
 	case "istio":
-		fmt.Println("istio")
+		fmt.Println("istio TODO")
 		return
 	case "linkerd":
-		fmt.Println("ld")
+		fmt.Println("ld TODO")
 		return
 	default:
 		// should not get here
@@ -59,7 +59,7 @@ func qualifyFlags(opts *options.Options) error {
 	top := opts.Top
 	iop := &opts.Install
 
-	// we always need a filename
+	// we always need a filename TODO -remove this restriction/field
 	if iop.Filename == "" {
 		return fmt.Errorf("please provide a filename")
 	}
@@ -95,12 +95,9 @@ func qualifyFlags(opts *options.Options) error {
 
 func chooseMeshType() (string, error) {
 
-	// TODO(mitchdraft) - get from system/constants
-	meshOptions := []string{"istio", "consul", "linkerd"}
-
 	question := &survey.Select{
 		Message: "Select a mesh type",
-		Options: meshOptions,
+		Options: constants.MeshOptions,
 	}
 
 	var choice string
@@ -133,8 +130,9 @@ func chooseNamespace() (string, error) {
 	return choice, nil
 }
 
-func installationSummaryMessage(opts *options.Options) string {
-	return fmt.Sprintf("installing %v in namespace %v from %v\n", opts.Install.MeshType, opts.Install.Namespace, opts.Install.Filename)
+func installationSummaryMessage(opts *options.Options) {
+	fmt.Printf("Installing %v in namespace %v from %v\n", opts.Install.MeshType, opts.Install.Namespace, opts.Install.Filename)
+	return
 }
 
 func getNewInstallName(opts *options.Options) string {
