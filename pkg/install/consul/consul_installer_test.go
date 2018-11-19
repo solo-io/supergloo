@@ -22,7 +22,7 @@ Tests assume you already have a Kubernetes environment with Helm / Tiller set up
 The tests will install Consul and get it configured and validate all services up and running, then tear down and
 clean up all resources created. This will take about 45 seconds with mTLS, and 20 seconds without.
 */
-var _ = Describe("ConsulInstallSyncer", func() {
+var _ = Describe("Consul Installer", func() {
 
 	installNamespace := "consul"
 	superglooNamespace := "supergloo-system" // this needs to be made before running tests

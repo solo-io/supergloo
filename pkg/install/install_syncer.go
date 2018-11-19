@@ -84,7 +84,6 @@ func (syncer *InstallSyncer) SyncInstallImpl(_ context.Context, install *v1.Inst
 func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, defaultNamespace string) (string, error) {
 	installNamespace := getInstallNamespace(install, defaultNamespace)
 
-	// 1. Create a namespace
 	err := syncer.createNamespaceIfNotExist(installNamespace) // extract to CRD
 	if err != nil {
 		return installNamespace, errors.Wrap(err, "Error setting up namespace")

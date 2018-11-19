@@ -9,5 +9,5 @@ import (
 
 func TestConsulInstall(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Consul Suite")
+	RunSpecs(t, "Consul Installer Suite")
 }

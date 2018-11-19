@@ -28,7 +28,7 @@ The tests will install Consul and get it configured and validate all services up
 up any other configuration, then tear down and clean up all resources created.
 This will take about 80 seconds with mTLS, and 50 seconds without.
 */
-var _ = Describe("ConsulInstallSyncer", func() {
+var _ = Describe("Consul Install and Encryption E2E", func() {
 
 	installNamespace := "consul"
 	superglooNamespace := "supergloo-system" // this needs to be made before running tests
@@ -116,7 +116,7 @@ var _ = Describe("ConsulInstallSyncer", func() {
 		util.TerminateNamespaceBlocking(installNamespace)
 	})
 
-	It("Can install consul with mtls enabled", func() {
+	It("Can install consul with mtls enabled and custom root cert", func() {
 		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
