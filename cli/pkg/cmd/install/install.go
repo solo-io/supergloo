@@ -5,7 +5,7 @@ import (
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
-	survey "gopkg.in/AlecAivazis/survey.v1"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 func Cmd(opts *options.Options) *cobra.Command {
@@ -41,16 +41,16 @@ func qualifyFlags(opts *options.Options) error {
 
 	// we always need a filename
 	if iop.Filename == "" {
-		return fmt.Errorf("Please provide a filename")
+		return fmt.Errorf("please provide a filename")
 	}
 
 	// if they are using static mode, they must pass all params
 	if top.Static {
 		if iop.Namespace == "" {
-			return fmt.Errorf("Please provide a namespace")
+			return fmt.Errorf("please provide a namespace")
 		}
 		if iop.MeshType == "" {
-			return fmt.Errorf("Please provide a mesh type")
+			return fmt.Errorf("please provide a mesh type")
 		}
 	}
 
