@@ -41,7 +41,8 @@ var _ = Describe("Istio Installer", func() {
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{
-									Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio/",
+									// Use a local path for testing to save a lot of time...
+									Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
 								},
 							},
 						},
@@ -60,6 +61,9 @@ var _ = Describe("Istio Installer", func() {
 	var syncer install.InstallSyncer
 
 	BeforeEach(func() {
+		// This shouldn't be necessary, but helm will fail to install if there are CRDs already defined
+		// Rather than fail later, let's just try deleting them before the test
+		util.TryDeleteIstioCrds()
 		meshClient = util.GetMeshClient(kubeCache)
 		syncer = install.InstallSyncer{
 			Kube:           util.GetKubeClient(),
@@ -69,7 +73,7 @@ var _ = Describe("Istio Installer", func() {
 	})
 
 	AfterEach(func() {
-		util.TryDeleteCrds()
+		util.TryDeleteIstioCrds()
 		util.UninstallHelmRelease(meshName)
 		util.DeleteCrb(istio.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
@@ -83,7 +87,7 @@ var _ = Describe("Istio Installer", func() {
 		util.WaitForAvailablePods(installNamespace)
 	})
 
-	FIt("Can install istio without mtls enabled", func() {
+	It("Can install istio without mtls enabled", func() {
 		snap := getSnapshot(false)
 		err := syncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())

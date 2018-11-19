@@ -199,7 +199,7 @@ func UninstallHelmRelease(releaseName string) error {
 	return err
 }
 
-func TryDeleteCrds() {
+func TryDeleteIstioCrds() {
 	crdClient, err := client.NewForConfig(GetKubeConfig())
 	if err != nil {
 		return
