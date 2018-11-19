@@ -34,17 +34,13 @@ message Install {
 }
 
 message HelmChartLocator {
+
     oneof kind {
+        // path to a local directory, local tar.gz, or url tar.gz
         HelmChartPath chartPath = 1;
-        HelmChartRepoRelease repoRelease = 2;
     }
 }
 
 message HelmChartPath {
     string path = 1;
-}
-
-message HelmChartRepoRelease {
-    string repo = 1;
-    string release = 2;
 }

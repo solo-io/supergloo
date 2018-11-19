@@ -3,6 +3,9 @@ package istio
 import (
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
+
+	security "github.com/openshift/client-go/security/clientset/versioned"
+	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -10,7 +13,9 @@ const (
 	defaultNamespace = "istio-system"
 )
 
-type IstioInstaller struct{}
+type IstioInstaller struct {
+	SecurityClient *security.Clientset
+}
 
 func (c *IstioInstaller) GetDefaultNamespace() string {
 	return defaultNamespace
@@ -26,4 +31,30 @@ func (c *IstioInstaller) GetOverridesYaml(install *v1.Install) string {
 
 func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
 	return nil
+}
+
+func (c *IstioInstaller) DoPreHelmInstall() {
+	c.AddSccToUsers(
+		"default",
+		"istio-ingress-service-account",
+		"prometheus",
+		"istio-egressgateway-service-account",
+		"istio-citadel-service-account",
+		"istio-ingressgateway-service-account",
+		"istio-cleanup-old-ca-service-account",
+		"istio-mixer-post-install-account",
+		"istio-mixer-service-account",
+		"istio-pilot-service-account",
+		"istio-sidecar-injector-service-account",
+		"istio-galley-service-account")
+}
+
+func (c *IstioInstaller) AddSccToUsers(users ...string) {
+	anyuid, err := c.SecurityClient.SecurityV1().SecurityContextConstraints().Get("anyuid", kubemeta.GetOptions{})
+	if err != nil {
+		return
+	}
+	newUsers := append(anyuid.Users, users...)
+	anyuid.Users = newUsers
+	c.SecurityClient.SecurityV1().SecurityContextConstraints().Update(anyuid)
 }

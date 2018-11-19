@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/install/helm"
+
 	"github.com/hashicorp/consul/api"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -21,7 +23,11 @@ import (
 
 	kubecore "k8s.io/api/core/v1"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	helmlib "k8s.io/helm/pkg/helm"
 	helmkube "k8s.io/helm/pkg/kube"
+
+	security "github.com/openshift/client-go/security/clientset/versioned"
+	client "k8s.io/apiextensions-apiserver/pkg/client/clientset/internalclientset/typed/apiextensions/internalversion"
 )
 
 var kubeConfig *rest.Config
@@ -53,6 +59,12 @@ func GetKubeClient() *kubernetes.Clientset {
 	return client
 }
 
+func GetSecurityClient() *security.Clientset {
+	securityClient, err := security.NewForConfig(GetKubeConfig())
+	Expect(err).To(BeNil())
+	return securityClient
+}
+
 func GetSecretClient() gloo.SecretClient {
 	kube := GetKubeClient()
 	secretClient, err := gloo.NewSecretClient(&factory.KubeSecretClientFactory{
@@ -81,6 +93,9 @@ func WaitForAvailablePods(namespace string) {
 		done := true
 		for _, pod := range podList.Items {
 			for _, condition := range pod.Status.Conditions {
+				if pod.Status.Phase == kubecore.PodSucceeded {
+					continue
+				}
 				if condition.Type == kubecore.PodReady && condition.Status != kubecore.ConditionTrue {
 					done = false
 				}
@@ -171,4 +186,32 @@ func CheckCertMatches(consulTunnelPort int, rootCert string) {
 
 	currentRoot := currentConfig.Config["RootCert"]
 	Expect(currentRoot).To(BeEquivalentTo(rootCert))
+}
+
+func UninstallHelmRelease(releaseName string) error {
+	// helm install
+	helmClient, err := helm.GetHelmClient()
+	if err != nil {
+		return err
+	}
+	_, err = helmClient.DeleteRelease(releaseName, helmlib.DeletePurge(true))
+	helm.Teardown()
+	return err
+}
+
+func TryDeleteCrds() {
+	crdClient, err := client.NewForConfig(GetKubeConfig())
+	if err != nil {
+		return
+	}
+	crdList, err := crdClient.CustomResourceDefinitions().List(kubemeta.ListOptions{})
+	if err != nil {
+		return
+	}
+	for _, crd := range crdList.Items {
+		//TODO: use labels
+		if strings.Contains(crd.Name, "istio.io") {
+			crdClient.CustomResourceDefinitions().Delete(crd.Name, &kubemeta.DeleteOptions{})
+		}
+	}
 }

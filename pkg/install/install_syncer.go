@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/helm"
 	"k8s.io/client-go/kubernetes"
 
+	security "github.com/openshift/client-go/security/clientset/versioned"
 	kubecore "k8s.io/api/core/v1"
 	kuberbac "k8s.io/api/rbac/v1"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,20 +21,22 @@ import (
 )
 
 type InstallSyncer struct {
-	Kube       *kubernetes.Clientset
-	MeshClient v1.MeshClient
+	Kube           *kubernetes.Clientset
+	MeshClient     v1.MeshClient
+	SecurityClient *security.Clientset
 }
 
 type MeshInstaller interface {
 	GetDefaultNamespace() string
 	GetCrbName() string
 	GetOverridesYaml(install *v1.Install) string
+	DoPreHelmInstall()
 	DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error
 }
 
 func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	for _, install := range snap.Installs.List() {
-		err := syncer.SyncInstall(ctx, install)
+		err := syncer.syncInstall(ctx, install)
 		if err != nil {
 			return err
 		}
@@ -41,24 +44,26 @@ func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot)
 	return nil
 }
 
-func (syncer *InstallSyncer) SyncInstall(ctx context.Context, install *v1.Install) error {
+func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Install) error {
 	var meshInstaller MeshInstaller
 	switch install.MeshType {
 	case v1.MeshType_CONSUL:
 		meshInstaller = &consul.ConsulInstaller{}
 	case v1.MeshType_ISTIO:
-		meshInstaller = &istio.IstioInstaller{}
+		meshInstaller = &istio.IstioInstaller{
+			SecurityClient: syncer.SecurityClient,
+		}
 	default:
 		return errors.Errorf("Unsupported mesh type %v", install.MeshType)
 	}
 
-	if err := syncer.SyncInstallImpl(ctx, install, meshInstaller); err != nil {
+	if err := syncer.syncInstallImpl(ctx, install, meshInstaller); err != nil {
 		return err
 	}
 	return syncer.createMesh(install)
 }
 
-func (syncer *InstallSyncer) SyncInstallImpl(_ context.Context, install *v1.Install, installer MeshInstaller) error {
+func (syncer *InstallSyncer) syncInstallImpl(_ context.Context, install *v1.Install, installer MeshInstaller) error {
 	// 1. Setup namespace
 	installNamespace, err := syncer.SetupInstallNamespace(install, installer.GetDefaultNamespace())
 	if err != nil {
@@ -75,13 +80,16 @@ func (syncer *InstallSyncer) SyncInstallImpl(_ context.Context, install *v1.Inst
 		}
 	}
 
-	// 3. Install mesh via helm chart
-	releaseName, err := syncer.HelmInstall(install.ChartLocator, installNamespace, installer.GetOverridesYaml(install))
+	// 3. Do any pre-helm tasks
+	installer.DoPreHelmInstall()
+
+	// 4. Install mesh via helm chart
+	releaseName, err := syncer.HelmInstall(install.ChartLocator, install.Metadata.Name, installNamespace, installer.GetOverridesYaml(install))
 	if err != nil {
 		return errors.Wrap(err, "Error installing helm chart")
 	}
 
-	// 4. Do any additional steps
+	// 5. Do any additional steps
 	return installer.DoPostHelmInstall(install, syncer.Kube, releaseName)
 }
 
@@ -153,31 +161,30 @@ func getCrb(crbName string, namespaceName string) *kuberbac.ClusterRoleBinding {
 	}
 }
 
-func (syncer *InstallSyncer) HelmInstall(chartLocator *v1.HelmChartLocator, installNamespace string, overridesYaml string) (string, error) {
+func (syncer *InstallSyncer) HelmInstall(chartLocator *v1.HelmChartLocator, releaseName string, installNamespace string, overridesYaml string) (string, error) {
 	if chartLocator.GetChartPath() != nil {
-		return helmInstallChart("", chartLocator.GetChartPath().Path, installNamespace, overridesYaml)
-	} else if chartLocator.GetRepoRelease() != nil {
-		return helmInstallChart(chartLocator.GetRepoRelease().Repo, chartLocator.GetRepoRelease().Release, installNamespace, overridesYaml)
+		return helmInstallChart(chartLocator.GetChartPath().Path, releaseName, installNamespace, overridesYaml)
 	} else {
 		return "", errors.Errorf("Unsupported kind of chart locator")
 	}
 }
 
-func helmInstallChart(repoUrl string, chartPath string, installNamespace string, overridesYaml string) (string, error) {
+func helmInstallChart(chartPath string, releaseName string, installNamespace string, overridesYaml string) (string, error) {
 	// helm install
 	helmClient, err := helm.GetHelmClient()
 	if err != nil {
 		return "", err
 	}
 
-	installPath, err := helm.LocateChartRepoReleaseDefault(repoUrl, chartPath)
+	installPath, err := helm.LocateChartRepoReleaseDefault("", chartPath)
 	if err != nil {
 		return "", err
 	}
 	response, err := helmClient.InstallRelease(
 		installPath,
 		installNamespace,
-		helmlib.ValueOverrides([]byte(overridesYaml)))
+		helmlib.ValueOverrides([]byte(overridesYaml)),
+		helmlib.ReleaseName(releaseName))
 	helm.Teardown()
 	if err != nil {
 		return "", err

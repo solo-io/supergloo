@@ -720,6 +720,26 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
+  digest = "1:ccda8b9b5889f60d21ab3639f5074ea6865d89a42a6efc40e8aa65e659f84e9f"
+  name = "github.com/openshift/api"
+  packages = ["security/v1"]
+  pruneopts = "UT"
+  revision = "0d921e363e951d89f583292c60d013c318df64dc"
+  version = "v3.9.0"
+
+[[projects]]
+  digest = "1:89a989537dfd3868e3eea1ab8a9e40836dfa6d33b78b627a39aa5059d8919d7c"
+  name = "github.com/openshift/client-go"
+  packages = [
+    "security/clientset/versioned",
+    "security/clientset/versioned/scheme",
+    "security/clientset/versioned/typed/security/v1",
+  ]
+  pruneopts = "UT"
+  revision = "1fa528d3be060e4c7178eb69e76d37cf7e699e3c"
+  version = "v3.9.0"
+
+[[projects]]
   branch = "master"
   digest = "1:3bf17a6e6eaa6ad24152148a631d18662f7212e21637c2699bff3369b7f00fa2"
   name = "github.com/petar/GoLLRB"
@@ -1165,14 +1185,17 @@
   revision = "fd83cbc87e7632ccd8bbab63d2b673d4e0c631cc"
 
 [[projects]]
-  digest = "1:68802413f6b2d016bc2a49fb2a66be5507bbfbae627f8b81badd30bac6c4aa26"
+  digest = "1:6a267f294ca417c9ed9291a464853269ccd207f579fa738dc9411664bbeb651b"
   name = "k8s.io/apiextensions-apiserver"
   packages = [
     "pkg/apis/apiextensions",
+    "pkg/apis/apiextensions/install",
     "pkg/apis/apiextensions/v1beta1",
     "pkg/client/clientset/clientset",
     "pkg/client/clientset/clientset/scheme",
     "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+    "pkg/client/clientset/internalclientset/scheme",
+    "pkg/client/clientset/internalclientset/typed/apiextensions/internalversion",
     "pkg/features",
   ]
   pruneopts = "UT"
@@ -1579,6 +1602,7 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
+    "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -1627,6 +1651,7 @@
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+    "k8s.io/apiextensions-apiserver/pkg/client/clientset/internalclientset/typed/apiextensions/internalversion",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",

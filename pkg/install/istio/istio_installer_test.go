@@ -3,18 +3,16 @@ package istio_test
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
-
-	"github.com/solo-io/supergloo/pkg/install"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 /*
@@ -27,7 +25,7 @@ var _ = Describe("Istio Installer", func() {
 
 	installNamespace := "istio-system"
 	superglooNamespace := "supergloo-system" // this needs to be made before running tests
-	meshName := "test-istio-mesh"
+	meshName := "istio"
 
 	getSnapshot := func(mtls bool) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
@@ -43,7 +41,7 @@ var _ = Describe("Istio Installer", func() {
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{
-									Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
+									Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio/",
 								},
 							},
 						},
@@ -64,12 +62,15 @@ var _ = Describe("Istio Installer", func() {
 	BeforeEach(func() {
 		meshClient = util.GetMeshClient(kubeCache)
 		syncer = install.InstallSyncer{
-			Kube:       util.GetKubeClient(),
-			MeshClient: meshClient,
+			Kube:           util.GetKubeClient(),
+			MeshClient:     meshClient,
+			SecurityClient: util.GetSecurityClient(),
 		}
 	})
 
 	AfterEach(func() {
+		util.TryDeleteCrds()
+		util.UninstallHelmRelease(meshName)
 		util.DeleteCrb(istio.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
 		meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})
@@ -82,7 +83,7 @@ var _ = Describe("Istio Installer", func() {
 		util.WaitForAvailablePods(installNamespace)
 	})
 
-	It("Can install istio without mtls enabled", func() {
+	FIt("Can install istio without mtls enabled", func() {
 		snap := getSnapshot(false)
 		err := syncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())
