@@ -101,6 +101,10 @@ func LocateChartPathDefault(name string) (string, error) {
 	return locateChartPath("", "", "", name, "", false, "", "", "", "")
 }
 
+func LocateChartRepoReleaseDefault(repoUrl string, release string) (string, error) {
+	return locateChartPath(repoUrl, "", "", release, "", false, "", "", "", "")
+}
+
 // locateChartPath looks for a chart directory in known places, and returns either the full path or an error.
 //
 // This does not ensure that the chart is well-formed; only that the requested filename exists.

@@ -3,6 +3,8 @@ package install
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/istio"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -44,6 +46,8 @@ func (syncer *InstallSyncer) SyncInstall(ctx context.Context, install *v1.Instal
 	switch install.MeshType {
 	case v1.MeshType_CONSUL:
 		meshInstaller = &consul.ConsulInstaller{}
+	case v1.MeshType_ISTIO:
+		meshInstaller = &istio.IstioInstaller{}
 	default:
 		return errors.Errorf("Unsupported mesh type %v", install.MeshType)
 	}
@@ -71,7 +75,7 @@ func (syncer *InstallSyncer) SyncInstallImpl(_ context.Context, install *v1.Inst
 		}
 	}
 
-	// 3. Install Consul via helm chart
+	// 3. Install mesh via helm chart
 	releaseName, err := syncer.HelmInstall(install.ChartLocator, installNamespace, installer.GetOverridesYaml(install))
 	if err != nil {
 		return errors.Wrap(err, "Error installing helm chart")
@@ -119,7 +123,7 @@ func getNamespace(namespaceName string) *kubecore.Namespace {
 }
 
 func (syncer *InstallSyncer) CreateCrbIfNotExist(crbName string, namespaceName string) error {
-	_, err := syncer.Kube.RbacV1().ClusterRoleBindings().Get(namespaceName, kubemeta.GetOptions{})
+	_, err := syncer.Kube.RbacV1().ClusterRoleBindings().Get(crbName, kubemeta.GetOptions{})
 	if err == nil {
 		// crb already exists
 		return nil
@@ -151,20 +155,22 @@ func getCrb(crbName string, namespaceName string) *kuberbac.ClusterRoleBinding {
 
 func (syncer *InstallSyncer) HelmInstall(chartLocator *v1.HelmChartLocator, installNamespace string, overridesYaml string) (string, error) {
 	if chartLocator.GetChartPath() != nil {
-		return helmInstallPath(chartLocator.GetChartPath(), installNamespace, overridesYaml)
+		return helmInstallChart("", chartLocator.GetChartPath().Path, installNamespace, overridesYaml)
+	} else if chartLocator.GetRepoRelease() != nil {
+		return helmInstallChart(chartLocator.GetRepoRelease().Repo, chartLocator.GetRepoRelease().Release, installNamespace, overridesYaml)
 	} else {
 		return "", errors.Errorf("Unsupported kind of chart locator")
 	}
 }
 
-func helmInstallPath(chartPath *v1.HelmChartPath, installNamespace string, overridesYaml string) (string, error) {
+func helmInstallChart(repoUrl string, chartPath string, installNamespace string, overridesYaml string) (string, error) {
 	// helm install
 	helmClient, err := helm.GetHelmClient()
 	if err != nil {
 		return "", err
 	}
 
-	installPath, err := helm.LocateChartPathDefault(chartPath.Path)
+	installPath, err := helm.LocateChartRepoReleaseDefault(repoUrl, chartPath)
 	if err != nil {
 		return "", err
 	}
