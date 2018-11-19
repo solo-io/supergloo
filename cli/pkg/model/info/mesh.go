@@ -3,6 +3,8 @@ package info
 import (
 	"strconv"
 
+	"github.com/solo-io/supergloo/cli/pkg/constants"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/pkg/api/v1"
@@ -78,9 +80,25 @@ func FromList(list *v1.MeshList) *MeshInfo {
 func transform(mesh *v1.Mesh) map[string]string {
 	var meshFieldMap = make(map[string]string, 0)
 	meshFieldMap[name] = mesh.Metadata.Name
-	meshFieldMap[namespace] = mesh.Metadata.Namespace
-	meshFieldMap[targetMesh] = v1.MeshType_name[int32(mesh.TargetMesh.MeshType)]
+	meshFieldMap[targetMesh], meshFieldMap[namespace] = getMeshType(mesh)
 	meshFieldMap[status] = core.Status_State_name[int32(mesh.Status.State)]
 	meshFieldMap[encryption] = strconv.FormatBool(mesh.Encryption.TlsEnabled)
 	return meshFieldMap
+}
+
+func getMeshType(mesh *v1.Mesh) (meshType, installationNamespace string) {
+	if mesh.MeshType == nil {
+		return "", ""
+	}
+	switch x := mesh.MeshType.(type) {
+	case *v1.Mesh_Istio:
+		return constants.Istio, x.Istio.InstallationNamespace
+	case *v1.Mesh_Consul:
+		return constants.Consul, x.Consul.InstallationNamespace
+	case *v1.Mesh_Linkerd2:
+		return constants.Linkerd2, x.Linkerd2.InstallationNamespace
+	default:
+		//should never happen
+		return "", ""
+	}
 }
