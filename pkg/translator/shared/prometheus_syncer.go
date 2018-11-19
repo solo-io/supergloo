@@ -34,8 +34,11 @@ type PrometheusSyncer struct {
 func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "prometheus-syncer")
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
-		len(snap.Meshes), len(snap.Upstreams))
+	meshes := snap.Meshes.List()
+	upstreams := snap.Upstreams.List()
+
+	logger.Infof("begin sync %v (%v meshes)", snap.Hash(),
+		len(meshes), len(upstreams))
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 

@@ -42,14 +42,14 @@ func updateMetadataForWriting(meta *core.Metadata, writeNamespace string, writeS
 func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-routing-syncer")
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v (%v meshes, %v upstreams)", snap.Hash(),
-		len(snap.Meshes), len(snap.Upstreams))
-	defer logger.Infof("end sync %v", snap.Hash())
-	logger.Debugf("%v", snap)
-
 	meshes := snap.Meshes.List()
 	upstreams := snap.Upstreams.List()
 	rules := snap.Routingrules.List()
+
+	logger.Infof("begin sync %v (%v meshes, %v upstreams, %v rules)", snap.Hash(),
+		len(meshes), len(upstreams), len(rules))
+	defer logger.Infof("end sync %v", snap.Hash())
+	logger.Debugf("%v", snap)
 
 	destinationRules, err := destinationRulesForUpstreams(rules, meshes, upstreams)
 	if err != nil {
