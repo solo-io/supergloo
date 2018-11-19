@@ -129,7 +129,7 @@ func subsetsForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams
 	return subsets, nil
 }
 
-func virtualServiceForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (*v1alpha3.VirtualService, error) {
+func virtualServicesForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
 	istioMesh, err := getIstioMeshForRule(rule, meshes)
 	if err != nil {
 		return nil, err
@@ -153,25 +153,60 @@ func virtualServiceForRule(rule *v1.RoutingRule, meshes v1.MeshList, upstreams g
 			rule.Metadata.Ref())
 	}
 
+	// matcher is the same regardless of destination
 	istioMatcher, err := createIstioMatcher(rule, upstreams)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating istio matcher")
 	}
+	var destinationUpstreams gloov1.UpstreamList
+	if len(rule.Destinations) == 0 {
+		destinationUpstreams = upstreams
+	} else {
+		for _, dest := range rule.Destinations {
+			ups, err := upstreams.Find(dest.Strings())
+			if err != nil {
+				return nil, errors.Wrapf(err, "invalid destination for rule %v", dest)
+			}
+			destinationUpstreams = append(destinationUpstreams, ups)
+		}
+	}
 
-	return &v1alpha3.VirtualService{
-		Metadata: core.Metadata{
-			Name:      "supergloo-" + rule.Metadata.Name,
-			Namespace: rule.Metadata.Namespace,
-		},
-		// in istio api, this is equivalent to []string{"mesh"}
-		// which includes all pods in the mesh, with no selectors
-		// and no ingresses
-		Gateways: []string{"mesh"},
-		Http: []*v1alpha3.HTTPRoute{{
-			Match: istioMatcher,
-			Route: istioRoute,
-		}},
-	}, nil
+	var virtualServices v1alpha3.VirtualServiceList
+	for _, us := range destinationUpstreams {
+		labels := getLabelsForUpstream(us)
+		host, err := getHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+
+		destinations, err := createIstioDestinations(host, labels, rule, upstreams)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating istio destinations")
+		}
+		virtualServices = append(virtualServices, &v1alpha3.VirtualService{
+			Metadata: core.Metadata{
+				Name:      "supergloo-" + host + "-" + rule.Metadata.Name,
+				Namespace: rule.Metadata.Namespace,
+			},
+			Hosts: []string{host},
+			// in istio api, this is equivalent to []string{"mesh"}
+			// which includes all pods in the mesh, with no selectors
+			// and no ingresses
+			Gateways: []string{"mesh"},
+			Http: []*v1alpha3.HTTPRoute{{
+				Match: istioMatcher,
+				Route: destinations,
+			}},
+		})
+	}
+
+	return virtualServices, nil
+}
+
+func virtualServiceForUpstream() {}
+
+func addHttpFeatures(rule *v1.RoutingRule) {
+
 }
 
 func createIstioMatcher(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPMatchRequest, error) {
@@ -284,27 +319,68 @@ func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1
 	}
 }
 
-func createIstioDestinations(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
-	var istioDestinations []*v1alpha3.HTTPRouteDestination
-	switch {
-	case len(rule.Destinations) == 0:
-	case len(rule.Destinations) > 0:
-		for _, dest := range rule.Destinations {
-			upstream, err := upstreams.Find(dest.Strings())
-			if err != nil {
-				return nil, errors.Wrapf(err, "invalid destination %v", dest)
-			}
-			host, err := getHostForUpstream(upstream)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to get host for upstream")
-			}
-			istioDestinations = append(istioDestinations, &v1alpha3.HTTPRouteDestination{
-				Destination: &v1alpha3.Destination{
-					Host: host,
-				},
-			})
-		}
+func createIstioDestinations(host string, baseLabels map[string]string, rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
+	if rule.TrafficSplitting == nil || len(rule.TrafficSplitting.Destinations) == 0 {
+		return []*v1alpha3.HTTPRouteDestination{{
+			Destination: &v1alpha3.Destination{
+				Host:   host,
+				Subset: subsetName(host, baseLabels),
+			},
+		}}, nil
 	}
+	var istioDestinations []*v1alpha3.HTTPRouteDestination
+	for _, dest := range rule.TrafficSplitting.Destinations {
+		upstream, err := upstreams.Find(dest.Upstream.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid destination %v", dest)
+		}
+		host, err := getHostForUpstream(upstream)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get host for upstream")
+		}
+		labels := getLabelsForUpstream(upstream)
+		var port *v1alpha3.PortSelector
+		intPort, err := getPortForUpstream(upstream)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting port for upstream")
+		}
+		if intPort > 0 {
+			port = &v1alpha3.PortSelector{
+				Port: &v1alpha3.PortSelector_Number{Number: intPort},
+			}
+		}
+		istioDestinations = append(istioDestinations, &v1alpha3.HTTPRouteDestination{
+			Destination: &v1alpha3.Destination{
+				Host:   host,
+				Subset: subsetName(host, labels),
+				Port:   port,
+			},
+		})
+	}
+	return istioDestinations, nil
+}
+
+func convertRout2e(originalDestination *gloov1.Destination, route []*v1.HTTPRouteDestination, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
+	var istioMatch []*v1alpha3.HTTPRouteDestination
+	for _, m := range route {
+		destination := originalDestination
+		if m.AlternateDestination != nil {
+			destination = m.AlternateDestination
+		}
+		istioDestination, err := convertDestination(destination, upstreams)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert destination %v", destination)
+		}
+		istioMatch = append(istioMatch, &v1alpha3.HTTPRouteDestination{
+			Destination:           istioDestination,
+			Weight:                m.Weight,
+			RemoveRequestHeaders:  m.RemoveRequestHeaders,
+			RemoveResponseHeaders: m.RemoveResponseHeaders,
+			AppendRequestHeaders:  m.AppendRequestHeaders,
+			AppendResponseHeaders: m.AppendResponseHeaders,
+		})
+	}
+	return istioMatch, nil
 }
 
 func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstreams gloov1.UpstreamList) (v1alpha3.VirtualServiceList, error) {
@@ -386,27 +462,4 @@ func (s *MeshRoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules
 		return errors.Wrapf(err, "reconciling virtual services")
 	}
 	return nil
-}
-
-func convertRout2e(originalDestination *gloov1.Destination, route []*v1.HTTPRouteDestination, upstreams gloov1.UpstreamList) ([]*v1alpha3.HTTPRouteDestination, error) {
-	var istioMatch []*v1alpha3.HTTPRouteDestination
-	for _, m := range route {
-		destination := originalDestination
-		if m.AlternateDestination != nil {
-			destination = m.AlternateDestination
-		}
-		istioDestination, err := convertDestination(destination, upstreams)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to convert destination %v", destination)
-		}
-		istioMatch = append(istioMatch, &v1alpha3.HTTPRouteDestination{
-			Destination:           istioDestination,
-			Weight:                m.Weight,
-			RemoveRequestHeaders:  m.RemoveRequestHeaders,
-			RemoveResponseHeaders: m.RemoveResponseHeaders,
-			AppendRequestHeaders:  m.AppendRequestHeaders,
-			AppendResponseHeaders: m.AppendResponseHeaders,
-		})
-	}
-	return istioMatch, nil
 }
