@@ -5,8 +5,8 @@ metadata:
     linkerd.io/created-by: linkerd/cli stable-2.0.0
   creationTimestamp: null
   labels:
-    linkerd.io/control-plane-component: grafana
-  name: grafana
+    linkerd.io/control-plane-component: web
+  name: web
   namespace: linkerd
 spec:
   replicas: 1
@@ -18,34 +18,37 @@ spec:
         linkerd.io/proxy-version: stable-2.0.0
       creationTimestamp: null
       labels:
-        linkerd.io/control-plane-component: grafana
+        linkerd.io/control-plane-component: web
         linkerd.io/control-plane-ns: linkerd
-        linkerd.io/proxy-deployment: grafana
+        linkerd.io/proxy-deployment: web
     spec:
       containers:
-      - image: gcr.io/linkerd-io/grafana:stable-2.0.0
+      - args:
+        - -api-addr=api.linkerd.svc.cluster.local:8085
+        - -static-dir=/dist
+        - -template-dir=/templates
+        - -uuid=e77de2f9-c6e0-4760-9d18-ec4d9e716ae6
+        - -controller-namespace=linkerd
+        - -log-level=info
+        image: gcr.io/linkerd-io/web:stable-2.0.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
-            path: /api/health
-            port: 3000
-        name: grafana
+            path: /ping
+            port: 9994
+          initialDelaySeconds: 10
+        name: web
         ports:
-        - containerPort: 3000
+        - containerPort: 8084
           name: http
+        - containerPort: 9994
+          name: admin-http
         readinessProbe:
-          failureThreshold: 10
+          failureThreshold: 7
           httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 30
+            path: /ready
+            port: 9994
         resources: {}
-        volumeMounts:
-        - mountPath: /etc/grafana
-          name: grafana-config
-          readOnly: true
       - env:
         - name: LINKERD2_PROXY_LOG
           value: warn,linkerd2_proxy=info
@@ -107,15 +110,4 @@ spec:
             - NET_ADMIN
           privileged: false
         terminationMessagePolicy: FallbackToLogsOnError
-      volumes:
-      - configMap:
-          items:
-          - key: grafana.ini
-            path: grafana.ini
-          - key: datasources.yaml
-            path: provisioning/datasources/datasources.yaml
-          - key: dashboards.yaml
-            path: provisioning/dashboards/dashboards.yaml
-          name: grafana-config
-        name: grafana-config
 status: {}

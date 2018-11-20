@@ -50,32 +50,6 @@ func parseobjectYaml(ctx context.Context, objectYaml string) (KubeObjectList, er
 	return obj, nil
 }
 
-func convertUntypedList(untyped UntypedKubeObject) (KubeObjectList, error) {
-	itemsValue, ok := untyped["items"]
-	if !ok {
-		return nil, errors.Errorf("list object missing items")
-	}
-	items, ok := itemsValue.([]interface{})
-	if !ok {
-		return nil, errors.Errorf("items must be an array")
-	}
-	
-	var returnList KubeObjectList
-	for _, item := range items {
-		itemYaml, err := yaml.Marshal(item)
-		if err != nil {
-			return nil, errors.Wrapf(err, "marshalling item yaml")
-		}
-		s := string(itemYaml)
-		obj, err := convertYamlToResource(s)
-		if err != nil {
-			return nil, errors.Wrapf(err, "converting resource in list")
-		}
-		returnList = append(returnList, obj...)
-	}
-	return returnList, nil
-}
-
 func convertYamlToResource(objectYaml string) (KubeObjectList, error) {
 	var untyped UntypedKubeObject
 	if err := yaml.Unmarshal([]byte(objectYaml), &untyped); err != nil {
@@ -130,6 +104,31 @@ func convertYamlToResource(objectYaml string) (KubeObjectList, error) {
 		return nil, errors.Wrapf(err, "parsing raw yaml as %+v", obj)
 	}
 	return KubeObjectList{obj}, nil
+}
+func convertUntypedList(untyped UntypedKubeObject) (KubeObjectList, error) {
+	itemsValue, ok := untyped["items"]
+	if !ok {
+		return nil, errors.Errorf("list object missing items")
+	}
+	items, ok := itemsValue.([]interface{})
+	if !ok {
+		return nil, errors.Errorf("items must be an array")
+	}
+
+	var returnList KubeObjectList
+	for _, item := range items {
+		itemYaml, err := yaml.Marshal(item)
+		if err != nil {
+			return nil, errors.Wrapf(err, "marshalling item yaml")
+		}
+		s := string(itemYaml)
+		obj, err := convertYamlToResource(s)
+		if err != nil {
+			return nil, errors.Wrapf(err, "converting resource in list")
+		}
+		returnList = append(returnList, obj...)
+	}
+	return returnList, nil
 }
 
 type infraSyncer struct {

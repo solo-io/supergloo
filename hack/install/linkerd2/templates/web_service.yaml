@@ -4,14 +4,17 @@ metadata:
   annotations:
     linkerd.io/created-by: linkerd/cli stable-2.0.0
   labels:
-    linkerd.io/control-plane-component: grafana
-  name: grafana
+    linkerd.io/control-plane-component: web
+  name: web
   namespace: linkerd
 spec:
   ports:
   - name: http
-    port: 3000
-    targetPort: 3000
+    port: 8084
+    targetPort: 8084
+  - name: admin-http
+    port: 9994
+    targetPort: 9994
   selector:
-    linkerd.io/control-plane-component: grafana
+    linkerd.io/control-plane-component: web
   type: ClusterIP

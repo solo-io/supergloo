@@ -1,18 +1,17 @@
-### Prometheus ###
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
-  name: prometheus
-  namespace: {{.Namespace}}
-  labels:
-      {{.ControllerComponentLabel}}: prometheus
   annotations:
-      {{.CreatedByAnnotation}}: {{.CliVersion}}
+    linkerd.io/created-by: linkerd/cli stable-2.0.0
+  labels:
+    linkerd.io/control-plane-component: prometheus
+  name: prometheus
+  namespace: linkerd
 spec:
-  type: ClusterIP
-  selector:
-      {{.ControllerComponentLabel}}: prometheus
   ports:
   - name: admin-http
     port: 9090
     targetPort: 9090
+  selector:
+    linkerd.io/control-plane-component: prometheus
+  type: ClusterIP

@@ -4,14 +4,14 @@ metadata:
   annotations:
     linkerd.io/created-by: linkerd/cli stable-2.0.0
   labels:
-    linkerd.io/control-plane-component: grafana
-  name: grafana
+    linkerd.io/control-plane-component: controller
+  name: proxy-api
   namespace: linkerd
 spec:
   ports:
-  - name: http
-    port: 3000
-    targetPort: 3000
+  - name: grpc
+    port: 8086
+    targetPort: 8086
   selector:
-    linkerd.io/control-plane-component: grafana
+    linkerd.io/control-plane-component: controller
   type: ClusterIP
