@@ -2,6 +2,7 @@ package options
 
 import (
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"k8s.io/client-go/kubernetes"
 )
 
 type Options struct {
@@ -11,6 +12,7 @@ type Options struct {
 	IngressTool IngressTool
 	Get         Get
 	Create      Create
+	Cache       OptionsCache
 }
 
 type Top struct {
@@ -55,4 +57,11 @@ type RoutingRule struct {
 
 type Create struct {
 	RoutingRule RoutingRule
+}
+
+// OptionsCache holds resources that multiple commands need
+// It should be initialized on start
+type OptionsCache struct {
+	Namespaces []string
+	KubeClient *kubernetes.Clientset
 }

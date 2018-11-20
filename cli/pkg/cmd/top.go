@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/setup"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,8 @@ func App(version string) *cobra.Command {
 		ingresstoolbox.FortifyIngress(&opts),
 		ingresstoolbox.AddRoute(&opts),
 	)
+
+	setup.InitCache(&opts)
 
 	return app
 }
