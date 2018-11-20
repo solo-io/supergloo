@@ -34,8 +34,8 @@ func (c *ConsulInstaller) GetOverridesYaml(install *v1.Install) string {
 	return getOverrides(install.Encryption)
 }
 
-func (c *ConsulInstaller) DoPreHelmInstall() {
-	// no-op
+func (c *ConsulInstaller) DoPreHelmInstall() error {
+	return nil
 }
 
 func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {

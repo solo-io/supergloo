@@ -33,11 +33,11 @@ func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes
 	return nil
 }
 
-func (c *IstioInstaller) DoPreHelmInstall() {
+func (c *IstioInstaller) DoPreHelmInstall() error {
 	if c.SecurityClient == nil {
-		return
+		return nil
 	}
-	c.AddSccToUsers(
+	return c.AddSccToUsers(
 		"default",
 		"istio-ingress-service-account",
 		"prometheus",
@@ -55,12 +55,13 @@ func (c *IstioInstaller) DoPreHelmInstall() {
 // TODO: something like this should enable minishift installs to succeed, but this isn't right. The correct steps are
 //       to run "oc adm policy add-scc-to-user anyuid -z %s -n istio-system" for each of the user accounts above
 //       maybe the issue is not specifying the namespace?
-func (c *IstioInstaller) AddSccToUsers(users ...string) {
+func (c *IstioInstaller) AddSccToUsers(users ...string) error {
 	anyuid, err := c.SecurityClient.SecurityV1().SecurityContextConstraints().Get("anyuid", kubemeta.GetOptions{})
 	if err != nil {
-		return
+		return err
 	}
 	newUsers := append(anyuid.Users, users...)
 	anyuid.Users = newUsers
-	c.SecurityClient.SecurityV1().SecurityContextConstraints().Update(anyuid)
+	_, err = c.SecurityClient.SecurityV1().SecurityContextConstraints().Update(anyuid)
+	return err
 }

@@ -82,7 +82,7 @@ func TerminateNamespaceBlocking(namespace string) {
 	Eventually(func() error {
 		_, err := client.CoreV1().Namespaces().Get(namespace, kubemeta.GetOptions{})
 		return err
-	}, "60s", "1s").ShouldNot(BeNil()) // will be non-nil when NS is gone
+	}, "120s", "1s").ShouldNot(BeNil()) // will be non-nil when NS is gone
 }
 
 func WaitForAvailablePods(namespace string) {
@@ -102,7 +102,7 @@ func WaitForAvailablePods(namespace string) {
 			}
 		}
 		return done
-	}, "60s", "1s").Should(BeTrue())
+	}, "120s", "1s").Should(BeTrue())
 }
 
 func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {
