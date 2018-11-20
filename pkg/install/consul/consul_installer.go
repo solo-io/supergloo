@@ -1,14 +1,12 @@
 package consul
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	"k8s.io/api/admissionregistration/v1beta1"
 
 	"github.com/pkg/errors"
-	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/supergloo/pkg/api/v1"
@@ -80,18 +78,19 @@ connectInject:
 // The webhook config is created with the wrong name by the chart
 // Grab it, recreate with correct name, and delete the old one
 func updateMutatingWebhookAdapter(kube *kubernetes.Clientset, releaseName string) error {
-	name := fmt.Sprintf("%s-%s", releaseName, WebhookCfg)
-	cfg, err := kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, kubemeta.GetOptions{})
-	if err != nil {
-		return err
-	}
-	fixedCfg := getFixedWebhookAdapter(cfg)
-	_, err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(fixedCfg)
-	if err != nil {
-		return err
-	}
-	err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(name, &kubemeta.DeleteOptions{})
-	return err
+	return nil
+	//  	name := fmt.Sprintf("%s-%s", releaseName, WebhookCfg)
+	//  	cfg, err := kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, kubemeta.GetOptions{})
+	//  	if err != nil {
+	//  		return err
+	//  	}
+	//  	fixedCfg := getFixedWebhookAdapter(cfg)
+	//  	_, err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(fixedCfg)
+	//  	if err != nil {
+	//  		return err
+	//  	}
+	//  	err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(name, &kubemeta.DeleteOptions{})
+	//  	return err
 }
 
 func getFixedWebhookAdapter(input *v1beta1.MutatingWebhookConfiguration) *v1beta1.MutatingWebhookConfiguration {
