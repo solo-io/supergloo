@@ -169,14 +169,14 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		if secretClient != nil {
 			secretClient.Delete(superglooNamespace, secretName, clients.DeleteOpts{})
 		}
-
+		util.UninstallHelmRelease(meshName)
 		util.DeleteWebhookConfigIfExists(consul.WebhookCfg)
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
 		util.UninstallHelmRelease(meshName)
 	})
 
-	It("Can install consul with mtls enabled and custom root cert", func() {
+	FIt("Can install consul with mtls enabled and custom root cert", func() {
 		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
@@ -196,7 +196,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		err = meshSyncer.Sync(context.TODO(), syncSnapshot)
 		Expect(err).NotTo(HaveOccurred())
 
-		util.CheckCertMatches(tunnel.Local, util.TestRoot)
+		util.CheckCertMatchesConsul(tunnel.Local, util.TestRoot)
 	})
 
 	It("Can install consul without mtls enabled", func() {

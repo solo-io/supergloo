@@ -216,7 +216,7 @@ func CreateTestSecret(namespace string, name string) (*gloo.Secret, *core.Resour
 	return secret, ref
 }
 
-func CheckCertMatches(consulTunnelPort int, rootCert string) {
+func CheckCertMatchesConsul(consulTunnelPort int, rootCert string) {
 	config := &api.Config{
 		Address: fmt.Sprintf("127.0.0.1:%d", consulTunnelPort),
 	}

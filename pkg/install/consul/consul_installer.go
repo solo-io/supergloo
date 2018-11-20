@@ -15,7 +15,7 @@ import (
 const (
 	CrbName          = "consul-crb"
 	defaultNamespace = "consul"
-	WebhookCfg       = "consul-connect-injector-cfg"
+	WebhookCfg       = "connect-injector-cfg"
 )
 
 type ConsulInstaller struct{}
@@ -37,7 +37,7 @@ func (c *ConsulInstaller) DoPreHelmInstall() error {
 }
 
 func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
-	if install.Encryption.TlsEnabled {
+	if false {
 		err := updateMutatingWebhookAdapter(kube, releaseName)
 		if err != nil {
 			return errors.Wrap(err, "Error setting up webhook")

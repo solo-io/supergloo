@@ -72,6 +72,7 @@ var _ = Describe("Consul Installer", func() {
 	})
 
 	AfterEach(func() {
+		util.UninstallHelmRelease(meshName)
 		util.DeleteWebhookConfigIfExists(consul.WebhookCfg)
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
