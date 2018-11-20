@@ -169,7 +169,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		util.UninstallHelmRelease(meshName)
 	})
 
-	FIt("Can install consul with mtls enabled and custom root cert", func() {
+	It("Can install consul with mtls enabled and custom root cert", func() {
 		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
