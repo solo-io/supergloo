@@ -9,6 +9,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -29,14 +30,14 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1        string
-		namespace2        string
-		cfg               *rest.Config
-		emitter           TranslatorEmitter
-		meshClient        MeshClient
-		routingRuleClient RoutingRuleClient
-		upstreamClient    gloo_solo_io.UpstreamClient
-		secretClient      gloo_solo_io.SecretClient
+		namespace1               string
+		namespace2               string
+		cfg                      *rest.Config
+		emitter                  TranslatorEmitter
+		meshClient               MeshClient
+		routingRuleClient        RoutingRuleClient
+		upstreamClient           gloo_solo_io.UpstreamClient
+		istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient
 	)
 
 	BeforeEach(func() {
@@ -78,16 +79,16 @@ var _ = Describe("V1Emitter", func() {
 		upstreamClient, err = gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		// Secret Constructor
+		// IstioCacertsSecret Constructor
 
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
-		secretClientFactory := &factory.KubeSecretClientFactory{
+		istioCacertsSecretClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}
-		secretClient, err = gloo_solo_io.NewSecretClient(secretClientFactory)
+		istioCacertsSecretClient, err = encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
+		emitter = NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioCacertsSecretClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -287,21 +288,21 @@ var _ = Describe("V1Emitter", func() {
 		assertSnapshotUpstreams(nil, gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b})
 
 		/*
-			Secret
+			IstioCacertsSecret
 		*/
 
-		assertSnapshotSecrets := func(expectSecrets gloo_solo_io.SecretList, unexpectSecrets gloo_solo_io.SecretList) {
+		assertSnapshotIstiocerts := func(expectIstiocerts encryption_istio_io.IstioCacertsSecretList, unexpectIstiocerts encryption_istio_io.IstioCacertsSecretList) {
 		drain:
 			for {
 				select {
 				case snap = <-snapshots:
-					for _, expected := range expectSecrets {
-						if _, err := snap.Secrets.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+					for _, expected := range expectIstiocerts {
+						if _, err := snap.Istiocerts.List().Find(expected.Metadata.Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
-					for _, unexpected := range unexpectSecrets {
-						if _, err := snap.Secrets.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+					for _, unexpected := range unexpectIstiocerts {
+						if _, err := snap.Istiocerts.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -309,8 +310,8 @@ var _ = Describe("V1Emitter", func() {
 				case err := <-errs:
 					Expect(err).NotTo(HaveOccurred())
 				case <-time.After(time.Second * 10):
-					nsList1, _ := secretClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := secretClient.List(namespace2, clients.ListOpts{})
+					nsList1, _ := istioCacertsSecretClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := istioCacertsSecretClient.List(namespace2, clients.ListOpts{})
 					combined := nsList1.ByNamespace()
 					combined.Add(nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
@@ -318,32 +319,32 @@ var _ = Describe("V1Emitter", func() {
 			}
 		}
 
-		secret1a, err := secretClient.Write(gloo_solo_io.NewSecret(namespace1, "angela"), clients.WriteOpts{Ctx: ctx})
+		istioCacertsSecret1a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, "angela"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		secret1b, err := secretClient.Write(gloo_solo_io.NewSecret(namespace2, "angela"), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b}, nil)
-
-		secret2a, err := secretClient.Write(gloo_solo_io.NewSecret(namespace1, "bob"), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		secret2b, err := secretClient.Write(gloo_solo_io.NewSecret(namespace2, "bob"), clients.WriteOpts{Ctx: ctx})
+		istioCacertsSecret1b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, "angela"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b, secret2a, secret2b}, nil)
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, nil)
 
-		err = secretClient.Delete(secret2a.Metadata.Namespace, secret2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		istioCacertsSecret2a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, "bob"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = secretClient.Delete(secret2b.Metadata.Namespace, secret2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotSecrets(gloo_solo_io.SecretList{secret1a, secret1b}, gloo_solo_io.SecretList{secret2a, secret2b})
-
-		err = secretClient.Delete(secret1a.Metadata.Namespace, secret1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = secretClient.Delete(secret1b.Metadata.Namespace, secret1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		istioCacertsSecret2b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, "bob"), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotSecrets(nil, gloo_solo_io.SecretList{secret1a, secret1b, secret2a, secret2b})
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b}, nil)
+
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret2a.Metadata.Namespace, istioCacertsSecret2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret2b.Metadata.Namespace, istioCacertsSecret2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret2a, istioCacertsSecret2b})
+
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret1a.Metadata.Namespace, istioCacertsSecret1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret1b.Metadata.Namespace, istioCacertsSecret1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(nil, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b})
 	})
 })

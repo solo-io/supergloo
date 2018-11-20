@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,13 +43,13 @@ var _ = Describe("TranslatorEventLoop", func() {
 		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		secretClientFactory := &factory.MemoryResourceClientFactory{
+		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		secretClient, err := gloo_solo_io.NewSecretClient(secretClientFactory)
+		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
+		emitter = NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioCacertsSecretClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
@@ -57,7 +58,7 @@ var _ = Describe("TranslatorEventLoop", func() {
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Secret().Write(gloo_solo_io.NewSecret(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockTranslatorSyncer{}
 		el := NewTranslatorEventLoop(emitter, sync)

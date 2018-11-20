@@ -18,7 +18,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"k8s.io/client-go/kubernetes"
 
 	kubecore "k8s.io/api/core/v1"
@@ -66,10 +66,11 @@ func GetSecurityClient() *security.Clientset {
 	return securityClient
 }
 
-func GetSecretClient() gloo.SecretClient {
-	kube := GetKubeClient()
-	secretClient, err := gloo.NewSecretClient(&factory.KubeSecretClientFactory{
-		Clientset: kube,
+func GetSecretClient(kubeCache *kube.KubeCache) istiosecret.IstioCacertsSecretClient {
+	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeResourceClientFactory{
+		Crd:         istiosecret.IstioCacertsSecretCrd,
+		Cfg:         GetKubeConfig(),
+		SharedCache: kubeCache,
 	})
 	Expect(err).Should(BeNil())
 	err = secretClient.Register()
@@ -190,24 +191,19 @@ func CreateConsulTunnel(namespace string, port int) (*helmkube.Tunnel, error) {
 	return t, t.ForwardPort()
 }
 
-func CreateTestSecret(namespace string, name string) (*gloo.Secret, *core.ResourceRef) {
-	tls := gloo.TlsSecret{
-		RootCa:     TestRoot,
-		PrivateKey: testKey,
-		CertChain:  testCertChain,
-	}
-	tlsWrapper := gloo.Secret_Tls{
-		Tls: &tls,
-	}
-	secret := &gloo.Secret{
+func CreateTestSecret(kubeCache *kube.KubeCache, namespace string, name string) (*istiosecret.IstioCacertsSecret, *core.ResourceRef) {
+	secret := &istiosecret.IstioCacertsSecret{
 		Metadata: core.Metadata{
 			Namespace: namespace,
 			Name:      name,
 		},
-		Kind: &tlsWrapper,
+		CaCert:    TestRoot,
+		CaKey:     testKey,
+		RootCert:  TestRoot,
+		CertChain: testCertChain,
 	}
-	GetSecretClient().Delete(namespace, name, clients.DeleteOpts{})
-	_, err := GetSecretClient().Write(secret, clients.WriteOpts{})
+	GetSecretClient(kubeCache).Delete(namespace, name, clients.DeleteOpts{})
+	_, err := GetSecretClient(kubeCache).Write(secret, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	ref := &core.ResourceRef{
 		Namespace: namespace,

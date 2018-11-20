@@ -137,9 +137,9 @@ func (o *ServiceRole) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*ServiceRole)
 }
 
-var ServiceRoleCrd = crd.NewCrd("istio.rbac.v1alpha1",
+var ServiceRoleCrd = crd.NewCrd("rbac.istio.io",
 	"serviceroles",
-	"istio.rbac.v1alpha1",
+	"rbac.istio.io",
 	"v1alpha1",
 	"ServiceRole",
 	"svcrole",

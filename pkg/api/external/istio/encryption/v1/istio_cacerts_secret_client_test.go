@@ -15,12 +15,12 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("SecretClient", func() {
+var _ = Describe("IstioCacertsSecretClient", func() {
 	var (
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: SecretCrd},
+		&typed.KubeRcTester{Crd: IstioCacertsSecretCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -30,31 +30,31 @@ var _ = Describe("SecretClient", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client SecretClient
+				client IstioCacertsSecretClient
 				err    error
 			)
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				factory := test.Setup(namespace)
-				client, err = NewSecretClient(factory)
+				client, err = NewIstioCacertsSecretClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
-			It("CRUDs Secrets", func() {
-				SecretClientTest(namespace, client)
+			It("CRUDs IstioCacertsSecrets", func() {
+				IstioCacertsSecretClientTest(namespace, client)
 			})
 		})
 	}
 })
 
-func SecretClientTest(namespace string, client SecretClient) {
+func IstioCacertsSecretClientTest(namespace string, client IstioCacertsSecretClient) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := "foo"
-	input := NewSecret(namespace, name)
+	input := NewIstioCacertsSecret(namespace, name)
 	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -63,14 +63,15 @@ func SecretClientTest(namespace string, client SecretClient) {
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&Secret{}))
+	Expect(r1).To(BeAssignableToTypeOf(&IstioCacertsSecret{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
-	Expect(r1.Aws).To(Equal(input.Aws))
-	Expect(r1.Azure).To(Equal(input.Azure))
-	Expect(r1.Tls).To(Equal(input.Tls))
+	Expect(r1.RootCert).To(Equal(input.RootCert))
+	Expect(r1.CertChain).To(Equal(input.CertChain))
+	Expect(r1.CaCert).To(Equal(input.CaCert))
+	Expect(r1.CaKey).To(Equal(input.CaKey))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
@@ -92,7 +93,7 @@ func SecretClientTest(namespace string, client SecretClient) {
 	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = "boo"
-	input = &Secret{}
+	input = &IstioCacertsSecret{}
 
 	input.Metadata = core.Metadata{
 		Name:      name,
@@ -141,7 +142,7 @@ func SecretClientTest(namespace string, client SecretClient) {
 		Expect(err).NotTo(HaveOccurred())
 
 		name = "goo"
-		input = &Secret{}
+		input = &IstioCacertsSecret{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
 			Name:      name,

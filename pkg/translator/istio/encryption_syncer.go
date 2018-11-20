@@ -3,11 +3,13 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"k8s.io/client-go/kubernetes"
 
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -17,13 +19,12 @@ import (
 )
 
 type EncryptionSyncer struct {
-	Kube         kubernetes.Interface
-	SecretClient gloov1.SecretClient
-	ctx          context.Context
+	IstioNamespace string
+	Kube           kubernetes.Interface
+	SecretClient   istiov1.IstioCacertsSecretClient
 }
 
 const (
-	defaultIstioNamespace            = "istio-system"
 	customRootCertificateSecretName  = "cacerts"
 	defaultRootCertificateSecretName = "istio.default"
 	istioLabelKey                    = "istio"
@@ -31,113 +32,90 @@ const (
 )
 
 func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
-	s.ctx = ctx
 	for _, mesh := range snap.Meshes.List() {
-		if err := s.syncMesh(mesh, snap); err != nil {
+		if err := s.syncMesh(ctx, mesh, snap); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (s *EncryptionSyncer) syncMesh(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
-	_, ok := mesh.MeshType.(*v1.Mesh_Istio)
-	if !ok {
-		// not our mesh, we don't care
-		return nil
+func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+	if mesh.GetIstio() == nil {
+		return errors.Errorf("invalid mesh %v: expected istio", mesh.Metadata.Ref())
 	}
 	encryption := mesh.Encryption
 	if encryption == nil {
+		return nil
+	}
+	if !encryption.TlsEnabled {
 		return nil
 	}
 	encryptionSecret := encryption.Secret
 	if encryptionSecret == nil {
 		return nil
 	}
-	secretList := snap.Secrets.List()
-	secretInMeshConfig, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
+	secretList := snap.Istiocerts.List()
+	sourceSecret, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
 	if err != nil {
-		return errors.Errorf("Error finding secret referenced in mesh config (%s:%s): %v",
-			encryptionSecret.Namespace, encryptionSecret.Name, err)
+		return errors.Wrapf(err, "Error finding secret referenced in mesh config (%s:%s)",
+			encryptionSecret.Namespace, encryptionSecret.Name)
 	}
-	tlsSecretFromMeshConfig := secretInMeshConfig.GetTls()
-	if tlsSecretFromMeshConfig == nil {
-		return errors.Errorf("missing tls secret")
-	}
-
-	// this is where custom root certs will live once configured, if not found istioCacerts will be nil
-	istioCacerts, _ := secretList.Find(defaultIstioNamespace, customRootCertificateSecretName)
-
-	return s.syncSecret(tlsSecretFromMeshConfig, istioCacerts)
+	// this is where custom root certs will live once configured, if not found existingSecret will be nil
+	existingSecret, _ := secretList.Find(s.IstioNamespace, customRootCertificateSecretName)
+	return s.syncSecret(ctx, sourceSecret, existingSecret)
 }
 
-func (s *EncryptionSyncer) syncSecret(tlsSecretFromMeshConfig *gloov1.TlsSecret, currentCacerts *gloov1.Secret) error {
-	if err := validateTlsSecret(tlsSecretFromMeshConfig); err != nil {
-		return err
+func (s *EncryptionSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret) error {
+	if err := validateTlsSecret(sourceSecret); err != nil {
+		return errors.Wrapf(err, "invalid secret %v", sourceSecret.Metadata.Ref())
 	}
-
-	cacertsSecret := convertToCacerts(tlsSecretFromMeshConfig)
-	if !cacertsSecret.Equal(currentCacerts) {
-		if err := s.writeCacerts(cacertsSecret); err != nil {
-			return err
+	istioSecret := resources.Clone(sourceSecret).(*istiov1.IstioCacertsSecret)
+	if existingSecret == nil {
+		istioSecret.Metadata = core.Metadata{
+			Namespace: s.IstioNamespace,
+			Name:      customRootCertificateSecretName,
 		}
-		// now we need to ensure istio changes to use this cert:
-		// make sure istio.default is deleted, and restart citadel
-		if err := s.deleteIstioDefaultSecret(); err != nil {
-			return err
+		if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
+			Ctx: ctx,
+		}); err != nil {
+			return errors.Wrapf(err, "creating tool tls secret %v for istio", istioSecret.Metadata.Ref())
 		}
-		return s.restartCitadel()
-	} else {
 		return nil
 	}
-}
 
-func (s *EncryptionSyncer) writeCacerts(secret *gloov1.Secret) error {
-	_, err := s.SecretClient.Write(secret, clients.WriteOpts{})
-	return err
-}
-
-func validateTlsSecret(secret *gloov1.TlsSecret) error {
-	if secret.RootCa == "" {
-		return errors.Errorf("Root cert is missing.")
+	// move secret over to destination name/namespace
+	istioSecret.SetMetadata(existingSecret.Metadata)
+	istioSecret.Metadata.Annotations["created_by"] = "supergloo"
+	// nothing to do
+	if istioSecret.Equal(existingSecret) {
+		return nil
 	}
-	if secret.PrivateKey == "" {
-		return errors.Errorf("Private key is missing.")
-	}
-	// TODO: This should be supported
-	if secret.CertChain != "" {
-		return errors.Errorf("Updating the root with a cert chain is not supported")
+	if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
+		Ctx: ctx,
+	}); err != nil {
+		return errors.Wrapf(err, "updating tool tls secret %v for istio", istioSecret.Metadata.Ref())
 	}
 	return nil
 }
 
-func convertToCacerts(tlsSecretFromMeshConfig *gloov1.TlsSecret) *gloov1.Secret {
-	cacerts := gloov1.IstioCacertsSecret{
-		CaKey:     tlsSecretFromMeshConfig.PrivateKey,
-		CaCert:    tlsSecretFromMeshConfig.RootCa,
-		CertChain: tlsSecretFromMeshConfig.CertChain,
-		RootCert:  tlsSecretFromMeshConfig.RootCa,
+func validateTlsSecret(secret *istiov1.IstioCacertsSecret) error {
+	if secret.RootCert == "" {
+		return errors.Errorf("Root cert is missing.")
 	}
-	cacertsWrapper := gloov1.Secret_Cacerts{
-		Cacerts: &cacerts,
+	if secret.CaKey == "" {
+		return errors.Errorf("Private key is missing.")
 	}
-	secret := gloov1.Secret{
-		Kind: &cacertsWrapper,
-		Metadata: core.Metadata{
-			Namespace: defaultIstioNamespace,
-			Name:      customRootCertificateSecretName,
-		},
-	}
-	return &secret
+	return nil
 }
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
 	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
-	return s.Kube.CoreV1().Secrets(defaultIstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
+	return s.Kube.CoreV1().Secrets(s.IstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
 }
 
 func (s *EncryptionSyncer) restartCitadel() error {
 	selector := make(map[string]string)
 	selector[istioLabelKey] = citadelLabelValue
-	return kube.RestartPods(s.Kube, defaultIstioNamespace, selector)
+	return kube.RestartPods(s.Kube, s.IstioNamespace, selector)
 }

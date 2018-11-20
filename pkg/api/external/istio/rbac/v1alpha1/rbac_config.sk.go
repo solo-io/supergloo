@@ -137,9 +137,9 @@ func (o *RbacConfig) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*RbacConfig)
 }
 
-var RbacConfigCrd = crd.NewCrd("istio.rbac.v1alpha1",
+var RbacConfigCrd = crd.NewCrd("rbac.istio.io",
 	"rbacconfigs",
-	"istio.rbac.v1alpha1",
+	"rbac.istio.io",
 	"v1alpha1",
 	"RbacConfig",
 	"rbaccfg",

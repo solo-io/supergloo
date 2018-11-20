@@ -80,7 +80,7 @@ syntax = "proto3";
 //     kind: ServiceRole
 //     name: "products-viewer"
 // ```
-package istio.rbac.v1alpha1;
+package rbac.istio.io;
 
 option go_package="github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1";
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";

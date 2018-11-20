@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
-	v12 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/pkg/api/v1"
+
+	istio "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 )
 
 type ConsulSyncer struct {
@@ -30,32 +31,31 @@ func (c *ConsulSyncer) Sync(_ context.Context, snap *v1.TranslatorSnapshot) erro
 		if encryptionSecret == nil {
 			continue
 		}
-		secret, err := snap.Secrets.List().Find(encryptionSecret.Namespace, encryptionSecret.Name)
+		secret, err := snap.Istiocerts.List().Find(encryptionSecret.Namespace, encryptionSecret.Name)
 		if err != nil {
 			return err
-		}
-		tlsSecret := secret.GetTls()
-		if tlsSecret == nil {
-			return errors.Errorf("missing tls secret")
 		}
 
 		port := c.LocalPort
 		if port <= 0 {
 			port = 8500
 		}
-		if err := syncSecret(tlsSecret, port); err != nil {
+		if err := syncSecret(secret, port); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func validateTlsSecret(secret *v12.TlsSecret) error {
-	if secret.RootCa == "" {
-		return errors.Errorf("Root cert is missing.")
+func validateTlsSecret(secret *istio.IstioCacertsSecret) error {
+	if secret.CaCert == "" {
+		return errors.Errorf("Ca cert is missing.")
 	}
-	if secret.PrivateKey == "" {
+	if secret.CaKey == "" {
 		return errors.Errorf("Private key is missing.")
+	}
+	if secret.RootCert != "" && secret.RootCert != secret.CaCert {
+		return errors.Errorf("If root cert is provided it must equal ca cert currently")
 	}
 	// TODO: This should be supported
 	if secret.CertChain != "" {
@@ -64,37 +64,37 @@ func validateTlsSecret(secret *v12.TlsSecret) error {
 	return nil
 }
 
-func getConsulInnerConfigMap(secret *v12.TlsSecret) map[string]interface{} {
+func getConsulInnerConfigMap(secret *istio.IstioCacertsSecret) map[string]interface{} {
 	innerConfig := make(map[string]interface{})
 	innerConfig["LeafCertTTL"] = "72h"
-	innerConfig["PrivateKey"] = secret.PrivateKey
-	innerConfig["RootCert"] = secret.RootCa
+	innerConfig["PrivateKey"] = secret.CaCert
+	innerConfig["RootCert"] = secret.RootCert
 	innerConfig["RotationPeriod"] = "2160h"
 	return innerConfig
 }
 
-func getConsulConfigMap(secret *v12.TlsSecret) *api.CAConfig {
+func getConsulConfigMap(secret *istio.IstioCacertsSecret) *api.CAConfig {
 	return &api.CAConfig{
 		Provider: "consul",
 		Config:   getConsulInnerConfigMap(secret),
 	}
 }
 
-func shouldUpdateCurrentCert(client *api.Client, secret *v12.TlsSecret) (bool, error) {
+func shouldUpdateCurrentCert(client *api.Client, secret *istio.IstioCacertsSecret) (bool, error) {
 	var queryOpts api.QueryOptions
 	currentConfig, _, err := client.Connect().CAGetConfig(&queryOpts)
 	if err != nil {
 		return false, errors.Errorf("Error getting current root certificate: %v", err)
 	}
 	currentRoot := currentConfig.Config["RootCert"]
-	if currentRoot == secret.RootCa {
+	if currentRoot == secret.CaCert {
 		// Root certificate already set
 		return false, nil
 	}
 	return true, nil
 }
 
-func syncSecret(secret *v12.TlsSecret, port int) error {
+func syncSecret(secret *istio.IstioCacertsSecret, port int) error {
 	// TODO: This should be configured using the mesh location from the CRD
 	// TODO: This requires port forwarding, ingress, or running inside the cluster
 	consulCfg := &api.Config{

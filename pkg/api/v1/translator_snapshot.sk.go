@@ -4,6 +4,7 @@ package v1
 
 import (
 	gloo_solo_io "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
@@ -15,7 +16,7 @@ type TranslatorSnapshot struct {
 	Meshes       MeshesByNamespace
 	Routingrules RoutingrulesByNamespace
 	Upstreams    gloo_solo_io.UpstreamsByNamespace
-	Secrets      gloo_solo_io.SecretsByNamespace
+	Istiocerts   encryption_istio_io.IstiocertsByNamespace
 }
 
 func (s TranslatorSnapshot) Clone() TranslatorSnapshot {
@@ -23,7 +24,7 @@ func (s TranslatorSnapshot) Clone() TranslatorSnapshot {
 		Meshes:       s.Meshes.Clone(),
 		Routingrules: s.Routingrules.Clone(),
 		Upstreams:    s.Upstreams.Clone(),
-		Secrets:      s.Secrets.Clone(),
+		Istiocerts:   s.Istiocerts.Clone(),
 	}
 }
 
@@ -47,8 +48,8 @@ func (s TranslatorSnapshot) snapshotToHash() TranslatorSnapshot {
 		})
 		upstream.SetStatus(core.Status{})
 	}
-	for _, secret := range snapshotForHashing.Secrets.List() {
-		resources.UpdateMetadata(secret, func(meta *core.Metadata) {
+	for _, istioCacertsSecret := range snapshotForHashing.Istiocerts.List() {
+		resources.UpdateMetadata(istioCacertsSecret, func(meta *core.Metadata) {
 			meta.ResourceVersion = ""
 		})
 	}
@@ -69,8 +70,8 @@ func (s TranslatorSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("routingrules", routingrules))
 	upstreams := s.hashStruct(snapshotForHashing.Upstreams.List())
 	fields = append(fields, zap.Uint64("upstreams", upstreams))
-	secrets := s.hashStruct(snapshotForHashing.Secrets.List())
-	fields = append(fields, zap.Uint64("secrets", secrets))
+	istiocerts := s.hashStruct(snapshotForHashing.Istiocerts.List())
+	fields = append(fields, zap.Uint64("istiocerts", istiocerts))
 
 	return append(fields, zap.Uint64("snapshotHash", s.hashStruct(snapshotForHashing)))
 }
