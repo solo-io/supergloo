@@ -58,6 +58,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		tunnel        *helmkube.Tunnel
 		meshClient    v1.MeshClient
 		secretClient  istiosecret.IstioCacertsSecretClient
+		upstreamClient gloo.UpstreamClient
 		installSyncer install.InstallSyncer
 		pathToUds string
 	)
@@ -170,7 +171,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 	})
 
 	It("Can install consul with mtls enabled and custom root cert", func() {
-		secret, ref := util.CreateTestSecret(kubeCache, superglooNamespace, secretName)
+		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())

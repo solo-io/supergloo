@@ -118,10 +118,8 @@ func Main() error {
 		return err
 	}
 
-	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeResourceClientFactory{
-		Crd:         istiosecret.IstioCacertsSecretCrd,
-		Cfg:         restConfig,
-		SharedCache: kubeCache,
+	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
 	})
 	if err != nil {
 		return err

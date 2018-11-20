@@ -97,7 +97,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 	BeforeEach(func() {
 		meshClient = util.GetMeshClient(kubeCache)
-		secretClient = util.GetSecretClient(kubeCache)
+		secretClient = util.GetSecretClient()
 		installSyncer = install.InstallSyncer{
 			Kube:       util.GetKubeClient(),
 			MeshClient: meshClient,
@@ -118,7 +118,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	})
 
 	It("Can install istio with mtls enabled and custom root cert", func() {
-		secret, ref := util.CreateTestSecret(kubeCache, superglooNamespace, secretName)
+		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())

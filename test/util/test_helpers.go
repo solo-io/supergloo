@@ -66,11 +66,9 @@ func GetSecurityClient() *security.Clientset {
 	return securityClient
 }
 
-func GetSecretClient(kubeCache *kube.KubeCache) istiosecret.IstioCacertsSecretClient {
-	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeResourceClientFactory{
-		Crd:         istiosecret.IstioCacertsSecretCrd,
-		Cfg:         GetKubeConfig(),
-		SharedCache: kubeCache,
+func GetSecretClient() istiosecret.IstioCacertsSecretClient {
+	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: GetKubeClient(),
 	})
 	Expect(err).Should(BeNil())
 	err = secretClient.Register()
@@ -191,7 +189,7 @@ func CreateConsulTunnel(namespace string, port int) (*helmkube.Tunnel, error) {
 	return t, t.ForwardPort()
 }
 
-func CreateTestSecret(kubeCache *kube.KubeCache, namespace string, name string) (*istiosecret.IstioCacertsSecret, *core.ResourceRef) {
+func CreateTestSecret(namespace string, name string) (*istiosecret.IstioCacertsSecret, *core.ResourceRef) {
 	secret := &istiosecret.IstioCacertsSecret{
 		Metadata: core.Metadata{
 			Namespace: namespace,
@@ -202,8 +200,8 @@ func CreateTestSecret(kubeCache *kube.KubeCache, namespace string, name string) 
 		RootCert:  TestRoot,
 		CertChain: testCertChain,
 	}
-	GetSecretClient(kubeCache).Delete(namespace, name, clients.DeleteOpts{})
-	_, err := GetSecretClient(kubeCache).Write(secret, clients.WriteOpts{})
+	GetSecretClient().Delete(namespace, name, clients.DeleteOpts{})
+	_, err := GetSecretClient().Write(secret, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	ref := &core.ResourceRef{
 		Namespace: namespace,
