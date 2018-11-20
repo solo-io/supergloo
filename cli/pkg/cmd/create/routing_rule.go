@@ -16,10 +16,10 @@ import (
 	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func RoutingRuleCmd(opts *options.RoutingRule) *cobra.Command {
+func RoutingRuleCmd(opts *options.Options) *cobra.Command {
+	rrOpts := opts.Create.RoutingRule
 	cmd := &cobra.Command{
 		Use:   "routingrule",
 		Short: `Create a route rule with the given name`,
@@ -30,18 +30,18 @@ func RoutingRuleCmd(opts *options.RoutingRule) *cobra.Command {
 				fmt.Println(err)
 				return
 			}
-			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", args[0], opts.Namespace)
+			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", args[0], rrOpts.Namespace)
 		},
 	}
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.Mesh, "mesh", "", "", "The mesh that will be the target for this rule")
-	flags.StringVarP(&opts.Namespace, "namespace", "n", "default",
+	flags.StringVarP(&rrOpts.Mesh, "mesh", "", "", "The mesh that will be the target for this rule")
+	flags.StringVarP(&rrOpts.Namespace, "namespace", "n", "default",
 		"The namespace for this routing rule. Defaults to \"default\"")
-	flags.StringVarP(&opts.Sources, "sources", "", "", "Sources for this rule. Each entry "+
+	flags.StringVarP(&rrOpts.Sources, "sources", "", "", "Sources for this rule. Each entry "+
 		"consists of an upstream namespace and and upstream name, separated by a colon.")
-	flags.StringVarP(&opts.Destinations, "destinations", "", "", "Destinations for this rule. Same format as for 'sources'")
-	flags.StringVarP(&opts.Matchers, "matchers", "", "", "Matchers for this rule")
-	flags.BoolVarP(&opts.OverrideExisting, "override", "", false, "If set to \"true\", "+
+	flags.StringVarP(&rrOpts.Destinations, "destinations", "", "", "Destinations for this rule. Same format as for 'sources'")
+	flags.StringVarP(&rrOpts.Matchers, "matchers", "", "", "Matchers for this rule")
+	flags.BoolVarP(&rrOpts.OverrideExisting, "override", "", false, "If set to \"true\", "+
 		"the command will override any existing routing rule that matches the given namespace and name")
 
 	// The only required option is the target mesh
@@ -50,27 +50,23 @@ func RoutingRuleCmd(opts *options.RoutingRule) *cobra.Command {
 	return cmd
 }
 
-func createRoutingRule(routeName string, opts *options.RoutingRule) error {
+func createRoutingRule(routeName string, opts *options.Options) error {
+	rrOpts := opts.Create.RoutingRule
 
 	// Ensure that the given mesh exists
 	meshClient, err := common.GetMeshClient()
 	if err != nil {
 		return err
 	}
-	mesh, err := (*meshClient).Read(constants.SuperglooNamespace, opts.Mesh, clients.ReadOpts{})
+	mesh, err := (*meshClient).Read(constants.SuperglooNamespace, rrOpts.Mesh, clients.ReadOpts{})
 	if err != nil {
 		return err
 	}
 
 	// Validate namespace
-	if opts.Namespace != "" && opts.Namespace != "default" {
-		kube, err := common.GetKubernetesClient()
-		if err != nil {
-			return err
-		}
-		_, err = kube.CoreV1().Namespaces().Get(opts.Namespace, v1.GetOptions{IncludeUninitialized: false})
-		if err != nil {
-			return err
+	if rrOpts.Namespace != "" && rrOpts.Namespace != "default" {
+		if common.Contains(opts.Cache.Namespaces, rrOpts.Namespace) {
+			return fmt.Errorf("Namespace %v does not exist.\n", rrOpts.Namespace)
 		}
 	}
 
@@ -80,15 +76,15 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 		return err
 	}
 	var sources []*glooV1.Upstream
-	if opts.Sources != "" {
-		sources, err = validateUpstreams(upstreamClient, opts.Sources)
+	if rrOpts.Sources != "" {
+		sources, err = validateUpstreams(upstreamClient, rrOpts.Sources)
 		if err != nil {
 			return err
 		}
 	}
 	var destinations []*glooV1.Upstream
-	if opts.Destinations != "" {
-		sources, err = validateUpstreams(upstreamClient, opts.Destinations)
+	if rrOpts.Destinations != "" {
+		sources, err = validateUpstreams(upstreamClient, rrOpts.Destinations)
 		if err != nil {
 			return err
 		}
@@ -96,8 +92,8 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 
 	// Validate matchers
 	var matchers []*glooV1.Matcher
-	if opts.Matchers != "" {
-		matchers, err = validateMatchers(opts.Matchers)
+	if rrOpts.Matchers != "" {
+		matchers, err = validateMatchers(rrOpts.Matchers)
 	}
 	if err != nil {
 		return err
@@ -106,7 +102,7 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 	routingRule := &superglooV1.RoutingRule{
 		Metadata: core.Metadata{
 			Name:      routeName,
-			Namespace: opts.Namespace,
+			Namespace: rrOpts.Namespace,
 		},
 		TargetMesh: &core.ResourceRef{
 			Name:      mesh.Metadata.Name,
@@ -121,7 +117,7 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 	if err != nil {
 		return err
 	}
-	_, err = (*rrClient).Write(routingRule, clients.WriteOpts{OverwriteExisting: opts.OverrideExisting})
+	_, err = (*rrClient).Write(routingRule, clients.WriteOpts{OverwriteExisting: rrOpts.OverrideExisting})
 	return err
 }
 

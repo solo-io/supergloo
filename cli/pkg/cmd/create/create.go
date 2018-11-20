@@ -17,7 +17,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(RoutingRuleCmd(&opts.Create.RoutingRule))
+	cmd.AddCommand(RoutingRuleCmd(opts))
 
 	return cmd
 }
