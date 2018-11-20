@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
+	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	istioSync "github.com/solo-io/supergloo/pkg/translator/istio"
 	"k8s.io/client-go/kubernetes"
