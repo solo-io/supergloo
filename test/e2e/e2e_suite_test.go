@@ -7,8 +7,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"github.com/solo-io/supergloo/test/util"
 )
 
 func TestE2e(t *testing.T) {
