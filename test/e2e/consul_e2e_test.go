@@ -62,12 +62,6 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		pathToUds string
 	)
 
-	BeforeSuite(func() {
-		var err error
-		pathToUds, err = gexec.Build("github.com/solo-io/solo-projects/projects/discovery/cmd")
-		Expect(err).ShouldNot(HaveOccurred())
-	})
-
 	BeforeEach(func() {
 		ns := &kubecore.Namespace{
 			ObjectMeta: kubemeta.ObjectMeta{
@@ -89,9 +83,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		// delete gloo system to remove gloo resources like upstreams
 		util.TerminateNamespaceBlocking("gloo-system")
 	})
-	AfterSuite(func() {
-		gexec.CleanupBuildArtifacts()
-	})
+
 
 	getSnapshot := func(mtls bool, secret *core.ResourceRef) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
@@ -148,6 +140,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 	})
 
 	BeforeEach(func() {
+		pathToUds = PathToUds // set up by before suite
 		meshClient = util.GetMeshClient(kubeCache)
 		upstreamClient = util.GetUpstreamClient(kubeCache)
 		secretClient = util.GetSecretClient()
