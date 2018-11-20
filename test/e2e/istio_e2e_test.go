@@ -8,7 +8,7 @@ import (
 
 	"github.com/solo-io/supergloo/pkg/install"
 
-	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/test/util"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -72,11 +72,11 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		}
 	}
 
-	getTranslatorSnapshot := func(mesh *v1.Mesh, secret *gloo.Secret) *v1.TranslatorSnapshot {
-		secrets := gloo.SecretsByNamespace{}
+	getTranslatorSnapshot := func(mesh *v1.Mesh, secret *istiosecret.IstioCacertsSecret) *v1.TranslatorSnapshot {
+		secrets := istiosecret.IstiocertsByNamespace{}
 		if secret != nil {
-			secrets = gloo.SecretsByNamespace{
-				superglooNamespace: gloo.SecretList{
+			secrets = istiosecret.IstiocertsByNamespace{
+				superglooNamespace: istiosecret.IstioCacertsSecretList{
 					secret,
 				},
 			}
@@ -87,17 +87,17 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 					mesh,
 				},
 			},
-			Secrets: secrets,
+			Istiocerts: secrets,
 		}
 	}
 
 	var meshClient v1.MeshClient
-	var secretClient gloo.SecretClient
+	var secretClient istiosecret.IstioCacertsSecretClient
 	var installSyncer install.InstallSyncer
 
 	BeforeEach(func() {
 		meshClient = util.GetMeshClient(kubeCache)
-		secretClient = util.GetSecretClient()
+		secretClient = util.GetSecretClient(kubeCache)
 		installSyncer = install.InstallSyncer{
 			Kube:       util.GetKubeClient(),
 			MeshClient: meshClient,
@@ -118,7 +118,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	})
 
 	It("Can install istio with mtls enabled and custom root cert", func() {
-		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
+		secret, ref := util.CreateTestSecret(kubeCache, superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())

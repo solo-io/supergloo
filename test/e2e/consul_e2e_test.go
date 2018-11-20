@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
+	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+
 	"github.com/hashicorp/consul/api"
 
 	"github.com/solo-io/supergloo/pkg/install"
@@ -53,12 +55,10 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 	kubeCache := kube.NewKubeCache()
 
 	var (
-		tunnel         *helmkube.Tunnel
-		meshClient     v1.MeshClient
-		upstreamClient gloo.UpstreamClient
-		secretClient   gloo.SecretClient
-		installSyncer  install.InstallSyncer
-
+		tunnel        *helmkube.Tunnel
+		meshClient    v1.MeshClient
+		secretClient  istiosecret.IstioCacertsSecretClient
+		installSyncer install.InstallSyncer
 		pathToUds string
 	)
 
@@ -116,11 +116,11 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		}
 	}
 
-	getTranslatorSnapshot := func(mesh *v1.Mesh, secret *gloo.Secret) *v1.TranslatorSnapshot {
-		secrets := gloo.SecretsByNamespace{}
+	getTranslatorSnapshot := func(mesh *v1.Mesh, secret *istiosecret.IstioCacertsSecret) *v1.TranslatorSnapshot {
+		secrets := istiosecret.IstiocertsByNamespace{}
 		if secret != nil {
-			secrets = gloo.SecretsByNamespace{
-				superglooNamespace: gloo.SecretList{
+			secrets = istiosecret.IstiocertsByNamespace{
+				superglooNamespace: istiosecret.IstioCacertsSecretList{
 					secret,
 				},
 			}
@@ -131,7 +131,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 					mesh,
 				},
 			},
-			Secrets: secrets,
+			Istiocerts: secrets,
 		}
 	}
 
@@ -170,7 +170,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 	})
 
 	It("Can install consul with mtls enabled and custom root cert", func() {
-		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
+		secret, ref := util.CreateTestSecret(kubeCache, superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
 		Expect(err).NotTo(HaveOccurred())
