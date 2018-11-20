@@ -29,6 +29,9 @@ var _ = Describe("Istio Installer", func() {
 	meshName := "istio"
 
 	path := os.Getenv("HELM_CHART_PATH")
+	if path == "" {
+		panic("Set environment variable HELM_CHART_PATH")
+	}
 
 	getSnapshot := func(mtls bool) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
