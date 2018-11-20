@@ -22,6 +22,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	kubecore "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	helmlib "k8s.io/helm/pkg/helm"
 	helmkube "k8s.io/helm/pkg/kube"
@@ -76,16 +77,34 @@ func GetSecretClient() gloo.SecretClient {
 	return secretClient
 }
 
+func TryCreateNamespace(namespace string) {
+	client := GetKubeClient()
+	resource := &kubecore.Namespace{
+		ObjectMeta: kubemeta.ObjectMeta{
+			Name: namespace,
+		},
+	}
+	_, err := client.CoreV1().Namespaces().Create(resource)
+	if err != nil {
+		Expect(apierrors.IsAlreadyExists(err)).To(BeTrue())
+	}
+}
+
 func TerminateNamespaceBlocking(namespace string) {
 	client := GetKubeClient()
-	client.CoreV1().Namespaces().Delete(namespace, &kubemeta.DeleteOptions{})
+	gracePeriod := int64(0)
+	deleteOptions := &kubemeta.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod,
+	}
+	client.CoreV1().Pods(namespace).DeleteCollection(deleteOptions, kubemeta.ListOptions{})
+	client.CoreV1().Namespaces().Delete(namespace, deleteOptions)
 	Eventually(func() error {
 		_, err := client.CoreV1().Namespaces().Get(namespace, kubemeta.GetOptions{})
 		return err
 	}, "120s", "1s").ShouldNot(BeNil()) // will be non-nil when NS is gone
 }
 
-func WaitForAvailablePods(namespace string) {
+func WaitForAvailablePodsWithTimeout(namespace string, timeout string) {
 	client := GetKubeClient()
 	Eventually(func() bool {
 		podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
@@ -102,7 +121,11 @@ func WaitForAvailablePods(namespace string) {
 			}
 		}
 		return done
-	}, "120s", "1s").Should(BeTrue())
+	}, timeout, "1s").Should(BeTrue())
+}
+
+func WaitForAvailablePods(namespace string) {
+	WaitForAvailablePodsWithTimeout(namespace, "120s")
 }
 
 func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {

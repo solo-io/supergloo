@@ -85,7 +85,6 @@ var _ = Describe("Istio Installer", func() {
 	AfterEach(func() {
 		util.UninstallHelmRelease(meshName)
 		util.TryDeleteIstioCrds()
-		// TODO: istio namespace can get stuck during termination. this will only block for 60 seconds and will not propagate an error if it gets stuck
 		util.TerminateNamespaceBlocking(installNamespace)
 		util.DeleteCrb(istio.CrbName)
 		meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})

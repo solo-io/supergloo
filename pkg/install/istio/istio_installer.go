@@ -1,6 +1,9 @@
 package istio
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -26,8 +29,21 @@ func (c *IstioInstaller) GetCrbName() string {
 }
 
 func (c *IstioInstaller) GetOverridesYaml(install *v1.Install) string {
-	return ""
+	return getOverrides(install.Encryption)
 }
+
+func getOverrides(encryption *v1.Encryption) string {
+	updatedOverrides := overridesYaml
+	if encryption != nil {
+		strBool := strconv.FormatBool(encryption.TlsEnabled)
+		updatedOverrides = strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", strBool, -1)
+	}
+	return updatedOverrides
+}
+
+var overridesYaml = `
+global.mtls.enabled: @@MTLS_ENABLED@@
+`
 
 func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
 	return nil
