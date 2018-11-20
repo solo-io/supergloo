@@ -7,8 +7,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/constants"
+	cliConstants "github.com/solo-io/supergloo/cli/pkg/constants"
 	"github.com/solo-io/supergloo/cli/pkg/model/info"
+	sgConstants "github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -70,7 +71,7 @@ func (client *KubernetesSuperglooClient) ListResourceTypes() ([]string, error) {
 
 	superglooCRDs := make([]string, 0)
 	for _, crd := range crdList.Items {
-		if strings.Contains(crd.Name, constants.SuperglooGroupName) {
+		if strings.Contains(crd.Name, cliConstants.SuperglooGroupName) {
 			parts := strings.Split(crd.Name, ".")
 			if len(parts) > 0 {
 				superglooCRDs = append(superglooCRDs, parts[0])
@@ -86,13 +87,13 @@ func (client *KubernetesSuperglooClient) ListResources(resourceType, resourceNam
 	switch resourceType {
 	case "meshes":
 		if resourceName == "" {
-			meshList, err := (*client.meshClient).List(constants.SuperglooNamespace, clients.ListOpts{})
+			meshList, err := (*client.meshClient).List(sgConstants.SuperglooNamespace, clients.ListOpts{})
 			if err != nil {
 				return nil, err
 			}
 			return info.FromList(&meshList), nil
 		} else {
-			mesh, err := (*client.meshClient).Read(constants.SuperglooNamespace, resourceName, clients.ReadOpts{})
+			mesh, err := (*client.meshClient).Read(sgConstants.SuperglooNamespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return nil, err
 			}
@@ -100,7 +101,7 @@ func (client *KubernetesSuperglooClient) ListResources(resourceType, resourceNam
 		}
 	default:
 		// Should not happen since we validate the resource
-		return nil, errors.Errorf(constants.UnknownResourceTypeMsg, resourceType)
+		return nil, errors.Errorf(cliConstants.UnknownResourceTypeMsg, resourceType)
 	}
 }
 

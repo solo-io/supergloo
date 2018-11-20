@@ -2,7 +2,6 @@ package constants
 
 const (
 	SuperglooGroupName = "supergloo.solo.io"
-	SuperglooNamespace = "supergloo-system"
 
 	// Mesh types
 	Istio    = "istio"

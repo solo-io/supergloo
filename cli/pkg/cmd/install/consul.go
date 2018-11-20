@@ -31,7 +31,7 @@ func generateInstallSpecFromOpts(opts *options.Options) *v1.Install {
 	installSpec := &v1.Install{
 		Metadata: core.Metadata{
 			Name:      getNewInstallName(opts),
-			Namespace: constants.SuperGlooNamespace,
+			Namespace: constants.SuperglooNamespace,
 		},
 		Consul: &v1.ConsulInstall{
 			Path:      constants.ConsulInstallPath,
