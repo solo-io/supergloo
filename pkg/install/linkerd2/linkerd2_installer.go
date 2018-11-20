@@ -16,10 +16,6 @@ func (c *Linkerd2Installer) GetDefaultNamespace() string {
 	return defaultNamespace
 }
 
-func (c *Linkerd2Installer) CreateNamespaceBeforeHelm() bool {
-	return false
-}
-
 func (c *Linkerd2Installer) GetCrbName() string {
 	return ""
 }

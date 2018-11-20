@@ -23,7 +23,6 @@ clean up all resources created. This will take about 45 seconds with mTLS, and 2
 */
 var _ = Describe("Linkerd2 Installer", func() {
 
-	installNamespace := "default"
 	superglooNamespace := "supergloo-system" // this needs to be made before running tests
 	meshName := "test-linkerd-mesh"
 
@@ -43,7 +42,7 @@ var _ = Describe("Linkerd2 Installer", func() {
 						},
 						MeshType: &v1.Install_Linkerd2{
 							Linkerd2: &v1.Linkerd2{
-								InstallationNamespace: installNamespace,
+								InstallationNamespace: "default", // this is used by helm, but not by the linkerd2 chart, so this should be "default" to emulate helm command line
 							},
 						},
 						ChartLocator: &v1.HelmChartLocator{

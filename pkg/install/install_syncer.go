@@ -31,7 +31,6 @@ type InstallSyncer struct {
 
 type MeshInstaller interface {
 	GetDefaultNamespace() string
-	CreateNamespaceBeforeHelm() bool
 	GetCrbName() string
 	GetOverridesYaml(install *v1.Install) string
 	DoPreHelmInstall() error
@@ -71,7 +70,7 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 
 func (syncer *InstallSyncer) syncInstallImpl(_ context.Context, install *v1.Install, installer MeshInstaller) error {
 	// 1. Setup namespace
-	installNamespace, err := syncer.SetupInstallNamespace(install, installer)
+	installNamespace, err := syncer.SetupInstallNamespace(install, installer.GetDefaultNamespace())
 	if err != nil {
 		return err
 	}
@@ -102,17 +101,12 @@ func (syncer *InstallSyncer) syncInstallImpl(_ context.Context, install *v1.Inst
 	return installer.DoPostHelmInstall(install, syncer.Kube, releaseName)
 }
 
-func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, installer MeshInstaller) (string, error) {
-	defaultNamespace := installer.GetDefaultNamespace()
+func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, defaultNamespace string) (string, error) {
 	installNamespace := getInstallNamespace(install, defaultNamespace)
-
-	if installer.CreateNamespaceBeforeHelm() {
-		err := syncer.createNamespaceIfNotExist(installNamespace) // extract to CRD
-		if err != nil {
-			return installNamespace, errors.Wrap(err, "Error setting up namespace")
-		}
+	err := syncer.createNamespaceIfNotExist(installNamespace) // extract to CRD
+	if err != nil {
+		return installNamespace, errors.Wrap(err, "Error setting up namespace")
 	}
-
 	return installNamespace, nil
 }
 

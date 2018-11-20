@@ -26,10 +26,6 @@ func (c *ConsulInstaller) GetDefaultNamespace() string {
 	return defaultNamespace
 }
 
-func (c *ConsulInstaller) CreateNamespaceBeforeHelm() bool {
-	return true
-}
-
 func (c *ConsulInstaller) GetCrbName() string {
 	return CrbName
 }

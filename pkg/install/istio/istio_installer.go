@@ -21,10 +21,6 @@ func (c *IstioInstaller) GetDefaultNamespace() string {
 	return defaultNamespace
 }
 
-func (c *IstioInstaller) CreateNamespaceBeforeHelm() bool {
-	return true
-}
-
 func (c *IstioInstaller) GetCrbName() string {
 	return CrbName
 }
