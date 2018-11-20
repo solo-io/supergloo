@@ -146,6 +146,7 @@ func Main() error {
 	istioPrometheusSyncer := istio.NewPrometheusSyncer(kubeClient, prometheusClient)
 
 	consulEncryptionSyncer := &consul.ConsulSyncer{}
+	consulPolicySyncer := &consul.PolicySyncer{}
 	istioEncryptionSyncer := &istio.EncryptionSyncer{
 		Kube:         kubeClient,
 		SecretClient: secretClient,
@@ -156,6 +157,7 @@ func Main() error {
 		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
 		consulEncryptionSyncer,
+		consulPolicySyncer,
 		istioEncryptionSyncer,
 	}
 
