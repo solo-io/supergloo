@@ -1,0 +1,18 @@
+### Controller ###
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-api
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: controller
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  type: ClusterIP
+  selector:
+      {{.ControllerComponentLabel}}: controller
+  ports:
+  - name: grpc
+    port: {{.ProxyAPIPort}}
+    targetPort: {{.ProxyAPIPort}}

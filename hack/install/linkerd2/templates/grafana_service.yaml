@@ -1,0 +1,18 @@
+### Grafana ###
+kind: Service
+apiVersion: v1
+metadata:
+  name: grafana
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: grafana
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  type: ClusterIP
+  selector:
+      {{.ControllerComponentLabel}}: grafana
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000

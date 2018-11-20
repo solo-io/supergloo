@@ -1,0 +1,53 @@
+### Grafana ###
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: grafana
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: grafana
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+          {{.ControllerComponentLabel}}: grafana
+      annotations:
+          {{.CreatedByAnnotation}}: {{.CliVersion}}
+    spec:
+      volumes:
+      - name: grafana-config
+        configMap:
+          name: grafana-config
+          items:
+          - key: grafana.ini
+            path: grafana.ini
+          - key: datasources.yaml
+            path: provisioning/datasources/datasources.yaml
+          - key: dashboards.yaml
+            path: provisioning/dashboards/dashboards.yaml
+      containers:
+      - name: grafana
+        ports:
+        - name: http
+          containerPort: 3000
+        volumeMounts:
+        - name: grafana-config
+          mountPath: /etc/grafana
+          readOnly: true
+        image: {{.GrafanaImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 10
+          periodSeconds: 10

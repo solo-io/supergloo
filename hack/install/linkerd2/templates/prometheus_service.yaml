@@ -1,0 +1,18 @@
+### Prometheus ###
+kind: Service
+apiVersion: v1
+metadata:
+  name: prometheus
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: prometheus
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  type: ClusterIP
+  selector:
+      {{.ControllerComponentLabel}}: prometheus
+  ports:
+  - name: admin-http
+    port: 9090
+    targetPort: 9090

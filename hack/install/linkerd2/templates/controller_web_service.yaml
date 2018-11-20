@@ -1,0 +1,21 @@
+### Web ###
+kind: Service
+apiVersion: v1
+metadata:
+  name: web
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: web
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  type: ClusterIP
+  selector:
+      {{.ControllerComponentLabel}}: web
+  ports:
+  - name: http
+    port: 8084
+    targetPort: 8084
+  - name: admin-http
+    port: 9994
+    targetPort: 9994

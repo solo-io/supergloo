@@ -1,0 +1,45 @@
+### CA ###
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ca
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: ca
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  replicas: {{.ControllerReplicas}}
+  template:
+    metadata:
+      labels:
+          {{.ControllerComponentLabel}}: ca
+      annotations:
+          {{.CreatedByAnnotation}}: {{.CliVersion}}
+    spec:
+      serviceAccount: linkerd-ca
+      containers:
+      - name: ca
+        ports:
+        - name: admin-http
+          containerPort: 9997
+        image: {{.ControllerImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        args:
+        - "ca"
+        - "-controller-namespace={{.Namespace}}"
+        - "-single-namespace={{.SingleNamespace}}"
+        {{- if and .EnableTLS .ProxyAutoInjectEnabled }}
+            - "-proxy-auto-inject={{ .ProxyAutoInjectEnabled }}"
+            {{- end }}
+                - "-log-level={{.ControllerLogLevel}}"
+                livenessProbe:
+                    httpGet:
+                      path: /ping
+                      port: 9997
+                      initialDelaySeconds: 10
+                readinessProbe:
+                httpGet:
+                path: /ready
+                port: 9997
+                failureThreshold: 7

@@ -1,0 +1,12 @@
+### Prometheus RBAC ###
+kind: {{if not .SingleNamespace}}Cluster{{end}}Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: linkerd-{{.Namespace}}-prometheus
+  {{- if .SingleNamespace}}
+      namespace: {{.Namespace}}
+      {{- end}}
+          rules:
+              - apiGroups: [""]
+          resources: ["pods"]
+            verbs: ["get", "list", "watch"]

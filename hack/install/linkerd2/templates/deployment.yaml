@@ -1,0 +1,148 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "linkerd2.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "linkerd2.name" . }}
+    helm.sh/chart: {{ include "linkerd2.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "linkerd2.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "linkerd2.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+
+### Controller ###
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: controller
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: controller
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  replicas: {{.ControllerReplicas}}
+  template:
+    metadata:
+      labels:
+          {{.ControllerComponentLabel}}: controller
+      annotations:
+          {{.CreatedByAnnotation}}: {{.CliVersion}}
+    spec:
+      serviceAccount: linkerd-controller
+      containers:
+      - name: public-api
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: admin-http
+          containerPort: 9995
+        image: {{.ControllerImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        args:
+        - "public-api"
+        - "-prometheus-url=http://prometheus.{{.Namespace}}.svc.cluster.local:9090"
+        - "-controller-namespace={{.Namespace}}"
+        - "-single-namespace={{.SingleNamespace}}"
+        - "-log-level={{.ControllerLogLevel}}"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 9995
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9995
+          failureThreshold: 7
+      - name: proxy-api
+        ports:
+        - name: grpc
+          containerPort: {{.ProxyAPIPort}}
+        - name: admin-http
+          containerPort: 9996
+        image: {{.ControllerImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        args:
+        - "proxy-api"
+        - "-addr=:{{.ProxyAPIPort}}"
+        - "-controller-namespace={{.Namespace}}"
+        - "-single-namespace={{.SingleNamespace}}"
+        - "-enable-tls={{.EnableTLS}}"
+        - "-log-level={{.ControllerLogLevel}}"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 9996
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9996
+          failureThreshold: 7
+      - name: tap
+        ports:
+        - name: grpc
+          containerPort: 8088
+        - name: admin-http
+          containerPort: 9998
+        image: {{.ControllerImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        args:
+        - "tap"
+        - "-controller-namespace={{.Namespace}}"
+        - "-single-namespace={{.SingleNamespace}}"
+        - "-log-level={{.ControllerLogLevel}}"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 9998
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9998
+          failureThreshold: 7
+
+

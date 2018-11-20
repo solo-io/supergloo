@@ -1,0 +1,18 @@
+### Controller ###
+kind: Service
+apiVersion: v1
+metadata:
+  name: api
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: controller
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  type: ClusterIP
+  selector:
+      {{.ControllerComponentLabel}}: controller
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085

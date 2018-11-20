@@ -1,0 +1,50 @@
+### Prometheus ###
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: prometheus
+  namespace: {{.Namespace}}
+  labels:
+      {{.ControllerComponentLabel}}: prometheus
+  annotations:
+      {{.CreatedByAnnotation}}: {{.CliVersion}}
+spec:
+  replicas: {{.PrometheusReplicas}}
+  template:
+    metadata:
+      labels:
+          {{.ControllerComponentLabel}}: prometheus
+      annotations:
+          {{.CreatedByAnnotation}}: {{.CliVersion}}
+    spec:
+      serviceAccount: linkerd-prometheus
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config
+      containers:
+      - name: prometheus
+        ports:
+        - name: admin-http
+          containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+          readOnly: true
+        image: {{.PrometheusImage}}
+        imagePullPolicy: {{.ImagePullPolicy}}
+        args:
+        - "--storage.tsdb.retention=6h"
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
