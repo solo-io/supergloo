@@ -260,7 +260,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 			return bookinfons
 		}
 
-		FIt("Can change consul policy", func() {
+		It("Can change consul policy", func() {
 			snap := getSnapshot(true, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
