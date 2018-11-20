@@ -101,7 +101,7 @@ func Main() error {
 	if err != nil {
 		return err
 	}
-		if err := routingRuleClient.Register(); err != nil {
+	if err := routingRuleClient.Register(); err != nil {
 		return err
 	}
 

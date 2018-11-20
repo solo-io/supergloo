@@ -13,10 +13,8 @@ import _ "google.golang.org/genproto/googleapis/api/annotations"
 
 import bytes "bytes"
 
-import (
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-)
+import context "golang.org/x/net/context"
+import grpc "google.golang.org/grpc"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -230,9 +228,8 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// RateLimitDiscoveryServiceClient is the client API for RateLimitDiscoveryService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+// Client API for RateLimitDiscoveryService service
+
 type RateLimitDiscoveryServiceClient interface {
 	StreamRateLimitConfig(ctx context.Context, opts ...grpc.CallOption) (RateLimitDiscoveryService_StreamRateLimitConfigClient, error)
 	IncrementalRateLimitConfig(ctx context.Context, opts ...grpc.CallOption) (RateLimitDiscoveryService_IncrementalRateLimitConfigClient, error)
@@ -318,7 +315,8 @@ func (c *rateLimitDiscoveryServiceClient) FetchRateLimitConfig(ctx context.Conte
 	return out, nil
 }
 
-// RateLimitDiscoveryServiceServer is the server API for RateLimitDiscoveryService service.
+// Server API for RateLimitDiscoveryService service
+
 type RateLimitDiscoveryServiceServer interface {
 	StreamRateLimitConfig(RateLimitDiscoveryService_StreamRateLimitConfigServer) error
 	IncrementalRateLimitConfig(RateLimitDiscoveryService_IncrementalRateLimitConfigServer) error

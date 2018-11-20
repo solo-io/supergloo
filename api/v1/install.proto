@@ -24,9 +24,12 @@ message Install {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
 
-    string installNamespace = 4;
-
-    MeshType meshType = 5;
+    // mesh-specific configuration
+    oneof mesh_type {
+        Istio istio = 10;
+        Linkerd2 linkerd2= 20;
+        Consul consul= 30;
+    };
 
     HelmChartLocator chartLocator = 6;
 

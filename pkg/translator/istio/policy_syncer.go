@@ -193,7 +193,7 @@ func (s *PolicySyncer) updateMetadata(meta *core.Metadata) {
 	if meta.Annotations == nil {
 		meta.Annotations = make(map[string]string)
 	}
-	if meta.Labels == nil && len(s.WriteSelector) > 0{
+	if meta.Labels == nil && len(s.WriteSelector) > 0 {
 		meta.Labels = make(map[string]string)
 	}
 	meta.Annotations["created_by"] = "supergloo"

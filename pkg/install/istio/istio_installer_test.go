@@ -36,8 +36,11 @@ var _ = Describe("Istio Installer", func() {
 							Namespace: superglooNamespace,
 							Name:      meshName,
 						},
-						InstallNamespace: installNamespace,
-						MeshType:         v1.MeshType_ISTIO,
+						MeshType: &v1.Install_Istio{
+							Istio: &v1.Istio{
+								InstallationNamespace: installNamespace,
+							},
+						},
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{

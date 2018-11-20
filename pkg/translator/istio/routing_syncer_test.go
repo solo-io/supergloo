@@ -97,7 +97,7 @@ var _ = Describe("RoutingSyncer", func() {
 			},
 			Routingrules: map[string]v1.RoutingRuleList{
 				"hi": {{
-					Metadata: core.Metadata{Name: "name", Namespace: "namespace"},
+					Metadata:   core.Metadata{Name: "name", Namespace: "namespace"},
 					TargetMesh: &core.ResourceRef{Name: "name", Namespace: "namespace"},
 					FaultInjection: &v1alpha3.HTTPFaultInjection{
 						Abort: &v1alpha3.HTTPFaultInjection_Abort{

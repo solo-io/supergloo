@@ -37,8 +37,11 @@ var _ = Describe("Consul Installer", func() {
 							Namespace: superglooNamespace,
 							Name:      meshName,
 						},
-						InstallNamespace: installNamespace,
-						MeshType:         v1.MeshType_CONSUL,
+						MeshType: &v1.Install_Consul{
+							Consul: &v1.Consul{
+								InstallationNamespace: installNamespace,
+							},
+						},
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{

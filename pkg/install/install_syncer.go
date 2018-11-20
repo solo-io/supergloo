@@ -46,10 +46,10 @@ func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot)
 
 func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Install) error {
 	var meshInstaller MeshInstaller
-	switch install.MeshType {
-	case v1.MeshType_CONSUL:
+	switch install.MeshType.(type) {
+	case *v1.Install_Consul:
 		meshInstaller = &consul.ConsulInstaller{}
-	case v1.MeshType_ISTIO:
+	case *v1.Install_Istio:
 		meshInstaller = &istio.IstioInstaller{
 			SecurityClient: syncer.SecurityClient,
 		}
@@ -105,11 +105,25 @@ func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, defaultN
 }
 
 func getInstallNamespace(install *v1.Install, defaultNamespace string) string {
-	installNamespace := defaultNamespace
-	if install.InstallNamespace != "" {
-		installNamespace = install.InstallNamespace
+	installNamespace := getInstallationNamespace(install)
+	if installNamespace != "" {
+		return installNamespace
 	}
-	return installNamespace
+	return defaultNamespace
+}
+
+func getInstallationNamespace(install *v1.Install) (installationNamespace string) {
+	switch x := install.MeshType.(type) {
+	case *v1.Install_Istio:
+		return x.Istio.InstallationNamespace
+	case *v1.Install_Consul:
+		return x.Consul.InstallationNamespace
+	case *v1.Install_Linkerd2:
+		return x.Linkerd2.InstallationNamespace
+	default:
+		//should never happen
+		return ""
+	}
 }
 
 func (syncer *InstallSyncer) createNamespaceIfNotExist(namespaceName string) error {
@@ -199,15 +213,42 @@ func (syncer *InstallSyncer) createMesh(install *v1.Install) error {
 	return err
 }
 
+// Is there a more graceful way to do this?
 func getMeshObject(install *v1.Install) *v1.Mesh {
-	return &v1.Mesh{
-		Metadata: core.Metadata{
-			Name:      install.Metadata.Name,
-			Namespace: install.Metadata.Namespace,
-		},
-		TargetMesh: &v1.TargetMesh{
-			MeshType: install.MeshType,
-		},
-		Encryption: install.Encryption,
+	switch x := install.MeshType.(type) {
+	case *v1.Install_Istio:
+		return &v1.Mesh{
+			Metadata: core.Metadata{
+				Name:      install.Metadata.Name,
+				Namespace: install.Metadata.Namespace,
+			},
+			MeshType: &v1.Mesh_Istio{
+				Istio: x.Istio,
+			},
+			Encryption: install.Encryption,
+		}
+	case *v1.Install_Consul:
+		return &v1.Mesh{
+			Metadata: core.Metadata{
+				Name:      install.Metadata.Name,
+				Namespace: install.Metadata.Namespace,
+			},
+			MeshType: &v1.Mesh_Consul{
+				Consul: x.Consul,
+			},
+			Encryption: install.Encryption,
+		}
+	case *v1.Install_Linkerd2:
+		return &v1.Mesh{
+			Metadata: core.Metadata{
+				Name:      install.Metadata.Name,
+				Namespace: install.Metadata.Namespace,
+			},
+			MeshType: &v1.Mesh_Linkerd2{
+				Linkerd2: x.Linkerd2,
+			},
+			Encryption: install.Encryption,
+		}
 	}
+	return nil
 }
