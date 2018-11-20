@@ -70,9 +70,8 @@ var _ = Describe("Istio Installer", func() {
 		util.TryDeleteIstioCrds()
 		meshClient = util.GetMeshClient(kubeCache)
 		syncer = install.InstallSyncer{
-			Kube:           util.GetKubeClient(),
-			MeshClient:     meshClient,
-			SecurityClient: util.GetSecurityClient(),
+			Kube:       util.GetKubeClient(),
+			MeshClient: meshClient,
 		}
 	})
 
