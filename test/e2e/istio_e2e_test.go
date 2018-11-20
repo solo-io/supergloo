@@ -22,11 +22,7 @@ import (
 )
 
 /*
-End to end tests for consul installs with and without mTLS enabled.
-Tests assume you already have a Kubernetes environment with Helm / Tiller set up, and with a "supergloo-system" namespace.
-The tests will install Consul and get it configured and validate all services up and running, then sync the mesh to set
-up any other configuration, then tear down and clean up all resources created.
-This will take about 80 seconds with mTLS, and 50 seconds without.
+End to end tests for istio install and mesh syncing.
 */
 var _ = Describe("Istio Install and Encryption E2E", func() {
 
@@ -114,10 +110,11 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		}
 		if secretClient != nil {
 			secretClient.Delete(superglooNamespace, secretName, clients.DeleteOpts{})
+			secretClient.Delete(installNamespace, istioSync.CustomRootCertificateSecretName, clients.DeleteOpts{})
 		}
 	})
 
-	FIt("Can install istio with mtls enabled and custom root cert", func() {
+	It("Can install istio with mtls enabled and custom root cert", func() {
 		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
@@ -130,14 +127,18 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		meshSyncer := istioSync.EncryptionSyncer{
-			Kube:         util.GetKubeClient(),
-			SecretClient: secretClient,
+			Kube:           util.GetKubeClient(),
+			SecretClient:   secretClient,
+			IstioNamespace: installNamespace,
 		}
 		syncSnapshot := getTranslatorSnapshot(mesh, secret)
 		err = meshSyncer.Sync(context.TODO(), syncSnapshot)
 		Expect(err).NotTo(HaveOccurred())
 
 		util.CheckCertMatchesIstio(installNamespace)
+		// TODO: add more checking:
+		// - istio.default has actually been deleted and not regenerating
+		// - new certs are signed correctly
 	})
 
 	It("Can install istio without mtls enabled", func() {

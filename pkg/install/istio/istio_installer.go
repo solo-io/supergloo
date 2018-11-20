@@ -33,16 +33,25 @@ func (c *IstioInstaller) GetOverridesYaml(install *v1.Install) string {
 }
 
 func getOverrides(encryption *v1.Encryption) string {
-	updatedOverrides := overridesYaml
+	selfSigned := false
+	mtlsEnabled := false
 	if encryption != nil {
-		strBool := strconv.FormatBool(encryption.TlsEnabled)
-		updatedOverrides = strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", strBool, -1)
+		if encryption.TlsEnabled {
+			mtlsEnabled = true
+			if encryption.Secret != nil {
+				selfSigned = true
+			}
+		}
 	}
-	return updatedOverrides
+	selfSignedString := strconv.FormatBool(selfSigned)
+	tlsEnabledString := strconv.FormatBool(mtlsEnabled)
+	overridesWithMtlsFlag := strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", tlsEnabledString, -1)
+	return strings.Replace(overridesWithMtlsFlag, "@@SELF_SIGNED@@", selfSignedString, -1)
 }
 
 var overridesYaml = `
 global.mtls.enabled: @@MTLS_ENABLED@@
+security.selfSigned: @@SELF_SIGNED@@
 `
 
 func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {

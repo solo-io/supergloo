@@ -232,8 +232,6 @@ func CheckCertMatchesIstio(installNamespace string) {
 	Expect(actual.CaCert).Should(BeEquivalentTo(TestRoot))
 	Expect(actual.CaKey).Should(BeEquivalentTo(testKey))
 	Expect(actual.CertChain).Should(BeEquivalentTo(testCertChain))
-	_, err = GetSecretClient().Read(installNamespace, istioSync.DefaultRootCertificateSecretName, clients.ReadOpts{})
-	Expect(apierrors.IsNotFound(err)).To(BeTrue())
 }
 
 func UninstallHelmRelease(releaseName string) error {
