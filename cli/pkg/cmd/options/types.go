@@ -1,5 +1,9 @@
 package options
 
+import (
+	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+)
+
 type Options struct {
 	Top         Top
 	Install     Install
@@ -17,6 +21,7 @@ type Install struct {
 	MeshType  string
 	Namespace string
 	Mtls      bool
+	SecretRef core.ResourceRef
 	Consul    ConsulArgs
 }
 
