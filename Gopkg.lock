@@ -385,12 +385,11 @@
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
 
 [[projects]]
-  digest = "1:9421074cc4fa368c7f3fbefdd6d981727172176b67d649ba90cbd02c5bafcc53"
+  digest = "1:bfc483a051d3c7185ebeaa41b5bb67a4f76e742217bcaeab5661cc4b1320f392"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   pruneopts = "UT"
-  revision = "39f93f011e591c842acc8053a7f5972aa6e592fd"
-  version = "v1.2.1"
+  revision = "eba25a143821cec25bdb48fe64dd7b7a6152d01d"
 
 [[projects]]
   branch = "master"
@@ -691,11 +690,13 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:29f294e6a3b9d30629266b2765a8c203056387941e600405b8e8871c84653042"
+  digest = "1:58418daa018f162c520512737c19ecd42582524b0f900f2eee7c212ce55cf0da"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
     "format",
+    "gbytes",
+    "gexec",
     "internal/assertion",
     "internal/asyncassertion",
     "internal/oraclematcher",
@@ -1603,6 +1604,7 @@
     "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
     "github.com/openshift/client-go/security/clientset/versioned",
+    "github.com/onsi/gomega/gexec",
     "github.com/pkg/errors",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",

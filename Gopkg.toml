@@ -99,3 +99,7 @@
 [[override]]
   name = "github.com/russross/blackfriday"
   revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
+
+[[constraint]]
+  name = "github.com/hashicorp/consul"
+  revision = "eba25a143821cec25bdb48fe64dd7b7a6152d01d"

@@ -2,6 +2,13 @@ package e2e
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
+
+	"github.com/hashicorp/consul/api"
 
 	"github.com/solo-io/supergloo/pkg/install"
 
@@ -10,14 +17,21 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 
+	"github.com/onsi/gomega/gexec"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/consul"
 	consulSync "github.com/solo-io/supergloo/pkg/translator/consul"
 
+	consulplugin "github.com/solo-io/supergloo/pkg/api/external/gloo/v1/plugins/consul"
+
+	kubecore "k8s.io/api/core/v1"
+	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	helmkube "k8s.io/helm/pkg/kube"
 )
 
@@ -30,12 +44,48 @@ This will take about 80 seconds with mTLS, and 50 seconds without.
 */
 var _ = Describe("Consul Install and Encryption E2E", func() {
 
-	installNamespace := "consul"
-	superglooNamespace := "supergloo-system" // this needs to be made before running tests
-	meshName := "test-consul-mesh"
-	secretName := "test-tls-secret"
-	consulPort := 8500
+	const (
+		installNamespace   = "consul"
+		superglooNamespace = "supergloo-system" // this needs to be made before running tests
+		meshName           = "test-consul-mesh"
+		secretName         = "test-tls-secret"
+		consulPort         = 8500
+	)
+
 	kubeCache := kube.NewKubeCache()
+
+	var (
+		tunnel        *helmkube.Tunnel
+		meshClient    v1.MeshClient
+		secretClient  gloo.SecretClient
+		installSyncer install.InstallSyncer
+
+		pathToUds string
+	)
+
+	BeforeSuite(func() {
+		var err error
+		pathToUds, err = gexec.Build("github.com/solo-io/solo-projects/projects/discovery/cmd")
+		Expect(err).ShouldNot(HaveOccurred())
+
+		ns := &kubecore.Namespace{
+			ObjectMeta: kubemeta.ObjectMeta{
+				Name: "supergloo-system",
+			},
+		}
+		util.GetKubeClient().CoreV1().Namespaces().Create(ns)
+
+		ns = &kubecore.Namespace{
+			ObjectMeta: kubemeta.ObjectMeta{
+				Name: "gloo-system",
+			},
+		}
+		util.GetKubeClient().CoreV1().Namespaces().Create(ns)
+	})
+
+	AfterSuite(func() {
+		gexec.CleanupBuildArtifacts()
+	})
 
 	getSnapshot := func(mtls bool, secret *core.ResourceRef) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
@@ -54,7 +104,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{
-									Path: "https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
+									Path: "https://github.com/hashicorp/consul-helm/archive/5daf413626046d31dcb1030db889a7c96e078a1c.tar.gz", // this is old: https://github.com/hashicorp/consul-helm/archive/v0.3.0.tar.gz",
 								},
 							},
 						},
@@ -87,10 +137,9 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		}
 	}
 
-	var tunnel *helmkube.Tunnel
-	var meshClient v1.MeshClient
-	var secretClient gloo.SecretClient
-	var installSyncer install.InstallSyncer
+	AfterEach(func() {
+		gexec.TerminateAndWait(2 * time.Second)
+	})
 
 	BeforeEach(func() {
 		meshClient = util.GetMeshClient(kubeCache)
@@ -154,6 +203,153 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		syncSnapshot := getTranslatorSnapshot(mesh, nil)
 		err = meshSyncer.Sync(context.TODO(), syncSnapshot)
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	Describe("consul + policy", func() {
+
+		var (
+			bookinfons string
+		)
+		BeforeEach(func() {
+			bookinfons = "bookinfo"
+
+		})
+
+		AfterEach(func() {
+			util.GetKubeClient().CoreV1().Namespaces().Delete(bookinfons, &kubemeta.DeleteOptions{})
+		})
+
+		/*
+			deployBookInfo := func() string {
+				// create namespace for bookinfo
+				ns := &kubecore.Namespace{
+					ObjectMeta: kubemeta.ObjectMeta{
+						Name: bookinfons,
+					},
+				}
+				util.GetKubeClient().CoreV1().Namespaces().Create(ns)
+
+				bookinfo := "https://raw.githubusercontent.com/istio/istio/4c0a001b5e542d43b4c66ae75c1f41f2c1ff183e/samples/bookinfo/platform/kube/bookinfo.yaml"
+				kubectlargs := []string{"apply", "-n", bookinfons, "-f", bookinfo}
+				cmd := exec.Command("kubectl", kubectlargs...)
+				err := cmd.Run()
+				Expect(err).NotTo(HaveOccurred())
+
+				util.WaitForAvailablePods(bookinfons)
+				return bookinfons
+			}
+		*/
+
+		deployHelloWorld := func() string {
+			// create namespace for bookinfo
+			ns := &kubecore.Namespace{
+				ObjectMeta: kubemeta.ObjectMeta{
+					Name: bookinfons,
+				},
+			}
+			util.GetKubeClient().CoreV1().Namespaces().Create(ns)
+
+			bookinfo := filepath.Join(os.Getenv("GOPATH"), "src/github.com/solo-io/supergloo", "test/e2e/hello_consul.yaml")
+			kubectlargs := []string{"apply", "-n", bookinfons, "-f", bookinfo}
+			cmd := exec.Command("kubectl", kubectlargs...)
+			err := cmd.Run()
+			Expect(err).NotTo(HaveOccurred())
+
+			util.WaitForAvailablePods(bookinfons)
+			return bookinfons
+		}
+
+		FIt("Can change consul policy", func() {
+			snap := getSnapshot(true, nil)
+			err := installSyncer.Sync(context.TODO(), snap)
+			Expect(err).NotTo(HaveOccurred())
+
+			util.WaitForAvailablePods(installNamespace)
+
+			mesh, err := meshClient.Read(superglooNamespace, meshName, clients.ReadOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			// portforward consul to here
+
+			tunnel, err = util.CreateConsulTunnel(installNamespace, consulPort)
+			Expect(err).NotTo(HaveOccurred())
+
+			localport := tunnel.Local
+
+			// start discovery
+			cmd := exec.Command(pathToUds)
+			cmd.Env = os.Environ()
+			addr := fmt.Sprintf("localhost:%d", localport)
+			cmd.Env = append(cmd.Env, "CONSUL_HTTP_ADDR="+addr)
+			_, err = gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			os.Setenv("CONSUL_HTTP_ADDR", addr)
+
+			deployHelloWorld()
+
+			mesh.Policy = &v1.Policy{
+				Rules: []*v1.Rule{
+					{
+						Source: &core.ResourceRef{
+							Name:      "static-client",
+							Namespace: "gloo-system",
+						},
+						Destination: &core.ResourceRef{
+							Name:      "static-server",
+							Namespace: "gloo-system",
+						},
+					},
+				},
+			}
+
+			meshSyncer := consulSync.PolicySyncer{}
+			syncSnapshot := getTranslatorSnapshot(mesh, nil)
+			// TODO(yuval-k): get this from upstream client instead, to make sure
+			// discovery worked.
+			ups := []*gloo.Upstream{
+				{
+					Metadata: core.Metadata{
+						Name:      "static-server",
+						Namespace: "gloo-system",
+					},
+					UpstreamSpec: &gloo.UpstreamSpec{
+						UpstreamType: &gloo.UpstreamSpec_Consul{
+							Consul: &consulplugin.UpstreamSpec{
+								ServiceName:    "static-server",
+								ConnectEnabled: true,
+							},
+						},
+					},
+				}, {
+					Metadata: core.Metadata{
+						Name:      "static-client",
+						Namespace: "gloo-system",
+					},
+					UpstreamSpec: &gloo.UpstreamSpec{
+						UpstreamType: &gloo.UpstreamSpec_Consul{
+							Consul: &consulplugin.UpstreamSpec{
+								ServiceName:    "static-client",
+								ConnectEnabled: true,
+							},
+						},
+					},
+				},
+			}
+			syncSnapshot.Upstreams = gloo.UpstreamsByNamespace{
+				"gloo-system": ups,
+			}
+
+			// sync the snapshot to have the intentions created
+			err = meshSyncer.Sync(context.TODO(), syncSnapshot)
+			Expect(err).NotTo(HaveOccurred())
+
+			client, err := api.NewClient(api.DefaultConfig())
+			Expect(err).NotTo(HaveOccurred())
+			intentions, _, err := client.Connect().Intentions(nil)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(intentions).To(HaveLen(1))
+		})
+
 	})
 
 })
