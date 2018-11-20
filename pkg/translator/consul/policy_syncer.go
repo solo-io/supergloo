@@ -26,12 +26,15 @@ func (s *PolicySyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) er
 	ctx = contextutils.WithLogger(ctx, "consul-policy-syncer")
 
 	for _, mesh := range snap.Meshes.List() {
-		switch mesh.TargetMesh.MeshType {
-		case v1.MeshType_CONSUL:
-			policy := mesh.Policy
-			if policy != nil {
-				s.syncPolicy(ctx, snap.Upstreams, policy)
-			}
+		_, ok := mesh.MeshType.(*v1.Mesh_Consul)
+		if !ok {
+			// not our mesh, we don't care
+			continue
+		}
+
+		policy := mesh.Policy
+		if policy != nil {
+			s.syncPolicy(ctx, snap.Upstreams, policy)
 		}
 	}
 	return nil
