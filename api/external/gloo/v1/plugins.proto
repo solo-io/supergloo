@@ -9,6 +9,7 @@ import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/aws/aws.proto"
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/rest/rest.proto";
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/grpc/grpc.proto";
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/azure/azure.proto";
+import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/consul/consul.proto";
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/kubernetes/kubernetes.proto";
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/sqoop/sqoop.proto";
 import "github.com/solo-io/supergloo/api/external/gloo/v1/plugins/static/static.proto";
@@ -62,5 +63,6 @@ message UpstreamSpec {
         static.plugins.gloo.solo.io.UpstreamSpec static = 4;
         aws.plugins.gloo.solo.io.UpstreamSpec aws = 2;
         azure.plugins.gloo.solo.io.UpstreamSpec azure = 3;
+        consul.plugins.gloo.solo.io.UpstreamSpec consul = 5;
     }
 }
