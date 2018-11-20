@@ -1,4 +1,4 @@
-package create
+package common
 
 import (
 	"fmt"
@@ -6,15 +6,14 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	"github.com/solo-io/supergloo/cli/pkg/constants"
 	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
-func getUpstreamClient() (*glooV1.UpstreamClient, error) {
-	config, err := getKubernetesConfig()
+func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
+	config, err := GetKubernetesConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +32,8 @@ func getUpstreamClient() (*glooV1.UpstreamClient, error) {
 	return &upstreamClient, nil
 }
 
-func getMeshClient() (*superglooV1.MeshClient, error) {
-	config, err := getKubernetesConfig()
+func GetMeshClient() (*superglooV1.MeshClient, error) {
+	config, err := GetKubernetesConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +51,8 @@ func getMeshClient() (*superglooV1.MeshClient, error) {
 	return &meshClient, nil
 }
 
-func getRoutingRuleClient() (*superglooV1.RoutingRuleClient, error) {
-	config, err := getKubernetesConfig()
+func GetRoutingRuleClient() (*superglooV1.RoutingRuleClient, error) {
+	config, err := GetKubernetesConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +70,29 @@ func getRoutingRuleClient() (*superglooV1.RoutingRuleClient, error) {
 	return &rrClient, nil
 }
 
-func getKubernetesClient() (*kubernetes.Clientset, error) {
-	config, err := getKubernetesConfig()
+func GetInstallClient() (*superglooV1.InstallClient, error) {
+	cfg, err := kubeutils.GetConfig("", "")
+	cache := kube.NewKubeCache()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	installClient, err := superglooV1.NewInstallClient(&factory.KubeResourceClientFactory{
+		Crd:         superglooV1.InstallCrd,
+		Cfg:         cfg,
+		SharedCache: cache,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err = installClient.Register(); err != nil {
+		return nil, err
+	}
+	return &installClient, nil
+}
+
+func GetKubernetesClient() (*kubernetes.Clientset, error) {
+	config, err := GetKubernetesConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +103,10 @@ func getKubernetesClient() (*kubernetes.Clientset, error) {
 	return kubeClient, nil
 }
 
-func getKubernetesConfig() (*rest.Config, error) {
+func GetKubernetesConfig() (*rest.Config, error) {
 	config, err := kubeutils.GetConfig("", "")
 	if err != nil {
-		return nil, fmt.Errorf(constants.KubeConfigError, err)
+		return nil, fmt.Errorf(KubeConfigError, err)
 	}
 	return config, nil
 }

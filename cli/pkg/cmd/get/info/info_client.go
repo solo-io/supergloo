@@ -1,16 +1,13 @@
-package clients
+package info
 
 import (
 	"fmt"
 	"strings"
 
-	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-
 	"github.com/solo-io/solo-kit/pkg/errors"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	cliConstants "github.com/solo-io/supergloo/cli/pkg/constants"
-	"github.com/solo-io/supergloo/cli/pkg/model/info"
+	"github.com/solo-io/supergloo/cli/pkg/common"
 	sgConstants "github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
@@ -22,22 +19,20 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type SuperglooInfoClient interface {
+type InfoClient interface {
 	ListResourceTypes() ([]string, error)
-	ListResources(resourceType, resourceName string) (info.ResourceInfo, error)
+	ListResources(resourceType, resourceName string) (ResourceInfo, error)
 }
 
-type KubernetesSuperglooClient struct {
-	kubeCrdClient     *k8sApiExt.CustomResourceDefinitionInterface
-	meshClient        *superglooV1.MeshClient
-	routingRuleClient *superglooV1.RoutingRuleClient
-	upstreamClient    *glooV1.UpstreamClient
+type KubernetesInfoClient struct {
+	kubeCrdClient *k8sApiExt.CustomResourceDefinitionInterface
+	meshClient    *superglooV1.MeshClient
 }
 
-func NewClient() (SuperglooInfoClient, error) {
+func NewClient() (InfoClient, error) {
 	config, err := kubeutils.GetConfig("", "")
 	if err != nil {
-		return nil, fmt.Errorf(cliConstants.KubeConfigError, err)
+		return nil, fmt.Errorf(common.KubeConfigError, err)
 	}
 
 	crdClient, err := getCrdClient(config)
@@ -57,42 +52,16 @@ func NewClient() (SuperglooInfoClient, error) {
 		return nil, err
 	}
 
-	routingRuleClient, err := superglooV1.NewRoutingRuleClient(&factory.KubeResourceClientFactory{
-		Crd:         superglooV1.RoutingRuleCrd,
-		Cfg:         config,
-		SharedCache: kube.NewKubeCache(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = routingRuleClient.Register(); err != nil {
-		return nil, err
-	}
-
-	upstreamClient, err := glooV1.NewUpstreamClient(&factory.KubeResourceClientFactory{
-		Crd:         glooV1.UpstreamCrd,
-		Cfg:         config,
-		SharedCache: kube.NewKubeCache(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = upstreamClient.Register(); err != nil {
-		return nil, err
-	}
-
-	client := &KubernetesSuperglooClient{
-		kubeCrdClient:     crdClient,
-		meshClient:        &meshClient,
-		routingRuleClient: &routingRuleClient,
-		upstreamClient:    &upstreamClient,
+	client := &KubernetesInfoClient{
+		kubeCrdClient: crdClient,
+		meshClient:    &meshClient,
 	}
 
 	return client, nil
 }
 
 // Get a list of all supergloo resources
-func (client *KubernetesSuperglooClient) ListResourceTypes() ([]string, error) {
+func (client *KubernetesInfoClient) ListResourceTypes() ([]string, error) {
 	crdList, err := (*client.kubeCrdClient).List(k8s.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
@@ -100,7 +69,7 @@ func (client *KubernetesSuperglooClient) ListResourceTypes() ([]string, error) {
 
 	superglooCRDs := make([]string, 0)
 	for _, crd := range crdList.Items {
-		if strings.Contains(crd.Name, cliConstants.SuperglooGroupName) {
+		if strings.Contains(crd.Name, common.SuperglooGroupName) {
 			parts := strings.Split(crd.Name, ".")
 			if len(parts) > 0 {
 				superglooCRDs = append(superglooCRDs, parts[0])
@@ -110,7 +79,7 @@ func (client *KubernetesSuperglooClient) ListResourceTypes() ([]string, error) {
 	return superglooCRDs, nil
 }
 
-func (client *KubernetesSuperglooClient) ListResources(resourceType, resourceName string) (info.ResourceInfo, error) {
+func (client *KubernetesInfoClient) ListResources(resourceType, resourceName string) (ResourceInfo, error) {
 	// TODO(marco): make code more generic. Ideally we don't want to enumerate the different options, but I could not
 	// find an interface that all of the generated clients implement
 	switch resourceType {
@@ -120,17 +89,17 @@ func (client *KubernetesSuperglooClient) ListResources(resourceType, resourceNam
 			if err != nil {
 				return nil, err
 			}
-			return info.FromList(&meshList), nil
+			return FromList(&meshList), nil
 		} else {
 			mesh, err := (*client.meshClient).Read(sgConstants.SuperglooNamespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return nil, err
 			}
-			return info.From(mesh), nil
+			return From(mesh), nil
 		}
 	default:
 		// Should not happen since we validate the resource
-		return nil, errors.Errorf(cliConstants.UnknownResourceTypeMsg, resourceType)
+		return nil, errors.Errorf(common.UnknownResourceTypeMsg, resourceType)
 	}
 }
 

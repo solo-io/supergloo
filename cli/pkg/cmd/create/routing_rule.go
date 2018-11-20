@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/supergloo/cli/pkg/common"
+
 	"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/supergloo/cli/pkg/util"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	cliConstants "github.com/solo-io/supergloo/cli/pkg/constants"
 	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/spf13/cobra"
@@ -53,7 +53,7 @@ func RoutingRuleCmd(opts *options.RoutingRule) *cobra.Command {
 func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 
 	// Ensure that the given mesh exists
-	meshClient, err := getMeshClient()
+	meshClient, err := common.GetMeshClient()
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 
 	// Validate namespace
 	if opts.Namespace != "" && opts.Namespace != "default" {
-		kube, err := getKubernetesClient()
+		kube, err := common.GetKubernetesClient()
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 	}
 
 	// Validate source and destination upstreams
-	upstreamClient, err := getUpstreamClient()
+	upstreamClient, err := common.GetUpstreamClient()
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func createRoutingRule(routeName string, opts *options.RoutingRule) error {
 		RequestMatchers: matchers,
 	}
 
-	rrClient, err := getRoutingRuleClient()
+	rrClient, err := common.GetRoutingRuleClient()
 	if err != nil {
 		return err
 	}
@@ -140,13 +140,13 @@ func toResourceRefs(upstreams []*glooV1.Upstream) []*core.ResourceRef {
 }
 
 func validateUpstreams(client *glooV1.UpstreamClient, upstreamOption string) ([]*glooV1.Upstream, error) {
-	sources := strings.Split(upstreamOption, cliConstants.ListOptionSeparator)
+	sources := strings.Split(upstreamOption, common.ListOptionSeparator)
 	upstreams := make([]*glooV1.Upstream, len(sources))
 	// TODO validate namespace?
 	for i, u := range sources {
-		parts := strings.Split(u, cliConstants.NamespacedResourceSeparator)
+		parts := strings.Split(u, common.NamespacedResourceSeparator)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf(cliConstants.InvalidOptionFormat, u, "create routingrule")
+			return nil, fmt.Errorf(common.InvalidOptionFormat, u, "create routingrule")
 		}
 		namespace, name := parts[0], parts[1]
 		upstream, err := (*client).Read(namespace, name, clients.ReadOpts{})
@@ -160,14 +160,14 @@ func validateUpstreams(client *glooV1.UpstreamClient, upstreamOption string) ([]
 }
 
 func validateMatchers(matcherOption string) ([]*glooV1.Matcher, error) {
-	matchers := strings.Split(matcherOption, cliConstants.ListOptionSeparator)
+	matchers := strings.Split(matcherOption, common.ListOptionSeparator)
 	result := make([]*glooV1.Matcher, len(matchers))
 
 	for i, m := range matchers {
 
 		parts := strings.Split(m, "=")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf(cliConstants.InvalidOptionFormat, m, "create routingrule")
+			return nil, fmt.Errorf(common.InvalidOptionFormat, m, "create routingrule")
 		}
 
 		matcherType, value := parts[0], parts[1]
@@ -180,16 +180,16 @@ func validateMatchers(matcherOption string) ([]*glooV1.Matcher, error) {
 
 		case "methods":
 			methods := strings.Split(value, "|")
-			validMethods := strings.Split(cliConstants.ValidMatcherHttpMethods, "|")
+			validMethods := strings.Split(common.ValidMatcherHttpMethods, "|")
 			for _, method := range methods {
-				if !util.Contains(validMethods, strings.ToUpper(method)) {
-					return nil, errors.Errorf(cliConstants.InvalidMatcherHttpMethod, method)
+				if !common.Contains(validMethods, strings.ToUpper(method)) {
+					return nil, errors.Errorf(common.InvalidMatcherHttpMethod, method)
 				}
 			}
 			result[i] = &glooV1.Matcher{Methods: methods}
 
 		default:
-			return nil, fmt.Errorf(cliConstants.InvalidOptionFormat, m, "create routingrule")
+			return nil, fmt.Errorf(common.InvalidOptionFormat, m, "create routingrule")
 		}
 	}
 	return result, nil

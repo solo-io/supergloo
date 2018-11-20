@@ -3,7 +3,7 @@ package info
 import (
 	"strconv"
 
-	"github.com/solo-io/supergloo/cli/pkg/constants"
+	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
@@ -92,11 +92,11 @@ func getMeshType(mesh *v1.Mesh) (meshType, installationNamespace string) {
 	}
 	switch x := mesh.MeshType.(type) {
 	case *v1.Mesh_Istio:
-		return constants.Istio, x.Istio.InstallationNamespace
+		return common.Istio, x.Istio.InstallationNamespace
 	case *v1.Mesh_Consul:
-		return constants.Consul, x.Consul.InstallationNamespace
+		return common.Consul, x.Consul.InstallationNamespace
 	case *v1.Mesh_Linkerd2:
-		return constants.Linkerd2, x.Linkerd2.InstallationNamespace
+		return common.Linkerd2, x.Linkerd2.InstallationNamespace
 	default:
 		//should never happen
 		return "", ""

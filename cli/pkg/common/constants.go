@@ -1,4 +1,4 @@
-package constants
+package common
 
 const (
 	SuperglooGroupName = "supergloo.solo.io"

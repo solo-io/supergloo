@@ -3,36 +3,12 @@ package install
 import (
 	"fmt"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	"github.com/solo-io/supergloo/cli/pkg/util"
-	"github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/constants"
-	survey "gopkg.in/AlecAivazis/survey.v1"
-)
+	"github.com/solo-io/supergloo/cli/pkg/common"
 
-func getInstallClient() (v1.InstallClient, error) {
-	cfg, err := kubeutils.GetConfig("", "")
-	cache := kube.NewKubeCache()
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	client, err := v1.NewInstallClient(&factory.KubeResourceClientFactory{
-		Crd:         v1.InstallCrd,
-		Cfg:         cfg,
-		SharedCache: cache,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = client.Register(); err != nil {
-		return nil, err
-	}
-	return client, nil
-}
+	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/pkg/constants"
+	"gopkg.in/AlecAivazis/survey.v1"
+)
 
 func installationSummaryMessage(opts *options.Options) {
 	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
@@ -46,7 +22,7 @@ func installationSummaryMessage(opts *options.Options) {
 // there is a very small chance that names may overlap
 // kubernetes has good messaging for name collisions so just print the error
 func getNewInstallName(opts *options.Options) string {
-	return fmt.Sprintf("%v-%v", opts.Install.MeshType, util.RandStringBytes(6))
+	return fmt.Sprintf("%v-%v", opts.Install.MeshType, common.RandStringBytes(6))
 }
 
 func qualifyFlags(opts *options.Options) error {

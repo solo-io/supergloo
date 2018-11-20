@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/solo-io/supergloo/cli/pkg/cmd/get/info"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/get/printers"
+	"github.com/solo-io/supergloo/cli/pkg/common"
+
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/supergloo/cli/pkg/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/printers"
-	"github.com/solo-io/supergloo/cli/pkg/constants"
-	"github.com/solo-io/supergloo/cli/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -38,8 +38,8 @@ func Cmd(opts *options.Options) *cobra.Command {
 func get(args []string, opts *options.Options) error {
 
 	output := opts.Get.Output
-	if output != "" && !util.Contains(supportedOutputFormats, output) {
-		return errors.Errorf(constants.UnknownOutputFormat, output, strings.Join(supportedOutputFormats, "|"))
+	if output != "" && !common.Contains(supportedOutputFormats, output) {
+		return errors.Errorf(common.UnknownOutputFormat, output, strings.Join(supportedOutputFormats, "|"))
 	}
 
 	if argNumber := len(args); argNumber == 1 {
@@ -51,35 +51,34 @@ func get(args []string, opts *options.Options) error {
 }
 
 func getResource(resourceType, resourceName string, opts options.Get) error {
-	sgClient, err := clients.NewClient()
+	infoClient, err := info.NewClient()
 	if err != nil {
 		return err
 	}
 
 	// Get available resource types
-	resourceTypes, err := sgClient.ListResourceTypes()
+	resourceTypes, err := infoClient.ListResourceTypes()
 	if err != nil {
 		return err
 	}
 
 	// Validate input resource type
-	if !util.Contains(resourceTypes, resourceType) {
-		return errors.Errorf(constants.UnknownResourceTypeMsg, resourceType)
+	if !common.Contains(resourceTypes, resourceType) {
+		return errors.Errorf(common.UnknownResourceTypeMsg, resourceType)
 	}
 
 	// Fetch the resource information
-	info, err := sgClient.ListResources(resourceType, resourceName)
+	resourceInfo, err := infoClient.ListResources(resourceType, resourceName)
 	if err != nil {
 		return err
 	}
 
 	// Write the resource information to stdout
 	writer := printers.NewTableWriter(os.Stdout)
-	if err = writer.WriteLine(info.Headers(opts)); err != nil {
+	if err = writer.WriteLine(resourceInfo.Headers(opts)); err != nil {
 		return err
 	}
-
-	for _, line := range info.Resources(opts) {
+	for _, line := range resourceInfo.Resources(opts) {
 		if err = writer.WriteLine(line); err != nil {
 			return err
 		}
