@@ -166,6 +166,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		util.DeleteWebhookConfigIfExists(consul.WebhookCfg)
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
+		util.UninstallHelmRelease(meshName)
 	})
 
 	It("Can install consul with mtls enabled and custom root cert", func() {
@@ -259,7 +260,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 			return bookinfons
 		}
 
-		It("Can change consul policy", func() {
+		FIt("Can change consul policy", func() {
 			snap := getSnapshot(true, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())

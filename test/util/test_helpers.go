@@ -139,7 +139,7 @@ func GetConsulServerPodName(namespace string) string {
 	podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
 	Expect(err).NotTo(HaveOccurred())
 	for _, pod := range podList.Items {
-		if strings.Contains(pod.Name, "consul-server-0") {
+		if strings.Contains(pod.Name, "consul-mesh-server-0") {
 			return pod.Name
 		}
 	}
