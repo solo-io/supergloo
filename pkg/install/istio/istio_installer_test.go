@@ -44,9 +44,10 @@ var _ = Describe("Istio Installer", func() {
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{
-									// Use a local path for testing to save a lot of time...
-									Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
-									// Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio",
+									// TODO: This is the only chart I could find online, but it doesn't reliably install
+									// and several pods get stuck in a "Terminating" state preventing cleanup
+									// Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
+									Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio",
 								},
 							},
 						},
