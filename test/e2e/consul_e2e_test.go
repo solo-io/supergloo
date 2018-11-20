@@ -217,6 +217,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		})
 
 		AfterEach(func() {
+			// TODO: use helper
 			util.GetKubeClient().CoreV1().Namespaces().Delete(bookinfons, &kubemeta.DeleteOptions{})
 		})
 
