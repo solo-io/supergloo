@@ -75,22 +75,11 @@ connectInject:
   enabled: @@MTLS_ENABLED@@
 `
 
-// The webhook config is created with the wrong name by the chart
-// Grab it, recreate with correct name, and delete the old one
+// The webhook config used to be created with the wrong name by the chart
+// this was fixed so now this method does nothing
+// TODO(yuval-k \ rickducott): remove this
 func updateMutatingWebhookAdapter(kube *kubernetes.Clientset, releaseName string) error {
 	return nil
-	//  	name := fmt.Sprintf("%s-%s", releaseName, WebhookCfg)
-	//  	cfg, err := kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, kubemeta.GetOptions{})
-	//  	if err != nil {
-	//  		return err
-	//  	}
-	//  	fixedCfg := getFixedWebhookAdapter(cfg)
-	//  	_, err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(fixedCfg)
-	//  	if err != nil {
-	//  		return err
-	//  	}
-	//  	err = kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(name, &kubemeta.DeleteOptions{})
-	//  	return err
 }
 
 func getFixedWebhookAdapter(input *v1beta1.MutatingWebhookConfiguration) *v1beta1.MutatingWebhookConfiguration {
