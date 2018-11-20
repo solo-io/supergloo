@@ -55,12 +55,12 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 	kubeCache := kube.NewKubeCache()
 
 	var (
-		tunnel        *helmkube.Tunnel
-		meshClient    v1.MeshClient
-		secretClient  istiosecret.IstioCacertsSecretClient
+		tunnel         *helmkube.Tunnel
+		meshClient     v1.MeshClient
+		secretClient   istiosecret.IstioCacertsSecretClient
 		upstreamClient gloo.UpstreamClient
-		installSyncer install.InstallSyncer
-		pathToUds string
+		installSyncer  install.InstallSyncer
+		pathToUds      string
 	)
 
 	BeforeEach(func() {
@@ -84,7 +84,6 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		// delete gloo system to remove gloo resources like upstreams
 		util.TerminateNamespaceBlocking("gloo-system")
 	})
-
 
 	getSnapshot := func(mtls bool, secret *core.ResourceRef) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
