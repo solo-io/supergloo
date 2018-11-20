@@ -46,8 +46,11 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 							Namespace: superglooNamespace,
 							Name:      meshName,
 						},
-						MeshType:         v1.MeshType_CONSUL,
-						InstallNamespace: installNamespace,
+						MeshType: &v1.Install_Consul{
+							Consul: &v1.Consul{
+								InstallationNamespace: installNamespace,
+							},
+						},
 						ChartLocator: &v1.HelmChartLocator{
 							Kind: &v1.HelmChartLocator_ChartPath{
 								ChartPath: &v1.HelmChartPath{

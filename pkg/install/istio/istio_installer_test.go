@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"context"
+	"os"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/v1"
@@ -27,6 +28,8 @@ var _ = Describe("Istio Installer", func() {
 	superglooNamespace := "supergloo-system" // this needs to be made before running tests
 	meshName := "istio"
 
+	path := os.Getenv("HELM_CHART_PATH")
+
 	getSnapshot := func(mtls bool) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
 			Installs: v1.InstallsByNamespace{
@@ -47,7 +50,7 @@ var _ = Describe("Istio Installer", func() {
 									// TODO: This is the only chart I could find online, but it doesn't reliably install
 									// and several pods get stuck in a "Terminating" state preventing cleanup
 									// Path: "https://storage.googleapis.com/istio-prerelease/daily-build/master-latest-daily/charts/istio-1.1.0.tgz",
-									Path: "/Users/rick/istio-1.0.3/install/kubernetes/helm/istio",
+									Path: path,
 								},
 							},
 						},
