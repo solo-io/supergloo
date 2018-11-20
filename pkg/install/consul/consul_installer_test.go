@@ -64,6 +64,7 @@ var _ = Describe("Consul Installer", func() {
 	var syncer install.InstallSyncer
 
 	BeforeEach(func() {
+		util.TryCreateNamespace("supergloo-system")
 		meshClient = util.GetMeshClient(kubeCache)
 		syncer = install.InstallSyncer{
 			Kube:       util.GetKubeClient(),
@@ -77,6 +78,7 @@ var _ = Describe("Consul Installer", func() {
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
 		meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})
+		util.TerminateNamespaceBlocking("supergloo-system")
 	})
 
 	It("Can install consul with mtls enabled", func() {

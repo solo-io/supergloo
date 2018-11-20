@@ -162,7 +162,6 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		if secretClient != nil {
 			secretClient.Delete(superglooNamespace, secretName, clients.DeleteOpts{})
 		}
-		util.UninstallHelmRelease(meshName)
 		util.DeleteWebhookConfigIfExists(consul.WebhookCfg)
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
