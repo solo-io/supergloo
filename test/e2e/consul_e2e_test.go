@@ -63,28 +63,6 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		pathToUds      string
 	)
 
-	BeforeEach(func() {
-		ns := &kubecore.Namespace{
-			ObjectMeta: kubemeta.ObjectMeta{
-				Name: "supergloo-system",
-			},
-		}
-		util.GetKubeClient().CoreV1().Namespaces().Create(ns)
-
-		ns = &kubecore.Namespace{
-			ObjectMeta: kubemeta.ObjectMeta{
-				Name: "gloo-system",
-			},
-		}
-		util.GetKubeClient().CoreV1().Namespaces().Create(ns)
-	})
-
-	AfterEach(func() {
-		util.TerminateNamespaceBlocking("supergloo-system")
-		// delete gloo system to remove gloo resources like upstreams
-		util.TerminateNamespaceBlocking("gloo-system")
-	})
-
 	getSnapshot := func(mtls bool, secret *core.ResourceRef) *v1.InstallSnapshot {
 		return &v1.InstallSnapshot{
 			Installs: v1.InstallsByNamespace{
@@ -135,11 +113,9 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		}
 	}
 
-	AfterEach(func() {
-		gexec.TerminateAndWait(2 * time.Second)
-	})
-
 	BeforeEach(func() {
+		util.TryCreateNamespace("gloo-system")
+		util.TryCreateNamespace("supergloo-system")
 		pathToUds = PathToUds // set up by before suite
 		meshClient = util.GetMeshClient(kubeCache)
 		upstreamClient = util.GetUpstreamClient(kubeCache)
@@ -166,6 +142,10 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		util.DeleteCrb(consul.CrbName)
 		util.TerminateNamespaceBlocking(installNamespace)
 		util.UninstallHelmRelease(meshName)
+		util.TerminateNamespaceBlocking("supergloo-system")
+		// delete gloo system to remove gloo resources like upstreams
+		util.TerminateNamespaceBlocking("gloo-system")
+		gexec.TerminateAndWait(2 * time.Second)
 	})
 
 	It("Can install consul with mtls enabled and custom root cert", func() {
@@ -216,8 +196,7 @@ var _ = Describe("Consul Install and Encryption E2E", func() {
 		})
 
 		AfterEach(func() {
-			// TODO: use helper
-			util.GetKubeClient().CoreV1().Namespaces().Delete(bookinfons, &kubemeta.DeleteOptions{})
+			util.TerminateNamespaceBlocking(bookinfons)
 		})
 
 		/*

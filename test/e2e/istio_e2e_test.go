@@ -92,6 +92,8 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var installSyncer install.InstallSyncer
 
 	BeforeEach(func() {
+		util.TryCreateNamespace("supergloo-system")
+		util.TryCreateNamespace("gloo-system")
 		meshClient = util.GetMeshClient(kubeCache)
 		secretClient = util.GetSecretClient()
 		installSyncer = install.InstallSyncer{
@@ -112,6 +114,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			secretClient.Delete(superglooNamespace, secretName, clients.DeleteOpts{})
 			secretClient.Delete(installNamespace, istioSync.CustomRootCertificateSecretName, clients.DeleteOpts{})
 		}
+		util.TerminateNamespaceBlocking("supergloo-system")
+		// delete gloo system to remove gloo resources like upstreams
+		util.TerminateNamespaceBlocking("gloo-system")
 	})
 
 	It("Can install istio with mtls enabled and custom root cert", func() {
