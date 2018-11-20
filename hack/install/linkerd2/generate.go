@@ -1,4 +1,4 @@
-package main
+package linkerd2
 
 import (
 	"github.com/ghodss/yaml"
