@@ -17,6 +17,7 @@ import (
 )
 
 /*
+TODO: These should be merged with tests in e2e folder
 End to end tests for consul installs with and without mTLS enabled.
 Tests assume you already have a Kubernetes environment with Helm / Tiller set up, and with a "supergloo-system" namespace.
 The tests will install Consul and get it configured and validate all services up and running, then tear down and
