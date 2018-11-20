@@ -48,17 +48,17 @@ func qualifyFlags(opts *options.Options) error {
 		return nil
 	}
 
-	if iop.Namespace == "" {
-		namespace, err := chooseNamespace(opts)
-		iop.Namespace = namespace
+	if iop.MeshType == "" {
+		chosenMesh, err := chooseMeshType()
+		iop.MeshType = chosenMesh
 		if err != nil {
 			return fmt.Errorf("input error")
 		}
 	}
 
-	if iop.MeshType == "" {
-		chosenMesh, err := chooseMeshType()
-		iop.MeshType = chosenMesh
+	if iop.Namespace == "" {
+		namespace, err := chooseNamespace(opts)
+		iop.Namespace = namespace
 		if err != nil {
 			return fmt.Errorf("input error")
 		}
@@ -106,9 +106,6 @@ func chooseMeshType() (string, error) {
 
 func chooseNamespace(opts *options.Options) (string, error) {
 
-	// TODO(mitchdraft) - get from system
-	// namespaceOptions := []string{"ns1", "ns2", "ns3"}
-
 	question := &survey.Select{
 		Message: "Select a namespace",
 		Options: opts.Cache.Namespaces,
@@ -148,10 +145,6 @@ func chooseMtls() (bool, error) {
 }
 
 func chooseSecretNamespace(opts *options.Options) (string, error) {
-
-	// TODO(mitchdraft) - get from system
-	// AND restrict these to the NS that have secrets
-	// namespaceOptions := []string{"ns1", "ns2", "ns3"}
 
 	question := &survey.Select{
 		Message: "Select a secret namespace",
