@@ -19,6 +19,7 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istioSync "github.com/solo-io/supergloo/pkg/translator/istio"
 	"k8s.io/client-go/kubernetes"
 
 	kubecore "k8s.io/api/core/v1"
@@ -222,6 +223,17 @@ func CheckCertMatchesConsul(consulTunnelPort int, rootCert string) {
 
 	currentRoot := currentConfig.Config["RootCert"]
 	Expect(currentRoot).To(BeEquivalentTo(rootCert))
+}
+
+func CheckCertMatchesIstio(installNamespace string) {
+	actual, err := GetSecretClient().Read(installNamespace, istioSync.CustomRootCertificateSecretName, clients.ReadOpts{})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(actual.RootCert).Should(BeEquivalentTo(TestRoot))
+	Expect(actual.CaCert).Should(BeEquivalentTo(TestRoot))
+	Expect(actual.CaKey).Should(BeEquivalentTo(testKey))
+	Expect(actual.CertChain).Should(BeEquivalentTo(testCertChain))
+	_, err = GetSecretClient().Read(installNamespace, istioSync.DefaultRootCertificateSecretName, clients.ReadOpts{})
+	Expect(apierrors.IsNotFound(err)).To(BeTrue())
 }
 
 func UninstallHelmRelease(releaseName string) error {

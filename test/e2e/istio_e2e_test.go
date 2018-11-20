@@ -117,7 +117,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		}
 	})
 
-	It("Can install istio with mtls enabled and custom root cert", func() {
+	FIt("Can install istio with mtls enabled and custom root cert", func() {
 		secret, ref := util.CreateTestSecret(superglooNamespace, secretName)
 		snap := getSnapshot(true, ref)
 		err := installSyncer.Sync(context.TODO(), snap)
@@ -137,7 +137,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		err = meshSyncer.Sync(context.TODO(), syncSnapshot)
 		Expect(err).NotTo(HaveOccurred())
 
-		// Check cert matches
+		util.CheckCertMatchesIstio(installNamespace)
 	})
 
 	It("Can install istio without mtls enabled", func() {

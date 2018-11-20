@@ -25,8 +25,8 @@ type EncryptionSyncer struct {
 }
 
 const (
-	customRootCertificateSecretName  = "cacerts"
-	defaultRootCertificateSecretName = "istio.default"
+	CustomRootCertificateSecretName  = "cacerts"
+	DefaultRootCertificateSecretName = "istio.default"
 	istioLabelKey                    = "istio"
 	citadelLabelValue                = "citadel"
 )
@@ -62,7 +62,7 @@ func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1
 			encryptionSecret.Namespace, encryptionSecret.Name)
 	}
 	// this is where custom root certs will live once configured, if not found existingSecret will be nil
-	existingSecret, _ := secretList.Find(s.IstioNamespace, customRootCertificateSecretName)
+	existingSecret, _ := secretList.Find(s.IstioNamespace, CustomRootCertificateSecretName)
 	return s.syncSecret(ctx, sourceSecret, existingSecret)
 }
 
@@ -74,7 +74,7 @@ func (s *EncryptionSyncer) syncSecret(ctx context.Context, sourceSecret, existin
 	if existingSecret == nil {
 		istioSecret.Metadata = core.Metadata{
 			Namespace: s.IstioNamespace,
-			Name:      customRootCertificateSecretName,
+			Name:      CustomRootCertificateSecretName,
 		}
 		if _, err := s.SecretClient.Write(istioSecret, clients.WriteOpts{
 			Ctx: ctx,
@@ -111,7 +111,7 @@ func validateTlsSecret(secret *istiov1.IstioCacertsSecret) error {
 
 func (s *EncryptionSyncer) deleteIstioDefaultSecret() error {
 	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
-	return s.Kube.CoreV1().Secrets(s.IstioNamespace).Delete(defaultRootCertificateSecretName, &metav1.DeleteOptions{})
+	return s.Kube.CoreV1().Secrets(s.IstioNamespace).Delete(DefaultRootCertificateSecretName, &metav1.DeleteOptions{})
 }
 
 func (s *EncryptionSyncer) restartCitadel() error {
