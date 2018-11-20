@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultNamespace = "linkerd"
+	defaultNamespace = "default" // chart is hard coded to "linkerd", but if we pass that to helm we'll get errors because it and the chart will both try to create it
 )
 
 type Linkerd2Installer struct{}

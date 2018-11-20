@@ -42,7 +42,7 @@ var _ = Describe("Linkerd2 Installer", func() {
 						},
 						MeshType: &v1.Install_Linkerd2{
 							Linkerd2: &v1.Linkerd2{
-								InstallationNamespace: "default", // this is used by helm, but not by the linkerd2 chart, so this should be "default" to emulate helm command line
+								// not specifying install namespace since it is hard coded in chart
 							},
 						},
 						ChartLocator: &v1.HelmChartLocator{
