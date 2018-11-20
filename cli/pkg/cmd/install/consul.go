@@ -35,9 +35,10 @@ func generateInstallSpecFromOpts(opts *options.Options) *v1.Install {
 			Name:      getNewInstallName(opts),
 			Namespace: constants.SuperglooNamespace,
 		},
-		Consul: &v1.ConsulInstall{
-			Path:      constants.ConsulInstallPath,
-			Namespace: opts.Install.Namespace,
+		MeshType: &v1.Install_Consul{
+			Consul: &v1.Consul{
+				InstallationNamespace: opts.Install.Namespace,
+			},
 		},
 	}
 	if opts.Install.Mtls {
