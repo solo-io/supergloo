@@ -1,4 +1,4 @@
-## Getting Started Guide
+## Installation
 
 ### Dependencies
 
@@ -33,7 +33,7 @@ Kubernetes environments in the future.
 
 ### Example Workflows
 
-#### 1. Install a new service mesh
+#### Install a new service mesh
 
 Supergloo supports Istio, Consul, and Linkerd2. To install them with default configuration, run the following command:
 
@@ -47,11 +47,3 @@ For instance, to deploy `istio` into the `istio-system` namespace, run:
 `supergloo install -m istio -n istio-system -s`
 
 
-## Dev Setup Guide
-
-- After cloning, run `make init` to set up pre-commit githook to enforce Go formatting and imports
-- If using IntelliJ/IDEA/GoLand, mark directory `api/external` as Resource Root
-
-### Updating API
-
-- To regenerate API from protos, run `go generate ./...`
