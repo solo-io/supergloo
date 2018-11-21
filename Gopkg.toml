@@ -29,8 +29,8 @@
   unused-packages = true
 
 [[constraint]]
-  revision = "01492f61c81b0e3aa79f150420be3948835f2672"
   name = "github.com/solo-io/solo-kit"
+  version = "0.1.0"
 
 [[override]]
   branch = "master"
