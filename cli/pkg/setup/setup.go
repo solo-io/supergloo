@@ -96,7 +96,6 @@ func InitCache(opts *options.Options) error {
 
 // Check if  supergloo is running on the cluster and deploy it if it isn't
 func Init(opts *options.Options) error {
-
 	tempDir, err := ioutil.TempDir("", "supergloo")
 	defer os.RemoveAll(tempDir)
 

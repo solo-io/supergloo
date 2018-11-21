@@ -3,7 +3,7 @@ package common
 const (
 	SuperglooGroupName             = "supergloo.solo.io"
 	SuperglooResourceDefinitionUrl = "http://asdasd"
-	SuperglooSetupFileName         = "supergloo.yaml"
+	SuperglooSetupFileName         = "https://github.com/solo-io/supergloo/blob/master/hack/install/supergloo.yaml"
 
 	// Mesh types
 	Istio    = "istio"

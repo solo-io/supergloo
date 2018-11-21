@@ -39,9 +39,6 @@ spec:
       labels:
         gloo: supergloo
     spec:
-      #TODO: remove before open source
-      imagePullSecrets:
-      - name: solo-bot-docker-hub # ${IMAGE_PULL_SECRET}
       containers:
       - name: supergloo
         image: soloio/supergloo:dev
