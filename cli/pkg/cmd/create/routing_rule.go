@@ -92,13 +92,12 @@ func createRoutingRule(routeName string, opts *options.Options) error {
 
 	if rrOpts.Mesh == "" {
 		// Q(mitchdraft)jdo we want to prefilter this by namespace if they have chosen one?
-		meshRef, err := nsutil.ChooseMesh(opts.Cache.NsResources)
+		mesh, namespace, err := nsutil.ChooseMesh(opts.Cache.NsResources)
 		if err != nil {
 			return fmt.Errorf("input error")
 		}
-		// TODO(mitchdraft) change these fields to a resource ref
-		rrOpts.Mesh = meshRef.Name
-		rrOpts.Namespace = meshRef.Namespace
+		rrOpts.Mesh = mesh
+		rrOpts.Namespace = namespace
 	} else {
 		if !common.Contains(opts.Cache.NsResources[rrOpts.Namespace].Meshes, rrOpts.Mesh) {
 			return fmt.Errorf("Please specify a valid mesh name. Mesh %v not found in namespace %v not found", rrOpts.Mesh, rrOpts.Namespace)
