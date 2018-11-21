@@ -2,6 +2,7 @@
 
 ### Dependencies
 
+- Go (1.11)
 - VM Driver (tested with VirtualBox, KVM)
 - Minikube (tested with 0.28.2-0.30.0)
 - Helm 2 (tested with 2.11)
@@ -18,23 +19,17 @@ Kubernetes environments in the future.
 
 > Service meshes require a lot of resources. Swap out virtualbox for your preferred VM driver.
 
-#### 2. Initialize Helm
-
-`kubectl apply -f hack/install/helm/helm-service-account.yaml`
-
-`helm init --service-account tiller --upgrade`
-
-#### 3. Install supergloo cli
+#### 2. Install supergloo cli
 
 `make install-cli`
 
-#### 4. Install supergloo server
+> When the CLI is first run, it will ensure that Helm and Supergloo server are deployed to the cluster.
 
-`make supergloo-server`
+#### 3. Install a mesh
 
-#### 5. Set up namespace for supergloo-system
+`supergloo install`
 
-`kubectl create namespace supergloo-system`
+This will bring you into an interactive mesh install. 
 
 
 ## Dev Setup Guide

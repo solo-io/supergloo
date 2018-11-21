@@ -7,7 +7,6 @@
 
 SuperGloo, an open-source project to manage and orchestrate service meshes at scale. SuperGloo is an opinionated abstraction layer that will simplify the installation, management, and operation of your service mesh, whether you use (or plan to use) a single mesh or multiple mesh technologies, on-site, in the cloud, or on any topology that best fits you. 
 
-
 [**Installation**](docs/getting_started.md) &nbsp; |
 &nbsp; [**Developers**]() &nbsp; |
 &nbsp; [**Documentation**](https://supergloo.solo.io) &nbsp; |
@@ -196,8 +195,4 @@ Our vision is to enable multi-mesh, the ability to connect meshes of any type to
 ## Thanks
 
 SuperGloo would not be possible without the valuable open-source work of projects in the service mesh community. We would like to extend a special thank-you to [Istio](https://istio.io), [Hashicorp Consul](https://www.hashicorp.com/products/consul) and [Linkerd](https://linkerd.io), as well as the vibrant [Kubernetes](https://kubernetes.io) community.
-
-
-
-
 

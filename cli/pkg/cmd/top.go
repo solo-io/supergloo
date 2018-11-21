@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/create"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/ingresstoolbox"
@@ -40,7 +41,10 @@ func App(version string) *cobra.Command {
 
 	setup.InitCache(&opts)
 
-	setup.Init(&opts)
+	err := setup.Init(&opts)
+	if err != nil {
+		panic(errors.Wrap(err, "Error during initialization."))
+	}
 
 	return app
 }
