@@ -126,18 +126,25 @@ func Init(opts *options.Options) error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
+	fmt.Printf("Waiting for Tiller pod to be ready.\n")
+	if !LoopUntilAllPodsReadyOrTimeout("kube-system", opts.Cache.KubeClient, "tiller") {
+		return errors.Errorf("Tiller pod was not ready.")
+	}
 	fmt.Printf("Helm is initialzed.\n")
 
 	return nil
 }
 
-func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset) bool {
+func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset, podNames ...string) bool {
 	podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
 	if err != nil {
 		return false
 	}
 	done := true
 	for _, pod := range podList.Items {
+		if len(podNames) > 0 && !common.ContainsSubstring(podNames, pod.Name) {
+			continue
+		}
 		for _, condition := range pod.Status.Conditions {
 			if pod.Status.Phase == kubecore.PodSucceeded {
 				continue
@@ -150,10 +157,10 @@ func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset) boo
 	return done
 }
 
-func LoopUntilAllPodsReadyOrTimeout(namespace string, client *kubernetes.Clientset) bool {
+func LoopUntilAllPodsReadyOrTimeout(namespace string, client *kubernetes.Clientset, podNames ...string) bool {
 	fmt.Printf("Waiting until supergloo pod is ready on kubernetes cluster.\n")
 	for i := 0; i < 30; i++ {
-		if AllPodsReadyOrSucceeded(namespace, client) {
+		if AllPodsReadyOrSucceeded(namespace, client, podNames...) {
 			return true
 		}
 		time.Sleep(2 * time.Second)

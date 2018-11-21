@@ -2,6 +2,7 @@ package common
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,15 @@ func RandStringBytes(n int) string {
 func Contains(a []string, s string) bool {
 	for _, n := range a {
 		if s == n {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainsSubstring(a []string, substring string) bool {
+	for _, n := range a {
+		if strings.Contains(n, substring) {
 			return true
 		}
 	}
