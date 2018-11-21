@@ -15,7 +15,7 @@ import (
 func installationSummaryMessage(opts *options.Options) {
 	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
 	if opts.Install.Mtls {
-		fmt.Printf("MTLS active.\n", opts.Install.SecretRef.Name, opts.Install.SecretRef.Namespace)
+		fmt.Printf("MTLS active.\n")
 	}
 	return
 }
