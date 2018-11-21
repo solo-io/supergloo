@@ -20,7 +20,7 @@ func generateConsulInstallSpecFromOpts(opts *options.Options) *v1.Install {
 		ChartLocator: &v1.HelmChartLocator{
 			Kind: &v1.HelmChartLocator_ChartPath{
 				ChartPath: &v1.HelmChartPath{
-					Path: "https://github.com/hashicorp/consul-helm/archive/5daf413626046d31dcb1030db889a7c96e078a1c.tar.gz",
+					Path: "https://s3.amazonaws.com/supergloo.solo.io/consul.tar.gz",
 				},
 			},
 		},
@@ -39,6 +39,13 @@ func generateIstioInstallSpecFromOpts(opts *options.Options) *v1.Install {
 				WatchNamespaces:       opts.Install.WatchNamespaces,
 			},
 		},
+		ChartLocator: &v1.HelmChartLocator{
+			Kind: &v1.HelmChartLocator_ChartPath{
+				ChartPath: &v1.HelmChartPath{
+					Path: "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+				},
+			},
+		},
 	}
 	installSpec.Encryption = getEncryptionFromOpts(opts)
 	return installSpec
@@ -51,6 +58,13 @@ func generateLinkerd2InstallSpecFromOpts(opts *options.Options) *v1.Install {
 			Linkerd2: &v1.Linkerd2{
 				InstallationNamespace: opts.Install.Namespace,
 				WatchNamespaces:       opts.Install.WatchNamespaces,
+			},
+		},
+		ChartLocator: &v1.HelmChartLocator{
+			Kind: &v1.HelmChartLocator_ChartPath{
+				ChartPath: &v1.HelmChartPath{
+					Path: "https://s3.amazonaws.com/supergloo.solo.io/linkerd2-0.1.0.tgz",
+				},
 			},
 		},
 	}
