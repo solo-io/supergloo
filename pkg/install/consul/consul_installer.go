@@ -47,12 +47,11 @@ func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernete
 }
 
 func getOverrides(encryption *v1.Encryption) string {
-	updatedOverrides := overridesYaml
+	strBool := "false"
 	if encryption != nil {
-		strBool := strconv.FormatBool(encryption.TlsEnabled)
-		updatedOverrides = strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", strBool, -1)
+		strBool = strconv.FormatBool(encryption.TlsEnabled)
 	}
-	return updatedOverrides
+	return strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", strBool, -1)
 }
 
 var overridesYaml = `
