@@ -1,7 +1,9 @@
 package common
 
 const (
-	SuperglooGroupName = "supergloo.solo.io"
+	SuperglooGroupName             = "supergloo.solo.io"
+	SuperglooResourceDefinitionUrl = "http://asdasd"
+	SuperglooSetupFileName         = "supergloo.yaml"
 
 	// Mesh types
 	Istio    = "istio"

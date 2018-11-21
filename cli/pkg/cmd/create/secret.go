@@ -59,11 +59,11 @@ func validateSecretArgs(opts *options.Options) error {
 	sOpts := &(opts.Create).Secret
 	// check if we are interactive mode
 	if opts.Top.Static && sOpts.Namespace == "" {
-		return fmt.Errorf("Please provide a namespace for the secret")
+		return fmt.Errorf("please provide a namespace for the secret")
 	}
 	if sOpts.Namespace != "" {
 		if !common.Contains(opts.Cache.Namespaces, sOpts.Namespace) {
-			return fmt.Errorf("Please provide a valid namespace for the secret. %v does not exist.", sOpts.Namespace)
+			return fmt.Errorf("please provide a valid namespace for the secret. %v does not exist", sOpts.Namespace)
 		}
 	}
 	return nil
