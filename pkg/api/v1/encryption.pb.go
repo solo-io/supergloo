@@ -25,10 +25,11 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 type Encryption struct {
 	// If set to true, TLS is enabled across the entire mesh.
 	TlsEnabled bool `protobuf:"varint,1,opt,name=tlsEnabled,proto3" json:"tlsEnabled,omitempty"`
-	// If TLS is enabled, this is the name of the secret containing the certs.
-	// When using Istio, this should either be "istio.default", meaning Istio is using the default Citadel cert
-	// generation, or "cacert", which is a custom-uploaded Kubernetes secret containing all the cert files.
-	// When using Linkerd, this is the name of a secret that will be mounted into the linkerd Kubernetes DaemonSet.
+	// This is a ref to a secret that should have at least ca-cert.pem and ca-key.pem fields.
+	// The expected format is the same as defined in
+	// github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1/secret.proto
+	// If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
+	// If tlsEnabled is not true, this won't be used.
 	Secret               *core.ResourceRef `protobuf:"bytes,2,opt,name=secret" json:"secret,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
@@ -39,7 +40,7 @@ func (m *Encryption) Reset()         { *m = Encryption{} }
 func (m *Encryption) String() string { return proto.CompactTextString(m) }
 func (*Encryption) ProtoMessage()    {}
 func (*Encryption) Descriptor() ([]byte, []int) {
-	return fileDescriptor_encryption_a7694e9b58c73bec, []int{0}
+	return fileDescriptor_encryption_10bdcf4d9e1dfc6b, []int{0}
 }
 func (m *Encryption) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Encryption.Unmarshal(m, b)
@@ -107,9 +108,9 @@ func (this *Encryption) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("encryption.proto", fileDescriptor_encryption_a7694e9b58c73bec) }
+func init() { proto.RegisterFile("encryption.proto", fileDescriptor_encryption_10bdcf4d9e1dfc6b) }
 
-var fileDescriptor_encryption_a7694e9b58c73bec = []byte{
+var fileDescriptor_encryption_10bdcf4d9e1dfc6b = []byte{
 	// 204 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x48, 0xcd, 0x4b, 0x2e,
 	0xaa, 0x2c, 0x28, 0xc9, 0xcc, 0xcf, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x2c, 0x2e,

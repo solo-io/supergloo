@@ -42,7 +42,7 @@ var _ = Describe("Linkerd2 Installer", func() {
 						},
 						MeshType: &v1.Install_Linkerd2{
 							Linkerd2: &v1.Linkerd2{
-							// not specifying install namespace since it is hard coded in chart
+								// not specifying install namespace since it is hard coded in chart
 							},
 						},
 						ChartLocator: &v1.HelmChartLocator{

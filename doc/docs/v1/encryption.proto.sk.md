@@ -27,6 +27,6 @@ Description:
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | tlsEnabled | bool | If set to true, TLS is enabled across the entire mesh. |  |
-| secret | [.core.solo.io.ResourceRef](encryption.proto.sk.md#Encryption) | If TLS is enabled, this is the name of the secret containing the certs. When using Istio, this should either be "istio.default", meaning Istio is using the default Citadel cert generation, or "cacert", which is a custom-uploaded Kubernetes secret containing all the cert files. When using Linkerd, this is the name of a secret that will be mounted into the linkerd Kubernetes DaemonSet. |  |
+| secret | [.core.solo.io.ResourceRef](encryption.proto.sk.md#Encryption) | This is a ref to a secret that should have at least ca-cert.pem and ca-key.pem fields. The expected format is the same as defined in github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1/secret.proto If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. If tlsEnabled is not true, this won't be used. |  |
 
 
