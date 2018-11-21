@@ -104,25 +104,27 @@ func Init(opts *options.Options) error {
 		}
 	}
 
-	fmt.Printf("Ensuring helm is initialized on kubernetes cluster.\n")
-	cmd := exec.Command("kubectl", "apply", "-f", common.HelmSetupFileName)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	if err := cmd.Run(); err != nil {
-		return err
+	if !AllPodsReadyOrSucceeded("kube-system", opts.Cache.KubeClient, "tiller") {
+		fmt.Printf("Ensuring helm is initialized on kubernetes cluster.\n")
+		cmd := exec.Command("kubectl", "apply", "-f", common.HelmSetupFileName)
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+		fmt.Printf("Running helm init.\n")
+		cmd = exec.Command("helm", "init", "--service-account", "tiller", "--upgrade")
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+		fmt.Printf("Waiting for Tiller pod to be ready.\n")
+		if !LoopUntilAllPodsReadyOrTimeout("kube-system", opts.Cache.KubeClient, "tiller") {
+			return errors.Errorf("Tiller pod was not ready.")
+		}
+		fmt.Printf("Helm is initialzed.\n")
 	}
-	fmt.Printf("Running helm init.\n")
-	cmd = exec.Command("helm", "init", "--service-account", "tiller", "--upgrade")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	fmt.Printf("Waiting for Tiller pod to be ready.\n")
-	if !LoopUntilAllPodsReadyOrTimeout("kube-system", opts.Cache.KubeClient, "tiller") {
-		return errors.Errorf("Tiller pod was not ready.")
-	}
-	fmt.Printf("Helm is initialzed.\n")
 
 	// Supergloo needs to be installed
 	if !common.Contains(opts.Cache.Namespaces, constants.SuperglooNamespace) {
