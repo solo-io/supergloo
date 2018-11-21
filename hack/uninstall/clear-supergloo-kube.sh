@@ -2,7 +2,6 @@
 
 set -x
 
-kubectl delete namespace test-consul
 kubectl delete install -n supergloo-system --all
 kubectl delete mesh -n supergloo-system --all
 

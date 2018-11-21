@@ -4,9 +4,6 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/api/admissionregistration/v1beta1"
-
-	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/supergloo/pkg/api/v1"
@@ -37,12 +34,6 @@ func (c *ConsulInstaller) DoPreHelmInstall() error {
 }
 
 func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
-	if false {
-		err := updateMutatingWebhookAdapter(kube, releaseName)
-		if err != nil {
-			return errors.Wrap(err, "Error setting up webhook")
-		}
-	}
 	return nil
 }
 
@@ -77,17 +68,3 @@ client:
 connectInject:
   enabled: @@MTLS_ENABLED@@
 `
-
-// The webhook config used to be created with the wrong name by the chart
-// this was fixed so now this method does nothing
-// TODO(yuval-k \ rickducott): remove this
-func updateMutatingWebhookAdapter(kube *kubernetes.Clientset, releaseName string) error {
-	return nil
-}
-
-func getFixedWebhookAdapter(input *v1beta1.MutatingWebhookConfiguration) *v1beta1.MutatingWebhookConfiguration {
-	fixed := input.DeepCopy()
-	fixed.Name = WebhookCfg
-	fixed.ResourceVersion = ""
-	return fixed
-}
