@@ -6,17 +6,16 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"os/exec"
-	"path/filepath"
-	"strings"
+	"time"
+
+	"github.com/pkg/errors"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/supergloo/pkg/constants"
-	k8sV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	kubecore "k8s.io/api/core/v1"
+	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func InitCache(opts *options.Options) error {
@@ -28,7 +27,7 @@ func InitCache(opts *options.Options) error {
 	opts.Cache.KubeClient = kube
 
 	// Get all namespaces
-	list, err := kube.CoreV1().Namespaces().List(v1.ListOptions{IncludeUninitialized: false})
+	list, err := kube.CoreV1().Namespaces().List(kubemeta.ListOptions{IncludeUninitialized: false})
 	if err != nil {
 		return err
 	}
@@ -96,9 +95,6 @@ func InitCache(opts *options.Options) error {
 
 // Check if  supergloo is running on the cluster and deploy it if it isn't
 func Init(opts *options.Options) error {
-	tempDir, err := ioutil.TempDir("", "supergloo")
-	defer os.RemoveAll(tempDir)
-
 	// Should never happen, since InitCache gets  called first, but just in case
 	if opts.Cache.KubeClient == nil {
 		if err := InitCache(opts); err != nil {
@@ -106,66 +102,48 @@ func Init(opts *options.Options) error {
 		}
 	}
 
-	// Create supergloo namespace if it does not exist
+	// Supergloo needs to be installed
 	if !common.Contains(opts.Cache.Namespaces, constants.SuperglooNamespace) {
-		opts.Cache.KubeClient.CoreV1().Namespaces().Create(
-			&k8sV1.Namespace{
-				ObjectMeta: v1.ObjectMeta{
-					Name: constants.SuperglooNamespace,
-				},
-			})
-	}
-
-	// Get the pods in the supergloo namespace
-	pods, err := opts.Cache.KubeClient.CoreV1().Pods(constants.SuperglooNamespace).List(v1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	// Very hacky way of determining if supergloo is running
-	var installed bool
-	for _, pod := range pods.Items {
-		if strings.Contains(pod.Name, "supergloo") {
-			installed = true
-		}
-	}
-
-	if !installed {
-
-		absPathToFile, err := downloadFile(tempDir)
-		if err != nil {
+		cmd := exec.Command("kubectl", "apply", "-f", common.SuperglooSetupFileName)
+		if err := cmd.Run(); err != nil {
 			return err
 		}
-
-		cmd := exec.Command("kubectl", "apply", "-f", absPathToFile)
-		return cmd.Run() //TODO: when this returns the resources might still be pending
+		// wait for supergloo pods to be ready
+		if !LoopUntilAllPodsReadyOrTimeout(constants.SuperglooNamespace, opts.Cache.KubeClient) {
+			return errors.Errorf("Supergloo pods did not initialize")
+		}
 	}
+
+	// TODO: init helm
 
 	return nil
 }
 
-func downloadFile(dir string) (string, error) {
-
-	// Create the file
-	absFilePath := filepath.Join(dir, common.SuperglooSetupFileName)
-	out, err := os.Create(absFilePath)
+func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset) bool {
+	podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
 	if err != nil {
-		return "", err
+		return false
 	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(common.SuperglooResourceDefinitionUrl)
-	if err != nil {
-		return "", err
+	done := true
+	for _, pod := range podList.Items {
+		for _, condition := range pod.Status.Conditions {
+			if pod.Status.Phase == kubecore.PodSucceeded {
+				continue
+			}
+			if condition.Type == kubecore.PodReady && condition.Status != kubecore.ConditionTrue {
+				done = false
+			}
+		}
 	}
-	defer resp.Body.Close()
+	return done
+}
 
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return "", err
+func LoopUntilAllPodsReadyOrTimeout(namespace string, client *kubernetes.Clientset) bool {
+	for i := 0; i < 30; i++ {
+		if AllPodsReadyOrSucceeded(namespace, client) {
+			return true
+		}
+		time.Sleep(2 * time.Second)
 	}
-
-	return absFilePath, nil
+	return false
 }

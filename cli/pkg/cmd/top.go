@@ -17,7 +17,7 @@ func App(version string) *cobra.Command {
 	app := &cobra.Command{
 		Use:   "supergloo",
 		Short: "manage mesh resources with supergloo",
-		Long: `superglooctl configures resources used by Supergloo server.
+		Long: `supergloo configures resources used by Supergloo server.
 	Find more information at https://solo.io`,
 		Version: version,
 	}
