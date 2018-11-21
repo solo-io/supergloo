@@ -19,17 +19,32 @@ Kubernetes environments in the future.
 
 > Service meshes require a lot of resources. Swap out virtualbox for your preferred VM driver.
 
-#### 2. Install supergloo cli
+#### 2. Install supergloo cli and supergloo server
 
-`make install-cli`
+`make install-cli supergloo-server`
 
-> When the CLI is first run, it will ensure that Helm and Supergloo server are deployed to the cluster.
+> When the CLI is first run, it will ensure that Helm is deployed and Supergloo's namespace is initialized.
 
-#### 3. Install a mesh
+#### 3. Start the supergloo server locally
 
-`supergloo install`
+`supergloo-server`
 
-This will bring you into an interactive mesh install. 
+> This will stay running and print logs to the console. Open another tab to run the CLI
+
+### Example Workflows
+
+#### 1. Install a new service mesh
+
+Supergloo supports Istio, Consul, and Linkerd2. To install them with default configuration, run the following command:
+
+`supergloo install -m {meshname} -n {namespace} -s`
+
+`{meshname}` should be one of `consul`, `istio`, or `linkerd2`. `{namespace}` is a namespace where the mesh control plane
+will be deployed. Supergloo will create this namespace if it doesn't already exist. 
+
+For instance, to deploy `istio` into the `istio-system` namespace, run: 
+
+`supergloo install -m istio -n istio-system -s`
 
 
 ## Dev Setup Guide

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -104,7 +105,7 @@ func Init(opts *options.Options) error {
 		}
 	}
 
-	if !AllPodsReadyOrSucceeded("kube-system", opts.Cache.KubeClient, "tiller") {
+	if !PodAppears("kube-system", opts.Cache.KubeClient, "tiller") {
 		fmt.Printf("Ensuring helm is initialized on kubernetes cluster.\n")
 		cmd := exec.Command("kubectl", "apply", "-f", common.HelmSetupFileName)
 		cmd.Stderr = os.Stderr
@@ -120,6 +121,9 @@ func Init(opts *options.Options) error {
 			return err
 		}
 		fmt.Printf("Waiting for Tiller pod to be ready.\n")
+		if !LoopUntilPodAppears("kube-system", opts.Cache.KubeClient, "tiller") {
+			return errors.Errorf("Tiller pod didn't get created")
+		}
 		if !LoopUntilAllPodsReadyOrTimeout("kube-system", opts.Cache.KubeClient, "tiller") {
 			return errors.Errorf("Tiller pod was not ready.")
 		}
@@ -128,21 +132,52 @@ func Init(opts *options.Options) error {
 
 	// Supergloo needs to be installed
 	if !common.Contains(opts.Cache.Namespaces, constants.SuperglooNamespace) {
-		fmt.Printf("Initializing supergloo on kubernetes cluster.\n")
-		cmd := exec.Command("kubectl", "apply", "-f", common.SuperglooSetupFileName)
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-		// wait for supergloo pods to be ready
-		if !LoopUntilAllPodsReadyOrTimeout(constants.SuperglooNamespace, opts.Cache.KubeClient) {
-			return errors.Errorf("Supergloo pods did not initialize.")
-		}
-		fmt.Printf("Supergloo is ready on kubernetes cluster.\n")
+
+		opts.Cache.KubeClient.CoreV1().Namespaces().Create(&kubecore.Namespace{
+			ObjectMeta: kubemeta.ObjectMeta{
+				Name: constants.SuperglooNamespace,
+			},
+		})
+
+		// TODO: Deploy supergloo to kubernetes. For now, we'll assume a local server
+		//fmt.Printf("Initializing supergloo on kubernetes cluster.\n")
+		//cmd := exec.Command("kubectl", "apply", "-f", common.SuperglooSetupFileName)
+		//cmd.Stderr = os.Stderr
+		//cmd.Stdout = os.Stdout
+		//if err := cmd.Run(); err != nil {
+		//	return err
+		//}
+		//// wait for supergloo pods to be ready
+		//if !LoopUntilAllPodsReadyOrTimeout(constants.SuperglooNamespace, opts.Cache.KubeClient) {
+		//	return errors.Errorf("Supergloo pods did not initialize.")
+		//}
+		//fmt.Printf("Supergloo is ready on kubernetes cluster.\n")
 	}
 
 	return nil
+}
+
+func PodAppears(namespace string, client *kubernetes.Clientset, podName string) bool {
+	podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
+	if err != nil {
+		return false
+	}
+	for _, pod := range podList.Items {
+		if strings.Contains(pod.Name, podName) {
+			return true
+		}
+	}
+	return false
+}
+
+func LoopUntilPodAppears(namespace string, client *kubernetes.Clientset, podName string) bool {
+	for i := 0; i < 30; i++ {
+		if PodAppears(namespace, client, podName) {
+			return true
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return false
 }
 
 func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset, podNames ...string) bool {

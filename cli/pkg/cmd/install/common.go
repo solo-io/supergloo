@@ -15,8 +15,7 @@ import (
 func installationSummaryMessage(opts *options.Options) {
 	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
 	if opts.Install.Mtls {
-		fmt.Printf("MTLS active with secret %v from namespace %v.\n", opts.Install.SecretRef.Name, opts.Install.SecretRef.Namespace)
-
+		fmt.Printf("MTLS active.\n", opts.Install.SecretRef.Name, opts.Install.SecretRef.Namespace)
 	}
 	return
 }
@@ -38,7 +37,6 @@ func getEncryptionFromOpts(opts *options.Options) *v1.Encryption {
 	if opts.Install.Mtls {
 		return &v1.Encryption{
 			TlsEnabled: opts.Install.Mtls,
-			Secret:     &opts.Install.SecretRef,
 		}
 	}
 	return &v1.Encryption{}
@@ -97,19 +95,19 @@ func qualifyFlags(opts *options.Options) error {
 		return fmt.Errorf("input error")
 	}
 
-	if iop.Mtls {
-		chosenSecretNamespace, err := chooseSecretNamespace(opts)
-		if err != nil {
-			return fmt.Errorf("input error")
-		}
-		iop.SecretRef.Namespace = chosenSecretNamespace
-
-		chosenSecretName, err := chooseSecretName()
-		if err != nil {
-			return fmt.Errorf("input error")
-		}
-		iop.SecretRef.Name = chosenSecretName
-	}
+	//if iop.Mtls {
+	//	chosenSecretNamespace, err := chooseSecretNamespace(opts)
+	//	if err != nil {
+	//		return fmt.Errorf("input error")
+	//	}
+	//	iop.SecretRef.Namespace = chosenSecretNamespace
+	//
+	//	chosenSecretName, err := chooseSecretName()
+	//	if err != nil {
+	//		return fmt.Errorf("input error")
+	//	}
+	//	iop.SecretRef.Name = chosenSecretName
+	//}
 
 	return nil
 }
@@ -177,7 +175,7 @@ func chooseSecretName() (string, error) {
 	nameOptions := []string{"verySecret", "sssshhhhh!!", "notSoSecret"}
 
 	question := &survey.Select{
-		Message: "Select a secret namespace",
+		Message: "Select a secret name",
 		Options: nameOptions,
 	}
 
