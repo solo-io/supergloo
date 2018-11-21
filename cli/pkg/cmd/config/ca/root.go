@@ -24,20 +24,21 @@ func Cmd(opts *options.Options) *cobra.Command {
 
 	flags.StringVar(&cOpts.Mesh.Name, "mesh.name", "", "name of mesh to update")
 
-	flags.StringVar(&cOpts.Mesh.Name, "mesh.namespace", "", "namespace of mesh to update")
+	flags.StringVar(&cOpts.Mesh.Namespace, "mesh.namespace", "", "namespace of mesh to update")
 
-	flags.StringVar(&cOpts.Secret.RootCa, "rootca", "", "filename of rootca for secret")
+	flags.StringVar(&cOpts.Secret.Name, "secret.name", "", "name of secret to apply")
 
-	flags.StringVar(&cOpts.Secret.PrivateKey, "privatekey", "", "filename of privatekey for secret")
-
-	flags.StringVar(&cOpts.Secret.CertChain, "certchain", "", "filename of certchain for secret")
-
-	flags.StringVar(&cOpts.Secret.Namespace, "secretnamespace", "", "namespace in which to store the secret")
+	flags.StringVar(&cOpts.Secret.Namespace, "secret.namespace", "", "namespace of secret to apply")
 
 	return cmd
 }
 
 func configureCa(opts *options.Options) {
+
+	// TODO(mitchdraft) - needed for basic usage:
+	// - check for static mode
+	// - submit crd updates
+
 	err := ensureFlags(opts)
 	if err != nil {
 		fmt.Println(err)
@@ -48,6 +49,7 @@ func configureCa(opts *options.Options) {
 }
 
 func ensureFlags(opts *options.Options) error {
+
 	oMeshRef := &(opts.Config.Ca).Mesh
 	// TODO(mitchdraft) - this block essentially gets a mesh resource ref if your cmd needs one
 	// It is very similar to logic in create/routing_rule.go
@@ -56,13 +58,29 @@ func ensureFlags(opts *options.Options) error {
 		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
 		meshName, namespace, err := nsutil.ChooseMesh(opts.Cache.NsResources)
 		if err != nil {
-			return fmt.Errorf("input error")
+			return err
 		}
 		oMeshRef.Name = meshName
 		oMeshRef.Namespace = namespace
 	} else {
 		if !common.Contains(opts.Cache.NsResources[oMeshRef.Namespace].Meshes, oMeshRef.Name) {
 			return fmt.Errorf("Please specify a valid mesh name. Mesh %v not found in namespace %v not found", oMeshRef.Name, oMeshRef.Namespace)
+		}
+	}
+
+	oSecretRef := &(opts.Config.Ca).Secret
+	// TODO(mitchdraft) - same comment as above
+	if oSecretRef.Name == "" {
+		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
+		secretName, secretNamespace, err := nsutil.ChooseSecret(opts.Cache.NsResources)
+		if err != nil {
+			return err
+		}
+		oSecretRef.Name = secretName
+		oSecretRef.Namespace = secretNamespace
+	} else {
+		if !common.Contains(opts.Cache.NsResources[oSecretRef.Namespace].Secrets, oSecretRef.Name) {
+			return fmt.Errorf("Please specify a valid secret name. Secret %v not found in namespace %v not found", oSecretRef.Name, oSecretRef.Namespace)
 		}
 	}
 

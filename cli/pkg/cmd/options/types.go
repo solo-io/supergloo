@@ -68,6 +68,7 @@ type RoutingRule struct {
 // Mirror
 // HeaderManipulaition
 
+// TODO(mitchdraft) Rename this NewSecret (to disambigute from secret ResourceRef)
 type Secret struct {
 	RootCa     string
 	PrivateKey string
@@ -87,7 +88,7 @@ type Config struct {
 
 type ConfigCa struct {
 	Mesh   ResourceRef
-	Secret Secret
+	Secret ResourceRef
 }
 
 type ResourceRef struct {
