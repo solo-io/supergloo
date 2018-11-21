@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 
+	"fmt"
 	"os/exec"
 	"time"
 
@@ -104,17 +105,28 @@ func Init(opts *options.Options) error {
 
 	// Supergloo needs to be installed
 	if !common.Contains(opts.Cache.Namespaces, constants.SuperglooNamespace) {
+		fmt.Printf("Initializing supergloo on kubernetes cluster.\n")
 		cmd := exec.Command("kubectl", "apply", "-f", common.SuperglooSetupFileName)
 		if err := cmd.Run(); err != nil {
 			return err
 		}
 		// wait for supergloo pods to be ready
 		if !LoopUntilAllPodsReadyOrTimeout(constants.SuperglooNamespace, opts.Cache.KubeClient) {
-			return errors.Errorf("Supergloo pods did not initialize")
+			return errors.Errorf("Supergloo pods did not initialize.")
 		}
+		fmt.Printf("Supergloo is ready on kubernetes cluster.\n")
 	}
 
-	// TODO: init helm
+	fmt.Printf("Ensuring helm is initialized on kubernetes cluster.\n")
+	cmd := exec.Command("kubectl", "apply", "-f", common.SuperglooSetupFileName)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	cmd = exec.Command("helm", "init", "--service-account", "tiller", "--upgrade")
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	fmt.Printf("Helm is initialzed.\n")
 
 	return nil
 }
@@ -139,6 +151,7 @@ func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset) boo
 }
 
 func LoopUntilAllPodsReadyOrTimeout(namespace string, client *kubernetes.Clientset) bool {
+	fmt.Printf("Waiting until supergloo pod is ready on kubernetes cluster.\n")
 	for i := 0; i < 30; i++ {
 		if AllPodsReadyOrSucceeded(namespace, client) {
 			return true
