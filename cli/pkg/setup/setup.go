@@ -122,6 +122,7 @@ func Init(opts *options.Options) error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
+	fmt.Printf("Running helm init.\n")
 	cmd = exec.Command("helm", "init", "--service-account", "tiller", "--upgrade")
 	if err := cmd.Run(); err != nil {
 		return err
@@ -158,7 +159,6 @@ func AllPodsReadyOrSucceeded(namespace string, client *kubernetes.Clientset, pod
 }
 
 func LoopUntilAllPodsReadyOrTimeout(namespace string, client *kubernetes.Clientset, podNames ...string) bool {
-	fmt.Printf("Waiting until supergloo pod is ready on kubernetes cluster.\n")
 	for i := 0; i < 30; i++ {
 		if AllPodsReadyOrSucceeded(namespace, client, podNames...) {
 			return true

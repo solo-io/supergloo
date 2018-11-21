@@ -56,14 +56,14 @@ func qualifyFlags(opts *options.Options) error {
 		if iop.MeshType == "" {
 			return fmt.Errorf("please provide a mesh type")
 		}
-		if iop.Mtls {
-			if iop.SecretRef.Name == "" {
-				return fmt.Errorf("please specify a secret name to use MTLS")
-			}
-			if iop.SecretRef.Namespace == "" {
-				return fmt.Errorf("please specify a secret namespace to use MTLS")
-			}
-		}
+		//if iop.Mtls {
+		//	if iop.SecretRef.Name == "" {
+		//		return fmt.Errorf("please specify a secret name to use MTLS")
+		//	}
+		//	if iop.SecretRef.Namespace == "" {
+		//		return fmt.Errorf("please specify a secret namespace to use MTLS")
+		//	}
+		//}
 		return nil
 	}
 
