@@ -42,7 +42,7 @@ func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 
 func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
 	if mesh.GetIstio() == nil {
-		return errors.Errorf("invalid mesh %v: expected istio", mesh.Metadata.Ref())
+		return nil
 	}
 	encryption := mesh.Encryption
 	if encryption == nil {

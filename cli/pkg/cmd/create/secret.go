@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/spf13/cobra"
 )
 
@@ -107,20 +107,15 @@ func createSecret(opts *options.Options) error {
 		return fmt.Errorf("Error while reading certchain file: %v\n%v", sOpts.CertChain, err)
 	}
 
-	tls := glooV1.TlsSecret{
-		RootCa:     string(rootCa),
-		PrivateKey: string(privateKey),
-		CertChain:  string(certChain),
-	}
-	tlsWrapper := glooV1.Secret_Tls{
-		Tls: &tls,
-	}
-	secret := &glooV1.Secret{
+	secret := &istiosecret.IstioCacertsSecret{
 		Metadata: core.Metadata{
 			Namespace: sOpts.Namespace,
 			Name:      sOpts.Name,
 		},
-		Kind: &tlsWrapper,
+		CertChain: string(certChain),
+		RootCert:  string(rootCa),
+		CaCert:    string(rootCa),
+		CaKey:     string(privateKey),
 	}
 	secretClient, err := common.GetSecretClient()
 	if err != nil {

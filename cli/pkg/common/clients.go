@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -32,9 +33,9 @@ func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
 	return &upstreamClient, nil
 }
 
-func GetSecretClient() (*glooV1.SecretClient, error) {
+func GetSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
 	clientset, err := GetKubernetesClient()
-	secretClient, err := glooV1.NewSecretClient(&factory.KubeSecretClientFactory{
+	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
 		Clientset: clientset,
 	})
 	if err != nil {

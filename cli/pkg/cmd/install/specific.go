@@ -17,8 +17,16 @@ func generateConsulInstallSpecFromOpts(opts *options.Options) *v1.Install {
 				ServerAddress:         opts.Install.ConsulServerAddress,
 			},
 		},
+		ChartLocator: &v1.HelmChartLocator{
+			Kind: &v1.HelmChartLocator_ChartPath{
+				ChartPath: &v1.HelmChartPath{
+					Path: "https://github.com/hashicorp/consul-helm/archive/5daf413626046d31dcb1030db889a7c96e078a1c.tar.gz",
+				},
+			},
+		},
 	}
 	installSpec.Encryption = getEncryptionFromOpts(opts)
+
 	return installSpec
 }
 
