@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/solo-io/supergloo/cli/pkg/cmd/create"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/ingresstoolbox"
@@ -22,12 +20,6 @@ func App(version string) *cobra.Command {
 		Long: `superglooctl configures resources used by Supergloo server.
 	Find more information at https://solo.io`,
 		Version: version,
-		PreRun: func(cmd *cobra.Command, args []string) {
-			fmt.Println("xasdsdsa")
-		},
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Inside subCmd Run with args: %v\n", args)
-		},
 	}
 
 	pflags := app.PersistentFlags()
