@@ -28,7 +28,7 @@ func ChooseMesh(nsr options.NsResourceMap) (string, string, error) {
 		return "", "", err
 	}
 
-	return meshMap[choice].name, meshMap[choice].namespace, nil
+	return meshMap[choice].resourceRef.Name, meshMap[choice].resourceRef.Namespace, nil
 }
 
 func ChooseSecret(nsr options.NsResourceMap) (string, string, error) {
@@ -49,5 +49,5 @@ func ChooseSecret(nsr options.NsResourceMap) (string, string, error) {
 		return "", "", err
 	}
 
-	return secretMap[choice].name, secretMap[choice].namespace, nil
+	return secretMap[choice].resourceRef.Name, secretMap[choice].resourceRef.Namespace, nil
 }

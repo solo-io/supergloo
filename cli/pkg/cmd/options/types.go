@@ -104,9 +104,18 @@ type OptionsCache struct {
 	NsResources NsResourceMap
 }
 
+// All the cli-relevant resources keyed by namespace
 type NsResourceMap map[string]*NsResource
 
+// NsResource contains lists of the resources needed by the cli associated* with given namespace.
+// *the association is by the namespace in which the CRD is installed, unless otherwise noted.
 type NsResource struct {
+	// keyed by namespace containing the CRD
 	Meshes  []string
 	Secrets []string
+
+	// keyed by mesh installation namespace
+	// purpose of this list: allows user to select a mesh by the namespace in which they installed the mesh
+	// needs to be a resource ref so we can point back to the resource
+	MeshesByInstallNs []ResourceRef
 }
