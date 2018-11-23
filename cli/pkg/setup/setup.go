@@ -96,8 +96,8 @@ func InitCache(opts *options.Options) error {
 	return nil
 }
 
-// Check if  supergloo is running on the cluster and deploy it if it isn't
-func Init(opts *options.Options) error {
+// Check if supergloo is running on the cluster and deploy it if it isn't
+func InitSupergloo(opts *options.Options) error {
 	// Should never happen, since InitCache gets  called first, but just in case
 	if opts.Cache.KubeClient == nil {
 		if err := InitCache(opts); err != nil {

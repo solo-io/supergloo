@@ -43,7 +43,7 @@ func App(version string) *cobra.Command {
 
 	setup.InitCache(&opts)
 
-	err := setup.Init(&opts)
+	err := setup.InitSupergloo(&opts)
 	if err != nil {
 		panic(errors.Wrap(err, "Error during initialization."))
 	}

@@ -26,7 +26,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	// TODO(mitchdraft) - remove filename or apply it to something
 	pflags.StringVarP(&iop.Filename, "filename", "f", "", "filename to create resources from")
 	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd2")
-	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace install mesh into")
+	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to install mesh into")
 	pflags.BoolVar(&iop.Mtls, "mtls", false, "use MTLS")
 	pflags.StringVar(&iop.SecretRef.Name, "secret.name", "", "name of the MTLS secret")
 	pflags.StringVar(&iop.SecretRef.Namespace, "secret.namespace", "", "namespace of the MTLS secret")
