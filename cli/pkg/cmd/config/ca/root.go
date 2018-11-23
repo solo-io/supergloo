@@ -3,6 +3,7 @@ package ca
 import (
 	"fmt"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
@@ -34,6 +35,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 }
 
 func configureCa(opts *options.Options) {
+	fmt.Println(opts.Top.Static)
 
 	// TODO(mitchdraft) - needed for basic usage:
 	// - submit crd updates
@@ -44,6 +46,19 @@ func configureCa(opts *options.Options) {
 		return
 	}
 	fmt.Println("wip")
+	meshClient, err := common.GetMeshClient()
+	if err != nil {
+		fmt.Println(err)
+		return
+		// return err
+	}
+	mesh, err := (*meshClient).Read(opts.Config.Ca.Mesh.Namespace, opts.Config.Ca.Mesh.Name, clients.ReadOpts{})
+	if err != nil {
+		fmt.Println(err)
+		return
+		// return err
+	}
+	fmt.Println(mesh)
 	fmt.Printf("Configured mesh %v to use secret %v", opts.Config.Ca.Mesh.Name, opts.Config.Ca.Secret.Name)
 	return
 }
@@ -51,10 +66,14 @@ func configureCa(opts *options.Options) {
 func ensureFlags(opts *options.Options) error {
 
 	oMeshRef := &(opts.Config.Ca).Mesh
-	nsutil.EnsureMesh(oMeshRef, opts)
+	if err := nsutil.EnsureMesh(oMeshRef, opts); err != nil {
+		return err
+	}
 
 	oSecretRef := &(opts.Config.Ca).Secret
-	nsutil.EnsureSecret(oSecretRef, opts)
+	if err := nsutil.EnsureSecret(oSecretRef, opts); err != nil {
+		return err
+	}
 
 	return nil
 }

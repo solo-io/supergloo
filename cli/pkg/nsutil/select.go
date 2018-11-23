@@ -38,7 +38,9 @@ func ChooseMesh(nsr options.NsResourceMap) (options.ResourceRef, error) {
 // EnsureSecret validates a meshRef relative to static vs. interactive mode
 // If in interactive mode (non-static mode) and a secret is not given, it will prompt the user to choose one
 func EnsureMesh(meshRef *options.ResourceRef, opts *options.Options) error {
-	validateResourceRefForStaticMode("mesh", meshRef, opts)
+	if err := validateResourceRefForStaticMode("mesh", meshRef, opts); err != nil {
+		return err
+	}
 
 	if meshRef.Name == "" || meshRef.Namespace == "" {
 		chosenMeshRef, err := ChooseMesh(opts.Cache.NsResources)
@@ -74,7 +76,9 @@ func ChooseSecret(nsr options.NsResourceMap) (options.ResourceRef, error) {
 // EnsureSecret validates a secretRef relative to static vs. interactive mode
 // If in interactive mode (non-static mode) and a secret is not given, it will prompt the user to choose one
 func EnsureSecret(secretRef *options.ResourceRef, opts *options.Options) error {
-	validateResourceRefForStaticMode("secret", secretRef, opts)
+	if err := validateResourceRefForStaticMode("secret", secretRef, opts); err != nil {
+		return err
+	}
 
 	// interactive mode
 	if secretRef.Name == "" || secretRef.Namespace == "" {
