@@ -45,6 +45,7 @@ func configureCa(opts *options.Options) {
 		return
 	}
 	fmt.Println("wip")
+	fmt.Printf("Configured mesh %v to use secret %v", opts.Config.Ca.Mesh.Name, opts.Config.Ca.Secret.Name)
 	return
 }
 
@@ -56,12 +57,11 @@ func ensureFlags(opts *options.Options) error {
 	// Abstract so that it operates on a pointer to a Mesh ResourceRef, providing validation and optional interactive selection mode
 	if oMeshRef.Name == "" {
 		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
-		meshName, namespace, err := nsutil.ChooseMesh(opts.Cache.NsResources)
+		meshRef, err := nsutil.ChooseMesh(opts.Cache.NsResources)
 		if err != nil {
 			return err
 		}
-		oMeshRef.Name = meshName
-		oMeshRef.Namespace = namespace
+		*oMeshRef = meshRef
 	} else {
 		if !common.Contains(opts.Cache.NsResources[oMeshRef.Namespace].Meshes, oMeshRef.Name) {
 			return fmt.Errorf("Please specify a valid mesh name. Mesh %v not found in namespace %v not found", oMeshRef.Name, oMeshRef.Namespace)
@@ -72,12 +72,11 @@ func ensureFlags(opts *options.Options) error {
 	// TODO(mitchdraft) - same comment as above
 	if oSecretRef.Name == "" {
 		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
-		secretName, secretNamespace, err := nsutil.ChooseSecret(opts.Cache.NsResources)
+		secretRef, err := nsutil.ChooseSecret(opts.Cache.NsResources)
 		if err != nil {
 			return err
 		}
-		oSecretRef.Name = secretName
-		oSecretRef.Namespace = secretNamespace
+		*oSecretRef = secretRef
 	} else {
 		if !common.Contains(opts.Cache.NsResources[oSecretRef.Namespace].Secrets, oSecretRef.Name) {
 			return fmt.Errorf("Please specify a valid secret name. Secret %v not found in namespace %v not found", oSecretRef.Name, oSecretRef.Namespace)
