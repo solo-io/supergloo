@@ -36,7 +36,6 @@ func Cmd(opts *options.Options) *cobra.Command {
 func configureCa(opts *options.Options) {
 
 	// TODO(mitchdraft) - needed for basic usage:
-	// - check for static mode
 	// - submit crd updates
 
 	err := ensureFlags(opts)
@@ -52,36 +51,10 @@ func configureCa(opts *options.Options) {
 func ensureFlags(opts *options.Options) error {
 
 	oMeshRef := &(opts.Config.Ca).Mesh
-	// TODO(mitchdraft) - this block essentially gets a mesh resource ref if your cmd needs one
-	// It is very similar to logic in create/routing_rule.go
-	// Abstract so that it operates on a pointer to a Mesh ResourceRef, providing validation and optional interactive selection mode
-	if oMeshRef.Name == "" {
-		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
-		meshRef, err := nsutil.ChooseMesh(opts.Cache.NsResources)
-		if err != nil {
-			return err
-		}
-		*oMeshRef = meshRef
-	} else {
-		if !common.Contains(opts.Cache.NsResources[oMeshRef.Namespace].Meshes, oMeshRef.Name) {
-			return fmt.Errorf("Please specify a valid mesh name. Mesh %v not found in namespace %v not found", oMeshRef.Name, oMeshRef.Namespace)
-		}
-	}
+	nsutil.EnsureMesh(oMeshRef, opts)
 
 	oSecretRef := &(opts.Config.Ca).Secret
-	// TODO(mitchdraft) - same comment as above
-	if oSecretRef.Name == "" {
-		// Q(mitchdraft) do we want to prefilter this by namespace if they have chosen one?
-		secretRef, err := nsutil.ChooseSecret(opts.Cache.NsResources)
-		if err != nil {
-			return err
-		}
-		*oSecretRef = secretRef
-	} else {
-		if !common.Contains(opts.Cache.NsResources[oSecretRef.Namespace].Secrets, oSecretRef.Name) {
-			return fmt.Errorf("Please specify a valid secret name. Secret %v not found in namespace %v not found", oSecretRef.Name, oSecretRef.Namespace)
-		}
-	}
+	nsutil.EnsureSecret(oSecretRef, opts)
 
 	return nil
 }
