@@ -66,7 +66,7 @@ func configureCa(opts *options.Options) error {
 	mesh.Encryption.Secret.Name = opts.Config.Ca.Secret.Name
 	mesh.Encryption.Secret.Namespace = opts.Config.Ca.Secret.Namespace
 
-	_, err := (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
+	_, err = (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
