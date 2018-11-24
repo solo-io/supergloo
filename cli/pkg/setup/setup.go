@@ -50,18 +50,14 @@ func InitCache(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
+	upstreamClient, err := common.GetUpstreamClient()
+	if err != nil {
+		return err
+	}
 	//   2. get client resources for each namespace
 	// 2.a secrets, meshes, prime the mesh-by-installation-ns map
 	opts.Cache.NsResources = make(map[string]*options.NsResource)
 	for _, ns := range namespaces {
-		secretList, err := (*secretClient).List(ns, clients.ListOpts{})
-		if err != nil {
-			return err
-		}
-		var secrets = []string{}
-		for _, m := range secretList {
-			secrets = append(secrets, m.Metadata.Name)
-		}
 		meshList, err := (*meshClient).List(ns, clients.ListOpts{})
 		if err != nil {
 			return err
@@ -70,6 +66,22 @@ func InitCache(opts *options.Options) error {
 		for _, m := range meshList {
 			meshes = append(meshes, m.Metadata.Name)
 		}
+		secretList, err := (*secretClient).List(ns, clients.ListOpts{})
+		if err != nil {
+			return err
+		}
+		var secrets = []string{}
+		for _, m := range secretList {
+			secrets = append(secrets, m.Metadata.Name)
+		}
+		upstreamList, err := (*upstreamClient).List(ns, clients.ListOpts{})
+		if err != nil {
+			return err
+		}
+		var upstreams = []string{}
+		for _, m := range upstreamList {
+			upstreams = append(upstreams, m.Metadata.Name)
+		}
 
 		// prime meshes
 		var meshesByInstallNs = []options.ResourceRef{}
@@ -77,6 +89,7 @@ func InitCache(opts *options.Options) error {
 			MeshesByInstallNs: meshesByInstallNs,
 			Meshes:            meshes,
 			Secrets:           secrets,
+			Upstreams:         upstreams,
 		}
 	}
 	// 2.c meshes by installation namespace
