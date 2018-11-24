@@ -52,15 +52,15 @@ func EnsureMesh(meshRef *options.ResourceRef, opts *options.Options) error {
 	return nil
 }
 
-func ChooseSecret(nsr options.NsResourceMap) (options.ResourceRef, error) {
+func ChooseResource(typeName string, nsr options.NsResourceMap) (options.ResourceRef, error) {
 
-	secretOptions, secretMap := generateCommonResourceSelectOptions("secret", nsr)
-	if len(secretOptions) == 0 {
-		return options.ResourceRef{}, fmt.Errorf("No secrets found. Please create a secret")
+	resOptions, resMap := generateCommonResourceSelectOptions(typeName, nsr)
+	if len(resOptions) == 0 {
+		return options.ResourceRef{}, fmt.Errorf("No %v found. Please create a %v", typeName, typeName)
 	}
 	question := &survey.Select{
-		Message: "Select a secret",
-		Options: secretOptions,
+		Message: fmt.Sprintf("Select a %v", typeName),
+		Options: resOptions,
 	}
 
 	var choice string
@@ -70,23 +70,23 @@ func ChooseSecret(nsr options.NsResourceMap) (options.ResourceRef, error) {
 		return options.ResourceRef{}, err
 	}
 
-	return secretMap[choice].resourceRef, nil
+	return resMap[choice].resourceRef, nil
 }
 
-// EnsureSecret validates a secretRef relative to static vs. interactive mode
-// If in interactive mode (non-static mode) and a secret is not given, it will prompt the user to choose one
-func EnsureSecret(secretRef *options.ResourceRef, opts *options.Options) error {
-	if err := validateResourceRefForStaticMode("secret", secretRef, opts); err != nil {
+// EnsureCommonResource validates a resRef relative to static vs. interactive mode
+// If in interactive mode (non-static mode) and a resourceRef is not given, it will prompt the user to choose one
+func EnsureCommonResource(typeName string, resRef *options.ResourceRef, opts *options.Options) error {
+	if err := validateResourceRefForStaticMode(typeName, resRef, opts); err != nil {
 		return err
 	}
 
 	// interactive mode
-	if secretRef.Name == "" || secretRef.Namespace == "" {
-		chosenSecretRef, err := ChooseSecret(opts.Cache.NsResources)
+	if resRef.Name == "" || resRef.Namespace == "" {
+		chosenResRef, err := ChooseResource(typeName, opts.Cache.NsResources)
 		if err != nil {
 			return err
 		}
-		*secretRef = chosenSecretRef
+		*resRef = chosenResRef
 	}
 	return nil
 }
@@ -114,6 +114,10 @@ func validateResourceRefForStaticMode(typeName string, resRef *options.ResourceR
 			}
 		case "secret":
 			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Secrets, resRef.Name) {
+				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, typeName, resRef.Namespace)
+			}
+		case "upstream":
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Upstreams, resRef.Name) {
 				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, typeName, resRef.Namespace)
 			}
 		default:
