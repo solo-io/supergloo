@@ -31,8 +31,19 @@ type Install struct {
 }
 
 type MeshTool struct {
-	MeshId    string
+	Mesh      ResourceRef
 	ServiceId string
+	AddPolicy AddPolicy
+}
+
+type AddPolicy struct {
+	// (Do we care to support bulk entry in a form like this?)
+	// PolicyCsv is a comma-separated-list in the form:
+	// source_namespace,source_name,destination_namespace,destination_name (repeated)
+	// PolicyCsv string
+
+	Source      ResourceRef
+	Destination ResourceRef
 }
 
 type IngressTool struct {

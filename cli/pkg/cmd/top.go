@@ -39,6 +39,7 @@ func App(version string) *cobra.Command {
 		meshtoolbox.FaultInjection(&opts),
 		meshtoolbox.LoadBalancing(&opts),
 		meshtoolbox.Retries(&opts),
+		meshtoolbox.Policy(&opts),
 		ingresstoolbox.FortifyIngress(&opts),
 		ingresstoolbox.AddRoute(&opts),
 	)
