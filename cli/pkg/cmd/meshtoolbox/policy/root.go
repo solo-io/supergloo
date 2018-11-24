@@ -3,8 +3,12 @@ package policy
 import (
 	"fmt"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
+	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/spf13/cobra"
 )
 
@@ -67,40 +71,107 @@ func LinkPolicyFlags(cmd *cobra.Command, opts *options.Options) {
 }
 
 func addPolicy(opts *options.Options) error {
-	if err := ensureCommonPolicyFlags(opts); err != nil {
+
+	if err := updatePolicy("add", opts); err != nil {
 		return err
 	}
-	fmt.Println("ap wip")
+	fmt.Printf("Added policy to mesh %v", opts.MeshTool.Mesh.Name)
+
 	return nil
 }
 
 func removePolicy(opts *options.Options) error {
-	if err := ensureCommonPolicyFlags(opts); err != nil {
-		return err
-	}
-	fmt.Println("rp wip")
+	fmt.Println(`This function is not implemented yet.
+For now, you can use "supergloo policy clear" to delete all of your policies.
+If this is a feature you would like to see expedited, please let us know.
+Thank you!`)
 	return nil
 }
 
 func clearPolicies(opts *options.Options) error {
-	if err := ensureCommonPolicyFlags(opts); err != nil {
+	if err := updatePolicy("clear", opts); err != nil {
 		return err
 	}
-	fmt.Println("cp wip")
+	fmt.Printf("Cleared policies from mesh %v", opts.MeshTool.Mesh.Name)
 	return nil
 }
 
-func ensureCommonPolicyFlags(opts *options.Options) error {
+// Ensure that all the needed user-specified values have been provided
+func ensureCommonPolicyFlags(operation string, opts *options.Options) error {
+
+	// all operations require a target mesh spec
 	meshRef := &(opts.MeshTool).Mesh
-	sOp := &(opts.MeshTool.AddPolicy).Source
-	dOp := &(opts.MeshTool.AddPolicy).Destination
 	if err := nsutil.EnsureMesh(meshRef, opts); err != nil {
 		return err
 	}
-	if err := nsutil.EnsureCommonResource("upstream", "policy source", sOp, opts); err != nil {
+
+	// only the add and remove operations require rule specs
+	if operation == "add" || operation == "remove" {
+		sOp := &(opts.MeshTool.AddPolicy).Source
+		dOp := &(opts.MeshTool.AddPolicy).Destination
+		if err := nsutil.EnsureCommonResource("upstream", "policy source", sOp, opts); err != nil {
+			return err
+		}
+		if err := nsutil.EnsureCommonResource("upstream", "policy destination", dOp, opts); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func updatePolicy(operation string, opts *options.Options) error {
+	// 1. validate/aquire arguments
+	if err := ensureCommonPolicyFlags(operation, opts); err != nil {
 		return err
 	}
-	if err := nsutil.EnsureCommonResource("upstream", "policy destination", dOp, opts); err != nil {
+
+	// 2. read the existing mesh
+	meshClient, err := common.GetMeshClient()
+	if err != nil {
+		return err
+	}
+	meshRef := &(opts.MeshTool).Mesh
+	mesh, err := (*meshClient).Read(meshRef.Namespace, meshRef.Name, clients.ReadOpts{})
+	if err != nil {
+		return err
+	}
+
+	sOp := &(opts.MeshTool.AddPolicy).Source
+	dOp := &(opts.MeshTool.AddPolicy).Destination
+
+	// 3. mutate the mesh structure
+	switch operation {
+	case "add":
+		// Note: this does not check for duplicate policies
+		newRule := &superglooV1.Rule{
+			Source: &core.ResourceRef{
+				Name:      sOp.Name,
+				Namespace: sOp.Namespace,
+			},
+			Destination: &core.ResourceRef{
+				Name:      dOp.Name,
+				Namespace: dOp.Namespace,
+			},
+		}
+
+		if mesh.Policy == nil {
+			mesh.Policy = &superglooV1.Policy{
+				Rules: []*superglooV1.Rule{newRule},
+			}
+		} else {
+			mesh.Policy.Rules = append(mesh.Policy.Rules, newRule)
+
+		}
+	case "clear":
+		mesh.Policy = nil
+	default:
+		panic(fmt.Errorf("Operation %v not recognized", operation))
+	}
+
+	// 4. write the changes
+	_, err = (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
+	if err != nil {
 		return err
 	}
 	return nil
