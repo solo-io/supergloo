@@ -67,30 +67,36 @@ func LinkPolicyFlags(cmd *cobra.Command, opts *options.Options) {
 }
 
 func addPolicy(opts *options.Options) error {
-	if err := EnsureCommonPolicyFlags(opts); err != nil {
+	if err := ensureCommonPolicyFlags(opts); err != nil {
 		return err
 	}
 	fmt.Println("ap wip")
 	return nil
 }
+
 func removePolicy(opts *options.Options) error {
-	if err := EnsureCommonPolicyFlags(opts); err != nil {
+	if err := ensureCommonPolicyFlags(opts); err != nil {
 		return err
 	}
 	fmt.Println("rp wip")
 	return nil
 }
+
 func clearPolicies(opts *options.Options) error {
-	if err := EnsureCommonPolicyFlags(opts); err != nil {
+	if err := ensureCommonPolicyFlags(opts); err != nil {
 		return err
 	}
 	fmt.Println("cp wip")
 	return nil
 }
 
-func EnsureCommonPolicyFlags(opts *options.Options) error {
+func ensureCommonPolicyFlags(opts *options.Options) error {
+	meshRef := &(opts.MeshTool).Mesh
 	sOp := &(opts.MeshTool.AddPolicy).Source
 	dOp := &(opts.MeshTool.AddPolicy).Destination
+	if err := nsutil.EnsureMesh(meshRef, opts); err != nil {
+		return err
+	}
 	if err := nsutil.EnsureCommonResource("upstream", "policy source", sOp, opts); err != nil {
 		return err
 	}

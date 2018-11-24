@@ -5,7 +5,6 @@ import (
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/policy"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	"github.com/solo-io/supergloo/cli/pkg/nsutil"
 	"github.com/spf13/cobra"
 )
 
@@ -77,12 +76,4 @@ func linkMeshToolFlags(cmd *cobra.Command, opts *options.Options) {
 
 func meshToolPlaceholder(opts *options.Options) {
 	fmt.Println("this mesh feature will be available in 2019")
-}
-
-func ensureFlags(opts *options.Options) error {
-	meshRef := &(opts.MeshTool).Mesh
-	if err := nsutil.EnsureMesh(meshRef, opts); err != nil {
-		return err
-	}
-	return nil
 }
