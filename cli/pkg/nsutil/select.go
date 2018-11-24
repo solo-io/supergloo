@@ -54,7 +54,7 @@ func EnsureMesh(meshRef *options.ResourceRef, opts *options.Options) error {
 
 func ChooseSecret(nsr options.NsResourceMap) (options.ResourceRef, error) {
 
-	secretOptions, secretMap := generateSecretSelectOptions(nsr)
+	secretOptions, secretMap := generateCommonResourceSelectOptions("secret", nsr)
 	if len(secretOptions) == 0 {
 		return options.ResourceRef{}, fmt.Errorf("No secrets found. Please create a secret")
 	}

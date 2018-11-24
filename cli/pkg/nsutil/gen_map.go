@@ -44,26 +44,35 @@ func generateMeshSelectOptions(nsrMap options.NsResourceMap) ([]string, ResMap) 
 	return meshOptions, meshMap
 }
 
-func generateSecretSelectOptions(nsrMap options.NsResourceMap) ([]string, ResMap) {
+func generateCommonResourceSelectOptions(typeName string, nsrMap options.NsResourceMap) ([]string, ResMap) {
 
-	var secretOptions []string
-	// map the key to the secret select object
+	var resOptions []string
+	// map the key to the res select object
 	// key is namespace, name
-	secretMap := make(ResMap)
+	resMap := make(ResMap)
 
 	for namespace, nsr := range nsrMap {
-		for _, secret := range nsr.Secrets {
-			selectMenuString := fmt.Sprintf("%v, %v", namespace, secret)
-			secretOptions = append(secretOptions, selectMenuString)
-			secretMap[selectMenuString] = ResSelect{
-				displayName:      secret,
+		var resArray []string
+		switch typeName {
+		case "secret":
+			resArray = nsr.Secrets
+		case "upstream":
+			resArray = nsr.Upstreams
+		default:
+			panic(fmt.Errorf("resource type %v not recognized", typeName))
+		}
+		for _, res := range resArray {
+			selectMenuString := fmt.Sprintf("%v, %v", namespace, res)
+			resOptions = append(resOptions, selectMenuString)
+			resMap[selectMenuString] = ResSelect{
+				displayName:      res,
 				displayNamespace: namespace,
 				resourceRef: options.ResourceRef{
-					Name:      secret,
+					Name:      res,
 					Namespace: namespace,
 				},
 			}
 		}
 	}
-	return secretOptions, secretMap
+	return resOptions, resMap
 }
