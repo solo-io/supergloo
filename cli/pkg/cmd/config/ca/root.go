@@ -84,7 +84,7 @@ func ensureFlags(opts *options.Options) error {
 	}
 
 	oSecretRef := &(opts.Config.Ca).Secret
-	if err := nsutil.EnsureCommonResource("secret", oSecretRef, opts); err != nil {
+	if err := nsutil.EnsureCommonResource("secret", "secret", oSecretRef, opts); err != nil {
 		return err
 	}
 

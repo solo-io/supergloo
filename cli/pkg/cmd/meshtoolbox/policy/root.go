@@ -91,10 +91,10 @@ func clearPolicies(opts *options.Options) error {
 func EnsureCommonPolicyFlags(opts *options.Options) error {
 	sOp := &(opts.MeshTool.AddPolicy).Source
 	dOp := &(opts.MeshTool.AddPolicy).Destination
-	if err := nsutil.EnsureCommonResource("upstream", sOp, opts); err != nil {
+	if err := nsutil.EnsureCommonResource("upstream", "policy source", sOp, opts); err != nil {
 		return err
 	}
-	if err := nsutil.EnsureCommonResource("upstream", dOp, opts); err != nil {
+	if err := nsutil.EnsureCommonResource("upstream", "policy destination", dOp, opts); err != nil {
 		return err
 	}
 	return nil
