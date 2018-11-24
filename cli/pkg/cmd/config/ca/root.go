@@ -62,9 +62,10 @@ func configureCa(opts *options.Options) error {
 
 	// TODO(mitchdraft) replace options.ResourceRef with core.ResourceRef
 	// *(mesh.Encryption.Secret) = opts.Config.Ca.Secret
-	mesh.Encryption.Secret = &core.ResourceRef{}
-	mesh.Encryption.Secret.Name = opts.Config.Ca.Secret.Name
-	mesh.Encryption.Secret.Namespace = opts.Config.Ca.Secret.Namespace
+	mesh.Encryption.Secret = &core.ResourceRef{
+		Name:      opts.Config.Ca.Secret.Name,
+		Namespace: opts.Config.Ca.Secret.Namespace,
+	}
 
 	_, err = (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
 	if err != nil {
