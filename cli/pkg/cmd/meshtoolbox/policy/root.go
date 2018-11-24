@@ -81,10 +81,14 @@ func addPolicy(opts *options.Options) error {
 }
 
 func removePolicy(opts *options.Options) error {
-	fmt.Println(`This function is not implemented yet.
-For now, you can use "supergloo policy clear" to delete all of your policies.
-If this is a feature you would like to see expedited, please let us know.
-Thank you!`)
+	// 	fmt.Println(`This function is not implemented yet.
+	// For now, you can use "supergloo policy clear" to delete all of your policies.
+	// If this is a feature you would like to see expedited, please let us know.
+	// Thank you!`)
+	if err := updatePolicy("remove", opts); err != nil {
+		return err
+	}
+	fmt.Printf("Removed policy from mesh %v", opts.MeshTool.Mesh.Name)
 	return nil
 }
 
@@ -109,6 +113,7 @@ func ensureCommonPolicyFlags(operation string, opts *options.Options) error {
 	if operation == "add" || operation == "remove" {
 		sOp := &(opts.MeshTool.AddPolicy).Source
 		dOp := &(opts.MeshTool.AddPolicy).Destination
+		// TODO(mitchdraft) remove should only show/allow selection of the policies that are active
 		if err := nsutil.EnsureCommonResource("upstream", "policy source", sOp, opts); err != nil {
 			return err
 		}
@@ -163,8 +168,23 @@ func updatePolicy(operation string, opts *options.Options) error {
 			mesh.Policy.Rules = append(mesh.Policy.Rules, newRule)
 
 		}
+	case "remove":
+		// if there are no rules to begin with, we have nothing to do
+		if mesh.Policy != nil || mesh.Policy.Rules != nil {
+			return fmt.Errorf("There are no policy rules to remove.")
+		}
+		newRules := []*superglooV1.Rule{}
+		for _, rule := range mesh.Policy.Rules {
+			if rule.Source.Name != sOp.Name &&
+				rule.Source.Namespace != sOp.Namespace &&
+				rule.Destination.Name != dOp.Name &&
+				rule.Destination.Namespace != dOp.Namespace {
+				newRules = append(newRules, rule)
+			}
+		}
+		mesh.Policy.Rules = newRules
 	case "clear":
-		mesh.Policy = nil
+		mesh.Policy = &superglooV1.Policy{}
 	default:
 		panic(fmt.Errorf("Operation %v not recognized", operation))
 	}
