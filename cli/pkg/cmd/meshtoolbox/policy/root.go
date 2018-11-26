@@ -81,10 +81,6 @@ func addPolicy(opts *options.Options) error {
 }
 
 func removePolicy(opts *options.Options) error {
-	// 	fmt.Println(`This function is not implemented yet.
-	// For now, you can use "supergloo policy clear" to delete all of your policies.
-	// If this is a feature you would like to see expedited, please let us know.
-	// Thank you!`)
 	if err := updatePolicy("remove", opts); err != nil {
 		return err
 	}
