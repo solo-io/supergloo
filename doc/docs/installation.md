@@ -54,7 +54,9 @@ Supergloo supports Istio, Consul, and Linkerd2. To install them with default con
 supergloo install -m {meshname} -n {namespace} -s
 ```
 
-`{meshname}` should be one of `consul`, `istio`, or `linkerd2`. `{namespace}` is a namespace where the mesh control plane will be deployed. Supergloo will create this namespace if it doesn't already exist. 
+`{meshname}` should be one of `consul`, `istio`, or `linkerd2`. <BR>
+`{namespace}` is a namespace where the mesh control plane will be deployed. <BR> 
+Supergloo will create this namespace if it doesn't already exist. 
 
 For instance, to deploy `istio` into the `istio-system` namespace, run: 
 
