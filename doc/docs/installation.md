@@ -17,22 +17,30 @@ If this is your first time running SuperGloo, you’ll need to download the comm
 
 To install the CLI, run:
 
-`curl -sL https://run.solo.io/supergloo/install | sh`
+```
+curl -sL https://run.solo.io/supergloo/install | sh
+```
 
 Alternatively, you can download the CLI directly via the [SuperGloo releases page](https://github.com/solo-io/supergloo/releases).
 
 Next, add SupetGloo to your path with:
 
-`export PATH=$PATH:$HOME/.linkerd2/bin`
+```
+export PATH=$PATH:$HOME/.linkerd2/bin
+```
 
 Verify the CLI is installed and running correctly with:
 
-`supergloo --version`
+```
+supergloo --version
+```
 
 
 ## Install supergloo onto the cluster
 
-`supergloo init`
+```
+supergloo init
+```
 
 
 
@@ -42,12 +50,16 @@ Verify the CLI is installed and running correctly with:
 
 Supergloo supports Istio, Consul, and Linkerd2. To install them with default configuration, run the following command:
 
-`supergloo install -m {meshname} -n {namespace} -s`
+```
+supergloo install -m {meshname} -n {namespace} -s
+```
 
 `{meshname}` should be one of `consul`, `istio`, or `linkerd2`. `{namespace}` is a namespace where the mesh control plane will be deployed. Supergloo will create this namespace if it doesn't already exist. 
 
 For instance, to deploy `istio` into the `istio-system` namespace, run: 
 
-`supergloo install -m istio -n istio-system -s`
+```
+supergloo install -m istio -n istio-system -s
+```
 
 
