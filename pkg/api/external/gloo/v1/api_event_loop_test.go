@@ -13,7 +13,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 )
 
-var _ = Describe("ApiEventLoop", func() {
+var _ = FDescribe("ApiEventLoop", func() {
 	var (
 		namespace string
 		emitter   ApiEmitter

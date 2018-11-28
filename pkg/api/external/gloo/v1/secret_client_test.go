@@ -68,9 +68,6 @@ func SecretClientTest(namespace string, client SecretClient) {
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
-	Expect(r1.Aws).To(Equal(input.Aws))
-	Expect(r1.Azure).To(Equal(input.Azure))
-	Expect(r1.Tls).To(Equal(input.Tls))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

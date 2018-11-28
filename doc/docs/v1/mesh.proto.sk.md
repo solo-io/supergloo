@@ -19,9 +19,7 @@ mesh.proto
   
 ### <a name="Mesh">Mesh</a>
 
-Description: @solo-kit:resource.short_name=mesh
-@solo-kit:resource.plural_name=meshes
-@solo-kit:resource.resource_groups=translator.supergloo.solo.io
+Description: 
 
 ```yaml
 "status": .core.solo.io.Status

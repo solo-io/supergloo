@@ -51,7 +51,7 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
+		var kube kubernetes.Interface
 		// Mesh Constructor
 		meshClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         MeshCrd,
@@ -60,7 +60,6 @@ var _ = Describe("V1Emitter", func() {
 		}
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// RoutingRule Constructor
 		routingRuleClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         RoutingRuleCrd,
@@ -69,7 +68,6 @@ var _ = Describe("V1Emitter", func() {
 		}
 		routingRuleClient, err = NewRoutingRuleClient(routingRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Upstream Constructor
 		upstreamClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         gloo_solo_io.UpstreamCrd,
@@ -78,11 +76,10 @@ var _ = Describe("V1Emitter", func() {
 		}
 		upstreamClient, err = gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// IstioCacertsSecret Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		istioCacertsSecretClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}
