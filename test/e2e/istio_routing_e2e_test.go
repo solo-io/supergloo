@@ -95,7 +95,7 @@ var _ = Describe("istio routing E2e", func() {
 				}
 			}
 			return nil
-		}, time.Second*45).Should(Equal([]*v1alpha3.Subset{
+		}, time.Second*60).Should(Equal([]*v1alpha3.Subset{
 			{Labels: map[string]string{"app": "reviews"}, Name: "app-reviews"},
 			{Labels: map[string]string{"app": "reviews", "version": "v1"}, Name: "app-reviews-version-v1"},
 			{Labels: map[string]string{"app": "reviews", "version": "v2"}, Name: "app-reviews-version-v2"},
