@@ -12,9 +12,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	ADD_POLICY     = "add"
+	REMOVE_POLICY  = "remove"
+	CLEAR_POLICIES = "clear"
+)
+
 func Add(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add",
+		Use:   ADD_POLICY,
 		Short: `apply a policy`,
 		Long:  `apply a policy`,
 		Run: func(c *cobra.Command, args []string) {
@@ -30,7 +36,7 @@ func Add(opts *options.Options) *cobra.Command {
 
 func Remove(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remove",
+		Use:   REMOVE_POLICY,
 		Short: `remove a single policy`,
 		Long:  `remove a single policy`,
 		Run: func(c *cobra.Command, args []string) {
@@ -46,7 +52,7 @@ func Remove(opts *options.Options) *cobra.Command {
 
 func Clear(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "clear",
+		Use:   CLEAR_POLICIES,
 		Short: `clear all policies`,
 		Long:  `clear all policies`,
 		Run: func(c *cobra.Command, args []string) {
@@ -64,15 +70,15 @@ func LinkPolicyFlags(cmd *cobra.Command, opts *options.Options) {
 	sOp := &(opts.MeshTool.AddPolicy).Source
 	dOp := &(opts.MeshTool.AddPolicy).Destination
 	pflags := cmd.PersistentFlags()
-	pflags.StringVar(&dOp.Name, "source.name", "", "name of policy source")
-	pflags.StringVar(&dOp.Namespace, "source.namespace", "", "namespace of policy source")
-	pflags.StringVar(&sOp.Name, "destination.name", "", "name of policy destination")
-	pflags.StringVar(&sOp.Namespace, "destination.namespace", "", "namespace of policy destination")
+	pflags.StringVar(&dOp.Name, "source.name", "", "name of policy source upstream")
+	pflags.StringVar(&dOp.Namespace, "source.namespace", "", "namespace of policy source upstream")
+	pflags.StringVar(&sOp.Name, "destination.name", "", "name of policy destination upstream")
+	pflags.StringVar(&sOp.Namespace, "destination.namespace", "", "namespace of policy destination upstream")
 }
 
 func addPolicy(opts *options.Options) error {
 
-	if err := updatePolicy("add", opts); err != nil {
+	if err := updatePolicy(ADD_POLICY, opts); err != nil {
 		return err
 	}
 	fmt.Printf("Added policy to mesh %v", opts.MeshTool.Mesh.Name)
@@ -89,7 +95,7 @@ func removePolicy(opts *options.Options) error {
 }
 
 func clearPolicies(opts *options.Options) error {
-	if err := updatePolicy("clear", opts); err != nil {
+	if err := updatePolicy(CLEAR_POLICIES, opts); err != nil {
 		return err
 	}
 	fmt.Printf("Cleared policies from mesh %v", opts.MeshTool.Mesh.Name)
@@ -106,7 +112,7 @@ func ensureCommonPolicyFlags(operation string, opts *options.Options) error {
 	}
 
 	// only the add and remove operations require rule specs
-	if operation == "add" || operation == "remove" {
+	if operation == ADD_POLICY || operation == REMOVE_POLICY {
 		sOp := &(opts.MeshTool.AddPolicy).Source
 		dOp := &(opts.MeshTool.AddPolicy).Destination
 		// TODO(mitchdraft) remove should only show/allow selection of the policies that are active
@@ -143,7 +149,7 @@ func updatePolicy(operation string, opts *options.Options) error {
 
 	// 3. mutate the mesh structure
 	switch operation {
-	case "add":
+	case ADD_POLICY:
 		// Note: this does not check for duplicate policies
 		newRule := &superglooV1.Rule{
 			Source: &core.ResourceRef{
@@ -164,7 +170,7 @@ func updatePolicy(operation string, opts *options.Options) error {
 			mesh.Policy.Rules = append(mesh.Policy.Rules, newRule)
 
 		}
-	case "remove":
+	case REMOVE_POLICY:
 		// if there are no rules to begin with, we have nothing to do
 		if mesh.Policy != nil || mesh.Policy.Rules != nil {
 			return fmt.Errorf("There are no policy rules to remove.")
@@ -179,7 +185,7 @@ func updatePolicy(operation string, opts *options.Options) error {
 			}
 		}
 		mesh.Policy.Rules = newRules
-	case "clear":
+	case CLEAR_POLICIES:
 		mesh.Policy = &superglooV1.Policy{}
 	default:
 		panic(fmt.Errorf("Operation %v not recognized", operation))
