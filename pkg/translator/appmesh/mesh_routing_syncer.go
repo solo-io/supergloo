@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"sync"
 	"unicode/utf8"
 
@@ -47,15 +48,18 @@ func NewAwsClientFromSecret(awsSecret *gloov1.Secret_Aws, region string) (*appme
 	return svc, nil
 }
 
+// todo: replace with interface
+type AppMeshClient = *appmesh.AppMesh
+
 type MeshRoutingSyncer struct {
 	lock           sync.Mutex
-	activeSessions map[uint64]*appmesh.AppMesh
+	activeSessions map[uint64]AppMeshClient
 }
 
 func NewMeshRoutingSyncer() *MeshRoutingSyncer {
 	return &MeshRoutingSyncer{
 		lock:           sync.Mutex{},
-		activeSessions: make(map[uint64]*appmesh.AppMesh),
+		activeSessions: make(map[uint64]AppMeshClient),
 	}
 }
 
@@ -70,7 +74,7 @@ func hashCredentials(awsSecret *gloov1.Secret_Aws, region string) uint64 {
 	return hash
 }
 
-func (s *MeshRoutingSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (*appmesh.AppMesh, error) {
+func (s *MeshRoutingSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (AppMeshClient, error) {
 	secret, err := secrets.Find(appMesh.AwsCredentials.Strings())
 	if err != nil {
 		return nil, errors.Wrapf(err, "finding aws credentials for mesh")
@@ -95,6 +99,8 @@ func (s *MeshRoutingSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov
 	s.lock.Unlock()
 	if !ok {
 		// create a new client and cache it
+		// TODO: is there a point where we should drop old sessions?
+		// maybe aws will do it for us
 		appMeshClient, err = NewAwsClientFromSecret(awsSecret, region)
 		if err != nil {
 			return nil, errors.Wrapf(err, "creating aws client from provided secret/region")
@@ -135,6 +141,7 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 		desiredMeshes = append(desiredMeshes, desiredMesh)
 	}
 
+	return nil
 	/*
 		0 - mesh per mesh
 		1 - virtual node per upstream
@@ -142,19 +149,41 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 		routes on virtual service become the aws routes
 		virtual service becomes virtual router
 	*/
-	exampleMesh := appmesh.CreateMeshInput{}
-	exampleVirtualNode := appmesh.CreateVirtualNodeInput{}
-	exampleVirtualRouter := appmesh.CreateVirtualRouterInput{}
-	exampleRoute := appmesh.CreateRouteInput{}
+	//exampleMesh := appmesh.CreateMeshInput{}
+	//exampleVirtualNode := appmesh.CreateVirtualNodeInput{}
+	//exampleVirtualRouter := appmesh.CreateVirtualRouterInput{}
+	//exampleRoute := appmesh.CreateRouteInput{}
+	//
+	//destinationRules, err := virtualNodesForUpstreams(rules, meshes, upstreams)
+	//if err != nil {
+	//	return errors.Wrapf(err, "creating subsets from snapshot")
+	//}
+	//
+	//virtualServices, err := virtualServicesForRules(rules, meshes, upstreams)
+	//if err != nil {
+	//	return errors.Wrapf(err, "creating virtual services from snapshot")
+	//}
+	//return s.writeIstioCrds(ctx, destinationRules, virtualServices)
+}
 
-	destinationRules, err := virtualNodesForUpstreams(rules, meshes, upstreams)
-	if err != nil {
-		return errors.Wrapf(err, "creating subsets from snapshot")
-	}
+//func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+//
+//}
 
-	virtualServices, err := virtualServicesForRules(rules, meshes, upstreams)
+func (s* MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtualNodes []appmesh.CreateVirtualNodeInput) error {
+	existingMeshes, err := c.ListMeshes(nil)
 	if err != nil {
-		return errors.Wrapf(err, "creating virtual services from snapshot")
+		return errors.Wrapf(err, "getting existing meshes")
 	}
-	return s.writeIstioCrds(ctx, destinationRules, virtualServices)
+	log.Printf("%v", existingMeshes)
+	return nil
+}
+
+func (s* MeshRoutingSyncer) Try(c AppMeshClient) error {
+	existingMeshes, err := c.ListMeshes(nil)
+	if err != nil {
+		return errors.Wrapf(err, "getting existing meshes")
+	}
+	log.Printf("%v", existingMeshes)
+	return nil
 }
