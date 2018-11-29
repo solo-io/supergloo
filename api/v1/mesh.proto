@@ -77,6 +77,9 @@ message Consul {
 
 // configuration for an AWS AppMesh mesh.
 message AppMesh {
+    // the region where this mesh should be deployed
+    string aws_region = 1;
+
     // ref to a Secret containing aws credentials
     core.solo.io.ResourceRef aws_credentials= 3;
 }
