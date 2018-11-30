@@ -1,0 +1,7 @@
+apiVersion: v1
+appVersion: 1.0.3
+description: Helm chart for configuring a gateway for Istio telemetry addons
+icon: https://istio.io/favicons/android-192x192.png
+name: telemetry-gateway
+tillerVersion: '>=2.7.2'
+version: 1.0.3

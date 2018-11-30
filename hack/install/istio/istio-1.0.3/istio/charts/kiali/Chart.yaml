@@ -1,0 +1,7 @@
+apiVersion: v1
+appVersion: "0.9"
+description: Kiali is an open source project for service mesh observability, refer
+  to https://github.com/kiali/kiali for detail.
+name: kiali
+tillerVersion: '>=2.7.2'
+version: 1.0.3
