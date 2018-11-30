@@ -118,7 +118,7 @@ func createAwsSecret(opts *options.Options) error {
 		},
 		Kind: &gloov1.Secret_Aws{
 			Aws: &gloov1.AwsSecret{
-				// these can be read in from ~/.aws/credentials by default (if user does not provide)
+				// TODO: these can be read in from ~/.aws/credentials by default (if user does not provide)
 				// see https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html for more details
 				AccessKey: sOpts.AccessKey,
 				SecretKey: sOpts.SecretKey,
