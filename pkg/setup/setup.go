@@ -128,17 +128,27 @@ func Main(namespaces ...string) error {
 		return err
 	}
 
-	secretClient, err := factory2.GetIstioCacertsSecretClient(kubeClient)
+	istioSecretClient, err := factory2.GetIstioCacertsSecretClient(kubeClient)
 	if err != nil {
 		return err
 	}
-	if err := secretClient.Register(); err != nil {
+	if err := istioSecretClient.Register(); err != nil {
 		return err
 	}
 
-	installEmitter := v1.NewInstallEmitter(installClient, secretClient)
+	glooSecretClient, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
+	})
+	if err != nil {
+		return err
+	}
+	if err := glooSecretClient.Register(); err != nil {
+		return err
+	}
 
-	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
+	installEmitter := v1.NewInstallEmitter(installClient, istioSecretClient)
+
+	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioSecretClient, glooSecretClient)
 
 	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)
@@ -156,7 +166,7 @@ func Main(namespaces ...string) error {
 	consulPolicySyncer := &consul.PolicySyncer{}
 	istioEncryptionSyncer := &istio.EncryptionSyncer{
 		Kube:         kubeClient,
-		SecretClient: secretClient,
+		SecretClient: istioSecretClient,
 	}
 	istioPolicySyncer, err := istio.NewPolicySyncer("supergloo-system", kubeCache, restConfig)
 	if err != nil {
@@ -181,7 +191,7 @@ func Main(namespaces ...string) error {
 		ApiExts:      apiExts,
 		Kube:         kubeClient,
 		MeshClient:   meshClient,
-		SecretClient: secretClient,
+		SecretClient: istioSecretClient,
 		// TODO: set a security client when we resolve minishift issues
 	}
 	installSyncers := v1.InstallSyncers{
