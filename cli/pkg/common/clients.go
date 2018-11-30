@@ -35,9 +35,23 @@ func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
 	return &upstreamClient, nil
 }
 
-func GetSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
+func GetIstioSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
 	clientset, err := GetKubernetesClient()
 	secretClient, err := factory2.GetIstioCacertsSecretClient(clientset)
+	if err != nil {
+		return nil, err
+	}
+	if err = secretClient.Register(); err != nil {
+		return nil, err
+	}
+	return &secretClient, nil
+}
+
+func GetGlooSecretClient() (*glooV1.SecretClient, error) {
+	clientset, err := GetKubernetesClient()
+	secretClient, err := glooV1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: clientset,
+	})
 	if err != nil {
 		return nil, err
 	}

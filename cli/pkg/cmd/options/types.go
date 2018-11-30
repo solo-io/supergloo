@@ -87,9 +87,17 @@ type Secret struct {
 	Name       string
 }
 
+type AwsSecret struct {
+	AccessKey string
+	SecretKey string
+	Namespace string
+	Name      string
+}
+
 type Create struct {
 	InputRoutingRule InputRoutingRule
-	Secret           Secret
+	Secret      Secret
+	AwsSecret   AwsSecret
 }
 
 type Config struct {
