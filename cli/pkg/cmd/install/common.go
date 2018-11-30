@@ -13,11 +13,11 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-func installationSummaryMessage(opts *options.Options) {
+func installationSummaryMessage(opts *options.Options, name string) {
 	if opts.Install.Namespace == "" {
-		fmt.Printf("Installing %v", opts.Install.MeshType)
+		fmt.Printf("Installing %v with name %s.\n", opts.Install.MeshType, name)
 	} else {
-		fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
+		fmt.Printf("Installing %v in namespace %v with name %s.\n", opts.Install.MeshType, opts.Install.Namespace, name)
 	}
 
 	if opts.Install.Mtls {

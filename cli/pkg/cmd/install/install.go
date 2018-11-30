@@ -60,28 +60,30 @@ func install(opts *options.Options) {
 		installSpec = generateLinkerd2InstallSpecFromOpts(opts)
 	}
 
+	var name string
 	// App mesh is a special case that is installed in the translator syncer, until we refactor install syncer to allow non-helm installs
 	if opts.Install.MeshType == "appmesh" {
-		installAppMesh(opts)
+		name, err = installAppMesh(opts)
 	} else {
 		_, err = (*installClient).Write(installSpec, clients.WriteOpts{})
+		name = installSpec.Metadata.Name
 	}
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	installationSummaryMessage(opts)
+	installationSummaryMessage(opts, name)
 	return
 }
 
-func installAppMesh(opts *options.Options) error {
+func installAppMesh(opts *options.Options) (string, error) {
 	meshClient, err := common.GetMeshClient()
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
 	mesh := generateAppMeshInstallSpecFromOpts(opts)
 	_, err = (*meshClient).Write(mesh, clients.WriteOpts{})
-	return err
+	return mesh.Metadata.Name, err
 }
