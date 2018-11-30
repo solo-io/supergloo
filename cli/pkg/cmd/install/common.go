@@ -56,15 +56,6 @@ func qualifyFlags(opts *options.Options) error {
 		if iop.MeshType == "" {
 			return fmt.Errorf("please provide a mesh type")
 		}
-
-		// user does not need to pass a custom secret
-		// if they do, they must pass both the name and namespace
-		if iop.SecretRef.Namespace != "" && iop.SecretRef.Name == "" {
-			return fmt.Errorf("please specify a secret name to use mTLS")
-		}
-		if iop.SecretRef.Name != "" && iop.SecretRef.Namespace == "" {
-			return fmt.Errorf("please specify a secret namespace to use mTLS")
-		}
 		return nil
 	}
 
@@ -82,6 +73,28 @@ func qualifyFlags(opts *options.Options) error {
 			return fmt.Errorf("input error")
 		}
 		iop.Namespace = namespace
+	}
+
+	if iop.MeshType == common.AppMesh {
+		if iop.AwsRegion == "" {
+			return fmt.Errorf("please specify an aws region")
+		}
+		if iop.AwsSecret.Name == "" || iop.AwsSecret.Namespace == "" {
+			return fmt.Errorf("please specify an aws secret")
+		}
+		// short-circuit, none of the remaining options are used for AppMesh
+		return nil
+	}
+
+	if top.Static {
+		// user does not need to pass a custom secret
+		// if they do, they must pass both the name and namespace
+		if iop.SecretRef.Namespace != "" && iop.SecretRef.Name == "" {
+			return fmt.Errorf("please specify a secret name")
+		}
+		if iop.SecretRef.Name != "" && iop.SecretRef.Namespace == "" {
+			return fmt.Errorf("please specify a secret namespace")
+		}
 	}
 
 	if common.Contains([]string{common.Istio, common.Linkerd2}, iop.MeshType) {

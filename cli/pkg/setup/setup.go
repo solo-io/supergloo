@@ -47,7 +47,11 @@ func InitCache(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
-	secretClient, err := common.GetSecretClient()
+	istioSecretClient, err := common.GetIstioSecretClient()
+	if err != nil {
+		return err
+	}
+	glooSecretClient, err := common.GetGlooSecretClient()
 	if err != nil {
 		return err
 	}
@@ -67,13 +71,21 @@ func InitCache(opts *options.Options) error {
 		for _, m := range meshList {
 			meshes = append(meshes, m.Metadata.Name)
 		}
-		secretList, err := (*secretClient).List(ns, clients.ListOpts{})
+		istioSecretList, err := (*istioSecretClient).List(ns, clients.ListOpts{})
 		if err != nil {
 			return err
 		}
-		var secrets = []string{}
-		for _, m := range secretList {
-			secrets = append(secrets, m.Metadata.Name)
+		var istioSecrets = []string{}
+		for _, m := range istioSecretList {
+			istioSecrets = append(istioSecrets, m.Metadata.Name)
+		}
+		glooSecretList, err := (*glooSecretClient).List(ns, clients.ListOpts{})
+		if err != nil {
+			return err
+		}
+		var glooSecrets = []string{}
+		for _, m := range glooSecretList {
+			glooSecrets = append(glooSecrets, m.Metadata.Name)
 		}
 		upstreamList, err := (*upstreamClient).List(ns, clients.ListOpts{})
 		if err != nil {
@@ -89,7 +101,8 @@ func InitCache(opts *options.Options) error {
 		opts.Cache.NsResources[ns] = &options.NsResource{
 			MeshesByInstallNs: meshesByInstallNs,
 			Meshes:            meshes,
-			Secrets:           secrets,
+			IstioSecrets:      istioSecrets,
+			GlooSecrets:       glooSecrets,
 			Upstreams:         upstreams,
 		}
 	}

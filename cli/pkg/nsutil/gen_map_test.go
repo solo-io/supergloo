@@ -1,6 +1,7 @@
 package nsutil
 
 import (
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 
 	. "github.com/onsi/ginkgo"
@@ -10,20 +11,20 @@ import (
 var _ = Describe("Generate Options", func() {
 	nsrMap := make(options.NsResourceMap)
 	nsrMap["ns1"] = &options.NsResource{
-		Meshes:  []string{"m1", "m2"},
-		Secrets: []string{"s1", "s2"},
-		MeshesByInstallNs: []options.ResourceRef{
-			options.ResourceRef{
+		Meshes:      []string{"m1", "m2"},
+		GlooSecrets: []string{"s1", "s2"},
+		MeshesByInstallNs: []core.ResourceRef{
+			{
 				Name:      "m1",
 				Namespace: "ns1",
 			},
 		},
 	}
 	nsrMap["ns2"] = &options.NsResource{
-		Meshes:  []string{},
-		Secrets: []string{"s3"},
-		MeshesByInstallNs: []options.ResourceRef{
-			options.ResourceRef{
+		Meshes:      []string{},
+		GlooSecrets: []string{"s3"},
+		MeshesByInstallNs: []core.ResourceRef{
+			{
 				Name:      "m2",
 				Namespace: "ns1",
 			},
@@ -41,7 +42,7 @@ var _ = Describe("Generate Options", func() {
 		expectedMap["ns1, m1"] = ResSelect{
 			displayName:      "m1",
 			displayNamespace: "ns1",
-			resourceRef: options.ResourceRef{
+			resourceRef: core.ResourceRef{
 				Name:      "m1",
 				Namespace: "ns1",
 			},
@@ -49,7 +50,7 @@ var _ = Describe("Generate Options", func() {
 		expectedMap["ns2, m2"] = ResSelect{
 			displayName:      "m2",
 			displayNamespace: "ns2",
-			resourceRef: options.ResourceRef{
+			resourceRef: core.ResourceRef{
 				Name:      "m2",
 				Namespace: "ns1",
 			},
@@ -68,7 +69,7 @@ var _ = Describe("Generate Options", func() {
 		expectedMap["ns1, s1"] = ResSelect{
 			displayName:      "s1",
 			displayNamespace: "ns1",
-			resourceRef: options.ResourceRef{
+			resourceRef: core.ResourceRef{
 				Name:      "s1",
 				Namespace: "ns1",
 			},
@@ -76,7 +77,7 @@ var _ = Describe("Generate Options", func() {
 		expectedMap["ns1, s2"] = ResSelect{
 			displayName:      "s2",
 			displayNamespace: "ns1",
-			resourceRef: options.ResourceRef{
+			resourceRef: core.ResourceRef{
 				Name:      "s2",
 				Namespace: "ns1",
 			},
@@ -84,7 +85,7 @@ var _ = Describe("Generate Options", func() {
 		expectedMap["ns2, s3"] = ResSelect{
 			displayName:      "s3",
 			displayNamespace: "ns2",
-			resourceRef: options.ResourceRef{
+			resourceRef: core.ResourceRef{
 				Name:      "s3",
 				Namespace: "ns2",
 			},

@@ -31,6 +31,8 @@ type Install struct {
 	SecretRef           core.ResourceRef
 	WatchNamespaces     []string
 	ConsulServerAddress string
+	AwsRegion           string
+	AwsSecret           core.ResourceRef
 
 	// Interactive only (not passable via flags)
 	UseCustomSecret bool
@@ -124,9 +126,10 @@ type NsResourceMap map[string]*NsResource
 // *the association is by the namespace in which the CRD is installed, unless otherwise noted.
 type NsResource struct {
 	// keyed by namespace containing the CRD
-	Meshes    []string
-	Secrets   []string
-	Upstreams []string
+	Meshes       []string
+	IstioSecrets []string
+	GlooSecrets  []string
+	Upstreams    []string
 
 	// keyed by mesh installation namespace
 	// purpose of this list: allows user to select a mesh by the namespace in which they installed the mesh

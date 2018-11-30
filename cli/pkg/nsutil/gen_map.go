@@ -56,9 +56,12 @@ func generateCommonResourceSelectOptions(typeName string, nsrMap options.NsResou
 		var resArray []string
 		switch typeName {
 		case "secret":
-			resArray = nsr.Secrets
+			resArray = nsr.IstioSecrets
 		case "upstream":
 			resArray = nsr.Upstreams
+		case "awssecret":
+			// TODO: the secret mappings here use the proto name in the resource map, and translate to a user facing name based on the use case. cleanup?
+			resArray = nsr.GlooSecrets
 		default:
 			panic(fmt.Errorf("resource type %v not recognized", typeName))
 		}
