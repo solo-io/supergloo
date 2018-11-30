@@ -48,6 +48,7 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
+		var kube kubernetes.Interface
 		// Install Constructor
 		installClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         InstallCrd,
@@ -56,11 +57,10 @@ var _ = Describe("V1Emitter", func() {
 		}
 		installClient, err = NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// IstioCacertsSecret Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		istioCacertsSecretClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}

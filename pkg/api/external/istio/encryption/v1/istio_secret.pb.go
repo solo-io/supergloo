@@ -25,7 +25,7 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 //
 // @solo-kit:resource.short_name=ics
 // @solo-kit:resource.plural_name=istiocerts
-// @solo-kit:resource.resource_groups=translator.supergloo.solo.io
+// @solo-kit:resource.resource_groups=translator.supergloo.solo.io,install.supergloo.solo.io
 // Secret containing CA Certs for Istio
 // Structured TLS Secret that istio uses for non-default root certificates
 type IstioCacertsSecret struct {
@@ -44,7 +44,7 @@ func (m *IstioCacertsSecret) Reset()         { *m = IstioCacertsSecret{} }
 func (m *IstioCacertsSecret) String() string { return proto.CompactTextString(m) }
 func (*IstioCacertsSecret) ProtoMessage()    {}
 func (*IstioCacertsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_istio_secret_0d803956e48eaa27, []int{0}
+	return fileDescriptor_istio_secret_51f67eb0eba329ab, []int{0}
 }
 func (m *IstioCacertsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioCacertsSecret.Unmarshal(m, b)
@@ -142,9 +142,9 @@ func (this *IstioCacertsSecret) Equal(that interface{}) bool {
 	return true
 }
 
-func init() { proto.RegisterFile("istio_secret.proto", fileDescriptor_istio_secret_0d803956e48eaa27) }
+func init() { proto.RegisterFile("istio_secret.proto", fileDescriptor_istio_secret_51f67eb0eba329ab) }
 
-var fileDescriptor_istio_secret_0d803956e48eaa27 = []byte{
+var fileDescriptor_istio_secret_51f67eb0eba329ab = []byte{
 	// 295 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x90, 0xbf, 0x4e, 0xc3, 0x30,
 	0x10, 0xc6, 0x09, 0x54, 0x2d, 0x75, 0x05, 0x43, 0x40, 0x28, 0xaa, 0x10, 0x54, 0x9d, 0xba, 0xc4,
