@@ -124,14 +124,15 @@ func InitCache(opts *options.Options) error {
 			case *superglooV1.Mesh_Istio:
 				iNs = spec.Istio.InstallationNamespace
 			}
-			opts.Cache.NsResources[iNs].MeshesByInstallNs = append(
-				opts.Cache.NsResources[iNs].MeshesByInstallNs,
-				core.ResourceRef{
-					Name:      m.Metadata.Name,
-					Namespace: m.Metadata.Namespace,
-				})
+			if iNs != "" {
+				opts.Cache.NsResources[iNs].MeshesByInstallNs = append(
+					opts.Cache.NsResources[iNs].MeshesByInstallNs,
+					core.ResourceRef{
+						Name:      m.Metadata.Name,
+						Namespace: m.Metadata.Namespace,
+					})
+			}
 		}
-
 	}
 
 	return nil

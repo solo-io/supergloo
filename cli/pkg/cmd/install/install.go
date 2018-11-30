@@ -30,6 +30,9 @@ func Cmd(opts *options.Options) *cobra.Command {
 	pflags.BoolVar(&iop.Mtls, "mtls", false, "use mTLS")
 	pflags.StringVar(&iop.SecretRef.Name, "secret.name", "", "name of the mTLS secret")
 	pflags.StringVar(&iop.SecretRef.Namespace, "secret.namespace", "", "namespace of the mTLS secret")
+	pflags.StringVar(&iop.AwsSecretRef.Name, "awssecret.name", "", "name of the AWS secret")
+	pflags.StringVar(&iop.AwsSecretRef.Namespace, "awssecret.namespace", "", "namespace of the AWS secret")
+	pflags.StringVar(&iop.AwsRegion, "aws-region", "", "AWS region")
 	return cmd
 }
 

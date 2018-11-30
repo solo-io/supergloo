@@ -14,7 +14,12 @@ import (
 )
 
 func installationSummaryMessage(opts *options.Options) {
-	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
+	if opts.Install.Namespace == "" {
+		fmt.Printf("Installing %v", opts.Install.MeshType)
+	} else {
+		fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
+	}
+
 	if opts.Install.Mtls {
 		fmt.Printf("mTLS active.\n")
 	}
@@ -50,9 +55,6 @@ func qualifyFlags(opts *options.Options) error {
 
 	// if they are using static mode, they must pass all params
 	if top.Static {
-		if iop.Namespace == "" {
-			return fmt.Errorf("please provide a namespace")
-		}
 		if iop.MeshType == "" {
 			return fmt.Errorf("please provide a mesh type")
 		}
@@ -67,26 +69,36 @@ func qualifyFlags(opts *options.Options) error {
 		}
 	}
 
-	if iop.Namespace == "" {
-		namespace, err := common.ChooseNamespace(opts, "Select an installation namespace")
-		if err != nil {
-			return fmt.Errorf("input error")
-		}
-		iop.Namespace = namespace
-	}
-
 	if iop.MeshType == common.AppMesh {
+		if top.Static {
+			if iop.AwsRegion == "" {
+				return fmt.Errorf("please specify an aws region")
+			}
+			if iop.AwsSecretRef.Name == "" || iop.AwsSecretRef.Namespace == "" {
+				return fmt.Errorf("please specify an aws secret")
+			}
+		}
+
 		if iop.AwsRegion == "" {
-			return fmt.Errorf("please specify an aws region")
+			awsRegion, err := common.GetString("Select an aws region")
+			if err != nil {
+				return fmt.Errorf("input error")
+			}
+			iop.AwsRegion = awsRegion
 		}
-		if iop.AwsSecret.Name == "" || iop.AwsSecret.Namespace == "" {
-			return fmt.Errorf("please specify an aws secret")
+
+		if err := nsutil.EnsureCommonResource("awssecret", "awssecret", &iop.AwsSecretRef, opts); err != nil {
+			return err
 		}
+
 		// short-circuit, none of the remaining options are used for AppMesh
 		return nil
 	}
 
 	if top.Static {
+		if iop.Namespace == "" {
+			return fmt.Errorf("please provide a namespace")
+		}
 		// user does not need to pass a custom secret
 		// if they do, they must pass both the name and namespace
 		if iop.SecretRef.Namespace != "" && iop.SecretRef.Name == "" {
@@ -95,6 +107,14 @@ func qualifyFlags(opts *options.Options) error {
 		if iop.SecretRef.Name != "" && iop.SecretRef.Namespace == "" {
 			return fmt.Errorf("please specify a secret namespace")
 		}
+	}
+
+	if iop.Namespace == "" {
+		namespace, err := common.ChooseNamespace(opts, "Select an installation namespace")
+		if err != nil {
+			return fmt.Errorf("input error")
+		}
+		iop.Namespace = namespace
 	}
 
 	if common.Contains([]string{common.Istio, common.Linkerd2}, iop.MeshType) {

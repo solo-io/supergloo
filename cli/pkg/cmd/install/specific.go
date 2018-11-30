@@ -80,7 +80,7 @@ func generateAppMeshInstallSpecFromOpts(opts *options.Options) *v1.Mesh {
 		MeshType: &v1.Mesh_AppMesh{
 			AppMesh: &v1.AppMesh{
 				AwsRegion:      opts.Install.AwsRegion,
-				AwsCredentials: &opts.Install.AwsSecret,
+				AwsCredentials: &opts.Install.AwsSecretRef,
 			},
 		},
 	}

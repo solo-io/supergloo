@@ -32,7 +32,7 @@ type Install struct {
 	WatchNamespaces     []string
 	ConsulServerAddress string
 	AwsRegion           string
-	AwsSecret           core.ResourceRef
+	AwsSecretRef        core.ResourceRef
 
 	// Interactive only (not passable via flags)
 	UseCustomSecret bool
