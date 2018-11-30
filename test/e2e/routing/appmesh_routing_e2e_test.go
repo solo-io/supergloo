@@ -35,6 +35,8 @@ var _ = FDescribe("appmesh routing E2e", func() {
 
 	BeforeEach(func() {
 		namespace = "appmesh-routing-test-" + helpers.RandString(8)
+		namespace = "supergloo-system"
+		return
 		err := testsetup.SetupKubeForTest(namespace)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -55,26 +57,29 @@ var _ = FDescribe("appmesh routing E2e", func() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
+		return
 		testsetup.TeardownKube(namespace)
 	})
 
 	It("works", func() {
-		go setup.Main(func(e error) {
-			defer GinkgoRecover()
-			if e == nil {
-				return
-			}
-			if strings.Contains(e.Error(), "upstream") {
-				return
-			}
-			Fail(e.Error())
-		}, namespace)
+		if false {
+			go setup.Main(func(e error) {
+				defer GinkgoRecover()
+				if e == nil {
+					return
+				}
+				if strings.Contains(e.Error(), "upstream") {
+					return
+				}
+				Fail(e.Error())
+			}, namespace)
 
-		// start discovery
-		cmd := exec.Command(PathToUds, "--namespace", namespace)
-		cmd.Env = os.Environ()
-		_, err := gexec.Start(cmd, os.Stdout, os.Stdout)
-		Expect(err).NotTo(HaveOccurred())
+			// start discovery
+			cmd := exec.Command(PathToUds, "--namespace", namespace)
+			cmd.Env = os.Environ()
+			_, err := gexec.Start(cmd, os.Stdout, os.Stdout)
+			Expect(err).NotTo(HaveOccurred())
+		}
 
 		meshes, routingRules, secretClient, err := v1Clients()
 		Expect(err).NotTo(HaveOccurred())
@@ -135,6 +140,7 @@ func setupAppMesh(meshClient v1.MeshClient, secretClient gloov1.SecretClient, na
 			},
 		},
 	}, clients.WriteOpts{})
+	Expect(err).NotTo(HaveOccurred())
 
 	meshMeta := core.Metadata{Name: "my-appmesh", Namespace: namespace}
 	meshClient.Delete(meshMeta.Namespace, meshMeta.Name, clients.DeleteOpts{})

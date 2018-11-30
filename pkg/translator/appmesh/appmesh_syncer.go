@@ -228,8 +228,10 @@ func resyncState(client AppMeshClient,
 	if err := reconcileVirtualRouters(client, mesh, vRouters); err != nil {
 		return errors.Wrapf(err, "reconciling virtual routers")
 	}
-	if err := reconcileRoutes(client, mesh, routes); err != nil {
-		return errors.Wrapf(err, "reconciling virtual routers")
+	for _, vRouter := range vRouters {
+		if err := reconcileRoutes(client, mesh, *vRouter.VirtualRouterName, routes); err != nil {
+			return errors.Wrapf(err, "reconciling routes")
+		}
 	}
 
 	return nil
@@ -390,7 +392,7 @@ func routesFromRules(meshName string, upstreams gloov1.UpstreamList, routingRule
 				return nil, errors.Wrapf(err, "getting host for destination upstream")
 			}
 			targets = append(targets, &appmesh.WeightedTarget{
-				VirtualNode: aws.String(destinationHost),
+				VirtualNode: aws.String(nameutils.SanitizeName(destinationHost)),
 				Weight:      aws.Int64(int64(dest.Weight)),
 			})
 		}
@@ -459,11 +461,6 @@ func reconcileVirtualNodes(client AppMeshClient, mesh appmesh.CreateMeshInput, v
 	if err != nil {
 		return errors.Wrapf(err, "failed to list existing virtual nodes for mesh %v", *mesh.MeshName)
 	}
-	for _, desiredVNode := range vNodes {
-		if err := reconcileVirtualNode(client, desiredVNode, existingVirtualNodes.VirtualNodes); err != nil {
-			return errors.Wrapf(err, "reconciling virtual node %v", *desiredVNode.VirtualNodeName)
-		}
-	}
 	// delete unused
 	for _, original := range existingVirtualNodes.VirtualNodes {
 		cleanup := true
@@ -480,6 +477,11 @@ func reconcileVirtualNodes(client AppMeshClient, mesh appmesh.CreateMeshInput, v
 			}); err != nil {
 				return errors.Wrapf(err, "deleting stale resource %v", original)
 			}
+		}
+	}
+	for _, desiredVNode := range vNodes {
+		if err := reconcileVirtualNode(client, desiredVNode, existingVirtualNodes.VirtualNodes); err != nil {
+			return errors.Wrapf(err, "reconciling virtual node %v", *desiredVNode.VirtualNodeName)
 		}
 	}
 	return nil
@@ -508,8 +510,10 @@ func reconcileVirtualNode(client AppMeshClient, desiredVNode appmesh.CreateVirtu
 			}); err != nil {
 				return errors.Wrapf(err, "updating virtual node")
 			}
+			return nil
 		}
 	}
+	// create new
 	if _, err := client.CreateVirtualNode(&desiredVNode); err != nil {
 		return errors.Wrapf(err, "creating virtual node")
 	}
@@ -524,11 +528,6 @@ func reconcileVirtualRouters(client AppMeshClient, mesh appmesh.CreateMeshInput,
 	if err != nil {
 		return errors.Wrapf(err, "failed to list existing virtual routers for mesh %v", *mesh.MeshName)
 	}
-	for _, desiredVRouter := range vRouters {
-		if err := reconcileVirtualRouter(client, desiredVRouter, existingVirtualRouters.VirtualRouters); err != nil {
-			return errors.Wrapf(err, "reconciling virtual router %v", *desiredVRouter.VirtualRouterName)
-		}
-	}
 	// delete unused
 	for _, original := range existingVirtualRouters.VirtualRouters {
 		cleanup := true
@@ -539,12 +538,33 @@ func reconcileVirtualRouters(client AppMeshClient, mesh appmesh.CreateMeshInput,
 			}
 		}
 		if cleanup {
+			routesForRouter, err := client.ListRoutes(&appmesh.ListRoutesInput{
+				MeshName:          original.MeshName,
+				VirtualRouterName: original.VirtualRouterName,
+			})
+			if err != nil {
+				return errors.Wrapf(err, "listing routes for %v", *original.VirtualRouterName)
+			}
+			for _, route := range routesForRouter.Routes {
+				if _, err := client.DeleteRoute(&appmesh.DeleteRouteInput{
+					MeshName:          original.MeshName,
+					VirtualRouterName: original.VirtualRouterName,
+					RouteName:         route.RouteName,
+				}); err != nil {
+					return errors.Wrapf(err, "deleting route %v for %v", *route.RouteName, *original.VirtualRouterName)
+				}
+			}
 			if _, err := client.DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
 				MeshName:          original.MeshName,
 				VirtualRouterName: original.VirtualRouterName,
 			}); err != nil {
 				return errors.Wrapf(err, "deleting stale resource %v", original)
 			}
+		}
+	}
+	for _, desiredVRouter := range vRouters {
+		if err := reconcileVirtualRouter(client, desiredVRouter, existingVirtualRouters.VirtualRouters); err != nil {
+			return errors.Wrapf(err, "reconciling virtual router %v", *desiredVRouter.VirtualRouterName)
 		}
 	}
 	return nil
@@ -573,6 +593,8 @@ func reconcileVirtualRouter(client AppMeshClient, desiredVRouter appmesh.CreateV
 			}); err != nil {
 				return errors.Wrapf(err, "updating virtual router")
 			}
+
+			return nil
 		}
 	}
 	if _, err := client.CreateVirtualRouter(&desiredVRouter); err != nil {
@@ -582,22 +604,21 @@ func reconcileVirtualRouter(client AppMeshClient, desiredVRouter appmesh.CreateV
 	return nil
 }
 
-func reconcileRoutes(client AppMeshClient, mesh appmesh.CreateMeshInput, vRouters []appmesh.CreateRouteInput) error {
+func reconcileRoutes(client AppMeshClient, mesh appmesh.CreateMeshInput, vRouterName string, routes []appmesh.CreateRouteInput) error {
 	existingRoutes, err := client.ListRoutes(&appmesh.ListRoutesInput{
-		MeshName: mesh.MeshName,
+		MeshName:          mesh.MeshName,
+		VirtualRouterName: aws.String(vRouterName),
 	})
 	if err != nil {
 		return errors.Wrapf(err, "failed to list existing routes for mesh %v", *mesh.MeshName)
 	}
-	for _, desiredRoute := range vRouters {
-		if err := reconcileRoute(client, desiredRoute, existingRoutes.Routes); err != nil {
-			return errors.Wrapf(err, "reconciling route %v", *desiredRoute.RouteName)
-		}
-	}
 	// delete unused
 	for _, original := range existingRoutes.Routes {
+		if aws.StringValue(original.VirtualRouterName) != vRouterName {
+			continue
+		}
 		cleanup := true
-		for _, desired := range vRouters {
+		for _, desired := range routes {
 			if *desired.RouteName == aws.StringValue(original.RouteName) {
 				cleanup = false
 				break
@@ -612,6 +633,14 @@ func reconcileRoutes(client AppMeshClient, mesh appmesh.CreateMeshInput, vRouter
 			}
 		}
 	}
+	for _, desiredRoute := range routes {
+		if *desiredRoute.VirtualRouterName != vRouterName {
+			continue
+		}
+		if err := reconcileRoute(client, desiredRoute, existingRoutes.Routes); err != nil {
+			return errors.Wrapf(err, "reconciling route %v", *desiredRoute.RouteName)
+		}
+	}
 	return nil
 }
 
@@ -620,11 +649,12 @@ func reconcileRoute(client AppMeshClient, desiredRoute appmesh.CreateRouteInput,
 		if aws.StringValue(router.RouteName) == *desiredRoute.RouteName {
 			// update
 			originalRoute, err := client.DescribeRoute(&appmesh.DescribeRouteInput{
-				MeshName:  desiredRoute.MeshName,
-				RouteName: desiredRoute.RouteName,
+				MeshName:          desiredRoute.MeshName,
+				VirtualRouterName: desiredRoute.VirtualRouterName,
+				RouteName:         desiredRoute.RouteName,
 			})
 			if err != nil {
-				return errors.Wrapf(err, "retrieving original router for update")
+				return errors.Wrapf(err, "retrieving original route for update")
 			}
 			// TODO: find a better way of comparing AWS structs
 			if originalRoute.Route.Spec.String() == desiredRoute.Spec.String() {
@@ -638,6 +668,7 @@ func reconcileRoute(client AppMeshClient, desiredRoute appmesh.CreateRouteInput,
 			}); err != nil {
 				return errors.Wrapf(err, "updating route")
 			}
+			return nil
 		}
 	}
 	if _, err := client.CreateRoute(&desiredRoute); err != nil {

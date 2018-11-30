@@ -34,6 +34,19 @@ spec:
 
 const TestRunnerAwsAppMeshYaml = `
 apiVersion: v1
+kind: Service
+metadata:
+  name: testrunner
+  labels:
+    gloo: testrunner
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    gloo: testrunner
+---
+apiVersion: v1
 kind: Pod
 metadata:
   labels:
