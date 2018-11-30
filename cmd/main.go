@@ -15,7 +15,7 @@ func main() {
 func run() error {
 	errs := make(chan error)
 	go func() {
-		errs <- setup.Main()
+		errs <- setup.Main(nil)
 	}()
 	return <-errs
 }

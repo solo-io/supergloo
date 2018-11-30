@@ -6,6 +6,11 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/install/shared"
+	appsv1 "k8s.io/api/apps/v1"
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	"k8s.io/api/extensions/v1beta1"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	"k8s.io/api/core/v1"
@@ -32,8 +37,27 @@ func IstioInject(istioNamespace, input string) (string, error) {
 	return output.String(), nil
 }
 
-func AwsAppMeshInject(pod *v1.Pod, meshName, virtualNodeName, awsRegion string, applicationPorts []uint32) {
-	pod.Spec.Containers = append(pod.Spec.Containers, v1.Container{
+func AwsAppMeshInjectKubeObjList(kubeObjectList shared.KubeObjectList, meshName, virtualNodeName, awsRegion string, applicationPorts []uint32) {
+	for i := range kubeObjectList {
+		switch obj := kubeObjectList[i].(type) {
+		case *v1.Pod:
+			AwsAppMeshInject(&obj.Spec, meshName, virtualNodeName, awsRegion, applicationPorts)
+			kubeObjectList[i] = obj
+		case *v1beta1.Deployment:
+			AwsAppMeshInject(&obj.Spec.Template.Spec, meshName, virtualNodeName, awsRegion, applicationPorts)
+			kubeObjectList[i] = obj
+		case *appsv1.Deployment:
+			AwsAppMeshInject(&obj.Spec.Template.Spec, meshName, virtualNodeName, awsRegion, applicationPorts)
+			kubeObjectList[i] = obj
+		case *appsv1beta1.Deployment:
+			AwsAppMeshInject(&obj.Spec.Template.Spec, meshName, virtualNodeName, awsRegion, applicationPorts)
+			kubeObjectList[i] = obj
+		}
+	}
+}
+
+func AwsAppMeshInject(podSpec *v1.PodSpec, meshName, virtualNodeName, awsRegion string, applicationPorts []uint32) {
+	podSpec.Containers = append(podSpec.Containers, v1.Container{
 		Name:  "envoy",
 		Image: "111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.8.0.2-beta",
 		SecurityContext: &v1.SecurityContext{
@@ -58,7 +82,7 @@ func AwsAppMeshInject(pod *v1.Pod, meshName, virtualNodeName, awsRegion string, 
 	for _, port := range applicationPorts {
 		stringPorts = append(stringPorts, fmt.Sprintf("%v", port))
 	}
-	pod.Spec.InitContainers = append(pod.Spec.InitContainers, v1.Container{
+	podSpec.InitContainers = append(podSpec.InitContainers, v1.Container{
 		Name:  "proxyinit",
 		Image: "111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:latest",
 		SecurityContext: &v1.SecurityContext{

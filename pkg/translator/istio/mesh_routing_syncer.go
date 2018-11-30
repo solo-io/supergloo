@@ -98,6 +98,12 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	if err != nil {
 		return errors.Wrapf(err, "creating virtual services from snapshot")
 	}
+
+	// nothing to do until we create some
+	if len(virtualServices) == 0 {
+		return nil
+	}
+
 	for _, res := range destinationRules {
 		updateMetadataForWriting(&res.Metadata, s.writeSelector)
 	}
@@ -210,6 +216,12 @@ func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstr
 	// separate config changes for each mesh
 	meshesByRule := make(map[*v1.RoutingRule]v1.MeshList)
 	for _, rule := range rules {
+		istioMesh, err := getIstioMeshForRule(rule, meshes)
+		if err == nil && istioMesh == nil {
+			// not our mesh, ignore rule
+			continue
+		}
+
 		if err := validateRule(rule, meshes); err != nil {
 			return nil, err
 		}

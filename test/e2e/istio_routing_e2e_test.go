@@ -1,12 +1,9 @@
-package routing
+package e2e
 
 import (
 	"os"
 	"os/exec"
 	"time"
-
-	"github.com/solo-io/supergloo/pkg/install/istio"
-	"github.com/solo-io/supergloo/test/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,23 +25,17 @@ var _ = Describe("istio routing E2e", func() {
 	var namespace, releaseName string
 	path := os.Getenv("HELM_CHART_PATH_ISTIO")
 	if path == "" {
-		path = "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz"
+		Skip("Set environment variable HELM_CHART_PATH")
 	}
-
 	BeforeEach(func() {
 		releaseName = "istio-release-test-" + helpers.RandString(8)
 		namespace = "istio-routing-test-" + helpers.RandString(8)
 		err := testsetup.SetupKubeForTest(namespace)
 		Expect(err).NotTo(HaveOccurred())
 	})
-
 	AfterEach(func() {
-		gexec.TerminateAndWait(2 * time.Second)
-
-		util.UninstallHelmRelease(releaseName)
-		util.TryDeleteIstioCrds()
+		exec.Command("helm", "delete", releaseName, "--purge").Run()
 		testsetup.TeardownKube(namespace)
-		util.DeleteCrb(istio.CrbName)
 	})
 
 	It("works", func() {
@@ -59,6 +50,7 @@ var _ = Describe("istio routing E2e", func() {
 		meshes, routingRules, installClient, err := run()
 		Expect(err).NotTo(HaveOccurred())
 
+		installClient.Register()
 		// wait for supergloo to register crds
 		Eventually(func() error {
 			_, err := installClient.List(namespace, clients.ListOpts{})
@@ -309,7 +301,7 @@ func run() (v1.MeshClient, v1.RoutingRuleClient, v1.InstallClient, error) {
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if err := installClient.Register(); err != nil {
+	if err := routingRuleClient.Register(); err != nil {
 		return nil, nil, nil, err
 	}
 	return meshClient, routingRuleClient, installClient, nil

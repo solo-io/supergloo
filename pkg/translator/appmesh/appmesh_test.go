@@ -1,4 +1,4 @@
-package istio_test
+package appmesh_test
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,7 +19,7 @@ var _ = Describe("Appmesh", func() {
 		Expect(err).NotTo(HaveOccurred())
 		svc := appmesh.New(sess, &aws.Config{Region: aws.String("us-east-1")})
 
-		s := NewMeshRoutingSyncer()
+		s := NewSyncer()
 		err = s.Try(svc)
 		Expect(err).NotTo(HaveOccurred())
 

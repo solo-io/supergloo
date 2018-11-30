@@ -1,4 +1,4 @@
-package istio_test
+package appmesh_test
 
 import (
 	"testing"

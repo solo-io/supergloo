@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -31,7 +33,7 @@ import (
 
 var defaultNamespaces = []string{"supergloo-system", "gloo-system", "default"}
 
-func Main(namespaces ...string) error {
+func Main(errHandler func(error), namespaces ...string) error {
 	if len(namespaces) == 0 {
 		namespaces = defaultNamespaces
 	}
@@ -173,7 +175,10 @@ func Main(namespaces ...string) error {
 		return err
 	}
 
+	appMeshSyncer := appmesh.NewSyncer()
+
 	translatorSyncers := v1.TranslatorSyncers{
+		appMeshSyncer,
 		istioRoutingSyncer,
 		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
@@ -225,6 +230,9 @@ func Main(namespaces ...string) error {
 		select {
 		case err := <-writeErrs:
 			logger.Errorf("error: %v", err)
+			if errHandler != nil {
+				errHandler(err)
+			}
 		case <-watchOpts.Ctx.Done():
 			close(writeErrs)
 			return nil
