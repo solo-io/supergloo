@@ -240,10 +240,16 @@ func helmInstallChart(ctx context.Context, chartPath string, releaseName string,
 		return nil, err
 	}
 
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("preparing to install chart from path %s for release %s", chartPath, releaseName)
+
 	installPath, err := helm.LocateChartRepoReleaseDefault(ctx, "", chartPath)
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Infof("installing chart from install path %s", installPath)
+
 	response, err := helmClient.InstallRelease(
 		installPath,
 		installNamespace,
@@ -270,10 +276,15 @@ func helmUpdateChart(ctx context.Context, chartPath string, releaseName string, 
 		return err
 	}
 
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("preparing to update chart from path %s for release %s", chartPath, releaseName)
+
 	installPath, err := helm.LocateChartRepoReleaseDefault(ctx, "", chartPath)
 	if err != nil {
 		return err
 	}
+
+	logger.Infof("updating chart from install path %s", installPath)
 
 	_, err = helmClient.UpdateRelease(
 		releaseName,

@@ -2,3 +2,6 @@
 .idea
 _output/
 doc/site
+hack/install/istio/istio-1.0.3/istio-1.0.3.tgz
+
+

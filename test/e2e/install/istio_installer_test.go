@@ -2,7 +2,7 @@ package install
 
 import (
 	"github.com/solo-io/solo-kit/test/helpers"
-	"github.com/solo-io/supergloo/pkg/constants"
+	//"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/istio"
@@ -28,7 +28,8 @@ var _ = Describe("Istio Installer", func() {
 	}
 
 	BeforeEach(func() {
-		ChartPath = constants.IstioInstallPath
+		ChartPath = "/Users/rick/code/src/github.com/solo-io/supergloo/hack/install/istio/istio-1.0.3/istio-1.0.3.tgz"
+		//ChartPath = constants.IstioInstallPath
 		randStr := helpers.RandString(8)
 		InstallNamespace = "istio-install-test-" + randStr
 		MeshName = "istio-mesh-test-" + randStr
@@ -39,7 +40,7 @@ var _ = Describe("Istio Installer", func() {
 		util.DeleteCrb(istio.CrbName)
 	})
 
-	It("Can install and uninstall istio", func() {
+	FIt("Can install and uninstall istio", func() {
 		InstallAndWaitForPods(getInstall(true), 9)
 		UninstallAndWaitForCleanup(getInstall(false))
 

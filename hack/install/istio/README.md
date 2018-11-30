@@ -3,7 +3,9 @@
 We've forked the istio helm chart to make several modifications, listed here. To re-package the chart, 
 navigate into the istio-1.0.3 directory and run: 
 
-`tar -zcvf istio-1.0.3.tgz .`
+On Linux: `tar -zcvf istio-1.0.3.tgz istio` 
+
+On Mac: `tar --disable-copyfile -zcvf istio-1.0.3.tgz istio`
 
 # Change log
 
