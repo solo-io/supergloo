@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"sync"
 	"unicode/utf8"
@@ -168,38 +169,44 @@ func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) err
 	if appMesh.AppMesh == nil {
 		return errors.Errorf("%v missing configuration for AppMesh", mesh.Metadata.Ref())
 	}
-	desiredMesh := &appmesh.CreateMeshInput{
-		MeshName: aws.String(mesh.Metadata.Name),
+	meshName := fmt.Sprintf("%v.%v", mesh.Metadata.Ref().String())
+	desiredMesh := appmesh.CreateMeshInput{
+		MeshName: aws.String(meshName),
 	}
 	upstreams := snap.Upstreams.List()
-	virtualNodes, err := virtualNodesFromUpstreams(upstreams)
+	virtualNodes, err := virtualNodesFromUpstreams(meshName, upstreams)
 	if err != nil {
 		return errors.Wrapf(err, "creating virtual nodes from upstreams")
 	}
-	virtualRouters, err := virtualRoutersFromUpstreams(upstreams)
+	virtualRouters, err := virtualRoutersFromUpstreams(meshName, upstreams)
 	if err != nil {
 		return errors.Wrapf(err, "creating virtual routers from upstreams")
 	}
-	//routes := routesForRules()
+	routingRules := snap.Routingrules.List()
+	routes, err := routesFromRules(meshName, upstreams, routingRules)
+	if err != nil {
+		return errors.Wrapf(err, "creating virtual routers from upstreams")
+	}
 
-	// todo: generate desired virtual node for every service
-	// go through route rules, only focus on traffic shifting, otherwise notihng to do?
-	// * need to investigate using testrunner pod with the yaml
+	if err := s.reconcileMesh(desiredMesh, virtualNodes, virtualRouters, routes); err != nil {
+		return errors.Wrapf(err, "reconciling desired state")
+	}
+	return nil
 }
 
 func (s *MeshRoutingSyncer) reconcileMesh(mesh appmesh.CreateMeshInput,
 	vNodes []appmesh.CreateVirtualNodeInput,
 	vRouters []appmesh.CreateVirtualRouterInput,
-	vRoutes []appmesh.CreateRouteInput) error {
+	routes []appmesh.CreateRouteInput) error {
 	// todo: look up the right client
-
+	panic("implement me")
 }
 
-func virtualNodesFromUpstreams(meshName string, list gloov1.UpstreamList) ([]appmesh.CreateVirtualNodeInput, error) {
+func virtualNodesFromUpstreams(meshName string, upstreams gloov1.UpstreamList) ([]appmesh.CreateVirtualNodeInput, error) {
 	portsByHost := make(map[string][]uint32)
 	// TODO: filter hosts by policy, i.e. only what the user wants
 	var allHosts []string
-	for _, us := range list {
+	for _, us := range upstreams {
 		host, err := utils.GetHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
@@ -245,9 +252,9 @@ func virtualNodesFromUpstreams(meshName string, list gloov1.UpstreamList) ([]app
 	return virtualNodes, nil
 }
 
-func virtualRoutersFromUpstreams(meshName string, list gloov1.UpstreamList) ([]appmesh.CreateVirtualRouterInput, error) {
+func virtualRoutersFromUpstreams(meshName string, upstreams gloov1.UpstreamList) ([]appmesh.CreateVirtualRouterInput, error) {
 	var allHosts []string
-	for _, us := range list {
+	for _, us := range upstreams {
 		host, err := utils.GetHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
@@ -255,21 +262,117 @@ func virtualRoutersFromUpstreams(meshName string, list gloov1.UpstreamList) ([]a
 		allHosts = append(allHosts, host)
 	}
 
-	var virtualRouters []appmesh.CreateVirtualRouterInput
+	var virtualNodes []appmesh.CreateVirtualRouterInput
 	for _, host := range allHosts {
-		virtualRouter := appmesh.CreateVirtualRouterInput{
-			MeshName:          aws.String(meshName),
-			VirtualRouterName: aws.String(host),
+		virtualNode := appmesh.CreateVirtualRouterInput{
+			MeshName: aws.String(meshName),
 			Spec: &appmesh.VirtualRouterSpec{
 				ServiceNames: aws.StringSlice([]string{host}),
 			},
 		}
-		virtualRouters = append(virtualRouters, virtualRouter)
+		virtualNodes = append(virtualNodes, virtualNode)
 	}
-	sort.SliceStable(virtualRouters, func(i, j int) bool {
-		return virtualRouters[i].String() < virtualRouters[j].String()
+	sort.SliceStable(virtualNodes, func(i, j int) bool {
+		return virtualNodes[i].String() < virtualNodes[j].String()
 	})
-	return virtualRouters, nil
+	return virtualNodes, nil
+}
+
+func routesFromRules(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateRouteInput, error) {
+	// todo: using selector, figure out which source upstreams and which destinations need
+	// the route. we are only going to support traffic shifting for now
+	var allHosts []string
+	for _, us := range upstreams {
+		host, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		allHosts = append(allHosts, host)
+	}
+
+	var routes []appmesh.CreateRouteInput
+
+	for _, rule := range routingRules {
+		if rule.TrafficShifting == nil {
+			// only traffic shifting is currently supported on AppMesh
+			continue
+		}
+
+		// NOTE: sources get ignored. AppMesh applies rules to all sources in the mesh
+		var destinationHosts []string
+
+		for _, usRef := range rule.Destinations {
+			us, err := upstreams.Find(usRef.Strings())
+			if err != nil {
+				return nil, errors.Wrapf(err, "cannot find destination for routing rule")
+			}
+			host, err := utils.GetHostForUpstream(us)
+			if err != nil {
+				return nil, errors.Wrapf(err, "getting host for upstream")
+			}
+			var alreadyAdded bool
+			for _, added := range destinationHosts {
+				if added == host {
+					alreadyAdded = true
+					break
+				}
+			}
+			if !alreadyAdded {
+				destinationHosts = append(destinationHosts, host)
+			}
+		}
+
+		var targets []*appmesh.WeightedTarget
+		// NOTE: only 3 destinations are allowed at time of release
+		for _, dest := range rule.TrafficShifting.Destinations {
+			us, err := upstreams.Find(dest.Upstream.Strings())
+			if err != nil {
+				return nil, errors.Wrapf(err, "cannot find destination for routing rule")
+			}
+			destinationHost, err := utils.GetHostForUpstream(us)
+			if err != nil {
+				return nil, errors.Wrapf(err, "getting host for destination upstream")
+			}
+			targets = append(targets, &appmesh.WeightedTarget{
+				VirtualNode: aws.String(destinationHost),
+				Weight:      aws.Int64(int64(dest.Weight)),
+			})
+		}
+
+		prefix := "/"
+		if len(rule.RequestMatchers) > 0 {
+			// TODO: when appmesh supports multiple matchers, we should too
+			// for now, just pick the first one
+			match := rule.RequestMatchers[0]
+			// TODO: when appmesh supports more types of path matching, we should too
+			if prefixSpecifier, ok := match.PathSpecifier.(*gloov1.Matcher_Prefix); ok {
+				prefix = prefixSpecifier.Prefix
+			}
+		}
+		for _, host := range destinationHosts {
+			route := appmesh.CreateRouteInput{
+				MeshName:          aws.String(meshName),
+				RouteName:         aws.String(host + "-" + rule.Metadata.Namespace + "-" + rule.Metadata.Name),
+				VirtualRouterName: aws.String(host),
+				Spec: &appmesh.RouteSpec{
+					HttpRoute: &appmesh.HttpRoute{
+						Match: &appmesh.HttpRouteMatch{
+							Prefix: aws.String(prefix),
+						},
+						Action: &appmesh.HttpRouteAction{
+							WeightedTargets: targets,
+						},
+					},
+				},
+			}
+			routes = append(routes, route)
+		}
+	}
+
+	sort.SliceStable(routes, func(i, j int) bool {
+		return routes[i].String() < routes[j].String()
+	})
+	return routes, nil
 }
 
 func (s *MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtualNodes []appmesh.CreateVirtualNodeInput) error {
