@@ -3,6 +3,8 @@ package create
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws/credentials"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
@@ -88,6 +90,23 @@ func gatherAwsSecretArgs(args []string, opts *options.Options) error {
 			return fmt.Errorf("input error")
 		}
 		sOpts.Namespace = namespace
+	}
+
+	if sOpts.SecretKey == "" && sOpts.AccessKey == "" {
+		tryDefault, err := common.ChooseBool("Use default credentials?")
+		if err != nil {
+			return fmt.Errorf("input error")
+		}
+		if tryDefault {
+			creds := credentials.NewSharedCredentials("", "")
+			val, err := creds.Get()
+			if err == nil {
+				sOpts.SecretKey = val.SecretAccessKey
+				sOpts.AccessKey = val.AccessKeyID
+			} else {
+				fmt.Printf("Error getting default credentials: %v.\n", err)
+			}
+		}
 	}
 
 	if sOpts.SecretKey == "" {
