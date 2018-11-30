@@ -6,6 +6,9 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/solo-io/solo-kit/test/helpers"
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/solo-io/supergloo/pkg/secret"
 
 	"github.com/solo-io/supergloo/pkg/install/istio"
@@ -36,22 +39,20 @@ End to end tests for istio install and mesh syncing.
 */
 var _ = Describe("Istio Install and Encryption E2E", func() {
 	defer GinkgoRecover()
-
-	installNamespace := "istio-system"
-	superglooNamespace := "supergloo-system" // this needs to be made before running tests
-	meshName := "test-istio-mesh"
-	secretName := "test-tls-secret"
+	var installNamespace string
+	var meshName string
+	var secretName string
 	kubeCache := kube.NewKubeCache()
 	path := os.Getenv("HELM_CHART_PATH")
 	if path == "" {
-		path = "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz"
+		path = constants.IstioInstallPath
 	}
 
 	getSnapshot := func(mtls bool, install bool, secretRef *core.ResourceRef, secret *istiov1.IstioCacertsSecret) *v1.InstallSnapshot {
 		secrets := istiosecret.IstiocertsByNamespace{}
 		if secret != nil {
 			secrets = istiosecret.IstiocertsByNamespace{
-				superglooNamespace: istiosecret.IstioCacertsSecretList{
+				constants.SuperglooNamespace: istiosecret.IstioCacertsSecretList{
 					secret,
 				},
 			}
@@ -61,7 +62,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 				installNamespace: v1.InstallList{
 					&v1.Install{
 						Metadata: core.Metadata{
-							Namespace: superglooNamespace,
+							Namespace: constants.SuperglooNamespace,
 							Name:      meshName,
 						},
 						MeshType: &v1.Install_Istio{
@@ -91,14 +92,14 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		secrets := istiosecret.IstiocertsByNamespace{}
 		if secret != nil {
 			secrets = istiosecret.IstiocertsByNamespace{
-				superglooNamespace: istiosecret.IstioCacertsSecretList{
+				constants.SuperglooNamespace: istiosecret.IstioCacertsSecretList{
 					secret,
 				},
 			}
 		}
 		return &v1.TranslatorSnapshot{
 			Meshes: v1.MeshesByNamespace{
-				superglooNamespace: v1.MeshList{
+				constants.SuperglooNamespace: v1.MeshList{
 					mesh,
 				},
 			},
@@ -113,6 +114,10 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var installSyncer install.InstallSyncer
 
 	BeforeEach(func() {
+		randStr := helpers.RandString(8)
+		installNamespace = "istio-install-test-" + randStr
+		meshName = "istio-mesh-test-" + randStr
+		secretName = "istio-secret-test-" + randStr
 		util.TryCreateNamespace("supergloo-system")
 		util.TryCreateNamespace("gloo-system")
 		meshClient = util.GetMeshClient(kubeCache)
@@ -129,10 +134,10 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 	AfterEach(func() {
 		if meshClient != nil {
-			meshClient.Delete(superglooNamespace, meshName, clients.DeleteOpts{})
+			meshClient.Delete(constants.SuperglooNamespace, meshName, clients.DeleteOpts{})
 		}
 		if secretClient != nil {
-			secretClient.Delete(superglooNamespace, secretName, clients.DeleteOpts{})
+			secretClient.Delete(constants.SuperglooNamespace, secretName, clients.DeleteOpts{})
 			secretClient.Delete(installNamespace, secret.CustomRootCertificateSecretName, clients.DeleteOpts{})
 		}
 		util.TerminateNamespaceBlocking("supergloo-system")
@@ -147,7 +152,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 	Describe("istio + encryption", func() {
 		It("Can install istio with mtls enabled and custom root cert", func() {
-			secret, ref := util.CreateTestRsaSecret(superglooNamespace, secretName)
+			secret, ref := util.CreateTestRsaSecret(constants.SuperglooNamespace, secretName)
 			snap := getSnapshot(true, true, ref, secret)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
@@ -160,14 +165,14 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		})
 
 		It("Can install istio with mtls enabled and deploy custom cert later", func() {
-			secret, ref := util.CreateTestRsaSecret(superglooNamespace, secretName)
+			secret, ref := util.CreateTestRsaSecret(constants.SuperglooNamespace, secretName)
 			snap := getSnapshot(true, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
 
-			mesh, err := meshClient.Read(superglooNamespace, meshName, clients.ReadOpts{})
+			mesh, err := meshClient.Read(constants.SuperglooNamespace, meshName, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			mesh.Encryption.Secret = ref
 
@@ -193,7 +198,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			util.WaitForAvailablePods(installNamespace)
-			_, err = meshClient.Read(superglooNamespace, meshName, clients.ReadOpts{})
+			_, err = meshClient.Read(constants.SuperglooNamespace, meshName, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			// make sure default mesh policy and destination rule are created, meaning overrides for security were applied
@@ -271,7 +276,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			deployBookInfo()
 			util.WaitForAvailablePodsWithTimeout(bookinfons, "500s")
 
-			mesh, err := meshClient.Read(superglooNamespace, meshName, clients.ReadOpts{})
+			mesh, err := meshClient.Read(constants.SuperglooNamespace, meshName, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			mesh.Policy = &v1.Policy{
