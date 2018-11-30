@@ -7,9 +7,10 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 
 	"github.com/mitchellh/hashstructure"
 
@@ -56,13 +57,13 @@ func NewAwsClientFromSecret(awsSecret *gloov1.Secret_Aws, region string) (*appme
 // todo: replace with interface
 type AppMeshClient = *appmesh.AppMesh
 
-type MeshRoutingSyncer struct {
+type AppMeshSyncer struct {
 	lock           sync.Mutex
 	activeSessions map[uint64]AppMeshClient
 }
 
-func NewMeshRoutingSyncer() *MeshRoutingSyncer {
-	return &MeshRoutingSyncer{
+func NewMeshRoutingSyncer() *AppMeshSyncer {
+	return &AppMeshSyncer{
 		lock:           sync.Mutex{},
 		activeSessions: make(map[uint64]AppMeshClient),
 	}
@@ -79,7 +80,7 @@ func hashCredentials(awsSecret *gloov1.Secret_Aws, region string) uint64 {
 	return hash
 }
 
-func (s *MeshRoutingSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (AppMeshClient, error) {
+func (s *AppMeshSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (AppMeshClient, error) {
 	secret, err := secrets.Find(appMesh.AwsCredentials.Strings())
 	if err != nil {
 		return nil, errors.Wrapf(err, "finding aws credentials for mesh")
@@ -118,7 +119,7 @@ func (s *MeshRoutingSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov
 	return appMeshClient, nil
 }
 
-func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+func (s *AppMeshSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-routing-syncer")
 	logger := contextutils.LoggerFrom(ctx)
 	meshes := snap.Meshes.List()
@@ -161,7 +162,7 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	//return s.writeIstioCrds(ctx, destinationRules, virtualServices)
 }
 
-func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+func (s *AppMeshSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
 	appMesh, ok := mesh.MeshType.(*v1.Mesh_AppMesh)
 	if !ok {
 		return nil
@@ -188,18 +189,108 @@ func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) err
 		return errors.Wrapf(err, "creating virtual routers from upstreams")
 	}
 
-	if err := s.reconcileMesh(desiredMesh, virtualNodes, virtualRouters, routes); err != nil {
+	secrets := snap.Secrets.List()
+	client, err := s.NewOrCachedClient(appMesh.AppMesh, secrets)
+	if err != nil {
+		return errors.Wrapf(err, "creating new AWS AppMesh session")
+	}
+
+	if err := resyncState(client, desiredMesh, virtualNodes, virtualRouters, routes); err != nil {
 		return errors.Wrapf(err, "reconciling desired state")
 	}
 	return nil
 }
 
-func (s *MeshRoutingSyncer) reconcileMesh(mesh appmesh.CreateMeshInput,
+func resyncState(client AppMeshClient,
+	mesh appmesh.CreateMeshInput,
 	vNodes []appmesh.CreateVirtualNodeInput,
 	vRouters []appmesh.CreateVirtualRouterInput,
 	routes []appmesh.CreateRouteInput) error {
-	// todo: look up the right client
-	panic("implement me")
+	if err := reconcileMesh(client, mesh); err != nil {
+		return errors.Wrapf(err, "reconciling mesh")
+	}
+
+	return nil
+}
+
+func reconcileMesh(client AppMeshClient, mesh appmesh.CreateMeshInput) error {
+	_, err := client.DescribeMesh(&appmesh.DescribeMeshInput{
+		MeshName: mesh.MeshName,
+	})
+	if err == nil {
+		return nil
+	}
+	if aerr, ok := err.(awserr.Error); ok {
+		switch aerr.Code() {
+		case appmesh.ErrCodeNotFoundException:
+			_, err := client.CreateMesh(&mesh)
+			return err
+		default:
+		}
+	}
+	return errors.Wrapf(err, "failed to check existence of mesh %v", *mesh.MeshName)
+}
+
+func reconcileVirtualNodes(client AppMeshClient, mesh appmesh.CreateMeshInput, vNodes []appmesh.CreateVirtualNodeInput) error {
+	existingVirtualNodes, err := client.ListVirtualNodes(&appmesh.ListVirtualNodesInput{
+		MeshName: mesh.MeshName,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to list existing virtual nodes for mesh %v", *mesh.MeshName)
+	}
+	for _, desiredVNode := range vNodes {
+		if err := reconcileVirtualNode(client, desiredVNode, existingVirtualNodes.VirtualNodes); err != nil {
+			return errors.Wrapf(err, "reconciling virtual node %v", *desiredVNode.VirtualNodeName)
+		}
+	}
+	// delete unused
+	for _, original := range existingVirtualNodes.VirtualNodes {
+		var unused bool
+		for _, desired := range vNodes {
+
+		}
+	}
+	if aerr, ok := err.(awserr.Error); ok {
+		switch aerr.Code() {
+		case appmesh.ErrCodeNotFoundException:
+			_, err := client.CreateMesh(&mesh)
+			return err
+		default:
+		}
+	}
+
+}
+
+func reconcileVirtualNode(client AppMeshClient, desiredVNode appmesh.CreateVirtualNodeInput, existingVirtualNodes []*appmesh.VirtualNodeRef) error {
+	for _, node := range existingVirtualNodes {
+		if aws.StringValue(node.VirtualNodeName) == *desiredVNode.VirtualNodeName {
+			// update
+			originalVNode, err := client.DescribeVirtualNode(&appmesh.DescribeVirtualNodeInput{
+				MeshName:        desiredVNode.MeshName,
+				VirtualNodeName: desiredVNode.VirtualNodeName,
+			})
+			if err != nil {
+				return errors.Wrapf(err, "retrieving original node for update")
+			}
+			// TODO: find a better way of comparing AWS structs
+			if originalVNode.VirtualNode.Spec.String() == desiredVNode.Spec.String() {
+				// spec already matches, nothing to do
+				return nil
+			}
+			if _, err := client.UpdateVirtualNode(&appmesh.UpdateVirtualNodeInput{
+				MeshName:        desiredVNode.MeshName,
+				VirtualNodeName: desiredVNode.VirtualNodeName,
+				Spec:            desiredVNode.Spec,
+			}); err != nil {
+				return errors.Wrapf(err, "updating virtual node")
+			}
+		}
+	}
+	if _, err := client.CreateVirtualNode(&desiredVNode); err != nil {
+		return errors.Wrapf(err, "creating virtual node")
+	}
+
+	return nil
 }
 
 func virtualNodesFromUpstreams(meshName string, upstreams gloov1.UpstreamList) ([]appmesh.CreateVirtualNodeInput, error) {
@@ -375,20 +466,27 @@ func routesFromRules(meshName string, upstreams gloov1.UpstreamList, routingRule
 	return routes, nil
 }
 
-func (s *MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtualNodes []appmesh.CreateVirtualNodeInput) error {
-	existingMeshes, err := c.ListMeshes(nil)
-	if err != nil {
-		return errors.Wrapf(err, "getting existing meshes")
+func appMeshExampleMeshAndSecret() (*v1.Mesh, *gloov1.Secret) {
+	secret := &gloov1.Secret{
+		Metadata: core.Metadata{Name: "my-aws-credentials", Namespace: "my-namespace"},
+		Kind: &gloov1.Secret_Aws{
+			Aws: &gloov1.AwsSecret{
+				// these can be read in from ~/.aws/credentials by default (if user does not provide)
+				// see https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html for more details
+				AccessKey: "MY-ACCESS-KEY",
+				SecretKey: "MY-SECRET-KEY",
+			},
+		},
 	}
-	log.Printf("%v", existingMeshes)
-	return nil
-}
-
-func (s *MeshRoutingSyncer) Try(c AppMeshClient) error {
-	existingMeshes, err := c.ListMeshes(nil)
-	if err != nil {
-		return errors.Wrapf(err, "getting existing meshes")
+	ref := secret.Metadata.Ref()
+	mesh := &v1.Mesh{
+		Metadata: core.Metadata{Name: "my-mesh", Namespace: "my-namespace"},
+		MeshType: &v1.Mesh_AppMesh{
+			AppMesh: &v1.AppMesh{
+				AwsRegion:      "us-east-1",
+				AwsCredentials: &ref,
+			},
+		},
 	}
-	log.Printf("%v", existingMeshes)
-	return nil
+	return mesh, secret
 }
