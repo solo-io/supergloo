@@ -2,8 +2,9 @@ package istio
 
 import (
 	"context"
-	"fmt"
 	"strings"
+
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
@@ -166,8 +167,8 @@ func destinationRulesForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, 
 		mtlsEnabled := mesh.Encryption != nil && mesh.Encryption.TlsEnabled
 		labelsByHost := make(map[string][]map[string]string)
 		for _, us := range upstreams {
-			labels := getLabelsForUpstream(us)
-			host, err := getHostForUpstream(us)
+			labels := utils.GetLabelsForUpstream(us)
+			host, err := utils.GetHostForUpstream(us)
 			if err != nil {
 				return nil, errors.Wrapf(err, "getting host for upstream")
 			}
@@ -229,7 +230,7 @@ func virtualServicesForRules(rules v1.RoutingRuleList, meshes v1.MeshList, upstr
 		}
 	addUniqueHosts:
 		for _, us := range destUpstreams {
-			host, err := getHostForUpstream(us)
+			host, err := utils.GetHostForUpstream(us)
 			if err != nil {
 				return nil, errors.Wrapf(err, "getting host for upstream")
 			}
@@ -449,7 +450,7 @@ func createIstioMatcher(rule *v1.RoutingRule, upstreams gloov1.UpstreamList) ([]
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid source %v", src)
 		}
-		labels := getLabelsForUpstream(upstream)
+		labels := utils.GetLabelsForUpstream(upstream)
 		sourceLabelSets = append(sourceLabelSets, labels)
 	}
 
@@ -559,13 +560,13 @@ func createLoadBalancedRoute(destinations []*v1.WeightedDestination, upstreams g
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid destination %v", dest)
 		}
-		host, err := getHostForUpstream(upstream)
+		host, err := utils.GetHostForUpstream(upstream)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get host for upstream")
 		}
-		labels := getLabelsForUpstream(upstream)
+		labels := utils.GetLabelsForUpstream(upstream)
 		var port *v1alpha3.PortSelector
-		intPort, err := getPortForUpstream(upstream)
+		intPort, err := utils.GetPortForUpstream(upstream)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting port for upstream")
 		}
@@ -592,8 +593,8 @@ func addHttpFeatures(rule *v1.RoutingRule, http *v1alpha3.HTTPRoute, upstreams g
 	http.Timeout = rule.Timeout
 	if rule.Mirror != nil {
 		us, err := upstreams.Find(rule.Mirror.Upstream.Strings())
-		labels := getLabelsForUpstream(us)
-		host, err := getHostForUpstream(us)
+		labels := utils.GetLabelsForUpstream(us)
+		host, err := utils.GetHostForUpstream(us)
 		if err != nil {
 			return errors.Wrapf(err, "getting host for upstream")
 		}
@@ -665,63 +666,4 @@ func preserveVirtualService(original, desired *v1alpha3.VirtualService) (bool, e
 	original.Metadata = desired.Metadata
 	original.Status = desired.Status
 	return !proto.Equal(original, desired), nil
-}
-
-func getLabelsForUpstream(us *gloov1.Upstream) map[string]string {
-	switch specType := us.UpstreamSpec.UpstreamType.(type) {
-	case *gloov1.UpstreamSpec_Kube:
-		return specType.Kube.Selector
-	}
-	// default to using the labels from the upstream
-	return us.Metadata.Labels
-}
-
-func getHostForUpstream(us *gloov1.Upstream) (string, error) {
-	hosts, err := getHostsForUpstream(us)
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to get hosts for upstream")
-	}
-	if len(hosts) < 1 {
-		return "", errors.Errorf("failed to get hosts for upstream")
-	}
-	return hosts[0], nil
-}
-
-func getHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
-	switch specType := us.UpstreamSpec.UpstreamType.(type) {
-	case *gloov1.UpstreamSpec_Aws:
-		return nil, errors.Errorf("aws not implemented")
-	case *gloov1.UpstreamSpec_Azure:
-		return nil, errors.Errorf("azure not implemented")
-	case *gloov1.UpstreamSpec_Kube:
-		return []string{
-			fmt.Sprintf("%v.%v.svc.cluster.local", specType.Kube.ServiceName, specType.Kube.ServiceNamespace),
-			specType.Kube.ServiceName,
-		}, nil
-	case *gloov1.UpstreamSpec_Static:
-		var hosts []string
-		for _, h := range specType.Static.Hosts {
-			hosts = append(hosts, h.Addr)
-		}
-		return hosts, nil
-	}
-	return nil, errors.Errorf("unsupported upstream type %v", us)
-}
-
-func getPortForUpstream(us *gloov1.Upstream) (uint32, error) {
-	switch specType := us.UpstreamSpec.UpstreamType.(type) {
-	case *gloov1.UpstreamSpec_Aws:
-		return 0, errors.Errorf("aws not implemented")
-	case *gloov1.UpstreamSpec_Azure:
-		return 0, errors.Errorf("azure not implemented")
-	case *gloov1.UpstreamSpec_Kube:
-		return specType.Kube.ServicePort, nil
-	case *gloov1.UpstreamSpec_Static:
-		// TODO(ilackarms): handle cases where port changes between hosts
-		for _, h := range specType.Static.Hosts {
-			return h.Port, nil
-		}
-		return 0, errors.Errorf("no hosts found on static upstream")
-	}
-	return 0, errors.Errorf("unknown upstream type")
 }
