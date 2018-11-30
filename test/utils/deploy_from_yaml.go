@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func DeployFromYamlWithInject(cfg *rest.Config, namespace, yamlManifest string) error {
+func DeployFromYamlWithIstioInject(cfg *rest.Config, namespace, yamlManifest string) error {
 	injected, err := IstioInject(namespace, yamlManifest)
 	if err != nil {
 		return err
