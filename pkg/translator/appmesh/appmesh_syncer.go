@@ -2,9 +2,13 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"sort"
 	"sync"
 	"unicode/utf8"
+
+	"github.com/solo-io/supergloo/pkg/translator/utils"
+
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 
 	"github.com/mitchellh/hashstructure"
 
@@ -125,20 +129,10 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 
-	var desiredMeshes []*appmesh.CreateMeshInput
 	for _, mesh := range snap.Meshes.List() {
-		appMesh, ok := mesh.MeshType.(*v1.Mesh_AppMesh)
-		if !ok {
-			continue
+		if err := s.sync(mesh, snap); err != nil {
+			return errors.Wrapf(err, "syncing mesh %v", mesh.Metadata.Ref())
 		}
-		if appMesh.AppMesh == nil {
-			return errors.Errorf("%v missing configuration for AppMesh", mesh.Metadata.Ref())
-		}
-
-		desiredMesh := &appmesh.CreateMeshInput{
-			MeshName: aws.String(mesh.Metadata.Name),
-		}
-		desiredMeshes = append(desiredMeshes, desiredMesh)
 	}
 
 	return nil
@@ -166,11 +160,119 @@ func (s *MeshRoutingSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapsho
 	//return s.writeIstioCrds(ctx, destinationRules, virtualServices)
 }
 
-//func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
-//
-//}
+func (s *MeshRoutingSyncer) sync(mesh *v1.Mesh, snap *v1.TranslatorSnapshot) error {
+	appMesh, ok := mesh.MeshType.(*v1.Mesh_AppMesh)
+	if !ok {
+		return nil
+	}
+	if appMesh.AppMesh == nil {
+		return errors.Errorf("%v missing configuration for AppMesh", mesh.Metadata.Ref())
+	}
+	desiredMesh := &appmesh.CreateMeshInput{
+		MeshName: aws.String(mesh.Metadata.Name),
+	}
+	upstreams := snap.Upstreams.List()
+	virtualNodes, err := virtualNodesFromUpstreams(upstreams)
+	if err != nil {
+		return errors.Wrapf(err, "creating virtual nodes from upstreams")
+	}
+	virtualRouters, err := virtualRoutersFromUpstreams(upstreams)
+	if err != nil {
+		return errors.Wrapf(err, "creating virtual routers from upstreams")
+	}
+	//routes := routesForRules()
 
-func (s* MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtualNodes []appmesh.CreateVirtualNodeInput) error {
+	// todo: generate desired virtual node for every service
+	// go through route rules, only focus on traffic shifting, otherwise notihng to do?
+	// * need to investigate using testrunner pod with the yaml
+}
+
+func (s *MeshRoutingSyncer) reconcileMesh(mesh appmesh.CreateMeshInput,
+	vNodes []appmesh.CreateVirtualNodeInput,
+	vRouters []appmesh.CreateVirtualRouterInput,
+	vRoutes []appmesh.CreateRouteInput) error {
+	// todo: look up the right client
+
+}
+
+func virtualNodesFromUpstreams(meshName string, list gloov1.UpstreamList) ([]appmesh.CreateVirtualNodeInput, error) {
+	portsByHost := make(map[string][]uint32)
+	// TODO: filter hosts by policy, i.e. only what the user wants
+	var allHosts []string
+	for _, us := range list {
+		host, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		port, err := utils.GetPortForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting port for upstream")
+		}
+		portsByHost[host] = append(portsByHost[host], port)
+		allHosts = append(allHosts, host)
+	}
+
+	var virtualNodes []appmesh.CreateVirtualNodeInput
+	for host, ports := range portsByHost {
+		var listeners []*appmesh.Listener
+		for _, port := range ports {
+			listener := &appmesh.Listener{
+				PortMapping: &appmesh.PortMapping{
+					// TODO: support more than just http here
+					Protocol: aws.String("http"),
+					Port:     aws.Int64(int64(port)),
+				},
+			}
+			listeners = append(listeners, listener)
+		}
+		virtualNode := appmesh.CreateVirtualNodeInput{
+			MeshName: aws.String(meshName),
+			Spec: &appmesh.VirtualNodeSpec{
+				Backends:  aws.StringSlice(allHosts),
+				Listeners: listeners,
+				ServiceDiscovery: &appmesh.ServiceDiscovery{
+					Dns: &appmesh.DnsServiceDiscovery{
+						ServiceName: aws.String(host),
+					},
+				},
+			},
+		}
+		virtualNodes = append(virtualNodes, virtualNode)
+	}
+	sort.SliceStable(virtualNodes, func(i, j int) bool {
+		return virtualNodes[i].String() < virtualNodes[j].String()
+	})
+	return virtualNodes, nil
+}
+
+func virtualRoutersFromUpstreams(meshName string, list gloov1.UpstreamList) ([]appmesh.CreateVirtualRouterInput, error) {
+	var allHosts []string
+	for _, us := range list {
+		host, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		allHosts = append(allHosts, host)
+	}
+
+	var virtualRouters []appmesh.CreateVirtualRouterInput
+	for _, host := range allHosts {
+		virtualRouter := appmesh.CreateVirtualRouterInput{
+			MeshName:          aws.String(meshName),
+			VirtualRouterName: aws.String(host),
+			Spec: &appmesh.VirtualRouterSpec{
+				ServiceNames: aws.StringSlice([]string{host}),
+			},
+		}
+		virtualRouters = append(virtualRouters, virtualRouter)
+	}
+	sort.SliceStable(virtualRouters, func(i, j int) bool {
+		return virtualRouters[i].String() < virtualRouters[j].String()
+	})
+	return virtualRouters, nil
+}
+
+func (s *MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtualNodes []appmesh.CreateVirtualNodeInput) error {
 	existingMeshes, err := c.ListMeshes(nil)
 	if err != nil {
 		return errors.Wrapf(err, "getting existing meshes")
@@ -179,7 +281,7 @@ func (s* MeshRoutingSyncer) ReconcileVirtualNodes(c AppMeshClient, desiredVirtua
 	return nil
 }
 
-func (s* MeshRoutingSyncer) Try(c AppMeshClient) error {
+func (s *MeshRoutingSyncer) Try(c AppMeshClient) error {
 	existingMeshes, err := c.ListMeshes(nil)
 	if err != nil {
 		return errors.Wrapf(err, "getting existing meshes")
