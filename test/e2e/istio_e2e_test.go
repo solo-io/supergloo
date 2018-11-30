@@ -211,7 +211,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		})
 
 		FIt("Can install istio with mtls disabled and toggle it on", func() {
-			snap := getSnapshot(true, true, nil, nil)
+			snap := getSnapshot(false, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
@@ -220,6 +220,8 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			err = installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
+
+			// TODO: currently no check that mesh policy actually changed from mtls {mode: PERMISSIVE} to mtls: {}
 		})
 	})
 
