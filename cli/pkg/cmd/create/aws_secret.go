@@ -41,10 +41,7 @@ func AwsSecretCmd(opts *options.Options) *cobra.Command {
 	flags := cmd.Flags()
 
 	flags.StringVar(&sOpts.AccessKey, "access-key", "", "aws access key")
-	cmd.MarkFlagRequired("access-key")
-
 	flags.StringVar(&sOpts.SecretKey, "secret-key", "", "aws secret key")
-	cmd.MarkFlagRequired("secret-key")
 
 	flags.StringVar(&sOpts.Namespace, "secretnamespace", "", "namespace in which to store the secret")
 
@@ -57,6 +54,15 @@ func validateAwsSecretArgs(opts *options.Options) error {
 	if opts.Top.Static && sOpts.Namespace == "" {
 		return fmt.Errorf("please provide a namespace for the secret")
 	}
+
+	if opts.Top.Static && sOpts.AccessKey == "" {
+		return fmt.Errorf("please provide an AWS access key")
+	}
+
+	if opts.Top.Static && sOpts.SecretKey == "" {
+		return fmt.Errorf("please provide an AWS secret key")
+	}
+
 	if sOpts.Namespace != "" {
 		if !common.Contains(opts.Cache.Namespaces, sOpts.Namespace) {
 			return fmt.Errorf("please provide a valid namespace for the secret. %v does not exist", sOpts.Namespace)
@@ -82,6 +88,22 @@ func gatherAwsSecretArgs(args []string, opts *options.Options) error {
 			return fmt.Errorf("input error")
 		}
 		sOpts.Namespace = namespace
+	}
+
+	if sOpts.SecretKey == "" {
+		secretKey, err := common.GetString("AWS Secret Key")
+		if err != nil {
+			return fmt.Errorf("input error")
+		}
+		sOpts.SecretKey = secretKey
+	}
+
+	if sOpts.AccessKey == "" {
+		accessKey, err := common.GetString("AWS Access Key")
+		if err != nil {
+			return fmt.Errorf("input error")
+		}
+		sOpts.AccessKey = accessKey
 	}
 	return nil
 }
