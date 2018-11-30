@@ -204,6 +204,18 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 			// TODO: deploy sample app and do more checking
 		})
+
+		FIt("Can install istio with mtls disabled and toggle it on", func() {
+			snap := getSnapshot(true, true, nil, nil)
+			err := installSyncer.Sync(context.TODO(), snap)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
+
+			snap = getSnapshot(true, true, nil, nil)
+			err = installSyncer.Sync(context.TODO(), snap)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
+		})
 	})
 
 	Describe("istio + policy", func() {

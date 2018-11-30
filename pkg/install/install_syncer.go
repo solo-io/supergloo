@@ -94,6 +94,10 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 			return err
 		}
 		return syncer.MeshClient.Delete(mesh.Metadata.Namespace, mesh.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+	case meshErr == nil && installEnabled:
+		if err := syncer.updateHelmRelease(ctx, install.ChartLocator, mesh.Metadata.Name, meshInstaller.GetOverridesYaml(install)); err != nil {
+			return err
+		}
 	case meshErr != nil && installEnabled:
 		releaseName, err := syncer.installHelmRelease(ctx, install, meshInstaller)
 		if err != nil {
@@ -132,7 +136,7 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 
 	logger.Infof("helm install")
 	// 4. Install mesh via helm chart
-	release, err := syncer.HelmInstall(ctx, install.ChartLocator, install.Metadata.Name, installNamespace, installer.GetOverridesYaml(install))
+	release, err := syncer.helmInstall(ctx, install.ChartLocator, install.Metadata.Name, installNamespace, installer.GetOverridesYaml(install))
 	if err != nil {
 		return "", errors.Wrap(err, "installing helm chart")
 	}
@@ -222,7 +226,7 @@ func getCrb(crbName string, namespaceName string) *kuberbac.ClusterRoleBinding {
 	}
 }
 
-func (syncer *InstallSyncer) HelmInstall(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
+func (syncer *InstallSyncer) helmInstall(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
 	if chartLocator.GetChartPath() != nil {
 		return helmInstallChart(ctx, chartLocator.GetChartPath().Path, releaseName, installNamespace, overridesYaml)
 	}
@@ -250,6 +254,33 @@ func helmInstallChart(ctx context.Context, chartPath string, releaseName string,
 		return nil, err
 	}
 	return response.Release, nil
+}
+
+func (syncer *InstallSyncer) updateHelmRelease(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, overridesYaml string) error {
+	if chartLocator.GetChartPath() != nil {
+		return helmUpdateChart(ctx, chartLocator.GetChartPath().Path, releaseName, overridesYaml)
+	}
+	return errors.Errorf("Unsupported kind of chart locator")
+}
+
+func helmUpdateChart(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error {
+	// helm install
+	helmClient, err := helm.GetHelmClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	installPath, err := helm.LocateChartRepoReleaseDefault(ctx, "", chartPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = helmClient.UpdateRelease(
+		releaseName,
+		installPath,
+		helmlib.UpdateValueOverrides([]byte(overridesYaml)))
+	helm.Teardown()
+	return err
 }
 
 func (syncer *InstallSyncer) createMesh(ctx context.Context, install *v1.Install, releaseName string) error {
