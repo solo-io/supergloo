@@ -2,9 +2,15 @@ package e2e
 
 import (
 	"context"
+	"fmt"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/pkg/constants"
@@ -112,12 +118,16 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 	var secretClient istiosecret.IstioCacertsSecretClient
 	var installSyncer install.InstallSyncer
+	var bookinfoNamespace string
+	logger := contextutils.LoggerFrom(context.TODO())
 
 	BeforeEach(func() {
 		randStr := helpers.RandString(8)
-		installNamespace = "istio-install-test-" + randStr
+		//installNamespace = "istio-install-test-" + randStr
+		installNamespace = "istio-system"
 		meshName = "istio-mesh-test-" + randStr
 		secretName = "istio-secret-test-" + randStr
+		bookinfoNamespace = "istio-bookinfo-test-" + randStr
 		util.TryCreateNamespace("supergloo-system")
 		util.TryCreateNamespace("gloo-system")
 		meshClient = util.GetMeshClient(kubeCache)
@@ -146,9 +156,60 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 		util.UninstallHelmRelease(meshName)
 		util.TryDeleteIstioCrds()
-		util.TerminateNamespaceBlocking(installNamespace)
 		util.DeleteCrb(istio.CrbName)
+		util.TerminateNamespaceBlocking(installNamespace) // can't install a new istio due to nodePort conflicts
+		util.TerminateNamespace(bookinfoNamespace)
 	})
+
+	deployBookInfo := func() string {
+		// create namespace for bookinfo
+		ns := &kubecore.Namespace{
+			ObjectMeta: kubemeta.ObjectMeta{
+				Name: bookinfoNamespace,
+				Labels: map[string]string{
+					"istio-injection": "enabled",
+				},
+			},
+		}
+		util.GetKubeClient().CoreV1().Namespaces().Create(ns)
+
+		bookinfo := "https://raw.githubusercontent.com/istio/istio/4c0a001b5e542d43b4c66ae75c1f41f2c1ff183e/samples/bookinfo/platform/kube/bookinfo.yaml"
+		kubectlargs := []string{"apply", "-n", bookinfoNamespace, "-f", bookinfo}
+		cmd := exec.Command("kubectl", kubectlargs...)
+		err := cmd.Run()
+		Expect(err).NotTo(HaveOccurred())
+		gateway := "https://raw.githubusercontent.com/istio/istio/4c0a001b5e542d43b4c66ae75c1f41f2c1ff183e/samples/bookinfo/networking/bookinfo-gateway.yaml"
+		kubectlargs = []string{"apply", "-n", bookinfoNamespace, "-f", gateway}
+		cmd = exec.Command("kubectl", kubectlargs...)
+		err = cmd.Run()
+		Expect(err).NotTo(HaveOccurred())
+
+		return bookinfoNamespace
+	}
+
+	getIngressHost := func() string {
+		addr := util.GetKubeConfig().Host
+		url, err := url.Parse(addr)
+		Expect(err).NotTo(HaveOccurred())
+		host, _, _ := net.SplitHostPort(url.Host)
+		return host
+	}
+
+	getIngressPort := func() int32 {
+		service, err := util.GetKubeClient().CoreV1().Services(installNamespace).Get("istio-ingressgateway", kubemeta.GetOptions{})
+		Expect(err).NotTo(HaveOccurred())
+		for _, port := range service.Spec.Ports {
+			if port.Name == "http2" {
+				return port.NodePort
+			}
+		}
+		Expect(false).To(BeTrue())
+		return 0
+	}
+
+	getGatewayUrl := func() string {
+		return fmt.Sprintf("%s:%d", getIngressHost(), getIngressPort())
+	}
 
 	Describe("istio + encryption", func() {
 		It("Can install istio with mtls enabled and custom root cert", func() {
@@ -211,63 +272,47 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		})
 
 		FIt("Can install istio with mtls disabled and toggle it on", func() {
+			// deploy istio and bookinfo with gateway
 			snap := getSnapshot(false, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
+			deployBookInfo()
+			util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
 
+			// ping bookinfo through the gateway, expecting 200
+			gatewayUrl := getGatewayUrl()
+			statusOk := func() bool {
+				response, err := http.Get(fmt.Sprintf("http://%s/productpage", gatewayUrl))
+				if err != nil {
+					return false
+				}
+				logger.Infof("%d\n", response.StatusCode)
+				return response.StatusCode == http.StatusOK
+			}
+			Eventually(statusOk, "300s", "1s").Should(BeTrue())
+
+			// turn on mtls
 			snap = getSnapshot(true, true, nil, nil)
 			err = installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
 
-			// TODO: currently no check that mesh policy actually changed from mtls {mode: PERMISSIVE} to mtls: {}
+			// ping bookinfo through the gateway, now expecting 503
+			Eventually(statusOk, "300s", "1s").Should(BeFalse())
 		})
 	})
 
 	Describe("istio + policy", func() {
-		var (
-			bookinfons string
-		)
-
-		BeforeEach(func() {
-			// TODO: change this to something random once we fix discovery
-			// to work with labeled namespaces
-			bookinfons = "bookinfo"
-		})
 
 		AfterEach(func() {
 			gexec.TerminateAndWait(2 * time.Second)
-			if bookinfons != "default" {
-				util.TerminateNamespaceBlocking(bookinfons)
-			}
 		})
-
-		deployBookInfo := func() string {
-			// create namespace for bookinfo
-			ns := &kubecore.Namespace{
-				ObjectMeta: kubemeta.ObjectMeta{
-					Name: bookinfons,
-					Labels: map[string]string{
-						"istio-injection": "enabled",
-					},
-				},
-			}
-			util.GetKubeClient().CoreV1().Namespaces().Create(ns)
-
-			bookinfo := "https://raw.githubusercontent.com/istio/istio/4c0a001b5e542d43b4c66ae75c1f41f2c1ff183e/samples/bookinfo/platform/kube/bookinfo.yaml"
-			kubectlargs := []string{"apply", "-n", bookinfons, "-f", bookinfo}
-			cmd := exec.Command("kubectl", kubectlargs...)
-			err := cmd.Run()
-			Expect(err).NotTo(HaveOccurred())
-
-			return bookinfons
-		}
 
 		It("Should install istio and enable policy", func() {
 
 			// start discovery
-			cmd := exec.Command(PathToUds, "-discover", bookinfons)
+			cmd := exec.Command(PathToUds, "-discover", bookinfoNamespace)
 			_, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 
 			snap := getSnapshot(true, true, nil, nil)
@@ -276,7 +321,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			util.WaitForAvailablePodsWithTimeout(installNamespace, "300s")
 
 			deployBookInfo()
-			util.WaitForAvailablePodsWithTimeout(bookinfons, "500s")
+			util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
 
 			mesh, err := meshClient.Read(constants.SuperglooNamespace, meshName, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
