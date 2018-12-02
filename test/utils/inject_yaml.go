@@ -117,14 +117,6 @@ func AwsAppMeshInject(podSpec *v1.PodSpec, meshName, virtualNodeName, awsRegion 
 				Name:  "APPMESH_EGRESS_IGNORED_IP",
 				Value: "169.254.169.254",
 			},
-			{
-				Name:  "APPMESH_START_ENABLED",
-				Value: "mesh/" + meshName + "/virtualNode/" + virtualNodeName,
-			},
-			{
-				Name:  "AWS_REGION",
-				Value: awsRegion,
-			},
 		},
 	})
 }

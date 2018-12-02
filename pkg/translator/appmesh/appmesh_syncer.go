@@ -192,7 +192,7 @@ func (s *AppMeshSyncer) sync(ctx context.Context, mesh *v1.Mesh, snap *v1.Transl
 		return errors.Wrapf(err, "creating virtual routers from upstreams")
 	}
 	routingRules := snap.Routingrules.List()
-	routes, err := routesFromRules(meshName, upstreams, routingRules)
+	routes, err := routesForUpstreams(meshName, upstreams, routingRules)
 	if err != nil {
 		return errors.Wrapf(err, "creating virtual routers from upstreams")
 	}
@@ -240,7 +240,7 @@ func resyncState(client AppMeshClient,
 func getUniqueHosts(upstreams gloov1.UpstreamList) ([]string, error) {
 	var uniqueHosts []string
 	for _, us := range upstreams {
-		host, err := utils.GetHostForUpstream(us)
+		host, err := getSecondHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
@@ -259,11 +259,43 @@ func getUniqueHosts(upstreams gloov1.UpstreamList) ([]string, error) {
 	return uniqueHosts, nil
 }
 
+// Unused currently...
+func getAllHosts(upstreams gloov1.UpstreamList) ([]string, error) {
+	uniqueHostMap := make(map[string]struct{})
+	var uniqueHosts []string
+	for _, us := range upstreams {
+		hosts, err := utils.GetHostsForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		for _, host := range hosts {
+			uniqueHostMap[host] = struct{}{}
+		}
+
+	}
+	for host := range uniqueHostMap {
+		uniqueHosts = append(uniqueHosts, host)
+	}
+	sort.Strings(uniqueHosts)
+	return uniqueHosts, nil
+}
+
+func getSecondHostForUpstream(us *gloov1.Upstream) (string, error) {
+	hosts, err := utils.GetHostsForUpstream(us)
+	if err != nil {
+		return "", err
+	}
+	if len(hosts) != 2 {
+		return "", errors.Errorf("%v invalid length, expected 2", hosts)
+	}
+	return hosts[0], nil
+}
+
 func virtualNodesFromUpstreams(meshName string, upstreams gloov1.UpstreamList) ([]appmesh.CreateVirtualNodeInput, error) {
 	portsByHost := make(map[string][]uint32)
 	// TODO: filter hosts by policy, i.e. only what the user wants
 	for _, us := range upstreams {
-		host, err := utils.GetHostForUpstream(us)
+		host, err := getSecondHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
@@ -323,12 +355,11 @@ func virtualNodesFromUpstreams(meshName string, upstreams gloov1.UpstreamList) (
 }
 
 func virtualRoutersFromUpstreams(meshName string, upstreams gloov1.UpstreamList) ([]appmesh.CreateVirtualRouterInput, error) {
+	var virtualNodes []appmesh.CreateVirtualRouterInput
 	uniqueHosts, err := getUniqueHosts(upstreams)
 	if err != nil {
-		return nil, errors.Wrapf(err, "getting unique hosts")
+		return nil, errors.Wrapf(err, "getting unique hosts for virtual router")
 	}
-
-	var virtualNodes []appmesh.CreateVirtualRouterInput
 	for _, host := range uniqueHosts {
 		virtualNode := appmesh.CreateVirtualRouterInput{
 			MeshName:          aws.String(meshName),
@@ -345,92 +376,167 @@ func virtualRoutersFromUpstreams(meshName string, upstreams gloov1.UpstreamList)
 	return virtualNodes, nil
 }
 
-func routesFromRules(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateRouteInput, error) {
-	// todo: using selector, figure out which source upstreams and which destinations need
-	// the route. we are only going to support traffic shifting for now
-	var routes []appmesh.CreateRouteInput
-
-	for _, rule := range routingRules {
-		if rule.TrafficShifting == nil {
-			// only traffic shifting is currently supported on AppMesh
-			continue
+func rulesByHost(upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) (map[string]v1.RoutingRuleList, error) {
+	rules := make(map[string]v1.RoutingRuleList)
+	for _, us := range upstreams {
+		host, err := getSecondHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
-
-		// NOTE: sources get ignored. AppMesh applies rules to all sources in the mesh
-		var destinationHosts []string
-
+		rules[host] = v1.RoutingRuleList{}
+	}
+	// add copy each rule for the hosts it applies to
+	for _, rule := range routingRules {
 		for _, usRef := range rule.Destinations {
 			us, err := upstreams.Find(usRef.Strings())
 			if err != nil {
 				return nil, errors.Wrapf(err, "cannot find destination for routing rule")
 			}
-			host, err := utils.GetHostForUpstream(us)
+			host, err := getSecondHostForUpstream(us)
 			if err != nil {
 				return nil, errors.Wrapf(err, "getting host for upstream")
 			}
-			var alreadyAdded bool
-			for _, added := range destinationHosts {
-				if added == host {
-					alreadyAdded = true
-					break
+			rules[host] = append(rules[host], rule)
+		}
+	}
+	return rules, nil
+}
+
+func routesForUpstreams(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateRouteInput, error) {
+	// todo: using selector, figure out which source upstreams and which destinations need
+	// the route. we are only going to support traffic shifting for now
+	var routes []appmesh.CreateRouteInput
+
+	hostsAndRules, err := rulesByHost(upstreams, routingRules)
+	if err != nil {
+		return nil, errors.Wrapf(err, "applying routing rules by host")
+	}
+
+	for host, routingRules := range hostsAndRules {
+		var targets []*appmesh.WeightedTarget
+		prefix := "/"
+		// currently only 1 or 0 route rules are supported
+		// aws may increase supported limits in the future
+		if len(routingRules) > 0 {
+			if len(routingRules) > 1 {
+				return nil, errors.Errorf("currently only one routing rule is supporter per host")
+			}
+			rule := routingRules[0]
+
+			if len(rule.RequestMatchers) > 0 {
+				// TODO: when appmesh supports multiple matchers, we should too
+				// for now, just pick the first one
+				match := rule.RequestMatchers[0]
+				// TODO: when appmesh supports more types of path matching, we should too
+				if prefixSpecifier, ok := match.PathSpecifier.(*gloov1.Matcher_Prefix); ok {
+					prefix = prefixSpecifier.Prefix
 				}
 			}
-			if !alreadyAdded {
-				destinationHosts = append(destinationHosts, host)
+			// NOTE: only 3 destinations are allowed at time of release
+			if rule.TrafficShifting != nil && len(rule.TrafficShifting.Destinations) > 0 {
+				for _, dest := range rule.TrafficShifting.Destinations {
+					us, err := upstreams.Find(dest.Upstream.Strings())
+					if err != nil {
+						return nil, errors.Wrapf(err, "cannot find destination for routing rule")
+					}
+					destinationHost, err := getSecondHostForUpstream(us)
+					if err != nil {
+						return nil, errors.Wrapf(err, "getting host for destination upstream")
+					}
+					targets = append(targets, &appmesh.WeightedTarget{
+						VirtualNode: aws.String(nameutils.SanitizeName(destinationHost)),
+						Weight:      aws.Int64(int64(dest.Weight)),
+					})
+				}
 			}
 		}
 
-		var targets []*appmesh.WeightedTarget
-		// NOTE: only 3 destinations are allowed at time of release
-		for _, dest := range rule.TrafficShifting.Destinations {
-			us, err := upstreams.Find(dest.Upstream.Strings())
-			if err != nil {
-				return nil, errors.Wrapf(err, "cannot find destination for routing rule")
-			}
-			destinationHost, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return nil, errors.Wrapf(err, "getting host for destination upstream")
-			}
+		if len(targets) == 0 {
+			// this is a default route, just point it at destination host
 			targets = append(targets, &appmesh.WeightedTarget{
-				VirtualNode: aws.String(nameutils.SanitizeName(destinationHost)),
-				Weight:      aws.Int64(int64(dest.Weight)),
+				VirtualNode: aws.String(nameutils.SanitizeName(host)),
+				Weight:      aws.Int64(int64(100)),
 			})
 		}
-
-		prefix := "/"
-		if len(rule.RequestMatchers) > 0 {
-			// TODO: when appmesh supports multiple matchers, we should too
-			// for now, just pick the first one
-			match := rule.RequestMatchers[0]
-			// TODO: when appmesh supports more types of path matching, we should too
-			if prefixSpecifier, ok := match.PathSpecifier.(*gloov1.Matcher_Prefix); ok {
-				prefix = prefixSpecifier.Prefix
-			}
-		}
-		for _, host := range destinationHosts {
-			route := appmesh.CreateRouteInput{
-				MeshName:          aws.String(meshName),
-				RouteName:         aws.String(nameutils.SanitizeName(host + "-" + rule.Metadata.Namespace + "-" + rule.Metadata.Name)),
-				VirtualRouterName: aws.String(nameutils.SanitizeName(host)),
-				Spec: &appmesh.RouteSpec{
-					HttpRoute: &appmesh.HttpRoute{
-						Match: &appmesh.HttpRouteMatch{
-							Prefix: aws.String(prefix),
-						},
-						Action: &appmesh.HttpRouteAction{
-							WeightedTargets: targets,
-						},
+		route := appmesh.CreateRouteInput{
+			MeshName: aws.String(meshName),
+			// TODO: names will have to be made more unique when route limits increase
+			RouteName:         aws.String(nameutils.SanitizeName(host)),
+			VirtualRouterName: aws.String(nameutils.SanitizeName(host)),
+			Spec: &appmesh.RouteSpec{
+				HttpRoute: &appmesh.HttpRoute{
+					Match: &appmesh.HttpRouteMatch{
+						Prefix: aws.String(prefix),
+					},
+					Action: &appmesh.HttpRouteAction{
+						WeightedTargets: targets,
 					},
 				},
-			}
-			routes = append(routes, route)
+			},
 		}
+		routes = append(routes, route)
 	}
 
 	sort.SliceStable(routes, func(i, j int) bool {
 		return routes[i].String() < routes[j].String()
 	})
 	return routes, nil
+}
+
+func purgeMesh(client AppMeshClient, mesh *appmesh.MeshRef) error {
+	// delete all vrouters & routes for mesh
+	virtualRouters, err := client.ListVirtualRouters(&appmesh.ListVirtualRoutersInput{
+		MeshName: mesh.MeshName,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "listing existing meshes")
+	}
+	for _, vRouter := range virtualRouters.VirtualRouters {
+		routesForRouter, err := client.ListRoutes(&appmesh.ListRoutesInput{
+			MeshName:          vRouter.MeshName,
+			VirtualRouterName: vRouter.VirtualRouterName,
+		})
+		if err != nil {
+			return errors.Wrapf(err, "listing routes for %v", *vRouter.VirtualRouterName)
+		}
+		for _, route := range routesForRouter.Routes {
+			if _, err := client.DeleteRoute(&appmesh.DeleteRouteInput{
+				MeshName:          vRouter.MeshName,
+				VirtualRouterName: vRouter.VirtualRouterName,
+				RouteName:         route.RouteName,
+			}); err != nil {
+				return errors.Wrapf(err, "deleting route %v for %v", *route.RouteName, *vRouter.VirtualRouterName)
+			}
+		}
+		if _, err := client.DeleteVirtualRouter(&appmesh.DeleteVirtualRouterInput{
+			MeshName:          vRouter.MeshName,
+			VirtualRouterName: vRouter.VirtualRouterName,
+		}); err != nil {
+			return errors.Wrapf(err, "deleting stale resource %v", vRouter)
+		}
+	}
+	// delete virtual nodes for mesh
+	existingVirtualNodes, err := client.ListVirtualNodes(&appmesh.ListVirtualNodesInput{
+		MeshName: mesh.MeshName,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to list existing virtual nodes for mesh %v", *mesh.MeshName)
+	}
+	for _, original := range existingVirtualNodes.VirtualNodes {
+		if _, err := client.DeleteVirtualNode(&appmesh.DeleteVirtualNodeInput{
+			MeshName:        original.MeshName,
+			VirtualNodeName: original.VirtualNodeName,
+		}); err != nil {
+			return errors.Wrapf(err, "deleting mesh dependency vnode %v", original)
+		}
+	}
+	// delete mesh itself
+	if _, err := client.DeleteMesh(&appmesh.DeleteMeshInput{
+		MeshName: mesh.MeshName,
+	}); err != nil {
+		return errors.Wrapf(err, "deleting mesh %v", *mesh.MeshName)
+	}
+	return nil
 }
 
 /*
@@ -443,15 +549,29 @@ func reconcileMesh(client AppMeshClient, mesh appmesh.CreateMeshInput) error {
 	if err == nil {
 		return nil
 	}
-	if aerr, ok := err.(awserr.Error); ok {
-		switch aerr.Code() {
-		case appmesh.ErrCodeNotFoundException:
-			_, err := client.CreateMesh(&mesh)
-			return err
-		default:
+	aerr, ok := err.(awserr.Error)
+	if !ok || aerr.Code() != appmesh.ErrCodeNotFoundException {
+		return errors.Wrapf(err, "describing mesh %v", mesh.MeshName)
+	}
+	// we got a not found error, time to clean up existing meshes before installing our new one
+	// TODO: when service limits go up on AWS, maybe increase the number of allowed meshes
+
+	existingMeshes, err := client.ListMeshes(&appmesh.ListMeshesInput{})
+	if err != nil {
+		return errors.Wrapf(err, "listing existing meshes")
+	}
+	if len(existingMeshes.Meshes) > 0 {
+		// clean up all previous mesh
+		for _, existingMesh := range existingMeshes.Meshes {
+			if err := purgeMesh(client, existingMesh); err != nil {
+				return errors.Wrapf(err, "purging stale mesh for reconcile")
+			}
 		}
 	}
-	return errors.Wrapf(err, "failed to check existence of mesh %v", *mesh.MeshName)
+	if _, err := client.CreateMesh(&mesh); err != nil {
+		return errors.Wrapf(err, "creating new mesh")
+	}
+	return nil
 }
 
 func reconcileVirtualNodes(client AppMeshClient, mesh appmesh.CreateMeshInput, vNodes []appmesh.CreateVirtualNodeInput) error {
@@ -489,29 +609,30 @@ func reconcileVirtualNodes(client AppMeshClient, mesh appmesh.CreateMeshInput, v
 
 func reconcileVirtualNode(client AppMeshClient, desiredVNode appmesh.CreateVirtualNodeInput, existingVirtualNodes []*appmesh.VirtualNodeRef) error {
 	for _, node := range existingVirtualNodes {
-		if aws.StringValue(node.VirtualNodeName) == *desiredVNode.VirtualNodeName {
-			// update
-			originalVNode, err := client.DescribeVirtualNode(&appmesh.DescribeVirtualNodeInput{
-				MeshName:        desiredVNode.MeshName,
-				VirtualNodeName: desiredVNode.VirtualNodeName,
-			})
-			if err != nil {
-				return errors.Wrapf(err, "retrieving original node for update")
-			}
-			// TODO: find a better way of comparing AWS structs
-			if originalVNode.VirtualNode.Spec.String() == desiredVNode.Spec.String() {
-				// spec already matches, nothing to do
-				return nil
-			}
-			if _, err := client.UpdateVirtualNode(&appmesh.UpdateVirtualNodeInput{
-				MeshName:        desiredVNode.MeshName,
-				VirtualNodeName: desiredVNode.VirtualNodeName,
-				Spec:            desiredVNode.Spec,
-			}); err != nil {
-				return errors.Wrapf(err, "updating virtual node")
-			}
+		if aws.StringValue(node.VirtualNodeName) != *desiredVNode.VirtualNodeName {
+			continue
+		}
+		// update
+		originalVNode, err := client.DescribeVirtualNode(&appmesh.DescribeVirtualNodeInput{
+			MeshName:        desiredVNode.MeshName,
+			VirtualNodeName: desiredVNode.VirtualNodeName,
+		})
+		if err != nil {
+			return errors.Wrapf(err, "retrieving original node for update")
+		}
+		// TODO: find a better way of comparing AWS structs
+		if originalVNode.VirtualNode.Spec.String() == desiredVNode.Spec.String() {
+			// spec already matches, nothing to do
 			return nil
 		}
+		if _, err := client.UpdateVirtualNode(&appmesh.UpdateVirtualNodeInput{
+			MeshName:        desiredVNode.MeshName,
+			VirtualNodeName: desiredVNode.VirtualNodeName,
+			Spec:            desiredVNode.Spec,
+		}); err != nil {
+			return errors.Wrapf(err, "updating virtual node")
+		}
+		return nil
 	}
 	// create new
 	if _, err := client.CreateVirtualNode(&desiredVNode); err != nil {
@@ -626,8 +747,9 @@ func reconcileRoutes(client AppMeshClient, mesh appmesh.CreateMeshInput, vRouter
 		}
 		if cleanup {
 			if _, err := client.DeleteRoute(&appmesh.DeleteRouteInput{
-				MeshName:  original.MeshName,
-				RouteName: original.RouteName,
+				MeshName:          original.MeshName,
+				VirtualRouterName: original.VirtualRouterName,
+				RouteName:         original.RouteName,
 			}); err != nil {
 				return errors.Wrapf(err, "deleting stale resource %v", original)
 			}

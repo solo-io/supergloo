@@ -88,9 +88,7 @@ var _ = FDescribe("appmesh routing E2e", func() {
 
 		cfg, err := kubeutils.GetConfig("", "")
 		Expect(err).NotTo(HaveOccurred())
-		reviewsHost := "reviews." + namespace + ".svc.cluster.local"
-		reviewsVirtualNodeName := nameutils.SanitizeName(reviewsHost)
-		err = utils.DeployBookinfoAppMesh(cfg, namespace, appmesh.MeshName(ref), reviewsVirtualNodeName, "us-east-1")
+		err = utils.DeployBookinfoAppMesh(cfg, namespace, appmesh.MeshName(ref), "us-east-1")
 		Expect(err).NotTo(HaveOccurred())
 		testrunnerHost := "testrunner." + namespace + ".svc.cluster.local"
 		testrunnerVirtualNodeName := nameutils.SanitizeName(testrunnerHost)
