@@ -7,7 +7,6 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -183,18 +182,11 @@ func (s *AppMeshSyncer) sync(ctx context.Context, mesh *v1.Mesh, snap *v1.Transl
 		MeshName: aws.String(meshName),
 	}
 	upstreams := snap.Upstreams.List()
-	virtualNodes, err := virtualNodesFromUpstreams(meshName, upstreams)
-	if err != nil {
-		return errors.Wrapf(err, "creating virtual nodes from upstreams")
-	}
-	virtualRouters, err := virtualRoutersFromUpstreams(meshName, upstreams)
-	if err != nil {
-		return errors.Wrapf(err, "creating virtual routers from upstreams")
-	}
 	routingRules := snap.Routingrules.List()
-	routes, err := routesForUpstreams(meshName, upstreams, routingRules)
+
+	virtualNodes, virtualRouters, routes, err := DesiredResources(meshName, upstreams, routingRules)
 	if err != nil {
-		return errors.Wrapf(err, "creating virtual routers from upstreams")
+		return errors.Wrapf(err, "generating desired resources")
 	}
 
 	secrets := snap.Secrets.List()
@@ -203,15 +195,32 @@ func (s *AppMeshSyncer) sync(ctx context.Context, mesh *v1.Mesh, snap *v1.Transl
 		return errors.Wrapf(err, "creating new AWS AppMesh session")
 	}
 
-	contextutils.LoggerFrom(ctx).Infof("syncing desired state")
-	log.Printf("desired mesh: %v", desiredMesh)
-	log.Printf("desired virtual nodes: %v", virtualNodes)
-	log.Printf("desired virtual routers: %v", virtualRouters)
-	log.Printf("desired routes: %v", routes)
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("syncing desired state")
+	logger.Debugf("desired mesh: %v", desiredMesh)
+	logger.Debugf("desired virtual nodes: %v", virtualNodes)
+	logger.Debugf("desired virtual routers: %v", virtualRouters)
+	logger.Debugf("desired routes: %v", routes)
 	if err := resyncState(client, desiredMesh, virtualNodes, virtualRouters, routes); err != nil {
 		return errors.Wrapf(err, "reconciling desired state")
 	}
 	return nil
+}
+
+func DesiredResources(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateVirtualNodeInput, []appmesh.CreateVirtualRouterInput, []appmesh.CreateRouteInput, error) {
+	virtualNodes, err := virtualNodesFromUpstreams(meshName, upstreams)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "creating virtual nodes from upstreams")
+	}
+	virtualRouters, err := virtualRoutersFromUpstreams(meshName, upstreams)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "creating virtual routers from upstreams")
+	}
+	routes, err := routesForUpstreams(meshName, upstreams, routingRules)
+	if err != nil {
+		return nil, nil, nil, errors.Wrapf(err, "creating virtual routers from upstreams")
+	}
+	return virtualNodes, virtualRouters, routes, nil
 }
 
 func resyncState(client AppMeshClient,
