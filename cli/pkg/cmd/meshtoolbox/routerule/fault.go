@@ -33,7 +33,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 	t := opts.MeshTool.RoutingRule.FaultInjection
 
 	// Delay
-	if err := EnsurePercentage("Delay percentage (integer, 1-100)", &fo.DelayPercent, &(t.Delay).Percent, opts); err != nil {
+	if err := EnsurePercentage("Delay percentage (integer, 0-100)", &fo.DelayPercent, &(t.Delay).Percent, opts); err != nil {
 		return err
 	}
 	if !opts.Top.Static {
@@ -61,7 +61,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 	}
 
 	// Abort
-	if err := EnsurePercentage("Abort percentage (integer, 1-100)", &fo.AbortPercent, &(t.Abort).Percent, opts); err != nil {
+	if err := EnsurePercentage("Abort percentage (integer, 0-100)", &fo.AbortPercent, &(t.Abort).Percent, opts); err != nil {
 		return err
 	}
 
