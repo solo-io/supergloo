@@ -3,10 +3,11 @@ package util
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
 

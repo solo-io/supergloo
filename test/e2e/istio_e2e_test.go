@@ -218,7 +218,6 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			util.CheckCertMatchesIstio(installNamespace)
 		})
 
-
 		curlSucceeds := func(plainText bool) bool {
 			pod, err := util.GetPodWithSubstringInName(bookinfoNamespace, "productpage")
 			Expect(err).NotTo(HaveOccurred())
@@ -247,7 +246,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			output, err := cmd.CombinedOutput()
 			fmt.Printf("Error: %v\nOutput: %s\n", err, string(output))
 
-			return cmd.Run() == nil
+			return err == nil
 		}
 
 		plainTextCurlSucceeds := func() bool {
@@ -291,7 +290,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")).To(BeEquivalentTo(6))
 
 			// plain text and tls curling should work from inside the pod
-			Eventually(plainTextCurlSucceeds(), "30s", "1s").Should(BeTrue()) // retry in case race in pod startup
+			Eventually(plainTextCurlSucceeds, "30s", "1s").Should(BeTrue()) // retry in case race in pod startup
 			Expect(tlsCurlSucceeds()).To(BeTrue())
 
 			// turn on mtls
