@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/config"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/create"
@@ -26,8 +29,8 @@ func App(version string) *cobra.Command {
 		Version: version,
 	}
 
-	pflags := app.PersistentFlags()
-	pflags.BoolVarP(&opts.Top.Static, "static", "s", false, "disable interactive mode")
+	pFlags := app.PersistentFlags()
+	pFlags.BoolVarP(&opts.Top.Static, "static", "s", false, "disable interactive mode")
 
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
@@ -47,11 +50,24 @@ func App(version string) *cobra.Command {
 		ingresstoolbox.AddRoute(&opts),
 	)
 
-	setup.InitCache(&opts)
-
-	err := setup.InitSupergloo(&opts)
+	// Fail fast if we cannot connect to kubernetes
+	err := setup.CheckConnection()
 	if err != nil {
-		panic(errors.Wrap(err, "Error during initialization."))
+		fmt.Println(errors.Wrap(err, "Failed to connect to Kubernetes. Please check whether the current-context "+
+			"in your kubeconfig file points to a running cluster"))
+		os.Exit(1)
+	}
+
+	err = setup.InitCache(&opts)
+	if err != nil {
+		fmt.Println(errors.Wrap(err, "Error during initialization!"))
+		os.Exit(1)
+	}
+
+	err = setup.InitSupergloo(&opts)
+	if err != nil {
+		fmt.Println(errors.Wrap(err, "Error during initialization!"))
+		os.Exit(1)
 	}
 
 	return app
