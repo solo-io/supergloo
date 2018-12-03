@@ -3,10 +3,11 @@ package e2e
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/pkg/constants"
