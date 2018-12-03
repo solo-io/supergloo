@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"os"
 	"os/exec"
 	"time"
@@ -114,7 +115,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var secretClient istiosecret.IstioCacertsSecretClient
 	var installSyncer install.InstallSyncer
 	var bookinfoNamespace string
-	//logger := contextutils.LoggerFrom(context.TODO())
+	logger := contextutils.LoggerFrom(context.TODO())
 
 	BeforeEach(func() {
 		randStr := helpers.RandString(8)
@@ -243,9 +244,10 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			}
 
 			cmd := exec.Command("kubectl", kubectlArgs...)
-			output, err := cmd.CombinedOutput()
-			fmt.Printf("Error: %v\nOutput: %s\n", err, string(output))
-
+			err = cmd.Run()
+			if err != nil {
+				logger.Infof("Curling product page failed.")
+			}
 			return err == nil
 		}
 
@@ -275,11 +277,11 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			// Shouldn't be able to plain text curl from inside the pod
 			deployBookInfo()
 			util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
+			Eventually(tlsCurlSucceeds, "60s", "1s").Should(BeTrue()) // can take awhile after pod starts up for this to work
 			Expect(curlSucceeds(true)).To(BeFalse())
-			Expect(curlSucceeds(false)).To(BeTrue())
 		})
 
-		FIt("Can install istio with mtls disabled and toggle it on", func() {
+		It("Can install istio with mtls disabled and toggle it on", func() {
 			// deploy istio and bookinfo with gateway
 			snap := getSnapshot(false, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
@@ -290,7 +292,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")).To(BeEquivalentTo(6))
 
 			// plain text and tls curling should work from inside the pod
-			Eventually(plainTextCurlSucceeds, "30s", "1s").Should(BeTrue()) // retry in case race in pod startup
+			Eventually(plainTextCurlSucceeds, "60s", "1s").Should(BeTrue()) // can take awhile after pod starts up for this to work
 			Expect(tlsCurlSucceeds()).To(BeTrue())
 
 			// turn on mtls
@@ -299,7 +301,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
 
-			// now plain text curling should fail
+			// now plain text curling should fail, should take effect immediately
 			Expect(tlsCurlSucceeds()).To(BeTrue())
 			Expect(plainTextCurlSucceeds()).To(BeFalse())
 
