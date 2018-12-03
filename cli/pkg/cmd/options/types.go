@@ -2,6 +2,8 @@ package options
 
 import (
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
+	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -41,9 +43,10 @@ type Uninstall struct {
 }
 
 type MeshTool struct {
-	Mesh      core.ResourceRef
-	ServiceId string
-	AddPolicy AddPolicy
+	Mesh        core.ResourceRef
+	ServiceId   string
+	AddPolicy   AddPolicy
+	RoutingRule superglooV1.RoutingRule
 }
 
 type AddPolicy struct {
@@ -65,29 +68,15 @@ type Get struct {
 	Output string
 }
 
-type RoutingRule struct {
-	Mesh             string
-	Namespace        string
-	Sources          string
-	Destinations     string
-	Matchers         []string
-	OverrideExisting bool
+type InputDuration struct {
+	Seconds string
+	Nanos   string
 }
 
-// // Route Rule fields
-// Status
-// Metadata
-// TargetMesh
-// Sources
-// Destinations
-// RequestMatchers
-// TrafficShifting
-// FaultInjection
-// Timeout
-// Retries
-// CorsPolicy
-// Mirror
-// HeaderManipulaition
+type InputRetry struct {
+	Attempts      string
+	PerTryTimeout InputDuration
+}
 
 // TODO(mitchdraft) Rename this NewSecret (to disambigute from secret ResourceRef)
 type Secret struct {
@@ -99,8 +88,8 @@ type Secret struct {
 }
 
 type Create struct {
-	RoutingRule RoutingRule
-	Secret      Secret
+	InputRoutingRule InputRoutingRule
+	Secret           Secret
 }
 
 type Config struct {

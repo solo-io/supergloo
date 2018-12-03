@@ -31,18 +31,25 @@ func App(version string) *cobra.Command {
 
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
+		// Common utils
 		initsupergloo.Cmd(&opts),
 		install.Cmd(&opts),
 		uninstall.Cmd(&opts),
-
 		get.Cmd(&opts),
 		create.Cmd(&opts),
 		config.Cmd(&opts),
+		// Routing
+		meshtoolbox.TrafficShifting(&opts),
 		meshtoolbox.FaultInjection(&opts),
-		meshtoolbox.LoadBalancing(&opts),
+		meshtoolbox.Timeout(&opts),
 		meshtoolbox.Retries(&opts),
+		meshtoolbox.CorsPolicy(&opts),
+		meshtoolbox.Mirror(&opts),
+		meshtoolbox.HeaderManipulation(&opts),
+		// Policy
 		meshtoolbox.Policy(&opts),
 		meshtoolbox.ToggleMtls(&opts),
+		// Ingress
 		ingresstoolbox.FortifyIngress(&opts),
 		ingresstoolbox.AddRoute(&opts),
 	)

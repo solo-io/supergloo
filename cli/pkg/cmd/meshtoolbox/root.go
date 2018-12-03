@@ -5,46 +5,50 @@ import (
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/mtls"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/policy"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/routerule"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
 )
 
-func FaultInjection(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "fault-injection",
-		Short: `Stress test your mesh with faults`,
-		Long:  `Stress test your mesh with faults`,
-		Run: func(c *cobra.Command, args []string) {
-			fmt.Println("this feature will be available in 2019")
-		},
-	}
-	linkMeshToolFlags(cmd, opts)
+func TrafficShifting(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("traffic-shifting", "Configure traffic shifting parameters", routerule.TrafficShifting_Rule, opts)
+	routerule.AddTrafficShiftingFlags(cmd, opts)
 	return cmd
 }
 
-func LoadBalancing(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "load-balancing",
-		Short: `Specify traffic distribution`,
-		Long:  `Specify traffic distribution`,
-		Run: func(c *cobra.Command, args []string) {
-			fmt.Println("this feature will be available in 2019")
-		},
-	}
-	linkMeshToolFlags(cmd, opts)
+func FaultInjection(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("fault-injection", "Stress test your mesh with faults", routerule.FaultInjection_Rule, opts)
+	routerule.AddFaultFlags(cmd, opts)
 	return cmd
 }
 
 func Retries(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "retries",
-		Short: `Configure retry parameters`,
-		Long:  `Configure retry parameters`,
-		Run: func(c *cobra.Command, args []string) {
-			meshToolPlaceholder(opts)
-		},
-	}
-	linkMeshToolFlags(cmd, opts)
+	cmd := generateRouteCmd("retries", "Configure retry parameters", routerule.Retries_Rule, opts)
+	routerule.AddRetryFlags(cmd, opts)
+	return cmd
+}
+
+func Timeout(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("timeout", "Configure timeout parameters", routerule.Timeout_Rule, opts)
+	routerule.AddTimeoutFlags(cmd, opts)
+	return cmd
+}
+
+func CorsPolicy(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("cors", "Configure cors policy parameters", routerule.CorsPolicy_Rule, opts)
+	routerule.AddCorsFlags(cmd, opts)
+	return cmd
+}
+
+func Mirror(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("mirror", "Configure mirror parameters", routerule.Mirror_Rule, opts)
+	routerule.AddMirrorFlags(cmd, opts)
+	return cmd
+}
+
+func HeaderManipulation(opts *options.Options) *cobra.Command {
+	cmd := generateRouteCmd("header-manipulation", "Configure header manipulation parameters", routerule.HeaderManipulaition_Rule, opts)
+	routerule.AddHeaderManipulationFlags(cmd, opts)
 	return cmd
 }
 
@@ -83,4 +87,24 @@ func linkMeshToolFlags(cmd *cobra.Command, opts *options.Options) {
 
 func meshToolPlaceholder(opts *options.Options) {
 	fmt.Println("this mesh feature will be available in 2019")
+}
+
+func generateRouteCmd(useString string, description string, ruleTypeID string, opts *options.Options) *cobra.Command {
+	rrOpts := &(opts.Create).InputRoutingRule
+	cmd := &cobra.Command{
+		Use:   useString,
+		Short: description,
+		Long:  description,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(c *cobra.Command, args []string) error {
+			rrOpts.RouteName = args[0]
+			if err := routerule.CreateRoutingRule(ruleTypeID, opts); err != nil {
+				return err
+			}
+			fmt.Printf("Created %v routing rule [%v] in namespace [%v]\n", routerule.RoutingRuleDisplayName[ruleTypeID], args[0], rrOpts.TargetMesh.Namespace)
+			return nil
+		},
+	}
+	linkMeshToolFlags(cmd, opts)
+	return cmd
 }
