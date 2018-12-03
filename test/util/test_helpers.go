@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -259,6 +260,20 @@ func waitForAvailablePodsWithTimeout(namespace, timeout string) int {
 		return done, nil
 	}, timeout, "1s").Should(BeTrue())
 	return podNum
+}
+
+func GetPodWithSubstringInName(namespace string, substring string) (*kubecore.Pod, error) {
+	podList, err := GetKubeClient().CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	for _, pod := range podList.Items {
+		if strings.Contains(pod.Name, substring) {
+			return pod.DeepCopy(), nil
+		}
+	}
+	Expect(false).To(BeTrue())
+	return nil, errors.Errorf("Couldn't find pod with name containing %s in namespace %s.\n", substring, namespace)
 }
 
 func WaitForDeletedPodsWithTimeout(namespace string, timeout string) {

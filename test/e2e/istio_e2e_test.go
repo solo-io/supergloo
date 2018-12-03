@@ -3,14 +3,9 @@ package e2e
 import (
 	"context"
 	"fmt"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"time"
-
-	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/pkg/constants"
@@ -119,7 +114,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var secretClient istiosecret.IstioCacertsSecretClient
 	var installSyncer install.InstallSyncer
 	var bookinfoNamespace string
-	logger := contextutils.LoggerFrom(context.TODO())
+	//logger := contextutils.LoggerFrom(context.TODO())
 
 	BeforeEach(func() {
 		randStr := helpers.RandString(8)
@@ -178,37 +173,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		cmd := exec.Command("kubectl", kubectlargs...)
 		err := cmd.Run()
 		Expect(err).NotTo(HaveOccurred())
-		gateway := "https://raw.githubusercontent.com/istio/istio/4c0a001b5e542d43b4c66ae75c1f41f2c1ff183e/samples/bookinfo/networking/bookinfo-gateway.yaml"
-		kubectlargs = []string{"apply", "-n", bookinfoNamespace, "-f", gateway}
-		cmd = exec.Command("kubectl", kubectlargs...)
-		err = cmd.Run()
-		Expect(err).NotTo(HaveOccurred())
-
 		return bookinfoNamespace
-	}
-
-	getIngressHost := func() string {
-		addr := util.GetKubeConfig().Host
-		url, err := url.Parse(addr)
-		Expect(err).NotTo(HaveOccurred())
-		host, _, _ := net.SplitHostPort(url.Host)
-		return host
-	}
-
-	getIngressPort := func() int32 {
-		service, err := util.GetKubeClient().CoreV1().Services(installNamespace).Get("istio-ingressgateway", kubemeta.GetOptions{})
-		Expect(err).NotTo(HaveOccurred())
-		for _, port := range service.Spec.Ports {
-			if port.Name == "http2" {
-				return port.NodePort
-			}
-		}
-		Expect(false).To(BeTrue())
-		return 0
-	}
-
-	getGatewayUrl := func() string {
-		return fmt.Sprintf("%s:%d", getIngressHost(), getIngressPort())
 	}
 
 	Describe("istio + encryption", func() {
@@ -253,6 +218,46 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			util.CheckCertMatchesIstio(installNamespace)
 		})
 
+
+		curlSucceeds := func(plainText bool) bool {
+			pod, err := util.GetPodWithSubstringInName(bookinfoNamespace, "productpage")
+			Expect(err).NotTo(HaveOccurred())
+			s := "s"
+			if plainText {
+				s = ""
+			}
+			curlUrl := fmt.Sprintf("http%s://%s:9080/productpage", s, pod.Status.PodIP)
+			kubectlArgs := []string{
+				"exec",
+				"-n",
+				bookinfoNamespace,
+				pod.Name,
+				"-c",
+				"istio-proxy",
+				"--",
+				"curl",
+				curlUrl,
+			}
+
+			if !plainText {
+				kubectlArgs = append(kubectlArgs, "--key", "/etc/certs/key.pem", "--cert", "/etc/certs/cert-chain.pem", "--cacert", "/etc/certs/root-cert.pem", "-k")
+			}
+
+			cmd := exec.Command("kubectl", kubectlArgs...)
+			output, err := cmd.CombinedOutput()
+			fmt.Printf("Error: %v\nOutput: %s\n", err, string(output))
+
+			return cmd.Run() == nil
+		}
+
+		plainTextCurlSucceeds := func() bool {
+			return curlSucceeds(true)
+		}
+
+		tlsCurlSucceeds := func() bool {
+			return curlSucceeds(false)
+		}
+
 		It("Can install istio with mtls enabled and self-signing", func() {
 			snap := getSnapshot(true, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
@@ -268,7 +273,11 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			cmd = exec.Command("kubectl", "get", "destinationrule", "default", "-n", installNamespace)
 			Expect(cmd.Run()).To(BeNil())
 
-			// TODO: deploy sample app and do more checking
+			// Shouldn't be able to plain text curl from inside the pod
+			deployBookInfo()
+			util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
+			Expect(curlSucceeds(true)).To(BeFalse())
+			Expect(curlSucceeds(false)).To(BeTrue())
 		})
 
 		FIt("Can install istio with mtls disabled and toggle it on", func() {
@@ -277,20 +286,13 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
-			deployBookInfo()
-			util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
 
-			// ping bookinfo through the gateway, expecting 200
-			gatewayUrl := getGatewayUrl()
-			statusOk := func() bool {
-				response, err := http.Get(fmt.Sprintf("http://%s/productpage", gatewayUrl))
-				if err != nil {
-					return false
-				}
-				logger.Infof("%d\n", response.StatusCode)
-				return response.StatusCode == http.StatusOK
-			}
-			Eventually(statusOk, "300s", "1s").Should(BeTrue())
+			deployBookInfo()
+			Expect(util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")).To(BeEquivalentTo(6))
+
+			// plain text and tls curling should work from inside the pod
+			Eventually(plainTextCurlSucceeds(), "30s", "1s").Should(BeTrue()) // retry in case race in pod startup
+			Expect(tlsCurlSucceeds()).To(BeTrue())
 
 			// turn on mtls
 			snap = getSnapshot(true, true, nil, nil)
@@ -298,8 +300,10 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(util.WaitForAvailablePods(installNamespace)).To(BeEquivalentTo(9))
 
-			// ping bookinfo through the gateway, now expecting 503
-			Eventually(statusOk, "300s", "1s").Should(BeFalse())
+			// now plain text curling should fail
+			Expect(tlsCurlSucceeds()).To(BeTrue())
+			Expect(plainTextCurlSucceeds()).To(BeFalse())
+
 		})
 	})
 
@@ -310,7 +314,6 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		})
 
 		It("Should install istio and enable policy", func() {
-
 			// start discovery
 			cmd := exec.Command(PathToUds, "-discover", bookinfoNamespace)
 			_, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
