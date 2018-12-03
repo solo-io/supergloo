@@ -132,7 +132,7 @@ var _ = Describe("appmesh routing E2e", func() {
 		_, err := gexec.Start(cmd, os.Stdout, os.Stdout)
 		Expect(err).NotTo(HaveOccurred())
 
-		meshes, routingRules, secretClient, err := v1Clients()
+		meshes, _, secretClient, err := v1Clients()
 		Expect(err).NotTo(HaveOccurred())
 
 		ref := setupAppMesh(meshes, secretClient, namespace)
@@ -146,7 +146,22 @@ var _ = Describe("appmesh routing E2e", func() {
 		err = utils.DeployTestRunnerAppMesh(cfg, namespace, appmesh.MeshName(ref), testrunnerVirtualNodeName, "us-east-1")
 		Expect(err).NotTo(HaveOccurred())
 
-		setupV1RoutingRule(routingRules, namespace, &ref)
+		// TODO ilackarms: remove this code when the AWS Service Limits increase
+		// for now we must delete some deployments
+		kube, err := kubernetes.NewForConfig(cfg)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.ExtensionsV1beta1().Deployments(namespace).Delete("details-v1", nil)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.ExtensionsV1beta1().Deployments(namespace).Delete("ratings-v1", nil)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.ExtensionsV1beta1().Deployments(namespace).Delete("productpage-v1", nil)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.CoreV1().Services(namespace).Delete("details", nil)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.CoreV1().Services(namespace).Delete("ratings", nil)
+		Expect(err).NotTo(HaveOccurred())
+		err = kube.CoreV1().Services(namespace).Delete("productpage", nil)
+		Expect(err).NotTo(HaveOccurred())
 
 		// reviews v1
 		Eventually(func() (string, error) {
@@ -157,18 +172,6 @@ var _ = Describe("appmesh routing E2e", func() {
 				Port:    9080,
 			})
 		}, time.Second*120).Should(ContainSubstring(`{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!"},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare."}]}`))
-
-		setupV2RoutingRule(routingRules, namespace, &ref)
-
-		// reviews v2
-		Eventually(func() (string, error) {
-			return testsetup.Curl(testsetup.CurlOpts{
-				Method:  "GET",
-				Path:    "/reviews/1",
-				Service: "reviews." + namespace + ".svc.cluster.local",
-				Port:    9080,
-			})
-		}, time.Second*120).Should(ContainSubstring(`{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "black"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "black"}}]}`))
 
 	})
 })
