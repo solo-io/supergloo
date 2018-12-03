@@ -240,7 +240,7 @@ func resyncState(client AppMeshClient,
 func getUniqueHosts(upstreams gloov1.UpstreamList) ([]string, error) {
 	var uniqueHosts []string
 	for _, us := range upstreams {
-		host, err := getSecondHostForUpstream(us)
+		host, err := getHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
@@ -280,7 +280,7 @@ func getAllHosts(upstreams gloov1.UpstreamList) ([]string, error) {
 	return uniqueHosts, nil
 }
 
-func getSecondHostForUpstream(us *gloov1.Upstream) (string, error) {
+func getHostForUpstream(us *gloov1.Upstream) (string, error) {
 	hosts, err := utils.GetHostsForUpstream(us)
 	if err != nil {
 		return "", err
@@ -295,7 +295,7 @@ func virtualNodesFromUpstreams(meshName string, upstreams gloov1.UpstreamList) (
 	portsByHost := make(map[string][]uint32)
 	// TODO: filter hosts by policy, i.e. only what the user wants
 	for _, us := range upstreams {
-		host, err := getSecondHostForUpstream(us)
+		host, err := getHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
@@ -379,7 +379,7 @@ func virtualRoutersFromUpstreams(meshName string, upstreams gloov1.UpstreamList)
 func rulesByHost(upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) (map[string]v1.RoutingRuleList, error) {
 	rules := make(map[string]v1.RoutingRuleList)
 	for _, us := range upstreams {
-		host, err := getSecondHostForUpstream(us)
+		host, err := getHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
@@ -392,7 +392,7 @@ func rulesByHost(upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList)
 			if err != nil {
 				return nil, errors.Wrapf(err, "cannot find destination for routing rule")
 			}
-			host, err := getSecondHostForUpstream(us)
+			host, err := getHostForUpstream(us)
 			if err != nil {
 				return nil, errors.Wrapf(err, "getting host for upstream")
 			}
@@ -439,7 +439,7 @@ func routesForUpstreams(meshName string, upstreams gloov1.UpstreamList, routingR
 					if err != nil {
 						return nil, errors.Wrapf(err, "cannot find destination for routing rule")
 					}
-					destinationHost, err := getSecondHostForUpstream(us)
+					destinationHost, err := getHostForUpstream(us)
 					if err != nil {
 						return nil, errors.Wrapf(err, "getting host for destination upstream")
 					}
