@@ -3,6 +3,8 @@ package meshtoolbox
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/common"
+
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/mtls"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/policy"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/routerule"
@@ -57,7 +59,6 @@ func Policy(opts *options.Options) *cobra.Command {
 		Use:   "policy",
 		Short: `Apply a policy`,
 		Long:  `Apply, update, or remove a policy`,
-		Args:  cobra.ExactArgs(1),
 		Run: func(c *cobra.Command, args []string) {
 		},
 	}
@@ -95,7 +96,7 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 		Use:   useString,
 		Short: description,
 		Long:  description,
-		Args:  cobra.ExactArgs(1),
+		Args:  common.RequiredNameArg,
 		RunE: func(c *cobra.Command, args []string) error {
 			rrOpts.RouteName = args[0]
 			if err := routerule.CreateRoutingRule(ruleTypeID, opts); err != nil {
@@ -105,6 +106,7 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 			return nil
 		},
 	}
+	cmd.SetUsageTemplate(common.UsageTemplate("resource-name"))
 	linkMeshToolFlags(cmd, opts)
 	return cmd
 }
