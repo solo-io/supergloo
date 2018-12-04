@@ -30,7 +30,7 @@ func AssembleRoutingRule(ruleTypeID string, activeRuleTypes *[]options.Multisele
 	// if they are using the full "create" workflow the user first specifies
 	// which rules to apply
 	if ruleTypeID == USE_ALL_ROUTING_RULES {
-		if err := EnsureActiveRoutingRuleTypes(&rrOpts.ActiveTypes, opts.Top.Static); err != nil {
+		if err := EnsureActiveRoutingRuleTypes(&rrOpts.ActiveTypes, &opts.Top, &opts.Create.InputRoutingRule); err != nil {
 			return err
 		}
 	}
@@ -82,16 +82,44 @@ func applyRule(id string, opts *options.Options) error {
 	return nil
 }
 
-func EnsureActiveRoutingRuleTypes(active *[]options.MultiselectOptionBool, staticMode bool) error {
-	if staticMode {
+func EnsureActiveRoutingRuleTypes(active *[]options.MultiselectOptionBool, rootOpts *options.Top, rrOpts *options.InputRoutingRule) error {
+	if rootOpts.Static {
 		// this function is irrelevant in static mode
 		return nil
 	}
+	if rootOpts.File != "" {
+		if found := selectRRBasedOnFile(active, rrOpts); found {
+			return nil
+		}
+	}
+
 	return selectRoutingRules(active)
+}
+
+// TODO(EItanya) Make function smarter and able to select more than one option
+func selectRRBasedOnFile(list *[]options.MultiselectOptionBool, rrOpts * options.InputRoutingRule) bool {
+	for i := range *list {
+		(*list)[i].Active = false
+	}
+	success := false
+	if (rrOpts.Cors != (options.InputCors{})) {
+		toggleRoutingRule(list, CorsPolicy_Rule)
+		success = true
+	}
+	if (rrOpts.FaultInjection != (options.InputFaultInjection{})) {
+		toggleRoutingRule(list, FaultInjection_Rule)
+		success = true
+	}
+	if (rrOpts.Timeout != (options.InputDuration{})) {
+		toggleRoutingRule(list, Timeout_Rule)
+		success = true
+	}
+	return success
 }
 
 func selectRoutingRules(list *[]options.MultiselectOptionBool) error {
 	var optionsList []string
+
 	for i, l := range *list {
 		// construct the options
 		optionsList = append(optionsList, fmt.Sprintf("%v. %v", i, l.DisplayName))
@@ -113,13 +141,18 @@ func selectRoutingRules(list *[]options.MultiselectOptionBool) error {
 
 	for _, c := range choice {
 		// extract index from user choice
-		parts := strings.SplitN(c, ".", 2)
-		index, err := strconv.Atoi(parts[0])
-		if err != nil {
-			return err
-		}
-		(*list)[index].Active = true
+		toggleRoutingRule(list, c)
 	}
 
+	return nil
+}
+
+func toggleRoutingRule(list *[]options.MultiselectOptionBool, choice string) error {
+	parts := strings.SplitN(choice, ".", 2)
+	index, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return err
+	}
+	(*list)[index].Active = !(*list)[index].Active
 	return nil
 }
