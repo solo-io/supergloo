@@ -118,7 +118,7 @@ func qualifyFlags(opts *options.Options) error {
 	}
 
 	if common.Contains([]string{common.Istio, common.Linkerd2}, iop.MeshType) {
-		watchNamespaces, err := chooseWatchNamespaces(opts)
+		watchNamespaces, err := chooseWatchNamespaces(opts, iop.MeshType)
 		if err != nil {
 			return fmt.Errorf("input error")
 		}
