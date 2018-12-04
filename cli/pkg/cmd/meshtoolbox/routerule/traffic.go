@@ -24,7 +24,7 @@ func EnsureTrafficShifting(irOpts *options.InputTrafficShifting, opts *options.O
 	var stagingUpstreams []*core.ResourceRef
 	var stagingWeights []uint32
 
-	if opts.Top.Static {
+	if opts.Top.Static || opts.Top.File != "" {
 		upstreamClient, err := common.GetUpstreamClient()
 		if err != nil {
 			return err
