@@ -60,8 +60,8 @@ func EnsurePercentage(message string, source *string, target *int32, opts *optio
 	return nil
 }
 
-func ensureCsv(message string, source string, target *[]string, staticMode bool) error {
-	if staticMode && source == "" {
+func ensureCsv(message string, source string, target *[]string, staticMode bool, required bool) error {
+	if staticMode && required  &&source == "" {
 		return fmt.Errorf(message)
 	}
 	if !staticMode {
@@ -75,9 +75,9 @@ func ensureCsv(message string, source string, target *[]string, staticMode bool)
 }
 
 // Expected format of source: k1,v1,k2,v2
-func ensureKVCsv(message string, source string, target *map[string]string, staticMode bool) error {
+func ensureKVCsv(message string, source string, target *map[string]string, staticMode bool, required bool) error {
 	parts := []string{}
-	ensureCsv(message, source, &parts, staticMode)
+	ensureCsv(message, source, &parts, staticMode, required)
 	if len(parts)%2 != 0 {
 		return fmt.Errorf("Must provide one key per value (received an odd sum)")
 	}
