@@ -67,6 +67,7 @@ func getOverrides(encryption *v1.Encryption) string {
 			}
 		}
 	}
+
 	selfSignedString := strconv.FormatBool(selfSigned)
 	tlsEnabledString := strconv.FormatBool(mtlsEnabled)
 	overridesWithMtlsFlag := strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", tlsEnabledString, -1)

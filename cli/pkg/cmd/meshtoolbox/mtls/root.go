@@ -11,14 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// we have not yet implemented mtls updates
-// if you are working on mTLS updates, set DEV_MTLS to true
-// when you implement mTLS updates, remove the placeholder
-// comment: consider passing this setting as a dev flag
-// pros: easier to configure
-// cons: may confuse users when shown in help msg, might not add a lot of value
-const DEV_MTLS = false
-
 // strings that users will pass to trigger commands
 const (
 	ENABLE_MTLS  = "enable"
@@ -29,19 +21,6 @@ const (
 var validRootArgs = []string{ENABLE_MTLS, DISABLE_MTLS, TOGGLE_MTLS} // for bash completion
 
 func Root(opts *options.Options) *cobra.Command {
-	if !DEV_MTLS {
-		cmd := &cobra.Command{
-			Use:   "mtls",
-			Short: `Set mTLS status`,
-			Long:  `Set mTLS status`,
-			RunE: func(c *cobra.Command, args []string) error {
-				// this function does nothing but it triggers validation
-				fmt.Println("Warning: mTLS config is not yet available. In the meantime, you can specify mTLS properties during install.")
-				return nil
-			},
-		}
-		return cmd
-	}
 	cmd := &cobra.Command{
 		Use:       "mtls",
 		Short:     `set mTLS status`,
@@ -62,9 +41,9 @@ func Root(opts *options.Options) *cobra.Command {
 }
 
 func rootArgValidation(c *cobra.Command, args []string) error {
-	expectedArgCount := 1
-	if len(args) != expectedArgCount {
-		return fmt.Errorf("Too many args (%v given, %v expected)", len(args), expectedArgCount)
+	exactArgs := cobra.ExactArgs(1)
+	if err := exactArgs(c, args); err != nil {
+		return err
 	}
 	subCommandName := args[0]
 	if !common.Contains(validRootArgs, subCommandName) {
@@ -161,19 +140,19 @@ func ensureFlags(operation string, opts *options.Options) error {
 	return nil
 }
 
-func updateMtls(operation string, opts *options.Options) (*superglooV1.Mesh, error) {
+func updateMtls(operation string, opts *options.Options) (*superglooV1.Install, error) {
 	// 1. validate/aquire arguments
 	if err := ensureFlags(operation, opts); err != nil {
 		return nil, err
 	}
 
-	// 2. read the existing mesh
-	meshClient, err := common.GetMeshClient()
+	// 2. read the existing install config, since mtls toggling happens in the install syncer (via helm redeploying)
+	installClient, err := common.GetInstallClient()
 	if err != nil {
 		return nil, err
 	}
 	meshRef := &(opts.MeshTool).Mesh
-	mesh, err := (*meshClient).Read(meshRef.Namespace, meshRef.Name, clients.ReadOpts{})
+	installCrd, err := (*installClient).Read(meshRef.Namespace, meshRef.Name, clients.ReadOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -181,31 +160,31 @@ func updateMtls(operation string, opts *options.Options) (*superglooV1.Mesh, err
 	// 3. mutate the mesh structure
 	switch operation {
 	case ENABLE_MTLS:
-		if mesh.Encryption == nil {
-			mesh.Encryption = &superglooV1.Encryption{
+		if installCrd.Encryption == nil {
+			installCrd.Encryption = &superglooV1.Encryption{
 				TlsEnabled: true,
 			}
 		} else {
-			mesh.Encryption.TlsEnabled = true
+			installCrd.Encryption.TlsEnabled = true
 
 		}
 	case DISABLE_MTLS:
-		if mesh.Encryption == nil {
-			mesh.Encryption = &superglooV1.Encryption{
+		if installCrd.Encryption == nil {
+			installCrd.Encryption = &superglooV1.Encryption{
 				TlsEnabled: false,
 			}
 		} else {
-			mesh.Encryption.TlsEnabled = false
+			installCrd.Encryption.TlsEnabled = false
 
 		}
 	case TOGGLE_MTLS:
 		// if encryption has not been specified, "toggle" will enable it
-		if mesh.Encryption == nil {
-			mesh.Encryption = &superglooV1.Encryption{
+		if installCrd.Encryption == nil {
+			installCrd.Encryption = &superglooV1.Encryption{
 				TlsEnabled: true,
 			}
 		} else {
-			mesh.Encryption.TlsEnabled = !mesh.Encryption.TlsEnabled
+			installCrd.Encryption.TlsEnabled = !installCrd.Encryption.TlsEnabled
 
 		}
 	default:
@@ -213,9 +192,9 @@ func updateMtls(operation string, opts *options.Options) (*superglooV1.Mesh, err
 	}
 
 	// 4. write the changes
-	writtenMesh, err := (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
+	writtenInstallCrd, err := (*installClient).Write(installCrd, clients.WriteOpts{OverwriteExisting: true})
 	if err != nil {
 		return nil, err
 	}
-	return writtenMesh, nil
+	return writtenInstallCrd, nil
 }

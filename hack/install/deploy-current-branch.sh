@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Use this script instead of running supergloo init in order to deploy the local supergloo server code for testing
 
 set -ex
 
