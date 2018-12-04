@@ -117,13 +117,16 @@ func qualifyFlags(opts *options.Options) error {
 		iop.Namespace = namespace
 	}
 
-	if common.Contains([]string{common.Istio, common.Linkerd2}, iop.MeshType) {
-		watchNamespaces, err := chooseWatchNamespaces(opts, iop.MeshType)
-		if err != nil {
-			return fmt.Errorf("input error")
-		}
-		iop.WatchNamespaces = watchNamespaces
-	}
+	// TODO (EItanya): re-add the following code to support specific namespaces for installs
+	//if common.Contains([]string{common.Istio, common.Linkerd2}, iop.MeshType) {
+	//	watchNamespaces, err := chooseWatchNamespaces(opts, iop.MeshType)
+	//	if err != nil {
+	//		return fmt.Errorf("input error")
+	//	}
+	//	iop.WatchNamespaces = watchNamespaces
+	//}
+	// Default like of watch_namespaces to empty, in order to watch all
+	iop.WatchNamespaces = []string{}
 
 	chosenMtls, err := common.ChooseBool("use mTLS?")
 	iop.Mtls = chosenMtls
