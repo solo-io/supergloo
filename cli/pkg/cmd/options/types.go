@@ -1,7 +1,7 @@
 package options
 
 import (
-	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
@@ -21,6 +21,7 @@ type Options struct {
 
 type Top struct {
 	Static bool
+	File   string
 }
 
 type Install struct {
@@ -98,8 +99,8 @@ type AwsSecret struct {
 
 type Create struct {
 	InputRoutingRule InputRoutingRule
-	Secret      Secret
-	AwsSecret   AwsSecret
+	Secret           Secret
+	AwsSecret        AwsSecret
 }
 
 type Config struct {

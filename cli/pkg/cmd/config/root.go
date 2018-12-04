@@ -11,9 +11,6 @@ func Cmd(opts *options.Options) *cobra.Command {
 		Use:   "config",
 		Short: `Configure mesh resources`,
 		Long:  `Configure mesh resources`,
-		Args:  cobra.ExactArgs(1), // TODO: for now allow only stdin creation, no file
-		Run: func(c *cobra.Command, args []string) {
-		},
 	}
 
 	cmd.AddCommand(

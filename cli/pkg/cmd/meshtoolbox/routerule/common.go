@@ -12,7 +12,7 @@ import (
 
 func EnsureDuration(rootMessage string, durOpts *options.InputDuration, targetDur *types.Duration, opts *options.Options) error {
 	dur := types.Duration{}
-	if !opts.Top.Static {
+	if !opts.Top.Static && opts.Top.File == "" {
 		err := iutil.GetStringInput(fmt.Sprintf("%v (seconds)", rootMessage), &durOpts.Seconds)
 		if err != nil {
 			return err

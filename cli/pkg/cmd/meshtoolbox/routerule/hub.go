@@ -13,6 +13,13 @@ import (
 
 func AssembleRoutingRule(ruleTypeID string, activeRuleTypes *[]options.MultiselectOptionBool, opts *options.Options) error {
 
+	if opts.Top.File != "" {
+		err := configFromFile(opts)
+		if err != nil {
+			return err
+		}
+	}
+
 	if err := EnsureMinimumRequiredParams(opts); err != nil {
 		return err
 	}

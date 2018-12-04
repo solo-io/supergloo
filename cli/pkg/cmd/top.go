@@ -31,6 +31,7 @@ func App(version string) *cobra.Command {
 
 	pFlags := app.PersistentFlags()
 	pFlags.BoolVarP(&opts.Top.Static, "static", "s", false, "disable interactive mode")
+	pFlags.StringVarP(&opts.Top.File, "file", "f", "", "file input")
 
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
