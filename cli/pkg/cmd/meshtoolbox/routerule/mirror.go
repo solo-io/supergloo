@@ -15,7 +15,7 @@ func EnsureMirror(mOpts *options.InputMirror, opts *options.Options) error {
 	var stagingUpstreams []*core.ResourceRef
 	stagingUpstream := &core.ResourceRef{}
 
-	if opts.Top.Static {
+	if opts.Top.Static || opts.Top.File != "" {
 		upstreamClient, err := common.GetUpstreamClient()
 		if err != nil {
 			return err
