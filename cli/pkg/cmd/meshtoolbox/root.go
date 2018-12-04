@@ -59,7 +59,6 @@ func Policy(opts *options.Options) *cobra.Command {
 		Use:   "policy",
 		Short: `Apply a policy`,
 		Long:  `Apply, update, or remove a policy`,
-		//Args:  common.RequiredNameArg,
 		Run: func(c *cobra.Command, args []string) {
 		},
 	}
@@ -107,7 +106,7 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 			return nil
 		},
 	}
-	cmd.SetUsageTemplate(common.UsageTemplate("rule-name"))
+	cmd.SetUsageTemplate(common.UsageTemplate("resource-name"))
 	linkMeshToolFlags(cmd, opts)
 	return cmd
 }
