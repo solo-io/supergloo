@@ -119,7 +119,7 @@ func createSecret(opts *options.Options) error {
 		CaCert:    string(rootCa),
 		CaKey:     string(privateKey),
 	}
-	secretClient, err := common.GetSecretClient()
+	secretClient, err := common.GetIstioSecretClient()
 	if err != nil {
 		return err
 	}

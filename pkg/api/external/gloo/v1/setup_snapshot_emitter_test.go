@@ -44,7 +44,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
 		// Settings Constructor
 		settingsClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         SettingsCrd,

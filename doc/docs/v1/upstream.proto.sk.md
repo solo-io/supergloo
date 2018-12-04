@@ -17,10 +17,7 @@ upstream.proto
   
 ### <a name="Upstream">Upstream</a>
 
-Description: @solo-kit:resource.short_name=us
-@solo-kit:resource.plural_name=upstreams
-@solo-kit:resource.resource_groups=api.gloo.solo.io,discovery.gloo.solo.io,translator.supergloo.solo.io
-
+Description: 
 Upstreams represent destination for routing HTTP requests. Upstreams can be compared to
 [clusters](https://www.envoyproxy.io/docs/envoy/latest/api-v1/cluster_manager/cluster.html?highlight=cluster) in Envoy terminology.
 Each upstream in Gloo has a type. Supported types include `static`, `kubernetes`, `aws`, `consul`, and more.

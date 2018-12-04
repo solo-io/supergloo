@@ -1,17 +1,17 @@
 package setup
 
 import (
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	"github.com/solo-io/supergloo/cli/pkg/common"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
-
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/common"
+	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
@@ -21,6 +21,23 @@ import (
 	kubecore "k8s.io/api/core/v1"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// Checks whether the cluster that the kubeconfig points at is available
+// The timeout for the kubernetes client is set to a low value to notify the user of the failure
+func CheckConnection() error {
+	config, err := common.GetKubernetesConfig(time.Second)
+	if err != nil {
+		return err
+	}
+	kube, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	_, err = kube.CoreV1().Namespaces().List(kubemeta.ListOptions{})
+
+	return err
+}
 
 func InitCache(opts *options.Options) error {
 	// Get a kube client
@@ -47,7 +64,11 @@ func InitCache(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
-	secretClient, err := common.GetSecretClient()
+	istioSecretClient, err := common.GetIstioSecretClient()
+	if err != nil {
+		return err
+	}
+	glooSecretClient, err := common.GetGlooSecretClient()
 	if err != nil {
 		return err
 	}
@@ -67,13 +88,21 @@ func InitCache(opts *options.Options) error {
 		for _, m := range meshList {
 			meshes = append(meshes, m.Metadata.Name)
 		}
-		secretList, err := (*secretClient).List(ns, clients.ListOpts{})
+		istioSecretList, err := (*istioSecretClient).List(ns, clients.ListOpts{})
 		if err != nil {
 			return err
 		}
-		var secrets = []string{}
-		for _, m := range secretList {
-			secrets = append(secrets, m.Metadata.Name)
+		var istioSecrets = []string{}
+		for _, m := range istioSecretList {
+			istioSecrets = append(istioSecrets, m.Metadata.Name)
+		}
+		glooSecretList, err := (*glooSecretClient).List(ns, clients.ListOpts{})
+		if err != nil {
+			return err
+		}
+		var glooSecrets = []string{}
+		for _, m := range glooSecretList {
+			glooSecrets = append(glooSecrets, m.Metadata.Name)
 		}
 		upstreamList, err := (*upstreamClient).List(ns, clients.ListOpts{})
 		if err != nil {
@@ -89,7 +118,8 @@ func InitCache(opts *options.Options) error {
 		opts.Cache.NsResources[ns] = &options.NsResource{
 			MeshesByInstallNs: meshesByInstallNs,
 			Meshes:            meshes,
-			Secrets:           secrets,
+			IstioSecrets:      istioSecrets,
+			GlooSecrets:       glooSecrets,
 			Upstreams:         upstreams,
 		}
 	}
@@ -111,14 +141,15 @@ func InitCache(opts *options.Options) error {
 			case *superglooV1.Mesh_Istio:
 				iNs = spec.Istio.InstallationNamespace
 			}
-			opts.Cache.NsResources[iNs].MeshesByInstallNs = append(
-				opts.Cache.NsResources[iNs].MeshesByInstallNs,
-				core.ResourceRef{
-					Name:      m.Metadata.Name,
-					Namespace: m.Metadata.Namespace,
-				})
+			if iNs != "" {
+				opts.Cache.NsResources[iNs].MeshesByInstallNs = append(
+					opts.Cache.NsResources[iNs].MeshesByInstallNs,
+					core.ResourceRef{
+						Name:      m.Metadata.Name,
+						Namespace: m.Metadata.Namespace,
+					})
+			}
 		}
-
 	}
 
 	return nil
@@ -126,7 +157,7 @@ func InitCache(opts *options.Options) error {
 
 // Check if supergloo is running on the cluster and deploy it if it isn't
 func InitSupergloo(opts *options.Options) error {
-	// Should never happen, since InitCache gets  called first, but just in case
+	// Should never happen, since InitCache gets called first, but just in case
 	if opts.Cache.KubeClient == nil {
 		if err := InitCache(opts); err != nil {
 			return err

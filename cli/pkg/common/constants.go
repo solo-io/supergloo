@@ -9,6 +9,7 @@ const (
 	Istio    = "istio"
 	Consul   = "consul"
 	Linkerd2 = "linkerd2"
+	AppMesh  = "appmesh"
 
 	// The character used as a separator when specifying CLI options that are to be interpreted as a list of values
 	ListOptionSeparator = ","

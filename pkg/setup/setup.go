@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -31,7 +33,7 @@ import (
 
 var defaultNamespaces = []string{"supergloo-system", "gloo-system", "default"}
 
-func Main(namespaces ...string) error {
+func Main(errHandler func(error), namespaces ...string) error {
 	if len(namespaces) == 0 {
 		namespaces = defaultNamespaces
 	}
@@ -128,17 +130,27 @@ func Main(namespaces ...string) error {
 		return err
 	}
 
-	secretClient, err := factory2.GetIstioCacertsSecretClient(kubeClient)
+	istioSecretClient, err := factory2.GetIstioCacertsSecretClient(kubeClient)
 	if err != nil {
 		return err
 	}
-	if err := secretClient.Register(); err != nil {
+	if err := istioSecretClient.Register(); err != nil {
 		return err
 	}
 
-	installEmitter := v1.NewInstallEmitter(installClient, secretClient)
+	glooSecretClient, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
+	})
+	if err != nil {
+		return err
+	}
+	if err := glooSecretClient.Register(); err != nil {
+		return err
+	}
 
-	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
+	installEmitter := v1.NewInstallEmitter(installClient, istioSecretClient)
+
+	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioSecretClient, glooSecretClient)
 
 	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)
@@ -156,14 +168,17 @@ func Main(namespaces ...string) error {
 	consulPolicySyncer := &consul.PolicySyncer{}
 	istioEncryptionSyncer := &istio.EncryptionSyncer{
 		Kube:         kubeClient,
-		SecretClient: secretClient,
+		SecretClient: istioSecretClient,
 	}
 	istioPolicySyncer, err := istio.NewPolicySyncer("supergloo-system", kubeCache, restConfig)
 	if err != nil {
 		return err
 	}
 
+	appMeshSyncer := appmesh.NewSyncer()
+
 	translatorSyncers := v1.TranslatorSyncers{
+		appMeshSyncer,
 		istioRoutingSyncer,
 		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
@@ -181,7 +196,7 @@ func Main(namespaces ...string) error {
 		ApiExts:      apiExts,
 		Kube:         kubeClient,
 		MeshClient:   meshClient,
-		SecretClient: secretClient,
+		SecretClient: istioSecretClient,
 		// TODO: set a security client when we resolve minishift issues
 	}
 	installSyncers := v1.InstallSyncers{
@@ -215,6 +230,9 @@ func Main(namespaces ...string) error {
 		select {
 		case err := <-writeErrs:
 			logger.Errorf("error: %v", err)
+			if errHandler != nil {
+				errHandler(err)
+			}
 		case <-watchOpts.Ctx.Done():
 			close(writeErrs)
 			return nil

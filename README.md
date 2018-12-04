@@ -72,6 +72,7 @@ For users, this will provide the ability to migrate between service mesh provide
         <tr>
             <th colspan=2></th>
             <th>Istio</th>
+            <th>AWS App Mesh</th>
             <th>Consul Connect</th>
             <th>Linkerd 2</th>            
         </tr>
@@ -82,9 +83,11 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>✔</td>
+            <td align=center>✔</td>
         </tr>
         <tr>
             <td colspan=2><B>Discovery</B></td>
+            <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
@@ -93,24 +96,28 @@ For users, this will provide the ability to migrate between service mesh provide
             <td rowspan=3><B>Security</B></td>
             <td><B>Root Cert</B></td>
             <td align=center>✔</td>
+            <td align=center>N/A</td>
             <td align=center>✔</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>mTLS</B></td>
             <td align=center>✔</td>
+            <td align=center>N/A</td>
             <td align=center>✔</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>Policy</B></td>
             <td align=center>✔</td>
+            <td align=center>🚧</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
         </tr>
         <tr>
             <td rowspan=2><B>Routing</B></td>
             <td><B>Traffic Control</B></td>
+            <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>N/A</td>
@@ -120,10 +127,12 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>N/A</td>
+            <td align=center>N/A</td>
         </tr>
         <tr>
             <td rowspan=3><B>Observibility</B></td>
             <td><B>Metrics via Prometheus</B></td>
+            <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>✔</td>
@@ -131,12 +140,14 @@ For users, this will provide the ability to migrate between service mesh provide
             <tr>
             <td><B>Metrics via Grafana</B></td>
             <td align=center>🚧</td>
+            <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>OpenTracing</B></td>
             <td align=center>🚧</td>
+            <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>🚧</td>
         </tr>        
@@ -146,9 +157,11 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
+            <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>Discovery</B></td>
+            <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
@@ -202,5 +215,5 @@ Our vision is to enable multi-mesh: the ability to connect meshes of any type to
 
 ## Thanks
 
-SuperGloo would not be possible without the valuable open-source work of projects in the service mesh community. We would like to extend a special thank-you to [Istio](https://istio.io), [Hashicorp Consul](https://www.hashicorp.com/products/consul) and [Linkerd](https://linkerd.io), as well as the vibrant [Kubernetes](https://kubernetes.io) community.
+SuperGloo would not be possible without the valuable open-source work of projects in the service mesh community. We would like to extend a special thank-you to [Istio](https://istio.io), [AWS App Mesh](https://aws.amazon.com/app-mesh/), [Hashicorp Consul](https://www.hashicorp.com/products/consul) and [Linkerd](https://linkerd.io), as well as the vibrant [Kubernetes](https://kubernetes.io) community.
 

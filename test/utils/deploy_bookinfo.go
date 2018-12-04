@@ -5,7 +5,7 @@ import (
 )
 
 func DeployBookinfo(cfg *rest.Config, namespace string) error {
-	return DeployFromYamlWithInject(cfg, namespace, IstioBookinfoYaml)
+	return DeployFromYamlWithIstioInject(cfg, namespace, IstioBookinfoYaml)
 }
 
 const IstioBookinfoYaml = `# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml

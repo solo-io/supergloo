@@ -46,17 +46,16 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
+		var kube kubernetes.Interface
 		// Secret Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		secretClientFactory := &factory.KubeSecretClientFactory{
 			Clientset: kube,
 		}
 		secretClient, err = NewSecretClient(secretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Upstream Constructor
 		upstreamClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         UpstreamCrd,

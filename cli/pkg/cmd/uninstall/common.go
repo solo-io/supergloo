@@ -107,12 +107,12 @@ func uninstallMeshes(meshList []string, installClient *v1.InstallClient) error {
 	for i, val := range meshList {
 		installCrd, err := installList.Find(constants.SuperglooNamespace, val)
 		if err != nil {
-			return fmt.Errorf("unable to fetch CRD for (%s) \n finished work: (%s) \n remaining work :", val, meshList[0:i+1], meshList[i:len(meshList)])
+			return fmt.Errorf("unable to fetch CRD for (%s) \n finished work: (%s) \n remaining work : (%s)", val, meshList[0:i+1], meshList[i:])
 		}
 
-		err = updateMeshInstall(installCrd, installClient)
+		err = disableMeshInstall(installCrd, installClient)
 		if err != nil {
-			return fmt.Errorf("unable to update CRD for (%s) \n finished work: (%s) \n remaining work :", val, meshList[0:i+1], meshList[i:len(meshList)])
+			return fmt.Errorf("unable to update CRD for (%s) \n finished work: (%s) \n remaining work : (%s)", val, meshList[0:i+1], meshList[i:])
 		}
 
 		fmt.Printf("Successfully uninstalled mesh: (%s)", val)
@@ -121,7 +121,7 @@ func uninstallMeshes(meshList []string, installClient *v1.InstallClient) error {
 	return err
 }
 
-func updateMeshInstall(installCrd *v1.Install, installClient *v1.InstallClient) error {
+func disableMeshInstall(installCrd *v1.Install, installClient *v1.InstallClient) error {
 	installCrd.Enabled = &types.BoolValue{Value: false}
 	_, err := (*installClient).Write(installCrd, clients.WriteOpts{OverwriteExisting: true})
 	return err

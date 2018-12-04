@@ -147,19 +147,26 @@ func validateResourceRefForStaticMode(typeName string, menuDescription string, r
 			return fmt.Errorf("Please specify a valid namespace. Namespace %v not found.", resRef.Namespace)
 		}
 
+		refError := fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, menuDescription, resRef.Namespace)
+
 		// make sure that the particular resource exists in the specified namespace
 		switch typeName {
 		case "mesh":
 			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Meshes, resRef.Name) {
-				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, menuDescription, resRef.Namespace)
+				return refError
 			}
+		// TODO: clean up the mapping for secrets, which is made in several places
 		case "secret":
-			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Secrets, resRef.Name) {
-				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, menuDescription, resRef.Namespace)
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].IstioSecrets, resRef.Name) {
+				return refError
+			}
+		case "awssecret":
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].GlooSecrets, resRef.Name) {
+				return refError
 			}
 		case "upstream":
 			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Upstreams, resRef.Name) {
-				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, menuDescription, resRef.Namespace)
+				return refError
 			}
 		default:
 			panic(fmt.Errorf("typename %v not recognized", typeName))

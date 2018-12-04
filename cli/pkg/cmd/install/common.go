@@ -13,8 +13,13 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-func installationSummaryMessage(opts *options.Options) {
-	fmt.Printf("Installing %v in namespace %v.\n", opts.Install.MeshType, opts.Install.Namespace)
+func installationSummaryMessage(opts *options.Options, name string) {
+	if opts.Install.Namespace == "" {
+		fmt.Printf("Installing %v with name %s.\n", opts.Install.MeshType, name)
+	} else {
+		fmt.Printf("Installing %v in namespace %v with name %s.\n", opts.Install.MeshType, opts.Install.Namespace, name)
+	}
+
 	if opts.Install.Mtls {
 		fmt.Printf("mTLS active.\n")
 	}
@@ -50,20 +55,8 @@ func qualifyFlags(opts *options.Options) error {
 
 	// if they are using static mode, they must pass all params
 	if top.Static {
-		if iop.Namespace == "" {
-			return fmt.Errorf("please provide a namespace")
-		}
 		if iop.MeshType == "" {
 			return fmt.Errorf("please provide a mesh type")
-		}
-
-		// user does not need to pass a custom secret
-		// if they do, they must pass both the name and namespace
-		if iop.SecretRef.Namespace != "" && iop.SecretRef.Name == "" {
-			return fmt.Errorf("please specify a secret name to use mTLS")
-		}
-		if iop.SecretRef.Name != "" && iop.SecretRef.Namespace == "" {
-			return fmt.Errorf("please specify a secret namespace to use mTLS")
 		}
 		return nil
 	}
@@ -73,6 +66,46 @@ func qualifyFlags(opts *options.Options) error {
 		iop.MeshType = chosenMesh
 		if err != nil {
 			return fmt.Errorf("input error")
+		}
+	}
+
+	if iop.MeshType == common.AppMesh {
+		if top.Static {
+			if iop.AwsRegion == "" {
+				return fmt.Errorf("please specify an aws region")
+			}
+			if iop.AwsSecretRef.Name == "" || iop.AwsSecretRef.Namespace == "" {
+				return fmt.Errorf("please specify an aws secret")
+			}
+		}
+
+		if iop.AwsRegion == "" {
+			awsRegion, err := common.GetString("Select an aws region")
+			if err != nil {
+				return fmt.Errorf("input error")
+			}
+			iop.AwsRegion = awsRegion
+		}
+
+		if err := nsutil.EnsureCommonResource("awssecret", "awssecret", &iop.AwsSecretRef, opts); err != nil {
+			return err
+		}
+
+		// short-circuit, none of the remaining options are used for AppMesh
+		return nil
+	}
+
+	if top.Static {
+		if iop.Namespace == "" {
+			return fmt.Errorf("please provide a namespace")
+		}
+		// user does not need to pass a custom secret
+		// if they do, they must pass both the name and namespace
+		if iop.SecretRef.Namespace != "" && iop.SecretRef.Name == "" {
+			return fmt.Errorf("please specify a secret name")
+		}
+		if iop.SecretRef.Name != "" && iop.SecretRef.Namespace == "" {
+			return fmt.Errorf("please specify a secret namespace")
 		}
 	}
 
