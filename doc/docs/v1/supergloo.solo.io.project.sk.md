@@ -5,5 +5,6 @@
 - [Mesh](./mesh.proto.sk.md#Mesh)
 - [RoutingRule](./routing.proto.sk.md#RoutingRule)
 - [gloo_solo_io.Upstream](./upstream.proto.sk.md#Upstream)
-- [encryption_istio_io.IstioCacertsSecret](./secret.proto.sk.md#IstioCacertsSecret)
+- [encryption_istio_io.IstioCacertsSecret](./istio_secret.proto.sk.md#IstioCacertsSecret)
+- [gloo_solo_io.Secret](./secret.proto.sk.md#Secret)
 

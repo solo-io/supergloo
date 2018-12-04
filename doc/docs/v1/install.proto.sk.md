@@ -18,9 +18,7 @@ install.proto
   
 ### <a name="Install">Install</a>
 
-Description: @solo-kit:resource.short_name=install
-@solo-kit:resource.plural_name=installs
-@solo-kit:resource.resource_groups=install.supergloo.solo.io
+Description: 
 
 ```yaml
 "status": .core.solo.io.Status

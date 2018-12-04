@@ -42,3 +42,9 @@ func ChooseBool(message string) (bool, error) {
 
 	return choice == yes, nil
 }
+
+func GetString(message string) (string, error) {
+	var str string
+	err := survey.AskOne(&survey.Input{Message: message}, &str, survey.Required)
+	return str, err
+}

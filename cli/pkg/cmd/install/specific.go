@@ -74,6 +74,19 @@ func generateLinkerd2InstallSpecFromOpts(opts *options.Options) *v1.Install {
 	return installSpec
 }
 
+func generateAppMeshInstallSpecFromOpts(opts *options.Options) *v1.Mesh {
+	installSpec := &v1.Mesh{
+		Metadata: getMetadataFromOpts(opts),
+		MeshType: &v1.Mesh_AppMesh{
+			AppMesh: &v1.AppMesh{
+				AwsRegion:      opts.Install.AwsRegion,
+				AwsCredentials: &opts.Install.AwsSecretRef,
+			},
+		},
+	}
+	return installSpec
+}
+
 func chooseWatchNamespaces(opts *options.Options) ([]string, error) {
 
 	prompt := &survey.MultiSelect{

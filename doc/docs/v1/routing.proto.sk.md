@@ -20,10 +20,7 @@ routing.proto
   
 ### <a name="RoutingRule">RoutingRule</a>
 
-Description: @solo-kit:resource.short_name=rr
-@solo-kit:resource.plural_name=routingrules
-@solo-kit:resource.resource_groups=translator.supergloo.solo.io
-rules to add features such as Fault Injection and Retries to a mesh
+Description: rules to add features such as Fault Injection and Retries to a mesh
 
 ```yaml
 "status": .core.solo.io.Status

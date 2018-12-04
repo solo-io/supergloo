@@ -6,6 +6,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"k8s.io/api/admissionregistration/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batch "k8s.io/api/batch/v1"
@@ -84,16 +85,26 @@ func convertYamlToResource(objectYaml string) (KubeObjectList, error) {
 	case "Pod":
 		obj = &core.Pod{TypeMeta: typeMeta}
 	case "Deployment":
-		if typeMeta.APIVersion == "extensions/v1beta1" {
+		switch typeMeta.APIVersion {
+		case "extensions/v1beta1":
 			obj = &extensionsv1beta1.Deployment{TypeMeta: typeMeta}
-		} else {
+		case "apps/v1":
+			obj = &appsv1.Deployment{TypeMeta: typeMeta}
+		case "apps/v1beta2":
 			obj = &appsv1beta2.Deployment{TypeMeta: typeMeta}
+		default:
+			return nil, errors.Errorf("unknown api version for deployment: %v", typeMeta.APIVersion)
 		}
 	case "DaemonSet":
-		if typeMeta.APIVersion == "extensions/v1beta1" {
+		switch typeMeta.APIVersion {
+		case "extensions/v1beta1":
 			obj = &extensionsv1beta1.DaemonSet{TypeMeta: typeMeta}
-		} else {
+		case "apps/v1":
+			obj = &appsv1.DaemonSet{TypeMeta: typeMeta}
+		case "apps/v1beta2":
 			obj = &appsv1beta2.DaemonSet{TypeMeta: typeMeta}
+		default:
+			return nil, errors.Errorf("unknown api version for daemon set: %v", typeMeta.APIVersion)
 		}
 	case "CustomResourceDefinition":
 		obj = &apiextensions.CustomResourceDefinition{TypeMeta: typeMeta}

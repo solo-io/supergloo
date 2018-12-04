@@ -20,6 +20,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	cmd.AddCommand(
 		RoutingRuleCmd(opts),
 		SecretCmd(opts),
+		AwsSecretCmd(opts),
 	)
 
 	return cmd

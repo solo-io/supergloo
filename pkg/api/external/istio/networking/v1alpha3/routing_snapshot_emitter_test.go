@@ -45,7 +45,6 @@ var _ = Describe("V1Alpha3Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
 		// DestinationRule Constructor
 		destinationRuleClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         DestinationRuleCrd,
@@ -54,7 +53,6 @@ var _ = Describe("V1Alpha3Emitter", func() {
 		}
 		destinationRuleClient, err = NewDestinationRuleClient(destinationRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// VirtualService Constructor
 		virtualServiceClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         VirtualServiceCrd,

@@ -3,6 +3,7 @@ package shared
 import (
 	"github.com/pkg/errors"
 	"k8s.io/api/admissionregistration/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batch "k8s.io/api/batch/v1"
@@ -75,8 +76,14 @@ func (k *kubeInstaller) Create(obj runtime.Object) error {
 	case *appsv1beta2.Deployment:
 		_, err := kube.AppsV1beta2().Deployments(namespace).Create(obj)
 		return err
+	case *appsv1.Deployment:
+		_, err := kube.AppsV1().Deployments(namespace).Create(obj)
+		return err
 	case *appsv1beta2.DaemonSet:
 		_, err := kube.AppsV1beta2().DaemonSets(namespace).Create(obj)
+		return err
+	case *appsv1.DaemonSet:
+		_, err := kube.AppsV1().DaemonSets(namespace).Create(obj)
 		return err
 	case *extensionsv1beta1.Deployment:
 		_, err := kube.ExtensionsV1beta1().Deployments(namespace).Create(obj)
@@ -199,6 +206,24 @@ func (k *kubeInstaller) Update(obj runtime.Object) error {
 		obj.ResourceVersion = obj2.ResourceVersion
 		_, err = client.Update(obj)
 		return err
+	case *appsv1.Deployment:
+		client := kube.AppsV1().Deployments(namespace)
+		obj2, err := client.Get(obj.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		obj.ResourceVersion = obj2.ResourceVersion
+		_, err = client.Update(obj)
+		return err
+	case *appsv1.DaemonSet:
+		client := kube.AppsV1().DaemonSets(namespace)
+		obj2, err := client.Get(obj.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		obj.ResourceVersion = obj2.ResourceVersion
+		_, err = client.Update(obj)
+		return err
 	case *apiextensions.CustomResourceDefinition:
 		client := exts.ApiextensionsV1beta1().CustomResourceDefinitions()
 		obj2, err := client.Get(obj.Name, metav1.GetOptions{})
@@ -258,6 +283,10 @@ func (k *kubeInstaller) Delete(obj runtime.Object) error {
 		return kube.RbacV1().ClusterRoleBindings().Delete(obj.Name, nil)
 	case *batch.Job:
 		return kube.BatchV1().Jobs(namespace).Delete(obj.Name, nil)
+	case *appsv1.Deployment:
+		return kube.AppsV1().Deployments(namespace).Delete(obj.Name, nil)
+	case *appsv1.DaemonSet:
+		return kube.AppsV1().DaemonSets(namespace).Delete(obj.Name, nil)
 	case *appsv1beta2.Deployment:
 		return kube.AppsV1beta2().Deployments(namespace).Delete(obj.Name, nil)
 	case *appsv1beta2.DaemonSet:

@@ -43,12 +43,12 @@ var _ = Describe("istio routing E2e", func() {
 
 		util.UninstallHelmRelease(releaseName)
 		util.TryDeleteIstioCrds()
-		util.TerminateNamespace(namespace) // non-blocking, since this ns is randomly generated
+		testsetup.TeardownKube(namespace)
 		util.DeleteCrb(istio.CrbName)
 	})
 
 	It("works", func() {
-		go setup.Main(namespace)
+		go setup.Main(nil, namespace)
 
 		// start discovery
 		cmd := exec.Command(PathToUds, "--namespace", namespace)
@@ -59,7 +59,6 @@ var _ = Describe("istio routing E2e", func() {
 		meshes, routingRules, installClient, err := run()
 		Expect(err).NotTo(HaveOccurred())
 
-		installClient.Register()
 		// wait for supergloo to register crds
 		Eventually(func() error {
 			_, err := installClient.List(namespace, clients.ListOpts{})
@@ -310,7 +309,7 @@ func run() (v1.MeshClient, v1.RoutingRuleClient, v1.InstallClient, error) {
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if err := routingRuleClient.Register(); err != nil {
+	if err := installClient.Register(); err != nil {
 		return nil, nil, nil, err
 	}
 	return meshClient, routingRuleClient, installClient, nil
