@@ -41,9 +41,9 @@ func Root(opts *options.Options) *cobra.Command {
 }
 
 func rootArgValidation(c *cobra.Command, args []string) error {
-	expectedArgCount := 1
-	if len(args) != expectedArgCount {
-		return fmt.Errorf("Unexpected number of args (%v given, %v expected)", len(args), expectedArgCount)
+	exactArgs := cobra.ExactArgs(1)
+	if err := exactArgs(c, args); err != nil {
+		return err
 	}
 	subCommandName := args[0]
 	if !common.Contains(validRootArgs, subCommandName) {
