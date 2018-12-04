@@ -3,6 +3,8 @@ package create
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/common"
+
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/routerule"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 
@@ -15,7 +17,7 @@ func RoutingRuleCmd(opts *options.Options) *cobra.Command {
 		Use:   "routingrule",
 		Short: `Create a route rule with the given name`,
 		Long:  `Create a route rule with the given name`,
-		Args:  cobra.ExactArgs(1),
+		Args:  common.RequiredNameArg,
 		RunE: func(c *cobra.Command, args []string) error {
 			rrOpts.RouteName = args[0]
 			if err := routerule.CreateRoutingRule(routerule.USE_ALL_ROUTING_RULES, opts); err != nil {
@@ -25,6 +27,8 @@ func RoutingRuleCmd(opts *options.Options) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.SetUsageTemplate(common.UsageTemplate("rule-name"))
 
 	routerule.AddBaseFlags(cmd, opts)
 	routerule.AddTrafficShiftingFlags(cmd, opts)
