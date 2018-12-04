@@ -104,7 +104,7 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 			if err := routerule.CreateRoutingRule(ruleTypeID, opts); err != nil {
 				return err
 			}
-			fmt.Printf("Created %v routing rule [%v] in namespace [%v]\n", routerule.RoutingRuleDisplayName[ruleTypeID], rrOpts.TargetMesh.Name, rrOpts.TargetMesh.Namespace)
+			fmt.Printf("Created %v routing rule [%v] in namespace [%v]\n", routerule.RoutingRuleDisplayName[ruleTypeID], rrOpts.RouteName, rrOpts.TargetMesh.Namespace)
 			return nil
 		},
 	}
