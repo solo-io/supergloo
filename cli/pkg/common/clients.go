@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"time"
 
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
 
@@ -16,7 +17,7 @@ import (
 )
 
 func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func GetGlooSecretClient() (*glooV1.SecretClient, error) {
 }
 
 func GetMeshClient() (*superglooV1.MeshClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func GetMeshClient() (*superglooV1.MeshClient, error) {
 }
 
 func GetRoutingRuleClient() (*superglooV1.RoutingRuleClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +122,7 @@ func GetInstallClient() (*superglooV1.InstallClient, error) {
 }
 
 func GetKubernetesClient() (*kubernetes.Clientset, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -132,10 +133,11 @@ func GetKubernetesClient() (*kubernetes.Clientset, error) {
 	return kubeClient, nil
 }
 
-func GetKubernetesConfig() (*rest.Config, error) {
+func GetKubernetesConfig(timeout time.Duration) (*rest.Config, error) {
 	config, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, fmt.Errorf(KubeConfigError, err)
 	}
+	config.Timeout = timeout
 	return config, nil
 }

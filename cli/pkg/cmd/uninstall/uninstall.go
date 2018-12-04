@@ -17,9 +17,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 		Run: func(c *cobra.Command, args []string) {
 			uninstall(opts)
 		},
-
 	}
-
 
 	uop := &opts.Uninstall
 	pflags := cmd.PersistentFlags()
@@ -43,7 +41,6 @@ func uninstall(opts *options.Options) {
 		fmt.Println(err)
 		return
 	}
-
 
 	return
 }

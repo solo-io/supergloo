@@ -2,12 +2,13 @@ package uninstall
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/constants"
-	"strings"
 )
 
 func staticArgParse(opts *options.Options, installClient *v1.InstallClient) ([]string, error) {
@@ -40,7 +41,7 @@ func staticArgParse(opts *options.Options, installClient *v1.InstallClient) ([]s
 	return meshesToDelete, nil
 }
 
-func dynamicArgParse(opts *options.Options, installClient *v1.InstallClient) ([]string, error)  {
+func dynamicArgParse(opts *options.Options, installClient *v1.InstallClient) ([]string, error) {
 	var meshesToDelete []string
 
 	installList, err := (*installClient).List(constants.SuperglooNamespace, clients.ListOpts{})
@@ -64,8 +65,6 @@ func dynamicArgParse(opts *options.Options, installClient *v1.InstallClient) ([]
 
 	return meshesToDelete, nil
 }
-
-
 
 func validateArgs(opts *options.Options, installClient *v1.InstallClient) error {
 	var meshesToDelete []string
@@ -98,7 +97,6 @@ func validateArgs(opts *options.Options, installClient *v1.InstallClient) error 
 	return uninstallMeshes(meshesToDelete, installClient)
 }
 
-
 func fmtNameList(names string) []string {
 	cleanNames := strings.Replace(names, " ", "", -1)
 	return strings.Split(cleanNames, ",")
@@ -109,12 +107,12 @@ func uninstallMeshes(meshList []string, installClient *v1.InstallClient) error {
 	for i, val := range meshList {
 		installCrd, err := installList.Find(constants.SuperglooNamespace, val)
 		if err != nil {
-			return fmt.Errorf("unable to fetch CRD for (%s) \n finished work: (%s) \n remaining work :", val, meshList[0: i+1], meshList[i:len(meshList)])
+			return fmt.Errorf("unable to fetch CRD for (%s) \n finished work: (%s) \n remaining work : (%s)", val, meshList[0:i+1], meshList[i:])
 		}
 
-		err = updateMeshInstall(installCrd, installClient)
+		err = disableMeshInstall(installCrd, installClient)
 		if err != nil {
-			return fmt.Errorf("unable to update CRD for (%s) \n finished work: (%s) \n remaining work :", val, meshList[0: i+1], meshList[i:len(meshList)])
+			return fmt.Errorf("unable to update CRD for (%s) \n finished work: (%s) \n remaining work : (%s)", val, meshList[0:i+1], meshList[i:])
 		}
 
 		fmt.Printf("Successfully uninstalled mesh: (%s)", val)
@@ -123,16 +121,16 @@ func uninstallMeshes(meshList []string, installClient *v1.InstallClient) error {
 	return err
 }
 
-func updateMeshInstall(installCrd *v1.Install, installClient *v1.InstallClient) error  {
-	installCrd.Enabled = &types.BoolValue{Value:false}
-	_, err := (*installClient).Write(installCrd, clients.WriteOpts{OverwriteExisting:true})
+func disableMeshInstall(installCrd *v1.Install, installClient *v1.InstallClient) error {
+	installCrd.Enabled = &types.BoolValue{Value: false}
+	_, err := (*installClient).Write(installCrd, clients.WriteOpts{OverwriteExisting: true})
 	return err
 }
 
-func activeMeshInstalls(installList v1.InstallList) ([]string) {
+func activeMeshInstalls(installList v1.InstallList) []string {
 	activeMeshList := make([]string, 0)
 
-	for _,val := range installList {
+	for _, val := range installList {
 		if val.Enabled == nil || val.Enabled != nil && val.Enabled.Value {
 			activeMeshList = append(activeMeshList, val.Metadata.Name)
 		}
