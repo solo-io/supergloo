@@ -45,7 +45,7 @@ func EnsureDuration(rootMessage string, durOpts *options.InputDuration, targetDu
 // If not present, it promts the user for input with the given message
 // Errors on invalid input
 func EnsurePercentage(message string, source *string, target *int32, opts *options.Options) error {
-	if !opts.Top.Static {
+	if !opts.Top.Static && opts.Top.File == "" {
 		if err := iutil.GetStringInput(message, source); err != nil {
 			return err
 		}

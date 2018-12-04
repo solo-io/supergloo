@@ -3,26 +3,22 @@ package routerule
 import (
 	"encoding/json"
 	"github.com/ghodss/yaml"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"io/ioutil"
 )
 
-type RoutingRuleConfig struct {
-	TargetMesh core.ResourceRef
-	Rule options.InputRoutingRule
-}
+
 
 func configFromFile(opts *options.Options) error {
 	//opts.Create.InputRoutingRule = options.InputRoutingRule{}
-	fileInput := &RoutingRuleConfig{}
+	fileInput := &options.InputRoutingRule{}
 	err := genericReadFileInto(opts.Top.File, fileInput)
 	if err != nil {
 		return err
 	}
 	// set daa
-	(*opts).Create.InputRoutingRule = fileInput.Rule
+	(*opts).Create.InputRoutingRule = *fileInput
 	return nil
 }
 

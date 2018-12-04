@@ -15,7 +15,7 @@ func EnsureRetry(irOpts *options.InputRetry, opts *options.Options) error {
 		PerTryTimeout: &types.Duration{},
 	}
 	// Gather the attempt count
-	if !opts.Top.Static {
+	if !opts.Top.Static && opts.Top.File == "" {
 		err := iutil.GetStringInput("Please specify the number of retry attempts", &irOpts.Attempts)
 		if err != nil {
 			return err

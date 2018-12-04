@@ -98,15 +98,26 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 		Long:  description,
 		Args:  common.RequiredNameArg,
 		RunE: func(c *cobra.Command, args []string) error {
-			rrOpts.RouteName = args[0]
+			if err := EnsureName(rrOpts, args); err != nil {
+				return err
+			}
 			if err := routerule.CreateRoutingRule(ruleTypeID, opts); err != nil {
 				return err
 			}
-			fmt.Printf("Created %v routing rule [%v] in namespace [%v]\n", routerule.RoutingRuleDisplayName[ruleTypeID], args[0], rrOpts.TargetMesh.Namespace)
+			fmt.Printf("Created %v routing rule [%v] in namespace [%v]\n", routerule.RoutingRuleDisplayName[ruleTypeID], rrOpts.TargetMesh.Name, rrOpts.TargetMesh.Namespace)
 			return nil
 		},
 	}
 	cmd.SetUsageTemplate(common.UsageTemplate("resource-name"))
 	linkMeshToolFlags(cmd, opts)
 	return cmd
+}
+
+func EnsureName(opts *options.InputRoutingRule, args []string) error {
+	if opts.RouteName == "" {
+		if len(args) > 0 {
+			(*opts).RouteName = args[0]
+		}
+	}
+	return nil
 }
