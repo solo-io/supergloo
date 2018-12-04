@@ -90,12 +90,12 @@ func generateAppMeshInstallSpecFromOpts(opts *options.Options) *v1.Mesh {
 func chooseWatchNamespaces(opts *options.Options, meshName string) ([]string, error) {
 
 	prompt := &survey.MultiSelect{
-		Message: fmt.Sprintf("Which namespace(s) would you like the new %s mesh to have access to: ", meshName),
+		Message: fmt.Sprintf("Which namespace(s) would you like the new %s mesh to have access to: (leave blank for all)", meshName),
 		Options: opts.Cache.Namespaces,
 	}
 
 	chosenNamespaces := []string{}
-	if err := survey.AskOne(prompt, &chosenNamespaces, survey.Required); err != nil {
+	if err := survey.AskOne(prompt, &chosenNamespaces, nil); err != nil {
 		return []string{}, err
 	}
 
