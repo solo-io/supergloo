@@ -90,7 +90,7 @@ func generateAppMeshInstallSpecFromOpts(opts *options.Options) *v1.Mesh {
 func chooseWatchNamespaces(opts *options.Options, meshName string) ([]string, error) {
 
 	prompt := &survey.MultiSelect{
-		Message: fmt.Sprintf("Which namespace(s) would you like the new %s mesh to watch:", meshName),
+		Message: fmt.Sprintf("Which namespace(s) would you like the new %s mesh to have access to: ", meshName),
 		Options: opts.Cache.Namespaces,
 	}
 
