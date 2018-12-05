@@ -41,7 +41,7 @@ func EnsureMinimumRequiredParams(opts *options.Options) error {
 
 func EnsureUpstreams(opts *options.Options) error {
 	rrOpts := &(opts.Create).InputRoutingRule
-	if opts.Top.Static {
+	if opts.Top.Static || opts.Top.File != "" {
 		upstreamClient, err := common.GetUpstreamClient()
 		if err != nil {
 			return err
