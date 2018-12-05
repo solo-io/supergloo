@@ -2,6 +2,10 @@ Command-Line Interface
 ----
 The supergloo cli is a command line wrapper for supergloo's [REST API](https://supergloo.solo.io/v1/supergloo.solo.io.project.sk/).
 
+ In order to create a seamless experience, the supergloo cli is interactive by default.
+However, if you would not like to take advantage of these features, feel free to use the `static -s` flag and turn them off.
+
+
 * [`Initializing supergloo`](cli.md#initializing-supergloo)
 * [`Installing Meshes`](cli.md#installing-meshes)
 * [`Uninstalling Meshes`](cli.md#uninstalling-meshes)
@@ -11,9 +15,6 @@ The supergloo cli is a command line wrapper for supergloo's [REST API](https://s
 * [`Configuration`](cli.md#configuration)
 * [`Get`](cli.md#get)
 
-### supergloo-cli conventions
-In order to create a seamless experience, the supergloo cli is interactive by default.
-However, if you would not like to take advantage of these features, feel free to use the `static -s` flag and turn them off.
 
 
 ### Initializing supergloo
