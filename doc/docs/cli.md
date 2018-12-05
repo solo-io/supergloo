@@ -223,6 +223,7 @@ This rule will then append the response header `[header-response1, text]` and re
 security features: 
 * [`policies`](cli.md#policies)
 * [`mtls`](cli.md#mtls)
+* [`ingress``]
 
 ##### Policies
 
@@ -270,10 +271,28 @@ Clears all policies from a given mesh
 ```bash
 supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace>
 ```
-##### mtls
+##### mTLS
+
+TODO: Brief description here
+
+```bash
+supergloo mtls [sub-command] [flags] 
+```
+
+Sub-Commands:
+* `disable` disable mTLS
+* `enable` enable mTLS
+* `toggle` toggle mTLS
+
+Persistent-Flags:
+* `--mesh.name` (string, required) name of mesh to update
+* `--mesh.namespace` (string, required) namespace of mesh to update
 
 
-### Policies
+Example:
+```bash
+supergloo mtls enable -s --mesh.namespace <namespace> --mesh.name <mesh-name>
+```
 
 ### Configuration
 
