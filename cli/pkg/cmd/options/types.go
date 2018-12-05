@@ -68,9 +68,10 @@ type IngressTool struct {
 }
 
 type Get struct {
-	Output string
-	Type   string
-	Name   string
+	Output    string
+	Type      string
+	Name      string
+	Namespace string
 }
 
 type InputDuration struct {

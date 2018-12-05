@@ -12,8 +12,6 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get/printers"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	sgConstants "github.com/solo-io/supergloo/pkg/constants"
-
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	k8sApiExt "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,6 +74,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 	resourceType := gOpts.Type
 	resourceName := gOpts.Name
 	outputFormat := gOpts.Output
+	namespace := gOpts.Namespace
 
 	standardResourceType := client.resourceNameMap[resourceType]
 
@@ -84,7 +83,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 	switch standardResourceType {
 	case "mesh":
 		if resourceName == "" {
-			res, err := (*client.meshClient).List(sgConstants.SuperglooNamespace, clients.ListOpts{})
+			res, err := (*client.meshClient).List(namespace, clients.ListOpts{})
 			if err != nil {
 				return err
 			}
@@ -97,7 +96,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 			}
 			return toTable(*ri, gOpts)
 		} else {
-			res, err := (*client.meshClient).Read(sgConstants.SuperglooNamespace, resourceName, clients.ReadOpts{})
+			res, err := (*client.meshClient).Read(namespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return err
 			}
@@ -113,7 +112,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 	case "routingrule":
 		if resourceName == "" {
 			// TODO: replace with supergloo namespace
-			res, err := (*client.routingRulesClient).List("default", clients.ListOpts{})
+			res, err := (*client.routingRulesClient).List(namespace, clients.ListOpts{})
 			if err != nil {
 				return err
 			}
@@ -126,7 +125,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 			}
 			return toTable(*ri, gOpts)
 		} else {
-			res, err := (*client.routingRulesClient).Read("default", resourceName, clients.ReadOpts{})
+			res, err := (*client.routingRulesClient).Read(namespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return err
 			}

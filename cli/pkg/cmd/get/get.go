@@ -3,6 +3,7 @@ package get
 import (
 	"fmt"
 	"github.com/olekukonko/tablewriter"
+	"github.com/solo-io/supergloo/pkg/constants"
 	"os"
 	"strconv"
 	"strings"
@@ -33,8 +34,8 @@ func Cmd(opts *options.Options) *cobra.Command {
 		},
 	}
 	getOpts := &opts.Get
-	pFlags := cmd.Flags()
-	pFlags.StringVarP(&getOpts.Output, "output", "o", "",
+	flags := cmd.Flags()
+	flags.StringVarP(&getOpts.Output, "output", "o", "",
 		"Output format. Options include: \n"+strings.Join(supportedOutputFormats, "|"))
 
 	cmd.AddCommand(getResourcesCmd(opts))
@@ -46,6 +47,7 @@ func getResourcesCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resources",
 		Short: `Displays resources that can be displayed`,
+		Aliases: []string{"r", "options"},
 		Args:  cobra.ExactArgs(0),
 		RunE: func(c *cobra.Command, args []string) error {
 			crdClient, err := common.GetKubeCrdClient()
@@ -62,9 +64,12 @@ func getResourcesCmd(opts *options.Options) *cobra.Command {
 			index := 1
 			for _, crd := range crdList.Items {
 				if strings.Contains(crd.Name, common.SuperglooGroupName) {
+					// TODO (EItanya) think of a better way to deal with this
 					nameSpec := crd.Spec.Names
-					table.Append([]string{strconv.Itoa(index) ,nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
-					index++
+					if nameSpec.Singular != "install" {
+						table.Append([]string{strconv.Itoa(index) ,nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
+						index++
+					}
 				}
 			}
 			table.Render()
@@ -72,9 +77,11 @@ func getResourcesCmd(opts *options.Options) *cobra.Command {
 		},
 	}
 	getOpts := &opts.Get
-	pFlags := cmd.Flags()
-	pFlags.StringVarP(&getOpts.Output, "output", "o", "",
+	flags := cmd.Flags()
+	flags.StringVarP(&getOpts.Output, "output", "o", "",
 		"Output format. Options include: \n"+strings.Join(supportedOutputFormats, "|"))
+
+	flags.StringVarP(&getOpts.Namespace, "namespace", "n", constants.SuperglooNamespace, "namespace to search")
 	return cmd
 }
 
