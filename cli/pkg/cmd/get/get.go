@@ -37,7 +37,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	pFlags.StringVarP(&getOpts.Output, "output", "o", "",
 		"Output format. Options include: \n"+strings.Join(supportedOutputFormats, "|"))
 
-	cmd.AddCommand(getOptionsCmd(opts))
+	cmd.AddCommand(getResourcesCmd(opts))
 
 	return cmd
 }
