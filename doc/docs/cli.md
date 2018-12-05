@@ -234,7 +234,7 @@ security features:
 
 #### Policies
 
-Configure security policies for which services can communicate within the cluster.
+Configure security policies for service communication.
 
 ```bash
 supergloo policy [sub-command] [flags] 
