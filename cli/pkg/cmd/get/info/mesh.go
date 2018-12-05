@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	meshName   = "NAME"
-	namespace  = "NAMESPACE"
-	target     = "TARGET-MESH"
-	status     = "STATUS"
-	encryption = "ENCRYPTION"
+	meshName    = "NAME"
+	namespace   = "NAMESPACE"
+	target      = "TARGET-MESH"
+	status      = "STATUS"
+	encryption  = "ENCRYPTION"
+	policyCount = "POLICY-COUNT"
 )
 
 // TODO: ideally at some point we might annotate our .proto files with this information
@@ -24,6 +25,7 @@ var meshHeaders = []Header{
 	{Name: target, WideOnly: false},
 	{Name: status, WideOnly: false},
 	{Name: encryption, WideOnly: true},
+	{Name: policyCount, WideOnly: true},
 }
 
 func FromMesh(mesh *v1.Mesh) *ResourceInfo {
@@ -44,12 +46,23 @@ func transformMesh(mesh *v1.Mesh) map[string]string {
 	meshFieldMap[meshName] = mesh.Metadata.Name
 	meshFieldMap[target], meshFieldMap[namespace] = getMeshType(mesh)
 	meshFieldMap[status] = core.Status_State_name[int32(mesh.Status.State)]
+	meshFieldMap[policyCount] = strconv.Itoa(getPolicyCount(mesh))
 	if mesh.Encryption != nil {
 		meshFieldMap[encryption] = strconv.FormatBool(mesh.Encryption.TlsEnabled)
 	} else {
 		meshFieldMap[encryption] = strconv.FormatBool(false)
 	}
 	return meshFieldMap
+}
+
+func getPolicyCount(mesh *v1.Mesh) int {
+	if mesh.Policy == nil {
+		return 0
+	}
+	if mesh.Policy.Rules == nil {
+		return 0
+	}
+	return len(mesh.Policy.Rules)
 }
 
 func getMeshType(mesh *v1.Mesh) (meshType, installationNamespace string) {
