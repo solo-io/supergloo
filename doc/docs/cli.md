@@ -38,13 +38,14 @@ supergloo install [flags]
 
 Flags:
  
-* `--aws-region` (string, optional)
-* `--awssecret.name` (string, optional)
-* `--awssecret.namespace` (string, optional)
-* `--meshtype` (string, required, options: "istio", "consul", "linkerd2", "" ) name of mesh to install
+* `--aws-region` (string, optional) AWS region
+* `--awssecret.name` (string, optional) name of the AWS secret
+* `--awssecret.namespace` (string, optional) namespace of the AWS secret
+* `-m --meshtype` (string, required, options: "istio", "consul", "linkerd2", "appmesh" ) name of mesh to install
 * `--mtls` (boolean, optional, default: false) enable mtls for mesh
-* `--secret.name` (string, optional)
-* `--secret.namespace` (string, optional)
+* `-n --namespace` (string, required) namespace to install mesh into
+* `--secret.name` (string, optional) name of the mTLS secret
+* `--secret.namespace` (string, optional) namespace of the mTLS secret
 
 Example usage: 
 ```bash
@@ -57,15 +58,16 @@ The above command will install istio into the istio-system namespace
 
 ### Uninstalling Meshes
 
+Uninstalls meshes from the cluster.
+
 ```bash
 supergloo uninstall [flags]
 ```
 
-
 Flags:
-* `--all` (boolean, optional)
-* `--meshname` (string, required)
-* `--meshtype` (string, optional)
+* `--all` (boolean, optional) uninstalls all installed meshes
+* `--meshname` (string, required) name of an installed mesh of any type.
+* `--meshtype` (string, optional) mesh to uninstall: (istio, consul, linkerd2, appmesh). Rather than supplying the exact name of the mesh like above, this argument takes the mesh type and finds the corresponding mesh to delete.
 
 Example usage:
 ```bash
@@ -133,7 +135,7 @@ supergloo traffic-shifting ts-rule -s -m <mesh-name> -n <namespace> \
 supergloo fault-injection [flags] <resource-name>
 ```
 
-FLags:
+Flags:
 * `--fault.abort.message` (string, required) Error message (int for type=http errors, string otherwise).
 * `--fault.abort.percent` (int, required) Percentage of requests on which the abort will be injected (0-100)
 * `--fault.abort.type` (string, required) Type of error (http, http2, or grpc)
@@ -232,7 +234,7 @@ security features:
 
 #### Policies
 
-TODO: Brief description here
+Configure security policies for which services can communicate within the cluster.
 
 ```bash
 supergloo policy [sub-command] [flags] 
@@ -278,7 +280,7 @@ supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace>
 ```
 #### mTLS
 
-control mTLS for a given mesh
+Configure mTLS for a given mesh
 
 ```bash
 supergloo mtls [sub-command] [flags] 
