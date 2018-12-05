@@ -42,7 +42,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	return cmd
 }
 
-func getOptionsCmd(opts *options.Options) *cobra.Command {
+func getResourcesCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resources",
 		Short: `Displays resources that can be displayed`,
