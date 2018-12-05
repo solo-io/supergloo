@@ -16,7 +16,7 @@ In order to create a seamless experience, the supergloo cli is interactive by de
 However, if you would not like to take advantage of these features, feel free to use the `static -s` flag and turn them off.
 
 
-#### Initializing supergloo
+### Initializing supergloo
 
 The first step with the CLI is Initializing supergloo in your desired cluster.
 
@@ -28,7 +28,7 @@ The above command will create supergloo-system namespace in your cluster, as wel
 
 ---
 
-#### Installing Meshes
+### Installing Meshes
 
 
 ```bash
@@ -54,7 +54,7 @@ The above command will install istio into the istio-system namespace
 
 ---
 
-#### Uninstalling Meshes
+### Uninstalling Meshes
 
 ```bash
 supergloo uninstall [flags]
@@ -73,7 +73,7 @@ supergloo uninstall --meshname <name-of-mesh>
 
 ---
 
-#### Routing Rules
+### Routing Rules
 
 * [`Traffic Shifting`](cli.md#traffic-shifting)
 * [`Fault Injection`](cli.md#fault-injection)
@@ -108,7 +108,7 @@ kubectl get routingrules.supergloo.solo.io --all-namespaces
 Create routing rule functions as the sum total of all of the individual rule commands listed below. 
 `create routing-rule` allows for the creation of multiple rules simultaneously, either via flags, or via yaml.
 
-##### Traffic Shifting
+#### Traffic Shifting
 
 ```bash
 supergloo traffic-shifting [flags] <resource-name>
@@ -126,7 +126,7 @@ supergloo traffic-shifting ts-rule -s -m <mesh-name> -n <namespace> \
     --traffic.upstreams <namespace:name>, <namespace:name> --traffic.weights 10, 20
 ```
 
-##### Fault Injection
+#### Fault Injection
 
 ```bash
 supergloo fault-injection [flags] <resource-name>
@@ -142,7 +142,7 @@ FLags:
 * `--fault.delay.value.nanos` (int, required) delay duration (nanoseconds)
 
 
-##### Timeout
+#### Timeout
 
 ```bash
 supergloo timeout [flags] <resource-name>
@@ -152,7 +152,7 @@ Flags:
 * `--route.timeout.seconds` (int, required) timeout duration (seconds)
 * `--rout.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
-##### Retries
+#### Retries
 
 ```bash
 supergloo retries [flags] <resource-name>
@@ -163,7 +163,7 @@ Flags:
 * `--route.retry.timeout.seconds` (int, required) timeout duration (seconds)
 * `--route.retry.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
-##### Cors Policy
+#### Cors Policy
 
 ```bash
 supergloo cors [flags] <resource-name>
@@ -178,7 +178,7 @@ Flags:
 * `--cors.maxage.seconds` (int, required) Max age time in seconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header.
 * `--cors.maxage.nanos` (int, required) Max age time in nanoseconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header.
 
-##### Mirror
+#### Mirror
 
 ```bash
 supergloo mirror [flags] <resource-name>
@@ -195,7 +195,7 @@ supergloo mirror m-rule -s --mesh <mesh-name> --namespace <mesh-namespace> \
 ```
 The above command creates a new mirror rule
 
-##### Header Manipulation
+#### Header Manipulation
 
 ```bash
 supergloo header-manipulation [flags] <resource-name>
@@ -227,7 +227,7 @@ security features:
 * [`mtls`](cli.md#mtls)
 * [`ingress`](cli.md#fortify-ingress)
 
-##### Policies
+#### Policies
 
 TODO: Brief description here
 
@@ -273,7 +273,7 @@ Clears all policies from a given mesh
 ```bash
 supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace>
 ```
-##### mTLS
+#### mTLS
 
 control mTLS for a given mesh
 
@@ -296,7 +296,7 @@ Example:
 supergloo mtls enable -s --mesh.namespace <namespace> --mesh.name <mesh-name>
 ```
 
-##### Fortify Ingress
+#### Fortify Ingress
 
 Configure ingress security parameters
 
