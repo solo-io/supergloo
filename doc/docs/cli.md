@@ -91,12 +91,12 @@ supergloo create routing-rule [flags] <resource-name>
 Persistent flags:
 * `--matchers` (string, optional) list of comma seperated matchers. eg: ("*")
 * `-m --mesh` (string, required) name of mesh which will be the target for this rule
-* `-n --namespace` (string, required, default "default") namespace this rule will be installed into
+* `-n --namespace` (string, required, default: "default") namespace this rule will be installed into
 * `-d --destinations` (string, required) destinations for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
 * `--sources` (string, required) Sources for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
 * `-f --filename` (string, optional) filename containing info to construct route rule. Only yaml supported currently. note: currently this feature supports multiple data formats.
 Either use the form defined in the `routing_rule.proto` or one that conforms to the CLI.
-* `-s --static` (bool, optional, default false) As stated above. the CLI by default is interactive unless specified via this flag
+* `-s --static` (bool, optional, default: false) As stated above. the CLI by default is interactive unless specified via this flag
 
 
 Notes:
@@ -306,3 +306,18 @@ This feature will be available in 2019.
 
 
 ### Get
+
+Fetch supergloo data/CRDs in a readable format
+
+```bash
+supergloo get <RESOURCE-TYPE> <resource-name> [flags]
+```
+
+This command functions similarly to `kubectl get`. The first arg is the resource type, and the second (optional) arg is the name of the individual resource.
+ 
+Sub-Commands:
+*  `-r --resources` prints a list of available resource types and their corresponding shortcuts
+
+Flags:
+* `-n --namespace` (string, optional, default: "gloo-system) namespace to search for the corresponding CRD
+* `-o --output` (string, optional) output format for the data, small table by default (yaml, wide...)
