@@ -52,10 +52,7 @@ func ensureParameters(infoClient info.SuperglooInfoClient, opts *options.Options
 	gOpts := &opts.Get
 
 	// Get available resource types
-	resourceTypes, err := infoClient.ListResourceTypes()
-	if err != nil {
-		return err
-	}
+	resourceTypes := infoClient.ListResourceTypes()
 
 	// Argument count is validated by cobra.RangeArgs
 	if len(args) == 0 {
