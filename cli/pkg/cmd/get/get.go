@@ -2,11 +2,12 @@ package get
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
-	"github.com/solo-io/supergloo/pkg/constants"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get/info"
 	"github.com/solo-io/supergloo/cli/pkg/common"
@@ -45,10 +46,10 @@ func Cmd(opts *options.Options) *cobra.Command {
 
 func getResourcesCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "resources",
-		Short: `Displays resources that can be displayed`,
+		Use:     "resources",
+		Short:   `Displays resources that can be displayed`,
 		Aliases: []string{"r", "options"},
-		Args:  cobra.ExactArgs(0),
+		Args:    cobra.ExactArgs(0),
 		RunE: func(c *cobra.Command, args []string) error {
 			crdClient, err := common.GetKubeCrdClient()
 			if err != nil {
@@ -67,7 +68,7 @@ func getResourcesCmd(opts *options.Options) *cobra.Command {
 					// TODO (EItanya) think of a better way to deal with this
 					nameSpec := crd.Spec.Names
 					if nameSpec.Singular != "install" {
-						table.Append([]string{strconv.Itoa(index) ,nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
+						table.Append([]string{strconv.Itoa(index), nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
 						index++
 					}
 				}

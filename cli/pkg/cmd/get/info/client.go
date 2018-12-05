@@ -62,7 +62,7 @@ func NewClient() (SuperglooInfoClient, error) {
 }
 
 // Get a list of all supergloo resources
-func (client *KubernetesInfoClient) ListResourceTypes() ([]string) {
+func (client *KubernetesInfoClient) ListResourceTypes() []string {
 	nameSlice := make([]string, len(client.resourceNameMap))
 	for k := range client.resourceNameMap {
 		nameSlice = append(nameSlice, k)
@@ -171,7 +171,7 @@ func getResourceNames(crdClient *k8sApiExt.CustomResourceDefinitionInterface) (m
 	crdList, err := (*crdClient).List(k8s.ListOptions{})
 	resourceMap := make(map[string]string)
 	if err != nil {
-		return resourceMap,  fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
+		return resourceMap, fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
 	}
 
 	for _, crd := range crdList.Items {
