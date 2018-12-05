@@ -2,6 +2,9 @@ package get
 
 import (
 	"fmt"
+	"github.com/olekukonko/tablewriter"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get/info"
@@ -11,6 +14,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
 	"gopkg.in/AlecAivazis/survey.v1"
+	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var supportedOutputFormats = []string{"wide", "yaml"}
@@ -21,10 +25,50 @@ func Cmd(opts *options.Options) *cobra.Command {
 		Short: `Display one or many supergloo resources`,
 		Long:  `Display one or many supergloo resources`,
 		Args:  cobra.RangeArgs(0, 2),
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			if err := get(args, opts); err != nil {
-				fmt.Println(err)
+				return err
 			}
+			return nil
+		},
+	}
+	getOpts := &opts.Get
+	pFlags := cmd.Flags()
+	pFlags.StringVarP(&getOpts.Output, "output", "o", "",
+		"Output format. Options include: \n"+strings.Join(supportedOutputFormats, "|"))
+
+	cmd.AddCommand(getOptionsCmd(opts))
+
+	return cmd
+}
+
+func getOptionsCmd(opts *options.Options) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "resources",
+		Short: `Displays resources that can be displayed`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(c *cobra.Command, args []string) error {
+			crdClient, err := common.GetKubeCrdClient()
+			if err != nil {
+				return err
+			}
+			crdList, err := (*crdClient).List(k8s.ListOptions{})
+			if err != nil {
+				return fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
+			}
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetBorder(false)
+			table.SetHeader([]string{"", "resource", "plural", "short names"})
+			index := 1
+			for _, crd := range crdList.Items {
+				if strings.Contains(crd.Name, common.SuperglooGroupName) {
+					nameSpec := crd.Spec.Names
+					table.Append([]string{strconv.Itoa(index) ,nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
+					index++
+				}
+			}
+			table.Render()
+			return nil
 		},
 	}
 	getOpts := &opts.Get

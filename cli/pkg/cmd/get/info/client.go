@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	sgConstants "github.com/solo-io/supergloo/pkg/constants"
 
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	k8sApiExt "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +33,7 @@ type KubernetesInfoClient struct {
 
 func NewClient() (SuperglooInfoClient, error) {
 
-	crdClient, err := getCrdClient()
+	crdClient, err := common.GetKubeCrdClient()
 	if err != nil {
 		return nil, err
 	}
@@ -146,21 +145,6 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 	}
 }
 
-// Return a client to query kubernetes CRDs
-func getCrdClient() (*k8sApiExt.CustomResourceDefinitionInterface, error) {
-	config, err := kubeutils.GetConfig("", "")
-	if err != nil {
-		return nil, fmt.Errorf(common.KubeConfigError, err)
-	}
-
-	apiExtClient, err := k8sApiExt.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("Error building Kubernetes client: %v \n", err)
-	}
-	crdClient := apiExtClient.CustomResourceDefinitions()
-	return &crdClient, nil
-}
-
 func toYaml(data interface{}) error {
 	yml, err := yaml.Marshal(data)
 	if err != nil {
@@ -191,7 +175,6 @@ func getResourceNames(crdClient *k8sApiExt.CustomResourceDefinitionInterface) (m
 		return resourceMap,  fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
 	}
 
-	//superglooCRDs := make([]string, 0)
 	for _, crd := range crdList.Items {
 		if strings.Contains(crd.Name, common.SuperglooGroupName) {
 			nameSpec := crd.Spec.Names
