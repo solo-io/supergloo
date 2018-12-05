@@ -14,9 +14,13 @@ import (
 func AssembleRoutingRule(ruleTypeID string, activeRuleTypes *[]options.MultiselectOptionBool, opts *options.Options) error {
 
 	if opts.Top.File != "" {
-		err := configFromFile(opts)
+		configType, err := configFromFile(opts)
 		if err != nil {
 			return err
+		}
+		// If file is parsed as valid yaml conforming to API the work is done and we can return to save it
+		if configType == API_CONFIG {
+			return nil
 		}
 	}
 

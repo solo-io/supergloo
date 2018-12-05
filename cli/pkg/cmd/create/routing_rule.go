@@ -26,7 +26,7 @@ func RoutingRuleCmd(opts *options.Options) *cobra.Command {
 			if err := routerule.CreateRoutingRule(routerule.USE_ALL_ROUTING_RULES, opts); err != nil {
 				return err
 			}
-			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", rrOpts.RouteName, rrOpts.TargetMesh.Namespace)
+			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", opts.MeshTool.RoutingRule.Metadata.Name, opts.MeshTool.RoutingRule.Metadata.Namespace)
 			return nil
 		},
 	}

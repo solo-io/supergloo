@@ -5,21 +5,29 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/pkg/api/v1"
 	"io/ioutil"
 )
 
 
+const (
+	API_CONFIG = "api_config"
+	CLI_CONFIG = "cli_config"
+)
 
-func configFromFile(opts *options.Options) error {
+func configFromFile(opts *options.Options) (string, error) {
 	//opts.Create.InputRoutingRule = options.InputRoutingRule{}
-	fileInput := &options.InputRoutingRule{}
-	err := genericReadFileInto(opts.Top.File, fileInput)
-	if err != nil {
-		return err
+	cliInput := &options.InputRoutingRule{}
+	apiInput := &v1.RoutingRule{}
+	if err := genericReadFileInto(opts.Top.File, apiInput); err == nil {
+		(*opts).MeshTool.RoutingRule = *apiInput
+		return API_CONFIG, nil
 	}
-	// set daa
-	(*opts).Create.InputRoutingRule = *fileInput
-	return nil
+	if err := genericReadFileInto(opts.Top.File, cliInput); err == nil {
+		(*opts).Create.InputRoutingRule = *cliInput
+		return CLI_CONFIG, nil
+	}
+	return "", errors.Errorf("yaml file does not conform to either cli format, or API format")
 }
 
 func genericReadFileInto(filename string, dat interface{}) error {
@@ -33,3 +41,4 @@ func genericReadFileInto(filename string, dat interface{}) error {
 	}
 	return json.Unmarshal(jsn, dat)
 }
+
