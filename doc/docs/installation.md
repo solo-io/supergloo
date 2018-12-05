@@ -63,4 +63,6 @@ For instance, to deploy `istio` into the `istio-system` namespace, run:
 supergloo install -m istio -n istio-system -s
 ```
 
+Full CLI documentation can be found [**here**](cli.md)
+
 
