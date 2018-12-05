@@ -47,8 +47,10 @@ Flags:
 
 Example usage: 
 ```bash
-WIP: DO THIS LATER
+supergloo install --meshtype istio --namespace istio-system
 ```
+The above command will install istio into the istio-system namespace
+
 
 ---
 
@@ -223,7 +225,7 @@ This rule will then append the response header `[header-response1, text]` and re
 security features: 
 * [`policies`](cli.md#policies)
 * [`mtls`](cli.md#mtls)
-* [`ingress``]
+* [`ingress`](cli.md#fortify-ingress)
 
 ##### Policies
 
@@ -273,7 +275,7 @@ supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace>
 ```
 ##### mTLS
 
-TODO: Brief description here
+control mTLS for a given mesh
 
 ```bash
 supergloo mtls [sub-command] [flags] 
@@ -293,6 +295,12 @@ Example:
 ```bash
 supergloo mtls enable -s --mesh.namespace <namespace> --mesh.name <mesh-name>
 ```
+
+##### Fortify Ingress
+
+Configure ingress security parameters
+
+This feature will be available in 2019.
 
 ### Configuration
 
