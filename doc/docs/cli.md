@@ -6,8 +6,10 @@ The supergloo cli is a command line wrapper for supergloo's [REST API](https://s
 * [`Installing Meshes`](cli.md#installing-meshes)
 * [`Uninstalling Meshes`](cli.md#uninstalling-meshes)
 * [`Routing Rules`](cli.md#routing-rules)
-* Getting
-* Policies
+* [`Security`](cli.md#security)
+* [`Policies`](cli.md#policies)
+* [`Configuration`](cli.md#configuration)
+* [`Get`](cli.md#get)
 
 ### supergloo-cli conventions
 In order to create a seamless experience, the supergloo cli is interactive by default.
@@ -183,6 +185,14 @@ supergloo mirror [flags] <resource-name>
 Flags:
 * `--mirror` (string, required) Destination upstream (ex: upstream_namespace:upstream_name).
 
+Example:
+```bash
+supergloo mirror m-rule -s --mesh <mesh-name> --namespace <mesh-namespace> \
+    --destinations <namespace:name> --sources <namespace:name> \
+    --mirror <namespace:name>
+```
+The above command creates a new mirror rule
+
 ##### Header Manipulation
 
 ```bash
@@ -206,3 +216,66 @@ supergloo header-manipulation hm-rule -s --mesh <mesh-name> --namespace <mesh-na
 The above command creates a new header-manipulation rule for the mesh (`mesh`) in the namespace (`namespace`).
 This rule will append the request header `[header-request1, text]` and remvove the request header `header-request2`.
 This rule will then append the response header `[header-response1, text]` and remove the response header `header-response2`.
+
+
+### Security
+
+security features: 
+* [`policies`](cli.md#policies)
+* [`mtls`](cli.md#mtls)
+
+##### Policies
+
+TODO: Brief description here
+
+```bash
+supergloo policy [sub-command] [flags] 
+```
+
+Sub-Commands:
+* `add` apply a policy
+* `claer` clear all policies
+* `remove` remove a single policy
+
+Persistent-Flags:
+* `--mesh.name` (string, required) name of mesh to update
+* `--mesh.namespace` (string, required) namespace of mesh to update
+* `--destination.name` (string, required) name of policy destination upstream
+* `--destination.namespace` (string, required) namespace of policy destination upstream
+* `--source.name` (string, required) name of policy source upstream
+* `--source.namespace` (string, required) namespace of policy source upstream
+
+
+Add:
+
+Adds a single policy to a given mesh with the specified source and destination
+```bash
+supergloo policy add -s --mesh.name <mesh-name> --mesh.namespace <namespace> \
+    --destination.name <upstream-name> --destination.namespace <upstream-namespace> \
+    --source.name <upstream-name> --source.namespace <upstream-namespace>
+```
+
+Remove: 
+
+Removes a single policy from a given mesh with the specified source and destination.
+```bash
+supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace> \
+    --destination.name <upstream-name> --destination.namespace <upstream-namespace> \
+    --source.name <upstream-name> --source.namespace <upstream-namespace>
+```
+
+Clear:
+
+Clears all policies from a given mesh
+```bash
+supergloo policy remove -s --mesh.name <mesh-name> --mesh.namespace <namespace>
+```
+##### mtls
+
+
+### Policies
+
+### Configuration
+
+
+### Get
