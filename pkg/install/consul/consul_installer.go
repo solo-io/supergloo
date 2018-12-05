@@ -29,7 +29,7 @@ func (c *ConsulInstaller) GetOverridesYaml(install *v1.Install) string {
 	return getOverrides(install.Encryption)
 }
 
-func (c *ConsulInstaller) DoPreHelmInstall() error {
+func (c *ConsulInstaller) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
 	return nil
 }
 
@@ -43,14 +43,6 @@ func getOverrides(encryption *v1.Encryption) string {
 		strBool = strconv.FormatBool(encryption.TlsEnabled)
 	}
 	return strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", strBool, -1)
-}
-
-func (c *ConsulInstaller) DoPreHelmUninstall() error {
-	return nil
-}
-
-func (c *ConsulInstaller) DoPostHelmUninstall() error {
-	return nil
 }
 
 var overridesYaml = `

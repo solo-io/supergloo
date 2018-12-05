@@ -6,7 +6,7 @@ metadata:
   labels:
     linkerd.io/control-plane-component: grafana
   name: grafana
-  namespace: linkerd
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
   - name: http

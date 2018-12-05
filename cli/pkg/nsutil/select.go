@@ -3,6 +3,7 @@ package nsutil
 import (
 	"fmt"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"gopkg.in/AlecAivazis/survey.v1"
@@ -13,11 +14,11 @@ import (
 // ChooseMesh allows users to interactively select a mesh
 // Options are displayed in the format "<installation_namespace>, <name>" for each mesh
 // Selections are returned as a resource ref (and the resource ref namespace may differ from the installation namespace)
-func ChooseMesh(nsr options.NsResourceMap) (options.ResourceRef, error) {
+func ChooseMesh(nsr options.NsResourceMap) (core.ResourceRef, error) {
 
 	meshOptions, meshMap := generateMeshSelectOptions(nsr)
 	if len(meshOptions) == 0 {
-		return options.ResourceRef{}, fmt.Errorf("No meshs found. Please create a mesh")
+		return core.ResourceRef{}, fmt.Errorf("No meshs found. Please create a mesh")
 	}
 
 	question := &survey.Select{
@@ -29,7 +30,7 @@ func ChooseMesh(nsr options.NsResourceMap) (options.ResourceRef, error) {
 	if err := survey.AskOne(question, &choice, survey.Required); err != nil {
 		// this should not error
 		fmt.Println("error with input")
-		return options.ResourceRef{}, err
+		return core.ResourceRef{}, err
 	}
 
 	return meshMap[choice].resourceRef, nil
@@ -37,8 +38,8 @@ func ChooseMesh(nsr options.NsResourceMap) (options.ResourceRef, error) {
 
 // EnsureSecret validates a meshRef relative to static vs. interactive mode
 // If in interactive mode (non-static mode) and a secret is not given, it will prompt the user to choose one
-func EnsureMesh(meshRef *options.ResourceRef, opts *options.Options) error {
-	if err := validateResourceRefForStaticMode("mesh", meshRef, opts); err != nil {
+func EnsureMesh(meshRef *core.ResourceRef, opts *options.Options) error {
+	if err := validateResourceRefForStaticMode("mesh", "mesh", meshRef, opts); err != nil {
 		return err
 	}
 
@@ -52,53 +53,93 @@ func EnsureMesh(meshRef *options.ResourceRef, opts *options.Options) error {
 	return nil
 }
 
-func ChooseSecret(nsr options.NsResourceMap) (options.ResourceRef, error) {
+func ChooseResource(typeName string, menuDescription string, nsr options.NsResourceMap) (core.ResourceRef, error) {
 
-	secretOptions, secretMap := generateSecretSelectOptions(nsr)
-	if len(secretOptions) == 0 {
-		return options.ResourceRef{}, fmt.Errorf("No secrets found. Please create a secret")
+	resOptions, resMap := generateCommonResourceSelectOptions(typeName, nsr)
+	if len(resOptions) == 0 {
+		return core.ResourceRef{}, fmt.Errorf("No %v found. Please create a %v", menuDescription, menuDescription)
 	}
 	question := &survey.Select{
-		Message: "Select a secret",
-		Options: secretOptions,
+		Message: fmt.Sprintf("Select a %v", menuDescription),
+		Options: resOptions,
 	}
 
 	var choice string
 	if err := survey.AskOne(question, &choice, survey.Required); err != nil {
 		// this should not error
 		fmt.Println("error with input")
-		return options.ResourceRef{}, err
+		return core.ResourceRef{}, err
 	}
 
-	return secretMap[choice].resourceRef, nil
+	return resMap[choice].resourceRef, nil
 }
 
-// EnsureSecret validates a secretRef relative to static vs. interactive mode
-// If in interactive mode (non-static mode) and a secret is not given, it will prompt the user to choose one
-func EnsureSecret(secretRef *options.ResourceRef, opts *options.Options) error {
-	if err := validateResourceRefForStaticMode("secret", secretRef, opts); err != nil {
+// TODO(mitchdraft) merge with ChooseResource
+func ChooseResources(typeName string, menuDescription string, nsr options.NsResourceMap) ([]*core.ResourceRef, error) {
+
+	resOptions, resMap := generateCommonResourceSelectOptions(typeName, nsr)
+	if len(resOptions) == 0 {
+		return []*core.ResourceRef{}, fmt.Errorf("No %v found. Please create a %v", menuDescription, menuDescription)
+	}
+	question := &survey.MultiSelect{
+		Message: fmt.Sprintf("Select a %v", menuDescription),
+		Options: resOptions,
+	}
+
+	var choice []string
+	if err := survey.AskOne(question, &choice, survey.Required); err != nil {
+		// this should not error
+		fmt.Println("error with input")
+		return []*core.ResourceRef{}, err
+	}
+	var response []*core.ResourceRef
+	for _, c := range choice {
+		res := resMap[c].resourceRef
+		response = append(response, &res)
+	}
+
+	return response, nil
+}
+
+// EnsureCommonResource validates a resRef relative to static vs. interactive mode
+// If in interactive mode (non-static mode) and a resourceRef is not given, it will prompt the user to choose one
+// This function works for multiple types of resources. Specify the resource type via typeName
+// menuDescription - the string that the user will see when the prompt menu appears
+func EnsureCommonResource(typeName string, menuDescription string, resRef *core.ResourceRef, opts *options.Options) error {
+	if err := validateResourceRefForStaticMode(typeName, menuDescription, resRef, opts); err != nil {
 		return err
 	}
 
 	// interactive mode
-	if secretRef.Name == "" || secretRef.Namespace == "" {
-		chosenSecretRef, err := ChooseSecret(opts.Cache.NsResources)
+	if resRef.Name == "" || resRef.Namespace == "" {
+		chosenResRef, err := ChooseResource(typeName, menuDescription, opts.Cache.NsResources)
 		if err != nil {
 			return err
 		}
-		*secretRef = chosenSecretRef
+		*resRef = chosenResRef
 	}
 	return nil
 }
 
-func validateResourceRefForStaticMode(typeName string, resRef *options.ResourceRef, opts *options.Options) error {
+// Static mode not supported ATM
+// TODO(mitchdraft) integrate with static mode
+func EnsureCommonResources(typeName string, menuDescription string, resRefs *[]*core.ResourceRef, opts *options.Options) error {
+	chosenResRefs, err := ChooseResources(typeName, menuDescription, opts.Cache.NsResources)
+	if err != nil {
+		return err
+	}
+	*resRefs = chosenResRefs
+	return nil
+}
+
+func validateResourceRefForStaticMode(typeName string, menuDescription string, resRef *core.ResourceRef, opts *options.Options) error {
 	if opts.Top.Static {
 		// make sure we have a full resource ref
 		if resRef.Name == "" {
-			return fmt.Errorf("Please provide a %v name", typeName)
+			return fmt.Errorf("Please provide a %v name", menuDescription)
 		}
 		if resRef.Namespace == "" {
-			return fmt.Errorf("Please provide a %v namespace", typeName)
+			return fmt.Errorf("Please provide a %v namespace", menuDescription)
 		}
 
 		// make sure they chose a valid namespace
@@ -106,15 +147,26 @@ func validateResourceRefForStaticMode(typeName string, resRef *options.ResourceR
 			return fmt.Errorf("Please specify a valid namespace. Namespace %v not found.", resRef.Namespace)
 		}
 
+		refError := fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, menuDescription, resRef.Namespace)
+
 		// make sure that the particular resource exists in the specified namespace
 		switch typeName {
 		case "mesh":
 			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Meshes, resRef.Name) {
-				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, typeName, resRef.Namespace)
+				return refError
 			}
+		// TODO: clean up the mapping for secrets, which is made in several places
 		case "secret":
-			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Secrets, resRef.Name) {
-				return fmt.Errorf("Please specify a valid %v name. %v not found in namespace %v.", resRef.Name, typeName, resRef.Namespace)
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].IstioSecrets, resRef.Name) {
+				return refError
+			}
+		case "awssecret":
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].GlooSecrets, resRef.Name) {
+				return refError
+			}
+		case "upstream":
+			if !common.Contains(opts.Cache.NsResources[resRef.Namespace].Upstreams, resRef.Name) {
+				return refError
 			}
 		default:
 			panic(fmt.Errorf("typename %v not recognized", typeName))

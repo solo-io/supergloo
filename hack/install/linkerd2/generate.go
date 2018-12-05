@@ -1,13 +1,14 @@
-package linkerd2
+package main
 
 import (
-	"github.com/ghodss/yaml"
-	"github.com/iancoleman/strcase"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/ghodss/yaml"
+	"github.com/iancoleman/strcase"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 )
 
 func main() {
@@ -48,7 +49,7 @@ func (o KubeObject) Filename() string {
 	if !ok {
 		panic("kind not string")
 	}
-	return strings.Replace(strcase.ToSnake(name+kind), "-", "_", -1)+".yaml"
+	return strings.Replace(strcase.ToSnake(name+kind), "-", "_", -1) + ".yaml"
 }
 
 func writeTemplates(dir string) error {
@@ -62,7 +63,9 @@ func writeTemplates(dir string) error {
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(filepath.Join(dir, obj.Filename()), yml, 0644)
+		ymlString := string(yml)
+		updatedYml := strings.Replace(ymlString, "namespace: linkerd", "namespace: {{ .Release.Namespace }}", -1)
+		err = ioutil.WriteFile(filepath.Join(dir, obj.Filename()), []byte(updatedYml), 0644)
 	}
 	return nil
 }
@@ -84,12 +87,7 @@ func ParseKubeManifest(manifest string) (KubeObjectList, error) {
 	return objs, nil
 }
 
-const source = `### Namespace ###
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: linkerd
-
+const source = `
 ### Service Account Controller ###
 ---
 kind: ServiceAccount

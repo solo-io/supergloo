@@ -46,8 +46,12 @@ func transformMesh(mesh *v1.Mesh) map[string]string {
 	meshFieldMap[meshName] = mesh.Metadata.Name
 	meshFieldMap[target], meshFieldMap[namespace] = getMeshType(mesh)
 	meshFieldMap[status] = core.Status_State_name[int32(mesh.Status.State)]
-	meshFieldMap[encryption] = strconv.FormatBool(mesh.Encryption.TlsEnabled)
 	meshFieldMap[policyCount] = strconv.Itoa(getPolicyCount(mesh))
+	if mesh.Encryption != nil {
+		meshFieldMap[encryption] = strconv.FormatBool(mesh.Encryption.TlsEnabled)
+	} else {
+		meshFieldMap[encryption] = strconv.FormatBool(false)
+	}
 	return meshFieldMap
 }
 

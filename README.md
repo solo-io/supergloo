@@ -33,14 +33,14 @@ SuperGloo, an open-source project to manage and orchestrate service meshes at sc
 
 **SuperGloo unifies management of ingress traffic (“north/south”) and mesh traffic (“east/west”).** Every service mesh relies on ingress controllers to manage traffic across clusters and from the internet. SuperGloo provides a fully-automated opinionated workflow for configuring your mesh to work with your ingress, offering a unified management experience for all traffic.
 
-**SuperGloo gives you the freedom to pair any service mesh with any ingress.** The mesh abstraction provided by SuperGloo lets users be free to choose their favorites mesh and ingress, and leave it to SuperGloo to take care of the installation and configuration necessary to let them work together. SuperGloo also supports running multiple ingress with multiple mesh in the same cluster.
+**SuperGloo gives you the freedom to pair any service mesh with any ingress.** The mesh abstraction provided by SuperGloo allows users to choose their favorite mesh and ingress. In addition, it handles the installation and configuration necessary to allow them work together. SuperGloo also supports running multiple ingress with multiple mesh in the same cluster.
 
 **SuperGloo makes it easy to explore different meshes and migrate between them.** The unified interface, as well as the automated installation, makes the transition from one mesh to another fast and painless.
 
-**SuperGloo allows using the same tools with different meshes.** The abstraction we seek to provide will allow developers to build a single product that runs on any mesh, or across meshes.
-For users, this will provide the ability to migrate between service mesh providers without changing the tooling they are work with. 
+**SuperGloo allows use of the same tools with different meshes.** The abstraction we seek to provide will allow developers to build a single product that runs on any mesh, or across meshes.
+For users, this will provide the ability to migrate between service mesh providers without changing the tooling they work with. 
 
-**SuperGloo will ‘glue’ meshes of any type into a multi-mesh.** For companies that run multiple service mesh instances, SuperGloo will connect all the different meshes together, across namespaces, across clusters, across clouds. All with flat-networking and policy applied at the level, rather than repeated at each individual level, without any effort of synchronizing config across meshes. 
+**SuperGloo will ‘glue’ meshes of any type into a multi-mesh.** For companies that run multiple service mesh instances, SuperGloo will connect all the different meshes together, across namespaces, across clusters, or across clouds. All with flat-networking and policy applied at every level, rather than repeated at each individual level, without the effort of synchronizing config across meshes. 
 
 
 ## Features
@@ -49,7 +49,7 @@ For users, this will provide the ability to migrate between service mesh provide
 
 **Installation** - Install, Uninstall and Reinstall service meshes with default or customized settings. Automate complicated workflows such as supporting multi-tenant (multi-namespace) installations using the one-click SuperGloo API.
 
-**Discovery** - Discover existing service mesh installations and integrate SuperGloo on top of them to manage seamlessly, without additional user configuration or risk of error.
+**Discovery** - Discover existing service mesh installations and integrate SuperGloo on top of them seamlessly, with no risk of error, and zero additional user configuration necessary.
 
 **Security** - Manage Root Certificates, enable/disable mTLS, and enforce policy within your mesh with the click of a button.
 
@@ -72,6 +72,7 @@ For users, this will provide the ability to migrate between service mesh provide
         <tr>
             <th colspan=2></th>
             <th>Istio</th>
+            <th>AWS App Mesh</th>
             <th>Consul Connect</th>
             <th>Linkerd 2</th>            
         </tr>
@@ -82,9 +83,11 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>✔</td>
+            <td align=center>✔</td>
         </tr>
         <tr>
             <td colspan=2><B>Discovery</B></td>
+            <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
@@ -93,24 +96,28 @@ For users, this will provide the ability to migrate between service mesh provide
             <td rowspan=3><B>Security</B></td>
             <td><B>Root Cert</B></td>
             <td align=center>✔</td>
+            <td align=center>N/A</td>
             <td align=center>✔</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>mTLS</B></td>
             <td align=center>✔</td>
+            <td align=center>N/A</td>
             <td align=center>✔</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>Policy</B></td>
             <td align=center>✔</td>
+            <td align=center>🚧</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
         </tr>
         <tr>
             <td rowspan=2><B>Routing</B></td>
             <td><B>Traffic Control</B></td>
+            <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>N/A</td>
@@ -120,10 +127,12 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>N/A</td>
+            <td align=center>N/A</td>
         </tr>
         <tr>
             <td rowspan=3><B>Observibility</B></td>
             <td><B>Metrics via Prometheus</B></td>
+            <td align=center>✔</td>
             <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>✔</td>
@@ -131,12 +140,14 @@ For users, this will provide the ability to migrate between service mesh provide
             <tr>
             <td><B>Metrics via Grafana</B></td>
             <td align=center>🚧</td>
+            <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>OpenTracing</B></td>
             <td align=center>🚧</td>
+            <td align=center>✔</td>
             <td align=center>N/A</td>
             <td align=center>🚧</td>
         </tr>        
@@ -146,9 +157,11 @@ For users, this will provide the ability to migrate between service mesh provide
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
+            <td align=center>🚧</td>
         </tr>
         <tr>
             <td><B>Discovery</B></td>
+            <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
             <td align=center>🚧</td>
@@ -195,12 +208,12 @@ For users, this will provide the ability to migrate between service mesh provide
 
 ## Vision
 
-At Solo, we believe that companies at any stage of adoption will gain from experiencing multiple service meshes. At the early stages of adoption, users will benefit from the ability to experiment with multiple technologies. Groups within the same organization may favor different options, making multi-mesh a lasting reality. Whether multi-mesh is a transition-phase or the end-game, keeping your options open without compromising on ease-of-use, functionality or flexibility will give early adopters a competitive edge.
+At Solo, we believe that companies at any stage of service mesh adoption can benefit from the ability to use multiple meshes simultaneously. At the early stages of adoption, users will benefit from the ability to experiment with multiple technologies. In addition, groups within the same organization may favor different options, making multi-mesh a lasting reality. Whether multi-mesh is a transition-phase or the end-game, keeping your options open without compromising on ease-of-use, functionality or flexibility will give early adopters a competitive edge.
 
-Our vision is to enable multi-mesh, the ability to connect meshes of any type together, across namespaces, across clusters, across clouds. All with flat-networking and policy applied at the super-mesh level, rather than repeated at each individual level, without any effort of synchronizing config across meshes. The abstraction we seek to provide will allow developers to build a single product that runs on any mesh, or across meshes.
+Our vision is to enable multi-mesh: the ability to connect meshes of any type together, across namespaces, across clusters, and across clouds. All with flat-networking and policy applied at the super-mesh level, rather than repeated at each individual level, without the effort of synchronizing configs across meshes. The abstraction we seek to provide will allow developers to build a single product that runs on any mesh, or across meshes.
 
 
 ## Thanks
 
-SuperGloo would not be possible without the valuable open-source work of projects in the service mesh community. We would like to extend a special thank-you to [Istio](https://istio.io), [Hashicorp Consul](https://www.hashicorp.com/products/consul) and [Linkerd](https://linkerd.io), as well as the vibrant [Kubernetes](https://kubernetes.io) community.
+SuperGloo would not be possible without the valuable open-source work of projects in the service mesh community. We would like to extend a special thank-you to [Istio](https://istio.io), [AWS App Mesh](https://aws.amazon.com/app-mesh/), [Hashicorp Consul](https://www.hashicorp.com/products/consul) and [Linkerd](https://linkerd.io), as well as the vibrant [Kubernetes](https://kubernetes.io) community.
 

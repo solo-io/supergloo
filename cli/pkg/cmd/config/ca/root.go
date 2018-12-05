@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
@@ -27,13 +26,9 @@ func Cmd(opts *options.Options) *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-
 	flags.StringVar(&cOpts.Mesh.Name, "mesh.name", "", "name of mesh to update")
-
 	flags.StringVar(&cOpts.Mesh.Namespace, "mesh.namespace", "", "namespace of mesh to update")
-
 	flags.StringVar(&cOpts.Secret.Name, "secret.name", "", "name of secret to apply")
-
 	flags.StringVar(&cOpts.Secret.Namespace, "secret.namespace", "", "namespace of secret to apply")
 
 	return cmd
@@ -60,12 +55,7 @@ func configureCa(opts *options.Options) error {
 		return fmt.Errorf("TLS is not enabled on mesh %v. You must first enable TLS before configuring CA.", opts.Config.Ca.Mesh.Name)
 	}
 
-	// TODO(mitchdraft) replace options.ResourceRef with core.ResourceRef
-	// *(mesh.Encryption.Secret) = opts.Config.Ca.Secret
-	mesh.Encryption.Secret = &core.ResourceRef{
-		Name:      opts.Config.Ca.Secret.Name,
-		Namespace: opts.Config.Ca.Secret.Namespace,
-	}
+	*(mesh.Encryption.Secret) = opts.Config.Ca.Secret
 
 	_, err = (*meshClient).Write(mesh, clients.WriteOpts{OverwriteExisting: true})
 	if err != nil {
@@ -84,7 +74,7 @@ func ensureFlags(opts *options.Options) error {
 	}
 
 	oSecretRef := &(opts.Config.Ca).Secret
-	if err := nsutil.EnsureSecret(oSecretRef, opts); err != nil {
+	if err := nsutil.EnsureCommonResource("secret", "secret", oSecretRef, opts); err != nil {
 		return err
 	}
 

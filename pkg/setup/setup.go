@@ -4,20 +4,25 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/install"
+	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+
+	factory2 "github.com/solo-io/supergloo/pkg/factory"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/errors"
+	"github.com/solo-io/supergloo/pkg/install"
 
-	//"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-
-	//"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/consul"
@@ -28,7 +33,10 @@ import (
 
 var defaultNamespaces = []string{"supergloo-system", "gloo-system", "default"}
 
-func Main() error {
+func Main(errHandler func(error), namespaces ...string) error {
+	if len(namespaces) == 0 {
+		namespaces = defaultNamespaces
+	}
 	// TODO: ilackarms: suport options
 	kubeCache := kube.NewKubeCache()
 	restConfig, err := kubeutils.GetConfig("", "")
@@ -40,29 +48,29 @@ func Main() error {
 		return err
 	}
 
-	//destinationRuleClient, err := v1alpha3.NewDestinationRuleClient(&factory.KubeResourceClientFactory{
-	//	Crd:         v1alpha3.DestinationRuleCrd,
-	//	Cfg:         restConfig,
-	//	SharedCache: kubeCache,
-	//})
-	//if err != nil {
-	//	return err
-	//}
-	//if err := destinationRuleClient.Register(); err != nil {
-	//	return err
-	//}
+	destinationRuleClient, err := v1alpha3.NewDestinationRuleClient(&factory.KubeResourceClientFactory{
+		Crd:         v1alpha3.DestinationRuleCrd,
+		Cfg:         restConfig,
+		SharedCache: kubeCache,
+	})
+	if err != nil {
+		return err
+	}
+	if err := destinationRuleClient.Register(); err != nil {
+		return err
+	}
 
-	//virtualServiceClient, err := v1alpha3.NewVirtualServiceClient(&factory.KubeResourceClientFactory{
-	//	Crd:         v1alpha3.VirtualServiceCrd,
-	//	Cfg:         restConfig,
-	//	SharedCache: kubeCache,
-	//})
-	//if err != nil {
-	//	return err
-	//}
-	//if err := virtualServiceClient.Register(); err != nil {
-	//	return err
-	//}
+	virtualServiceClient, err := v1alpha3.NewVirtualServiceClient(&factory.KubeResourceClientFactory{
+		Crd:         v1alpha3.VirtualServiceCrd,
+		Cfg:         restConfig,
+		SharedCache: kubeCache,
+	})
+	if err != nil {
+		return err
+	}
+	if err := virtualServiceClient.Register(); err != nil {
+		return err
+	}
 
 	prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
 		Clientset: kubeClient,
@@ -122,30 +130,36 @@ func Main() error {
 		return err
 	}
 
-	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
+	istioSecretClient, err := factory2.GetIstioCacertsSecretClient(kubeClient)
+	if err != nil {
+		return err
+	}
+	if err := istioSecretClient.Register(); err != nil {
+		return err
+	}
+
+	glooSecretClient, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
 		Clientset: kubeClient,
 	})
 	if err != nil {
 		return err
 	}
-	if err := secretClient.Register(); err != nil {
+	if err := glooSecretClient.Register(); err != nil {
 		return err
 	}
 
-	installEmitter := v1.NewInstallEmitter(installClient)
+	installEmitter := v1.NewInstallEmitter(installClient, istioSecretClient)
 
-	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, secretClient)
+	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioSecretClient, glooSecretClient)
 
-	//rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
+	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)
 
-	//istioRoutingSyncer := &istio.MeshRoutingSyncer{
-	//	WriteNamespaces:           defaultNamespaces,
-	//	DestinationRuleReconciler: v1alpha3.NewDestinationRuleReconciler(destinationRuleClient),
-	//	VirtualServiceReconciler:  v1alpha3.NewVirtualServiceReconciler(virtualServiceClient),
-	//	Reporter:                  rpt,
-	//	WriteSelector:             map[string]string{"reconciler.solo.io": "supergloo.istio.routing"},
-	//}
+	istioRoutingSyncer := istio.NewMeshRoutingSyncer(namespaces,
+		nil, // if we run multiple syncers, set this to prevent a conflict / race
+		v1alpha3.NewDestinationRuleReconciler(destinationRuleClient),
+		v1alpha3.NewVirtualServiceReconciler(virtualServiceClient),
+		rpt)
 
 	linkerd2PrometheusSyncer := linkerd2.NewPrometheusSyncer(kubeClient, prometheusClient)
 	istioPrometheusSyncer := istio.NewPrometheusSyncer(kubeClient, prometheusClient)
@@ -154,15 +168,18 @@ func Main() error {
 	consulPolicySyncer := &consul.PolicySyncer{}
 	istioEncryptionSyncer := &istio.EncryptionSyncer{
 		Kube:         kubeClient,
-		SecretClient: secretClient,
+		SecretClient: istioSecretClient,
 	}
 	istioPolicySyncer, err := istio.NewPolicySyncer("supergloo-system", kubeCache, restConfig)
 	if err != nil {
 		return err
 	}
 
+	appMeshSyncer := appmesh.NewSyncer()
+
 	translatorSyncers := v1.TranslatorSyncers{
-		// istioRoutingSyncer, //TODO: Routing creates istio CRDs, causing istio installation to fail. We need to figure out a solution, removing this syncer as a short-term fix.
+		appMeshSyncer,
+		istioRoutingSyncer,
 		istioPrometheusSyncer,
 		linkerd2PrometheusSyncer,
 		consulEncryptionSyncer,
@@ -171,9 +188,15 @@ func Main() error {
 		istioPolicySyncer,
 	}
 
+	apiExts, err := apiexts.NewForConfig(restConfig)
+	if err != nil {
+		return errors.Wrapf(err, "creating api extensions client")
+	}
 	installSyncer := &install.InstallSyncer{
-		Kube:       kubeClient,
-		MeshClient: meshClient,
+		ApiExts:      apiExts,
+		Kube:         kubeClient,
+		MeshClient:   meshClient,
+		SecretClient: istioSecretClient,
 		// TODO: set a security client when we resolve minishift issues
 	}
 	installSyncers := v1.InstallSyncers{
@@ -189,13 +212,13 @@ func Main() error {
 		RefreshRate: time.Second * 1,
 	}
 
-	translatorEventLoopErrs, err := translatorEventLoop.Run(defaultNamespaces, watchOpts)
+	translatorEventLoopErrs, err := translatorEventLoop.Run(namespaces, watchOpts)
 	if err != nil {
 		return err
 	}
 	go errutils.AggregateErrs(watchOpts.Ctx, writeErrs, translatorEventLoopErrs, "translator_event_loop")
 
-	installEventLoopErrs, err := installEventLoop.Run(defaultNamespaces, watchOpts)
+	installEventLoopErrs, err := installEventLoop.Run(namespaces, watchOpts)
 	if err != nil {
 		return err
 	}
@@ -207,6 +230,9 @@ func Main() error {
 		select {
 		case err := <-writeErrs:
 			logger.Errorf("error: %v", err)
+			if errHandler != nil {
+				errHandler(err)
+			}
 		case <-watchOpts.Ctx.Done():
 			close(writeErrs)
 			return nil

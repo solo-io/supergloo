@@ -49,27 +49,25 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
+		var kube kubernetes.Interface
 		// Artifact Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		artifactClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}
 		artifactClient, err = NewArtifactClient(artifactClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Endpoint Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		endpointClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}
 		endpointClient, err = NewEndpointClient(endpointClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Proxy Constructor
 		proxyClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         ProxyCrd,
@@ -78,17 +76,15 @@ var _ = Describe("V1Emitter", func() {
 		}
 		proxyClient, err = NewProxyClient(proxyClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Secret Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		secretClientFactory := &factory.KubeSecretClientFactory{
 			Clientset: kube,
 		}
 		secretClient, err = NewSecretClient(secretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-
 		// Upstream Constructor
 		upstreamClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         UpstreamCrd,

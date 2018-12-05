@@ -34,7 +34,9 @@ func (s *PolicySyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) er
 
 		policy := mesh.Policy
 		if policy != nil {
-			s.syncPolicy(ctx, snap.Upstreams, policy)
+			if err := s.syncPolicy(ctx, snap.Upstreams, policy); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

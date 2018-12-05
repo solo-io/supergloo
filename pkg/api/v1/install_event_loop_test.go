@@ -6,6 +6,8 @@ import (
 	"context"
 	"time"
 
+	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -28,10 +30,18 @@ var _ = Describe("InstallEventLoop", func() {
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewInstallEmitter(installClient)
+		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewInstallEmitter(installClient, istioCacertsSecretClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockInstallSyncer{}
 		el := NewInstallEventLoop(emitter, sync)

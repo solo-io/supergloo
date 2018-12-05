@@ -3,6 +3,8 @@ package install
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"gopkg.in/AlecAivazis/survey.v1"
@@ -20,7 +22,7 @@ func generateConsulInstallSpecFromOpts(opts *options.Options) *v1.Install {
 		ChartLocator: &v1.HelmChartLocator{
 			Kind: &v1.HelmChartLocator_ChartPath{
 				ChartPath: &v1.HelmChartPath{
-					Path: "https://s3.amazonaws.com/supergloo.solo.io/consul.tar.gz",
+					Path: constants.ConsulInstallPath,
 				},
 			},
 		},
@@ -42,7 +44,7 @@ func generateIstioInstallSpecFromOpts(opts *options.Options) *v1.Install {
 		ChartLocator: &v1.HelmChartLocator{
 			Kind: &v1.HelmChartLocator_ChartPath{
 				ChartPath: &v1.HelmChartPath{
-					Path: "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+					Path: constants.IstioInstallPath,
 				},
 			},
 		},
@@ -63,7 +65,7 @@ func generateLinkerd2InstallSpecFromOpts(opts *options.Options) *v1.Install {
 		ChartLocator: &v1.HelmChartLocator{
 			Kind: &v1.HelmChartLocator_ChartPath{
 				ChartPath: &v1.HelmChartPath{
-					Path: "https://s3.amazonaws.com/supergloo.solo.io/linkerd2-0.1.0.tgz",
+					Path: constants.LinkerdInstallPath,
 				},
 			},
 		},
@@ -72,18 +74,28 @@ func generateLinkerd2InstallSpecFromOpts(opts *options.Options) *v1.Install {
 	return installSpec
 }
 
-func chooseWatchNamespaces(opts *options.Options) ([]string, error) {
+func generateAppMeshInstallSpecFromOpts(opts *options.Options) *v1.Mesh {
+	installSpec := &v1.Mesh{
+		Metadata: getMetadataFromOpts(opts),
+		MeshType: &v1.Mesh_AppMesh{
+			AppMesh: &v1.AppMesh{
+				AwsRegion:      opts.Install.AwsRegion,
+				AwsCredentials: &opts.Install.AwsSecretRef,
+			},
+		},
+	}
+	return installSpec
+}
+
+func chooseWatchNamespaces(opts *options.Options, meshName string) ([]string, error) {
 
 	prompt := &survey.MultiSelect{
-		Message: "Which namespaces should this mesh watch:",
+		Message: fmt.Sprintf("Which namespace(s) would you like the new %s mesh to have access to: (leave blank for all)", meshName),
 		Options: opts.Cache.Namespaces,
 	}
 
 	chosenNamespaces := []string{}
-	// survey.AskOne(prompt, &chosenNamespaces, nil)
-	if err := survey.AskOne(prompt, &chosenNamespaces, survey.Required); err != nil {
-		// this should not error
-		fmt.Println("error with input")
+	if err := survey.AskOne(prompt, &chosenNamespaces, nil); err != nil {
 		return []string{}, err
 	}
 

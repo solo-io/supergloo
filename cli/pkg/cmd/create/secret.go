@@ -18,7 +18,7 @@ func SecretCmd(opts *options.Options) *cobra.Command {
 		Use:   "secret",
 		Short: `Create a secret with the given name`,
 		Long:  `Create a secret with the given name`,
-		Args:  cobra.ExactArgs(1),
+		Args:  common.RequiredNameArg,
 		Run: func(c *cobra.Command, args []string) {
 			// make sure the given args are valid
 			if err := validateSecretArgs(opts); err != nil {
@@ -51,6 +51,8 @@ func SecretCmd(opts *options.Options) *cobra.Command {
 	cmd.MarkFlagRequired("certchain")
 
 	flags.StringVar(&sOpts.Namespace, "secretnamespace", "", "namespace in which to store the secret")
+
+	cmd.SetUsageTemplate(common.UsageTemplate("secret-name"))
 
 	return cmd
 }
@@ -117,7 +119,7 @@ func createSecret(opts *options.Options) error {
 		CaCert:    string(rootCa),
 		CaKey:     string(privateKey),
 	}
-	secretClient, err := common.GetSecretClient()
+	secretClient, err := common.GetIstioSecretClient()
 	if err != nil {
 		return err
 	}

@@ -12,8 +12,8 @@ import (
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: `Initialize supergloo.`,
-		Long:  `Initialize supergloo.`,
+		Short: `Initialize supergloo`,
+		Long:  `Initialize supergloo`,
 		Run: func(c *cobra.Command, args []string) {
 			initsupergloo()
 		},

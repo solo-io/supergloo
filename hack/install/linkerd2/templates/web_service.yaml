@@ -6,7 +6,7 @@ metadata:
   labels:
     linkerd.io/control-plane-component: web
   name: web
-  namespace: linkerd
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
   - name: http

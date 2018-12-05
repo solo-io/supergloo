@@ -45,11 +45,11 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cache := kuberc.NewKubeCache()
-
+		var kube kubernetes.Interface
 		// Config Constructor
-
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
+
 		configClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}

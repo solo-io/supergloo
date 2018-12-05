@@ -50,4 +50,4 @@ metadata:
   labels:
     linkerd.io/control-plane-component: grafana
   name: grafana-config
-  namespace: linkerd
+  namespace: {{ .Release.Namespace }}

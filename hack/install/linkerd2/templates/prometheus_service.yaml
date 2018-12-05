@@ -6,7 +6,7 @@ metadata:
   labels:
     linkerd.io/control-plane-component: prometheus
   name: prometheus
-  namespace: linkerd
+  namespace: {{ .Release.Namespace }}
 spec:
   ports:
   - name: admin-http

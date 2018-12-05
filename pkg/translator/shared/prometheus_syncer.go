@@ -35,10 +35,9 @@ func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot
 	ctx = contextutils.WithLogger(ctx, "prometheus-syncer")
 	logger := contextutils.LoggerFrom(ctx)
 	meshes := snap.Meshes.List()
-	upstreams := snap.Upstreams.List()
 
 	logger.Infof("begin sync %v (%v meshes)", snap.Hash(),
-		len(meshes), len(upstreams))
+		len(meshes))
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("%v", snap)
 

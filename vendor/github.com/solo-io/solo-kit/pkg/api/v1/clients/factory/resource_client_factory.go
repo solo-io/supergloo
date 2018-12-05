@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kubesecretplain"
 	"reflect"
 	"strings"
 
@@ -61,6 +62,9 @@ func newResourceClient(factory ResourceClientFactory, params NewResourceClientPa
 	case *KubeConfigMapClientFactory:
 		return configmap.NewResourceClient(opts.Clientset, resourceType)
 	case *KubeSecretClientFactory:
+		if opts.PlainSecrets {
+			return kubesecretplain.NewResourceClient(opts.Clientset, resourceType)
+		}
 		return kubesecret.NewResourceClient(opts.Clientset, resourceType)
 	case *VaultSecretClientFactory:
 		return vault.NewResourceClient(opts.Vault, opts.RootKey, resourceType), nil
@@ -118,6 +122,9 @@ func (f *KubeConfigMapClientFactory) NewResourceClient(params NewResourceClientP
 
 type KubeSecretClientFactory struct {
 	Clientset kubernetes.Interface
+	// set this  to true if resource fields are all strings
+	// resources will be stored as plain kubernetes secrets without serializing/deserializing
+	PlainSecrets bool
 }
 
 func (f *KubeSecretClientFactory) NewResourceClient(params NewResourceClientParams) (clients.ResourceClient, error) {

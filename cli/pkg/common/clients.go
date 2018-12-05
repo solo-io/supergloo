@@ -2,6 +2,9 @@ package common
 
 import (
 	"fmt"
+	"time"
+
+	factory2 "github.com/solo-io/supergloo/pkg/factory"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -14,7 +17,7 @@ import (
 )
 
 func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -33,9 +36,21 @@ func GetUpstreamClient() (*glooV1.UpstreamClient, error) {
 	return &upstreamClient, nil
 }
 
-func GetSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
+func GetIstioSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
 	clientset, err := GetKubernetesClient()
-	secretClient, err := istiosecret.NewIstioCacertsSecretClient(&factory.KubeSecretClientFactory{
+	secretClient, err := factory2.GetIstioCacertsSecretClient(clientset)
+	if err != nil {
+		return nil, err
+	}
+	if err = secretClient.Register(); err != nil {
+		return nil, err
+	}
+	return &secretClient, nil
+}
+
+func GetGlooSecretClient() (*glooV1.SecretClient, error) {
+	clientset, err := GetKubernetesClient()
+	secretClient, err := glooV1.NewSecretClient(&factory.KubeSecretClientFactory{
 		Clientset: clientset,
 	})
 	if err != nil {
@@ -48,7 +63,7 @@ func GetSecretClient() (*istiosecret.IstioCacertsSecretClient, error) {
 }
 
 func GetMeshClient() (*superglooV1.MeshClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +82,7 @@ func GetMeshClient() (*superglooV1.MeshClient, error) {
 }
 
 func GetRoutingRuleClient() (*superglooV1.RoutingRuleClient, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +122,7 @@ func GetInstallClient() (*superglooV1.InstallClient, error) {
 }
 
 func GetKubernetesClient() (*kubernetes.Clientset, error) {
-	config, err := GetKubernetesConfig()
+	config, err := GetKubernetesConfig(0)
 	if err != nil {
 		return nil, err
 	}
@@ -118,10 +133,11 @@ func GetKubernetesClient() (*kubernetes.Clientset, error) {
 	return kubeClient, nil
 }
 
-func GetKubernetesConfig() (*rest.Config, error) {
+func GetKubernetesConfig(timeout time.Duration) (*rest.Config, error) {
 	config, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, fmt.Errorf(KubeConfigError, err)
 	}
+	config.Timeout = timeout
 	return config, nil
 }

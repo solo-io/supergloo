@@ -1,13 +1,16 @@
 package options
 
 import (
-	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
+	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
 type Options struct {
 	Top         Top
 	Install     Install
+	Uninstall   Uninstall
 	MeshTool    MeshTool
 	IngressTool IngressTool
 	Get         Get
@@ -18,6 +21,7 @@ type Options struct {
 
 type Top struct {
 	Static bool
+	File   string
 }
 
 type Install struct {
@@ -28,11 +32,34 @@ type Install struct {
 	SecretRef           core.ResourceRef
 	WatchNamespaces     []string
 	ConsulServerAddress string
+	AwsRegion           string
+	AwsSecretRef        core.ResourceRef
+
+	// Interactive only (not passable via flags)
+	UseCustomSecret bool
+}
+
+type Uninstall struct {
+	All       bool
+	MeshNames string
+	MeshType  string
 }
 
 type MeshTool struct {
-	MeshId    string
-	ServiceId string
+	Mesh        core.ResourceRef
+	ServiceId   string
+	AddPolicy   AddPolicy
+	RoutingRule superglooV1.RoutingRule
+}
+
+type AddPolicy struct {
+	// (Do we care to support bulk entry in a form like this?)
+	// PolicyCsv is a comma-separated-list in the form:
+	// source_namespace,source_name,destination_namespace,destination_name (repeated)
+	// PolicyCsv string
+
+	Source      core.ResourceRef
+	Destination core.ResourceRef
 }
 
 type IngressTool struct {
@@ -46,29 +73,15 @@ type Get struct {
 	Name   string
 }
 
-type RoutingRule struct {
-	Mesh             string
-	Namespace        string
-	Sources          string
-	Destinations     string
-	Matchers         []string
-	OverrideExisting bool
+type InputDuration struct {
+	Seconds string
+	Nanos   string
 }
 
-// // Route Rule fields
-// Status
-// Metadata
-// TargetMesh
-// Sources
-// Destinations
-// RequestMatchers
-// TrafficShifting
-// FaultInjection
-// Timeout
-// Retries
-// CorsPolicy
-// Mirror
-// HeaderManipulaition
+type InputRetry struct {
+	Attempts      string
+	PerTryTimeout InputDuration
+}
 
 // TODO(mitchdraft) Rename this NewSecret (to disambigute from secret ResourceRef)
 type Secret struct {
@@ -79,9 +92,17 @@ type Secret struct {
 	Name       string
 }
 
+type AwsSecret struct {
+	AccessKey string
+	SecretKey string
+	Namespace string
+	Name      string
+}
+
 type Create struct {
-	RoutingRule RoutingRule
-	Secret      Secret
+	InputRoutingRule InputRoutingRule
+	Secret           Secret
+	AwsSecret        AwsSecret
 }
 
 type Config struct {
@@ -89,13 +110,8 @@ type Config struct {
 }
 
 type ConfigCa struct {
-	Mesh   ResourceRef
-	Secret ResourceRef
-}
-
-type ResourceRef struct {
-	Name      string
-	Namespace string
+	Mesh   core.ResourceRef
+	Secret core.ResourceRef
 }
 
 // OptionsCache holds resources that multiple commands need
@@ -113,11 +129,13 @@ type NsResourceMap map[string]*NsResource
 // *the association is by the namespace in which the CRD is installed, unless otherwise noted.
 type NsResource struct {
 	// keyed by namespace containing the CRD
-	Meshes  []string
-	Secrets []string
+	Meshes       []string
+	IstioSecrets []string
+	GlooSecrets  []string
+	Upstreams    []string
 
 	// keyed by mesh installation namespace
 	// purpose of this list: allows user to select a mesh by the namespace in which they installed the mesh
 	// needs to be a resource ref so we can point back to the resource
-	MeshesByInstallNs []ResourceRef
+	MeshesByInstallNs []core.ResourceRef
 }

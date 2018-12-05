@@ -78,4 +78,4 @@ metadata:
   labels:
     linkerd.io/control-plane-component: prometheus
   name: prometheus-config
-  namespace: linkerd
+  namespace: {{ .Release.Namespace }}

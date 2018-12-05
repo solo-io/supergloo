@@ -121,25 +121,36 @@ func (s *PolicySyncer) removePolicy(ctx context.Context) error {
 	}
 
 	// delete everything!
-	err := s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRoleBinding, opts)
+	err := s.rbacConfigReconciler.Reconcile(s.WriteNamespace, nil, preserveRbacConfig, opts)
 	if err != nil {
 		return err
 	}
 
-	err = s.serviceRoleReconciler.Reconcile(s.WriteNamespace, nil, preserveServiceRole, opts)
+	// get all namespaces
+	namespaces, err := s.kubeClient.CoreV1().Namespaces().List(kubemeta.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	err = s.rbacConfigReconciler.Reconcile(s.WriteNamespace, nil, preserveRbacConfig, opts)
-	if err != nil {
-		return err
+	for _, namespace := range namespaces.Items {
+		ns := namespace.Name
+		err := s.serviceRoleBindingReconciler.Reconcile(ns, nil, preserveServiceRoleBinding, opts)
+		if err != nil {
+			return err
+		}
+
+		err = s.serviceRoleReconciler.Reconcile(ns, nil, preserveServiceRole, opts)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (s *PolicySyncer) syncPolicy(ctx context.Context, upstreams gloov1.UpstreamsByNamespace, p *v1.Policy) error {
+	// go over all the available namespaces and reconcile.
+
 	opts := clients.ListOpts{
 		Ctx:      ctx,
 		Selector: s.WriteSelector,
@@ -150,24 +161,47 @@ func (s *PolicySyncer) syncPolicy(ctx context.Context, upstreams gloov1.Upstream
 	var rcfgs v1alpha1.RbacConfigList
 	rcfgs = append(rcfgs, rcfg)
 	converter := convertToIstio{upstreams, p, s.kubeClient}
-	sr, srb := converter.toIstio()
+	serviceRoles, serviceRolesBindings := converter.toIstio()
 
 	resources.UpdateMetadata(rcfg, s.updateMetadata)
-	for _, res := range sr {
+	for _, res := range serviceRoles {
 		resources.UpdateMetadata(res, s.updateMetadata)
 	}
-	for _, res := range srb {
+	for _, res := range serviceRolesBindings {
 		resources.UpdateMetadata(res, s.updateMetadata)
 	}
 
-	err := s.serviceRoleBindingReconciler.Reconcile(s.WriteNamespace, srb, preserveServiceRoleBinding, opts)
+	// get all namespaces
+	namespaces, err := s.kubeClient.CoreV1().Namespaces().List(kubemeta.ListOptions{})
 	if err != nil {
 		return err
 	}
-	err = s.serviceRoleReconciler.Reconcile(s.WriteNamespace, sr, preserveServiceRole, opts)
-	if err != nil {
-		return err
+
+	for _, namespace := range namespaces.Items {
+		currentns := namespace.Name
+		var currentsrb []*v1alpha1.ServiceRoleBinding
+		for _, srb := range serviceRolesBindings {
+			if srb.Metadata.Namespace == currentns {
+				currentsrb = append(currentsrb, srb)
+			}
+		}
+		var currentsr []*v1alpha1.ServiceRole
+		for _, sr := range serviceRoles {
+			if sr.Metadata.Namespace == currentns {
+				currentsr = append(currentsr, sr)
+			}
+		}
+
+		err = s.serviceRoleBindingReconciler.Reconcile(currentns, currentsrb, preserveServiceRoleBinding, opts)
+		if err != nil {
+			return err
+		}
+		err = s.serviceRoleReconciler.Reconcile(currentns, currentsr, preserveServiceRole, opts)
+		if err != nil {
+			return err
+		}
 	}
+
 	err = s.rbacConfigReconciler.Reconcile(s.WriteNamespace, rcfgs, preserveRbacConfig, opts)
 	if err != nil {
 		return err
@@ -228,7 +262,8 @@ func (c *convertToIstio) toIstio() ([]*v1alpha1.ServiceRole, []*v1alpha1.Service
 		destref.Name = destupstream.ServiceName
 		destref.Namespace = destupstream.ServiceNamespace
 
-		ns := dest.Namespace
+		// objects need to be written to the same namespaces as the service the control.
+		ns := destupstream.ServiceNamespace
 		// create an istio service role and binding:
 		name := "access-" + dest.Namespace + "-" + dest.Name
 		// create service role:
@@ -337,7 +372,6 @@ func (c *convertToIstio) principalame(s core.ResourceRef) string {
 }
 
 func (s *PolicySyncer) updateMetadata(meta *core.Metadata) {
-	meta.Namespace = s.WriteNamespace
 	if meta.Annotations == nil {
 		meta.Annotations = make(map[string]string)
 	}

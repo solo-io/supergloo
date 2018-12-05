@@ -10,7 +10,7 @@ import (
 // TODO: ilackarms: make this test runnable (now it blocks forever)
 var _ = Describe("Setup", func() {
 	XIt("works", func() {
-		err := Main()
+		err := Main(nil)
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

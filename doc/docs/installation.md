@@ -1,60 +1,66 @@
 # Installation
 
-# Dependencies
+In this guide, we’ll walk you through how to install SuperGloo onto your Kubernetes cluster and some basic functionality you can use once installed.
 
-- Go (1.11)
-- VM Driver (tested with VirtualBox, KVM)
-- Minikube (tested with 0.28.2-0.30.0)
-- Helm 2 (tested with 2.11)
-- Kubectl (tested with client version 1.12)
+## Dependencies
 
-> For demo purposes, Supergloo is only supported on local Minikube environments. It will likely support other 
-Kubernetes environments in the future. 
+First, you’ll need a Kubernetes cluster running 1.9 or later, and a functioning [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) command (tested with client version 1.12) on your local machine. 
 
-# Local Setup
+To run Kubernetes on your local machine, we suggest [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) — running version 0.24.1 or later. (tested with 0.28.2-0.30.0)
 
-## 1. Create a new Kubernetes environment in Minikube
+You also need to install the [Helm client](https://docs.helm.sh/using_helm/#install-helm) (tested with 2.11).
 
-`minikube start --vm-driver=virtualbox --memory=8192 --cpus=4 --kubernetes-version=v1.10.0`
+## Install the CLI
 
-> Service meshes require a lot of resources. Swap out virtualbox for your preferred VM driver.
+If this is your first time running SuperGloo, you’ll need to download the command-line interface (CLI) onto your local machine. You’ll use this CLI to interact with SuperGloo, including installing it onto your Kubernetes cluster.
 
-## 2. Download or Install supergloo cli
+To install the CLI, run:
 
-## From source
-To install the supergloo cli from source, do:
 ```
-mkdir -p $GOPATH/src/github.com/solo-io
-cd $GOPATH/src/github.com/solo-io
-git clone https://github.com/solo-io/supergloo/
-cd supergloo
-make install-cli
+curl -sL https://run.solo.io/supergloo/install | sh
 ```
 
-## Download a binary
-Go to our [releases page](https://github.com/solo-io/supergloo/releases) and download the latest release. Use the binary that matches your platform. rename it to `superglo` and copy it to somwhere in your path.
+Alternatively, you can download the CLI directly via the [SuperGloo releases page](https://github.com/solo-io/supergloo/releases).
 
-> When the CLI is first run, it will ensure that Helm is deployed and Supergloo's namespace is initialized.
+Next, add SupetGloo to your path with:
 
-## 3. Install supergloo in your cluster
+```
+export PATH=$PATH:$HOME/.supergloo/bin
+```
 
-`supergloo init`
+Verify the CLI is installed and running correctly with:
 
-> This will stay running and print logs to the console. Open another tab to run the CLI
+```
+supergloo --version
+```
 
-# Example Workflows
+
+## Install SuperGloo onto the cluster
+
+```
+supergloo init
+```
+
+
+
+# Explore SuperGloo
 
 ## Install a new service mesh
 
 Supergloo supports Istio, Consul, and Linkerd2. To install them with default configuration, run the following command:
 
-`supergloo install -m {meshname} -n {namespace} -s`
+```
+supergloo install -m {meshname} -n {namespace} -s
+```
 
-`{meshname}` should be one of `consul`, `istio`, or `linkerd2`. `{namespace}` is a namespace where the mesh control plane
-will be deployed. Supergloo will create this namespace if it doesn't already exist. 
+`{meshname}` should be one of `consul`, `istio`, or `linkerd2`. <BR>
+`{namespace}` is a namespace where the mesh control plane will be deployed. <BR> 
+Supergloo will create this namespace if it doesn't already exist. 
 
 For instance, to deploy `istio` into the `istio-system` namespace, run: 
 
-`supergloo install -m istio -n istio-system -s`
+```
+supergloo install -m istio -n istio-system -s
+```
 
 

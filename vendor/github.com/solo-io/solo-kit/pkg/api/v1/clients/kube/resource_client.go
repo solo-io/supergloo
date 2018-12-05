@@ -276,6 +276,9 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 		stats.Record(ctx, MCreates.M(1), MInFlight.M(1))
 		defer stats.Record(ctx, MInFlight.M(-1))
 		if _, err := rc.kube.ResourcesV1().Resources(meta.Namespace).Create(resourceCrd); err != nil {
+			if apierrors.IsAlreadyExists(err) {
+				return nil, errors.NewExistErr(meta)
+			}
 			return nil, errors.Wrapf(err, "creating kube resource %v", resourceCrd.Name)
 		}
 	}

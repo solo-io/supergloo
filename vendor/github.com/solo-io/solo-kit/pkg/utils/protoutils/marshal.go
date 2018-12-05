@@ -16,11 +16,22 @@ import (
 )
 
 var jsonpbMarshaler = &jsonpb.Marshaler{OrigName: false}
+var jsonpbMarshalerEmitZeroValues = &jsonpb.Marshaler{OrigName: false, EmitDefaults: true}
 
 // this function is designed for converting go object (that is not a proto.Message) into a
 // pb Struct, based on json struct tags
 func MarshalStruct(m proto.Message) (*types.Struct, error) {
 	data, err := MarshalBytes(m)
+	if err != nil {
+		return nil, err
+	}
+	var pb types.Struct
+	err = jsonpb.UnmarshalString(string(data), &pb)
+	return &pb, err
+}
+
+func MarshalStructEmitZeroValues(m proto.Message) (*types.Struct, error) {
+	data, err := MarshalBytesEmitZeroValues(m)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +71,24 @@ func MarshalBytes(pb proto.Message) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func MarshalBytesEmitZeroValues(pb proto.Message) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	err := jsonpbMarshalerEmitZeroValues.Marshal(buf, pb)
+	return buf.Bytes(), err
+}
+
 func MarshalMap(from proto.Message) (map[string]interface{}, error) {
 	data, err := MarshalBytes(from)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]interface{}
+	err = json.Unmarshal(data, &m)
+	return m, err
+}
+
+func MarshalMapEmitZeroValues(from proto.Message) (map[string]interface{}, error) {
+	data, err := MarshalBytesEmitZeroValues(from)
 	if err != nil {
 		return nil, err
 	}

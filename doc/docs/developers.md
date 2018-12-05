@@ -93,7 +93,7 @@ which provides a skeleton for writing event-based systems.
 Take a look at [pkg/setup/setup.go](https://github.com/solo-io/supergloo/blob/master/pkg/setup/setup.go#L164)
 to see how syncers are registered to the main event loop in SuperGloo.
 
-In order to add a syncer, it need to implement the interface
+In order to add a syncer, it needs to implement the interface
 ```go
 type TranslatorSyncer interface {
 	Sync(context.Context, *TranslatorSnapshot) error

@@ -7,7 +7,7 @@ case "$1" in
     ;;
   "delete")
     CRD=$2
-    for i in $(kubectl get crd | grep ${CRD} | awk '{print $1}'); do echo $i; kubectl delete $i -n default --all; done
+    for ns in $(kubectl get ns | grep Active | awk '{print $1}'); do for i in $(kubectl get crd | grep ${CRD} | awk '{print $1}'); do kubectl delete --all $i -n $ns; done; done
     ;;
   "get")
     TYPE=$2
