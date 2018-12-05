@@ -121,13 +121,13 @@ supergloo fault-injection [flags] <resource-name>
 ```
 
 FLags:
-* `--fault.abort.message` (string, )
-* `--fault.abort.percent` (string, )
-* `--fault.abort.type` (string, )
-* `--fault.delay.percent` (string, )
-* `--fault.delay.type` (string, )
-* `--fault.delay.value.seconds` (string, )
-* `--fault.delay.value.nanos` (string, )
+* `--fault.abort.message` (string, required) Error message (int for type=http errors, string otherwise).
+* `--fault.abort.percent` (int, required) Percentage of requests on which the abort will be injected (0-100)
+* `--fault.abort.type` (string, required) Type of error (http, http2, or grpc)
+* `--fault.delay.percent` (int , required) Percentage of requests on which the delay will be injected (0-100)
+* `--fault.delay.type` (string, required) Type of delay (fixed or exponential)
+* `--fault.delay.value.seconds` (int, required) delay duration (seconds)
+* `--fault.delay.value.nanos` (int, required) delay duration (nanoseconds)
 * `--mesh.name` (string, optional) name of mesh to update
 * `--mesh.namespace` (string, optional) name of mesh to update
 * `--serviceid` (string, optional) service to modify
@@ -143,8 +143,8 @@ Flags:
 * `--mesh.name` (string, optional) name of mesh to update
 * `--mesh.namespace` (string, optional) name of mesh to update
 * `--serviceid` (string, optional) service to modify
-* `--route.timeout.seconds` (string, )
-* `--rout.timeout.nanos` (string, )
+* `--route.timeout.seconds` (int, required) timeout duration (seconds)
+* `--rout.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
 #####Retries
 
@@ -156,7 +156,9 @@ Flags:
 * `--mesh.name` (string, optional) name of mesh to update
 * `--mesh.namespace` (string, optional) name of mesh to update
 * `--serviceid` (string, optional) service to modify
-* `--route.retry.atempt` (string, option)
+* `--route.retry.attempt` (int, required) number of retries to attempt
+* `--route.retry.timeout.seconds` (int, required) timeout duration (seconds)
+* `--route.retry.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
 #####Cors Policy
 
