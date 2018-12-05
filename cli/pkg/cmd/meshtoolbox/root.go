@@ -107,6 +107,6 @@ func generateRouteCmd(useString string, description string, ruleTypeID string, o
 		},
 	}
 	cmd.SetUsageTemplate(common.UsageTemplate("resource-name"))
-	linkMeshToolFlags(cmd, opts)
+	routerule.AddBaseFlags(cmd, opts)
 	return cmd
 }
