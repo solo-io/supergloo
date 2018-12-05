@@ -36,7 +36,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 	if err := EnsurePercentage("Delay percentage (integer, 0-100)", &fo.DelayPercent, &(t.Delay).Percent, opts); err != nil {
 		return err
 	}
-	if !opts.Top.Static {
+	if !opts.Top.Static && opts.Top.File == "" {
 		if err := iutil.ChooseFromList("Delay type", &fo.HttpDelayType, delayTypeOptions); err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 		return err
 	}
 
-	if !opts.Top.Static {
+	if !opts.Top.Static && opts.Top.File == "" {
 
 		if err := iutil.ChooseFromList("Error type", &fo.ErrorType, errorTypeOptions); err != nil {
 			return err

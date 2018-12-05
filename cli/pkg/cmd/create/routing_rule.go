@@ -2,6 +2,7 @@ package create
 
 import (
 	"fmt"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox"
 
 	"github.com/solo-io/supergloo/cli/pkg/common"
 
@@ -19,11 +20,13 @@ func RoutingRuleCmd(opts *options.Options) *cobra.Command {
 		Long:  `Create a route rule with the given name`,
 		Args:  common.RequiredNameArg,
 		RunE: func(c *cobra.Command, args []string) error {
-			rrOpts.RouteName = args[0]
+			if err := meshtoolbox.EnsureName(rrOpts, args); err != nil {
+				return err
+			}
 			if err := routerule.CreateRoutingRule(routerule.USE_ALL_ROUTING_RULES, opts); err != nil {
 				return err
 			}
-			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", args[0], rrOpts.TargetMesh.Namespace)
+			fmt.Printf("Created routing rule [%v] in namespace [%v]\n", opts.MeshTool.RoutingRule.Metadata.Name, opts.MeshTool.RoutingRule.Metadata.Namespace)
 			return nil
 		},
 	}

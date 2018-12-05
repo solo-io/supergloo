@@ -24,7 +24,6 @@ func Cmd(opts *options.Options) *cobra.Command {
 	iop := &opts.Install
 	pflags := cmd.PersistentFlags()
 	// TODO(mitchdraft) - remove filename or apply it to something
-	pflags.StringVarP(&iop.Filename, "filename", "f", "", "filename to create resources from")
 	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd2, appmesh")
 	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to install mesh into")
 	pflags.BoolVar(&iop.Mtls, "mtls", false, "use mTLS")
