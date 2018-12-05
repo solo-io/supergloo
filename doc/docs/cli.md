@@ -219,6 +219,8 @@ The above command creates a new header-manipulation rule for the mesh (`mesh`) i
 This rule will append the request header `[header-request1, text]` and remvove the request header `header-request2`.
 This rule will then append the response header `[header-response1, text]` and remove the response header `header-response2`.
 
+---
+
 
 ### Security
 
@@ -302,7 +304,11 @@ Configure ingress security parameters
 
 This feature will be available in 2019.
 
+---
+
 ### Configuration
+
+---
 
 
 ### Get
