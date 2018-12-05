@@ -86,14 +86,22 @@ supergloo create routing-rule [flags] <resource-name>
 
 Persistent flags:
 * `--matchers` (string, optional) list of comma seperated matchers. eg: ("*")
-* `--mesh` (string, required) name of mesh which will be the target for this rule
-* `--namespace` (string, required, default "default") namespace this rule will be installed into
-* `--destinations` (string, required) destinations for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
+* `-m --mesh` (string, required) name of mesh which will be the target for this rule
+* `-n --namespace` (string, required, default "default") namespace this rule will be installed into
+* `-d --destinations` (string, required) destinations for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
 * `--sources` (string, required) Sources for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
 * `-f --filename` (string, optional) filename containing info to construct route rule. Only yaml supported currently. note: currently this feature supports multiple data formats.
 Either use the form defined in the `routing_rule.proto` or one that conforms to the CLI.
+* `-s --static` (bool, optional, default false) As stated above. the CLI by default is interactive unless specified via this flag
 
-Creating routing rule functions as the sum total of all of the individual rule commands listed below. 
+
+Notes:
+* `upstreams` are found via our discovery system and can be found easily using the following command. It is important to check all namespaces because the user is given the freedom to place these wherever he/she pleases.
+```bash
+kubectl get routingrules.supergloo.solo.io --all-namespaces
+```
+
+Create routing rule functions as the sum total of all of the individual rule commands listed below. 
 `create routing-rule` allows for the creation of multiple rules simultaneously, either via flags, or via yaml.
 
 #####Traffic Shifting
@@ -109,7 +117,9 @@ Flags:
 
 Example: 
 ```bash
-supergloo traffic-shifting [flags] ts-rule
+supergloo traffic-shifting ts-rule -s -m <mesh-name> -n <namespace> \
+    --destinations <namespace:name> --sources <namespace:name> \
+    --traffic.upstreams <namespace:name>, <namespace:name> --traffic.weights 10, 20
 ```
 
 #####Fault Injection
@@ -188,10 +198,11 @@ Flags:
 
 Example:
 ```bash
-supergloo header-manipulation hm-rule --mesh.name mesh --mesh.namespace mesh-namespace \
+supergloo header-manipulation hm-rule -s --mesh <mesh-name> --namespace <mesh-namespace> \
+    --destinations <namespace:name> --sources <namespace:name> \
     --header.request.append header-request1,text --header.request.remove header-request2 \
     --header.response.append header-response1,text --header.request.remove header-response2
 ```
 The above command creates a new header-manipulation rule for the mesh (`mesh`) in the namespace (`namespace`).
 This rule will append the request header `[header-request1, text]` and remvove the request header `header-request2`.
-This rule will then append the response header `[]`
+This rule will then append the response header `[header-response1, text]` and remove the response header `header-response2`.
