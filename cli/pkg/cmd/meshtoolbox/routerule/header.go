@@ -16,18 +16,18 @@ func EnsureHeaderManipulation(irOpts *options.InputHeaderManipulation, opts *opt
 	static := opts.Top.Static ||  opts.Top.File != ""
 
 	// Response
-	if err := ensureCsv("Please specify headers to remove from the response", irOpts.RemoveResponseHeaders, &staging.RemoveResponseHeaders, static, false); err != nil {
+	if err := ensureCsv("Please specify headers to remove from the response", irOpts.RemoveResponseHeaders, &staging.RemoveResponseHeaders, static, true); err != nil {
 		return err
 	}
-	if err := ensureKVCsv("Please specify headers to append to the response", irOpts.AppendResponseHeaders, &staging.AppendResponseHeaders, static, false); err != nil {
+	if err := ensureKVCsv("Please specify headers to append to the response", irOpts.AppendResponseHeaders, &staging.AppendResponseHeaders, static, true); err != nil {
 		return err
 	}
 
 	// Request
-	if err := ensureCsv("Please specify headers to remove from the request", irOpts.RemoveRequestHeaders, &staging.RemoveRequestHeaders, static, false); err != nil {
+	if err := ensureCsv("Please specify headers to remove from the request", irOpts.RemoveRequestHeaders, &staging.RemoveRequestHeaders, static, true); err != nil {
 		return err
 	}
-	if err := ensureKVCsv("Please specify headers to append to the request", irOpts.AppendRequestHeaders, &staging.AppendRequestHeaders, static, false); err != nil {
+	if err := ensureKVCsv("Please specify headers to append to the request", irOpts.AppendRequestHeaders, &staging.AppendRequestHeaders, static, true); err != nil {
 		return err
 	}
 

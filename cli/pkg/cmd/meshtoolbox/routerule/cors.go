@@ -13,16 +13,16 @@ func EnsureCors(irOpts *options.InputCors, opts *options.Options) error {
 
 	static := opts.Top.Static ||  opts.Top.File != ""
 
-	if err := ensureCsv("Please specify the allowed origins (comma-separated list)", cOpts.AllowOrigin, &target.AllowOrigin, static, false); err != nil {
+	if err := ensureCsv("Please specify the allowed origins (comma-separated list)", cOpts.AllowOrigin, &target.AllowOrigin, static, true); err != nil {
 		return err
 	}
-	if err := ensureCsv("Please specify the allowed methods (comma-separated list)", cOpts.AllowMethods, &target.AllowMethods, static, false); err != nil {
+	if err := ensureCsv("Please specify the allowed methods (comma-separated list)", cOpts.AllowMethods, &target.AllowMethods, static, true); err != nil {
 		return err
 	}
-	if err := ensureCsv("Please specify the allowed headers (comma-separated list)", cOpts.AllowHeaders, &target.AllowHeaders, static, false); err != nil {
+	if err := ensureCsv("Please specify the allowed headers (comma-separated list)", cOpts.AllowHeaders, &target.AllowHeaders, static, true); err != nil {
 		return err
 	}
-	if err := ensureCsv("Please specify the exposed headers (comma-separated list)", cOpts.ExposeHeaders, &target.ExposeHeaders, static, false); err != nil {
+	if err := ensureCsv("Please specify the exposed headers (comma-separated list)", cOpts.ExposeHeaders, &target.ExposeHeaders, static, true); err != nil {
 		return err
 	}
 	target.MaxAge = &types.Duration{}
