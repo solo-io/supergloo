@@ -74,10 +74,7 @@ type Get struct {
 	Namespace string
 }
 
-type InputDuration struct {
-	Seconds string
-	Nanos   string
-}
+type InputDuration = string
 
 type InputRetry struct {
 	Attempts      string

@@ -114,7 +114,7 @@ func selectRRBasedOnFile(list *[]options.MultiselectOptionBool, rrOpts *options.
 		toggleRoutingRule(list, FaultInjection_Rule)
 		success = true
 	}
-	if rrOpts.Timeout != (options.InputDuration{}) {
+	if rrOpts.Timeout != "" {
 		toggleRoutingRule(list, Timeout_Rule)
 		success = true
 	}
