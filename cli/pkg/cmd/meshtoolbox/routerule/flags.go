@@ -2,6 +2,7 @@ package routerule
 
 import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/spf13/cobra"
 )
 
@@ -42,14 +43,10 @@ func AddBaseFlags(cmd *cobra.Command, opts *options.Options) {
 func AddTimeoutFlags(cmd *cobra.Command, opts *options.Options) {
 	rrOpts := &(opts.Create).InputRoutingRule
 	flags := cmd.Flags()
-	flags.StringVar(&(rrOpts.Timeout).Seconds,
-		"route.timeout.seconds",
+	flags.StringVar(&(rrOpts.Timeout),
+		"route.timeout",
 		"",
-		"timeout time in seconds")
-	flags.StringVar(&(rrOpts.Timeout).Nanos,
-		"route.timeout.nanos",
-		"",
-		"timeout time in nanoseconds")
+		"timeout time. "+common.DurationQuestionExample)
 }
 
 func AddRetryFlags(cmd *cobra.Command, opts *options.Options) {
@@ -59,14 +56,10 @@ func AddRetryFlags(cmd *cobra.Command, opts *options.Options) {
 		"route.retry.attempt",
 		"",
 		"number of times to retry")
-	flags.StringVar(&(rrOpts.Retry.PerTryTimeout).Seconds,
-		"route.retry.timeout.seconds",
+	flags.StringVar(&(rrOpts.Retry.PerTryTimeout),
+		"route.retry.timeout",
 		"",
-		"retry timeout time in seconds")
-	flags.StringVar(&(rrOpts.Retry.PerTryTimeout).Nanos,
-		"route.retry.timeout.nanos",
-		"",
-		"retry timeout time in nanoseconds")
+		"retry timeout time. "+common.DurationQuestionExample)
 }
 
 func AddFaultFlags(cmd *cobra.Command, opts *options.Options) {
@@ -81,14 +74,10 @@ func AddFaultFlags(cmd *cobra.Command, opts *options.Options) {
 		"fault.delay.type",
 		"",
 		"Type of delay (fixed or exponential).")
-	flags.StringVar(&(rrOpts.FaultInjection).HttpDelayValue.Seconds,
-		"fault.delay.value.seconds",
+	flags.StringVar(&(rrOpts.FaultInjection).HttpDelayValue,
+		"fault.delay.value",
 		"",
-		"delay duration (seconds).")
-	flags.StringVar(&(rrOpts.FaultInjection).HttpDelayValue.Nanos,
-		"fault.delay.value.nanos",
-		"",
-		"delay duration (nanoseconds).")
+		"delay duration. "+common.DurationQuestionExample)
 	// abort
 	flags.StringVar(&(rrOpts.FaultInjection).AbortPercent,
 		"fault.abort.percent",
@@ -144,15 +133,10 @@ func AddCorsFlags(cmd *cobra.Command, opts *options.Options) {
 		"",
 		"A white list of HTTP headers that the browsers are allowed to access. Serialized into Access-Control-Expose-Headers header.")
 
-	flags.StringVar(&(cOpts.MaxAge).Seconds,
-		"cors.maxage.seconds",
+	flags.StringVar(&(cOpts.MaxAge),
+		"cors.maxage",
 		"",
-		"Max age time in seconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header.")
-
-	flags.StringVar(&(cOpts.MaxAge).Nanos,
-		"cors.maxage.nanos",
-		"",
-		"Max age time in nanoseconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header.")
+		"Max age time in seconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header."+common.DurationQuestionExample)
 
 	flags.BoolVar(&cOpts.AllowCredentials,
 		"cors.allow.credentials",

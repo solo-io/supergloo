@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 
@@ -14,30 +17,31 @@ import (
 
 func EnsureDuration(rootMessage string, durOpts *options.InputDuration, targetDur *types.Duration, opts *options.Options) error {
 	dur := types.Duration{}
+	ensureDuration := func(ans interface{}) error {
+		switch val := ans.(type) {
+		case string:
+			_, err := time.ParseDuration(val)
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.Errorf("Incorrect format for duration, must be a string")
+		}
+		return nil
+	}
 	if !opts.Top.Static && opts.Top.File == "" {
-		err := iutil.GetStringInput(fmt.Sprintf("%v (seconds)", rootMessage), &durOpts.Seconds, nil)
-		if err != nil {
-			return err
-		}
-		err = iutil.GetStringInput(fmt.Sprintf("%v (nanoseconds)", rootMessage), &durOpts.Nanos, nil)
+		err := iutil.GetStringInput(rootMessage+common.DurationQuestionExample, durOpts, ensureDuration)
 		if err != nil {
 			return err
 		}
 	}
-	// if not in interactive mode, timeout values will have already been passed
-	if durOpts.Seconds != "" {
-		sec, err := strconv.Atoi(durOpts.Seconds)
+	if *durOpts != "" {
+		duration, err := time.ParseDuration(*durOpts)
 		if err != nil {
 			return err
 		}
-		dur.Seconds = int64(sec)
-	}
-	if durOpts.Nanos != "" {
-		nanos, err := strconv.Atoi(durOpts.Nanos)
-		if err != nil {
-			return err
-		}
-		dur.Nanos = int32(nanos)
+		dur.Seconds = int64(duration.Seconds())
+		dur.Nanos = int32(duration.Nanoseconds() % time.Second.Nanoseconds())
 	}
 	*targetDur = dur
 	return nil
