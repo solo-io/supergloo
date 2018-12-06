@@ -6,9 +6,9 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-func GetStringInput(msg string, value *string) error {
+func GetStringInput(msg string, value *string, v survey.Validator) error {
 	prompt := &survey.Input{Message: msg}
-	if err := survey.AskOne(prompt, value, nil); err != nil {
+	if err := survey.AskOne(prompt, value, v); err != nil {
 		return err
 	}
 	return nil
