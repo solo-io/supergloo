@@ -2,3 +2,4 @@
 .idea
 _output/
 doc/site
+.DS_Store

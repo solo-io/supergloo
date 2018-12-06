@@ -9,8 +9,8 @@ func AddBaseFlags(cmd *cobra.Command, opts *options.Options) {
 	rrOpts := &(opts.Create).InputRoutingRule
 	flags := cmd.Flags()
 
-	flags.StringVar(&(rrOpts.TargetMesh).Name,
-		"mesh",
+	flags.StringVarP(&(rrOpts.TargetMesh).Name,
+		"mesh", "m",
 		"",
 		"The mesh that will be the target for this rule")
 
@@ -24,8 +24,8 @@ func AddBaseFlags(cmd *cobra.Command, opts *options.Options) {
 		"",
 		"Sources for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon.")
 
-	flags.StringVar(&rrOpts.Destinations,
-		"destinations",
+	flags.StringVarP(&rrOpts.Destinations,
+		"destinations", "d",
 		"",
 		"Destinations for this rule. Same format as for 'sources'")
 
@@ -34,8 +34,7 @@ func AddBaseFlags(cmd *cobra.Command, opts *options.Options) {
 		false,
 		"If set to \"true\", the command will override any existing routing rule that matches the given namespace and name")
 
-	rrOpts.Matchers = *flags.StringArrayP("matchers",
-		"m",
+	rrOpts.Matchers = *flags.StringArray("matchers",
 		nil,
 		"Matcher for this rule")
 }
