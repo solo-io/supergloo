@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/solo-io/supergloo/cli/pkg/cmd/get/info"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
@@ -13,7 +12,7 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
-var supportedOutputFormats = []string{"wide", "yaml"}
+var supportedOutputFormats = []string{"json", "yaml"}
 
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
@@ -40,7 +39,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 
 func get(args []string, opts *options.Options) error {
 
-	infoClient, err := info.NewClient()
+	infoClient, err := NewClient()
 	if err != nil {
 		return err
 	}
@@ -52,7 +51,7 @@ func get(args []string, opts *options.Options) error {
 	return getResource(infoClient, opts.Get)
 }
 
-func ensureParameters(infoClient info.SuperglooInfoClient, opts *options.Options, args []string) error {
+func ensureParameters(infoClient SuperglooInfoClient, opts *options.Options, args []string) error {
 	gOpts := &opts.Get
 
 	// Get available resource types
@@ -87,7 +86,7 @@ func ensureParameters(infoClient info.SuperglooInfoClient, opts *options.Options
 	return nil
 }
 
-func getResource(infoClient info.SuperglooInfoClient, gOpts options.Get) error {
+func getResource(infoClient SuperglooInfoClient, gOpts options.Get) error {
 
 	// Fetch the resource information
 	err := infoClient.ListResources(gOpts)
