@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
@@ -50,7 +52,7 @@ func SecretCmd(opts *options.Options) *cobra.Command {
 	flags.StringVar(&sOpts.CertChain, "certchain", "", "filename of certchain for secret")
 	cmd.MarkFlagRequired("certchain")
 
-	flags.StringVar(&sOpts.Namespace, "secretnamespace", "", "namespace in which to store the secret")
+	flags.StringVar(&sOpts.Namespace, cliconstants.SecretNamespace, "", "namespace in which to store the secret")
 
 	cmd.SetUsageTemplate(common.UsageTemplate("secret-name"))
 

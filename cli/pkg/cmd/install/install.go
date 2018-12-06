@@ -3,6 +3,8 @@ package install
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -24,11 +26,11 @@ func Cmd(opts *options.Options) *cobra.Command {
 	iop := &opts.Install
 	pflags := cmd.PersistentFlags()
 	// TODO(mitchdraft) - remove filename or apply it to something
-	pflags.StringVarP(&iop.MeshType, "meshtype", "m", "", "mesh to install: istio, consul, linkerd2, appmesh")
-	pflags.StringVarP(&iop.Namespace, "namespace", "n", "", "namespace to install mesh into")
-	pflags.BoolVar(&iop.Mtls, "mtls", false, "use mTLS")
-	pflags.StringVar(&iop.SecretRef.Name, "secret.name", "", "name of the mTLS secret")
-	pflags.StringVar(&iop.SecretRef.Namespace, "secret.namespace", "", "namespace of the mTLS secret")
+	pflags.StringVarP(&iop.MeshType, cliconstants.MeshType, "m", "", "mesh to install: istio, consul, linkerd2, appmesh")
+	pflags.StringVarP(&iop.Namespace, cliconstants.Namespace, "n", "", "namespace to install mesh into")
+	pflags.BoolVar(&iop.Mtls, cliconstants.MTLS, false, "use mTLS")
+	pflags.StringVar(&iop.SecretRef.Name, cliconstants.SecretName, "", "name of the mTLS secret")
+	pflags.StringVar(&iop.SecretRef.Namespace, cliconstants.SecretNamespace, "", "namespace of the mTLS secret")
 	pflags.StringVar(&iop.AwsSecretRef.Name, "awssecret.name", "", "name of the AWS secret")
 	pflags.StringVar(&iop.AwsSecretRef.Namespace, "awssecret.namespace", "", "namespace of the AWS secret")
 	pflags.StringVar(&iop.AwsRegion, "aws-region", "", "AWS region")

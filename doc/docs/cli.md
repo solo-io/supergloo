@@ -266,8 +266,8 @@ Sub-Commands:
 * `remove` remove a single policy
 
 Persistent-Flags:
-* `--mesh.name` (string, required) name of mesh to update
-* `--mesh.namespace` (string, required) namespace of mesh to update
+* `--mesh` (string, required) name of mesh to update
+* `--namespace` (string, required) namespace of mesh to update
 * `--destination.name` (string, required) name of policy destination upstream
 * `--destination.namespace` (string, required) namespace of policy destination upstream
 * `--source.name` (string, required) name of policy source upstream
@@ -312,9 +312,8 @@ Sub-Commands:
 * `toggle` toggle mTLS
 
 Persistent-Flags:
-* `--mesh.name` (string, required) name of mesh to update
-* `--mesh.namespace` (string, required) namespace of mesh to update
-
+* `--mesh` (string, required) name of mesh to update
+* `--namespace` (string, required) namespace of mesh to update
 
 Example:
 ```bash
@@ -329,7 +328,37 @@ This feature will be available in 2019.
 
 ---
 
-### Configuration
+### Secrets
+
+supergloo-cli allows for the creation of multiple secret-types in the given cluster
+
+#### Standard
+
+create a standard secret in a given namespace
+```bash
+supergloo create secret [flags] <secret-name>
+```
+
+Flags:
+* `--certchain` (string, required) filename of certchain for secret
+* `--privatekey` (string, required) filename of privatekey for secret
+* `--rootca` (string, required) filename of rootca for secret
+* `--secret.namespace` (string, required) namespace in which to store the secret
+
+
+#### AWS 
+
+Create an AWS secret
+
+```bash
+supergloo create aws-secret [flags] <secret-name>
+```
+
+Flags: 
+* `--secret.namespace` (string, required) namespace in which to store the secret
+* `--access-key` (string, required) aws access key
+* `--secret-key` (string, required) aws secret key
+
 
 ---
 
