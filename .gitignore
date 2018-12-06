@@ -3,4 +3,6 @@
 _output/
 doc/site
 
+
+# Mac Files
 **/.DS_Store
