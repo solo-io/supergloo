@@ -31,6 +31,7 @@ The above command will create supergloo-system namespace in your cluster, as wel
 
 ### Installing Meshes
 
+supergloo cli allows for the installation of multiple different meshes from one unified place.
 
 ```bash
 supergloo install [flags]
@@ -78,6 +79,10 @@ supergloo uninstall --meshname <name-of-mesh>
 
 ### Routing Rules
 
+Routing rules control the flow of traffic to and from the application. In addition these rules allow the user to test for resilience.
+Each rule has specific sources and destinations to allow for more fine-grained targeting of the rules. 
+See [**here**](../../README.md#features-snapshot) for meshes which currently support this feature.
+
 * [`Traffic Shifting`](cli.md#traffic-shifting)
 * [`Fault Injection`](cli.md#fault-injection)
 * [`Timeout`](cli.md#timeout)
@@ -113,6 +118,8 @@ Create routing rule functions as the sum total of all of the individual rule com
 
 #### Traffic Shifting
 
+Traffic-shifting rules allow for the disbursement of network traffic among a specific set of upstreams based on a set of given weights.
+
 ```bash
 supergloo traffic-shifting [flags] <resource-name>
 ```
@@ -131,6 +138,8 @@ supergloo traffic-shifting ts-rule -s -m <mesh-name> -n <namespace> \
 
 #### Fault Injection
 
+Fault injection rules allow for purposeful semi-random error generation.
+
 ```bash
 supergloo fault-injection [flags] <resource-name>
 ```
@@ -147,6 +156,9 @@ Flags:
 
 #### Timeout
 
+Timeout rules rules create specific timeouts within a given route.
+
+
 ```bash
 supergloo timeout [flags] <resource-name>
 ```
@@ -156,6 +168,8 @@ Flags:
 * `--rout.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
 #### Retries
+
+Retry rules create specific forced retries for the given route(s).
 
 ```bash
 supergloo retries [flags] <resource-name>
@@ -167,6 +181,8 @@ Flags:
 * `--route.retry.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
 #### Cors Policy
+
+Cors-policy rules updates the CORS settings for the given route(s)
 
 ```bash
 supergloo cors [flags] <resource-name>
@@ -182,6 +198,8 @@ Flags:
 * `--cors.maxage.nanos` (int, required) Max age time in nanoseconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header.
 
 #### Mirror
+
+Mirror rules allow for the sending of a duplicate request to the given upstream, in addition the responses to these requests are ignored.
 
 ```bash
 supergloo mirror [flags] <resource-name>
@@ -199,6 +217,8 @@ supergloo mirror m-rule -s --mesh <mesh-name> --namespace <mesh-namespace> \
 The above command creates a new mirror rule
 
 #### Header Manipulation
+
+Header-manipulation rules allow for the control of request and response headers
 
 ```bash
 supergloo header-manipulation [flags] <resource-name>
