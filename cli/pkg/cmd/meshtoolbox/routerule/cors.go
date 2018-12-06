@@ -11,7 +11,7 @@ func EnsureCors(irOpts *options.InputCors, opts *options.Options) error {
 	// initialize the field
 	target := &v1alpha3.CorsPolicy{}
 
-	static := opts.Top.Static ||  opts.Top.File != ""
+	static := opts.Top.Static || opts.Top.File != ""
 
 	if err := ensureCsv("Please specify the allowed origins (comma-separated list)", cOpts.AllowOrigin, &target.AllowOrigin, static, true); err != nil {
 		return err

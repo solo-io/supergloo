@@ -3,6 +3,8 @@ package mtls
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
@@ -22,7 +24,7 @@ var validRootArgs = []string{ENABLE_MTLS, DISABLE_MTLS, TOGGLE_MTLS} // for bash
 
 func Root(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "mtls",
+		Use:       cliconstants.MTLS,
 		Short:     `set mTLS status`,
 		Long:      `set mTLS status`,
 		ValidArgs: validRootArgs,

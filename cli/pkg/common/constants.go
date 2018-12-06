@@ -23,4 +23,6 @@ const (
 	NamespacedResourceSeparator = ":"
 
 	ValidMatcherHttpMethods = "GET|HEAD|POST|PUT|PATCH|DELETE|CONNECT|OPTIONS|TRACE"
+
+	DurationQuestionExample = " (1s2ms3ns). see https://golang.org/pkg/time/#Duration for more info"
 )
