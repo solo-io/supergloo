@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	types "github.com/gogo/protobuf/types"
+	"github.com/solo-io/solo-kit/pkg/errors"
+
+	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common/iutil"
 )
@@ -13,11 +15,11 @@ import (
 func EnsureDuration(rootMessage string, durOpts *options.InputDuration, targetDur *types.Duration, opts *options.Options) error {
 	dur := types.Duration{}
 	if !opts.Top.Static && opts.Top.File == "" {
-		err := iutil.GetStringInput(fmt.Sprintf("%v (seconds)", rootMessage), &durOpts.Seconds)
+		err := iutil.GetStringInput(fmt.Sprintf("%v (seconds)", rootMessage), &durOpts.Seconds, nil)
 		if err != nil {
 			return err
 		}
-		err = iutil.GetStringInput(fmt.Sprintf("%v (nanoseconds)", rootMessage), &durOpts.Nanos)
+		err = iutil.GetStringInput(fmt.Sprintf("%v (nanoseconds)", rootMessage), &durOpts.Nanos, nil)
 		if err != nil {
 			return err
 		}
@@ -45,8 +47,23 @@ func EnsureDuration(rootMessage string, durOpts *options.InputDuration, targetDu
 // If not present, it promts the user for input with the given message
 // Errors on invalid input
 func EnsurePercentage(message string, source *string, target *int32, opts *options.Options) error {
+	ensurePercentage := func(ans interface{}) error {
+		switch val := ans.(type) {
+		case string:
+			v, err := strconv.Atoi(val)
+			if err != nil {
+				return err
+			}
+			if v < 0 || v > 100 {
+				return errors.Errorf("percent values must be between 0-100")
+			}
+		default:
+			return errors.Errorf("val (%s) is the incorrect format")
+		}
+		return nil
+	}
 	if !opts.Top.Static && opts.Top.File == "" {
-		if err := iutil.GetStringInput(message, source); err != nil {
+		if err := iutil.GetStringInput(message, source, ensurePercentage); err != nil {
 			return err
 		}
 	}
@@ -55,17 +72,20 @@ func EnsurePercentage(message string, source *string, target *int32, opts *optio
 		if err != nil {
 			return err
 		}
+		if percentage < 0 || percentage > 100 {
+			return errors.Errorf("percent values must be between 0-100")
+		}
 		*target = int32(percentage)
 	}
 	return nil
 }
 
 func ensureCsv(message string, source string, target *[]string, staticMode bool, required bool) error {
-	if staticMode && required  &&source == "" {
+	if staticMode && required && source == "" {
 		return fmt.Errorf(message)
 	}
 	if !staticMode {
-		if err := iutil.GetStringInput(message, &source); err != nil {
+		if err := iutil.GetStringInput(message, &source, nil); err != nil {
 			return err
 		}
 	}
