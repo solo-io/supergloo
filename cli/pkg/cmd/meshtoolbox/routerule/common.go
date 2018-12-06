@@ -2,9 +2,10 @@ package routerule
 
 import (
 	"fmt"
-	"github.com/solo-io/solo-kit/pkg/errors"
 	"strconv"
 	"strings"
+
+	"github.com/solo-io/solo-kit/pkg/errors"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
@@ -80,7 +81,7 @@ func EnsurePercentage(message string, source *string, target *int32, opts *optio
 }
 
 func ensureCsv(message string, source string, target *[]string, staticMode bool, required bool) error {
-	if staticMode && required  &&source == "" {
+	if staticMode && required && source == "" {
 		return fmt.Errorf(message)
 	}
 	if !staticMode {
