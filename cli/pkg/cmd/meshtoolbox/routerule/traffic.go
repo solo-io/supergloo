@@ -48,7 +48,7 @@ func EnsureTrafficShifting(irOpts *options.InputTrafficShifting, opts *options.O
 			return err
 		}
 		var weightInput string
-		if err := iutil.GetStringInput("Please specify the associated upstream's traffic sharing percentage as comma-separated integers (ex: 20,30,50).", &weightInput); err != nil {
+		if err := iutil.GetStringInput("Please specify the associated upstream's traffic sharing percentage as comma-separated integers (ex: 20,30,50).", &weightInput, nil); err != nil {
 			return err
 		}
 		if err := getWeightsFromCsv(&stagingWeights, weightInput, len(stagingUpstreams)); err != nil {

@@ -74,7 +74,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 		if fo.ErrorType == HTTP {
 			expectedErrorMessageType = "int"
 		}
-		if err := iutil.GetStringInput(fmt.Sprintf("Error message (%v)", expectedErrorMessageType), &fo.ErrorMessage); err != nil {
+		if err := iutil.GetStringInput(fmt.Sprintf("Error message (%v)", expectedErrorMessageType), &fo.ErrorMessage, nil); err != nil {
 			return err
 		}
 	}
