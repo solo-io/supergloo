@@ -2,24 +2,17 @@ package get
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 
-	"github.com/olekukonko/tablewriter"
-	"github.com/solo-io/supergloo/pkg/constants"
-
-	"github.com/solo-io/supergloo/cli/pkg/cmd/get/info"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
 	"gopkg.in/AlecAivazis/survey.v1"
-	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var supportedOutputFormats = []string{"wide", "yaml"}
+var supportedOutputFormats = []string{"json", "yaml"}
 
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
@@ -44,51 +37,9 @@ func Cmd(opts *options.Options) *cobra.Command {
 	return cmd
 }
 
-func getResourcesCmd(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "resources",
-		Short:   `Displays resources that can be displayed`,
-		Aliases: []string{"r", "options"},
-		Args:    cobra.ExactArgs(0),
-		RunE: func(c *cobra.Command, args []string) error {
-			crdClient, err := common.GetKubeCrdClient()
-			if err != nil {
-				return err
-			}
-			crdList, err := (*crdClient).List(k8s.ListOptions{})
-			if err != nil {
-				return fmt.Errorf("Error retrieving supergloo resource types. Cause: %v \n", err)
-			}
-			table := tablewriter.NewWriter(os.Stdout)
-			table.SetBorder(false)
-			table.SetHeader([]string{"", "resource", "plural", "short names"})
-			index := 1
-			for _, crd := range crdList.Items {
-				if strings.Contains(crd.Name, common.SuperglooGroupName) {
-					// TODO (EItanya) think of a better way to deal with this
-					nameSpec := crd.Spec.Names
-					if nameSpec.Singular != "install" {
-						table.Append([]string{strconv.Itoa(index), nameSpec.Singular, nameSpec.Plural, strings.Join(nameSpec.ShortNames, ",")})
-						index++
-					}
-				}
-			}
-			table.Render()
-			return nil
-		},
-	}
-	getOpts := &opts.Get
-	flags := cmd.Flags()
-	flags.StringVarP(&getOpts.Output, "output", "o", "",
-		"Output format. Options include: \n"+strings.Join(supportedOutputFormats, "|"))
-
-	flags.StringVarP(&getOpts.Namespace, "namespace", "n", constants.SuperglooNamespace, "namespace to search")
-	return cmd
-}
-
 func get(args []string, opts *options.Options) error {
 
-	infoClient, err := info.NewClient()
+	infoClient, err := NewClient()
 	if err != nil {
 		return err
 	}
@@ -100,7 +51,7 @@ func get(args []string, opts *options.Options) error {
 	return getResource(infoClient, opts.Get)
 }
 
-func ensureParameters(infoClient info.SuperglooInfoClient, opts *options.Options, args []string) error {
+func ensureParameters(infoClient SuperglooInfoClient, opts *options.Options, args []string) error {
 	gOpts := &opts.Get
 
 	// Get available resource types
@@ -135,7 +86,7 @@ func ensureParameters(infoClient info.SuperglooInfoClient, opts *options.Options
 	return nil
 }
 
-func getResource(infoClient info.SuperglooInfoClient, gOpts options.Get) error {
+func getResource(infoClient SuperglooInfoClient, gOpts options.Get) error {
 
 	// Fetch the resource information
 	err := infoClient.ListResources(gOpts)

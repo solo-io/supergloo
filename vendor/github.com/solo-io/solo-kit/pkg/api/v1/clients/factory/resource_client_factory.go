@@ -1,9 +1,10 @@
 package factory
 
 import (
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kubesecretplain"
 	"reflect"
 	"strings"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kubesecretplain"
 
 	"github.com/hashicorp/consul/api"
 	vaultapi "github.com/hashicorp/vault/api"

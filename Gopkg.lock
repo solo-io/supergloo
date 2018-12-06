@@ -892,7 +892,7 @@
   revision = "241bc627d5400a0794853220df4fdefeeb2af0e0"
 
 [[projects]]
-  digest = "1:66a98b21046233cb6fbef11f8ae96e0ef858e0eb87fbb736134f578426fc38e4"
+  digest = "1:c133d6cb41190e3386c8a6ca72e172c21d6ecbd924c000eb510bc67fd717d007"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -919,6 +919,7 @@
     "pkg/api/v1/resources",
     "pkg/api/v1/resources/core",
     "pkg/errors",
+    "pkg/utils/cliutils",
     "pkg/utils/contextutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
@@ -932,8 +933,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "dbdc438480bf94648fa493d07e62341219f8167f"
-  version = "0.1.3"
+  revision = "fb669c96821dd1464cb1619ac10debb92c024ab8"
+  version = "0.1.6"
 
 [[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
@@ -1715,6 +1716,7 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources/core",
     "github.com/solo-io/solo-kit/pkg/errors",
+    "github.com/solo-io/solo-kit/pkg/utils/cliutils",
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",

@@ -1,11 +1,9 @@
-package info
+package get
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/solo-io/solo-kit/pkg/errors"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -78,93 +76,43 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 
 	standardResourceType := client.resourceNameMap[resourceType]
 
-	// TODO(marco): make code more generic. Ideally we don't want to enumerate the different options, but I could not
-	// find an interface that all of the generated clients implement
 	switch standardResourceType {
 	case "mesh":
+		mList := superglooV1.MeshList{}
 		if resourceName == "" {
 			res, err := (*client.meshClient).List(namespace, clients.ListOpts{})
 			if err != nil {
 				return err
 			}
-			if outputFormat == "yaml" {
-				return toYaml(res)
-			}
-			ri, err := FromMeshList(&res), nil
-			if err != nil {
-				return err
-			}
-			return toTable(*ri, gOpts)
+			mList = append(mList, res...)
 		} else {
 			res, err := (*client.meshClient).Read(namespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return err
 			}
-			if outputFormat == "yaml" {
-				return toYaml(res)
-			}
-			ri, err := FromMesh(res), nil
-			if err != nil {
-				return err
-			}
-			return toTable(*ri, gOpts)
+			mList = append(mList, res)
 		}
+		return printers.MeshTable(&mList, outputFormat, "")
 	case "routingrule":
+		rrList := superglooV1.RoutingRuleList{}
 		if resourceName == "" {
-			// TODO: replace with supergloo namespace
 			res, err := (*client.routingRulesClient).List(namespace, clients.ListOpts{})
 			if err != nil {
 				return err
 			}
-			if outputFormat == "yaml" {
-				return toYaml(res)
-			}
-			ri, err := FromRoutingRuleList(&res), nil
-			if err != nil {
-				return err
-			}
-			return toTable(*ri, gOpts)
+			rrList = append(rrList, res...)
 		} else {
 			res, err := (*client.routingRulesClient).Read(namespace, resourceName, clients.ReadOpts{})
 			if err != nil {
 				return err
 			}
-			if outputFormat == "yaml" {
-				return toYaml(res)
-			}
-			ri, err := FromRoutingRule(res), nil
-			if err != nil {
-				return err
-			}
-			return toTable(*ri, gOpts)
+			rrList = append(rrList, res)
 		}
+		return printers.RoutingRuleTable(&rrList, outputFormat, "")
 	default:
 		// Should not happen since we validate the resource
 		return errors.Errorf(common.UnknownResourceTypeMsg, resourceType)
 	}
-}
-
-func toYaml(data interface{}) error {
-	yml, err := yaml.Marshal(data)
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(yml))
-	return nil
-}
-
-func toTable(resourceInfo ResourceInfo, gOpts options.Get) error {
-	// Write the resource information to stdout
-	writer := printers.NewTableWriter(os.Stdout)
-	if err := writer.WriteLine(resourceInfo.Headers(gOpts)); err != nil {
-		return err
-	}
-	for _, line := range resourceInfo.Resources(gOpts) {
-		if err := writer.WriteLine(line); err != nil {
-			return err
-		}
-	}
-	return writer.Flush()
 }
 
 func getResourceNames(crdClient *k8sApiExt.CustomResourceDefinitionInterface) (map[string]string, error) {
