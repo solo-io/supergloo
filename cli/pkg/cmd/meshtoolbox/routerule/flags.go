@@ -136,7 +136,7 @@ func AddCorsFlags(cmd *cobra.Command, opts *options.Options) {
 	flags.StringVar(&(cOpts.MaxAge),
 		"cors.maxage",
 		"",
-		"Max age time in seconds. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header."+common.DurationQuestionExample)
+		"Max age time. Specifies how long the the results of a preflight request can be cached. Translates to the Access-Control-Max-Age header."+common.DurationQuestionExample)
 
 	flags.BoolVar(&cOpts.AllowCredentials,
 		"cors.allow.credentials",
