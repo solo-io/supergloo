@@ -1,6 +1,7 @@
 package routerule
 
 import (
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/spf13/cobra"
 )
@@ -10,31 +11,31 @@ func AddBaseFlags(cmd *cobra.Command, opts *options.Options) {
 	flags := cmd.Flags()
 
 	flags.StringVarP(&(rrOpts.TargetMesh).Name,
-		"mesh", "m",
+		cliconstants.Mesh, "m",
 		"",
 		"The mesh that will be the target for this rule")
 
 	flags.StringVarP(&(rrOpts.TargetMesh).Namespace,
-		"namespace", "n",
+		cliconstants.Namespace, "n",
 		"",
 		"The namespace for this routing rule. Defaults to \"default\"")
 
 	flags.StringVar(&rrOpts.Sources,
-		"sources",
+		cliconstants.Sources,
 		"",
 		"Sources for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon.")
 
 	flags.StringVarP(&rrOpts.Destinations,
-		"destinations", "d",
+		cliconstants.Destinations, "d",
 		"",
 		"Destinations for this rule. Same format as for 'sources'")
 
 	flags.BoolVar(&rrOpts.OverrideExisting,
-		"override",
+		cliconstants.Override,
 		false,
 		"If set to \"true\", the command will override any existing routing rule that matches the given namespace and name")
 
-	rrOpts.Matchers = *flags.StringArray("matchers",
+	rrOpts.Matchers = *flags.StringArray(cliconstants.Matchers,
 		nil,
 		"Matcher for this rule")
 }

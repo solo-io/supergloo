@@ -3,6 +3,8 @@ package meshtoolbox
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/solo-io/supergloo/cli/pkg/common"
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/meshtoolbox/mtls"
@@ -13,50 +15,50 @@ import (
 )
 
 func TrafficShifting(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("traffic-shifting", "Configure traffic shifting parameters", routerule.TrafficShifting_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.TrafficShifting, "Configure traffic shifting parameters", routerule.TrafficShifting_Rule, opts)
 	routerule.AddTrafficShiftingFlags(cmd, opts)
 	return cmd
 }
 
 func FaultInjection(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("fault-injection", "Stress test your mesh with faults", routerule.FaultInjection_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.FaultInjection, "Stress test your mesh with faults", routerule.FaultInjection_Rule, opts)
 	routerule.AddFaultFlags(cmd, opts)
 	return cmd
 }
 
 func Retries(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("retries", "Configure retry parameters", routerule.Retries_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.Retries, "Configure retry parameters", routerule.Retries_Rule, opts)
 	routerule.AddRetryFlags(cmd, opts)
 	return cmd
 }
 
 func Timeout(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("timeout", "Configure timeout parameters", routerule.Timeout_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.Timeout, "Configure timeout parameters", routerule.Timeout_Rule, opts)
 	routerule.AddTimeoutFlags(cmd, opts)
 	return cmd
 }
 
 func CorsPolicy(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("cors", "Configure cors policy parameters", routerule.CorsPolicy_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.Cors, "Configure cors policy parameters", routerule.CorsPolicy_Rule, opts)
 	routerule.AddCorsFlags(cmd, opts)
 	return cmd
 }
 
 func Mirror(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("mirror", "Configure mirror parameters", routerule.Mirror_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.Mirror, "Configure mirror parameters", routerule.Mirror_Rule, opts)
 	routerule.AddMirrorFlags(cmd, opts)
 	return cmd
 }
 
 func HeaderManipulation(opts *options.Options) *cobra.Command {
-	cmd := generateRouteCmd("header-manipulation", "Configure header manipulation parameters", routerule.HeaderManipulaition_Rule, opts)
+	cmd := generateRouteCmd(cliconstants.HeaderManipulation, "Configure header manipulation parameters", routerule.HeaderManipulaition_Rule, opts)
 	routerule.AddHeaderManipulationFlags(cmd, opts)
 	return cmd
 }
 
 func Policy(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "policy",
+		Use:   cliconstants.Policy,
 		Short: `Apply a policy`,
 		Long:  `Apply, update, or remove a policy`,
 		Run: func(c *cobra.Command, args []string) {
@@ -81,9 +83,9 @@ func ToggleMtls(opts *options.Options) *cobra.Command {
 func linkMeshToolFlags(cmd *cobra.Command, opts *options.Options) {
 	meshRef := &(opts.MeshTool).Mesh
 	pflags := cmd.PersistentFlags()
-	pflags.StringVar(&meshRef.Name, "mesh.name", "", "name of mesh to update")
-	pflags.StringVar(&meshRef.Namespace, "mesh.namespace", "", "namespace of mesh to update")
-	pflags.StringVar(&opts.MeshTool.ServiceId, "serviceid", "", "service to modify")
+	pflags.StringVar(&meshRef.Name, cliconstants.Mesh, "", "name of mesh to update")
+	pflags.StringVar(&meshRef.Namespace, cliconstants.Namespace, "", "namespace of mesh to update")
+	pflags.StringVar(&opts.MeshTool.ServiceId, cliconstants.ServiceId, "", "service to modify")
 }
 
 func meshToolPlaceholder(opts *options.Options) {

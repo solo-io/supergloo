@@ -2,13 +2,13 @@ package routerule
 
 import (
 	"encoding/json"
+	"io/ioutil"
+
 	"github.com/ghodss/yaml"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/pkg/api/v1"
-	"io/ioutil"
 )
-
 
 const (
 	API_CONFIG = "api_config"
@@ -41,4 +41,3 @@ func genericReadFileInto(filename string, dat interface{}) error {
 	}
 	return json.Unmarshal(jsn, dat)
 }
-

@@ -101,20 +101,20 @@ func EnsureActiveRoutingRuleTypes(active *[]options.MultiselectOptionBool, rootO
 }
 
 // TODO(EItanya) Make function smarter and able to select more than one option
-func selectRRBasedOnFile(list *[]options.MultiselectOptionBool, rrOpts * options.InputRoutingRule) bool {
+func selectRRBasedOnFile(list *[]options.MultiselectOptionBool, rrOpts *options.InputRoutingRule) bool {
 	for i := range *list {
 		(*list)[i].Active = false
 	}
 	success := false
-	if (rrOpts.Cors != (options.InputCors{})) {
+	if rrOpts.Cors != (options.InputCors{}) {
 		toggleRoutingRule(list, CorsPolicy_Rule)
 		success = true
 	}
-	if (rrOpts.FaultInjection != (options.InputFaultInjection{})) {
+	if rrOpts.FaultInjection != (options.InputFaultInjection{}) {
 		toggleRoutingRule(list, FaultInjection_Rule)
 		success = true
 	}
-	if (rrOpts.Timeout != (options.InputDuration{})) {
+	if rrOpts.Timeout != (options.InputDuration{}) {
 		toggleRoutingRule(list, Timeout_Rule)
 		success = true
 	}

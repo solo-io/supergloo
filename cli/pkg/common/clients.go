@@ -143,8 +143,6 @@ func GetKubernetesConfig(timeout time.Duration) (*rest.Config, error) {
 	return config, nil
 }
 
-
-
 // Return a client to query kubernetes CRDs
 func GetKubeCrdClient() (*k8sApiExt.CustomResourceDefinitionInterface, error) {
 	config, err := kubeutils.GetConfig("", "")

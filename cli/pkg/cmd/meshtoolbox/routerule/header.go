@@ -13,7 +13,7 @@ func EnsureHeaderManipulation(irOpts *options.InputHeaderManipulation, opts *opt
 		AppendRequestHeaders:  make(map[string]string),
 	}
 
-	static := opts.Top.Static ||  opts.Top.File != ""
+	static := opts.Top.Static || opts.Top.File != ""
 
 	// Response
 	if err := ensureCsv("Please specify headers to remove from the response", irOpts.RemoveResponseHeaders, &staging.RemoveResponseHeaders, static, true); err != nil {

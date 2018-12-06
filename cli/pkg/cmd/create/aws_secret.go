@@ -3,6 +3,8 @@ package create
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/aws/aws-sdk-go/aws/credentials"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -45,7 +47,9 @@ func AwsSecretCmd(opts *options.Options) *cobra.Command {
 	flags.StringVar(&sOpts.AccessKey, "access-key", "", "aws access key")
 	flags.StringVar(&sOpts.SecretKey, "secret-key", "", "aws secret key")
 
-	flags.StringVar(&sOpts.Namespace, "secretnamespace", "", "namespace in which to store the secret")
+	flags.StringVar(&sOpts.Namespace, cliconstants.SecretNamespace, "", "namespace in which to store the secret")
+
+	cmd.SetUsageTemplate(common.UsageTemplate("secret-name"))
 
 	return cmd
 }

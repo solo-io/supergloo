@@ -3,6 +3,8 @@ package ca
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
@@ -26,10 +28,10 @@ func Cmd(opts *options.Options) *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.StringVar(&cOpts.Mesh.Name, "mesh.name", "", "name of mesh to update")
-	flags.StringVar(&cOpts.Mesh.Namespace, "mesh.namespace", "", "namespace of mesh to update")
-	flags.StringVar(&cOpts.Secret.Name, "secret.name", "", "name of secret to apply")
-	flags.StringVar(&cOpts.Secret.Namespace, "secret.namespace", "", "namespace of secret to apply")
+	flags.StringVar(&cOpts.Mesh.Name, cliconstants.Mesh, "", "name of mesh to update")
+	flags.StringVar(&cOpts.Mesh.Namespace, cliconstants.Namespace, "", "namespace of mesh to update")
+	flags.StringVar(&cOpts.Secret.Name, cliconstants.SecretName, "", "name of secret to apply")
+	flags.StringVar(&cOpts.Secret.Namespace, cliconstants.SecretNamespace, "", "namespace of secret to apply")
 
 	return cmd
 }
