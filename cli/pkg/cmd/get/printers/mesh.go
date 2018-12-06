@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/cliutils"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/pkg/api/v1"
@@ -24,7 +23,7 @@ func MeshTable(list *v1.MeshList, output string, template string) error {
 
 func meshTable(list *v1.MeshList, w io.Writer) {
 	table := tablewriter.NewWriter(w)
-	headers := []string{"", "name", "mesh-type", "namespace", "status", "policy count", "encryption"}
+	headers := []string{"", "name", "mesh-type", "namespace", "policy count", "encryption"}
 	table.SetHeader(headers)
 
 	table.SetBorder(false)
@@ -40,14 +39,13 @@ func transformMesh(mesh *v1.Mesh, index int) []string {
 	var encryption string
 	meshName := mesh.Metadata.Name
 	target, namespace := getMeshType(mesh)
-	status := core.Status_State_name[int32(mesh.Status.State)]
 	policyCount := strconv.Itoa(getPolicyCount(mesh))
 	if mesh.Encryption != nil {
 		encryption = strconv.FormatBool(mesh.Encryption.TlsEnabled)
 	} else {
 		encryption = strconv.FormatBool(false)
 	}
-	row := []string{strconv.Itoa(index), meshName, target, namespace, status, policyCount, encryption}
+	row := []string{strconv.Itoa(index), meshName, target, namespace, policyCount, encryption}
 	return row
 }
 
