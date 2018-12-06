@@ -37,6 +37,9 @@ func AssembleRoutingRule(ruleTypeID string, activeRuleTypes *[]options.Multisele
 		if err := EnsureActiveRoutingRuleTypes(&rrOpts.ActiveTypes, &opts.Top, &opts.Create.InputRoutingRule); err != nil {
 			return err
 		}
+	} else {
+		//if they are not using that workflow then append the rule type to the name to avoid collissions
+		rrOpts.RouteName = fmt.Sprintf("%s-%s", strings.ToLower(ruleTypeID), rrOpts.RouteName)
 	}
 
 	// Initialize the root of our RoutingRule with the minimal required params
