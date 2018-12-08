@@ -7,6 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/pkg/errors"
 
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
@@ -45,11 +48,14 @@ import (
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 )
 
-var kubeConfig *rest.Config
-var kubeClient *kubernetes.Clientset
-var apiExtsClient apiexts.Interface
-var upstreamClient gloo.UpstreamClient
-var secretClient istiov1.IstioCacertsSecretClient
+var (
+	kubeConfig     *rest.Config
+	kubeClient     *kubernetes.Clientset
+	apiExtsClient  apiexts.Interface
+	upstreamClient gloo.UpstreamClient
+	meshClient     v1.MeshClient
+	secretClient   istiov1.IstioCacertsSecretClient
+)
 
 var testEcKey = "-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDBoI1sMdiOTvBBdjWlS\nZ8qwNuK9xV4yKuboLZ4Sx/OBfy1eKZocxTKvnjLrHUe139uhZANiAAQMTIR56O8U\nTIqf6uUHM4i9mZYLj152up7elS06Gi6lk7IeUQDHxP0NnOnbhC7rmtOV6myLNApL\nQ92kZKg7qa8q7OY/4w1QfC4ch7zZKxjNkSIiuAx7V/lzF6FYDcqT3js=\n-----END PRIVATE KEY-----"
 var TestEcRoot = "-----BEGIN CERTIFICATE-----\nMIIB7jCCAXUCCQC2t6Lqc2xnXDAKBggqhkjOPQQDAjBhMQswCQYDVQQGEwJVUzEW\nMBQGA1UECAwNTWFzc2FjaHVzZXR0czESMBAGA1UEBwwJQ2FtYnJpZGdlMQwwCgYD\nVQQKDANPcmcxGDAWBgNVBAMMD3d3dy5leGFtcGxlLmNvbTAeFw0xODExMTgxMzQz\nMDJaFw0xOTExMTgxMzQzMDJaMGExCzAJBgNVBAYTAlVTMRYwFAYDVQQIDA1NYXNz\nYWNodXNldHRzMRIwEAYDVQQHDAlDYW1icmlkZ2UxDDAKBgNVBAoMA09yZzEYMBYG\nA1UEAwwPd3d3LmV4YW1wbGUuY29tMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEDEyE\neejvFEyKn+rlBzOIvZmWC49edrqe3pUtOhoupZOyHlEAx8T9DZzp24Qu65rTleps\nizQKS0PdpGSoO6mvKuzmP+MNUHwuHIe82SsYzZEiIrgMe1f5cxehWA3Kk947MAoG\nCCqGSM49BAMCA2cAMGQCMCytVFc8sBdbM7DaBCz0N2ptdb0T7LFFfxDTzn4gjiDq\nVCd/3dct21TUWsthKXF2VgIwXEMI5EQiJ5kjR/y1KNBC9b4wfDiKRvG33jYe9gn6\ntzXUS00SoqG9D27/7aK71/xv\n-----END CERTIFICATE-----"
@@ -295,6 +301,9 @@ func WaitForDeletedPods(namespace string) {
 }
 
 func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {
+	if meshClient != nil {
+		return meshClient
+	}
 	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.MeshCrd,
 		Cfg:         GetKubeConfig(),
@@ -492,7 +501,7 @@ func TryDeleteIstioCrds() {
 }
 
 func GetUpstreamNames(upstreamClient gloo.UpstreamClient) ([]string, error) {
-	ul, err := upstreamClient.List("gloo-system", clients.ListOpts{})
+	ul, err := upstreamClient.List(constants.GlooNamespace, clients.ListOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -502,3 +511,11 @@ func GetUpstreamNames(upstreamClient gloo.UpstreamClient) ([]string, error) {
 	}
 	return ups, nil
 }
+
+func GetResourceList(client clients.ResourceClient, namespace string) resources.ResourceList {
+	list, err := client.List(namespace, clients.ListOpts{})
+	Expect(err).NotTo(HaveOccurred())
+	return list
+}
+
+func GetMeshNames() {}

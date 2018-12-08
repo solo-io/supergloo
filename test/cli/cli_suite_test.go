@@ -1,6 +1,8 @@
 package cli_test
 
 import (
+	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/onsi/gomega/gexec"
@@ -10,7 +12,8 @@ import (
 )
 
 const (
-	supergloo_dir = "github.com/solo-io/supergloo/cli/cmd"
+	supergloo_dir        = "github.com/solo-io/supergloo/cli/cmd"
+	delete_ruoting_rules = "delete routingrules.supergloo.solo.io --all -n supergloo-system"
 )
 
 var SuperglooExec string
@@ -22,8 +25,10 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-
 	gexec.CleanupBuildArtifacts()
+	cmd := exec.Command("kubectl", strings.Split(delete_ruoting_rules, " ")...)
+	err := cmd.Run()
+	Expect(err).NotTo(HaveOccurred())
 })
 
 func TestCli(t *testing.T) {

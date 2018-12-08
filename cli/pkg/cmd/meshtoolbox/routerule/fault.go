@@ -5,22 +5,24 @@ import (
 	"strconv"
 	"strings"
 
-	types "github.com/gogo/protobuf/types"
+	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/common/iutil"
-	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 )
 
 const (
-	HTTP              = "http"
-	HTTP2             = "http2"
-	GRPC              = "grpc"
-	FIXED_DELAY       = "fixed delay"
-	EXPONENTIAL_DELAY = "exponential delay"
+	HTTP                    = "http"
+	HTTP2                   = "http2"
+	GRPC                    = "grpc"
+	FIXED_DELAY             = "fixed delay"
+	FIXED_DELAY_INPUT       = "fixed"
+	EXPONENTIAL_DELAY       = "exponential delay"
+	EXPONENTIAL_DELAY_INPUT = "exponential"
 )
 
-var delayTypeOptions = []string{FIXED_DELAY, EXPONENTIAL_DELAY}
+var delayTypeOptions = []string{FIXED_DELAY, EXPONENTIAL_DELAY, FIXED_DELAY_INPUT, EXPONENTIAL_DELAY_INPUT}
 var errorTypeOptions = []string{HTTP, HTTP2, GRPC}
 
 func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
@@ -42,7 +44,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 		}
 	}
 	if !common.Contains(delayTypeOptions, fo.HttpDelayType) {
-		return fmt.Errorf("Must specify a valid http delay type: %v", strings.Join(delayTypeOptions[:], ", "))
+		return fmt.Errorf("Must specify a valid http delay type: %v", strings.Join(delayTypeOptions[2:], ", "))
 	}
 	delayDuration := &types.Duration{}
 	if err := EnsureDuration("Please specify the delay", &fo.HttpDelayValue,
@@ -50,7 +52,7 @@ func EnsureFault(fo *options.InputFaultInjection, opts *options.Options) error {
 		opts); err != nil {
 		return err
 	}
-	if fo.HttpDelayType == FIXED_DELAY {
+	if fo.HttpDelayType == FIXED_DELAY || fo.HttpDelayType == FIXED_DELAY_INPUT {
 		t.Delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
 			FixedDelay: delayDuration,
 		}

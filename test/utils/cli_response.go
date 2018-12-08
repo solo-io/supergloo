@@ -34,3 +34,38 @@ Flags:
 
 Use "supergloo [command] --help" for more information about a command.
 `
+
+const RoutingRulesArgs = `
+	{{.RuleType}} test-rule -s --mesh {{.MeshName}} --namespace supergloo-system
+	--destinations {{.Upstream}} --sources {{.Upstream}}
+`
+
+const HeaderManipulationArgs = `
+    --header.request.append header-request1,text --header.request.remove header-request2 
+    --header.response.append header-response1,text --header.response.remove header-response2
+`
+const FaultInjectionArgs = `
+	--fault.abort.message 404
+	--fault.abort.percent 50
+	--fault.abort.type http
+	--fault.delay.percent 50
+	--fault.delay.type fixed
+	--fault.delay.value 1s
+`
+const RetriesArgs = `
+	--route.retry.attempt 3
+	--route.retry.timeout 1s
+`
+const TimeoutArgs = `
+    --route.timeout 1s2ms3ns
+`
+const TrafficShiftingArgs = ` --traffic.upstreams {{.Upstream}} --traffic.weights 1 `
+const MirrorArgs = ` --mirror {{.Upstream}} `
+const CorsArgs = `
+	--cors.allow.credentials
+	--cors.allow.headers *
+	--cors.allow.methods get
+	--cors.allow.origin *
+	--cors.expose.headers authorization
+	--cors.maxage 10s
+`
