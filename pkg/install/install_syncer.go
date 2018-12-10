@@ -3,6 +3,8 @@ package install
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/kube"
+
 	"github.com/solo-io/supergloo/pkg/secret"
 
 	"k8s.io/helm/pkg/proto/hapi/release"
@@ -10,7 +12,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/supergloo/pkg/install/linkerd2"
-	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/helm"
 	"k8s.io/client-go/kubernetes"
 
-	security "github.com/openshift/client-go/security/clientset/versioned"
 	kubecore "k8s.io/api/core/v1"
 	kuberbac "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,8 +37,8 @@ const releaseNameKey = "helm_release"
 type InstallSyncer struct {
 	Kube           *kubernetes.Clientset
 	MeshClient     v1.MeshClient
-	SecurityClient *security.Clientset
-	ApiExts        apiexts.Interface
+	SecurityClient kube.SecurityClient
+	CrdClient      kube.CrdClient
 	SecretClient   istiov1.IstioCacertsSecretClient
 }
 
@@ -68,13 +68,16 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 	case *v1.Install_Consul:
 		meshInstaller = &consul.ConsulInstaller{}
 	case *v1.Install_Istio:
+		podClient := kube.NewKubePodClient(syncer.Kube)
+		secretClient := kube.NewKubeSecretClient(syncer.Kube)
 		secretSyncer := &secret.SecretSyncer{
-			SecretClient: syncer.SecretClient,
-			SecretList:   secretList,
-			Kube:         syncer.Kube,
-			Preinstall:   true,
+			IstioSecretClient: syncer.SecretClient,
+			IstioSecretList:   secretList,
+			PodClient:         podClient,
+			SecretClient:      secretClient,
+			Preinstall:        true,
 		}
-		i, err := istio.NewIstioInstaller(ctx, syncer.ApiExts, syncer.SecurityClient, secretSyncer)
+		i, err := istio.NewIstioInstaller(ctx, syncer.CrdClient, syncer.SecurityClient, secretSyncer)
 		if err != nil {
 			return errors.Wrapf(err, "initializing istio installer")
 		}

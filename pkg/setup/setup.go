@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	kube_client "github.com/solo-io/supergloo/pkg/kube"
+
 	"github.com/solo-io/supergloo/pkg/translator/appmesh"
 
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
@@ -192,8 +194,9 @@ func Main(errHandler func(error), namespaces ...string) error {
 	if err != nil {
 		return errors.Wrapf(err, "creating api extensions client")
 	}
+	crdClient := kube_client.NewKubeCrdClient(apiExts)
 	installSyncer := &install.InstallSyncer{
-		ApiExts:      apiExts,
+		CrdClient:    crdClient,
 		Kube:         kubeClient,
 		MeshClient:   meshClient,
 		SecretClient: istioSecretClient,
