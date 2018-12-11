@@ -46,7 +46,7 @@ var _ = AfterSuite(func() {
 	}
 })
 
-var Syncer install.InstallSyncer
+var Syncer *install.InstallSyncer
 
 // Get set in before each of test files
 var MeshName string
@@ -54,11 +54,7 @@ var ChartPath string
 var InstallNamespace string
 
 var _ = BeforeEach(func() {
-	Syncer = install.InstallSyncer{
-		Kube:       util.GetKubeClient(),
-		MeshClient: util.GetMeshClient(KubeCache),
-		ApiExts:    util.GetApiExtsClient(),
-	}
+	Syncer = install.NewKubeInstallSyncer(util.GetMeshClient(KubeCache), util.GetSecretClient(), util.GetKubeClient(), util.GetApiExtsClient())
 })
 
 var _ = AfterEach(func() {

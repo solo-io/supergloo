@@ -115,7 +115,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var upstreamClient gloo.UpstreamClient
 
 	var secretClient istiosecret.IstioCacertsSecretClient
-	var installSyncer install.InstallSyncer
+	var installSyncer *install.InstallSyncer
 	var bookinfoNamespace string
 	logger := contextutils.LoggerFrom(context.TODO())
 
@@ -131,12 +131,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		upstreamClient = util.GetUpstreamClient(kubeCache)
 
 		secretClient = util.GetSecretClient()
-		installSyncer = install.InstallSyncer{
-			Kube:         util.GetKubeClient(),
-			MeshClient:   meshClient,
-			ApiExts:      util.GetApiExtsClient(),
-			SecretClient: util.GetSecretClient(),
-		}
+		installSyncer = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
 	})
 
 	AfterEach(func() {

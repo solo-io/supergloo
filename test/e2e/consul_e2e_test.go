@@ -58,7 +58,7 @@ var _ = Describe("Consul E2E", func() {
 		meshClient     v1.MeshClient
 		secretClient   istiosecret.IstioCacertsSecretClient
 		upstreamClient gloo.UpstreamClient
-		installSyncer  install.InstallSyncer
+		installSyncer  *install.InstallSyncer
 		pathToUds      string
 	)
 
@@ -131,10 +131,7 @@ var _ = Describe("Consul E2E", func() {
 		meshClient = util.GetMeshClient(kubeCache)
 		upstreamClient = util.GetUpstreamClient(kubeCache)
 		secretClient = util.GetSecretClient()
-		installSyncer = install.InstallSyncer{
-			Kube:       util.GetKubeClient(),
-			MeshClient: meshClient,
-		}
+		installSyncer = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
 	})
 
 	AfterEach(func() {
