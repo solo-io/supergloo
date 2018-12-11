@@ -70,7 +70,7 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 	case *v1.Install_Istio:
 		podClient := kube.NewKubePodClient(syncer.Kube)
 		secretClient := kube.NewKubeSecretClient(syncer.Kube)
-		secretSyncer := &secret.SecretSyncer{
+		secretSyncer := &secret.KubeSecretSyncer{
 			IstioSecretClient: syncer.SecretClient,
 			IstioSecretList:   secretList,
 			PodClient:         podClient,
