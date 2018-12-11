@@ -2,13 +2,14 @@ package istio_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/ghodss/yaml"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/kube"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/solo-io/supergloo/mock/pkg/kube"
@@ -31,9 +32,9 @@ func TestSecret(t *testing.T) {
 var _ = Describe("Istio Installer", func() {
 
 	var (
-		installer *istio.IstioInstaller
-		err error
-		mockCrdClient *mock_kube.MockCrdClient
+		installer        *istio.IstioInstaller
+		err              error
+		mockCrdClient    *mock_kube.MockCrdClient
 		mockSecretSyncer *mock_secret.MockSecretSyncer
 	)
 
@@ -89,18 +90,18 @@ var _ = Describe("Istio Installer", func() {
 		}
 
 		type GlobalOverrides struct {
-			Mtls MtlsOverrides `json:"mtls"`
-			Crds bool `json:"crds"`
-			ControlPlaneSecurityEnabled bool `json:"controlPlaneSecurityEnabled"`
+			Mtls                        MtlsOverrides `json:"mtls"`
+			Crds                        bool          `json:"crds"`
+			ControlPlaneSecurityEnabled bool          `json:"controlPlaneSecurityEnabled"`
 		}
 
 		type SecurityOverrides struct {
-			Enabled bool `json:"enabled"`
+			Enabled    bool `json:"enabled"`
 			SelfSigned bool `json:"selfSigned"`
 		}
 
 		type Overrides struct {
-			Global GlobalOverrides `json:"global"` // Affects YAML field names too.
+			Global   GlobalOverrides   `json:"global"` // Affects YAML field names too.
 			Security SecurityOverrides `json:"security"`
 		}
 
@@ -108,13 +109,13 @@ var _ = Describe("Istio Installer", func() {
 			return &Overrides{
 				Global: GlobalOverrides{
 					ControlPlaneSecurityEnabled: true,
-					Crds: false,
+					Crds:                        false,
 					Mtls: MtlsOverrides{
 						Enabled: mtls,
 					},
 				},
 				Security: SecurityOverrides{
-					Enabled: true,
+					Enabled:    true,
 					SelfSigned: selfSigned,
 				},
 			}
