@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/solo-io/supergloo/test/util"
+
 	"github.com/ghodss/yaml"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/kube"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
@@ -48,36 +49,6 @@ var _ = Describe("Istio Installer", func() {
 		installer, err = istio.NewIstioInstaller(context.TODO(), mockCrdClient, nil, mockSecretSyncer)
 		Expect(err).To(BeNil())
 	})
-
-	getRef := func(namespace, name string) *core.ResourceRef {
-		return &core.ResourceRef{
-			Namespace: namespace,
-			Name:      name,
-		}
-	}
-
-	getEncryption := func(mtls *types.BoolValue, ref *core.ResourceRef) *v1.Encryption {
-		encryption := &v1.Encryption{}
-		if mtls == nil {
-			return encryption
-		}
-		encryption.TlsEnabled = mtls.Value
-		if ref == nil {
-			return encryption
-		}
-		encryption.Secret = ref
-		return encryption
-	}
-
-	getInstallFromEnc := func(encryption *v1.Encryption) *v1.Install {
-		return &v1.Install{
-			Encryption: encryption,
-		}
-	}
-
-	getInstall := func(mtls *types.BoolValue, ref *core.ResourceRef) *v1.Install {
-		return getInstallFromEnc(getEncryption(mtls, ref))
-	}
 
 	Describe("Should get correct overrides", func() {
 
@@ -131,37 +102,37 @@ var _ = Describe("Istio Installer", func() {
 		}
 
 		It("nil encryption", func() {
-			actual := getActualOverrides(getInstallFromEnc(nil))
+			actual := getActualOverrides(util.GetInstallFromEnc(nil))
 			expected := getExpectedOverrides(false, true)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
 
 		It("empty encryption", func() {
-			actual := getActualOverrides(getInstall(nil, nil))
+			actual := getActualOverrides(util.GetInstall(nil, nil))
 			expected := getExpectedOverrides(false, true)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
 
 		It("false mtls nil secret", func() {
-			actual := getActualOverrides(getInstall(&types.BoolValue{Value: false}, nil))
+			actual := getActualOverrides(util.GetInstall(&types.BoolValue{Value: false}, nil))
 			expected := getExpectedOverrides(false, true)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
 
 		It("false mtls secret is ignored", func() {
-			actual := getActualOverrides(getInstall(&types.BoolValue{Value: false}, getRef("foo", "bar")))
+			actual := getActualOverrides(util.GetInstall(&types.BoolValue{Value: false}, util.GetRef("foo", "bar")))
 			expected := getExpectedOverrides(false, true)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
 
 		It("true mtls nil secret", func() {
-			actual := getActualOverrides(getInstall(&types.BoolValue{Value: true}, nil))
+			actual := getActualOverrides(util.GetInstall(&types.BoolValue{Value: true}, nil))
 			expected := getExpectedOverrides(true, true)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
 
 		It("true mtls with secret", func() {
-			actual := getActualOverrides(getInstall(&types.BoolValue{Value: true}, getRef("foo", "bar")))
+			actual := getActualOverrides(util.GetInstall(&types.BoolValue{Value: true}, util.GetRef("foo", "bar")))
 			expected := getExpectedOverrides(true, false)
 			Expect(actual).To(BeEquivalentTo(expected))
 		})
@@ -181,21 +152,21 @@ var _ = Describe("Istio Installer", func() {
 
 		It("error crd client", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(testError)
-			actual := installer.DoPreHelmInstall(installNamespace, getInstallFromEnc(encryption))
+			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
 			Expect(actual.Error()).Should(ContainSubstring("creating istio crds"))
 		})
 
 		It("error secret syncer", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(nil)
 			mockSecretSyncer.EXPECT().SyncSecret(context.TODO(), installNamespace, encryption).Return(testError)
-			actual := installer.DoPreHelmInstall(installNamespace, getInstallFromEnc(encryption))
+			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
 			Expect(actual.Error()).Should(ContainSubstring("syncing secret"))
 		})
 
 		It("succeeds", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(nil)
 			mockSecretSyncer.EXPECT().SyncSecret(context.TODO(), installNamespace, encryption).Return(nil)
-			actual := installer.DoPreHelmInstall(installNamespace, getInstallFromEnc(encryption))
+			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
 			Expect(actual).Should(BeNil())
 		})
 	})
