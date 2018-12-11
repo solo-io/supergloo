@@ -47,7 +47,6 @@ type MeshInstaller interface {
 	GetCrbName() string
 	GetOverridesYaml(install *v1.Install) string
 	DoPreHelmInstall(installNamespace string, install *v1.Install) error
-	DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error
 }
 
 func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
@@ -148,9 +147,9 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 
 	releaseName := release.Name
 
-	logger.Infof("installed %v", releaseName)
+	logger.Infof("finished installing %v", releaseName)
 	// 5. Do any additional steps
-	return releaseName, installer.DoPostHelmInstall(install, syncer.Kube, releaseName)
+	return releaseName, nil
 }
 
 func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, installer MeshInstaller) (string, error) {

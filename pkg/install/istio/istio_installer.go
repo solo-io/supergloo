@@ -11,8 +11,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-
-	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -95,10 +93,6 @@ security:
   enabled: true
 
 `
-
-func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
-	return nil
-}
 
 func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
 	// create crds if they don't exist. CreateCrds does not error on err type IsAlreadyExists
