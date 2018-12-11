@@ -16,6 +16,12 @@ type KubeRbacClient struct {
 	kube kubernetes.Interface
 }
 
+func NewKubeRbacClient(kube kubernetes.Interface) *KubeRbacClient {
+	return &KubeRbacClient{
+		kube: kube,
+	}
+}
+
 func (client *KubeRbacClient) CreateCrbIfNotExist(crbName string, namespaceName string) error {
 	_, err := client.kube.RbacV1().ClusterRoleBindings().Create(GetCrb(crbName, namespaceName))
 	if apierrors.IsAlreadyExists(err) {

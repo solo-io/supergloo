@@ -3,6 +3,8 @@ package install
 import (
 	"context"
 
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/solo-io/supergloo/pkg/kube"
 
 	"github.com/solo-io/supergloo/pkg/secret"
@@ -22,9 +24,10 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/consul"
 	"github.com/solo-io/supergloo/pkg/install/helm"
 
-	helmlib "k8s.io/helm/pkg/helm"
-
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	kube_client "github.com/solo-io/supergloo/pkg/kube"
+	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	helmlib "k8s.io/helm/pkg/helm"
 )
 
 const releaseNameKey = "helm_release"
@@ -38,6 +41,23 @@ type InstallSyncer struct {
 	SecretClient      kube.SecretClient
 	RbacClient        kube.RbacClient
 	NamespaceClient   kube.NamespaceClient
+}
+
+func NewKubeInstallSyncer(meshClient v1.MeshClient, istioSecretClient istiov1.IstioCacertsSecretClient, kube kubernetes.Interface, apiExts apiexts.Interface) *InstallSyncer {
+	crdClient := kube_client.NewKubeCrdClient(apiExts)
+	rbacClient := kube_client.NewKubeRbacClient(kube)
+	namespaceClient := kube_client.NewKubeNamespaceClient(kube)
+	secretClient := kube_client.NewKubeSecretClient(kube)
+	podClient := kube_client.NewKubePodClient(kube)
+	return &InstallSyncer{
+		MeshClient:        meshClient,
+		IstioSecretClient: istioSecretClient,
+		CrdClient:         crdClient,
+		RbacClient:        rbacClient,
+		NamespaceClient:   namespaceClient,
+		SecretClient:      secretClient,
+		PodClient:         podClient,
+	}
 }
 
 type MeshInstaller interface {
