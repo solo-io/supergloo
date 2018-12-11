@@ -37,6 +37,7 @@ type InstallSyncer struct {
 	IstioSecretClient istiov1.IstioCacertsSecretClient
 	RbacClient        kube.RbacClient
 	NamespaceClient   kube.NamespaceClient
+	HelmClient        helm.HelmClient
 
 	istioInstaller    *istio.IstioInstaller
 	linkerd2Installer *linkerd2.Linkerd2Installer
@@ -49,7 +50,8 @@ func NewInstallSyncer(
 	secretSyncer secret.SecretSyncer,
 	rbacClient kube.RbacClient,
 	namespaceClient kube.NamespaceClient,
-	crdClient kube.CrdClient) (*InstallSyncer, error) {
+	crdClient kube.CrdClient,
+	helmClient helm.HelmClient) (*InstallSyncer, error) {
 	istio, err := istio.NewIstioInstaller(crdClient, nil, secretSyncer)
 	if err != nil {
 		return nil, errors.Wrap(err, "setting up istio installer")
@@ -61,6 +63,7 @@ func NewInstallSyncer(
 		IstioSecretClient: istioSecretClient,
 		RbacClient:        rbacClient,
 		NamespaceClient:   namespaceClient,
+		HelmClient:        helmClient,
 
 		istioInstaller:    istio,
 		linkerd2Installer: linkerd2,
@@ -83,7 +86,9 @@ func NewKubeInstallSyncer(meshClient v1.MeshClient, istioSecretClient istiov1.Is
 		IstioSecretClient: istioSecretClient,
 	}
 
-	return NewInstallSyncer(meshClient, istioSecretClient, secretSyncer, rbacClient, namespaceClient, crdClient)
+	helmClient := &helm.KubeHelmClient{}
+
+	return NewInstallSyncer(meshClient, istioSecretClient, secretSyncer, rbacClient, namespaceClient, crdClient, helmClient)
 }
 
 type MeshInstaller interface {
@@ -220,14 +225,14 @@ func (syncer *InstallSyncer) CreateCrbIfNotExist(crbName string, namespaceName s
 
 func (syncer *InstallSyncer) helmInstall(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
 	if chartLocator.GetChartPath() != nil {
-		return helmInstallChart(ctx, chartLocator.GetChartPath().Path, releaseName, installNamespace, overridesYaml)
+		return syncer.helmInstallChart(ctx, chartLocator.GetChartPath().Path, releaseName, installNamespace, overridesYaml)
 	}
 	return nil, errors.Errorf("Unsupported kind of chart locator")
 }
 
-func helmInstallChart(ctx context.Context, chartPath string, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
+func (syncer *InstallSyncer) helmInstallChart(ctx context.Context, chartPath string, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
 	// helm install
-	helmClient, err := helm.GetHelmClient(ctx)
+	helmClient, err := syncer.HelmClient.GetHelmClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +240,7 @@ func helmInstallChart(ctx context.Context, chartPath string, releaseName string,
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("preparing to install chart from path %s for release %s", chartPath, releaseName)
 
-	installPath, err := helm.LocateChartRepoReleaseDefault(ctx, "", chartPath)
+	installPath, err := syncer.HelmClient.LocateChartRepoReleaseDefault(ctx, "", chartPath)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +252,7 @@ func helmInstallChart(ctx context.Context, chartPath string, releaseName string,
 		installNamespace,
 		helmlib.ValueOverrides([]byte(overridesYaml)),
 		helmlib.ReleaseName(releaseName))
-	helm.Teardown()
+	syncer.HelmClient.Teardown()
 	if err != nil {
 		return nil, err
 	}
@@ -256,14 +261,14 @@ func helmInstallChart(ctx context.Context, chartPath string, releaseName string,
 
 func (syncer *InstallSyncer) updateHelmRelease(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, overridesYaml string) error {
 	if chartLocator.GetChartPath() != nil {
-		return helmUpdateChart(ctx, chartLocator.GetChartPath().Path, releaseName, overridesYaml)
+		return syncer.helmUpdateChart(ctx, chartLocator.GetChartPath().Path, releaseName, overridesYaml)
 	}
 	return errors.Errorf("Unsupported kind of chart locator")
 }
 
-func helmUpdateChart(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error {
+func (syncer *InstallSyncer) helmUpdateChart(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error {
 	// helm install
-	helmClient, err := helm.GetHelmClient(ctx)
+	helmClient, err := syncer.HelmClient.GetHelmClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -271,7 +276,7 @@ func helmUpdateChart(ctx context.Context, chartPath string, releaseName string, 
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("preparing to update chart from path %s for release %s", chartPath, releaseName)
 
-	installPath, err := helm.LocateChartRepoReleaseDefault(ctx, "", chartPath)
+	installPath, err := syncer.HelmClient.LocateChartRepoReleaseDefault(ctx, "", chartPath)
 	if err != nil {
 		return err
 	}
@@ -282,7 +287,7 @@ func helmUpdateChart(ctx context.Context, chartPath string, releaseName string, 
 		releaseName,
 		installPath,
 		helmlib.UpdateValueOverrides([]byte(overridesYaml)))
-	helm.Teardown()
+	syncer.HelmClient.Teardown()
 	return err
 }
 
@@ -326,12 +331,12 @@ func getMeshObject(install *v1.Install, releaseName string) (*v1.Mesh, error) {
 
 func (syncer *InstallSyncer) uninstallHelmRelease(ctx context.Context, mesh *v1.Mesh, install *v1.Install, meshInstaller MeshInstaller) error {
 	releaseName := mesh.Metadata.Annotations[releaseNameKey]
-	helmClient, err := helm.GetHelmClient(ctx)
+	helmClient, err := syncer.HelmClient.GetHelmClient(ctx)
 	if err != nil {
 		return err
 	}
 	_, err = helmClient.DeleteRelease(releaseName, helmlib.DeletePurge(true))
-	helm.Teardown()
+	syncer.HelmClient.Teardown()
 	// Install may be into ns that can't be deleted, don't propagate error if delete fails
 	syncer.NamespaceClient.TryDeleteInstallNamespace(getInstallNamespace(install, meshInstaller.GetDefaultNamespace()))
 	// TODO: this will break if there are more than one installs of a given mesh that depend on the CRB

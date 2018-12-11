@@ -26,6 +26,14 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
+type HelmClient interface {
+	GetHelmClient(ctx context.Context) (*helm.Client, error)
+	LocateChartRepoReleaseDefault(ctx context.Context, repoUrl string, release string) (string, error)
+	Teardown()
+}
+
+type KubeHelmClient struct{}
+
 func setupTillerHost(ctx context.Context) {
 	tiller := "tiller-deploy.kube-system.svc.cluster.local"
 	_, err := net.LookupIP(tiller)
@@ -40,7 +48,7 @@ func setupTillerHost(ctx context.Context) {
 // Create a tunnel to tiller, set up a helm client, and ping it to ensure the connection is live
 // Consumers are expected to call Teardown to ensure the tunnel gets closed
 // TODO: Expose configuration options inside setupConnection()
-func GetHelmClient(ctx context.Context) (*helm.Client, error) {
+func (client *KubeHelmClient) GetHelmClient(ctx context.Context) (*helm.Client, error) {
 	if err := setupConnection(ctx); err != nil {
 		return nil, err
 	}
@@ -57,7 +65,7 @@ var (
 	Settings     helm_env.EnvSettings
 )
 
-func Teardown() {
+func (client *KubeHelmClient) Teardown() {
 	if tillerTunnel != nil {
 		tillerTunnel.Close()
 	}
@@ -114,11 +122,7 @@ func setupConnection(ctx context.Context) error {
 	return nil
 }
 
-func LocateChartPathDefault(ctx context.Context, name string) (string, error) {
-	return locateChartPath(ctx, "", "", "", name, "", false, "", "", "", "")
-}
-
-func LocateChartRepoReleaseDefault(ctx context.Context, repoUrl string, release string) (string, error) {
+func (client *KubeHelmClient) LocateChartRepoReleaseDefault(ctx context.Context, repoUrl string, release string) (string, error) {
 	return locateChartPath(ctx, repoUrl, "", "", release, "", false, "", "", "", "")
 }
 

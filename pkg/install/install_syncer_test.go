@@ -188,4 +188,17 @@ var _ = Describe("Install syncer", func() {
 		Expect(err.Error()).To(ContainSubstring("Error doing pre-helm install steps"))
 	})
 
+	It("install istio propagates helm error", func() {
+		install := getIstioInstall()
+		snap := util.GetSnapshot(install)
+		mockNamespaceClient.EXPECT().CreateNamespaceIfNotExist(testInstallNamespace).Times(1).Return(nil)
+		mockRbacClient.EXPECT().CreateCrbIfNotExist(istio.CrbName, testInstallNamespace).Times(1).Return(nil)
+		mockCrdClient.EXPECT().CreateCrds(getCrds()).Times(1).Return(nil)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+		mockSecretSyncer.EXPECT().SyncSecret(updatedCtx, testInstallNamespace, install.Encryption, util.GetTestSecrets(), true).Times(1).Return(nil)
+
+		err := syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
 })

@@ -10,8 +10,9 @@ import (
 
 var _ = Describe("HelmTest", func() {
 	It("Can get helm client", func() {
-		_, err := helm.GetHelmClient(context.TODO())
-		helm.Teardown()
+		helmClient := helm.KubeHelmClient{}
+		_, err := helmClient.GetHelmClient(context.TODO())
+		helmClient.Teardown()
 		Expect(err).NotTo(HaveOccurred())
 	})
 })
