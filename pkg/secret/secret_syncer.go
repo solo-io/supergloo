@@ -14,7 +14,11 @@ import (
 	"github.com/solo-io/supergloo/pkg/kube"
 )
 
-type SecretSyncer struct {
+type SecretSyncer interface {
+	SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption) error
+}
+
+type KubeSecretSyncer struct {
 	PodClient    kube.PodClient
 	SecretClient kube.SecretClient
 
@@ -31,7 +35,7 @@ const (
 	citadelLabelValue                = "citadel"
 )
 
-func (s *SecretSyncer) SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption) error {
+func (s *KubeSecretSyncer) SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption) error {
 	s.installNamespace = installNamespace
 	if encryption == nil {
 		return nil
@@ -53,7 +57,7 @@ func (s *SecretSyncer) SyncSecret(ctx context.Context, installNamespace string, 
 	return s.syncSecret(ctx, sourceSecret, existingSecret)
 }
 
-func (s *SecretSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret) error {
+func (s *KubeSecretSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret) error {
 	if err := validateTlsSecret(sourceSecret); err != nil {
 		return errors.Wrapf(err, "invalid secret %v", sourceSecret.Metadata.Ref())
 	}
@@ -106,12 +110,12 @@ func validateTlsSecret(secret *istiov1.IstioCacertsSecret) error {
 	return nil
 }
 
-func (s *SecretSyncer) deleteIstioDefaultSecret() error {
+func (s *KubeSecretSyncer) deleteIstioDefaultSecret() error {
 	// Using Kube API directly cause we don't expect this secret to be tagged and it should be mostly a one-time op
 	return s.SecretClient.Delete(s.installNamespace, DefaultRootCertificateSecretName)
 }
 
-func (s *SecretSyncer) restartCitadel() error {
+func (s *KubeSecretSyncer) restartCitadel() error {
 	selector := make(map[string]string)
 	selector[istioLabelKey] = citadelLabelValue
 	return s.PodClient.RestartPods(s.installNamespace, selector)

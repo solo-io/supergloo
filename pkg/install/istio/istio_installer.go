@@ -26,10 +26,10 @@ type IstioInstaller struct {
 	crdClient      kube.CrdClient
 	securityClient kube.SecurityClient
 
-	secretSyncer *secret.SecretSyncer
+	secretSyncer secret.SecretSyncer
 }
 
-func NewIstioInstaller(ctx context.Context, CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer *secret.SecretSyncer) (*IstioInstaller, error) {
+func NewIstioInstaller(ctx context.Context, CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer secret.SecretSyncer) (*IstioInstaller, error) {
 	crds, err := kube.CrdsFromManifest(IstioCrdYaml)
 	if err != nil {
 		return nil, err
@@ -53,10 +53,10 @@ func (c *IstioInstaller) GetCrbName() string {
 }
 
 func (c *IstioInstaller) GetOverridesYaml(install *v1.Install) string {
-	return getOverrides(install.Encryption)
+	return getOverridesFromEnc(install.Encryption)
 }
 
-func getOverrides(encryption *v1.Encryption) string {
+func getOverridesFromEnc(encryption *v1.Encryption) string {
 	selfSigned := true
 	mtlsEnabled := false
 	if encryption != nil {
@@ -67,7 +67,10 @@ func getOverrides(encryption *v1.Encryption) string {
 			}
 		}
 	}
+	return getOverrides(mtlsEnabled, selfSigned)
+}
 
+func getOverrides(mtlsEnabled, selfSigned bool) string {
 	selfSignedString := strconv.FormatBool(selfSigned)
 	tlsEnabledString := strconv.FormatBool(mtlsEnabled)
 	overridesWithMtlsFlag := strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", tlsEnabledString, -1)
@@ -108,7 +111,7 @@ func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.I
 	if c.securityClient == nil {
 		return nil
 	}
-	return c.AddSccToUsers(
+	return c.addSccToUsers(
 		"default",
 		"istio-ingress-service-account",
 		"prometheus",
@@ -133,7 +136,7 @@ func (c *IstioInstaller) syncSecret(installNamespace string, install *v1.Install
 // TODO: something like this should enable minishift installs to succeed, but this isn't right. The correct steps are
 //       to run "oc adm policy add-scc-to-user anyuid -z %s -n istio-system" for each of the user accounts above
 //       maybe the issue is not specifying the namespace?
-func (c *IstioInstaller) AddSccToUsers(users ...string) error {
+func (c *IstioInstaller) addSccToUsers(users ...string) error {
 	anyuid, err := c.securityClient.GetScc("anyuid")
 	if err != nil {
 		return err
