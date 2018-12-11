@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/secret"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
@@ -20,7 +21,6 @@ const (
 )
 
 type IstioInstaller struct {
-	ctx            context.Context
 	crds           []*v1beta1.CustomResourceDefinition
 	crdClient      kube.CrdClient
 	securityClient kube.SecurityClient
@@ -28,13 +28,12 @@ type IstioInstaller struct {
 	secretSyncer secret.SecretSyncer
 }
 
-func NewIstioInstaller(ctx context.Context, CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer secret.SecretSyncer) (*IstioInstaller, error) {
+func NewIstioInstaller(CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer secret.SecretSyncer) (*IstioInstaller, error) {
 	crds, err := kube.CrdsFromManifest(IstioCrdYaml)
 	if err != nil {
 		return nil, err
 	}
 	return &IstioInstaller{
-		ctx:            ctx,
 		crdClient:      CrdClient,
 		securityClient: SecurityClient,
 		crds:           crds,
@@ -95,22 +94,22 @@ security:
 
 `
 
-func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
+func (c *IstioInstaller) DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
 	// create crds if they don't exist. CreateCrds does not error on err type IsAlreadyExists
 	if err := c.crdClient.CreateCrds(c.crds...); err != nil {
 		return errors.Wrapf(err, "creating istio crds")
 	}
-	if err := c.syncSecret(installNamespace, install); err != nil {
+	if err := c.syncSecret(ctx, installNamespace, install, secretList); err != nil {
 		return errors.Wrapf(err, "syncing secret")
 	}
 	return c.syncSecurity()
 }
 
-func (c *IstioInstaller) syncSecret(installNamespace string, install *v1.Install) error {
+func (c *IstioInstaller) syncSecret(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
 	if c.secretSyncer == nil && install.Encryption != nil && install.Encryption.Secret != nil {
 		return errors.Errorf("Invalid setup")
 	}
-	return c.secretSyncer.SyncSecret(c.ctx, installNamespace, install.Encryption)
+	return c.secretSyncer.SyncSecret(ctx, installNamespace, install.Encryption, secretList, true)
 }
 
 func (c *IstioInstaller) syncSecurity() error {

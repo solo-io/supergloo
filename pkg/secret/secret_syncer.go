@@ -15,7 +15,7 @@ import (
 )
 
 type SecretSyncer interface {
-	SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption) error
+	SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption, secretList istiov1.IstioCacertsSecretList, preinstall bool) error
 }
 
 type KubeSecretSyncer struct {
@@ -23,8 +23,6 @@ type KubeSecretSyncer struct {
 	SecretClient kube.SecretClient
 
 	IstioSecretClient istiov1.IstioCacertsSecretClient
-	IstioSecretList   istiov1.IstioCacertsSecretList
-	Preinstall        bool
 	installNamespace  string
 }
 
@@ -35,7 +33,7 @@ const (
 	citadelLabelValue                = "citadel"
 )
 
-func (s *KubeSecretSyncer) SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption) error {
+func (s *KubeSecretSyncer) SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption, secretList istiov1.IstioCacertsSecretList, preinstall bool) error {
 	s.installNamespace = installNamespace
 	if encryption == nil {
 		return nil
@@ -47,17 +45,17 @@ func (s *KubeSecretSyncer) SyncSecret(ctx context.Context, installNamespace stri
 	if encryptionSecret == nil {
 		return nil
 	}
-	sourceSecret, err := s.IstioSecretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
+	sourceSecret, err := secretList.Find(encryptionSecret.Namespace, encryptionSecret.Name)
 	if err != nil {
 		return errors.Wrapf(err, "Error finding secret referenced in mesh config (%s:%s)",
 			encryptionSecret.Namespace, encryptionSecret.Name)
 	}
 	// this is where custom root certs will live once configured, if not found existingSecret will be nil
-	existingSecret, _ := s.IstioSecretList.Find(s.installNamespace, CustomRootCertificateSecretName)
-	return s.syncSecret(ctx, sourceSecret, existingSecret)
+	existingSecret, _ := secretList.Find(s.installNamespace, CustomRootCertificateSecretName)
+	return s.syncSecret(ctx, sourceSecret, existingSecret, preinstall)
 }
 
-func (s *KubeSecretSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret) error {
+func (s *KubeSecretSyncer) syncSecret(ctx context.Context, sourceSecret, existingSecret *istiov1.IstioCacertsSecret, preinstall bool) error {
 	if err := validateTlsSecret(sourceSecret); err != nil {
 		return errors.Wrapf(err, "invalid secret %v", sourceSecret.Metadata.Ref())
 	}
@@ -88,7 +86,7 @@ func (s *KubeSecretSyncer) syncSecret(ctx context.Context, sourceSecret, existin
 		return errors.Wrapf(err, "updating tool tls secret %v for istio", istioSecret.Metadata.Ref())
 	}
 
-	if !s.Preinstall {
+	if !preinstall {
 		if err := s.restartCitadel(); err != nil {
 			return errors.Wrapf(err, "Error restarting citadel")
 		}

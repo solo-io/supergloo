@@ -8,10 +8,8 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/constants"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install"
 	"github.com/solo-io/supergloo/test/util"
@@ -67,43 +65,18 @@ func GetInstallWithoutMeshType(install bool) *v1.Install {
 	if path == "" {
 		path = ChartPath
 	}
-	return &v1.Install{
-		Metadata: core.Metadata{
-			Namespace: constants.SuperglooNamespace,
-			Name:      MeshName,
-		},
-		ChartLocator: &v1.HelmChartLocator{
-			Kind: &v1.HelmChartLocator_ChartPath{
-				ChartPath: &v1.HelmChartPath{
-					Path: path,
-				},
-			},
-		},
-		Enabled: &types.BoolValue{
-			Value: install,
-		},
-	}
-}
-
-func getSnapshot(install *v1.Install) *v1.InstallSnapshot {
-	return &v1.InstallSnapshot{
-		Installs: v1.InstallsByNamespace{
-			constants.SuperglooNamespace: v1.InstallList{
-				install,
-			},
-		},
-	}
+	return util.GetInstallWithoutMeshType(path, MeshName, install)
 }
 
 func InstallAndWaitForPods(install *v1.Install, pods int) {
-	snap := getSnapshot(install)
+	snap := util.GetSnapshot(install)
 	err := Syncer.Sync(context.TODO(), snap)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(util.WaitForAvailablePods(InstallNamespace)).To(BeEquivalentTo(pods))
 }
 
 func UninstallAndWaitForCleanup(install *v1.Install) {
-	snap := getSnapshot(install)
+	snap := util.GetSnapshot(install)
 	err := Syncer.Sync(context.TODO(), snap)
 	Expect(err).NotTo(HaveOccurred())
 

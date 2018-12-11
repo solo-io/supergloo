@@ -33,38 +33,64 @@ import (
 const releaseNameKey = "helm_release"
 
 type InstallSyncer struct {
-	PodClient         kube.PodClient
 	MeshClient        v1.MeshClient
-	SecurityClient    kube.SecurityClient
-	CrdClient         kube.CrdClient
 	IstioSecretClient istiov1.IstioCacertsSecretClient
-	SecretClient      kube.SecretClient
 	RbacClient        kube.RbacClient
 	NamespaceClient   kube.NamespaceClient
+
+	istioInstaller    *istio.IstioInstaller
+	linkerd2Installer *linkerd2.Linkerd2Installer
+	consulInstaller   *consul.ConsulInstaller
 }
 
-func NewKubeInstallSyncer(meshClient v1.MeshClient, istioSecretClient istiov1.IstioCacertsSecretClient, kube kubernetes.Interface, apiExts apiexts.Interface) *InstallSyncer {
+func NewInstallSyncer(
+	meshClient v1.MeshClient,
+	istioSecretClient istiov1.IstioCacertsSecretClient,
+	secretSyncer secret.SecretSyncer,
+	rbacClient kube.RbacClient,
+	namespaceClient kube.NamespaceClient,
+	crdClient kube.CrdClient) (*InstallSyncer, error) {
+	istio, err := istio.NewIstioInstaller(crdClient, nil, secretSyncer)
+	if err != nil {
+		return nil, errors.Wrap(err, "setting up istio installer")
+	}
+	consul := &consul.ConsulInstaller{}
+	linkerd2 := &linkerd2.Linkerd2Installer{}
+	syncer := &InstallSyncer{
+		MeshClient:        meshClient,
+		IstioSecretClient: istioSecretClient,
+		RbacClient:        rbacClient,
+		NamespaceClient:   namespaceClient,
+
+		istioInstaller:    istio,
+		linkerd2Installer: linkerd2,
+		consulInstaller:   consul,
+	}
+	return syncer, nil
+
+}
+
+func NewKubeInstallSyncer(meshClient v1.MeshClient, istioSecretClient istiov1.IstioCacertsSecretClient, kube kubernetes.Interface, apiExts apiexts.Interface) (*InstallSyncer, error) {
 	crdClient := kube_client.NewKubeCrdClient(apiExts)
 	rbacClient := kube_client.NewKubeRbacClient(kube)
 	namespaceClient := kube_client.NewKubeNamespaceClient(kube)
 	secretClient := kube_client.NewKubeSecretClient(kube)
 	podClient := kube_client.NewKubePodClient(kube)
-	return &InstallSyncer{
-		MeshClient:        meshClient,
-		IstioSecretClient: istioSecretClient,
-		CrdClient:         crdClient,
-		RbacClient:        rbacClient,
-		NamespaceClient:   namespaceClient,
+
+	secretSyncer := &secret.KubeSecretSyncer{
 		SecretClient:      secretClient,
 		PodClient:         podClient,
+		IstioSecretClient: istioSecretClient,
 	}
+
+	return NewInstallSyncer(meshClient, istioSecretClient, secretSyncer, rbacClient, namespaceClient, crdClient)
 }
 
 type MeshInstaller interface {
 	GetDefaultNamespace() string
 	GetCrbName() string
 	GetOverridesYaml(install *v1.Install) string
-	DoPreHelmInstall(installNamespace string, install *v1.Install) error
+	DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error
 }
 
 func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
@@ -83,22 +109,11 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 	var meshInstaller MeshInstaller
 	switch install.MeshType.(type) {
 	case *v1.Install_Consul:
-		meshInstaller = &consul.ConsulInstaller{}
+		meshInstaller = syncer.consulInstaller
 	case *v1.Install_Istio:
-		secretSyncer := &secret.KubeSecretSyncer{
-			IstioSecretClient: syncer.IstioSecretClient,
-			IstioSecretList:   secretList,
-			PodClient:         syncer.PodClient,
-			SecretClient:      syncer.SecretClient,
-			Preinstall:        true,
-		}
-		i, err := istio.NewIstioInstaller(ctx, syncer.CrdClient, syncer.SecurityClient, secretSyncer)
-		if err != nil {
-			return errors.Wrapf(err, "initializing istio installer")
-		}
-		meshInstaller = i
+		meshInstaller = syncer.istioInstaller
 	case *v1.Install_Linkerd2:
-		meshInstaller = &linkerd2.Linkerd2Installer{}
+		meshInstaller = syncer.linkerd2Installer
 	default:
 		return errors.Errorf("Unsupported mesh type %v", install.MeshType)
 	}
@@ -117,7 +132,7 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 			return err
 		}
 	case meshErr != nil && installEnabled:
-		releaseName, err := syncer.installHelmRelease(ctx, install, meshInstaller)
+		releaseName, err := syncer.installHelmRelease(ctx, install, meshInstaller, secretList)
 		if err != nil {
 			return err
 		}
@@ -126,11 +141,11 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 	return nil
 }
 
-func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1.Install, installer MeshInstaller) (string, error) {
+func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1.Install, installer MeshInstaller, secretList istiov1.IstioCacertsSecretList) (string, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("setting up namespace")
 	// 1. Setup namespace
-	installNamespace, err := syncer.SetupInstallNamespace(install, installer)
+	installNamespace, err := syncer.setupInstallNamespace(install, installer)
 	if err != nil {
 		return "", err
 	}
@@ -139,15 +154,15 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 	// This is not cleaned up when deleting namespace so it may already exist on the system, don't fail
 	crbName := installer.GetCrbName()
 	if crbName != "" {
-		err = syncer.CreateCrbIfNotExist(crbName, installNamespace)
+		err = syncer.RbacClient.CreateCrbIfNotExist(crbName, installNamespace)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap(err, "Error creating CRB")
 		}
 	}
 
 	logger.Infof("helm pre-install")
 	// 3. Do any pre-helm tasks
-	err = installer.DoPreHelmInstall(installNamespace, install)
+	err = installer.DoPreHelmInstall(ctx, installNamespace, install, secretList)
 	if err != nil {
 		return "", errors.Wrap(err, "Error doing pre-helm install steps")
 	}
@@ -168,7 +183,7 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 	return releaseName, nil
 }
 
-func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, installer MeshInstaller) (string, error) {
+func (syncer *InstallSyncer) setupInstallNamespace(install *v1.Install, installer MeshInstaller) (string, error) {
 	installNamespace := getInstallNamespace(install, installer.GetDefaultNamespace())
 	err := syncer.NamespaceClient.CreateNamespaceIfNotExist(installNamespace)
 	if err != nil {

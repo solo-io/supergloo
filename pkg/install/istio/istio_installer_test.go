@@ -46,7 +46,7 @@ var _ = Describe("Istio Installer", func() {
 		mockCrdClient = mock_kube.NewMockCrdClient(ctrl)
 		mockSecretSyncer = mock_secret.NewMockSecretSyncer(ctrl)
 
-		installer, err = istio.NewIstioInstaller(context.TODO(), mockCrdClient, nil, mockSecretSyncer)
+		installer, err = istio.NewIstioInstaller(mockCrdClient, nil, mockSecretSyncer)
 		Expect(err).To(BeNil())
 	})
 
@@ -143,6 +143,8 @@ var _ = Describe("Istio Installer", func() {
 		installNamespace := "foo"
 		testError := errors.Errorf("error")
 		var encryption *v1.Encryption
+		ctx := context.TODO()
+		secretList := util.GetTestSecrets()
 
 		getCrds := func() []*v1beta1.CustomResourceDefinition {
 			crds, err := kube.CrdsFromManifest(istio.IstioCrdYaml)
@@ -152,21 +154,21 @@ var _ = Describe("Istio Installer", func() {
 
 		It("error crd client", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(testError)
-			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
+			actual := installer.DoPreHelmInstall(ctx, installNamespace, util.GetInstallFromEnc(encryption), secretList)
 			Expect(actual.Error()).Should(ContainSubstring("creating istio crds"))
 		})
 
 		It("error secret syncer", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(nil)
-			mockSecretSyncer.EXPECT().SyncSecret(context.TODO(), installNamespace, encryption).Return(testError)
-			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
+			mockSecretSyncer.EXPECT().SyncSecret(ctx, installNamespace, encryption, secretList, true).Return(testError)
+			actual := installer.DoPreHelmInstall(ctx, installNamespace, util.GetInstallFromEnc(encryption), secretList)
 			Expect(actual.Error()).Should(ContainSubstring("syncing secret"))
 		})
 
 		It("succeeds", func() {
 			mockCrdClient.EXPECT().CreateCrds(getCrds()).Return(nil)
-			mockSecretSyncer.EXPECT().SyncSecret(context.TODO(), installNamespace, encryption).Return(nil)
-			actual := installer.DoPreHelmInstall(installNamespace, util.GetInstallFromEnc(encryption))
+			mockSecretSyncer.EXPECT().SyncSecret(ctx, installNamespace, encryption, secretList, true).Return(nil)
+			actual := installer.DoPreHelmInstall(ctx, installNamespace, util.GetInstallFromEnc(encryption), secretList)
 			Expect(actual).Should(BeNil())
 		})
 	})

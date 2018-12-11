@@ -1,6 +1,9 @@
 package linkerd2
 
 import (
+	"context"
+
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -22,6 +25,6 @@ func (c *Linkerd2Installer) GetOverridesYaml(install *v1.Install) string {
 	return ""
 }
 
-func (c *Linkerd2Installer) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
+func (c *Linkerd2Installer) DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
 	return nil
 }
