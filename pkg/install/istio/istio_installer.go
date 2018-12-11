@@ -17,7 +17,7 @@ import (
 
 const (
 	CrbName          = "istio-crb"
-	defaultNamespace = "istio-system"
+	DefaultNamespace = "istio-system"
 )
 
 type IstioInstaller struct {
@@ -45,7 +45,7 @@ func NewIstioInstaller(ctx context.Context, CrdClient kube.CrdClient, SecurityCl
 }
 
 func (c *IstioInstaller) GetDefaultNamespace() string {
-	return defaultNamespace
+	return DefaultNamespace
 }
 
 func (c *IstioInstaller) GetCrbName() string {

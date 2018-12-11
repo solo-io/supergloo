@@ -23,7 +23,7 @@ import (
 
 var T *testing.T
 
-func TestSecret(t *testing.T) {
+func TestIstioInstaller(t *testing.T) {
 	RegisterFailHandler(Fail)
 	T = t
 	RunSpecs(t, "Shared Suite")
@@ -197,6 +197,16 @@ var _ = Describe("Istio Installer", func() {
 			mockSecretSyncer.EXPECT().SyncSecret(context.TODO(), installNamespace, encryption).Return(nil)
 			actual := installer.DoPreHelmInstall(installNamespace, getInstallFromEnc(encryption))
 			Expect(actual).Should(BeNil())
+		})
+	})
+
+	Describe("expected hard-coded values", func() {
+		It("should match crb name", func() {
+			Expect(installer.GetCrbName()).To(BeEquivalentTo(istio.CrbName))
+		})
+
+		It("should match default namespace", func() {
+			Expect(installer.GetDefaultNamespace()).To(BeEquivalentTo(istio.DefaultNamespace))
 		})
 	})
 
