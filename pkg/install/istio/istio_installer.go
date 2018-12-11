@@ -16,6 +16,7 @@ import (
 const (
 	CrbName          = "istio-crb"
 	DefaultNamespace = "istio-system"
+	SccEnabled       = false
 )
 
 type IstioInstaller struct {
@@ -102,6 +103,22 @@ func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.I
 	if err := c.syncSecret(installNamespace, install); err != nil {
 		return errors.Wrapf(err, "syncing secret")
 	}
+	return c.syncSecurity()
+}
+
+func (c *IstioInstaller) syncSecret(installNamespace string, install *v1.Install) error {
+	if c.secretSyncer == nil && install.Encryption != nil && install.Encryption.Secret != nil {
+		return errors.Errorf("Invalid setup")
+	}
+	return c.secretSyncer.SyncSecret(c.ctx, installNamespace, install.Encryption)
+}
+
+func (c *IstioInstaller) syncSecurity() error {
+	// TODO: remove flag when this is debugged
+	// Need to add tests to istio_installer_test.go for this codepath
+	if !SccEnabled {
+		return nil
+	}
 	if c.securityClient == nil {
 		return nil
 	}
@@ -118,13 +135,6 @@ func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.I
 		"istio-pilot-service-account",
 		"istio-sidecar-injector-service-account",
 		"istio-galley-service-account")
-}
-
-func (c *IstioInstaller) syncSecret(installNamespace string, install *v1.Install) error {
-	if c.secretSyncer == nil && install.Encryption != nil && install.Encryption.Secret != nil {
-		return errors.Errorf("Invalid setup")
-	}
-	return c.secretSyncer.SyncSecret(c.ctx, installNamespace, install.Encryption)
 }
 
 // TODO: something like this should enable minishift installs to succeed, but this isn't right. The correct steps are

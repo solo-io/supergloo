@@ -21,12 +21,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/consul"
 	"github.com/solo-io/supergloo/pkg/install/helm"
-	"k8s.io/client-go/kubernetes"
 
-	kubecore "k8s.io/api/core/v1"
-	kuberbac "k8s.io/api/rbac/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	helmlib "k8s.io/helm/pkg/helm"
 
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
@@ -35,11 +30,14 @@ import (
 const releaseNameKey = "helm_release"
 
 type InstallSyncer struct {
-	Kube           *kubernetes.Clientset
-	MeshClient     v1.MeshClient
-	SecurityClient kube.SecurityClient
-	CrdClient      kube.CrdClient
-	SecretClient   istiov1.IstioCacertsSecretClient
+	PodClient         kube.PodClient
+	MeshClient        v1.MeshClient
+	SecurityClient    kube.SecurityClient
+	CrdClient         kube.CrdClient
+	IstioSecretClient istiov1.IstioCacertsSecretClient
+	SecretClient      kube.SecretClient
+	RbacClient        kube.RbacClient
+	NamespaceClient   kube.NamespaceClient
 }
 
 type MeshInstaller interface {
@@ -67,13 +65,11 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 	case *v1.Install_Consul:
 		meshInstaller = &consul.ConsulInstaller{}
 	case *v1.Install_Istio:
-		podClient := kube.NewKubePodClient(syncer.Kube)
-		secretClient := kube.NewKubeSecretClient(syncer.Kube)
 		secretSyncer := &secret.KubeSecretSyncer{
-			IstioSecretClient: syncer.SecretClient,
+			IstioSecretClient: syncer.IstioSecretClient,
 			IstioSecretList:   secretList,
-			PodClient:         podClient,
-			SecretClient:      secretClient,
+			PodClient:         syncer.PodClient,
+			SecretClient:      syncer.SecretClient,
 			Preinstall:        true,
 		}
 		i, err := istio.NewIstioInstaller(ctx, syncer.CrdClient, syncer.SecurityClient, secretSyncer)
@@ -154,7 +150,7 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 
 func (syncer *InstallSyncer) SetupInstallNamespace(install *v1.Install, installer MeshInstaller) (string, error) {
 	installNamespace := getInstallNamespace(install, installer.GetDefaultNamespace())
-	err := syncer.createNamespaceIfNotExist(installNamespace) // extract to CRD
+	err := syncer.NamespaceClient.CreateNamespaceIfNotExist(installNamespace)
 	if err != nil {
 		return installNamespace, errors.Wrap(err, "Error setting up namespace")
 	}
@@ -183,49 +179,8 @@ func getInstallationNamespace(install *v1.Install) (installationNamespace string
 	}
 }
 
-func (syncer *InstallSyncer) createNamespaceIfNotExist(namespaceName string) error {
-	_, err := syncer.Kube.CoreV1().Namespaces().Create(getNamespace(namespaceName))
-	if apierrors.IsAlreadyExists(err) {
-		return nil
-	}
-	return err
-}
-
-func getNamespace(namespaceName string) *kubecore.Namespace {
-	return &kubecore.Namespace{
-		ObjectMeta: kubemeta.ObjectMeta{
-			Name: namespaceName,
-		},
-	}
-}
-
 func (syncer *InstallSyncer) CreateCrbIfNotExist(crbName string, namespaceName string) error {
-	_, err := syncer.Kube.RbacV1().ClusterRoleBindings().Create(getCrb(crbName, namespaceName))
-	if apierrors.IsAlreadyExists(err) {
-		return nil
-	}
-	return err
-}
-
-func getCrb(crbName string, namespaceName string) *kuberbac.ClusterRoleBinding {
-	meta := kubemeta.ObjectMeta{
-		Name: crbName,
-	}
-	subject := kuberbac.Subject{
-		Kind:      "ServiceAccount",
-		Namespace: namespaceName,
-		Name:      "default",
-	}
-	roleRef := kuberbac.RoleRef{
-		Kind:     "ClusterRole",
-		Name:     "cluster-admin",
-		APIGroup: "rbac.authorization.k8s.io",
-	}
-	return &kuberbac.ClusterRoleBinding{
-		ObjectMeta: meta,
-		Subjects:   []kuberbac.Subject{subject},
-		RoleRef:    roleRef,
-	}
+	return syncer.RbacClient.CreateCrbIfNotExist(crbName, namespaceName)
 }
 
 func (syncer *InstallSyncer) helmInstall(ctx context.Context, chartLocator *v1.HelmChartLocator, releaseName string, installNamespace string, overridesYaml string) (*release.Release, error) {
@@ -343,19 +298,11 @@ func (syncer *InstallSyncer) uninstallHelmRelease(ctx context.Context, mesh *v1.
 	_, err = helmClient.DeleteRelease(releaseName, helmlib.DeletePurge(true))
 	helm.Teardown()
 	// Install may be into ns that can't be deleted, don't propagate error if delete fails
-	syncer.tryDeleteInstallNamespace(getInstallNamespace(install, meshInstaller.GetDefaultNamespace()))
+	syncer.NamespaceClient.TryDeleteInstallNamespace(getInstallNamespace(install, meshInstaller.GetDefaultNamespace()))
 	// TODO: this will break if there are more than one installs of a given mesh that depend on the CRB
 	// Create a CRB per install?
 	if meshInstaller.GetCrbName() != "" {
-		return syncer.deleteCrb(meshInstaller.GetCrbName())
+		return syncer.RbacClient.DeleteCrb(meshInstaller.GetCrbName())
 	}
 	return nil
-}
-
-func (syncer *InstallSyncer) tryDeleteInstallNamespace(namespaceName string) {
-	syncer.Kube.CoreV1().Namespaces().Delete(namespaceName, &kubemeta.DeleteOptions{})
-}
-
-func (syncer *InstallSyncer) deleteCrb(crbName string) error {
-	return syncer.Kube.RbacV1().ClusterRoleBindings().Delete(crbName, &kubemeta.DeleteOptions{})
 }
