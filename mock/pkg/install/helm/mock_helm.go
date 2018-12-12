@@ -49,6 +49,20 @@ func (mr *MockHelmClientMockRecorder) InstallHelmRelease(ctx, chartPath, release
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstallHelmRelease", reflect.TypeOf((*MockHelmClient)(nil).InstallHelmRelease), ctx, chartPath, releaseName, installNamespace, overridesYaml)
 }
 
+// UpdateHelmRelease mocks base method
+func (m *MockHelmClient) UpdateHelmRelease(ctx context.Context, chartPath, releaseName, overridesYaml string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateHelmRelease", ctx, chartPath, releaseName, overridesYaml)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateHelmRelease indicates an expected call of UpdateHelmRelease
+func (mr *MockHelmClientMockRecorder) UpdateHelmRelease(ctx, chartPath, releaseName, overridesYaml interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHelmRelease", reflect.TypeOf((*MockHelmClient)(nil).UpdateHelmRelease), ctx, chartPath, releaseName, overridesYaml)
+}
+
 // DeleteHelmRelease mocks base method
 func (m *MockHelmClient) DeleteHelmRelease(ctx context.Context, releaseName string) error {
 	m.ctrl.T.Helper()
