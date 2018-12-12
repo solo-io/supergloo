@@ -3,6 +3,8 @@ package shared
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/kube"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
@@ -10,7 +12,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/translator/kube"
 	"go.uber.org/multierr"
 	"k8s.io/client-go/kubernetes"
 )
@@ -92,7 +93,8 @@ func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
 	selector := mesh.Observability.Prometheus.PodLabels
 
 	// got this far, it means we're on kube and they want us to restart pods
-	if err := kube.RestartPods(s.Kube, configMap.Namespace, selector); err != nil {
+	kubePodClient := kube.NewKubePodClient(s.Kube)
+	if err := kubePodClient.RestartPods(configMap.Namespace, selector); err != nil {
 		return errors.Wrapf(err, "restarting prometheus pods")
 	}
 
