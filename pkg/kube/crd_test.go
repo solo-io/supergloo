@@ -1,13 +1,15 @@
 package kube_test
 
 import (
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/supergloo/pkg/kube"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/solo-io/supergloo/pkg/install/shared"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 )
@@ -32,6 +34,10 @@ spec:
 `
 
 var _ = Describe("Crd", func() {
+	if os.Getenv("RUN_KUBE_TESTS") != "1" {
+		log.Printf("This test creates kubernetes resources and is disabled by default. To enable, set RUN_KUBE_TESTS=1 in your env.")
+		return
+	}
 	var (
 		testCrds  []*v1beta1.CustomResourceDefinition
 		apiExts   apiexts.Interface
