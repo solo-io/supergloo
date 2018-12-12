@@ -30,6 +30,7 @@ import (
 
 const ReleaseNameKey = "helm_release"
 
+// If you change this interface, you have to rerun mockgen
 type HelmClient interface {
 	InstallHelmRelease(ctx context.Context, chartPath string, releaseName string, installNamespace string, overridesYaml string) (string, error)
 	UpdateHelmRelease(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error

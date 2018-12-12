@@ -25,6 +25,7 @@ func CrdsFromManifest(crdManifestYaml string) ([]*v1beta1.CustomResourceDefiniti
 	return crds, nil
 }
 
+// If you change this interface, you have to rerun mockgen
 type CrdClient interface {
 	CreateCrds(crds ...*v1beta1.CustomResourceDefinition) error
 	DeleteCrds(crdNames ...string) error

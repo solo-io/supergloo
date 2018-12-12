@@ -5,6 +5,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// If you change this interface, you have to rerun mockgen
 type SecretClient interface {
 	Delete(namespace string, name string) error
 }

@@ -7,6 +7,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// If you change this interface, you have to rerun mockgen
 type RbacClient interface {
 	CreateCrbIfNotExist(crbName string, namespaceName string) error
 	DeleteCrb(crbName string) error

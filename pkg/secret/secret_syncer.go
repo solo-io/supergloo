@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/kube"
 )
 
+// If you change this interface, you have to rerun mockgen
 type SecretSyncer interface {
 	SyncSecret(ctx context.Context, installNamespace string, encryption *v1.Encryption, secretList istiov1.IstioCacertsSecretList, preinstall bool) error
 }

@@ -6,6 +6,7 @@ import (
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// If you change this interface, you have to rerun mockgen
 type SecurityClient interface {
 	GetScc(name string) (*v1.SecurityContextConstraints, error)
 	UpdateScc(*v1.SecurityContextConstraints) (*v1.SecurityContextConstraints, error)
