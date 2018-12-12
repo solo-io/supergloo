@@ -1,6 +1,7 @@
 package install_test
 
 import (
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -301,6 +302,105 @@ var _ = Describe("Install syncer", func() {
 		err := syncer.Sync(ctx, snap)
 		Expect(err).To(BeNil())
 		_, err = syncer.MeshClient.Read(constants.SuperglooNamespace, testMeshName, clients.ReadOpts{Ctx: updatedCtx})
+		Expect(err).To(BeNil())
+	})
+
+	It("uninstall istio", func() {
+		uninstall := getIstioInstall()
+		mesh, err := install.GetMeshObject(uninstall, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		uninstall.Enabled = &types.BoolValue{Value: false}
+		snap := util.GetSnapshot(uninstall)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+		mockHelm.EXPECT().DeleteHelmRelease(updatedCtx, testMeshName).Times(1).Return(nil)
+		mockNamespaceClient.EXPECT().TryDeleteInstallNamespace(testInstallNamespace).Times(1)
+		mockRbacClient.EXPECT().DeleteCrb(istio.CrbName).Times(1).Return(nil)
+		err = syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
+	It("uninstall consul", func() {
+		uninstall := getConsulInstall()
+		mesh, err := install.GetMeshObject(uninstall, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		uninstall.Enabled = &types.BoolValue{Value: false}
+		snap := util.GetSnapshot(uninstall)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+		mockHelm.EXPECT().DeleteHelmRelease(updatedCtx, testMeshName).Times(1).Return(nil)
+		mockNamespaceClient.EXPECT().TryDeleteInstallNamespace(testInstallNamespace).Times(1)
+		mockRbacClient.EXPECT().DeleteCrb(consul.CrbName).Times(1).Return(nil)
+		err = syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
+	It("uninstall linkerd2", func() {
+		uninstall := getLinkerd2Install()
+		mesh, err := install.GetMeshObject(uninstall, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		uninstall.Enabled = &types.BoolValue{Value: false}
+		snap := util.GetSnapshot(uninstall)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+		mockHelm.EXPECT().DeleteHelmRelease(updatedCtx, testMeshName).Times(1).Return(nil)
+		mockNamespaceClient.EXPECT().TryDeleteInstallNamespace(testInstallNamespace).Times(1)
+		err = syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
+	It("update istio", func() {
+		upgrade := getIstioInstall()
+		mesh, err := install.GetMeshObject(upgrade, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		upgrade.Enabled = &types.BoolValue{Value: true}
+		snap := util.GetSnapshot(upgrade)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+
+		istioInstaller, err := istio.NewIstioInstaller(mockCrdClient, nil, mockSecretSyncer)
+		Expect(err).To(BeNil())
+		overridesYaml := istioInstaller.GetOverridesYaml(upgrade)
+		mockHelm.EXPECT().UpdateHelmRelease(updatedCtx, testChartPath, testMeshName, overridesYaml).Times(1).Return(nil)
+		err = syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
+	It("update consul", func() {
+		upgrade := getConsulInstall()
+		mesh, err := install.GetMeshObject(upgrade, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		upgrade.Enabled = &types.BoolValue{Value: true}
+		snap := util.GetSnapshot(upgrade)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+
+		consulInstaller := consul.ConsulInstaller{}
+		overridesYaml := consulInstaller.GetOverridesYaml(upgrade)
+		mockHelm.EXPECT().UpdateHelmRelease(updatedCtx, testChartPath, testMeshName, overridesYaml).Times(1).Return(nil)
+		err = syncer.Sync(ctx, snap)
+		Expect(err).To(BeNil())
+	})
+
+	It("update linkerd2", func() {
+		upgrade := getLinkerd2Install()
+		mesh, err := install.GetMeshObject(upgrade, testMeshName)
+		Expect(err).To(BeNil())
+		syncer.MeshClient.Write(mesh, clients.WriteOpts{})
+
+		upgrade.Enabled = &types.BoolValue{Value: true}
+		snap := util.GetSnapshot(upgrade)
+		updatedCtx := contextutils.WithLogger(ctx, "install-syncer")
+
+		linkerd2Installer := linkerd2.Linkerd2Installer{}
+		overridesYaml := linkerd2Installer.GetOverridesYaml(upgrade)
+		mockHelm.EXPECT().UpdateHelmRelease(updatedCtx, testChartPath, testMeshName, overridesYaml).Times(1).Return(nil)
+		err = syncer.Sync(ctx, snap)
 		Expect(err).To(BeNil())
 	})
 })

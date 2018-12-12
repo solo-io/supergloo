@@ -230,7 +230,7 @@ func (syncer *InstallSyncer) updateHelmRelease(ctx context.Context, chartLocator
 }
 
 func (syncer *InstallSyncer) createMesh(ctx context.Context, install *v1.Install, releaseName string) error {
-	mesh, err := getMeshObject(install, releaseName)
+	mesh, err := GetMeshObject(install, releaseName)
 	if err != nil {
 		return err
 	}
@@ -238,7 +238,7 @@ func (syncer *InstallSyncer) createMesh(ctx context.Context, install *v1.Install
 	return err
 }
 
-func getMeshObject(install *v1.Install, releaseName string) (*v1.Mesh, error) {
+func GetMeshObject(install *v1.Install, releaseName string) (*v1.Mesh, error) {
 	mesh := &v1.Mesh{
 		Metadata: core.Metadata{
 			Name:        install.Metadata.Name,

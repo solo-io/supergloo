@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	kube_client "github.com/solo-io/supergloo/pkg/kube"
+	"github.com/solo-io/supergloo/pkg/secret"
+
 	"github.com/solo-io/supergloo/pkg/translator/appmesh"
 
 	factory2 "github.com/solo-io/supergloo/pkg/factory"
@@ -166,9 +169,17 @@ func Main(errHandler func(error), namespaces ...string) error {
 
 	consulEncryptionSyncer := &consul.ConsulSyncer{}
 	consulPolicySyncer := &consul.PolicySyncer{}
+
+	secretClient := kube_client.NewKubeSecretClient(kubeClient)
+	podClient := kube_client.NewKubePodClient(kubeClient)
+
+	secretSyncer := &secret.KubeSecretSyncer{
+		SecretClient:      secretClient,
+		PodClient:         podClient,
+		IstioSecretClient: istioSecretClient,
+	}
 	istioEncryptionSyncer := &istio.EncryptionSyncer{
-		Kube:         kubeClient,
-		SecretClient: istioSecretClient,
+		SecretSyncer: secretSyncer,
 	}
 	istioPolicySyncer, err := istio.NewPolicySyncer("supergloo-system", kubeCache, restConfig)
 	if err != nil {
@@ -192,7 +203,10 @@ func Main(errHandler func(error), namespaces ...string) error {
 	if err != nil {
 		return errors.Wrapf(err, "creating api extensions client")
 	}
-	installSyncer := install.NewKubeInstallSyncer(meshClient, istioSecretClient, kubeClient, apiExts)
+	installSyncer, err := install.NewKubeInstallSyncer(meshClient, istioSecretClient, kubeClient, apiExts)
+	if err != nil {
+		return errors.Wrapf(err, "creating kube install syncer")
+	}
 	installSyncers := v1.InstallSyncers{
 		installSyncer,
 	}
