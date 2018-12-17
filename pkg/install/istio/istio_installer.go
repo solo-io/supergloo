@@ -5,47 +5,45 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/kube"
 	"github.com/solo-io/supergloo/pkg/secret"
 
-	security "github.com/openshift/client-go/security/clientset/versioned"
 	"github.com/solo-io/solo-kit/pkg/errors"
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/shared"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 const (
 	CrbName          = "istio-crb"
-	defaultNamespace = "istio-system"
+	DefaultNamespace = "istio-system"
+	SccEnabled       = false
 )
 
 type IstioInstaller struct {
-	apiExts        apiexts.Interface
-	securityClient *security.Clientset
 	crds           []*v1beta1.CustomResourceDefinition
-	ctx            context.Context
-	secretSyncer   *secret.SecretSyncer
+	crdClient      kube.CrdClient
+	securityClient kube.SecurityClient
+
+	secretSyncer secret.SecretSyncer
 }
 
-func NewIstioInstaller(ctx context.Context, ApiExts apiexts.Interface, SecurityClient *security.Clientset, secretSyncer *secret.SecretSyncer) (*IstioInstaller, error) {
-	crds, err := shared.CrdsFromManifest(IstioCrdYaml)
+func NewIstioInstaller(CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer secret.SecretSyncer) (*IstioInstaller, error) {
+	crds, err := kube.CrdsFromManifest(IstioCrdYaml)
 	if err != nil {
 		return nil, err
 	}
 	return &IstioInstaller{
-		apiExts:        ApiExts,
+		crdClient:      CrdClient,
 		securityClient: SecurityClient,
 		crds:           crds,
-		ctx:            ctx,
-		secretSyncer:   secretSyncer,
+
+		secretSyncer: secretSyncer,
 	}, nil
 }
 
 func (c *IstioInstaller) GetDefaultNamespace() string {
-	return defaultNamespace
+	return DefaultNamespace
 }
 
 func (c *IstioInstaller) GetCrbName() string {
@@ -53,10 +51,10 @@ func (c *IstioInstaller) GetCrbName() string {
 }
 
 func (c *IstioInstaller) GetOverridesYaml(install *v1.Install) string {
-	return getOverrides(install.Encryption)
+	return getOverridesFromEnc(install.Encryption)
 }
 
-func getOverrides(encryption *v1.Encryption) string {
+func getOverridesFromEnc(encryption *v1.Encryption) string {
 	selfSigned := true
 	mtlsEnabled := false
 	if encryption != nil {
@@ -67,7 +65,10 @@ func getOverrides(encryption *v1.Encryption) string {
 			}
 		}
 	}
+	return getOverrides(mtlsEnabled, selfSigned)
+}
 
+func getOverrides(mtlsEnabled, selfSigned bool) string {
 	selfSignedString := strconv.FormatBool(selfSigned)
 	tlsEnabledString := strconv.FormatBool(mtlsEnabled)
 	overridesWithMtlsFlag := strings.Replace(overridesYaml, "@@MTLS_ENABLED@@", tlsEnabledString, -1)
@@ -93,22 +94,34 @@ security:
 
 `
 
-func (c *IstioInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
-	return nil
-}
-
-func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
+func (c *IstioInstaller) DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
 	// create crds if they don't exist. CreateCrds does not error on err type IsAlreadyExists
-	if err := shared.CreateCrds(c.apiExts, c.crds...); err != nil {
+	if err := c.crdClient.CreateCrds(c.crds...); err != nil {
 		return errors.Wrapf(err, "creating istio crds")
 	}
-	if err := c.syncSecret(installNamespace, install); err != nil {
+	if err := c.syncSecret(ctx, installNamespace, install, secretList); err != nil {
 		return errors.Wrapf(err, "syncing secret")
+	}
+	return c.syncSecurity()
+}
+
+func (c *IstioInstaller) syncSecret(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
+	if c.secretSyncer == nil && install.Encryption != nil && install.Encryption.Secret != nil {
+		return errors.Errorf("Invalid setup")
+	}
+	return c.secretSyncer.SyncSecret(ctx, installNamespace, install.Encryption, secretList, true)
+}
+
+func (c *IstioInstaller) syncSecurity() error {
+	// TODO: remove flag when this is debugged
+	// Need to add tests to istio_installer_test.go for this codepath
+	if !SccEnabled {
+		return nil
 	}
 	if c.securityClient == nil {
 		return nil
 	}
-	return c.AddSccToUsers(
+	return c.addSccToUsers(
 		"default",
 		"istio-ingress-service-account",
 		"prometheus",
@@ -123,23 +136,16 @@ func (c *IstioInstaller) DoPreHelmInstall(installNamespace string, install *v1.I
 		"istio-galley-service-account")
 }
 
-func (c *IstioInstaller) syncSecret(installNamespace string, install *v1.Install) error {
-	if c.secretSyncer == nil && install.Encryption != nil && install.Encryption.Secret != nil {
-		return errors.Errorf("Invalid setup")
-	}
-	return c.secretSyncer.SyncSecret(c.ctx, installNamespace, install.Encryption)
-}
-
 // TODO: something like this should enable minishift installs to succeed, but this isn't right. The correct steps are
 //       to run "oc adm policy add-scc-to-user anyuid -z %s -n istio-system" for each of the user accounts above
 //       maybe the issue is not specifying the namespace?
-func (c *IstioInstaller) AddSccToUsers(users ...string) error {
-	anyuid, err := c.securityClient.SecurityV1().SecurityContextConstraints().Get("anyuid", kubemeta.GetOptions{})
+func (c *IstioInstaller) addSccToUsers(users ...string) error {
+	anyuid, err := c.securityClient.GetScc("anyuid")
 	if err != nil {
 		return err
 	}
 	newUsers := append(anyuid.Users, users...)
 	anyuid.Users = newUsers
-	_, err = c.securityClient.SecurityV1().SecurityContextConstraints().Update(anyuid)
+	_, err = c.securityClient.UpdateScc(anyuid)
 	return err
 }

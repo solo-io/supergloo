@@ -3,19 +3,12 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/secret"
-
-	"k8s.io/client-go/kubernetes"
-
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-
 	"github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/secret"
 )
 
 type EncryptionSyncer struct {
-	IstioNamespace string
-	Kube           kubernetes.Interface
-	SecretClient   istiov1.IstioCacertsSecretClient
+	SecretSyncer secret.SecretSyncer
 }
 
 func (s *EncryptionSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
@@ -32,11 +25,5 @@ func (s *EncryptionSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh, snap *v1
 		return nil
 	}
 	secretList := snap.Istiocerts.List()
-	secretSyncer := secret.SecretSyncer{
-		Kube:         s.Kube,
-		SecretClient: s.SecretClient,
-		SecretList:   secretList,
-		Preinstall:   false,
-	}
-	return secretSyncer.SyncSecret(ctx, mesh.GetIstio().InstallationNamespace, mesh.Encryption)
+	return s.SecretSyncer.SyncSecret(ctx, mesh.GetIstio().InstallationNamespace, mesh.Encryption, secretList, false)
 }

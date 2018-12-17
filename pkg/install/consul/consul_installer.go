@@ -1,11 +1,11 @@
 package consul
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
-	"k8s.io/client-go/kubernetes"
-
+	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -29,11 +29,7 @@ func (c *ConsulInstaller) GetOverridesYaml(install *v1.Install) string {
 	return getOverrides(install.Encryption)
 }
 
-func (c *ConsulInstaller) DoPreHelmInstall(installNamespace string, install *v1.Install) error {
-	return nil
-}
-
-func (c *ConsulInstaller) DoPostHelmInstall(install *v1.Install, kube *kubernetes.Clientset, releaseName string) error {
+func (c *ConsulInstaller) DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error {
 	return nil
 }
 

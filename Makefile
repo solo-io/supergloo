@@ -41,7 +41,7 @@ generated-code:
 # SuperGloo
 #----------------------------------------------------------------------------------
 
-SOURCES=$(shell find . -name "*.go" | grep -v test )
+SOURCES=$(shell find . -name "*.go" | grep -v test | grep -v mock)
 
 $(OUTPUT_DIR)/supergloo-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o $@ cmd/main.go

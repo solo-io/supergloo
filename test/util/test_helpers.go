@@ -13,8 +13,6 @@ import (
 
 	"github.com/solo-io/supergloo/pkg/secret"
 
-	"k8s.io/helm/pkg/proto/hapi/release"
-
 	"github.com/solo-io/supergloo/pkg/install/helm"
 
 	"github.com/hashicorp/consul/api"
@@ -35,7 +33,6 @@ import (
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	helmlib "k8s.io/helm/pkg/helm"
 	helmkube "k8s.io/helm/pkg/kube"
 
 	security "github.com/openshift/client-go/security/clientset/versioned"
@@ -434,47 +431,13 @@ func CheckCertMatchesIstio(installNamespace string) {
 }
 
 func UninstallHelmRelease(releaseName string) error {
-	// helm install
-	helmClient, err := helm.GetHelmClient(context.TODO())
-	if err != nil {
-		return err
-	}
-	_, err = helmClient.DeleteRelease(releaseName, helmlib.DeletePurge(true))
-	helm.Teardown()
-	return err
+	helmWrapper := helm.KubeHelmClient{}
+	return helmWrapper.DeleteHelmRelease(context.TODO(), releaseName)
 }
 
 func HelmReleaseDoesntExist(releaseName string) bool {
-	helmClient, err := helm.GetHelmClient(context.TODO())
-	if err != nil {
-		return false
-	}
-	statuses := []release.Status_Code{
-		release.Status_UNKNOWN,
-		release.Status_DEPLOYED,
-		release.Status_DELETED,
-		release.Status_SUPERSEDED,
-		release.Status_FAILED,
-		release.Status_DELETING,
-		release.Status_PENDING_INSTALL,
-		release.Status_PENDING_UPGRADE,
-		release.Status_PENDING_ROLLBACK,
-	}
-	// equivalent to "--all" option
-	list, err := helmClient.ListReleases(helmlib.ReleaseListStatuses(statuses))
-	if err != nil {
-		return false
-	}
-	// No releases == successfully deleted
-	if list == nil {
-		return true
-	}
-	for _, item := range list.Releases {
-		if item.Name == releaseName {
-			return false
-		}
-	}
-	return true
+	helmWrapper := helm.KubeHelmClient{}
+	return helmWrapper.HelmReleaseDoesntExist(releaseName)
 }
 
 func TryDeleteIstioCrds() {

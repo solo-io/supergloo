@@ -7,13 +7,28 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// If you change this interface, you have to rerun mockgen
+type PodClient interface {
+	RestartPods(namespace string, selector map[string]string) error
+}
+
+type KubePodClient struct {
+	kube kubernetes.Interface
+}
+
+func NewKubePodClient(kube kubernetes.Interface) *KubePodClient {
+	return &KubePodClient{
+		kube: kube,
+	}
+}
+
 // Note: This assumes the pod will get restarted automatically due to the kubernetes deployment spec
-func RestartPods(kube kubernetes.Interface, namespace string, selector map[string]string) error {
-	if kube == nil {
+func (client *KubePodClient) RestartPods(namespace string, selector map[string]string) error {
+	if client.kube == nil {
 		return errors.Errorf("kubernetes suppport is currently disabled. see SuperGloo documentation" +
 			" for utilizing pod restarts")
 	}
-	if err := kube.CoreV1().Pods(namespace).DeleteCollection(nil, kubemeta.ListOptions{
+	if err := client.kube.CoreV1().Pods(namespace).DeleteCollection(nil, kubemeta.ListOptions{
 		LabelSelector: labels.SelectorFromSet(selector).String(),
 	}); err != nil {
 		return errors.Wrapf(err, "restarting pods with selector %v", selector)

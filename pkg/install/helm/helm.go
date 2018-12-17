@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
+	"k8s.io/helm/pkg/proto/hapi/release"
 
 	"k8s.io/helm/pkg/downloader"
 	"k8s.io/helm/pkg/repo"
@@ -21,10 +22,118 @@ import (
 
 	"k8s.io/helm/pkg/getter"
 	"k8s.io/helm/pkg/helm"
+	helmlib "k8s.io/helm/pkg/helm"
 	helm_env "k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/helm/portforwarder"
 	"k8s.io/helm/pkg/kube"
 )
+
+const ReleaseNameKey = "helm_release"
+
+// If you change this interface, you have to rerun mockgen
+type HelmClient interface {
+	InstallHelmRelease(ctx context.Context, chartPath string, releaseName string, installNamespace string, overridesYaml string) (string, error)
+	UpdateHelmRelease(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error
+	DeleteHelmRelease(ctx context.Context, releaseName string) error
+	HelmReleaseDoesntExist(releaseName string) bool
+}
+
+type KubeHelmClient struct{}
+
+func (client *KubeHelmClient) InstallHelmRelease(ctx context.Context, chartPath string, releaseName string, installNamespace string, overridesYaml string) (string, error) {
+	// helm install
+	helmClient, err := client.getHelmClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	installPath, err := client.locateChartRepoReleaseDefault(ctx, "", chartPath)
+	if err != nil {
+		return "", err
+	}
+	response, err := helmClient.InstallRelease(
+		installPath,
+		installNamespace,
+		helmlib.ValueOverrides([]byte(overridesYaml)),
+		helmlib.ReleaseName(releaseName))
+	client.teardown()
+	if err != nil {
+		return "", err
+	}
+	contextutils.LoggerFrom(ctx).Debugf("installed release %v", response.Release)
+	return response.Release.Name, nil
+}
+
+func (client *KubeHelmClient) UpdateHelmRelease(ctx context.Context, chartPath string, releaseName string, overridesYaml string) error {
+	// helm install
+	helmClient, err := client.getHelmClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("preparing to update chart from path %s for release %s", chartPath, releaseName)
+
+	installPath, err := client.locateChartRepoReleaseDefault(ctx, "", chartPath)
+	if err != nil {
+		return err
+	}
+
+	logger.Infof("updating chart from install path %s", installPath)
+
+	_, err = helmClient.UpdateRelease(
+		releaseName,
+		installPath,
+		helmlib.UpdateValueOverrides([]byte(overridesYaml)))
+	client.teardown()
+	return err
+}
+
+func (client *KubeHelmClient) DeleteHelmRelease(ctx context.Context, releaseName string) error {
+	helmClient, err := client.getHelmClient(ctx)
+	if err != nil {
+		client.teardown()
+		return err
+	}
+	_, err = helmClient.DeleteRelease(releaseName, helmlib.DeletePurge(true))
+	client.teardown()
+	return err
+}
+
+func (client *KubeHelmClient) HelmReleaseDoesntExist(releaseName string) bool {
+	helmClient, err := client.getHelmClient(context.TODO())
+	if err != nil {
+		client.teardown()
+		return false
+	}
+	statuses := []release.Status_Code{
+		release.Status_UNKNOWN,
+		release.Status_DEPLOYED,
+		release.Status_DELETED,
+		release.Status_SUPERSEDED,
+		release.Status_FAILED,
+		release.Status_DELETING,
+		release.Status_PENDING_INSTALL,
+		release.Status_PENDING_UPGRADE,
+		release.Status_PENDING_ROLLBACK,
+	}
+	// equivalent to "--all" option
+	list, err := helmClient.ListReleases(helmlib.ReleaseListStatuses(statuses))
+	client.teardown()
+	if err != nil {
+		return false
+	}
+	// No releases == successfully deleted
+	if list == nil {
+		return true
+	}
+	for _, item := range list.Releases {
+		if item.Name == releaseName {
+			return false
+		}
+	}
+	return true
+}
 
 func setupTillerHost(ctx context.Context) {
 	tiller := "tiller-deploy.kube-system.svc.cluster.local"
@@ -40,7 +149,7 @@ func setupTillerHost(ctx context.Context) {
 // Create a tunnel to tiller, set up a helm client, and ping it to ensure the connection is live
 // Consumers are expected to call Teardown to ensure the tunnel gets closed
 // TODO: Expose configuration options inside setupConnection()
-func GetHelmClient(ctx context.Context) (*helm.Client, error) {
+func (client *KubeHelmClient) getHelmClient(ctx context.Context) (*helm.Client, error) {
 	if err := setupConnection(ctx); err != nil {
 		return nil, err
 	}
@@ -57,7 +166,7 @@ var (
 	Settings     helm_env.EnvSettings
 )
 
-func Teardown() {
+func (client *KubeHelmClient) teardown() {
 	if tillerTunnel != nil {
 		tillerTunnel.Close()
 	}
@@ -114,11 +223,7 @@ func setupConnection(ctx context.Context) error {
 	return nil
 }
 
-func LocateChartPathDefault(ctx context.Context, name string) (string, error) {
-	return locateChartPath(ctx, "", "", "", name, "", false, "", "", "", "")
-}
-
-func LocateChartRepoReleaseDefault(ctx context.Context, repoUrl string, release string) (string, error) {
+func (client *KubeHelmClient) locateChartRepoReleaseDefault(ctx context.Context, repoUrl string, release string) (string, error) {
 	return locateChartPath(ctx, repoUrl, "", "", release, "", false, "", "", "", "")
 }
 

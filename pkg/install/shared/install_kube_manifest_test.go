@@ -1,9 +1,12 @@
 package shared_test
 
 import (
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
+	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
 	. "github.com/solo-io/supergloo/pkg/install/shared"
@@ -14,6 +17,10 @@ import (
 )
 
 var _ = Describe("InstallKubeManifest", func() {
+	if os.Getenv("RUN_KUBE_TESTS") != "1" {
+		log.Printf("This test creates kubernetes resources and is disabled by default. To enable, set RUN_KUBE_TESTS=1 in your env.")
+		return
+	}
 	var namespace string
 	BeforeEach(func() {
 		namespace = "install-kube-manifest-" + helpers.RandString(8)
