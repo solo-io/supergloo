@@ -50,7 +50,7 @@
 
 [[constraint]]
   name = "github.com/solo-io/go-checkpoint"
-  version = "0.0.3"
+  version = "0.0.4"
 
 [[constraint]]
   name = "k8s.io/helm"

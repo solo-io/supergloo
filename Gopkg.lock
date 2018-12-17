@@ -884,12 +884,12 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:d2631be1cb671b8a86338ecb2c194c3ad5be9b346e0b1a169beff38c8cdb1601"
+  digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
   name = "github.com/solo-io/go-checkpoint"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bdea1405611a5bbc025564545ce100bb10b684b8"
-  version = "0.0.3"
+  revision = "b798a7563f831f081f2a73ca889888f1ceec06b3"
+  version = "0.0.4"
 
 [[projects]]
   branch = "master"

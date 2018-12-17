@@ -6,9 +6,7 @@
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-#VERSION ?= $(shell git describe --tags)
-# TODO: use the above instead
-VERSION ?= dev
+VERSION := $(shell go run hack/version/main.go )
 REPOSITORY ?= $(basename `git rev-parse --show-toplevel`)
 
 #----------------------------------------------------------------------------------
