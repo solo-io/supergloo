@@ -25,7 +25,7 @@ curl -o /dev/null -sH "$AUTH" $GH_REPO || { echo "Error: Invalid repo, token or 
 
 BODY=$(cat <<EOF
 {
-  "tag_name": "v${tag}",
+  "tag_name": "${tag}",
   "target_commitish": "master",
   "name": "${tag}",
   "body": "${tag} release of supergloo binaries",

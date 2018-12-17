@@ -112,4 +112,4 @@ release-checksum:
 .PHONY: release
 release: release-binaries
 	hack/create-release.sh github_api_token=$(GITHUB_TOKEN) owner=solo-io repo=$(REPOSITORY) tag=$(VERSION)
-	@$(foreach BINARY,$(RELEASE_BINARIES),hack/upload-github-release-asset.sh github_api_token=$(GITHUB_TOKEN) owner=solo-io repo=$(REPOSITORY) tag=v$(VERSION) filename=$(BINARY) && hack/upload-github-release-asset.sh github_api_token=$(GITHUB_TOKEN) owner=solo-io repo=$(REPOSITORY) tag=v$(VERSION) filename=$(BINARY).sha256;)
+	@$(foreach BINARY,$(RELEASE_BINARIES),hack/upload-github-release-asset.sh github_api_token=$(GITHUB_TOKEN) owner=solo-io repo=$(REPOSITORY) tag=$(VERSION) filename=$(BINARY) && hack/upload-github-release-asset.sh github_api_token=$(GITHUB_TOKEN) owner=solo-io repo=$(REPOSITORY) tag=$(VERSION) filename=$(BINARY).sha256;)
