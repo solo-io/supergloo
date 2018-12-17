@@ -28,6 +28,7 @@ steps:
   - name: 'ssh'
     path: /root/.ssh
 
+# Dep is produced from a private cloud-builders repo
 - name: 'soloio/dep'
   args: ['ensure']
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
