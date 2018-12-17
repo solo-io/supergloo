@@ -19,7 +19,7 @@ url="https://github.com/solo-io/supergloo/releases/download/${SUPERGLOO_VERSION}
 
   echo "Downloading ${filename}..."
 
-  SHA=$(curl -sL "${url}.sha256")
+  SHA=$(curl -sL "${url}.sha256" | awk '{ print $1 }')
   curl -LO "${url}"
   echo ""
   echo "Download complete!, validating checksum..."

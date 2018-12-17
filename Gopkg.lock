@@ -364,6 +364,14 @@
   revision = "c65c006176ff7ff98bb916961c7abbc6b0afc0aa"
 
 [[projects]]
+  digest = "1:b60efdeb75d3c0ceed88783ac2495256aba3491a537d0f31401202579fd62a94"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  pruneopts = "UT"
+  revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:49423818ec67651d03b2fbb29faa55b0428135fae5733604b4a35ddcf45a49a3"
   name = "github.com/golang/protobuf"
@@ -1690,6 +1698,7 @@
     "github.com/gogo/protobuf/jsonpb",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
+    "github.com/golang/mock/gomock",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/iancoleman/strcase",
@@ -1700,6 +1709,7 @@
     "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gexec",
+    "github.com/openshift/api/security/v1",
     "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
     "github.com/solo-io/go-checkpoint",
