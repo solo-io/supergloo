@@ -4,8 +4,11 @@ import (
 	"flag"
 	"log"
 	"strings"
+	"time"
 
+	check "github.com/solo-io/go-checkpoint"
 	"github.com/solo-io/supergloo/pkg/setup"
+	"github.com/solo-io/supergloo/pkg/version"
 )
 
 // TODO (ilackarms): move to a flags package
@@ -27,6 +30,8 @@ func main() {
 
 func run() error {
 	errs := make(chan error)
+	start := time.Now()
+	check.CallCheck("supergloo", version.Version, start)
 	go func() {
 		var namespaces arrayFlags
 		flag.Var(&namespaces, "n", "namespace to watch for crds")

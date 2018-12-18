@@ -2,6 +2,7 @@ package checkpoint
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -33,13 +34,18 @@ func ConfigDir() (string, error) {
 	return d, err
 }
 
-// Format1 calls a basic version check
-func Format1(product string, version string, t time.Time) {
+func getSigfile() string {
 	sigfile := filepath.Join(HomeDir(), ".soloio.sig")
 	configDir, err := ConfigDir()
 	if err == nil {
 		sigfile = filepath.Join(configDir, "soloio.sig")
 	}
+	return sigfile
+}
+
+// CallReport calls a basic version check
+func CallReport(product string, version string, t time.Time) {
+	sigfile := getSigfile()
 	ctx := context.Background()
 	report := &ReportParams{
 		Product:       product,
@@ -47,6 +53,34 @@ func Format1(product string, version string, t time.Time) {
 		StartTime:     t,
 		EndTime:       time.Now(),
 		SignatureFile: sigfile,
+		Type:          "r1",
 	}
 	Report(ctx, report)
+}
+
+// CallCheck calls a basic version check at an interval
+func CallCheck(product string, version string, t time.Time) {
+	signature, err := checkSignature(getSigfile())
+	if err != nil {
+		signature, err = generateSignature()
+		if err != nil {
+			signature = "siggenerror"
+		}
+	}
+	params := &CheckParams{
+		Product:   product,
+		Version:   version,
+		Signature: signature,
+		Type:      "c1",
+	}
+	cb := func(resp *CheckResponse, err error) {
+		if err != nil {
+			return
+		}
+		if resp.Outdated && resp.CurrentVersion != "" && resp.CurrentVersion != version {
+			fmt.Printf("A new version of %v is available. Please visit %v.\n", product, resp.CurrentDownloadURL)
+		}
+		return
+	}
+	CheckInterval(params, VersionCheckInterval, cb)
 }

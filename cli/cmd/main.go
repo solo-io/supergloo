@@ -7,15 +7,14 @@ import (
 
 	check "github.com/solo-io/go-checkpoint"
 	"github.com/solo-io/supergloo/cli/pkg/cmd"
+	"github.com/solo-io/supergloo/pkg/version"
 )
-
-var Version = "0.0.1"
 
 func main() {
 	start := time.Now()
-	defer check.Format1("supergloo", Version, start)
+	defer check.CallReport("supergloo", version.Version, start)
 
-	app := cmd.App(Version)
+	app := cmd.App(version.Version)
 	if err := app.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

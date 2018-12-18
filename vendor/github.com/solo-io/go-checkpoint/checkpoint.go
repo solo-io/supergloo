@@ -26,10 +26,13 @@ import (
 	uuid "github.com/hashicorp/go-uuid"
 )
 
+
 const (
 	DefaultCheckpointHost = "checkpoint-api.solo.io"
 	DefaultUserAgent      = "solo.io/go-checkpoint"
 	DefaultScheme         = "https"
+	VersionCheckInterval  = 24*time.Hour
+	PercentStagger        = 50
 )
 
 var magicBytes [4]byte = [4]byte{0x35, 0x77, 0x69, 0xFB}
@@ -55,6 +58,7 @@ type ReportParams struct {
 	OS            string      `json:"os"`
 	Payload       interface{} `json:"payload,omitempty"`
 	Product       string      `json:"product"`
+	Type          string      `json:"type"`
 	RunID         string      `json:"run_id"`
 	SchemaVersion string      `json:"schema_version"`
 	Version       string      `json:"version"`
@@ -140,9 +144,10 @@ func ReportRequest(r *ReportParams) (*http.Request, error) {
 type CheckParams struct {
 	// Product and version are used to lookup the correct product and
 	// alerts for the proper version. The version is also used to perform
-	// a version check.
+	// a version check. Type corresponds to the checkpoint package version.
 	Product string
 	Version string
+	Type    string
 
 	// Arch and OS are used to filter alerts potentially only to things
 	// affecting a specific os/arch combination. If these aren't specified,
@@ -234,21 +239,12 @@ func Check(p *CheckParams) (*CheckResponse, error) {
 		p.OS = runtime.GOOS
 	}
 
-	// If we're given a SignatureFile, then attempt to read that.
-	signature := p.Signature
-	if p.Signature == "" && p.SignatureFile != "" {
-		var err error
-		signature, err = checkSignature(p.SignatureFile)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	v := u.Query()
 	v.Set("version", p.Version)
 	v.Set("arch", p.Arch)
 	v.Set("os", p.OS)
-	v.Set("signature", signature)
+	v.Set("signature", p.Signature)
+	v.Set("type", p.Type)
 
 	u.Scheme = DefaultScheme
 	u.Host = DefaultCheckpointHost
@@ -318,7 +314,7 @@ func CheckInterval(p *CheckParams, interval time.Duration, cb func(*CheckRespons
 	go func() {
 		for {
 			select {
-			case <-time.After(randomStagger(interval)):
+			case <-time.After(randomStagger(interval, PercentStagger)):
 				resp, err := Check(p)
 				cb(resp, err)
 			case <-doneCh:
@@ -332,9 +328,20 @@ func CheckInterval(p *CheckParams, interval time.Duration, cb func(*CheckRespons
 
 // randomStagger returns an interval that is between 3/4 and 5/4 of
 // the given interval. The expected value is the interval.
-func randomStagger(interval time.Duration) time.Duration {
-	stagger := time.Duration(mrand.Int63()) % (interval / 2)
-	return 3*(interval/4) + stagger
+func randomStagger(interval time.Duration, percent uint32) time.Duration {
+	// force the percentage value to be even so we don't drift when we divide by 2
+	if percent%2 == 1 {
+		percent = percent - 1
+	}
+	// but don't take the modulo of zero
+	if percent == 0 {
+		return interval
+	}
+	if percent > 50 {
+		percent = 50
+	}
+	stagger := time.Duration(mrand.Int63()) % (time.Duration(percent) * interval / 100)
+	return time.Duration(100-percent/2)*(interval/100) + stagger
 }
 
 func checkCache(current string, path string, d time.Duration) (io.ReadCloser, error) {
@@ -429,18 +436,10 @@ func checkSignature(path string) (string, error) {
 	}
 
 	// The file doesn't exist, so create a signature.
-	var b [16]byte
-	n := 0
-	for n < 16 {
-		n2, err := rand.Read(b[n:])
-		if err != nil {
-			return "", err
-		}
-
-		n += n2
+	signature, err := generateSignature()
+	if err != nil {
+		return "", err
 	}
-	signature := fmt.Sprintf(
-		"%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 
 	// Make sure the directory holding our signature exists.
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
@@ -453,6 +452,21 @@ func checkSignature(path string) (string, error) {
 	}
 
 	return signature, nil
+}
+
+func generateSignature() (string, error) {
+	var b [16]byte
+	n := 0
+	for n < 16 {
+		n2, err := rand.Read(b[n:])
+		if err != nil {
+			return "", err
+		}
+
+		n += n2
+	}
+	return fmt.Sprintf(
+		"%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
 }
 
 func writeCacheHeader(f io.Writer, v string) error {
