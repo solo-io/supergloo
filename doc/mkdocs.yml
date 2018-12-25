@@ -3,7 +3,7 @@ pages:
 - Index: index.md
 - Installation: installation.md
 - Developers: developers.md
-- Documentation: index.md
+# - Documentation: index.md
 - v1 API reference:
   - Overview: v1/supergloo.solo.io.project.sk.md
   - Encryption: v1/encryption.proto.sk.md
@@ -15,12 +15,16 @@ pages:
   - Secrets: v1/secret.proto.sk.md
   - Upstreams: v1/upstream.proto.sk.md
 repo_url: https://github.com/solo-io/supergloo/
-site_author: SuperGloo Project Authors
+edit_uri: ""
+site_author: solo.io
 copyright: © Copyright 2018, solo.io Inc.
 google_analytics: ['UA-101654320-1', 'supergloo.solo.io']
 theme:
-  name: 'material'
+  name: 'mkdocs'
   favicon: 'img/favicon.ico'
 extra_css: [extra.css]
 extra:
   version: 0.1.1
+plugins:
+  - search
+
