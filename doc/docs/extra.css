@@ -1,3 +1,9 @@
-.md-header {
-    background-color: #fd2e21; /* Red */
+.col-md-9 img {
+    border: 0px;
+    background:rgba(0,0,0,0);
+}
+
+img {
+    border: 0px;
+    background:rgba(0,0,0,0);
 }
