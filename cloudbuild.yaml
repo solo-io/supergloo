@@ -1,3 +1,4 @@
+steps:
 # Dep is produced from a private cloud-builders repo
 - name: 'soloio/dep'
   args: ['ensure']
