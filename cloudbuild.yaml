@@ -11,5 +11,5 @@ steps:
 
 artifacts:
   objects:
-    location: 'gs://artifacts.solo.io/'
+    location: 'gs://solo-public-artifacts.solo.io/'
     paths: ['supergloo']
