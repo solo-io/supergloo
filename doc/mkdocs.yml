@@ -3,7 +3,7 @@ pages:
 - Index: index.md
 - Installation: installation.md
 - Developers: developers.md
-# - Documentation: index.md
+- CLI reference: cli.md
 - v1 API reference:
   - Overview: v1/supergloo.solo.io.project.sk.md
   - Encryption: v1/encryption.proto.sk.md
