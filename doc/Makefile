@@ -23,6 +23,9 @@ docs/index.md: ../README.md
 site: docs/index.md
 	mkdocs build
 
+deploy-site: site
+	cd .. && firebase deploy --only hosting:supergloo-site
+
 .PHONY: docker-site
 docker-site: site
 	docker build -t soloio/supergloo-docs:$(VERSION) .
