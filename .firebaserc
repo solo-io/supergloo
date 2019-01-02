@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "solo-corp"
+  },
+  "targets": {
+    "solo-corp": {
+      "hosting": {
+        "supergloo-site": [
+          "supergloo-docs"
+        ]
+      }
+    }
+  }
+}
