@@ -9,11 +9,11 @@ const Linkerd1Yaml = `
 # HTTP/2 and gRPC calls with some reasonable defaults.
 #
 # To configure your applications to use Linkerd for HTTP traffic you can set the
-# `+"`"+`http_proxy`+"`"+` environment variable to `+"`"+`$(NODE_NAME):4140`+"`"+` where `+"`"+`NODE_NAME`+"`"+` is
+# ` + "`" + `http_proxy` + "`" + ` environment variable to ` + "`" + `$(NODE_NAME):4140` + "`" + ` where ` + "`" + `NODE_NAME` + "`" + ` is
 # the name of node on which the application instance is running.  The
-# `+"`"+`NODE_NAME`+"`"+` environment variable can be set with the downward API.
+# ` + "`" + `NODE_NAME` + "`" + ` environment variable can be set with the downward API.
 #
-# If your application does not support the `+"`"+`http_proxy`+"`"+` environment variable or
+# If your application does not support the ` + "`" + `http_proxy` + "`" + ` environment variable or
 # if you want to configure your application to use Linkerd for HTTP/2 or gRPC
 # traffic, you must configure your application to send traffic directly to
 # Linkerd:
@@ -23,13 +23,13 @@ const Linkerd1Yaml = `
 # * $(NODE_NAME):4340 for gRPC
 #
 # If you are sending HTTP or HTTP/2 traffic directly to Linkerd, you must set
-# the Host/Authority header to `+"`"+`<service>`+"`"+` or `+"`"+`<service>.<namespace>`+"`"+` where
-# `+"`"+`<service>`+"`"+` and `+"`"+`<namespace>`+"`"+` are the names of the service and namespace
-# that you want to proxy to.  If unspecified, `+"`"+`<namespace>`+"`"+` defaults to
-# `+"`"+`default`+"`"+`.
+# the Host/Authority header to ` + "`" + `<service>` + "`" + ` or ` + "`" + `<service>.<namespace>` + "`" + ` where
+# ` + "`" + `<service>` + "`" + ` and ` + "`" + `<namespace>` + "`" + ` are the names of the service and namespace
+# that you want to proxy to.  If unspecified, ` + "`" + `<namespace>` + "`" + ` defaults to
+# ` + "`" + `default` + "`" + `.
 #
 # If your application receives HTTP, HTTP/2, and/or gRPC traffic it must have a
-# Kubernetes Service object with ports named `+"`"+`http`+"`"+`, `+"`"+`h2`+"`"+`, and/or `+"`"+`grpc`+"`"+`
+# Kubernetes Service object with ports named ` + "`" + `http` + "`" + `, ` + "`" + `h2` + "`" + `, and/or ` + "`" + `grpc` + "`" + `
 # respectively.
 #
 # You can deploy this to your Kubernetes cluster by running:
@@ -111,7 +111,7 @@ data:
     #   sampleRate: 1.0 # Set to a lower sample rate depending on your traffic volume
 
     # Usage is used for anonymized usage reporting.  You can set the orgId to
-    # identify your organization or set `+"`"+`enabled: false`+"`"+` to disable entirely.
+    # identify your organization or set ` + "`" + `enabled: false` + "`" + ` to disable entirely.
     usage:
       orgId: linkerd-examples-servicemesh
 
@@ -331,7 +331,7 @@ spec:
           mountPath: "/io.buoyant/linkerd/config"
           readOnly: true
 
-      # Run `+"`"+`kubectl proxy`+"`"+` as a sidecar to give us authenticated access to the
+      # Run ` + "`" + `kubectl proxy` + "`" + ` as a sidecar to give us authenticated access to the
       # Kubernetes API.
       - name: kubectl
         image: buoyantio/kubectl:v1.12.2

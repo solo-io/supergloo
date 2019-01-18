@@ -2,8 +2,9 @@ package utils
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
 	"text/template"
+
+	"github.com/pkg/errors"
 )
 
 func render(tmpl *template.Template, data interface{}) (string, error) {
