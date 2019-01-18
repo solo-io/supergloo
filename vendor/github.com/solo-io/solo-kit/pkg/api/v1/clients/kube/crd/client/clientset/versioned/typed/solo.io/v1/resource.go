@@ -66,8 +66,11 @@ func newResources(c *ResourcesV1Client, namespace string, def crd.Crd) *resource
 // Get takes name of the resource, and returns the corresponding resource object, and an error if there is any.
 func (c *resources) Get(name string, options meta_v1.GetOptions) (result *v1.Resource, err error) {
 	result = &v1.Resource{}
-	err = c.client.Get().
-		Namespace(c.ns).
+	req := c.client.Get()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	err = req.
 		Resource(c.def.Plural).
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
@@ -79,8 +82,11 @@ func (c *resources) Get(name string, options meta_v1.GetOptions) (result *v1.Res
 // List takes label and field selectors, and returns the list of Resources that match those selectors.
 func (c *resources) List(opts meta_v1.ListOptions) (result *v1.ResourceList, err error) {
 	result = &v1.ResourceList{}
-	err = c.client.Get().
-		Namespace(c.ns).
+	req := c.client.Get()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	err = req.
 		Resource(c.def.Plural).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
@@ -91,8 +97,11 @@ func (c *resources) List(opts meta_v1.ListOptions) (result *v1.ResourceList, err
 // Watch returns a watch.Interface that watches the requested resources.
 func (c *resources) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
+	req := c.client.Get()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	return req.
 		Resource(c.def.Plural).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
@@ -101,8 +110,11 @@ func (c *resources) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
 // Create takes the representation of a resource and creates it.  Returns the server's representation of the resource, and an error, if there is any.
 func (c *resources) Create(resource *v1.Resource) (result *v1.Resource, err error) {
 	result = &v1.Resource{}
-	err = c.client.Post().
-		Namespace(c.ns).
+	req := c.client.Post()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	err = req.
 		Resource(c.def.Plural).
 		Body(resource).
 		Do().
@@ -113,8 +125,11 @@ func (c *resources) Create(resource *v1.Resource) (result *v1.Resource, err erro
 // Update takes the representation of a resource and updates it. Returns the server's representation of the resource, and an error, if there is any.
 func (c *resources) Update(resource *v1.Resource) (result *v1.Resource, err error) {
 	result = &v1.Resource{}
-	err = c.client.Put().
-		Namespace(c.ns).
+	req := c.client.Put()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	err = req.
 		Resource(c.def.Plural).
 		Name(resource.Name).
 		Body(resource).
@@ -125,8 +140,11 @@ func (c *resources) Update(resource *v1.Resource) (result *v1.Resource, err erro
 
 // Delete takes name of the resource and deletes it. Returns an error if one occurs.
 func (c *resources) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
+	req := c.client.Delete()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	return req.
 		Resource(c.def.Plural).
 		Name(name).
 		Body(options).
@@ -136,7 +154,11 @@ func (c *resources) Delete(name string, options *meta_v1.DeleteOptions) error {
 
 // DeleteCollection deletes a collection of objects.
 func (c *resources) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
+	req := c.client.Delete()
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	return req.
 		Namespace(c.ns).
 		Resource(c.def.Plural).
 		VersionedParams(&listOptions, scheme.ParameterCodec).
@@ -148,8 +170,11 @@ func (c *resources) DeleteCollection(options *meta_v1.DeleteOptions, listOptions
 // Patch applies the patch and returns the patched resource.
 func (c *resources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Resource, err error) {
 	result = &v1.Resource{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
+	req := c.client.Patch(pt)
+	if !c.def.ClusterScoped {
+		req = req.Namespace(c.ns)
+	}
+	err = req.
 		Resource(c.def.Plural).
 		SubResource(subresources...).
 		Name(name).

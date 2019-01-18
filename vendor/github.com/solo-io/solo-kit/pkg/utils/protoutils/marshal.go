@@ -113,7 +113,7 @@ func MapStringStringToMapStringInterface(stringMap map[string]string) (map[strin
 	for k, strVal := range stringMap {
 		var interfaceVal interface{}
 		if err := yaml.Unmarshal([]byte(strVal), &interfaceVal); err != nil {
-			return nil, errors.Errorf("%v cannot be parsed as yaml")
+			return nil, errors.Errorf("%v cannot be parsed as yaml", strVal)
 		} else {
 			interfaceMap[k] = interfaceVal
 		}

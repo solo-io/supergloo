@@ -333,13 +333,14 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:35621fe20f140f05a0c4ef662c26c0ab4ee50bca78aa30fe87d33120bd28165e"
+  digest = "1:60731c5aecf6061614be06333160462b47be4f7cd2369845e50d5da38bfd6a54"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
     "jsonpb",
     "proto",
     "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/plugin",
     "sortkeys",
     "types",
   ]
@@ -373,11 +374,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:49423818ec67651d03b2fbb29faa55b0428135fae5733604b4a35ddcf45a49a3"
+  digest = "1:e984c22f9fa4712f688412b9e2011a06fba9a7db1b88f5ad540af9e537ff9d59"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
@@ -585,6 +587,21 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "3605ed457bf7f8caa1371b4fafadadc026673479"
+
+[[projects]]
+  digest = "1:5258ca648f4cf40b7bc7c52b85009546699332616f9ed23d89b6798baca6f707"
+  name = "github.com/ilackarms/protoc-gen-doc"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:99bafffd60368afd17d11302671600e044137f5c6ba9babb950a47c84ed5a71d"
+  name = "github.com/ilackarms/protokit"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ee2393f3bbf04700fc5d611077496c47ec1937ed"
 
 [[projects]]
   digest = "1:3e260afa138eab6492b531a3b3d10ab4cb70512d423faa78b8949dec76e66a21"
@@ -853,6 +870,14 @@
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:d7aa51c836ace8d00a3d88b4058c470624bdd7045cd3b0f58c2d6ba7ab4433dc"
+  name = "github.com/pseudomuto/protoc-gen-doc"
+  packages = ["parser"]
+  pruneopts = "UT"
+  revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:0665976cc6d8c2e60dafca32820b6b7eca70f37ded0bcccc103388e1c0d05c53"
   name = "github.com/radovskyb/watcher"
   packages = ["."]
@@ -884,6 +909,28 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
+  digest = "1:a15f787be02abade2b81885d0fb504f6d6fbdfb56f878783ac203e5d7911b15d"
+  name = "github.com/solo-io/gloo"
+  packages = [
+    "projects/gloo/pkg/api/v1",
+    "projects/gloo/pkg/api/v1/plugins",
+    "projects/gloo/pkg/api/v1/plugins/aws",
+    "projects/gloo/pkg/api/v1/plugins/azure",
+    "projects/gloo/pkg/api/v1/plugins/consul",
+    "projects/gloo/pkg/api/v1/plugins/faultinjection",
+    "projects/gloo/pkg/api/v1/plugins/grpc",
+    "projects/gloo/pkg/api/v1/plugins/kubernetes",
+    "projects/gloo/pkg/api/v1/plugins/rest",
+    "projects/gloo/pkg/api/v1/plugins/retries",
+    "projects/gloo/pkg/api/v1/plugins/sqoop",
+    "projects/gloo/pkg/api/v1/plugins/static",
+    "projects/gloo/pkg/api/v1/plugins/transformation",
+  ]
+  pruneopts = "UT"
+  revision = "0fc0f773a1a18e7a83916dcc513ce15630b83735"
+  version = "v0.6.5"
+
+[[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
   name = "github.com/solo-io/go-checkpoint"
   packages = ["."]
@@ -892,15 +939,15 @@
   version = "0.0.4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:898faa8b0ea3e2a812fb293db0d9d3359c15669559f7128f15d11e597012fdee"
-  name = "github.com/solo-io/kubecontroller"
-  packages = ["."]
+  digest = "1:b0e5cf279fab936954f056cb4db6456f1a4c0cb3b960b524001fd3318363fa66"
+  name = "github.com/solo-io/go-utils"
+  packages = ["kubeutils"]
   pruneopts = "UT"
-  revision = "241bc627d5400a0794853220df4fdefeeb2af0e0"
+  revision = "1c5b99da71805f3cee3f259242e2e09057411586"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:c133d6cb41190e3386c8a6ca72e172c21d6ecbd924c000eb510bc67fd717d007"
+  digest = "1:5aaaf948b3f585bfb07dfce4fa976db078486f959fc9f6fe290d5d161544da61"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -909,6 +956,7 @@
     "pkg/api/v1/clients/factory",
     "pkg/api/v1/clients/file",
     "pkg/api/v1/clients/kube",
+    "pkg/api/v1/clients/kube/controller",
     "pkg/api/v1/clients/kube/crd",
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned",
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned/scheme",
@@ -926,11 +974,21 @@
     "pkg/api/v1/reporter",
     "pkg/api/v1/resources",
     "pkg/api/v1/resources/core",
+    "pkg/code-generator",
+    "pkg/code-generator/cmd",
+    "pkg/code-generator/codegen",
+    "pkg/code-generator/codegen/funcs",
+    "pkg/code-generator/codegen/templates",
+    "pkg/code-generator/docgen",
+    "pkg/code-generator/docgen/templates",
+    "pkg/code-generator/model",
+    "pkg/code-generator/parser",
     "pkg/errors",
     "pkg/utils/cliutils",
     "pkg/utils/contextutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
+    "pkg/utils/hashutils",
     "pkg/utils/kubeutils",
     "pkg/utils/log",
     "pkg/utils/nameutils",
@@ -941,8 +999,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "fb669c96821dd1464cb1619ac10debb92c024ab8"
-  version = "0.1.6"
+  revision = "d46d5027113b8ee70fd1d23f866c8facbfbaf87a"
+  version = "v0.2.17"
 
 [[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
@@ -1065,6 +1123,14 @@
   ]
   pruneopts = "UT"
   revision = "f42d05182288abf10faef86d16c0d07b8d40ea2d"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b521f10a2d8fa85c04a8ef4e62f2d1e14d303599a55d64dabf9f5a02f84d35eb"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "UT"
+  revision = "37e7f081c4d4c64e13b10787722085407fe5d15f"
 
 [[projects]]
   branch = "master"
@@ -1712,7 +1778,9 @@
     "github.com/openshift/api/security/v1",
     "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
@@ -1725,10 +1793,12 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/reporter",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources/core",
+    "github.com/solo-io/solo-kit/pkg/code-generator/cmd",
     "github.com/solo-io/solo-kit/pkg/errors",
     "github.com/solo-io/solo-kit/pkg/utils/cliutils",
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
+    "github.com/solo-io/solo-kit/pkg/utils/hashutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
     "github.com/solo-io/solo-kit/pkg/utils/nameutils",
