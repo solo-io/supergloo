@@ -26,7 +26,6 @@ const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 // @solo-kit:resource.short_name=ics
 // @solo-kit:resource.plural_name=istiocerts
 //
-// TODO: remove this line // resource_groups=translator.supergloo.solo.io,install.supergloo.solo.io
 // Secret containing CA Certs for Istio
 // Structured TLS Secret that istio uses for non-default root certificates
 type IstioCacertsSecret struct {

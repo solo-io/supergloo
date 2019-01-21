@@ -29,7 +29,6 @@ import "virtual_service.proto";
 
 //@solo-kit:resource.short_name=destinationrule
 //@solo-kit:resource.plural_name=destinationrules
-//TODO: remove this line resource_groups=routing.networking.istio.io
 // `DestinationRule` defines policies that apply to traffic intended for a
 // service after routing has occurred. These rules specify configuration
 // for load balancing, connection pool size from the sidecar, and outlier
