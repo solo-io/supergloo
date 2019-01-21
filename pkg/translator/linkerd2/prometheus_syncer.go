@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewPrometheusSyncer(kube kubernetes.Interface, prometheusClient prometheusv1.ConfigClient) v1.TranslatorSyncer {
+func NewPrometheusSyncer(kube kubernetes.Interface, prometheusClient prometheusv1.PrometheusConfigClient) v1.TranslatorSyncer {
 	return &shared.PrometheusSyncer{
 		Kube:                 kube,
 		PrometheusClient:     prometheusClient,

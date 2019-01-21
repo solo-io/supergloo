@@ -24,8 +24,8 @@ import (
 	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/test/util"
 
+	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -131,7 +131,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		upstreamClient = util.GetUpstreamClient(kubeCache)
 
 		secretClient = util.GetSecretClient()
-		installSyncer = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
+		var err error
+		installSyncer, err = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {

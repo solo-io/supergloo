@@ -24,8 +24,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -291,7 +291,7 @@ func WaitForDeletedPods(namespace string) {
 	WaitForDeletedPodsWithTimeout(namespace, "120s")
 }
 
-func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {
+func GetMeshClient(kubeCache kube.SharedCache) v1.MeshClient {
 	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.MeshCrd,
 		Cfg:         GetKubeConfig(),
@@ -303,7 +303,7 @@ func GetMeshClient(kubeCache *kube.KubeCache) v1.MeshClient {
 	return meshClient
 }
 
-func GetUpstreamClient(kubeCache *kube.KubeCache) gloo.UpstreamClient {
+func GetUpstreamClient(kubeCache kube.SharedCache) gloo.UpstreamClient {
 	if upstreamClient != nil {
 		return upstreamClient
 	}

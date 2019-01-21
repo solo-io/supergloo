@@ -28,7 +28,7 @@ func TestInstallers(t *testing.T) {
 	RunSpecs(t, "Installers e2e Suite")
 }
 
-var KubeCache *kube.KubeCache
+var KubeCache kube.SharedCache
 var providedChartPath string
 var CreatedSuperglooNamespace bool
 

@@ -75,7 +75,7 @@ func Main(errHandler func(error), namespaces ...string) error {
 		return err
 	}
 
-	prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
+	prometheusClient, err := prometheusv1.NewPrometheusConfigClient(&factory.KubeConfigMapClientFactory{
 		Clientset: kubeClient,
 	})
 	if err != nil {
@@ -153,7 +153,13 @@ func Main(errHandler func(error), namespaces ...string) error {
 
 	installEmitter := v1.NewInstallEmitter(installClient, istioSecretClient)
 
-	translatorEmitter := v1.NewTranslatorEmitter(istioSecretClient, meshClient, routingRuleClient, upstreamClient, glooSecretClient)
+	translatorEmitter := v1.NewTranslatorEmitter(
+		glooSecretClient,
+		upstreamClient,
+		meshClient,
+		routingRuleClient,
+		istioSecretClient,
+	)
 
 	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)

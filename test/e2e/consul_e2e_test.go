@@ -18,7 +18,7 @@ import (
 
 	"github.com/solo-io/supergloo/pkg/install"
 
-	gloo "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
+	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/test/util"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"

@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 )
 
 func GetLabelsForUpstream(us *gloov1.Upstream) map[string]string {
