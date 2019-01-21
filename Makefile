@@ -28,7 +28,9 @@ fmt:
 
 .PHONY: generated-code
 generated-code:
-	go generate ./... && gofmt -w pkg && goimports -w pkg
+	go generate ./...
+	gofmt -w pkg
+	goimports -w pkg
 
 #################
 #################

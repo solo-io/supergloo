@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -23,16 +25,16 @@ var _ = Describe("ObservabilityEventLoop", func() {
 
 	BeforeEach(func() {
 
-		configClientFactory := &factory.MemoryResourceClientFactory{
+		prometheusConfigClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		configClient, err := NewConfigClient(configClientFactory)
+		prometheusConfigClient, err := config_prometheus_io.NewPrometheusConfigClient(prometheusConfigClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewObservabilityEmitter(configClient)
+		emitter = NewObservabilityEmitter(prometheusConfigClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.Config().Write(NewConfig(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.PrometheusConfig().Write(config_prometheus_io.NewPrometheusConfig(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockObservabilitySyncer{}
 		el := NewObservabilityEventLoop(emitter, sync)

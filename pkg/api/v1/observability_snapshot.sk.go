@@ -3,12 +3,14 @@
 package v1
 
 import (
+	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"
 )
 
 type ObservabilitySnapshot struct {
-	Prometheusconfigs PrometheusconfigsByNamespace
+	Prometheusconfigs config_prometheus_io.PrometheusconfigsByNamespace
 }
 
 func (s ObservabilitySnapshot) Clone() ObservabilitySnapshot {

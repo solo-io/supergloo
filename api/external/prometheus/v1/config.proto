@@ -11,11 +11,10 @@ import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 /*
 @solo-kit:resource.short_name=pcf
 @solo-kit:resource.plural_name=prometheusconfigs
-@solo-kit:resource.resource_groups=observability.config.prometheus.io
 
 Prometheus Config
  */
-message Config {
+message PrometheusConfig {
     // json_name must refer to the data key in the configmap we expect
     google.protobuf.Struct prometheus = 1 [json_name="prometheus.yml"];
 

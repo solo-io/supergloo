@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -16,18 +18,18 @@ import (
 )
 
 var (
-	mObservabilitySnapshotIn  = stats.Int64("observability.config.prometheus.io/snap_emitter/snap_in", "The number of snapshots in", "1")
-	mObservabilitySnapshotOut = stats.Int64("observability.config.prometheus.io/snap_emitter/snap_out", "The number of snapshots out", "1")
+	mObservabilitySnapshotIn  = stats.Int64("observability.supergloo.solo.io/snap_emitter/snap_in", "The number of snapshots in", "1")
+	mObservabilitySnapshotOut = stats.Int64("observability.supergloo.solo.io/snap_emitter/snap_out", "The number of snapshots out", "1")
 
 	observabilitysnapshotInView = &view.View{
-		Name:        "observability.config.prometheus.io_snap_emitter/snap_in",
+		Name:        "observability.supergloo.solo.io_snap_emitter/snap_in",
 		Measure:     mObservabilitySnapshotIn,
 		Description: "The number of snapshots updates coming in",
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{},
 	}
 	observabilitysnapshotOutView = &view.View{
-		Name:        "observability.config.prometheus.io/snap_emitter/snap_out",
+		Name:        "observability.supergloo.solo.io/snap_emitter/snap_out",
 		Measure:     mObservabilitySnapshotOut,
 		Description: "The number of snapshots updates going out",
 		Aggregation: view.Count(),
@@ -41,59 +43,59 @@ func init() {
 
 type ObservabilityEmitter interface {
 	Register() error
-	Config() ConfigClient
+	PrometheusConfig() config_prometheus_io.PrometheusConfigClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ObservabilitySnapshot, <-chan error, error)
 }
 
-func NewObservabilityEmitter(configClient ConfigClient) ObservabilityEmitter {
-	return NewObservabilityEmitterWithEmit(configClient, make(chan struct{}))
+func NewObservabilityEmitter(prometheusConfigClient config_prometheus_io.PrometheusConfigClient) ObservabilityEmitter {
+	return NewObservabilityEmitterWithEmit(prometheusConfigClient, make(chan struct{}))
 }
 
-func NewObservabilityEmitterWithEmit(configClient ConfigClient, emit <-chan struct{}) ObservabilityEmitter {
+func NewObservabilityEmitterWithEmit(prometheusConfigClient config_prometheus_io.PrometheusConfigClient, emit <-chan struct{}) ObservabilityEmitter {
 	return &observabilityEmitter{
-		config:    configClient,
-		forceEmit: emit,
+		prometheusConfig: prometheusConfigClient,
+		forceEmit:        emit,
 	}
 }
 
 type observabilityEmitter struct {
-	forceEmit <-chan struct{}
-	config    ConfigClient
+	forceEmit        <-chan struct{}
+	prometheusConfig config_prometheus_io.PrometheusConfigClient
 }
 
 func (c *observabilityEmitter) Register() error {
-	if err := c.config.Register(); err != nil {
+	if err := c.prometheusConfig.Register(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *observabilityEmitter) Config() ConfigClient {
-	return c.config
+func (c *observabilityEmitter) PrometheusConfig() config_prometheus_io.PrometheusConfigClient {
+	return c.prometheusConfig
 }
 
 func (c *observabilityEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ObservabilitySnapshot, <-chan error, error) {
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for Config */
-	type configListWithNamespace struct {
-		list      ConfigList
+	/* Create channel for PrometheusConfig */
+	type prometheusConfigListWithNamespace struct {
+		list      config_prometheus_io.PrometheusConfigList
 		namespace string
 	}
-	configChan := make(chan configListWithNamespace)
+	prometheusConfigChan := make(chan prometheusConfigListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for Config */
-		configNamespacesChan, configErrs, err := c.config.Watch(namespace, opts)
+		/* Setup namespaced watch for PrometheusConfig */
+		prometheusConfigNamespacesChan, prometheusConfigErrs, err := c.prometheusConfig.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Config watch")
+			return nil, nil, errors.Wrapf(err, "starting PrometheusConfig watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, configErrs, namespace+"-prometheusconfigs")
+			errutils.AggregateErrs(ctx, errs, prometheusConfigErrs, namespace+"-prometheusconfigs")
 		}(namespace)
 
 		/* Watch for changes and update snapshot */
@@ -102,11 +104,11 @@ func (c *observabilityEmitter) Snapshots(watchNamespaces []string, opts clients.
 				select {
 				case <-ctx.Done():
 					return
-				case configList := <-configNamespacesChan:
+				case prometheusConfigList := <-prometheusConfigNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case configChan <- configListWithNamespace{list: configList, namespace: namespace}:
+					case prometheusConfigChan <- prometheusConfigListWithNamespace{list: prometheusConfigList, namespace: namespace}:
 					}
 				}
 			}
@@ -133,10 +135,10 @@ func (c *observabilityEmitter) Snapshots(watchNamespaces []string, opts clients.
 		   		// construct the first snapshot from all the configs that are currently there
 		   		// that guarantees that the first snapshot contains all the data.
 		   		for range watchNamespaces {
-		      configNamespacedList := <- configChan
-		      currentSnapshot.Prometheusconfigs.Clear(configNamespacedList.namespace)
-		      configList := configNamespacedList.list
-		   	currentSnapshot.Prometheusconfigs.Add(configList...)
+		      prometheusConfigNamespacedList := <- prometheusConfigChan
+		      currentSnapshot.Prometheusconfigs.Clear(prometheusConfigNamespacedList.namespace)
+		      prometheusConfigList := prometheusConfigNamespacedList.list
+		   	currentSnapshot.Prometheusconfigs.Add(prometheusConfigList...)
 		   		}
 		*/
 
@@ -154,14 +156,14 @@ func (c *observabilityEmitter) Snapshots(watchNamespaces []string, opts clients.
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case configNamespacedList := <-configChan:
+			case prometheusConfigNamespacedList := <-prometheusConfigChan:
 				record()
 
-				namespace := configNamespacedList.namespace
-				configList := configNamespacedList.list
+				namespace := prometheusConfigNamespacedList.namespace
+				prometheusConfigList := prometheusConfigNamespacedList.list
 
 				currentSnapshot.Prometheusconfigs.Clear(namespace)
-				currentSnapshot.Prometheusconfigs.Add(configList...)
+				currentSnapshot.Prometheusconfigs.Add(prometheusConfigList...)
 			}
 		}
 	}()

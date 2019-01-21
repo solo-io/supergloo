@@ -10,36 +10,36 @@ import (
 )
 
 type InstallSnapshot struct {
-	Istiocerts encryption_istio_io.IstiocertsByNamespace
 	Installs   InstallsByNamespace
+	Istiocerts encryption_istio_io.IstiocertsByNamespace
 }
 
 func (s InstallSnapshot) Clone() InstallSnapshot {
 	return InstallSnapshot{
-		Istiocerts: s.Istiocerts.Clone(),
 		Installs:   s.Installs.Clone(),
+		Istiocerts: s.Istiocerts.Clone(),
 	}
 }
 
 func (s InstallSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
-		s.hashIstiocerts(),
 		s.hashInstalls(),
+		s.hashIstiocerts(),
 	)
-}
-
-func (s InstallSnapshot) hashIstiocerts() uint64 {
-	return hashutils.HashAll(s.Istiocerts.List().AsInterfaces()...)
 }
 
 func (s InstallSnapshot) hashInstalls() uint64 {
 	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
 }
 
+func (s InstallSnapshot) hashIstiocerts() uint64 {
+	return hashutils.HashAll(s.Istiocerts.List().AsInterfaces()...)
+}
+
 func (s InstallSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("istiocerts", s.hashIstiocerts()))
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
+	fields = append(fields, zap.Uint64("istiocerts", s.hashIstiocerts()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }

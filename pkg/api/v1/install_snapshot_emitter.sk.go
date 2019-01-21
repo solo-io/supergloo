@@ -43,76 +43,65 @@ func init() {
 
 type InstallEmitter interface {
 	Register() error
-	IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient
 	Install() InstallClient
+	IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error)
 }
 
-func NewInstallEmitter(istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, installClient InstallClient) InstallEmitter {
-	return NewInstallEmitterWithEmit(istioCacertsSecretClient, installClient, make(chan struct{}))
+func NewInstallEmitter(installClient InstallClient, istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient) InstallEmitter {
+	return NewInstallEmitterWithEmit(installClient, istioCacertsSecretClient, make(chan struct{}))
 }
 
-func NewInstallEmitterWithEmit(istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, installClient InstallClient, emit <-chan struct{}) InstallEmitter {
+func NewInstallEmitterWithEmit(installClient InstallClient, istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, emit <-chan struct{}) InstallEmitter {
 	return &installEmitter{
-		istioCacertsSecret: istioCacertsSecretClient,
 		install:            installClient,
+		istioCacertsSecret: istioCacertsSecretClient,
 		forceEmit:          emit,
 	}
 }
 
 type installEmitter struct {
 	forceEmit          <-chan struct{}
-	istioCacertsSecret encryption_istio_io.IstioCacertsSecretClient
 	install            InstallClient
+	istioCacertsSecret encryption_istio_io.IstioCacertsSecretClient
 }
 
 func (c *installEmitter) Register() error {
-	if err := c.istioCacertsSecret.Register(); err != nil {
-		return err
-	}
 	if err := c.install.Register(); err != nil {
 		return err
 	}
+	if err := c.istioCacertsSecret.Register(); err != nil {
+		return err
+	}
 	return nil
-}
-
-func (c *installEmitter) IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient {
-	return c.istioCacertsSecret
 }
 
 func (c *installEmitter) Install() InstallClient {
 	return c.install
 }
 
+func (c *installEmitter) IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient {
+	return c.istioCacertsSecret
+}
+
 func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error) {
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for IstioCacertsSecret */
-	type istioCacertsSecretListWithNamespace struct {
-		list      encryption_istio_io.IstioCacertsSecretList
-		namespace string
-	}
-	istioCacertsSecretChan := make(chan istioCacertsSecretListWithNamespace)
 	/* Create channel for Install */
 	type installListWithNamespace struct {
 		list      InstallList
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
+	/* Create channel for IstioCacertsSecret */
+	type istioCacertsSecretListWithNamespace struct {
+		list      encryption_istio_io.IstioCacertsSecretList
+		namespace string
+	}
+	istioCacertsSecretChan := make(chan istioCacertsSecretListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for IstioCacertsSecret */
-		istioCacertsSecretNamespacesChan, istioCacertsSecretErrs, err := c.istioCacertsSecret.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting IstioCacertsSecret watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, istioCacertsSecretErrs, namespace+"-istiocerts")
-		}(namespace)
 		/* Setup namespaced watch for Install */
 		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
 		if err != nil {
@@ -124,6 +113,17 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
 		}(namespace)
+		/* Setup namespaced watch for IstioCacertsSecret */
+		istioCacertsSecretNamespacesChan, istioCacertsSecretErrs, err := c.istioCacertsSecret.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting IstioCacertsSecret watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, istioCacertsSecretErrs, namespace+"-istiocerts")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -131,17 +131,17 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				select {
 				case <-ctx.Done():
 					return
-				case istioCacertsSecretList := <-istioCacertsSecretNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case istioCacertsSecretChan <- istioCacertsSecretListWithNamespace{list: istioCacertsSecretList, namespace: namespace}:
-					}
 				case installList := <-installNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					}
+				case istioCacertsSecretList := <-istioCacertsSecretNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case istioCacertsSecretChan <- istioCacertsSecretListWithNamespace{list: istioCacertsSecretList, namespace: namespace}:
 					}
 				}
 			}
@@ -168,14 +168,14 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 		   		// construct the first snapshot from all the configs that are currently there
 		   		// that guarantees that the first snapshot contains all the data.
 		   		for range watchNamespaces {
-		      istioCacertsSecretNamespacedList := <- istioCacertsSecretChan
-		      currentSnapshot.Istiocerts.Clear(istioCacertsSecretNamespacedList.namespace)
-		      istioCacertsSecretList := istioCacertsSecretNamespacedList.list
-		   	currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 		      installNamespacedList := <- installChan
 		      currentSnapshot.Installs.Clear(installNamespacedList.namespace)
 		      installList := installNamespacedList.list
 		   	currentSnapshot.Installs.Add(installList...)
+		      istioCacertsSecretNamespacedList := <- istioCacertsSecretChan
+		      currentSnapshot.Istiocerts.Clear(istioCacertsSecretNamespacedList.namespace)
+		      istioCacertsSecretList := istioCacertsSecretNamespacedList.list
+		   	currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 		   		}
 		*/
 
@@ -193,14 +193,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case istioCacertsSecretNamespacedList := <-istioCacertsSecretChan:
-				record()
-
-				namespace := istioCacertsSecretNamespacedList.namespace
-				istioCacertsSecretList := istioCacertsSecretNamespacedList.list
-
-				currentSnapshot.Istiocerts.Clear(namespace)
-				currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 			case installNamespacedList := <-installChan:
 				record()
 
@@ -209,6 +201,14 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 
 				currentSnapshot.Installs.Clear(namespace)
 				currentSnapshot.Installs.Add(installList...)
+			case istioCacertsSecretNamespacedList := <-istioCacertsSecretChan:
+				record()
+
+				namespace := istioCacertsSecretNamespacedList.namespace
+				istioCacertsSecretList := istioCacertsSecretNamespacedList.list
+
+				currentSnapshot.Istiocerts.Clear(namespace)
+				currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 			}
 		}
 	}()

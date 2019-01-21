@@ -25,24 +25,24 @@ var _ = Describe("InstallEventLoop", func() {
 
 	BeforeEach(func() {
 
-		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		installClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewInstallEmitter(istioCacertsSecretClient, installClient)
+		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewInstallEmitter(installClient, istioCacertsSecretClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockInstallSyncer{}
 		el := NewInstallEventLoop(emitter, sync)

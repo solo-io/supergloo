@@ -74,7 +74,7 @@ func (el *observabilityEventLoop) Run(namespaces []string, opts clients.WatchOpt
 				// cancel any open watches from previous loop
 				cancel()
 
-				ctx, span := trace.StartSpan(opts.Ctx, "observability.config.prometheus.io.EventLoopSync")
+				ctx, span := trace.StartSpan(opts.Ctx, "observability.supergloo.solo.io.EventLoopSync")
 				ctx, canc := context.WithCancel(ctx)
 				cancel = canc
 				err := el.syncer.Sync(ctx, snapshot)

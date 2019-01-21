@@ -22,10 +22,10 @@ import (
 
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/consul"
@@ -153,7 +153,7 @@ func Main(errHandler func(error), namespaces ...string) error {
 
 	installEmitter := v1.NewInstallEmitter(installClient, istioSecretClient)
 
-	translatorEmitter := v1.NewTranslatorEmitter(meshClient, routingRuleClient, upstreamClient, istioSecretClient, glooSecretClient)
+	translatorEmitter := v1.NewTranslatorEmitter(istioSecretClient, meshClient, routingRuleClient, upstreamClient, glooSecretClient)
 
 	rpt := reporter.NewReporter("supergloo", meshClient.BaseClient())
 	writeErrs := make(chan error)

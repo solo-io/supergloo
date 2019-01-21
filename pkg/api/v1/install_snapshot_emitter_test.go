@@ -39,8 +39,8 @@ var _ = Describe("V1Emitter", func() {
 		name1, name2             = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
 		cfg                      *rest.Config
 		emitter                  InstallEmitter
-		istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient
 		installClient            InstallClient
+		istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient
 	)
 
 	BeforeEach(func() {
@@ -54,6 +54,14 @@ var _ = Describe("V1Emitter", func() {
 		err = setup.SetupKubeForTest(namespace2)
 		Expect(err).NotTo(HaveOccurred())
 		var kube kubernetes.Interface
+		// Install Constructor
+		installClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         InstallCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(),
+		}
+		installClient, err = NewInstallClient(installClientFactory)
+		Expect(err).NotTo(HaveOccurred())
 		// IstioCacertsSecret Constructor
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
@@ -63,15 +71,7 @@ var _ = Describe("V1Emitter", func() {
 		}
 		istioCacertsSecretClient, err = encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		// Install Constructor
-		installClientFactory := &factory.KubeResourceClientFactory{
-			Crd:         InstallCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(),
-		}
-		installClient, err = NewInstallClient(installClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-		emitter = NewInstallEmitter(istioCacertsSecretClient, installClient)
+		emitter = NewInstallEmitter(installClient, istioCacertsSecretClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -89,64 +89,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		var snap *InstallSnapshot
-
-		/*
-			IstioCacertsSecret
-		*/
-
-		assertSnapshotIstiocerts := func(expectIstiocerts encryption_istio_io.IstioCacertsSecretList, unexpectIstiocerts encryption_istio_io.IstioCacertsSecretList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectIstiocerts {
-						if _, err := snap.Istiocerts.List().Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectIstiocerts {
-						if _, err := snap.Istiocerts.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := istioCacertsSecretClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := istioCacertsSecretClient.List(namespace2, clients.ListOpts{})
-					combined := nsList1.ByNamespace()
-					combined.Add(nsList2...)
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		istioCacertsSecret1a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		istioCacertsSecret1b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, nil)
-		istioCacertsSecret2a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		istioCacertsSecret2b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b}, nil)
-
-		err = istioCacertsSecretClient.Delete(istioCacertsSecret2a.Metadata.Namespace, istioCacertsSecret2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = istioCacertsSecretClient.Delete(istioCacertsSecret2b.Metadata.Namespace, istioCacertsSecret2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret2a, istioCacertsSecret2b})
-
-		err = istioCacertsSecretClient.Delete(istioCacertsSecret1a.Metadata.Namespace, istioCacertsSecret1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = istioCacertsSecretClient.Delete(istioCacertsSecret1b.Metadata.Namespace, istioCacertsSecret1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotIstiocerts(nil, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b})
 
 		/*
 			Install
@@ -205,5 +147,63 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
+
+		/*
+			IstioCacertsSecret
+		*/
+
+		assertSnapshotIstiocerts := func(expectIstiocerts encryption_istio_io.IstioCacertsSecretList, unexpectIstiocerts encryption_istio_io.IstioCacertsSecretList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectIstiocerts {
+						if _, err := snap.Istiocerts.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectIstiocerts {
+						if _, err := snap.Istiocerts.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := istioCacertsSecretClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := istioCacertsSecretClient.List(namespace2, clients.ListOpts{})
+					combined := nsList1.ByNamespace()
+					combined.Add(nsList2...)
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		istioCacertsSecret1a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		istioCacertsSecret1b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, nil)
+		istioCacertsSecret2a, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		istioCacertsSecret2b, err := istioCacertsSecretClient.Write(encryption_istio_io.NewIstioCacertsSecret(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b}, nil)
+
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret2a.Metadata.Namespace, istioCacertsSecret2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret2b.Metadata.Namespace, istioCacertsSecret2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b}, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret2a, istioCacertsSecret2b})
+
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret1a.Metadata.Namespace, istioCacertsSecret1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = istioCacertsSecretClient.Delete(istioCacertsSecret1b.Metadata.Namespace, istioCacertsSecret1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotIstiocerts(nil, encryption_istio_io.IstioCacertsSecretList{istioCacertsSecret1a, istioCacertsSecret1b, istioCacertsSecret2a, istioCacertsSecret2b})
 	})
 })

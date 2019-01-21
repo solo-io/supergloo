@@ -3,6 +3,7 @@
 package v1
 
 import (
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
@@ -10,29 +11,39 @@ import (
 )
 
 type TranslatorSnapshot struct {
-	Istiocerts   encryption_istio_io.IstiocertsByNamespace
+	Secrets      gloo_solo_io.SecretsByNamespace
+	Upstreams    gloo_solo_io.UpstreamsByNamespace
 	Meshes       MeshesByNamespace
 	Routingrules RoutingrulesByNamespace
+	Istiocerts   encryption_istio_io.IstiocertsByNamespace
 }
 
 func (s TranslatorSnapshot) Clone() TranslatorSnapshot {
 	return TranslatorSnapshot{
-		Istiocerts:   s.Istiocerts.Clone(),
+		Secrets:      s.Secrets.Clone(),
+		Upstreams:    s.Upstreams.Clone(),
 		Meshes:       s.Meshes.Clone(),
 		Routingrules: s.Routingrules.Clone(),
+		Istiocerts:   s.Istiocerts.Clone(),
 	}
 }
 
 func (s TranslatorSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
-		s.hashIstiocerts(),
+		s.hashSecrets(),
+		s.hashUpstreams(),
 		s.hashMeshes(),
 		s.hashRoutingrules(),
+		s.hashIstiocerts(),
 	)
 }
 
-func (s TranslatorSnapshot) hashIstiocerts() uint64 {
-	return hashutils.HashAll(s.Istiocerts.List().AsInterfaces()...)
+func (s TranslatorSnapshot) hashSecrets() uint64 {
+	return hashutils.HashAll(s.Secrets.List().AsInterfaces()...)
+}
+
+func (s TranslatorSnapshot) hashUpstreams() uint64 {
+	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
 }
 
 func (s TranslatorSnapshot) hashMeshes() uint64 {
@@ -43,11 +54,17 @@ func (s TranslatorSnapshot) hashRoutingrules() uint64 {
 	return hashutils.HashAll(s.Routingrules.List().AsInterfaces()...)
 }
 
+func (s TranslatorSnapshot) hashIstiocerts() uint64 {
+	return hashutils.HashAll(s.Istiocerts.List().AsInterfaces()...)
+}
+
 func (s TranslatorSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("istiocerts", s.hashIstiocerts()))
+	fields = append(fields, zap.Uint64("secrets", s.hashSecrets()))
+	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("routingrules", s.hashRoutingrules()))
+	fields = append(fields, zap.Uint64("istiocerts", s.hashIstiocerts()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }

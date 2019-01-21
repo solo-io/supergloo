@@ -8,26 +8,19 @@ import (
 )
 
 type RoutingSnapshot struct {
-	Destinationrules DestinationrulesByNamespace
-	Virtualservices  VirtualservicesByNamespace
+	Virtualservices VirtualservicesByNamespace
 }
 
 func (s RoutingSnapshot) Clone() RoutingSnapshot {
 	return RoutingSnapshot{
-		Destinationrules: s.Destinationrules.Clone(),
-		Virtualservices:  s.Virtualservices.Clone(),
+		Virtualservices: s.Virtualservices.Clone(),
 	}
 }
 
 func (s RoutingSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
-		s.hashDestinationrules(),
 		s.hashVirtualservices(),
 	)
-}
-
-func (s RoutingSnapshot) hashDestinationrules() uint64 {
-	return hashutils.HashAll(s.Destinationrules.List().AsInterfaces()...)
 }
 
 func (s RoutingSnapshot) hashVirtualservices() uint64 {
@@ -36,7 +29,6 @@ func (s RoutingSnapshot) hashVirtualservices() uint64 {
 
 func (s RoutingSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("destinationrules", s.hashDestinationrules()))
 	fields = append(fields, zap.Uint64("virtualservices", s.hashVirtualservices()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	"go.opencensus.io/stats"
@@ -43,34 +44,43 @@ func init() {
 
 type TranslatorEmitter interface {
 	Register() error
-	IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient
+	Secret() gloo_solo_io.SecretClient
+	Upstream() gloo_solo_io.UpstreamClient
 	Mesh() MeshClient
 	RoutingRule() RoutingRuleClient
+	IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error)
 }
 
-func NewTranslatorEmitter(istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, meshClient MeshClient, routingRuleClient RoutingRuleClient) TranslatorEmitter {
-	return NewTranslatorEmitterWithEmit(istioCacertsSecretClient, meshClient, routingRuleClient, make(chan struct{}))
+func NewTranslatorEmitter(secretClient gloo_solo_io.SecretClient, upstreamClient gloo_solo_io.UpstreamClient, meshClient MeshClient, routingRuleClient RoutingRuleClient, istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient) TranslatorEmitter {
+	return NewTranslatorEmitterWithEmit(secretClient, upstreamClient, meshClient, routingRuleClient, istioCacertsSecretClient, make(chan struct{}))
 }
 
-func NewTranslatorEmitterWithEmit(istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, meshClient MeshClient, routingRuleClient RoutingRuleClient, emit <-chan struct{}) TranslatorEmitter {
+func NewTranslatorEmitterWithEmit(secretClient gloo_solo_io.SecretClient, upstreamClient gloo_solo_io.UpstreamClient, meshClient MeshClient, routingRuleClient RoutingRuleClient, istioCacertsSecretClient encryption_istio_io.IstioCacertsSecretClient, emit <-chan struct{}) TranslatorEmitter {
 	return &translatorEmitter{
-		istioCacertsSecret: istioCacertsSecretClient,
+		secret:             secretClient,
+		upstream:           upstreamClient,
 		mesh:               meshClient,
 		routingRule:        routingRuleClient,
+		istioCacertsSecret: istioCacertsSecretClient,
 		forceEmit:          emit,
 	}
 }
 
 type translatorEmitter struct {
 	forceEmit          <-chan struct{}
-	istioCacertsSecret encryption_istio_io.IstioCacertsSecretClient
+	secret             gloo_solo_io.SecretClient
+	upstream           gloo_solo_io.UpstreamClient
 	mesh               MeshClient
 	routingRule        RoutingRuleClient
+	istioCacertsSecret encryption_istio_io.IstioCacertsSecretClient
 }
 
 func (c *translatorEmitter) Register() error {
-	if err := c.istioCacertsSecret.Register(); err != nil {
+	if err := c.secret.Register(); err != nil {
+		return err
+	}
+	if err := c.upstream.Register(); err != nil {
 		return err
 	}
 	if err := c.mesh.Register(); err != nil {
@@ -79,11 +89,18 @@ func (c *translatorEmitter) Register() error {
 	if err := c.routingRule.Register(); err != nil {
 		return err
 	}
+	if err := c.istioCacertsSecret.Register(); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *translatorEmitter) IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient {
-	return c.istioCacertsSecret
+func (c *translatorEmitter) Secret() gloo_solo_io.SecretClient {
+	return c.secret
+}
+
+func (c *translatorEmitter) Upstream() gloo_solo_io.UpstreamClient {
+	return c.upstream
 }
 
 func (c *translatorEmitter) Mesh() MeshClient {
@@ -94,16 +111,26 @@ func (c *translatorEmitter) RoutingRule() RoutingRuleClient {
 	return c.routingRule
 }
 
+func (c *translatorEmitter) IstioCacertsSecret() encryption_istio_io.IstioCacertsSecretClient {
+	return c.istioCacertsSecret
+}
+
 func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *TranslatorSnapshot, <-chan error, error) {
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for IstioCacertsSecret */
-	type istioCacertsSecretListWithNamespace struct {
-		list      encryption_istio_io.IstioCacertsSecretList
+	/* Create channel for Secret */
+	type secretListWithNamespace struct {
+		list      gloo_solo_io.SecretList
 		namespace string
 	}
-	istioCacertsSecretChan := make(chan istioCacertsSecretListWithNamespace)
+	secretChan := make(chan secretListWithNamespace)
+	/* Create channel for Upstream */
+	type upstreamListWithNamespace struct {
+		list      gloo_solo_io.UpstreamList
+		namespace string
+	}
+	upstreamChan := make(chan upstreamListWithNamespace)
 	/* Create channel for Mesh */
 	type meshListWithNamespace struct {
 		list      MeshList
@@ -116,18 +143,35 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		namespace string
 	}
 	routingRuleChan := make(chan routingRuleListWithNamespace)
+	/* Create channel for IstioCacertsSecret */
+	type istioCacertsSecretListWithNamespace struct {
+		list      encryption_istio_io.IstioCacertsSecretList
+		namespace string
+	}
+	istioCacertsSecretChan := make(chan istioCacertsSecretListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for IstioCacertsSecret */
-		istioCacertsSecretNamespacesChan, istioCacertsSecretErrs, err := c.istioCacertsSecret.Watch(namespace, opts)
+		/* Setup namespaced watch for Secret */
+		secretNamespacesChan, secretErrs, err := c.secret.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting IstioCacertsSecret watch")
+			return nil, nil, errors.Wrapf(err, "starting Secret watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, istioCacertsSecretErrs, namespace+"-istiocerts")
+			errutils.AggregateErrs(ctx, errs, secretErrs, namespace+"-secrets")
+		}(namespace)
+		/* Setup namespaced watch for Upstream */
+		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Upstream watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
 		}(namespace)
 		/* Setup namespaced watch for Mesh */
 		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
@@ -151,6 +195,17 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, routingRuleErrs, namespace+"-routingrules")
 		}(namespace)
+		/* Setup namespaced watch for IstioCacertsSecret */
+		istioCacertsSecretNamespacesChan, istioCacertsSecretErrs, err := c.istioCacertsSecret.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting IstioCacertsSecret watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, istioCacertsSecretErrs, namespace+"-istiocerts")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -158,11 +213,17 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 				select {
 				case <-ctx.Done():
 					return
-				case istioCacertsSecretList := <-istioCacertsSecretNamespacesChan:
+				case secretList := <-secretNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case istioCacertsSecretChan <- istioCacertsSecretListWithNamespace{list: istioCacertsSecretList, namespace: namespace}:
+					case secretChan <- secretListWithNamespace{list: secretList, namespace: namespace}:
+					}
+				case upstreamList := <-upstreamNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
 					}
 				case meshList := <-meshNamespacesChan:
 					select {
@@ -175,6 +236,12 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 					case <-ctx.Done():
 						return
 					case routingRuleChan <- routingRuleListWithNamespace{list: routingRuleList, namespace: namespace}:
+					}
+				case istioCacertsSecretList := <-istioCacertsSecretNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case istioCacertsSecretChan <- istioCacertsSecretListWithNamespace{list: istioCacertsSecretList, namespace: namespace}:
 					}
 				}
 			}
@@ -201,10 +268,14 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		   		// construct the first snapshot from all the configs that are currently there
 		   		// that guarantees that the first snapshot contains all the data.
 		   		for range watchNamespaces {
-		      istioCacertsSecretNamespacedList := <- istioCacertsSecretChan
-		      currentSnapshot.Istiocerts.Clear(istioCacertsSecretNamespacedList.namespace)
-		      istioCacertsSecretList := istioCacertsSecretNamespacedList.list
-		   	currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
+		      secretNamespacedList := <- secretChan
+		      currentSnapshot.Secrets.Clear(secretNamespacedList.namespace)
+		      secretList := secretNamespacedList.list
+		   	currentSnapshot.Secrets.Add(secretList...)
+		      upstreamNamespacedList := <- upstreamChan
+		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
+		      upstreamList := upstreamNamespacedList.list
+		   	currentSnapshot.Upstreams.Add(upstreamList...)
 		      meshNamespacedList := <- meshChan
 		      currentSnapshot.Meshes.Clear(meshNamespacedList.namespace)
 		      meshList := meshNamespacedList.list
@@ -213,6 +284,10 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 		      currentSnapshot.Routingrules.Clear(routingRuleNamespacedList.namespace)
 		      routingRuleList := routingRuleNamespacedList.list
 		   	currentSnapshot.Routingrules.Add(routingRuleList...)
+		      istioCacertsSecretNamespacedList := <- istioCacertsSecretChan
+		      currentSnapshot.Istiocerts.Clear(istioCacertsSecretNamespacedList.namespace)
+		      istioCacertsSecretList := istioCacertsSecretNamespacedList.list
+		   	currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 		   		}
 		*/
 
@@ -230,14 +305,22 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case istioCacertsSecretNamespacedList := <-istioCacertsSecretChan:
+			case secretNamespacedList := <-secretChan:
 				record()
 
-				namespace := istioCacertsSecretNamespacedList.namespace
-				istioCacertsSecretList := istioCacertsSecretNamespacedList.list
+				namespace := secretNamespacedList.namespace
+				secretList := secretNamespacedList.list
 
-				currentSnapshot.Istiocerts.Clear(namespace)
-				currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
+				currentSnapshot.Secrets.Clear(namespace)
+				currentSnapshot.Secrets.Add(secretList...)
+			case upstreamNamespacedList := <-upstreamChan:
+				record()
+
+				namespace := upstreamNamespacedList.namespace
+				upstreamList := upstreamNamespacedList.list
+
+				currentSnapshot.Upstreams.Clear(namespace)
+				currentSnapshot.Upstreams.Add(upstreamList...)
 			case meshNamespacedList := <-meshChan:
 				record()
 
@@ -254,6 +337,14 @@ func (c *translatorEmitter) Snapshots(watchNamespaces []string, opts clients.Wat
 
 				currentSnapshot.Routingrules.Clear(namespace)
 				currentSnapshot.Routingrules.Add(routingRuleList...)
+			case istioCacertsSecretNamespacedList := <-istioCacertsSecretChan:
+				record()
+
+				namespace := istioCacertsSecretNamespacedList.namespace
+				istioCacertsSecretList := istioCacertsSecretNamespacedList.list
+
+				currentSnapshot.Istiocerts.Clear(namespace)
+				currentSnapshot.Istiocerts.Add(istioCacertsSecretList...)
 			}
 		}
 	}()

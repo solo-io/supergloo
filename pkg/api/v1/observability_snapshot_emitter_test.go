@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/kubeutils"
@@ -31,12 +33,12 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1   string
-		namespace2   string
-		name1, name2 = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg          *rest.Config
-		emitter      ObservabilityEmitter
-		configClient ConfigClient
+		namespace1             string
+		namespace2             string
+		name1, name2           = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg                    *rest.Config
+		emitter                ObservabilityEmitter
+		prometheusConfigClient config_prometheus_io.PrometheusConfigClient
 	)
 
 	BeforeEach(func() {
@@ -50,16 +52,16 @@ var _ = Describe("V1Emitter", func() {
 		err = setup.SetupKubeForTest(namespace2)
 		Expect(err).NotTo(HaveOccurred())
 		var kube kubernetes.Interface
-		// Config Constructor
+		// PrometheusConfig Constructor
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
-		configClientFactory := &factory.KubeConfigMapClientFactory{
+		prometheusConfigClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
 		}
-		configClient, err = NewConfigClient(configClientFactory)
+		prometheusConfigClient, err = config_prometheus_io.NewPrometheusConfigClient(prometheusConfigClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewObservabilityEmitter(configClient)
+		emitter = NewObservabilityEmitter(prometheusConfigClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -79,10 +81,10 @@ var _ = Describe("V1Emitter", func() {
 		var snap *ObservabilitySnapshot
 
 		/*
-			Config
+			PrometheusConfig
 		*/
 
-		assertSnapshotPrometheusconfigs := func(expectPrometheusconfigs ConfigList, unexpectPrometheusconfigs ConfigList) {
+		assertSnapshotPrometheusconfigs := func(expectPrometheusconfigs config_prometheus_io.PrometheusConfigList, unexpectPrometheusconfigs config_prometheus_io.PrometheusConfigList) {
 		drain:
 			for {
 				select {
@@ -101,39 +103,39 @@ var _ = Describe("V1Emitter", func() {
 				case err := <-errs:
 					Expect(err).NotTo(HaveOccurred())
 				case <-time.After(time.Second * 10):
-					nsList1, _ := configClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := configClient.List(namespace2, clients.ListOpts{})
+					nsList1, _ := prometheusConfigClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := prometheusConfigClient.List(namespace2, clients.ListOpts{})
 					combined := nsList1.ByNamespace()
 					combined.Add(nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
 		}
-		config1a, err := configClient.Write(NewConfig(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		prometheusConfig1a, err := prometheusConfigClient.Write(config_prometheus_io.NewPrometheusConfig(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		config1b, err := configClient.Write(NewConfig(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b}, nil)
-		config2a, err := configClient.Write(NewConfig(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		config2b, err := configClient.Write(NewConfig(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		prometheusConfig1b, err := prometheusConfigClient.Write(config_prometheus_io.NewPrometheusConfig(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b, config2a, config2b}, nil)
-
-		err = configClient.Delete(config2a.Metadata.Namespace, config2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		assertSnapshotPrometheusconfigs(config_prometheus_io.PrometheusConfigList{prometheusConfig1a, prometheusConfig1b}, nil)
+		prometheusConfig2a, err := prometheusConfigClient.Write(config_prometheus_io.NewPrometheusConfig(namespace1, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = configClient.Delete(config2b.Metadata.Namespace, config2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotPrometheusconfigs(ConfigList{config1a, config1b}, ConfigList{config2a, config2b})
-
-		err = configClient.Delete(config1a.Metadata.Namespace, config1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = configClient.Delete(config1b.Metadata.Namespace, config1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		prometheusConfig2b, err := prometheusConfigClient.Write(config_prometheus_io.NewPrometheusConfig(namespace2, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPrometheusconfigs(nil, ConfigList{config1a, config1b, config2a, config2b})
+		assertSnapshotPrometheusconfigs(config_prometheus_io.PrometheusConfigList{prometheusConfig1a, prometheusConfig1b, prometheusConfig2a, prometheusConfig2b}, nil)
+
+		err = prometheusConfigClient.Delete(prometheusConfig2a.Metadata.Namespace, prometheusConfig2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = prometheusConfigClient.Delete(prometheusConfig2b.Metadata.Namespace, prometheusConfig2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotPrometheusconfigs(config_prometheus_io.PrometheusConfigList{prometheusConfig1a, prometheusConfig1b}, config_prometheus_io.PrometheusConfigList{prometheusConfig2a, prometheusConfig2b})
+
+		err = prometheusConfigClient.Delete(prometheusConfig1a.Metadata.Namespace, prometheusConfig1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = prometheusConfigClient.Delete(prometheusConfig1b.Metadata.Namespace, prometheusConfig1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotPrometheusconfigs(nil, config_prometheus_io.PrometheusConfigList{prometheusConfig1a, prometheusConfig1b, prometheusConfig2a, prometheusConfig2b})
 	})
 })

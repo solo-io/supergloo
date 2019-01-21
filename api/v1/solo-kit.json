@@ -1,5 +1,45 @@
 {
   "name": "supergloo.solo.io",
   "version": "v1",
-  "docs_dir": "docs"
+  "docs_dir": "docs",
+  "resource_groups": {
+    "translator.supergloo.solo.io": [
+      {
+        "name": "Secret",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "RoutingRule",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "IstioCacertsSecret",
+        "package": "encryption.istio.io"
+      }
+    ],
+    "install.supergloo.solo.io": [
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "IstioCacertsSecret",
+        "package": "encryption.istio.io"
+      }
+    ],
+    "observability.supergloo.solo.io": [
+      {
+        "name": "PrometheusConfig",
+        "package": "config.prometheus.io"
+      }
+    ]
+  }
 }

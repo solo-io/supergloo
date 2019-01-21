@@ -17,12 +17,12 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("ConfigClient", func() {
+var _ = Describe("PrometheusConfigClient", func() {
 	var (
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: ConfigCrd},
+		&typed.KubeRcTester{Crd: PrometheusConfigCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -32,7 +32,7 @@ var _ = Describe("ConfigClient", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client              ConfigClient
+				client              PrometheusConfigClient
 				err                 error
 				name1, name2, name3 = "foo" + helpers.RandString(3), "boo" + helpers.RandString(3), "goo" + helpers.RandString(3)
 			)
@@ -40,25 +40,25 @@ var _ = Describe("ConfigClient", func() {
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				factory := test.Setup(namespace)
-				client, err = NewConfigClient(factory)
+				client, err = NewPrometheusConfigClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
-			It("CRUDs Configs "+test.Description(), func() {
-				ConfigClientTest(namespace, client, name1, name2, name3)
+			It("CRUDs PrometheusConfigs "+test.Description(), func() {
+				PrometheusConfigClientTest(namespace, client, name1, name2, name3)
 			})
 		})
 	}
 })
 
-func ConfigClientTest(namespace string, client ConfigClient, name1, name2, name3 string) {
+func PrometheusConfigClientTest(namespace string, client PrometheusConfigClient, name1, name2, name3 string) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := name1
-	input := NewConfig(namespace, name)
+	input := NewPrometheusConfig(namespace, name)
 	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -67,7 +67,7 @@ func ConfigClientTest(namespace string, client ConfigClient, name1, name2, name3
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&Config{}))
+	Expect(r1).To(BeAssignableToTypeOf(&PrometheusConfig{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
@@ -92,7 +92,7 @@ func ConfigClientTest(namespace string, client ConfigClient, name1, name2, name3
 	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = name2
-	input = &Config{}
+	input = &PrometheusConfig{}
 
 	input.Metadata = core.Metadata{
 		Name:      name,
@@ -115,12 +115,12 @@ func ConfigClientTest(namespace string, client ConfigClient, name1, name2, name3
 	err = client.Delete(namespace, r2.GetMetadata().Name, clients.DeleteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
-	Eventually(func() ConfigList {
+	Eventually(func() PrometheusConfigList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).Should(ContainElement(r1))
-	Eventually(func() ConfigList {
+	Eventually(func() PrometheusConfigList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
@@ -143,7 +143,7 @@ func ConfigClientTest(namespace string, client ConfigClient, name1, name2, name3
 		Expect(err).NotTo(HaveOccurred())
 
 		name = name3
-		input = &Config{}
+		input = &PrometheusConfig{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
 			Name:      name,

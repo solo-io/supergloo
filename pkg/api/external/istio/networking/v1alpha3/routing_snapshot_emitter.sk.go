@@ -41,41 +41,31 @@ func init() {
 
 type RoutingEmitter interface {
 	Register() error
-	DestinationRule() DestinationRuleClient
 	VirtualService() VirtualServiceClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *RoutingSnapshot, <-chan error, error)
 }
 
-func NewRoutingEmitter(destinationRuleClient DestinationRuleClient, virtualServiceClient VirtualServiceClient) RoutingEmitter {
-	return NewRoutingEmitterWithEmit(destinationRuleClient, virtualServiceClient, make(chan struct{}))
+func NewRoutingEmitter(virtualServiceClient VirtualServiceClient) RoutingEmitter {
+	return NewRoutingEmitterWithEmit(virtualServiceClient, make(chan struct{}))
 }
 
-func NewRoutingEmitterWithEmit(destinationRuleClient DestinationRuleClient, virtualServiceClient VirtualServiceClient, emit <-chan struct{}) RoutingEmitter {
+func NewRoutingEmitterWithEmit(virtualServiceClient VirtualServiceClient, emit <-chan struct{}) RoutingEmitter {
 	return &routingEmitter{
-		destinationRule: destinationRuleClient,
-		virtualService:  virtualServiceClient,
-		forceEmit:       emit,
+		virtualService: virtualServiceClient,
+		forceEmit:      emit,
 	}
 }
 
 type routingEmitter struct {
-	forceEmit       <-chan struct{}
-	destinationRule DestinationRuleClient
-	virtualService  VirtualServiceClient
+	forceEmit      <-chan struct{}
+	virtualService VirtualServiceClient
 }
 
 func (c *routingEmitter) Register() error {
-	if err := c.destinationRule.Register(); err != nil {
-		return err
-	}
 	if err := c.virtualService.Register(); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (c *routingEmitter) DestinationRule() DestinationRuleClient {
-	return c.destinationRule
 }
 
 func (c *routingEmitter) VirtualService() VirtualServiceClient {
@@ -86,12 +76,6 @@ func (c *routingEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for DestinationRule */
-	type destinationRuleListWithNamespace struct {
-		list      DestinationRuleList
-		namespace string
-	}
-	destinationRuleChan := make(chan destinationRuleListWithNamespace)
 	/* Create channel for VirtualService */
 	type virtualServiceListWithNamespace struct {
 		list      VirtualServiceList
@@ -100,17 +84,6 @@ func (c *routingEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 	virtualServiceChan := make(chan virtualServiceListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for DestinationRule */
-		destinationRuleNamespacesChan, destinationRuleErrs, err := c.destinationRule.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting DestinationRule watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, destinationRuleErrs, namespace+"-destinationrules")
-		}(namespace)
 		/* Setup namespaced watch for VirtualService */
 		virtualServiceNamespacesChan, virtualServiceErrs, err := c.virtualService.Watch(namespace, opts)
 		if err != nil {
@@ -129,12 +102,6 @@ func (c *routingEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				select {
 				case <-ctx.Done():
 					return
-				case destinationRuleList := <-destinationRuleNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case destinationRuleChan <- destinationRuleListWithNamespace{list: destinationRuleList, namespace: namespace}:
-					}
 				case virtualServiceList := <-virtualServiceNamespacesChan:
 					select {
 					case <-ctx.Done():
@@ -166,10 +133,6 @@ func (c *routingEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 		   		// construct the first snapshot from all the configs that are currently there
 		   		// that guarantees that the first snapshot contains all the data.
 		   		for range watchNamespaces {
-		      destinationRuleNamespacedList := <- destinationRuleChan
-		      currentSnapshot.Destinationrules.Clear(destinationRuleNamespacedList.namespace)
-		      destinationRuleList := destinationRuleNamespacedList.list
-		   	currentSnapshot.Destinationrules.Add(destinationRuleList...)
 		      virtualServiceNamespacedList := <- virtualServiceChan
 		      currentSnapshot.Virtualservices.Clear(virtualServiceNamespacedList.namespace)
 		      virtualServiceList := virtualServiceNamespacedList.list
@@ -191,14 +154,6 @@ func (c *routingEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case destinationRuleNamespacedList := <-destinationRuleChan:
-				record()
-
-				namespace := destinationRuleNamespacedList.namespace
-				destinationRuleList := destinationRuleNamespacedList.list
-
-				currentSnapshot.Destinationrules.Clear(namespace)
-				currentSnapshot.Destinationrules.Add(destinationRuleList...)
 			case virtualServiceNamespacedList := <-virtualServiceChan:
 				record()
 

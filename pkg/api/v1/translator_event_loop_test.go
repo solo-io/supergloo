@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -25,10 +26,16 @@ var _ = Describe("TranslatorEventLoop", func() {
 
 	BeforeEach(func() {
 
-		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
+		secretClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
+		secretClient, err := gloo_solo_io.NewSecretClient(secretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		upstreamClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		meshClientFactory := &factory.MemoryResourceClientFactory{
@@ -43,14 +50,24 @@ var _ = Describe("TranslatorEventLoop", func() {
 		routingRuleClient, err := NewRoutingRuleClient(routingRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewTranslatorEmitter(istioCacertsSecretClient, meshClient, routingRuleClient)
+		istioCacertsSecretClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		istioCacertsSecretClient, err := encryption_istio_io.NewIstioCacertsSecretClient(istioCacertsSecretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewTranslatorEmitter(secretClient, upstreamClient, meshClient, routingRuleClient, istioCacertsSecretClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Secret().Write(gloo_solo_io.NewSecret(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.RoutingRule().Write(NewRoutingRule(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.IstioCacertsSecret().Write(encryption_istio_io.NewIstioCacertsSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockTranslatorSyncer{}
 		el := NewTranslatorEventLoop(emitter, sync)
