@@ -26,14 +26,14 @@ var _ = Describe("Prometheus Config Conversion", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client ConfigClient
+				client PrometheusConfigClient
 				err    error
 				kube   kubernetes.Interface
 			)
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				fact := test.Setup(namespace)
-				client, err = NewConfigClient(fact)
+				client, err = NewPrometheusConfigClient(fact)
 				Expect(err).NotTo(HaveOccurred())
 				kube = fact.(*factory.KubeConfigMapClientFactory).Clientset
 			})
@@ -47,7 +47,7 @@ var _ = Describe("Prometheus Config Conversion", func() {
 	}
 })
 
-func testPrometheusSerializer(namespace string, kube kubernetes.Interface, client ConfigClient) {
+func testPrometheusSerializer(namespace string, kube kubernetes.Interface, client PrometheusConfigClient) {
 	name := "prometheus-config"
 	err := utils.DeployPrometheusConfigmap(namespace, name, kube)
 	Expect(err).NotTo(HaveOccurred())

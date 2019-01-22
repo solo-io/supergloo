@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"reflect"
+
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +54,7 @@ func DeployPrometheusConfigmap(namespace, name string, kube kubernetes.Interface
 			Name:      name,
 			Namespace: namespace,
 			// Required by Solo-Kit; TODO: consider removing this requirement
-			Annotations: map[string]string{"resource_kind": "*v1.Config"},
+			Annotations: map[string]string{"resource_kind": reflect.TypeOf(&prometheusv1.PrometheusConfig{}).Name()},
 		},
 		Data: map[string]string{"prometheus.yml": BasicPrometheusConfig},
 	})
