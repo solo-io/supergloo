@@ -144,7 +144,10 @@ func GetKubeConfig() *rest.Config {
 	if kubeConfig != nil {
 		return kubeConfig
 	}
-	kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	kubeconfigPath := os.Getenv("KUBECONFIG")
+	if kubeconfigPath == "" {
+		kubeconfigPath = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	}
 	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 	kubeConfig = cfg

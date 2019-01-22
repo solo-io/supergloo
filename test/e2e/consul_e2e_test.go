@@ -131,7 +131,9 @@ var _ = Describe("Consul E2E", func() {
 		meshClient = util.GetMeshClient(kubeCache)
 		upstreamClient = util.GetUpstreamClient(kubeCache)
 		secretClient = util.GetSecretClient()
-		installSyncer = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
+		var err error
+		installSyncer, err = install.NewKubeInstallSyncer(meshClient, secretClient, util.GetKubeClient(), util.GetApiExtsClient())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {
