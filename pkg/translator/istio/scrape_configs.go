@@ -2,10 +2,10 @@ package istio
 
 import (
 	"github.com/ghodss/yaml"
-	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
+	"github.com/prometheus/prometheus/config"
 )
 
-var IstioScrapeConfigs []prometheus.ScrapeConfig
+var IstioScrapeConfigs []*config.ScrapeConfig
 
 func init() {
 	err := yaml.Unmarshal([]byte(istioScrapeConfigsYaml), &IstioScrapeConfigs)
