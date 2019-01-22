@@ -3,11 +3,35 @@ steps:
 - name: 'soloio/dep'
   args: ['ensure']
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
+  id: 'dep'
 
 - name: 'gcr.io/cloud-builders/go'
   args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo/cmd']
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
 
+- name: gcr.io/cloud-builders/gcloud
+  args:
+    - kms
+    - decrypt
+    - --ciphertext-file=./gopath/src/github.com/solo-io/gloo/ci/aws_credentials.enc
+    - --plaintext-file=/workspace/aws_credentials
+    - --location=global
+    - --keyring=build
+    - --key=build-key
+  waitFor: ['dep']
+  id: 'setup-aws-creds'
+
+- name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+    - 'GOPATH=/workspace/gopath'
+    - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
+    - 'RUN_KUBE_TESTS=1'
+  dir: './gopath/src/github.com/solo-io/supergloo'
+  args: ['-r', '-failFast', 'pkg/']
+  waitFor: ['setup-aws-creds']
 
 artifacts:
   objects:
