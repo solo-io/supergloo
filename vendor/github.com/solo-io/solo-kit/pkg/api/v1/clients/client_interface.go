@@ -22,6 +22,7 @@ func DefaultNamespaceIfEmpty(namespace string) string {
 type ResourceClient interface {
 	Kind() string
 	NewResource() resources.Resource
+	// Deprecated: implemented only by the kubernetes resource client. Will be removed from the interface.
 	Register() error
 	Read(namespace, name string, opts ReadOpts) (resources.Resource, error)
 	Write(resource resources.Resource, opts WriteOpts) (resources.Resource, error)
@@ -97,6 +98,9 @@ func (o ListOpts) WithDefaults() ListOpts {
 	return o
 }
 
+// RefreshRate is currently ignored by the Kubernetes ResourceClient implementation.
+// To achieve a similar behavior you can use the KubeResourceClientFactory.ResyncPeriod field. The difference is that it
+// will apply to all the watches started by clients built with the factory.
 type WatchOpts struct {
 	Ctx         context.Context
 	Selector    map[string]string

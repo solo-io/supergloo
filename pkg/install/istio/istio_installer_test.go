@@ -80,7 +80,7 @@ var _ = Describe("Istio Installer", func() {
 			return &Overrides{
 				Global: GlobalOverrides{
 					ControlPlaneSecurityEnabled: true,
-					Crds:                        false,
+					Crds: false,
 					Mtls: MtlsOverrides{
 						Enabled: mtls,
 					},

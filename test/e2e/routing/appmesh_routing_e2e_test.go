@@ -14,8 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsappmesh "github.com/aws/aws-sdk-go/service/appmesh"
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	"github.com/solo-io/supergloo/pkg/translator/appmesh"
 	"k8s.io/client-go/kubernetes"
 

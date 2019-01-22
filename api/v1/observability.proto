@@ -7,7 +7,6 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
-import "gloo/v1/proxy.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 
 // observability config for the mesh

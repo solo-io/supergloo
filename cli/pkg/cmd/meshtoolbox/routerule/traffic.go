@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
+	glooV1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/common/iutil"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
-	glooV1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 

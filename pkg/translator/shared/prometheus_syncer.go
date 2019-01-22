@@ -25,7 +25,7 @@ type PrometheusSyncer struct {
 	// if the prometheus crd tells us to restart pods
 	// if the selector is set and this is nil, we don't have kube support enabled
 	Kube                 kubernetes.Interface
-	PrometheusClient     prometheusv1.ConfigClient // for reading/writing configmaps
+	PrometheusClient     prometheusv1.PrometheusConfigClient // for reading/writing configmaps
 	DesiredScrapeConfigs []prometheus.ScrapeConfig
 	// the implementing syncer puts in a function to return the configmap resource ref
 	// if the configmap ref is nil, we return, assume there is no work for us to do on this mesh

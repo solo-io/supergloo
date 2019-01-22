@@ -9,7 +9,7 @@ const BasicPrometheusConfig = `
 # and services to allow each to use different authentication configs.
 #
 # Kubernetes labels will be added as Prometheus labels on metrics via the
-# `+"`"+`labelmap`+"`"+` relabeling action.
+# ` + "`" + `labelmap` + "`" + ` relabeling action.
 #
 # If you are using Kubernetes 1.7.2 or earlier, please take note of the comments
 # for the kubernetes-cadvisor job; you will need to edit or remove this job.
@@ -17,9 +17,9 @@ const BasicPrometheusConfig = `
 # Scrape config for API servers.
 #
 # Kubernetes exposes API servers as endpoints to the default/kubernetes
-# service so this uses `+"`"+`endpoints`+"`"+` role and uses relabelling to only keep
+# service so this uses ` + "`" + `endpoints` + "`" + ` role and uses relabelling to only keep
 # the endpoints associated with the default/kubernetes service using the
-# default named port `+"`"+`https`+"`"+`. This works for single API server deployments as
+# default named port ` + "`" + `https` + "`" + `. This works for single API server deployments as
 # well as HA API server deployments.
 scrape_configs:
 - job_name: 'kubernetes-apiservers'
@@ -28,7 +28,7 @@ scrape_configs:
   - role: endpoints
 
   # Default to scraping over https. If required, just disable this or change to
-  # `+"`"+`http`+"`"+`.
+  # ` + "`" + `http` + "`" + `.
   scheme: https
 
   # This TLS & bearer token file config is used to connect to the actual scrape
@@ -65,7 +65,7 @@ scrape_configs:
 - job_name: 'kubernetes-nodes'
 
   # Default to scraping over https. If required, just disable this or change to
-  # `+"`"+`http`+"`"+`.
+  # ` + "`" + `http` + "`" + `.
   scheme: https
 
   # This TLS & bearer token file config is used to connect to the actual scrape
@@ -108,7 +108,7 @@ scrape_configs:
 - job_name: 'kubernetes-cadvisor'
 
   # Default to scraping over https. If required, just disable this or change to
-  # `+"`"+`http`+"`"+`.
+  # ` + "`" + `http` + "`" + `.
   scheme: https
 
   # This TLS & bearer token file config is used to connect to the actual scrape

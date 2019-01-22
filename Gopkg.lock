@@ -216,23 +216,6 @@
   revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
-  digest = "1:5a6db1caf9a392c08be3e375da97af31c8d4a3fedb059395e8b171db5aa0d43a"
-  name = "github.com/envoyproxy/go-control-plane"
-  packages = [
-    "envoy/api/v2",
-    "envoy/api/v2/auth",
-    "envoy/api/v2/cluster",
-    "envoy/api/v2/core",
-    "envoy/api/v2/endpoint",
-    "envoy/api/v2/listener",
-    "envoy/api/v2/route",
-    "envoy/service/discovery/v2",
-    "envoy/type",
-  ]
-  pruneopts = "UT"
-  revision = "676016db8193d83324a507a986a78cd3642ad713"
-
-[[projects]]
   digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
@@ -322,24 +305,14 @@
   version = "v0.2.3"
 
 [[projects]]
-  digest = "1:b6866b08184222995bf9347b648e11dc252317b809ee9f72c8724c07a016b303"
-  name = "github.com/gogo/googleapis"
-  packages = [
-    "google/api",
-    "google/rpc",
-  ]
-  pruneopts = "UT"
-  revision = "8558fb44d2f1fc223118afc694129d2c2d2924d1"
-  version = "v1.1.0"
-
-[[projects]]
-  digest = "1:35621fe20f140f05a0c4ef662c26c0ab4ee50bca78aa30fe87d33120bd28165e"
+  digest = "1:60731c5aecf6061614be06333160462b47be4f7cd2369845e50d5da38bfd6a54"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
     "jsonpb",
     "proto",
     "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/plugin",
     "sortkeys",
     "types",
   ]
@@ -373,11 +346,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:49423818ec67651d03b2fbb29faa55b0428135fae5733604b4a35ddcf45a49a3"
+  digest = "1:e984c22f9fa4712f688412b9e2011a06fba9a7db1b88f5ad540af9e537ff9d59"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
@@ -585,6 +559,21 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "3605ed457bf7f8caa1371b4fafadadc026673479"
+
+[[projects]]
+  digest = "1:5258ca648f4cf40b7bc7c52b85009546699332616f9ed23d89b6798baca6f707"
+  name = "github.com/ilackarms/protoc-gen-doc"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:99bafffd60368afd17d11302671600e044137f5c6ba9babb950a47c84ed5a71d"
+  name = "github.com/ilackarms/protokit"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ee2393f3bbf04700fc5d611077496c47ec1937ed"
 
 [[projects]]
   digest = "1:3e260afa138eab6492b531a3b3d10ab4cb70512d423faa78b8949dec76e66a21"
@@ -853,6 +842,14 @@
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:d7aa51c836ace8d00a3d88b4058c470624bdd7045cd3b0f58c2d6ba7ab4433dc"
+  name = "github.com/pseudomuto/protoc-gen-doc"
+  packages = ["parser"]
+  pruneopts = "UT"
+  revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:0665976cc6d8c2e60dafca32820b6b7eca70f37ded0bcccc103388e1c0d05c53"
   name = "github.com/radovskyb/watcher"
   packages = ["."]
@@ -884,6 +881,28 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
+  digest = "1:a15f787be02abade2b81885d0fb504f6d6fbdfb56f878783ac203e5d7911b15d"
+  name = "github.com/solo-io/gloo"
+  packages = [
+    "projects/gloo/pkg/api/v1",
+    "projects/gloo/pkg/api/v1/plugins",
+    "projects/gloo/pkg/api/v1/plugins/aws",
+    "projects/gloo/pkg/api/v1/plugins/azure",
+    "projects/gloo/pkg/api/v1/plugins/consul",
+    "projects/gloo/pkg/api/v1/plugins/faultinjection",
+    "projects/gloo/pkg/api/v1/plugins/grpc",
+    "projects/gloo/pkg/api/v1/plugins/kubernetes",
+    "projects/gloo/pkg/api/v1/plugins/rest",
+    "projects/gloo/pkg/api/v1/plugins/retries",
+    "projects/gloo/pkg/api/v1/plugins/sqoop",
+    "projects/gloo/pkg/api/v1/plugins/static",
+    "projects/gloo/pkg/api/v1/plugins/transformation",
+  ]
+  pruneopts = "UT"
+  revision = "0fc0f773a1a18e7a83916dcc513ce15630b83735"
+  version = "v0.6.5"
+
+[[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
   name = "github.com/solo-io/go-checkpoint"
   packages = ["."]
@@ -892,15 +911,15 @@
   version = "0.0.4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:898faa8b0ea3e2a812fb293db0d9d3359c15669559f7128f15d11e597012fdee"
-  name = "github.com/solo-io/kubecontroller"
-  packages = ["."]
+  digest = "1:b0e5cf279fab936954f056cb4db6456f1a4c0cb3b960b524001fd3318363fa66"
+  name = "github.com/solo-io/go-utils"
+  packages = ["kubeutils"]
   pruneopts = "UT"
-  revision = "241bc627d5400a0794853220df4fdefeeb2af0e0"
+  revision = "1c5b99da71805f3cee3f259242e2e09057411586"
+  version = "v0.1.0"
 
 [[projects]]
-  digest = "1:c133d6cb41190e3386c8a6ca72e172c21d6ecbd924c000eb510bc67fd717d007"
+  digest = "1:b6184a455ffeb9f56fd111c3a2d9241addf7d8daf30ef543fcabc8020843488e"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -909,6 +928,7 @@
     "pkg/api/v1/clients/factory",
     "pkg/api/v1/clients/file",
     "pkg/api/v1/clients/kube",
+    "pkg/api/v1/clients/kube/controller",
     "pkg/api/v1/clients/kube/crd",
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned",
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned/scheme",
@@ -918,19 +938,25 @@
     "pkg/api/v1/clients/kubesecretplain",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
-    "pkg/api/v1/control-plane/cache",
-    "pkg/api/v1/control-plane/client",
-    "pkg/api/v1/control-plane/log",
-    "pkg/api/v1/control-plane/server",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
     "pkg/api/v1/resources",
     "pkg/api/v1/resources/core",
+    "pkg/code-generator",
+    "pkg/code-generator/cmd",
+    "pkg/code-generator/codegen",
+    "pkg/code-generator/codegen/funcs",
+    "pkg/code-generator/codegen/templates",
+    "pkg/code-generator/docgen",
+    "pkg/code-generator/docgen/templates",
+    "pkg/code-generator/model",
+    "pkg/code-generator/parser",
     "pkg/errors",
     "pkg/utils/cliutils",
     "pkg/utils/contextutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
+    "pkg/utils/hashutils",
     "pkg/utils/kubeutils",
     "pkg/utils/log",
     "pkg/utils/nameutils",
@@ -941,8 +967,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "fb669c96821dd1464cb1619ac10debb92c024ab8"
-  version = "0.1.6"
+  revision = "d46d5027113b8ee70fd1d23f866c8facbfbaf87a"
+  version = "v0.2.17"
 
 [[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
@@ -1068,6 +1094,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b521f10a2d8fa85c04a8ef4e62f2d1e14d303599a55d64dabf9f5a02f84d35eb"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "UT"
+  revision = "37e7f081c4d4c64e13b10787722085407fe5d15f"
+
+[[projects]]
+  branch = "master"
   digest = "1:3364d01296ce7eeca363e3d530ae63a2092d6f8efb85fb3d101e8f6d7de83452"
   name = "golang.org/x/sys"
   packages = [
@@ -1142,12 +1176,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ec1919b8b80839559effbe3eabcebf92238d12d3dd9182e51deb5da3ed12e5e9"
+  digest = "1:56b0bca90b7e5d1facf5fbdacba23e4e0ce069d25381b8e2f70ef1e7ebfb9c1a"
   name = "google.golang.org/genproto"
-  packages = [
-    "googleapis/api/annotations",
-    "googleapis/rpc/status",
-  ]
+  packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
   revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
@@ -1691,8 +1722,6 @@
     "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/appmesh",
-    "github.com/envoyproxy/go-control-plane/envoy/api/v2",
-    "github.com/envoyproxy/go-control-plane/envoy/api/v2/core",
     "github.com/ghodss/yaml",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/jsonpb",
@@ -1702,7 +1731,6 @@
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/iancoleman/strcase",
-    "github.com/lyft/protoc-gen-validate/validate",
     "github.com/mitchellh/hashstructure",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
@@ -1712,23 +1740,26 @@
     "github.com/openshift/api/security/v1",
     "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
-    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/cache",
-    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/client",
-    "github.com/solo-io/solo-kit/pkg/api/v1/control-plane/server",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
     "github.com/solo-io/solo-kit/pkg/api/v1/reporter",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources/core",
+    "github.com/solo-io/solo-kit/pkg/code-generator/cmd",
     "github.com/solo-io/solo-kit/pkg/errors",
     "github.com/solo-io/solo-kit/pkg/utils/cliutils",
     "github.com/solo-io/solo-kit/pkg/utils/contextutils",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
+    "github.com/solo-io/solo-kit/pkg/utils/hashutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
     "github.com/solo-io/solo-kit/pkg/utils/nameutils",
@@ -1745,11 +1776,6 @@
     "go.opencensus.io/trace",
     "go.uber.org/multierr",
     "go.uber.org/zap",
-    "golang.org/x/net/context",
-    "google.golang.org/genproto/googleapis/api/annotations",
-    "google.golang.org/grpc",
-    "google.golang.org/grpc/codes",
-    "google.golang.org/grpc/status",
     "gopkg.in/AlecAivazis/survey.v1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",

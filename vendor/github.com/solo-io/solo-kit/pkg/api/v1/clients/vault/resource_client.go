@@ -117,7 +117,7 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 		return nil, err
 	}
 	if resource == nil {
-		return nil, errors.Errorf("secret %v is not kind %v", rc.Kind())
+		return nil, errors.Errorf("secret %v is not kind %v", key, rc.Kind())
 	}
 	return resource, nil
 }

@@ -2,6 +2,7 @@ package crd
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd/client/clientset/versioned/scheme"
@@ -20,13 +21,14 @@ import (
 var registerLock sync.Mutex
 
 type Crd struct {
-	GroupName string
-	Plural    string
-	Group     string
-	Version   string
-	KindName  string
-	ShortName string
-	Type      runtime.Object
+	GroupName     string
+	Plural        string
+	Group         string
+	Version       string
+	KindName      string
+	ShortName     string
+	ClusterScoped bool
+	Type          runtime.Object
 }
 
 func NewCrd(GroupName string,
@@ -35,27 +37,35 @@ func NewCrd(GroupName string,
 	Version string,
 	KindName string,
 	ShortName string,
+	ClusterScoped bool,
 	Type runtime.Object) Crd {
 	c := Crd{
-		GroupName: GroupName,
-		Plural:    Plural,
-		Group:     Group,
-		Version:   Version,
-		KindName:  KindName,
-		ShortName: ShortName,
-		Type:      Type,
+		GroupName:     GroupName,
+		Plural:        Plural,
+		Group:         Group,
+		Version:       Version,
+		KindName:      KindName,
+		ShortName:     ShortName,
+		ClusterScoped: ClusterScoped,
+		Type:          Type,
 	}
-	c.AddToScheme(scheme.Scheme)
+	if err := c.AddToScheme(scheme.Scheme); err != nil {
+		log.Panicf("error while adding [%v] CRD to scheme: %v", c.FullName(), err)
+	}
 	return c
 }
 
 func (d Crd) Register(apiexts apiexts.Interface) error {
+	scope := v1beta1.NamespaceScoped
+	if d.ClusterScoped {
+		scope = v1beta1.ClusterScoped
+	}
 	toRegister := &v1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{Name: d.FullName()},
 		Spec: v1beta1.CustomResourceDefinitionSpec{
 			Group:   d.Group,
 			Version: d.Version,
-			Scope:   v1beta1.NamespaceScoped,
+			Scope:   scope,
 			Names: v1beta1.CustomResourceDefinitionNames{
 				Plural:     d.Plural,
 				Kind:       d.KindName,
@@ -121,6 +131,7 @@ func (d Crd) Resource(resource string) schema.GroupResource {
 func (d Crd) SchemeBuilder() runtime.SchemeBuilder {
 	return runtime.NewSchemeBuilder(func(scheme *runtime.Scheme) error {
 		scheme.AddKnownTypeWithName(d.SchemeGroupVersion().WithKind(d.KindName), &v1.Resource{})
+		scheme.AddKnownTypeWithName(d.SchemeGroupVersion().WithKind(d.KindName+"List"), &v1.ResourceList{})
 
 		metav1.AddToGroupVersion(scheme, d.SchemeGroupVersion())
 		return nil

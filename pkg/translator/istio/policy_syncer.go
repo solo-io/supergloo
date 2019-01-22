@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/gogo/protobuf/proto"
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	glookubev1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	gloov1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1"
-	glookubev1 "github.com/solo-io/supergloo/pkg/api/external/gloo/v1/plugins/kubernetes"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -36,7 +36,7 @@ type PolicySyncer struct {
 	kubeClient *kubernetes.Clientset
 }
 
-func NewPolicySyncer(writens string, kubeCache *kube.KubeCache, restConfig *rest.Config) (*PolicySyncer, error) {
+func NewPolicySyncer(writens string, kubeCache kube.SharedCache, restConfig *rest.Config) (*PolicySyncer, error) {
 	var ps PolicySyncer
 	ps.WriteNamespace = writens
 

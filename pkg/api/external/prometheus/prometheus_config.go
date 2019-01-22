@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 )
 
-func ConfigFromResource(cfg *v1.Config) (*PrometheusConfig, error) {
+func ConfigFromResource(cfg *v1.PrometheusConfig) (*PrometheusConfig, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -27,7 +27,7 @@ func ConfigFromResource(cfg *v1.Config) (*PrometheusConfig, error) {
 	return &c, nil
 }
 
-func ConfigToResource(cfg *PrometheusConfig) (*v1.Config, error) {
+func ConfigToResource(cfg *PrometheusConfig) (*v1.PrometheusConfig, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -39,7 +39,7 @@ func ConfigToResource(cfg *PrometheusConfig) (*v1.Config, error) {
 	if err := jsonpb.Unmarshal(bytes.NewBuffer(jsn), &s); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal jsn to proto struct")
 	}
-	return &v1.Config{Prometheus: &s}, nil
+	return &v1.PrometheusConfig{Prometheus: &s}, nil
 }
 
 type PrometheusConfig struct {
