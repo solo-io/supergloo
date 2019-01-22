@@ -22,10 +22,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	testsetup "github.com/solo-io/solo-kit/test/setup"
@@ -135,7 +133,7 @@ var _ = Describe("appmesh routing E2e", func() {
 		meshes, _, secretClient, err := v1Clients()
 		Expect(err).NotTo(HaveOccurred())
 
-		ref := setupAppMesh(meshes, secretClient, namespace)
+		ref := utils.SetupAppMesh(meshes, secretClient, namespace)
 
 		cfg, err := kubeutils.GetConfig("", "")
 		Expect(err).NotTo(HaveOccurred())
@@ -175,42 +173,6 @@ var _ = Describe("appmesh routing E2e", func() {
 
 	})
 })
-
-func setupAppMesh(meshClient v1.MeshClient, secretClient gloov1.SecretClient, namespace string) core.ResourceRef {
-	secretMeta := core.Metadata{Name: "my-appmesh-credentials", Namespace: namespace}
-	creds, err := credentials.NewSharedCredentials("", "").Get()
-	Expect(err).NotTo(HaveOccurred())
-	secretClient.Delete(namespace, secretMeta.Name, clients.DeleteOpts{})
-	secret1, err := secretClient.Write(&gloov1.Secret{
-		Metadata: secretMeta,
-		Kind: &gloov1.Secret_Aws{
-			Aws: &gloov1.AwsSecret{
-				// these can be read in from ~/.aws/credentials by default (if user does not provide)
-				// see https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html for more details
-				AccessKey: creds.AccessKeyID,
-				SecretKey: creds.SecretAccessKey,
-			},
-		},
-	}, clients.WriteOpts{})
-	Expect(err).NotTo(HaveOccurred())
-
-	meshMeta := core.Metadata{Name: "my-appmesh", Namespace: namespace}
-	meshClient.Delete(meshMeta.Namespace, meshMeta.Name, clients.DeleteOpts{})
-
-	ref := secret1.Metadata.Ref()
-	mesh1, err := meshClient.Write(&v1.Mesh{
-		Metadata: meshMeta,
-		MeshType: &v1.Mesh_AppMesh{
-			AppMesh: &v1.AppMesh{
-				AwsRegion:      "us-east-1",
-				AwsCredentials: &ref,
-			},
-		},
-	}, clients.WriteOpts{})
-	Expect(err).NotTo(HaveOccurred())
-	Expect(mesh1).NotTo(BeNil())
-	return mesh1.Metadata.Ref()
-}
 
 func v1Clients() (v1.MeshClient, v1.RoutingRuleClient, gloov1.SecretClient, error) {
 	kubeCache := kube.NewKubeCache()
