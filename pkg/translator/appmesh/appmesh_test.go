@@ -17,7 +17,7 @@ import (
 
 var _ = Describe("Appmesh", func() {
 	It("works", func() {
-		namespace := "no ns"
+		namespace := "placeholder-ns"
 		secret, mesh := utils.MakeAppMeshResources(namespace)
 
 		s := NewSyncer()
