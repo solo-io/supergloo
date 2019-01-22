@@ -43,6 +43,9 @@ func generateMeshSelectOptions(nsrMap options.NsResourceMap) ([]string, ResMap) 
 			}
 		}
 	}
+	sort.SliceStable(meshOptions, func(i, j int) bool {
+		return meshOptions[i] < meshOptions[j]
+	})
 	return meshOptions, meshMap
 }
 
