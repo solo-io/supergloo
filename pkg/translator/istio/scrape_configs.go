@@ -1,14 +1,14 @@
 package istio
 
 import (
-	"github.com/ghodss/yaml"
 	"github.com/prometheus/prometheus/config"
+	"gopkg.in/yaml.v2"
 )
 
 var IstioScrapeConfigs []*config.ScrapeConfig
 
 func init() {
-	err := yaml.Unmarshal([]byte(istioScrapeConfigsYaml), &IstioScrapeConfigs)
+	err := yaml.UnmarshalStrict([]byte(istioScrapeConfigsYaml), &IstioScrapeConfigs)
 	if err != nil {
 		panic("failed to parse istioScrapeConfigsYaml: " + err.Error())
 	}
