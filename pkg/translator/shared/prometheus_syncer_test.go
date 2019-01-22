@@ -101,7 +101,7 @@ var _ = Describe("PrometheusSyncer", func() {
 	)
 })
 
-func getPrometheusConfig(promClient prometheusv1.ConfigClient, namespace, name string) *prometheus.PrometheusConfig {
+func getPrometheusConfig(promClient prometheusv1.ConfigClient, namespace, name string) *prometheus.Config {
 	cfg, err := promClient.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	promCfg, err := prometheus.ConfigFromResource(cfg)

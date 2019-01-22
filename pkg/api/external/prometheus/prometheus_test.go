@@ -1,16 +1,18 @@
 package prometheus_test
 
 import (
+	"log"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/pkg/utils/protoutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	. "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/test/utils"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -40,6 +42,9 @@ var _ = Describe("Prometheus Config Conversion", func() {
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
+			It("converts prometheus configs from proto type to go struct type", func() {
+				testConvert(namespace, kube, client)
+			})
 			It("CRUDs Configs", func() {
 				testPrometheusSerializer(namespace, kube, client)
 			})
@@ -47,23 +52,42 @@ var _ = Describe("Prometheus Config Conversion", func() {
 	}
 })
 
+func testConvert(namespace string, kube kubernetes.Interface, client PrometheusConfigClient) {
+	name := "prometheus-config"
+	err := utils.DeployPrometheusConfigmap(namespace, name, kube)
+	Expect(err).NotTo(HaveOccurred())
+	original, err := client.Read(namespace, name, clients.ReadOpts{})
+	Expect(err).NotTo(HaveOccurred())
+	cfg, err := prometheus.ConfigFromResource(original)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(cfg.ScrapeConfigs).To(HaveLen(7))
+	Expect(cfg.ScrapeConfigs[0].JobName).To(Equal("kubernetes-apiservers"))
+}
+
 func testPrometheusSerializer(namespace string, kube kubernetes.Interface, client PrometheusConfigClient) {
 	name := "prometheus-config"
 	err := utils.DeployPrometheusConfigmap(namespace, name, kube)
 	Expect(err).NotTo(HaveOccurred())
-	read, err := client.Read(namespace, name, clients.ReadOpts{})
+	original, err := client.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
-	cfg, err := prometheus.ConfigFromResource(read)
+	cfg, err := prometheus.ConfigFromResource(original)
 	Expect(err).NotTo(HaveOccurred())
-	expected, err := prometheus.ConfigToResource(cfg)
+	converted, err := prometheus.ConfigToResource(cfg)
 	Expect(err).NotTo(HaveOccurred())
-	expected.SetMetadata(read.Metadata)
-	Expect(expected).To(Equal(read))
-	jsn1, err := protoutils.MarshalBytes(read.Prometheus)
+	cfg2, err := prometheus.ConfigFromResource(converted)
 	Expect(err).NotTo(HaveOccurred())
-	jsn2, err := protoutils.MarshalBytes(expected.Prometheus)
+	Expect(cfg).To(Equal(cfg2))
+
+	yam1, err := yaml.Marshal(cfg)
 	Expect(err).NotTo(HaveOccurred())
-	str1 := string(jsn1)
-	str2 := string(jsn2)
+	yam2, err := yaml.Marshal(cfg2)
+	Expect(err).NotTo(HaveOccurred())
+	str1 := string(yam1)
+	str2 := string(yam2)
 	Expect(str1).To(Equal(str2))
+
+	log.Printf("\n%v\n\n\n\n\n\n\n", utils.BasicPrometheusConfig)
+	log.Printf("\n%v", str1)
+
+	Expect(str1).To(Equal(utils.BasicPrometheusConfig))
 }

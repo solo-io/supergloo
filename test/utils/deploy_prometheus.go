@@ -13,10 +13,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-/*
-
-
- */
 func DeployPrometheus(namespace, deploymentName, configmapName string, port uint32, kube kubernetes.Interface) error {
 	deploymentYaml, err := BasicPrometheusDeployment(namespace, deploymentName, configmapName)
 	if err != nil {
@@ -54,7 +50,7 @@ func DeployPrometheusConfigmap(namespace, name string, kube kubernetes.Interface
 			Name:      name,
 			Namespace: namespace,
 			// Required by Solo-Kit; TODO: consider removing this requirement
-			Annotations: map[string]string{"resource_kind": reflect.TypeOf(&prometheusv1.PrometheusConfig{}).Name()},
+			Annotations: map[string]string{"resource_kind": reflect.TypeOf(&prometheusv1.PrometheusConfig{}).String()},
 		},
 		Data: map[string]string{"prometheus.yml": BasicPrometheusConfig},
 	})
