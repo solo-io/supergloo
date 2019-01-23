@@ -66,6 +66,7 @@ supergloo uninstall [flags]
 ```
 
 Flags:
+
 * `--all` (boolean, optional) uninstalls all installed meshes
 * `--meshname` (string, required) name of an installed mesh of any type.
 * `--meshtype` (string, optional) mesh to uninstall: (istio, consul, linkerd2, appmesh). Rather than supplying the exact name of the mesh like above, this argument takes the mesh type and finds the corresponding mesh to delete.
@@ -81,7 +82,7 @@ supergloo uninstall --meshname <name-of-mesh>
 
 Routing rules control the flow of traffic to and from the application. In addition these rules allow the user to test for resilience.
 Each rule has specific sources and destinations to allow for more fine-grained targeting of the rules. 
-See [**here**](../../README.md#features-snapshot) for meshes which currently support this feature.
+See [**here**](./index.md#features-snapshot) for meshes which currently support this feature.
 
 * [`Traffic Shifting`](cli.md#traffic-shifting)
 * [`Fault Injection`](cli.md#fault-injection)
@@ -92,11 +93,12 @@ See [**here**](../../README.md#features-snapshot) for meshes which currently sup
 * [`Header Manipulation`](cli.md#header-manipulation)
 
 ```bash
-supergloo create routing-rule [flags] <resource-name>
+supergloo create routingrule [flags] <resource-name>
 ```
 
 
 Persistent flags:
+
 * `--matchers` (string, optional) list of comma seperated matchers. eg: ("*")
 * `-m --mesh` (string, required) name of mesh which will be the target for this rule
 * `-n --namespace` (string, required, default: "default") namespace this rule will be installed into
@@ -108,7 +110,9 @@ Either use the form defined in the `routing_rule.proto` or one that conforms to 
 
 
 Notes:
+
 * `upstreams` are found via our discovery system and can be found easily using the following command. It is important to check all namespaces because the user is given the freedom to place these wherever he/she pleases.
+
 ```bash
 kubectl get routingrules.supergloo.solo.io --all-namespaces
 ```
@@ -125,6 +129,7 @@ supergloo traffic-shifting [flags] <resource-name>
 ```
 
 Flags:
+
 * `--traffic.upstreams` (string, optional) upstreams for this rule. Each entry consists of an upstream namespace and and upstream name, separated by a colon. eg `<namespace:name>`
 * `--traffic.weights` (string, optional) Comma-separated list of integer weights corresponding to the associated upstream's traffic sharing percentage. Must be the same length as the # of upstreams
 
@@ -145,6 +150,7 @@ supergloo fault-injection [flags] <resource-name>
 ```
 
 Flags:
+
 * `--fault.abort.message` (string, required) Error message (int for type=http errors, string otherwise).
 * `--fault.abort.percent` (int, required) Percentage of requests on which the abort will be injected (0-100)
 * `--fault.abort.type` (string, required) Type of error (http, http2, or grpc)
@@ -164,6 +170,7 @@ supergloo timeout [flags] <resource-name>
 ```
 
 Flags:
+
 * `--route.timeout.seconds` (int, required) timeout duration (seconds)
 * `--rout.timeout.nanos` (int, required) timeout duration (nanoseconds)
 
@@ -176,6 +183,7 @@ supergloo retries [flags] <resource-name>
 ```
 
 Flags:
+
 * `--route.retry.attempt` (int, required) number of retries to attempt
 * `--route.retry.timeout.seconds` (int, required) timeout duration (seconds)
 * `--route.retry.timeout.nanos` (int, required) timeout duration (nanoseconds)
@@ -189,6 +197,7 @@ supergloo cors [flags] <resource-name>
 ```
 
 Flags:
+
 * `--cors.allow.credentials` (bool, required) Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to Access-Control-Allow-Credentials header.
 * `--cors.allow.headers` (string, required) List of HTTP headers that can be used when requesting the resource. Serialized to Access-Control-Allow-Methods header.
 * `--cors.allow.methods` (string, required) List of HTTP methods allowed to access the resource. The content will be serialized into the Access-Control-Allow-Methods header.
@@ -206,6 +215,7 @@ supergloo mirror [flags] <resource-name>
 ```
 
 Flags:
+
 * `--mirror` (string, required) Destination upstream (ex: upstream_namespace:upstream_name).
 
 Example:
@@ -226,12 +236,14 @@ supergloo header-manipulation [flags] <resource-name>
 
 
 Flags:
+
 * `--header.request.append` (string, optional) Headers to append to request (ex: h1,v1,h2,v2).
 * `--header.request.remove` (string, optional) Headers to remove from request (ex: h1,h2).
 * `--header.response.append` (string, optional) Headers to append to response (ex: h1,v1,h2,v2).
 * `--header.response.remove` (string, optional) Headers to remove from response (ex: h1,h2).
 
 Example:
+
 ```bash
 supergloo header-manipulation hm-rule -s --mesh <mesh-name> --namespace <mesh-namespace> \
     --destinations <namespace:name> --sources <namespace:name> \
@@ -261,11 +273,13 @@ supergloo policy [sub-command] [flags]
 ```
 
 Sub-Commands:
+
 * `add` apply a policy
 * `claer` clear all policies
 * `remove` remove a single policy
 
 Persistent-Flags:
+
 * `--mesh` (string, required) name of mesh to update
 * `--namespace` (string, required) namespace of mesh to update
 * `--destination.name` (string, required) name of policy destination upstream
@@ -307,11 +321,13 @@ supergloo mtls [sub-command] [flags]
 ```
 
 Sub-Commands:
+
 * `disable` disable mTLS
 * `enable` enable mTLS
 * `toggle` toggle mTLS
 
 Persistent-Flags:
+
 * `--mesh` (string, required) name of mesh to update
 * `--namespace` (string, required) namespace of mesh to update
 
@@ -340,6 +356,7 @@ supergloo create secret [flags] <secret-name>
 ```
 
 Flags:
+
 * `--certchain` (string, required) filename of certchain for secret
 * `--privatekey` (string, required) filename of privatekey for secret
 * `--rootca` (string, required) filename of rootca for secret
@@ -355,6 +372,7 @@ supergloo create aws-secret [flags] <secret-name>
 ```
 
 Flags: 
+
 * `--secret.namespace` (string, required) namespace in which to store the secret
 * `--access-key` (string, required) aws access key
 * `--secret-key` (string, required) aws secret key
@@ -377,5 +395,6 @@ Sub-Commands:
 *  `-r --resources` prints a list of available resource types and their corresponding shortcuts
 
 Flags:
+
 * `-n --namespace` (string, optional, default: "gloo-system) namespace to search for the corresponding CRD
 * `-o --output` (string, optional) output format for the data, small table by default (yaml, wide...)

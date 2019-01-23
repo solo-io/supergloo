@@ -1,5 +1,5 @@
 site_name: SuperGloo
-pages:
+nav:
 - Index: index.md
 - Installation: installation.md
 - Developers: developers.md
