@@ -1,14 +1,14 @@
 package linkerd2
 
 import (
-	"github.com/ghodss/yaml"
-	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
+	"github.com/prometheus/prometheus/config"
+	"gopkg.in/yaml.v2"
 )
 
-var LinkerdScrapeConfigs []prometheus.ScrapeConfig
+var LinkerdScrapeConfigs []*config.ScrapeConfig
 
 func init() {
-	err := yaml.Unmarshal([]byte(linkerd2ScrapeConfigsYaml), &LinkerdScrapeConfigs)
+	err := yaml.UnmarshalStrict([]byte(linkerd2ScrapeConfigsYaml), &LinkerdScrapeConfigs)
 	if err != nil {
 		panic("failed to parse linkerd2ScrapeConfigsYaml: " + err.Error())
 	}

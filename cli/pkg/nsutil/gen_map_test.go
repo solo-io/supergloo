@@ -59,7 +59,7 @@ var _ = Describe("Generate Options", func() {
 	})
 
 	It("should create the correct Secret options and map", func() {
-		genOpts, resMap := generateCommonResourceSelectOptions("secret", nsrMap)
+		genOpts, resMap := generateCommonResourceSelectOptions("awssecret", nsrMap)
 		Expect(genOpts).To(Equal([]string{
 			"ns1, s1",
 			"ns1, s2",

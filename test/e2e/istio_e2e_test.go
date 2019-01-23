@@ -8,6 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/factory"
+	kube_client "github.com/solo-io/supergloo/pkg/kube"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/test/helpers"
@@ -195,7 +199,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		})
 
 		It("Can install istio with mtls enabled and deploy custom cert later", func() {
-			secret, ref := util.CreateTestRsaSecret(constants.SuperglooNamespace, secretName)
+			testSecret, ref := util.CreateTestRsaSecret(constants.SuperglooNamespace, secretName)
 			snap := getSnapshot(true, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
@@ -206,12 +210,27 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(err).NotTo(HaveOccurred())
 			mesh.Encryption.Secret = ref
 
-			syncer := istioSync.EncryptionSyncer{
-				SecretClient:   util.GetSecretClient(),
-				Kube:           util.GetKubeClient(),
-				IstioNamespace: installNamespace,
+			kubeClient, err := kubernetes.NewForConfig(util.GetKubeConfig())
+			Expect(err).NotTo(HaveOccurred())
+
+			secretClient := kube_client.NewKubeSecretClient(kubeClient)
+			podClient := kube_client.NewKubePodClient(kubeClient)
+
+			istioSecretClient, err := factory.GetIstioCacertsSecretClient(kubeClient)
+			Expect(err).NotTo(HaveOccurred())
+			istioSecretClient.Register()
+			Expect(err).NotTo(HaveOccurred())
+
+			secretSyncer := &secret.KubeSecretSyncer{
+				SecretClient:      secretClient,
+				PodClient:         podClient,
+				IstioSecretClient: istioSecretClient,
 			}
-			err = syncer.Sync(context.TODO(), getTranslatorSnapshot(mesh, secret))
+
+			syncer := istioSync.EncryptionSyncer{
+				SecretSyncer: secretSyncer,
+			}
+			err = syncer.Sync(context.TODO(), getTranslatorSnapshot(mesh, testSecret))
 			Expect(err).NotTo(HaveOccurred())
 
 			// syncer will restart citadel

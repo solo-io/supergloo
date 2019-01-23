@@ -5,12 +5,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/pkg/utils/protoutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	. "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/test/utils"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -26,19 +26,22 @@ var _ = Describe("Prometheus Config Conversion", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client ConfigClient
+				client PrometheusConfigClient
 				err    error
 				kube   kubernetes.Interface
 			)
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				fact := test.Setup(namespace)
-				client, err = NewConfigClient(fact)
+				client, err = NewPrometheusConfigClient(fact)
 				Expect(err).NotTo(HaveOccurred())
 				kube = fact.(*factory.KubeConfigMapClientFactory).Clientset
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
+			})
+			It("converts prometheus configs from proto type to go struct type", func() {
+				testConvert(namespace, kube, client)
 			})
 			It("CRUDs Configs", func() {
 				testPrometheusSerializer(namespace, kube, client)
@@ -47,23 +50,40 @@ var _ = Describe("Prometheus Config Conversion", func() {
 	}
 })
 
-func testPrometheusSerializer(namespace string, kube kubernetes.Interface, client ConfigClient) {
+func testConvert(namespace string, kube kubernetes.Interface, client PrometheusConfigClient) {
 	name := "prometheus-config"
 	err := utils.DeployPrometheusConfigmap(namespace, name, kube)
 	Expect(err).NotTo(HaveOccurred())
-	read, err := client.Read(namespace, name, clients.ReadOpts{})
+	original, err := client.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
-	cfg, err := prometheus.ConfigFromResource(read)
+	cfg, err := prometheus.ConfigFromResource(original)
 	Expect(err).NotTo(HaveOccurred())
-	expected, err := prometheus.ConfigToResource(cfg)
+	Expect(cfg.ScrapeConfigs).To(HaveLen(7))
+	Expect(cfg.ScrapeConfigs[0].JobName).To(Equal("kubernetes-apiservers"))
+}
+
+func testPrometheusSerializer(namespace string, kube kubernetes.Interface, client PrometheusConfigClient) {
+	name := "prometheus-config"
+	err := utils.DeployPrometheusConfigmap(namespace, name, kube)
 	Expect(err).NotTo(HaveOccurred())
-	expected.SetMetadata(read.Metadata)
-	Expect(expected).To(Equal(read))
-	jsn1, err := protoutils.MarshalBytes(read.Prometheus)
+	original, err := client.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
-	jsn2, err := protoutils.MarshalBytes(expected.Prometheus)
+	cfg, err := prometheus.ConfigFromResource(original)
 	Expect(err).NotTo(HaveOccurred())
-	str1 := string(jsn1)
-	str2 := string(jsn2)
+	converted, err := prometheus.ConfigToResource(cfg)
+	Expect(err).NotTo(HaveOccurred())
+	cfg2, err := prometheus.ConfigFromResource(converted)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(cfg).To(Equal(cfg2))
+
+	yam1, err := yaml.Marshal(cfg)
+	Expect(err).NotTo(HaveOccurred())
+	yam2, err := yaml.Marshal(cfg2)
+	Expect(err).NotTo(HaveOccurred())
+	str1 := string(yam1)
+	str2 := string(yam2)
 	Expect(str1).To(Equal(str2))
+
+	// TODO(ilackarms): test to preserve comments
+	//Expect(str1).To(Equal(utils.BasicPrometheusConfig))
 }

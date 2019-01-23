@@ -144,7 +144,10 @@ func GetKubeConfig() *rest.Config {
 	if kubeConfig != nil {
 		return kubeConfig
 	}
-	kubeconfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	kubeconfigPath := os.Getenv("KUBECONFIG")
+	if kubeconfigPath == "" {
+		kubeconfigPath = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	}
 	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
 	kubeConfig = cfg
@@ -291,11 +294,11 @@ func WaitForDeletedPods(namespace string) {
 	WaitForDeletedPodsWithTimeout(namespace, "120s")
 }
 
-func GetMeshClient(kubeCache kube.SharedCache) v1.MeshClient {
+func GetMeshClient() v1.MeshClient {
 	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.MeshCrd,
 		Cfg:         GetKubeConfig(),
-		SharedCache: kubeCache,
+		SharedCache: kube.NewKubeCache(),
 	})
 	ExpectWithOffset(1, err).Should(BeNil())
 	err = meshClient.Register()
@@ -303,20 +306,16 @@ func GetMeshClient(kubeCache kube.SharedCache) v1.MeshClient {
 	return meshClient
 }
 
-func GetUpstreamClient(kubeCache kube.SharedCache) gloo.UpstreamClient {
-	if upstreamClient != nil {
-		return upstreamClient
-	}
+func GetUpstreamClient() gloo.UpstreamClient {
 	client, err := gloo.NewUpstreamClient(&factory.KubeResourceClientFactory{
 		Crd:         gloo.UpstreamCrd,
 		Cfg:         GetKubeConfig(),
-		SharedCache: kubeCache,
+		SharedCache: kube.NewKubeCache(),
 	})
 	ExpectWithOffset(1, err).Should(BeNil())
 	err = client.Register()
 	ExpectWithOffset(1, err).Should(BeNil())
-	upstreamClient = client
-	return upstreamClient
+	return client
 }
 
 func DeleteCrb(crbName string) {

@@ -44,7 +44,7 @@ func (m *IstioCacertsSecret) Reset()         { *m = IstioCacertsSecret{} }
 func (m *IstioCacertsSecret) String() string { return proto.CompactTextString(m) }
 func (*IstioCacertsSecret) ProtoMessage()    {}
 func (*IstioCacertsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_istio_secret_c69a9d882adfbffa, []int{0}
+	return fileDescriptor_istio_secret_23ee7bf94472d55e, []int{0}
 }
 func (m *IstioCacertsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioCacertsSecret.Unmarshal(m, b)
@@ -143,10 +143,10 @@ func (this *IstioCacertsSecret) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/encryption/v1/istio_secret.proto", fileDescriptor_istio_secret_c69a9d882adfbffa)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/encryption/v1/istio_secret.proto", fileDescriptor_istio_secret_23ee7bf94472d55e)
 }
 
-var fileDescriptor_istio_secret_c69a9d882adfbffa = []byte{
+var fileDescriptor_istio_secret_23ee7bf94472d55e = []byte{
 	// 303 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x91, 0xbf, 0x4e, 0xfb, 0x30,
 	0x10, 0xc7, 0x7f, 0xf9, 0x51, 0xb5, 0xd4, 0x15, 0x0c, 0x01, 0xa1, 0x28, 0x42, 0x10, 0x75, 0xea,

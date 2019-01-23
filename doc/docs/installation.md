@@ -66,3 +66,9 @@ supergloo install -m istio -n istio-system -s
 Full CLI documentation can be found [**here**](cli.md)
 
 
+# Enabling AppMesh Support
+
+In order to use Supergloo with AWS AppMesh, it's necessary to create an IAM Role with AWS AppMesh admin privileges. Documentation on 
+doing so can be found here: https://docs.aws.amazon.com/app-mesh/latest/userguide/MESH_IAM_user_policies.html.
+
+This role should be attached to the IAM user linked to the AWS credentials that you provide to Supergloo as a kubernetes secret.   

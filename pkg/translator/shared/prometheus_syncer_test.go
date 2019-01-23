@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -24,7 +25,7 @@ import (
 var _ = Describe("PrometheusSyncer", func() {
 	type test struct {
 		meshType      string
-		scrapeConfigs []prometheus.ScrapeConfig
+		scrapeConfigs []*config.ScrapeConfig
 	}
 
 	tester := &typed.KubeConfigMapRcTester{}
@@ -43,14 +44,12 @@ var _ = Describe("PrometheusSyncer", func() {
 		tester.Teardown(namespace)
 	})
 	table.DescribeTable("prometheus tests for various meshes",
-		func(port int, test struct {
-			scrapeConfigs []prometheus.ScrapeConfig
-		}) {
+		func(port int, testCase test) {
 			err := utils.DeployPrometheus(namespace, prometheusDeploymentName, prometheusConfigName, uint32(port), kube)
 			Expect(err).NotTo(HaveOccurred())
 			err = utils.DeployPrometheusConfigmap(namespace, prometheusConfigName, kube)
 			Expect(err).NotTo(HaveOccurred())
-			prometheusClient, err := prometheusv1.NewConfigClient(&factory.KubeConfigMapClientFactory{
+			prometheusClient, err := prometheusv1.NewPrometheusConfigClient(&factory.KubeConfigMapClientFactory{
 				Clientset: kube,
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -59,7 +58,7 @@ var _ = Describe("PrometheusSyncer", func() {
 			s := &PrometheusSyncer{
 				PrometheusClient:     prometheusClient,
 				Kube:                 kube,
-				DesiredScrapeConfigs: test.scrapeConfigs,
+				DesiredScrapeConfigs: testCase.scrapeConfigs,
 				GetConfigMap: func(mesh *v1.Mesh) *core.ResourceRef {
 					return &core.ResourceRef{
 						Namespace: namespace,
@@ -101,7 +100,7 @@ var _ = Describe("PrometheusSyncer", func() {
 	)
 })
 
-func getPrometheusConfig(promClient prometheusv1.ConfigClient, namespace, name string) *prometheus.PrometheusConfig {
+func getPrometheusConfig(promClient prometheusv1.PrometheusConfigClient, namespace, name string) *prometheus.Config {
 	cfg, err := promClient.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	promCfg, err := prometheus.ConfigFromResource(cfg)

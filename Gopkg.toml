@@ -28,9 +28,9 @@
   go-tests = true
   unused-packages = true
 
-[[constraint]]
+[[override]]
   name = "github.com/solo-io/solo-kit"
-  version = "0.2.17"
+  version = "v0.2.20"
 
 [[override]]
   branch = "master"
@@ -103,3 +103,11 @@
 [[constraint]]
   name = "github.com/hashicorp/consul"
   revision = "eba25a143821cec25bdb48fe64dd7b7a6152d01d"
+
+[[override]]
+  name = "github.com/miekg/dns"
+  revision = "8f269a6b16e03c80db1d823c86591177b533cc3a"
+
+[[constraint]]
+  name = "github.com/prometheus/prometheus"
+  version = "v2.6.1"

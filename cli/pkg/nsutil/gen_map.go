@@ -2,6 +2,7 @@ package nsutil
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
@@ -42,6 +43,9 @@ func generateMeshSelectOptions(nsrMap options.NsResourceMap) ([]string, ResMap) 
 			}
 		}
 	}
+	sort.SliceStable(meshOptions, func(i, j int) bool {
+		return meshOptions[i] < meshOptions[j]
+	})
 	return meshOptions, meshMap
 }
 
@@ -78,5 +82,8 @@ func generateCommonResourceSelectOptions(typeName string, nsrMap options.NsResou
 			}
 		}
 	}
+	sort.SliceStable(resOptions, func(i, j int) bool {
+		return resOptions[i] < resOptions[j]
+	})
 	return resOptions, resMap
 }

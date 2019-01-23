@@ -86,45 +86,6 @@ func hashCredentials(awsSecret *gloov1.Secret_Aws, region string) uint64 {
 	return hash
 }
 
-func (s *AppMeshSyncer) NewOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (AppMeshClient, error) {
-	secret, err := secrets.Find(appMesh.AwsCredentials.Strings())
-	if err != nil {
-		return nil, errors.Wrapf(err, "finding aws credentials for mesh")
-	}
-	region := appMesh.AwsRegion
-	if region == "" {
-		return nil, errors.Wrapf(err, "mesh must provide aws_region")
-	}
-
-	awsSecret, ok := secret.Kind.(*gloov1.Secret_Aws)
-	if !ok {
-		return nil, errors.Errorf("mesh referenced non-AWS secret, AWS secret required")
-	}
-	if awsSecret.Aws == nil {
-		return nil, errors.Errorf("secret missing field Aws")
-	}
-
-	// check if we already have an active session for this region/credential
-	sessionKey := hashCredentials(awsSecret, region)
-	s.lock.Lock()
-	appMeshClient, ok := s.activeSessions[sessionKey]
-	s.lock.Unlock()
-	if !ok {
-		// create a new client and cache it
-		// TODO: is there a point where we should drop old sessions?
-		// maybe aws will do it for us
-		appMeshClient, err = NewAwsClientFromSecret(awsSecret, region)
-		if err != nil {
-			return nil, errors.Wrapf(err, "creating aws client from provided secret/region")
-		}
-		s.lock.Lock()
-		s.activeSessions[sessionKey] = appMeshClient
-		s.lock.Unlock()
-	}
-
-	return appMeshClient, nil
-}
-
 func (s *AppMeshSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "appmesh-syncer")
 	logger := contextutils.LoggerFrom(ctx)
@@ -184,13 +145,13 @@ func (s *AppMeshSyncer) sync(ctx context.Context, mesh *v1.Mesh, snap *v1.Transl
 	upstreams := snap.Upstreams.List()
 	routingRules := snap.Routingrules.List()
 
-	virtualNodes, virtualRouters, routes, err := DesiredResources(meshName, upstreams, routingRules)
+	virtualNodes, virtualRouters, routes, err := desiredResources(meshName, upstreams, routingRules)
 	if err != nil {
 		return errors.Wrapf(err, "generating desired resources")
 	}
 
 	secrets := snap.Secrets.List()
-	client, err := s.NewOrCachedClient(appMesh.AppMesh, secrets)
+	client, err := s.newOrCachedClient(appMesh.AppMesh, secrets)
 	if err != nil {
 		return errors.Wrapf(err, "creating new AWS AppMesh session")
 	}
@@ -207,7 +168,46 @@ func (s *AppMeshSyncer) sync(ctx context.Context, mesh *v1.Mesh, snap *v1.Transl
 	return nil
 }
 
-func DesiredResources(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateVirtualNodeInput, []appmesh.CreateVirtualRouterInput, []appmesh.CreateRouteInput, error) {
+func (s *AppMeshSyncer) newOrCachedClient(appMesh *v1.AppMesh, secrets gloov1.SecretList) (AppMeshClient, error) {
+	secret, err := secrets.Find(appMesh.AwsCredentials.Strings())
+	if err != nil {
+		return nil, errors.Wrapf(err, "finding aws credentials for mesh")
+	}
+	region := appMesh.AwsRegion
+	if region == "" {
+		return nil, errors.Wrapf(err, "mesh must provide aws_region")
+	}
+
+	awsSecret, ok := secret.Kind.(*gloov1.Secret_Aws)
+	if !ok {
+		return nil, errors.Errorf("mesh referenced non-AWS secret, AWS secret required")
+	}
+	if awsSecret.Aws == nil {
+		return nil, errors.Errorf("secret missing field Aws")
+	}
+
+	// check if we already have an active session for this region/credential
+	sessionKey := hashCredentials(awsSecret, region)
+	s.lock.Lock()
+	appMeshClient, ok := s.activeSessions[sessionKey]
+	s.lock.Unlock()
+	if !ok {
+		// create a new client and cache it
+		// TODO: is there a point where we should drop old sessions?
+		// maybe aws will do it for us
+		appMeshClient, err = NewAwsClientFromSecret(awsSecret, region)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating aws client from provided secret/region")
+		}
+		s.lock.Lock()
+		s.activeSessions[sessionKey] = appMeshClient
+		s.lock.Unlock()
+	}
+
+	return appMeshClient, nil
+}
+
+func desiredResources(meshName string, upstreams gloov1.UpstreamList, routingRules v1.RoutingRuleList) ([]appmesh.CreateVirtualNodeInput, []appmesh.CreateVirtualRouterInput, []appmesh.CreateRouteInput, error) {
 	virtualNodes, err := virtualNodesFromUpstreams(meshName, upstreams)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "creating virtual nodes from upstreams")

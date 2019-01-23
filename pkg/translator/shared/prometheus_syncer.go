@@ -3,6 +3,8 @@ package shared
 import (
 	"context"
 
+	"github.com/prometheus/prometheus/config"
+
 	"github.com/solo-io/supergloo/pkg/kube"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -26,7 +28,7 @@ type PrometheusSyncer struct {
 	// if the selector is set and this is nil, we don't have kube support enabled
 	Kube                 kubernetes.Interface
 	PrometheusClient     prometheusv1.PrometheusConfigClient // for reading/writing configmaps
-	DesiredScrapeConfigs []prometheus.ScrapeConfig
+	DesiredScrapeConfigs []*config.ScrapeConfig
 	// the implementing syncer puts in a function to return the configmap resource ref
 	// if the configmap ref is nil, we return, assume there is no work for us to do on this mesh
 	GetConfigMap func(*v1.Mesh) *core.ResourceRef
@@ -101,7 +103,7 @@ func (s *PrometheusSyncer) syncMesh(ctx context.Context, mesh *v1.Mesh) error {
 	return nil
 }
 
-func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*prometheus.PrometheusConfig, error) {
+func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.ResourceRef) (*prometheus.Config, error) {
 	cfg, err := s.PrometheusClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{
 		Ctx: ctx,
 	})
@@ -115,7 +117,7 @@ func (s *PrometheusSyncer) getPrometheusConfig(ctx context.Context, ref core.Res
 	return promCfg, nil
 }
 
-func (s *PrometheusSyncer) writePrometheusConfig(ctx context.Context, ref core.ResourceRef, cfg *prometheus.PrometheusConfig) error {
+func (s *PrometheusSyncer) writePrometheusConfig(ctx context.Context, ref core.ResourceRef, cfg *prometheus.Config) error {
 	originalCfg, err := s.PrometheusClient.Read(ref.Namespace, ref.Name, clients.ReadOpts{
 		Ctx: ctx,
 	})
