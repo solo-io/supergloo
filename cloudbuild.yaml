@@ -41,3 +41,5 @@ artifacts:
   objects:
     location: 'gs://solo-public-artifacts.solo.io/'
     paths: ['supergloo']
+
+timeout: 6600s
