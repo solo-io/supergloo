@@ -4,7 +4,9 @@ import (
 	"text/template"
 )
 
-var ResourceGroupEmitterTestTemplate = template.Must(template.New("resource_group_emitter_test").Funcs(Funcs).Parse(`package {{ .Project.ProjectConfig.Version }}
+var ResourceGroupEmitterTestTemplate = template.Must(template.New("resource_group_emitter_test").Funcs(Funcs).Parse(`// +build solokit
+
+package {{ .Project.ProjectConfig.Version }}
 
 {{- /* we need to know if the tests require a crd client or a regular clientset */ -}}
 {{- $clients := new_str_slice }}

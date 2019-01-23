@@ -120,7 +120,7 @@ func LoadProjectConfig(path string) (ProjectConfig, error) {
 	return pc, err
 }
 
-var goPackageStatementRegex = regexp.MustCompile(`option go_package = "(.*)";`)
+var goPackageStatementRegex = regexp.MustCompile(`option go_package.*=.*"(.*)";`)
 
 func detectGoPackageForProject(projectFile string) (string, error) {
 	var goPkg string

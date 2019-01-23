@@ -4,7 +4,9 @@ import (
 	"text/template"
 )
 
-var ResourceGroupEventLoopTestTemplate = template.Must(template.New("resource_group_event_loop_test").Funcs(Funcs).Parse(`package {{ .Project.ProjectConfig.Version }}
+var ResourceGroupEventLoopTestTemplate = template.Must(template.New("resource_group_event_loop_test").Funcs(Funcs).Parse(`// +build solokit
+
+package {{ .Project.ProjectConfig.Version }}
 
 {{- $clients := new_str_slice }}
 {{- range .Resources}}
