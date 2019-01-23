@@ -1,13 +1,16 @@
 steps:
 # Dep is produced from a private cloud-builders repo
-- name: 'soloio/dep'
-  args: ['ensure']
+- name: 'gcr.io/$PROJECT_ID/dep'
+  args: ['ensure', '-v']
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
   id: 'dep'
 
 - name: 'gcr.io/cloud-builders/go'
   args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo/cmd']
-  env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+    - 'GOPATH=/workspace/gopath'
+  id: 'compile'
 
 - name: gcr.io/cloud-builders/gcloud
   args:
@@ -32,6 +35,7 @@ steps:
   dir: './gopath/src/github.com/solo-io/supergloo'
   args: ['-r', '-failFast', 'pkg/']
   waitFor: ['setup-aws-creds']
+  id: 'test'
 
 artifacts:
   objects:
