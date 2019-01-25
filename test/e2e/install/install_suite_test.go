@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 
-	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install"
 	"github.com/solo-io/supergloo/test/util"
 
