@@ -18,7 +18,7 @@ var PathToUds string
 
 var _ = BeforeSuite(func() {
 	var err error
-	PathToUds, err = gexec.Build("github.com/solo-io/solo-projects/projects/discovery/cmd")
+	PathToUds, err = gexec.Build("github.com/solo-io/gloo/projects/discovery/cmd")
 	Expect(err).ShouldNot(HaveOccurred())
 })
 

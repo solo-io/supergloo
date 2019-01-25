@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/solo-kit/test/helpers"
 	testsetup "github.com/solo-io/solo-kit/test/setup"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/utils"
 )
@@ -51,7 +51,7 @@ var _ = Describe("istio routing E2e", func() {
 		go setup.Main(nil, namespace)
 
 		// start discovery
-		cmd := exec.Command(PathToUds, "--namespace", namespace)
+		cmd := exec.Command(PathToUds, "--namespace="+namespace)
 		cmd.Env = os.Environ()
 		_, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())

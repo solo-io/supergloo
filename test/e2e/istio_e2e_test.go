@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gogo/protobuf/types"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+
 	"github.com/solo-io/supergloo/pkg/factory"
 	kube_client "github.com/solo-io/supergloo/pkg/kube"
 	"k8s.io/client-go/kubernetes"
@@ -34,7 +37,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/v1"
 	istioSync "github.com/solo-io/supergloo/pkg/translator/istio"
@@ -50,13 +52,12 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 	var installNamespace string
 	var meshName string
 	var secretName string
-	kubeCache := kube.NewKubeCache()
 	path := os.Getenv("HELM_CHART_PATH")
 	if path == "" {
 		path = constants.IstioInstallPath
 	}
 
-	getSnapshot := func(mtls bool, install bool, secretRef *core.ResourceRef, secret *istiov1.IstioCacertsSecret) *v1.InstallSnapshot {
+	getSnapshot := func(mtls, strict, install bool, secretRef *core.ResourceRef, secret *istiov1.IstioCacertsSecret) *v1.InstallSnapshot {
 		secrets := istiosecret.IstiocertsByNamespace{}
 		if secret != nil {
 			secrets = istiosecret.IstiocertsByNamespace{
