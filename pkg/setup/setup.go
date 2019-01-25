@@ -27,7 +27,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/consul"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd2"

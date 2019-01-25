@@ -13,9 +13,9 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/golang/mock/gomock"
-	"github.com/solo-io/supergloo/mock/pkg/kube"
-	"github.com/solo-io/supergloo/mock/pkg/secret"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	mock_kube "github.com/solo-io/supergloo/mock/pkg/kube"
+	mock_secret "github.com/solo-io/supergloo/mock/pkg/secret"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
@@ -80,7 +80,7 @@ var _ = Describe("Istio Installer", func() {
 			return &Overrides{
 				Global: GlobalOverrides{
 					ControlPlaneSecurityEnabled: true,
-					Crds: false,
+					Crds:                        false,
 					Mtls: MtlsOverrides{
 						Enabled: mtls,
 					},

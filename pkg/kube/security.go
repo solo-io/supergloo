@@ -1,7 +1,7 @@
 package kube
 
 import (
-	"github.com/openshift/api/security/v1"
+	v1 "github.com/openshift/api/security/v1"
 	security "github.com/openshift/client-go/security/clientset/versioned"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

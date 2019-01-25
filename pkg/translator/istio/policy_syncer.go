@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/go-multierror"
+	multierror "github.com/hashicorp/go-multierror"
 
 	"github.com/gogo/protobuf/proto"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -22,7 +22,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 type PolicySyncer struct {

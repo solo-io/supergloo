@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	. "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/test/utils"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 )
 

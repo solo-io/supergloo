@@ -2,7 +2,7 @@ package istio
 
 import (
 	"github.com/prometheus/prometheus/config"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var IstioScrapeConfigs []*config.ScrapeConfig
