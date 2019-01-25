@@ -236,7 +236,10 @@ var _ = Describe("Consul E2E", func() {
 			return bookinfons
 		}
 
-		It("Can change consul policy", func() {
+		// Skip test because setup is incorrect, test deploys pods without services
+		// no upstreams will be created
+		//
+		PIt("Can change consul policy", func() {
 			snap := createInstallSnapshot(true, nil, true)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())

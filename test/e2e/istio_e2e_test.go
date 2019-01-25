@@ -181,7 +181,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		err := cmd.Run()
 		Expect(err).NotTo(HaveOccurred())
 		logger.Infof("Waiting until bookinfo pods are ready")
-		Expect(util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")).Should(BeEquivalentTo(6))
+		Eventually(func() int {
+			return util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
+		}).Should(BeEquivalentTo(6))
 		logger.Infof("Bookinfo pods are ready")
 		return bookinfoNamespace
 	}
@@ -309,7 +311,6 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(curlSucceeds(true)).To(BeFalse())
 		})
 
-		// seems flaky
 		It("Can install istio with mtls disabled and toggle it on", func() {
 			// deploy istio and bookinfo with gateway
 			snap := getSnapshot(false, true, nil, nil)
