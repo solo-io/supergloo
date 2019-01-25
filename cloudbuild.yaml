@@ -33,7 +33,7 @@ steps:
     - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     - 'RUN_KUBE_TESTS=1'
   dir: './gopath/src/github.com/solo-io/supergloo'
-  args: ['-r', '-failFast', 'pkg/']
+  args: ['-r', '-failFast']
   waitFor: ['setup-aws-creds']
   id: 'test'
 
