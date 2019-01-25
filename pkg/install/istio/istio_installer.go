@@ -28,6 +28,12 @@ type IstioInstaller struct {
 	secretSyncer secret.SecretSyncer
 }
 
+func (c *IstioInstaller) DoPostHelmInstall(ctx context.Context, installNamespace string, install *v1.Install) error {
+	//mission: check out how to modify istio policy crd
+	//run glooctl, create istio installation crd
+	return nil
+}
+
 func NewIstioInstaller(CrdClient kube.CrdClient, SecurityClient kube.SecurityClient, secretSyncer secret.SecretSyncer) (*IstioInstaller, error) {
 	crds, err := kube.CrdsFromManifest(IstioCrdYaml)
 	if err != nil {

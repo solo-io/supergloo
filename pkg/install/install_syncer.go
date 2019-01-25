@@ -93,6 +93,11 @@ type MeshInstaller interface {
 	DoPreHelmInstall(ctx context.Context, installNamespace string, install *v1.Install, secretList istiov1.IstioCacertsSecretList) error
 }
 
+type MeshPostInstaller interface {
+	MeshInstaller
+	DoPostHelmInstall(ctx context.Context, installNamespace string, install *v1.Install) error
+}
+
 func (syncer *InstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	secretList := snap.Istiocerts.List()
 	ctx = contextutils.WithLogger(ctx, "install-syncer")
@@ -118,7 +123,7 @@ func (syncer *InstallSyncer) syncInstall(ctx context.Context, install *v1.Instal
 		return errors.Errorf("Unsupported mesh type %v", install.MeshType)
 	}
 
-	installEnabled := install.Enabled == nil || install.Enabled.Value
+	installEnabled := install.Enabled.GetValue()
 
 	mesh, meshErr := syncer.MeshClient.Read(install.Metadata.Namespace, install.Metadata.Name, clients.ReadOpts{Ctx: ctx})
 	switch {
@@ -160,18 +165,25 @@ func (syncer *InstallSyncer) installHelmRelease(ctx context.Context, install *v1
 		}
 	}
 
-	logger.Infof("helm pre-install")
+	logger.Infof("helm pre-install %v", install.Metadata.Ref())
 	// 3. Do any pre-helm tasks
 	err = installer.DoPreHelmInstall(ctx, installNamespace, install, secretList)
 	if err != nil {
 		return "", errors.Wrap(err, "Error doing pre-helm install steps")
 	}
 
-	logger.Infof("helm install")
+	logger.Infof("helm install %v", install.Metadata.Ref())
 	// 4. Install mesh via helm chart
 	release, err := syncer.helmInstall(ctx, install.ChartLocator, install.Metadata.Name, installNamespace, installer.GetOverridesYaml(install))
 	if err != nil {
 		return "", errors.Wrap(err, "installing helm chart")
+	}
+
+	if postInstaller, ok := installer.(MeshPostInstaller); ok {
+		logger.Infof("helm post-install %v", install.Metadata.Ref())
+		if err := postInstaller.DoPostHelmInstall(ctx, installNamespace, install); err != nil {
+			return "", errors.Wrap(err, "post helm install ")
+		}
 	}
 
 	logger.Infof("finished installing %v", release)
