@@ -10,6 +10,7 @@ import (
 type Options struct {
 	Top         Top
 	Install     Install
+	Init        Init
 	Uninstall   Uninstall
 	MeshTool    MeshTool
 	IngressTool IngressTool
@@ -22,6 +23,12 @@ type Options struct {
 type Top struct {
 	Static bool
 	File   string
+}
+
+type Init struct {
+	CustomInstall  bool
+	SuperGlooImage string
+	DiscoveryImage string
 }
 
 type Install struct {

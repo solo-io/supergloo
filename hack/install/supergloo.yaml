@@ -19,13 +19,13 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
-subjects:
+subjects
 - kind: ServiceAccount
   name: default
   namespace: supergloo-system
 ---
 ### Deployment
-apiVersion: extensions/v1beta1
+apiVersion: extensions / v1beta1
 kind: Deployment
 metadata:
   name: supergloo
@@ -41,11 +41,11 @@ spec:
     spec:
       containers:
       - name: supergloo
-        image: soloio/supergloo:dev
+        image: solo / supergloo: dev
         imagePullPolicy: Always
 ---
 ### Deployment
-apiVersion: extensions/v1beta1
+apiVersion: extensions / v1beta1
 kind: Deployment
 metadata:
   labels:
@@ -64,7 +64,7 @@ spec:
         supergloo: discovery
     spec:
       containers:
-        - image: "soloio/discovery:0.6.14"
+        - image: "soloio / discovery: 0.6.14"
           imagePullPolicy: Always
           name: discovery
-          args: ["--namespace=supergloo-system" ]
+          args: ["--namespace = supergloo-system"]

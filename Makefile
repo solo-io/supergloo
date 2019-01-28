@@ -9,6 +9,7 @@ SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 VERSION ?= $(shell git describe --tags )
 REPOSITORY ?= $(basename `git rev-parse --show-toplevel`)
 LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
+REGISTRY ?= soloio
 
 #----------------------------------------------------------------------------------
 # Repo init
@@ -64,10 +65,11 @@ $(OUTPUT_DIR)/Dockerfile.supergloo: cmd/Dockerfile
 	cp $< $@
 
 supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DIR)/Dockerfile.supergloo
-	docker build -t soloio/supergloo:$(VERSION)  $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
+	docker build -t $(REGISTRY)/supergloo:$(VERSION)  $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
 
 supergloo-docker-push: supergloo-docker
-	docker push soloio/supergloo:$(VERSION)
+	docker tag $(REGISTRY)/supergloo:$(VERSION) $(REGISTRY)/supergloo:$(VERSION)
+	docker push $(REGISTRY)/supergloo:$(VERSION)
 
 #----------------------------------------------------------------------------------
 # SuperGloo Server (for local testing)

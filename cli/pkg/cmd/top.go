@@ -72,11 +72,5 @@ func App(version string) *cobra.Command {
 		os.Exit(1)
 	}
 
-	err = setup.InitSupergloo(&opts)
-	if err != nil {
-		fmt.Println(errors.Wrap(err, "Error during initialization!"))
-		os.Exit(1)
-	}
-
 	return app
 }
