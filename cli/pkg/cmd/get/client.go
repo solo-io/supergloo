@@ -108,7 +108,7 @@ func (client *KubernetesInfoClient) ListResources(gOpts options.Get) error {
 			}
 			rrList = append(rrList, res)
 		}
-		return printers.RoutingRuleTable(&rrList, outputFormat, "")
+		return printers.RoutingRuleTable(rrList, outputFormat, "")
 	default:
 		// Should not happen since we validate the resource
 		return errors.Errorf(common.UnknownResourceTypeMsg, resourceType)
