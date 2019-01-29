@@ -12,10 +12,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/cliutils"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-func RoutingRuleTable(list *v1.RoutingRuleList, output string, template string) error {
+func RoutingRuleTable(list v1.RoutingRuleList, output string, template string) error {
 	err := cliutils.PrintList(output, template, list,
 		func(data interface{}, w io.Writer) error {
 			routingRuleTable(data.(*v1.RoutingRuleList), w)
