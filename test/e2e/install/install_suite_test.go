@@ -84,7 +84,7 @@ func UninstallAndWaitForCleanup(install *v1.Install) {
 	util.WaitForTerminatedNamespace(InstallNamespace)
 	Expect(util.HelmReleaseDoesntExist(MeshName)).To(BeTrue())
 
-	mesh, err := util.GetMeshClient(KubeCache).Read(constants.SuperglooNamespace, MeshName, clients.ReadOpts{})
+	mesh, err := util.GetMeshClient().Read(constants.SuperglooNamespace, MeshName, clients.ReadOpts{})
 	Expect(mesh).To(BeNil())
 	Expect(err).ToNot(BeNil())
 }

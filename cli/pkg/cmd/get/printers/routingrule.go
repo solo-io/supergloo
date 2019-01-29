@@ -18,21 +18,21 @@ import (
 func RoutingRuleTable(list v1.RoutingRuleList, output string, template string) error {
 	err := cliutils.PrintList(output, template, list,
 		func(data interface{}, w io.Writer) error {
-			routingRuleTable(data.(*v1.RoutingRuleList), w)
+			routingRuleTable(data.(v1.RoutingRuleList), w)
 			return nil
 		},
 		os.Stdout)
 	return err
 }
 
-func routingRuleTable(list *v1.RoutingRuleList, w io.Writer) {
+func routingRuleTable(list v1.RoutingRuleList, w io.Writer) {
 	table := tablewriter.NewWriter(w)
 	headers := []string{"", "name", "target-mesh", "sources", "destintations", "matchers"}
 	table.SetHeader(headers)
 
 	table.SetBorder(false)
 
-	for i, v := range *list {
+	for i, v := range list {
 		table.Append(transformRoutingRule(v, i+1))
 	}
 
