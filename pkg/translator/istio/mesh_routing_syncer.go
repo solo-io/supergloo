@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 type MeshRoutingSyncer struct {
@@ -183,6 +183,9 @@ func destinationRulesForUpstreams(rules v1.RoutingRuleList, meshes v1.MeshList, 
 		for host, labelSets := range labelsByHost {
 			var subsets []*v1alpha3.Subset
 			for _, labels := range labelSets {
+				if len(labels) == 0 {
+					continue
+				}
 				subsets = append(subsets, &v1alpha3.Subset{
 					Name:   subsetName(labels),
 					Labels: labels,
@@ -630,7 +633,8 @@ func (s *MeshRoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules
 		Ctx:      ctx,
 		Selector: s.writeSelector,
 	}
-	contextutils.LoggerFrom(ctx).Infof("reconciling %v destination rules", len(destinationRules))
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("reconciling %v destination rules", len(destinationRules))
 	drByNamespace := make(v1alpha3.DestinationrulesByNamespace)
 	drByNamespace.Add(destinationRules...)
 	for _, ns := range s.writeNamespaces {
@@ -665,6 +669,7 @@ func (s *MeshRoutingSyncer) writeIstioCrds(ctx context.Context, destinationRules
 				"%v are available namespaces for writing", len(virtualServices), ns, s.writeNamespaces))
 		}
 	}
+	logger.Infof("wrote %v destination rules and %v virtual services", len(destinationRules), len(virtualServices))
 	return nil
 }
 

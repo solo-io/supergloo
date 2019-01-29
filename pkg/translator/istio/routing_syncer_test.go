@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/translator/istio"
 )
 
@@ -194,5 +194,97 @@ var _ = Describe("RoutingSyncer", func() {
 			},
 		}))
 
+	})
+
+	It("does not create subsets for upstreams without labels", func() {
+		memory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		vsClient, err := v1alpha3.NewVirtualServiceClient(memory)
+		Expect(err).NotTo(HaveOccurred())
+		err = vsClient.Register()
+		Expect(err).NotTo(HaveOccurred())
+		vsReconciler := v1alpha3.NewVirtualServiceReconciler(vsClient)
+		drClient, err := v1alpha3.NewDestinationRuleClient(memory)
+		Expect(err).NotTo(HaveOccurred())
+		err = drClient.Register()
+		Expect(err).NotTo(HaveOccurred())
+		drReconciler := v1alpha3.NewDestinationRuleReconciler(drClient)
+		s := NewMeshRoutingSyncer([]string{namespace},
+			nil,
+			drReconciler,
+			vsReconciler,
+			nil,
+		)
+		err = s.Sync(context.TODO(), &v1.TranslatorSnapshot{
+			Meshes: map[string]v1.MeshList{
+				"ignored-at-this-point": {{
+					Metadata: core.Metadata{Name: "name", Namespace: namespace},
+					MeshType: &v1.Mesh_Istio{
+						Istio: &v1.Istio{
+							WatchNamespaces: []string{namespace},
+						},
+					},
+					Encryption: &v1.Encryption{TlsEnabled: true},
+				}},
+			},
+			Upstreams: map[string]gloov1.UpstreamList{
+				"also gets ignored": {
+					{
+						Metadata: core.Metadata{
+							Name:      "noselector",
+							Namespace: namespace,
+						},
+						UpstreamSpec: &gloov1.UpstreamSpec{
+							UpstreamType: &gloov1.UpstreamSpec_Kube{
+								Kube: &kubernetes.UpstreamSpec{
+									ServiceName:      "noselector",
+									ServiceNamespace: "default",
+									ServicePort:      1234,
+								},
+							},
+						},
+					},
+				},
+			},
+			Routingrules: map[string]v1.RoutingRuleList{
+				"": {
+					{
+						Metadata:   core.Metadata{Name: "fault", Namespace: namespace},
+						TargetMesh: &core.ResourceRef{Name: "name", Namespace: namespace},
+						FaultInjection: &v1alpha3.HTTPFaultInjection{
+							Abort: &v1alpha3.HTTPFaultInjection_Abort{
+								ErrorType: &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
+									HttpStatus: 566,
+								},
+								Percent: 100,
+							},
+						},
+					},
+					{
+						Metadata:   core.Metadata{Name: "trafficshifting", Namespace: namespace},
+						TargetMesh: &core.ResourceRef{Name: "name", Namespace: namespace},
+						TrafficShifting: &v1.TrafficShifting{
+							Destinations: []*v1.WeightedDestination{
+								{
+									Upstream: &core.ResourceRef{
+										Name:      "noselector",
+										Namespace: namespace,
+									},
+									Weight: 100,
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		dr, err := drClient.List(namespace, clients.ListOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(dr).To(HaveLen(1))
+		Expect(dr[0].Host).To(Equal("noselector.default.svc.cluster.local"))
+		Expect(dr[0].Subsets).To(HaveLen(0))
 	})
 })
