@@ -6,7 +6,7 @@
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-VERSION := $(shell git describe --tags )
+VERSION ?= $(shell git describe --tags )
 REPOSITORY ?= $(basename `git rev-parse --show-toplevel`)
 LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 
