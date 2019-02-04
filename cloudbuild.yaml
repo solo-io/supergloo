@@ -25,19 +25,6 @@ steps:
   id: 'setup-aws-creds'
 
 - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
-  entrypoint: 'git'
-  args: ['clone', 'https://github.com/solo-io/gloo', '/workspace/gopath/src/github.com/solo-io/gloo']
-  id: 'clone-gloo'
-
-  # Dep is produced from a private cloud-builders repo
-- name: 'gcr.io/$PROJECT_ID/dep'
-  args: ['ensure', '-v']
-  env: ['PROJECT_ROOT=github.com/solo-io/gloo']
-  dir: './gopath/src/github.com/solo-io/gloo'
-  waitFor: ['clone-gloo']
-  id: 'dep-gloo'
-
-- name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
   env:
     - 'PROJECT_ROOT=github.com/solo-io/supergloo'
     - 'GOPATH=/workspace/gopath'
@@ -46,8 +33,8 @@ steps:
     - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     - 'RUN_KUBE_TESTS=1'
   dir: './gopath/src/github.com/solo-io/supergloo'
-  args: ['-r', '-failFast', '--skipPackage=github.com/solo-io/supergloo/test/e2e/install']
-  waitFor: ['setup-aws-creds', 'dep-gloo']
+  args: ['-r', '-failFast', 'pkg']
+  waitFor: ['setup-aws-creds]
   id: 'test'
 
 timeout: 6600s
