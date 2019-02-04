@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	factory2 "github.com/solo-io/supergloo/pkg/factory"
-
 	glooV1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
 	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	factory2 "github.com/solo-io/supergloo/pkg/factory"
 	k8sApiExt "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
