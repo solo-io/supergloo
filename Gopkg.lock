@@ -1105,7 +1105,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:303e53cd656ae6c437ad463532657d90b179dc1d2eba2b49224082effb52ec63"
+  digest = "1:252c57395296f17e05745b2336a0b6ac0af6c71f1f837ea54a6ba37cca06254e"
   name = "github.com/solo-io/go-utils"
   packages = [
     "contextutils",
@@ -1116,7 +1116,8 @@
     "testutils",
   ]
   pruneopts = "UT"
-  revision = "927973eafdf0c09cc9fe1329b32bbf828ab09323"
+  revision = "3ca3f416d2ed74c92bdfa96daeb5d530bd937a33"
+  version = "v0.1.2"
 
 [[projects]]
   digest = "1:22d0c89870358723813ff1908c2c1557afe4a51ba1324f11926cd806fde94a04"
@@ -1964,6 +1965,7 @@
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/testutils",
