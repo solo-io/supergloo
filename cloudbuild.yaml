@@ -34,7 +34,7 @@ steps:
     - 'RUN_KUBE_TESTS=1'
   dir: './gopath/src/github.com/solo-io/supergloo'
   args: ['-r', '-failFast', 'pkg']
-  waitFor: ['setup-aws-creds]
+  waitFor: ['setup-aws-creds']
   id: 'test'
 
 timeout: 6600s
