@@ -183,7 +183,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 		logger.Infof("Waiting until bookinfo pods are ready")
 		Eventually(func() int {
 			return util.WaitForAvailablePodsWithTimeout(bookinfoNamespace, "500s")
-		}).Should(BeEquivalentTo(6))
+		}, 500*time.Second, time.Second).Should(BeEquivalentTo(6))
 		logger.Infof("Bookinfo pods are ready")
 		return bookinfoNamespace
 	}
@@ -195,7 +195,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(func() int { return util.WaitForAvailablePods(installNamespace) }).Should(BeEquivalentTo(9))
+			Eventually(func() int {
+				return util.WaitForAvailablePods(installNamespace)
+			}, 500*time.Second, time.Second).Should(BeEquivalentTo(9))
 
 			// At this point citadel has started up with self-signed to false and a mounted cacerts
 
@@ -211,7 +213,7 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 
 			Eventually(func() int {
 				return util.WaitForAvailablePods(installNamespace)
-			}).Should(BeEquivalentTo(9))
+			}, 500*time.Second, time.Second).Should(BeEquivalentTo(9))
 
 			mesh, err := meshClient.Read(constants.SuperglooNamespace, meshName, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -241,7 +243,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// syncer will restart citadel
-			Eventually(func() int { return util.WaitForAvailablePods(installNamespace) }).Should(BeEquivalentTo(9))
+			Eventually(func() int {
+				return util.WaitForAvailablePods(installNamespace)
+			}, 500*time.Second, time.Second).Should(BeEquivalentTo(9))
 			// At this point citadel has started up with self-signed to false and a mounted cacerts
 
 			// make sure what's in cacerts is right
@@ -316,7 +320,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			snap := getSnapshot(false, true, nil, nil)
 			err := installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Eventually(func() int { return util.WaitForAvailablePods(installNamespace) }).Should(BeEquivalentTo(9))
+			Eventually(func() int {
+				return util.WaitForAvailablePods(installNamespace)
+			}, 500*time.Second, time.Second).Should(BeEquivalentTo(9))
 
 			deployBookInfoAndWaitForAvailable()
 
@@ -328,7 +334,9 @@ var _ = Describe("Istio Install and Encryption E2E", func() {
 			snap = getSnapshot(true, true, nil, nil)
 			err = installSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Eventually(func() int { return util.WaitForAvailablePods(installNamespace) }).Should(BeEquivalentTo(9))
+			Eventually(func() int {
+				return util.WaitForAvailablePods(installNamespace)
+			}, 500*time.Second, time.Second).Should(BeEquivalentTo(9))
 
 			// permissive mode is enabled by default
 			Expect(tlsCurlSucceeds()).To(BeTrue())

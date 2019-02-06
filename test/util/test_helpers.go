@@ -363,7 +363,7 @@ func GetConsulServerPodName(namespace string) string {
 			}
 		}
 		return "", errors.Errorf("pod with name %v not found", consulServerPodSuffix)
-	}, time.Minute).Should(HaveSuffix(consulServerPodSuffix))
+	}, time.Minute, time.Second).Should(HaveSuffix(consulServerPodSuffix))
 	return podName
 }
 
