@@ -33,13 +33,8 @@ steps:
     - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     - 'RUN_KUBE_TESTS=1'
   dir: './gopath/src/github.com/solo-io/supergloo'
-  args: ['-r', '-failFast', 'pkg/']
+  args: ['-r', '-failFast', 'pkg']
   waitFor: ['setup-aws-creds']
   id: 'test'
-
-artifacts:
-  objects:
-    location: 'gs://solo-public-artifacts.solo.io/'
-    paths: ['supergloo']
 
 timeout: 6600s

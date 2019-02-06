@@ -13,7 +13,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"go.uber.org/multierr"
 	"k8s.io/client-go/kubernetes"
 )

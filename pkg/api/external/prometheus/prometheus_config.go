@@ -8,8 +8,8 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/config"
-	"github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	"gopkg.in/yaml.v2"
+	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func ConfigFromResource(cfg *v1.PrometheusConfig) (*Config, error) {

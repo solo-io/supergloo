@@ -27,7 +27,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	testsetup "github.com/solo-io/solo-kit/test/setup"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/utils"
 )
@@ -125,7 +125,7 @@ var _ = Describe("appmesh routing E2e", func() {
 		}, namespace)
 
 		// start discovery
-		cmd := exec.Command(PathToUds, "--namespace", namespace)
+		cmd := exec.Command(PathToUds, "--namespace="+namespace)
 		cmd.Env = os.Environ()
 		_, err := gexec.Start(cmd, os.Stdout, os.Stdout)
 		Expect(err).NotTo(HaveOccurred())

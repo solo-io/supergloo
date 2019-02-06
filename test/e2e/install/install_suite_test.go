@@ -6,11 +6,9 @@ import (
 	"testing"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/constants"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
-
-	"github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install"
 	"github.com/solo-io/supergloo/test/util"
 
@@ -28,14 +26,12 @@ func TestInstallers(t *testing.T) {
 	RunSpecs(t, "Installers e2e Suite")
 }
 
-var KubeCache kube.SharedCache
 var providedChartPath string
 var CreatedSuperglooNamespace bool
 
 var _ = BeforeSuite(func() {
 	providedChartPath = os.Getenv("HELM_CHART_PATH")
 	CreatedSuperglooNamespace = util.TryCreateNamespace(constants.SuperglooNamespace)
-	KubeCache = kube.NewKubeCache()
 })
 
 var _ = AfterSuite(func() {
@@ -52,7 +48,9 @@ var ChartPath string
 var InstallNamespace string
 
 var _ = BeforeEach(func() {
-	Syncer = install.NewKubeInstallSyncer(util.GetMeshClient(KubeCache), util.GetSecretClient(), util.GetKubeClient(), util.GetApiExtsClient())
+	var err error
+	Syncer, err = install.NewKubeInstallSyncer(util.GetMeshClient(), util.GetSecretClient(), util.GetKubeClient(), util.GetApiExtsClient())
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterEach(func() {
@@ -72,7 +70,10 @@ func InstallAndWaitForPods(install *v1.Install, pods int) {
 	snap := util.GetSnapshot(install)
 	err := Syncer.Sync(context.TODO(), snap)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(util.WaitForAvailablePods(InstallNamespace)).To(BeEquivalentTo(pods))
+
+	Eventually(func() int {
+		return util.WaitForAvailablePods(InstallNamespace)
+	}).Should(BeEquivalentTo(pods))
 }
 
 func UninstallAndWaitForCleanup(install *v1.Install) {

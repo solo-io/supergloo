@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -20,7 +21,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -347,17 +348,23 @@ func WebhookConfigNotFound(webhookName string) bool {
 }
 
 func GetConsulServerPodName(namespace string) string {
+	consulServerPodSuffix := "consul-mesh-server-0"
 	client := GetKubeClient()
-	podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-	for _, pod := range podList.Items {
-		if strings.Contains(pod.Name, "consul-mesh-server-0") {
-			return pod.Name
+	var podName string
+	EventuallyWithOffset(1, func() (string, error) {
+		podList, err := client.CoreV1().Pods(namespace).List(kubemeta.ListOptions{})
+		if err != nil {
+			return "", err
 		}
-	}
-	// Should not have happened
-	ExpectWithOffset(1, false).To(BeTrue())
-	return ""
+		for _, pod := range podList.Items {
+			if strings.HasSuffix(pod.Name, consulServerPodSuffix) {
+				podName = pod.Name
+				return podName, nil
+			}
+		}
+		return "", errors.Errorf("pod with name %v not found", consulServerPodSuffix)
+	}, time.Minute, time.Second).Should(HaveSuffix(consulServerPodSuffix))
+	return podName
 }
 
 // New creates a new and initialized tunnel.
@@ -453,8 +460,8 @@ func TryDeleteIstioCrds() {
 	}
 }
 
-func GetUpstreamNames(upstreamClient gloo.UpstreamClient) ([]string, error) {
-	ul, err := upstreamClient.List("gloo-system", clients.ListOpts{})
+func GetUpstreamNames(upstreamClient gloo.UpstreamClient, namespace string) ([]string, error) {
+	ul, err := upstreamClient.List(namespace, clients.ListOpts{})
 	if err != nil {
 		return nil, err
 	}

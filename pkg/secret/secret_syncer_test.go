@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
-	"github.com/solo-io/supergloo/mock/pkg/kube"
+	mock_kube "github.com/solo-io/supergloo/mock/pkg/kube"
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/secret"
 	"github.com/solo-io/supergloo/test/util"
 )

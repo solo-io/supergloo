@@ -8,10 +8,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/supergloo/pkg/kube"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // source: https://raw.githubusercontent.com/linkerd/linkerd2/master/cli/install/template.go

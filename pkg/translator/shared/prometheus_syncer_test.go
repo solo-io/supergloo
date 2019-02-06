@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
 	. "github.com/solo-io/supergloo/pkg/translator/shared"

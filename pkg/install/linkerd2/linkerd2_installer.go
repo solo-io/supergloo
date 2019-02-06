@@ -4,7 +4,7 @@ import (
 	"context"
 
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 const (

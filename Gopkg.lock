@@ -1116,8 +1116,8 @@
     "testutils",
   ]
   pruneopts = "UT"
-  revision = "1c5b99da71805f3cee3f259242e2e09057411586"
-  version = "v0.1.0"
+  revision = "3ca3f416d2ed74c92bdfa96daeb5d530bd937a33"
+  version = "v0.1.2"
 
 [[projects]]
   digest = "1:22d0c89870358723813ff1908c2c1557afe4a51ba1324f11926cd806fde94a04"
@@ -1722,7 +1722,7 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:e36775d8427af40412a6877aa3f2991431914ab9461f536d1da4395932219e35"
+  digest = "1:9e6d781dc66d73c283d1707fb05ad2852908ea4eaaa2b91d6d333aa778a8476e"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1748,6 +1748,7 @@
     "pkg/resolver",
     "pkg/storage/errors",
     "pkg/sympath",
+    "pkg/timeconv",
     "pkg/tlsutil",
     "pkg/urlutil",
     "pkg/version",
@@ -1964,6 +1965,8 @@
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/contextutils",
+    "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -2019,14 +2022,18 @@
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/downloader",
     "k8s.io/helm/pkg/getter",
     "k8s.io/helm/pkg/helm",
     "k8s.io/helm/pkg/helm/environment",
     "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
+    "k8s.io/helm/pkg/proto/hapi/chart",
     "k8s.io/helm/pkg/proto/hapi/release",
+    "k8s.io/helm/pkg/renderutil",
     "k8s.io/helm/pkg/repo",
+    "k8s.io/helm/pkg/timeconv",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

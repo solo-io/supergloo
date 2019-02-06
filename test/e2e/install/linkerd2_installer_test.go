@@ -5,7 +5,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/constants"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 /*

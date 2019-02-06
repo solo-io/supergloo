@@ -10,7 +10,7 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
