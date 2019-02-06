@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -24,7 +28,33 @@ const customResourceDefinitionKind = "CustomResourceDefinition"
 
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
-func RenderManifests(ctx context.Context, chartPath, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) ([]manifest.Manifest, error) {
+func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) ([]manifest.Manifest, error) {
+	var file io.Reader
+	if strings.HasPrefix(chartUri, "http://") || strings.HasPrefix(chartUri, "https://") {
+		resp, err := http.Get(chartUri)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, errors.Errorf("http GET returned status %d", resp.StatusCode)
+		}
+
+		file = resp.Body
+	} else {
+		path, err := filepath.Abs(chartUri)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting absolute path for %v", chartUri)
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, errors.Wrapf(err, "opening file %v", path)
+		}
+		file = f
+	}
+
 	if kubeVersion == "" {
 		kubeVersion = defaultKubeVersion
 	}
@@ -40,7 +70,7 @@ func RenderManifests(ctx context.Context, chartPath, values, releaseName, namesp
 	}
 
 	// Check chart requirements to make sure all dependencies are present in /charts
-	c, err := chartutil.Load(chartPath)
+	c, err := chartutil.LoadArchive(file)
 	if err != nil {
 		return nil, errors.Wrapf(err, "loading chart")
 	}
