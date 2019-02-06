@@ -20,6 +20,8 @@ import (
 	"k8s.io/helm/pkg/timeconv"
 )
 
+const customResourceDefinitionKind = "CustomResourceDefinition"
+
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
 func RenderManifests(ctx context.Context, chartPath, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) ([]manifest.Manifest, error) {
@@ -65,10 +67,38 @@ func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.
 	for _, man := range manifests {
 		contextutils.LoggerFrom(ctx).Infof("applying manifest %v: %v", man.Name, man.Head)
 
-		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), 0, false); err != nil {
+		var (
+			shouldWait bool
+			timeout    int64
+		)
+		// wait for crds. it's that easy!
+		if man.Head.Kind == customResourceDefinitionKind {
+			shouldWait = true
+			timeout = 5
+		}
+		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), timeout, shouldWait); err != nil {
 			//if err := kc.Delete(namespace, bytes.NewBufferString(man)); err != nil {
 			if kubeerrs.IsAlreadyExists(err) {
 				contextutils.LoggerFrom(ctx).Warnf("already exists, skipping %v", man.Name)
+				continue
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DeleteManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
+	kc := kube.New(nil)
+
+	for _, man := range manifests {
+		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
+
+		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
+			//if err := kc.Delete(namespace, bytes.NewBufferString(man)); err != nil {
+			if kubeerrs.IsNotFound(err) {
+				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
 				continue
 			}
 			return err

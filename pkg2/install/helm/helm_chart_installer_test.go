@@ -22,5 +22,7 @@ var _ = Describe("HelmChartInstaller", func() {
 		Expect(err).NotTo(HaveOccurred())
 		err = ApplyManifests(context.TODO(), "istio-system", manifests)
 		Expect(err).NotTo(HaveOccurred())
+		err = DeleteManifests(context.TODO(), "istio-system", manifests)
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
