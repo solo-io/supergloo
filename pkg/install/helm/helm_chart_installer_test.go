@@ -10,7 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/supergloo/pkg2/install/helm"
+	. "github.com/solo-io/supergloo/pkg/install/helm"
 )
 
 var istioCrd = apiextensions.CustomResourceDefinition{}

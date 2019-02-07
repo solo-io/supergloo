@@ -11,16 +11,15 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/helm/pkg/manifest"
-	"k8s.io/helm/pkg/tiller"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/kube"
+	"k8s.io/helm/pkg/manifest"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"k8s.io/helm/pkg/renderutil"
+	"k8s.io/helm/pkg/tiller"
 	"k8s.io/helm/pkg/timeconv"
 )
 
@@ -107,7 +106,6 @@ func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.
 			timeout = 5
 		}
 		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), timeout, shouldWait); err != nil {
-			//if err := kc.Delete(namespace, bytes.NewBufferString(man)); err != nil {
 			if kubeerrs.IsAlreadyExists(err) {
 				contextutils.LoggerFrom(ctx).Warnf("already exists, skipping %v", man.Name)
 				continue
@@ -126,7 +124,6 @@ func DeleteManifests(ctx context.Context, namespace string, manifests []manifest
 		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
 
 		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
-			//if err := kc.Delete(namespace, bytes.NewBufferString(man)); err != nil {
 			if kubeerrs.IsNotFound(err) {
 				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
 				continue
