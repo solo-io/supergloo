@@ -8,6 +8,9 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	// Needed to run tests in GKE
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/supergloo/pkg/install/helm"
