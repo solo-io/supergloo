@@ -501,6 +501,14 @@
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
 
 [[projects]]
+  digest = "1:9b7a07ac7577787a8ecc1334cb9f34df1c76ed82a917d556c5713d3ab84fbc43"
+  name = "github.com/grpc-ecosystem/go-grpc-prometheus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c225b8c3b01faf2899099b768856a9e916e5087b"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:bfc483a051d3c7185ebeaa41b5bb67a4f76e742217bcaeab5661cc4b1320f392"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
@@ -1188,6 +1196,14 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:9deeaaf623bd5bff1aff7317417ffcd960557afa3b1a1dc27ca800a416a4b6a3"
+  name = "github.com/technosophos/moniker"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a5dbd03a2245d554160e3ae6bfdcf969fe58b431"
+  version = "0.2.0"
+
+[[projects]]
   digest = "1:64c18dbf9c05549d0b0189cb0325e2145d788d1acc05735103746589c61dcff1"
   name = "go.opencensus.io"
   packages = [
@@ -1722,7 +1738,7 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:9e6d781dc66d73c283d1707fb05ad2852908ea4eaaa2b91d6d333aa778a8476e"
+  digest = "1:2c8293596bb0e32009b861aceac5888d983a1c3414b22a8c324a321dd61b9be4"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
@@ -1733,21 +1749,29 @@
     "pkg/helm/environment",
     "pkg/helm/helmpath",
     "pkg/helm/portforwarder",
+    "pkg/hooks",
     "pkg/ignore",
     "pkg/kube",
     "pkg/manifest",
     "pkg/plugin",
     "pkg/proto/hapi/chart",
     "pkg/proto/hapi/release",
+    "pkg/proto/hapi/rudder",
     "pkg/proto/hapi/services",
     "pkg/proto/hapi/version",
     "pkg/provenance",
+    "pkg/releasetesting",
     "pkg/releaseutil",
     "pkg/renderutil",
     "pkg/repo",
     "pkg/resolver",
+    "pkg/rudder",
+    "pkg/storage",
+    "pkg/storage/driver",
     "pkg/storage/errors",
     "pkg/sympath",
+    "pkg/tiller",
+    "pkg/tiller/environment",
     "pkg/timeconv",
     "pkg/tlsutil",
     "pkg/urlutil",
@@ -2010,6 +2034,7 @@
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1",
+    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
@@ -2029,10 +2054,12 @@
     "k8s.io/helm/pkg/helm/environment",
     "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
+    "k8s.io/helm/pkg/manifest",
     "k8s.io/helm/pkg/proto/hapi/chart",
     "k8s.io/helm/pkg/proto/hapi/release",
     "k8s.io/helm/pkg/renderutil",
     "k8s.io/helm/pkg/repo",
+    "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
   ]
   solver-name = "gps-cdcl"
