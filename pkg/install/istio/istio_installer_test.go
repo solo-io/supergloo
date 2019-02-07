@@ -24,13 +24,13 @@ import (
 
 var T *testing.T
 
-func TestIstioInstaller(t *testing.T) {
+func XTestIstioInstaller(t *testing.T) {
 	RegisterFailHandler(Fail)
 	T = t
 	RunSpecs(t, "Shared Suite")
 }
 
-var _ = Describe("Istio Installer", func() {
+var _ = XDescribe("Istio Installer", func() {
 
 	var (
 		installer        *istio.IstioInstaller

@@ -10,9 +10,15 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
+
+	"github.com/avast/retry-go"
+	kubecrds "github.com/solo-io/supergloo/pkg/kube"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/kube"
@@ -96,24 +102,53 @@ func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.
 	for _, man := range manifests {
 		contextutils.LoggerFrom(ctx).Infof("applying manifest %v: %v", man.Name, man.Head)
 
-		var (
-			shouldWait bool
-			timeout    int64
-		)
-		// wait for crds. it's that easy!
-		if man.Head.Kind == customResourceDefinitionKind {
-			shouldWait = true
-			timeout = 5
-		}
-		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), timeout, shouldWait); err != nil {
+		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), 0, false); err != nil {
 			if kubeerrs.IsAlreadyExists(err) {
 				contextutils.LoggerFrom(ctx).Warnf("already exists, skipping %v", man.Name)
 				continue
 			}
 			return err
 		}
+		// wait for crds. it's that easy!
+		if man.Head.Kind == customResourceDefinitionKind {
+			if err := waitForCrds(ctx, man, kc); err != nil {
+				return errors.Wrapf(err, "failed waiting for crd registration")
+			}
+		}
 	}
 
+	return nil
+}
+
+func waitForCrds(ctx context.Context, man manifest.Manifest, kc *kube.Client) error {
+	crds, err := kubecrds.CrdsFromManifest(man.Content)
+	if err != nil {
+		return errors.Wrapf(err, "failed parsing crds from manifest %v", man.Name)
+	}
+
+	restCfg, err := kc.ToRESTConfig()
+	if err != nil {
+		return errors.Wrapf(err, "getting kube rest cfg")
+	}
+	crdClientset, err := apiexts.NewForConfig(restCfg)
+	if err != nil {
+		return errors.Wrapf(err, "creating apiexts client")
+	}
+	for _, crd := range crds {
+		crdName := crd.Name
+		err = retry.Do(func() error {
+			crd, err := crdClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, v1.GetOptions{})
+			if err != nil {
+				return errors.Wrapf(err, "validating crd %v registration failed", crdName)
+			}
+
+			contextutils.LoggerFrom(ctx).Info("registered crd %v", crd.ObjectMeta)
+			return nil
+		},
+			retry.Delay(time.Millisecond*500),
+			retry.DelayType(retry.FixedDelay),
+		)
+	}
 	return nil
 }
 
