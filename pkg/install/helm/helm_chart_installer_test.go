@@ -3,6 +3,8 @@ package helm_test
 import (
 	"context"
 
+	"github.com/solo-io/go-utils/testutils"
+
 	"github.com/solo-io/go-utils/kubeutils"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -19,8 +21,14 @@ import (
 var istioCrd = apiextensions.CustomResourceDefinition{}
 
 var _ = Describe("HelmChartInstaller", func() {
+	var ns string
+	BeforeEach(func() {
+		ns = "test" + testutils.RandString(5)
+	})
+	AfterEach(func() {
+		testutils.TeardownKube(ns)
+	})
 	It("installs from a helm chart", func() {
-		ns := "test"
 		values := `
 security:
   enabled: true #should install policy crds
@@ -52,7 +60,6 @@ security:
 		Expect(err).NotTo(HaveOccurred())
 	})
 	It("handles value overrides correctly", func() {
-		ns := "test2"
 		values := `
 security:
   enabled: false #should not install policy crds

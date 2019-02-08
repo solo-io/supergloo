@@ -54,7 +54,7 @@ var _ = Describe("InstallIstio", func() {
 	type test struct {
 		opts InstallOptions
 	}
-	table.DescribeTable("prometheus tests for various meshes",
+	table.DescribeTable("multiple istio versions",
 		func(t test, blocking ...bool) {
 			if len(blocking) == 0 {
 				blocking = []bool{true}
