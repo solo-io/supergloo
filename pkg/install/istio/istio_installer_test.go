@@ -30,7 +30,7 @@ func TestIstioInstaller(t *testing.T) {
 	RunSpecs(t, "Shared Suite")
 }
 
-var _ = XDescribe("Istio Installer", func() {
+var _ = Describe("Istio Installer", func() {
 
 	var (
 		installer        *istio.IstioInstaller
