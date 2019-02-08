@@ -24,7 +24,7 @@ import (
 
 var T *testing.T
 
-func XTestIstioInstaller(t *testing.T) {
+func TestIstioInstaller(t *testing.T) {
 	RegisterFailHandler(Fail)
 	T = t
 	RunSpecs(t, "Shared Suite")
