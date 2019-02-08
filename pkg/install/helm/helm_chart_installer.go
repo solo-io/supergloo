@@ -156,7 +156,7 @@ func waitForCrds(ctx context.Context, man manifest.Manifest, kc *kube.Client) er
 				return errors.Errorf("crd %v exists but not yet established by kube", crdName)
 			}
 
-			contextutils.LoggerFrom(ctx).Info("registered crd %v", crd.ObjectMeta)
+			contextutils.LoggerFrom(ctx).Infof("registered crd %v", crd.ObjectMeta)
 			return nil
 		},
 			retry.Delay(time.Millisecond*500),
