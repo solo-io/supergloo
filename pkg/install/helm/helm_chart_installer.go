@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
 	"github.com/avast/retry-go"
 	kubecrds "github.com/solo-io/supergloo/pkg/kube"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,7 +141,19 @@ func waitForCrds(ctx context.Context, man manifest.Manifest, kc *kube.Client) er
 		err = retry.Do(func() error {
 			crd, err := crdClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, v1.GetOptions{})
 			if err != nil {
-				return errors.Wrapf(err, "validating crd %v registration failed", crdName)
+				return errors.Wrapf(err, "lookup crd %v", crdName)
+			}
+
+			var established bool
+			for _, status := range crd.Status.Conditions {
+				if status.Type == v1beta1.Established {
+					established = true
+					break
+				}
+			}
+
+			if !established {
+				return errors.Errorf("crd %v exists but not yet established by kube", crdName)
 			}
 
 			contextutils.LoggerFrom(ctx).Info("registered crd %v", crd.ObjectMeta)
