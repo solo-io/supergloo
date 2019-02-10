@@ -40,7 +40,7 @@ func cleanupManifest(ns, version string, blocking bool) {
 		true,
 	)
 	Expect(err).NotTo(HaveOccurred())
-	helm.DeleteManifests(context.TODO(), ns, manifests)
+	helm.DeleteFromManifests(context.TODO(), ns, manifests)
 }
 
 func assertDeploymentExists(namespace, name string) {

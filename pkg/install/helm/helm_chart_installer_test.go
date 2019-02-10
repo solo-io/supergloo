@@ -43,9 +43,9 @@ mixer:
 				"",
 				true,
 			)
-			defer DeleteManifests(context.TODO(), ns, manifests)
+			defer DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
-			err = CreateManifests(context.TODO(), ns, manifests)
+			err = CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			cfg, err := kubeutils.GetConfig("", "")
@@ -60,7 +60,7 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = DeleteManifests(context.TODO(), ns, manifests)
+			err = DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("handles value overrides correctly", func() {
@@ -79,14 +79,14 @@ mixer:
 				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			defer DeleteManifests(context.TODO(), ns, manifests)
+			defer DeleteFromManifests(context.TODO(), ns, manifests)
 
 			// no security crds
 			for _, man := range manifests {
 				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
 			}
 
-			err = CreateManifests(context.TODO(), ns, manifests)
+			err = CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			cfg, err := kubeutils.GetConfig("", "")
@@ -102,7 +102,7 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).To(HaveOccurred())
 
-			err = DeleteManifests(context.TODO(), ns, manifests)
+			err = DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

@@ -117,7 +117,7 @@ func InstallIstio(ctx context.Context, opts InstallOptions) error {
 		manifests[i] = m
 	}
 
-	if err := helm.CreateManifests(ctx, namespace, manifests); err != nil {
+	if err := helm.CreateFromManifests(ctx, namespace, manifests); err != nil {
 		return errors.Wrapf(err, "creating istio from manifests")
 	}
 

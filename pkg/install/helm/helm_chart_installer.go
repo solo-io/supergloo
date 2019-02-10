@@ -33,11 +33,9 @@ import (
 	"k8s.io/helm/pkg/timeconv"
 )
 
-const customResourceDefinitionKind = "CustomResourceDefinition"
-
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
-func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) ([]manifest.Manifest, error) {
+func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) (Manifests, error) {
 	var file io.Reader
 	if strings.HasPrefix(chartUri, "http://") || strings.HasPrefix(chartUri, "https://") {
 		resp, err := http.Get(chartUri)
@@ -100,33 +98,14 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	return tiller.SortByKind(manifests), nil
 }
 
-func joinManifests(manifests []manifest.Manifest) string {
-	buf := &bytes.Buffer{}
-
-	for _, m := range tiller.SortByKind(manifests) {
-		data := m.Content
-		b := filepath.Base(m.Name)
-		if b == "NOTES.txt" {
-			continue
-		}
-		if strings.HasPrefix(b, "_") {
-			continue
-		}
-		fmt.Fprintf(buf, "---\n# Source: %s\n", m.Name)
-		fmt.Fprintln(buf, data)
-	}
-
-	return buf.String()
-}
-
-func CreateManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
+func CreateFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
 	kc := kube.New(nil)
 
-	crdManifests, nonCrdManifests := splitCrdManifests(manifests)
+	crdManifests, nonCrdManifests := manifests.SplitByCrds()
 
 	//crds come first
 	if len(crdManifests) > 0 {
-		crdInput := joinManifests(crdManifests)
+		crdInput := crdManifests.CombinedString()
 		if err := kc.Create(namespace, bytes.NewBufferString(crdInput), 0, false); err != nil {
 			return err
 		}
@@ -135,28 +114,14 @@ func CreateManifests(ctx context.Context, namespace string, manifests []manifest
 		}
 	}
 
-	nonCrdInput := joinManifests(nonCrdManifests)
-	if err := kc.Create(namespace, bytes.NewBufferString(nonCrdInput), 0, false); err != nil {
-		return err
+	if len(nonCrdManifests) > 0 {
+		nonCrdInput := nonCrdManifests.CombinedString()
+		if err := kc.Create(namespace, bytes.NewBufferString(nonCrdInput), 0, false); err != nil {
+			return err
+		}
 	}
 
 	return nil
-}
-
-func isCrdManifest(man manifest.Manifest) bool {
-	return man.Head.Kind == customResourceDefinitionKind
-}
-
-func splitCrdManifests(mixedManifests []manifest.Manifest) ([]manifest.Manifest, []manifest.Manifest) {
-	var crdManifests, nonCrdManifests []manifest.Manifest
-	for _, man := range mixedManifests {
-		if isCrdManifest(man) {
-			crdManifests = append(crdManifests, man)
-		} else {
-			nonCrdManifests = append(nonCrdManifests, man)
-		}
-	}
-	return crdManifests, nonCrdManifests
 }
 
 func waitForCrds(ctx context.Context, kc *kube.Client, manifestContent string) error {
@@ -203,7 +168,16 @@ func waitForCrds(ctx context.Context, kc *kube.Client, manifestContent string) e
 	return nil
 }
 
-func DeleteManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
+var commentRegex = regexp.MustCompile("#.*")
+
+func isEmptyManifest(manifest string) bool {
+	removeComments := commentRegex.ReplaceAllString(manifest, "")
+	removeNewlines := strings.Replace(removeComments, "\n", "", -1)
+	removeDashes := strings.Replace(removeNewlines, "---", "", -1)
+	return removeDashes == ""
+}
+
+func DeleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
 	kc := kube.New(nil)
 
 	for _, man := range manifests {
@@ -228,11 +202,20 @@ func IsNoKindMatch(err error) bool {
 	return ok
 }
 
-var commentRegex = regexp.MustCompile("#.*")
+func PatchFromManifests(ctx context.Context, namespace string, oldM, newM Manifests) error {
+	kc := kube.New(nil)
 
-func isEmptyManifest(manifest string) bool {
-	removeComments := commentRegex.ReplaceAllString(manifest, "")
-	removeNewlines := strings.Replace(removeComments, "\n", "", -1)
-	removeDashes := strings.Replace(removeNewlines, "---", "", -1)
-	return removeDashes == ""
+	for _, man := range manifests {
+		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
+
+		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
+			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
+				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
+				continue
+			}
+			return err
+		}
+	}
+
+	return nil
 }
