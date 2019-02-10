@@ -3,12 +3,11 @@ package helm_test
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/testutils"
-
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 
 	// Needed to run tests in GKE
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -30,8 +29,8 @@ var _ = Describe("HelmChartInstaller", func() {
 	})
 	It("installs from a helm chart", func() {
 		values := `
-security:
-  enabled: true #should install policy crds
+mixer:
+  enabled: false #should install mixer
 
 `
 		manifests, err := RenderManifests(
@@ -50,10 +49,11 @@ security:
 		cfg, err := kubeutils.GetConfig("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		apiexts, err := clientset.NewForConfig(cfg)
+		kubeClient, err := kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = apiexts.ApiextensionsV1beta1().CustomResourceDefinitions().Get("policies.authentication.istio.io", v1.GetOptions{})
+		// yes mixer
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = DeleteManifests(context.TODO(), ns, manifests)
@@ -61,8 +61,8 @@ security:
 	})
 	It("handles value overrides correctly", func() {
 		values := `
-security:
-  enabled: false #should not install policy crds
+mixer:
+  enabled: false #should not install mixer
 
 `
 		manifests, err := RenderManifests(
@@ -75,15 +75,23 @@ security:
 			true,
 		)
 		Expect(err).NotTo(HaveOccurred())
+
+		// no security crds
+		for _, man := range manifests {
+			Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
+		}
+
 		err = ApplyManifests(context.TODO(), ns, manifests)
 		Expect(err).NotTo(HaveOccurred())
 
 		cfg, err := kubeutils.GetConfig("", "")
 		Expect(err).NotTo(HaveOccurred())
 
-		apiexts, err := clientset.NewForConfig(cfg)
+		kubeClient, err := kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
-		_, err = apiexts.ApiextensionsV1beta1().CustomResourceDefinitions().Get("policies.authentication.istio.io", v1.GetOptions{})
+
+		// no mixer
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
 		Expect(err).To(HaveOccurred())
 
 		err = DeleteManifests(context.TODO(), ns, manifests)
