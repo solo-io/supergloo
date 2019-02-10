@@ -100,34 +100,69 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	return tiller.SortByKind(manifests), nil
 }
 
-func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
+func joinManifests(manifests []manifest.Manifest) string {
+	buf := &bytes.Buffer{}
+
+	for _, m := range tiller.SortByKind(manifests) {
+		data := m.Content
+		b := filepath.Base(m.Name)
+		if b == "NOTES.txt" {
+			continue
+		}
+		if strings.HasPrefix(b, "_") {
+			continue
+		}
+		fmt.Fprintf(buf, "---\n# Source: %s\n", m.Name)
+		fmt.Fprintln(buf, data)
+	}
+
+	return buf.String()
+}
+
+func CreateManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
 	kc := kube.New(nil)
 
-	for _, man := range manifests {
-		contextutils.LoggerFrom(ctx).Infof("applying manifest %v: %v", man.Name, man.Head)
+	crdManifests, nonCrdManifests := splitCrdManifests(manifests)
 
-		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), 0, false); err != nil {
-			if kubeerrs.IsAlreadyExists(err) {
-				contextutils.LoggerFrom(ctx).Warnf("already exists, skipping %v", man.Name)
-				continue
-			}
+	//crds come first
+	if len(crdManifests) > 0 {
+		crdInput := joinManifests(crdManifests)
+		if err := kc.Create(namespace, bytes.NewBufferString(crdInput), 0, false); err != nil {
 			return err
 		}
-		// wait for crds. it's that easy!
-		if man.Head.Kind == customResourceDefinitionKind {
-			if err := waitForCrds(ctx, man, kc); err != nil {
-				return errors.Wrapf(err, "failed waiting for crd registration")
-			}
+		if err := waitForCrds(ctx, kc, crdInput); err != nil {
+			return err
 		}
+	}
+
+	nonCrdInput := joinManifests(nonCrdManifests)
+	if err := kc.Create(namespace, bytes.NewBufferString(nonCrdInput), 0, false); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func waitForCrds(ctx context.Context, man manifest.Manifest, kc *kube.Client) error {
-	crds, err := kubecrds.CrdsFromManifest(man.Content)
+func isCrdManifest(man manifest.Manifest) bool {
+	return man.Head.Kind == customResourceDefinitionKind
+}
+
+func splitCrdManifests(mixedManifests []manifest.Manifest) ([]manifest.Manifest, []manifest.Manifest) {
+	var crdManifests, nonCrdManifests []manifest.Manifest
+	for _, man := range mixedManifests {
+		if isCrdManifest(man) {
+			crdManifests = append(crdManifests, man)
+		} else {
+			nonCrdManifests = append(nonCrdManifests, man)
+		}
+	}
+	return crdManifests, nonCrdManifests
+}
+
+func waitForCrds(ctx context.Context, kc *kube.Client, manifestContent string) error {
+	crds, err := kubecrds.CrdsFromManifest(manifestContent)
 	if err != nil {
-		return errors.Wrapf(err, "failed parsing crds from manifest %v", man.Name)
+		return errors.Wrapf(err, "failed parsing crds from manifest")
 	}
 
 	restCfg, err := kc.ToRESTConfig()
