@@ -30,7 +30,7 @@ var _ = Describe("HelmChartInstaller", func() {
 	It("installs from a helm chart", func() {
 		values := `
 mixer:
-  enabled: false #should install mixer
+  enabled: true #should install mixer
 
 `
 		manifests, err := RenderManifests(
@@ -53,7 +53,9 @@ mixer:
 		Expect(err).NotTo(HaveOccurred())
 
 		// yes mixer
-		_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
 		err = DeleteManifests(context.TODO(), ns, manifests)
@@ -92,6 +94,9 @@ mixer:
 
 		// no mixer
 		_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
+		Expect(err).To(HaveOccurred())
+		_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 		Expect(err).To(HaveOccurred())
 
 		err = DeleteManifests(context.TODO(), ns, manifests)

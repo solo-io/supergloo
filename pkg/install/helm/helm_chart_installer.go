@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/avast/retry-go"
@@ -173,7 +175,7 @@ func DeleteManifests(ctx context.Context, namespace string, manifests []manifest
 		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
 
 		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
-			if kubeerrs.IsNotFound(err) {
+			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
 				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
 				continue
 			}
@@ -182,6 +184,13 @@ func DeleteManifests(ctx context.Context, namespace string, manifests []manifest
 	}
 
 	return nil
+}
+
+// consider moving to kube utils/errs package?
+
+func IsNoKindMatch(err error) bool {
+	_, ok := err.(*meta.NoKindMatchError)
+	return ok
 }
 
 var commentRegex = regexp.MustCompile("#.*")
