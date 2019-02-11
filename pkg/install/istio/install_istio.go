@@ -37,6 +37,7 @@ type versionedInstall struct {
 type InstallOptions struct {
 	Version       string
 	Namespace     string
+	AutoInject    AutoInjectInstallOptions
 	Mtls          MtlsInstallOptions
 	Observability ObservabilityInstallOptions
 	Gateway       GatewayInstallOptions
@@ -53,6 +54,10 @@ func (o InstallOptions) Validate() error {
 		return errors.Errorf("servicegraph can only be enabled with prometheus")
 	}
 	return nil
+}
+
+type AutoInjectInstallOptions struct {
+	Enabled bool
 }
 
 type MtlsInstallOptions struct {

@@ -5,9 +5,7 @@ package istio
 const helmValues = `
 global:
   proxy:
-    # This controls the 'policy' in the sidecar injector.
-    # Injection is left to SuperGloo, so we disable istio's automatioc injection
-    autoInject: false
+    autoInject: {{ .AutoInject.Enabled }}
 
   # controlPlaneMtls enabled.
   controlPlaneSecurityEnabled: {{ .Mtls.Enabled }}
@@ -44,8 +42,7 @@ gateways:
 # sidecar-injector webhook configuration
 #
 sidecarInjectorWebhook:
-  # Injection is left to SuperGloo, so we disable istio's automatioc injection
-  enabled: false
+  enabled: {{ .AutoInject.Enabled }}
 
 #
 # security configuration

@@ -201,21 +201,3 @@ func IsNoKindMatch(err error) bool {
 	_, ok := err.(*meta.NoKindMatchError)
 	return ok
 }
-
-func PatchFromManifests(ctx context.Context, namespace string, oldM, newM Manifests) error {
-	kc := kube.New(nil)
-
-	for _, man := range manifests {
-		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
-
-		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
-			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
-				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
-				continue
-			}
-			return err
-		}
-	}
-
-	return nil
-}
