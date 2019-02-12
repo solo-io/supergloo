@@ -10,9 +10,19 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
+
+	"k8s.io/apimachinery/pkg/api/meta"
+
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
+	"github.com/avast/retry-go"
+	kubecrds "github.com/solo-io/supergloo/pkg/kube"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/kube"
@@ -23,11 +33,9 @@ import (
 	"k8s.io/helm/pkg/timeconv"
 )
 
-const customResourceDefinitionKind = "CustomResourceDefinition"
-
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
-func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) ([]manifest.Manifest, error) {
+func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) (Manifests, error) {
 	var file io.Reader
 	if strings.HasPrefix(chartUri, "http://") || strings.HasPrefix(chartUri, "https://") {
 		resp, err := http.Get(chartUri)
@@ -90,26 +98,25 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	return tiller.SortByKind(manifests), nil
 }
 
-func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
+func CreateFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
 	kc := kube.New(nil)
 
-	for _, man := range manifests {
-		contextutils.LoggerFrom(ctx).Infof("applying manifest %v: %v", man.Name, man.Head)
+	crdManifests, nonCrdManifests := manifests.SplitByCrds()
 
-		var (
-			shouldWait bool
-			timeout    int64
-		)
-		// wait for crds. it's that easy!
-		if man.Head.Kind == customResourceDefinitionKind {
-			shouldWait = true
-			timeout = 5
+	//crds come first
+	if len(crdManifests) > 0 {
+		crdInput := crdManifests.CombinedString()
+		if err := kc.Create(namespace, bytes.NewBufferString(crdInput), 0, false); err != nil {
+			return err
 		}
-		if err := kc.Create(namespace, bytes.NewBufferString(man.Content), timeout, shouldWait); err != nil {
-			if kubeerrs.IsAlreadyExists(err) {
-				contextutils.LoggerFrom(ctx).Warnf("already exists, skipping %v", man.Name)
-				continue
-			}
+		if err := waitForCrds(ctx, kc, crdInput); err != nil {
+			return err
+		}
+	}
+
+	if len(nonCrdManifests) > 0 {
+		nonCrdInput := nonCrdManifests.CombinedString()
+		if err := kc.Create(namespace, bytes.NewBufferString(nonCrdInput), 0, false); err != nil {
 			return err
 		}
 	}
@@ -117,21 +124,47 @@ func ApplyManifests(ctx context.Context, namespace string, manifests []manifest.
 	return nil
 }
 
-func DeleteManifests(ctx context.Context, namespace string, manifests []manifest.Manifest) error {
-	kc := kube.New(nil)
-
-	for _, man := range manifests {
-		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
-
-		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
-			if kubeerrs.IsNotFound(err) {
-				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
-				continue
-			}
-			return err
-		}
+func waitForCrds(ctx context.Context, kc *kube.Client, manifestContent string) error {
+	crds, err := kubecrds.CrdsFromManifest(manifestContent)
+	if err != nil {
+		return errors.Wrapf(err, "failed parsing crds from manifest")
 	}
 
+	restCfg, err := kc.ToRESTConfig()
+	if err != nil {
+		return errors.Wrapf(err, "getting kube rest cfg")
+	}
+	crdClientset, err := apiexts.NewForConfig(restCfg)
+	if err != nil {
+		return errors.Wrapf(err, "creating apiexts client")
+	}
+	for _, crd := range crds {
+		crdName := crd.Name
+		err = retry.Do(func() error {
+			crd, err := crdClientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, v1.GetOptions{})
+			if err != nil {
+				return errors.Wrapf(err, "lookup crd %v", crdName)
+			}
+
+			var established bool
+			for _, status := range crd.Status.Conditions {
+				if status.Type == v1beta1.Established {
+					established = true
+					break
+				}
+			}
+
+			if !established {
+				return errors.Errorf("crd %v exists but not yet established by kube", crdName)
+			}
+
+			contextutils.LoggerFrom(ctx).Infof("registered crd %v", crd.ObjectMeta)
+			return nil
+		},
+			retry.Delay(time.Millisecond*500),
+			retry.DelayType(retry.FixedDelay),
+		)
+	}
 	return nil
 }
 
@@ -142,4 +175,29 @@ func isEmptyManifest(manifest string) bool {
 	removeNewlines := strings.Replace(removeComments, "\n", "", -1)
 	removeDashes := strings.Replace(removeNewlines, "---", "", -1)
 	return removeDashes == ""
+}
+
+func DeleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
+	kc := kube.New(nil)
+
+	for _, man := range manifests {
+		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
+
+		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
+			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
+				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
+				continue
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// consider moving to kube utils/errs package?
+
+func IsNoKindMatch(err error) bool {
+	_, ok := err.(*meta.NoKindMatchError)
+	return ok
 }
