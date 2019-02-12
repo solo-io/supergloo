@@ -5,13 +5,12 @@ steps:
   env: ['PROJECT_ROOT=github.com/solo-io/supergloo']
   id: 'dep'
 
-# Disabled until new supergloo artifacts are due for release
-#- name: 'gcr.io/cloud-builders/go'
-#  args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo/cmd']
-#  env:
-#    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-#    - 'GOPATH=/workspace/gopath'
-#  id: 'compile'
+- name: 'gcr.io/cloud-builders/go'
+  args: ['build', '-o', 'supergloo', 'github.com/solo-io/supergloo/cmd']
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+    - 'GOPATH=/workspace/gopath'
+  id: 'compile'
 
 - name: gcr.io/cloud-builders/gcloud
   args:
