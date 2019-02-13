@@ -3,8 +3,7 @@ package consul
 // Tested working for consul chart 0.6.0
 // be sure to test if adding new versions!
 
-const helmValues = ``
-const helmValues2 = `
+const helmValues = `
 # Enable Connect for secure communication between nodes
 connectInject:
   enabled: {{ .AutoInject.Enabled }}
