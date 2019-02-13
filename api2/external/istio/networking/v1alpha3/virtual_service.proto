@@ -59,7 +59,7 @@ import "github.com/solo-io/solo-kit/api/v1/status.proto";
 // services.
 package networking.istio.io;
 
-option go_package = "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3";
+option go_package = "github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3";
 
 //@solo-kit:resource.short_name=virtualservice
 //@solo-kit:resource.plural_name=virtualservices

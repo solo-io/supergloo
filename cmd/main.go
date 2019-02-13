@@ -7,8 +7,8 @@ import (
 	"time"
 
 	check "github.com/solo-io/go-checkpoint"
-	"github.com/solo-io/supergloo/pkg/setup"
-	"github.com/solo-io/supergloo/pkg/version"
+	"github.com/solo-io/supergloo/pkg2/setup"
+	"github.com/solo-io/supergloo/pkg2/version"
 )
 
 // TODO (ilackarms): move to a flags package

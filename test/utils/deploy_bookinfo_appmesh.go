@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
-	"github.com/solo-io/supergloo/pkg/install/shared"
+	"github.com/solo-io/supergloo/pkg2/install/shared"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"

@@ -5,25 +5,25 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/solo-io/supergloo/pkg/kube"
+	"github.com/solo-io/supergloo/pkg2/kube"
 
-	"github.com/solo-io/supergloo/pkg/secret"
+	"github.com/solo-io/supergloo/pkg2/secret"
 
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
-	"github.com/solo-io/supergloo/pkg/install/linkerd2"
+	"github.com/solo-io/supergloo/pkg2/install/linkerd2"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/supergloo/pkg2/install/istio"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/consul"
-	"github.com/solo-io/supergloo/pkg/install/helm"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/install/consul"
+	"github.com/solo-io/supergloo/pkg2/install/helm"
 
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	kube_client "github.com/solo-io/supergloo/pkg/kube"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
+	kube_client "github.com/solo-io/supergloo/pkg2/kube"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 )
 

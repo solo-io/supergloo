@@ -6,7 +6,7 @@ import (
 	types "github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common/iutil"
-	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	v1alpha3 "github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3"
 )
 
 func EnsureRetry(irOpts *options.InputRetry, opts *options.Options) error {

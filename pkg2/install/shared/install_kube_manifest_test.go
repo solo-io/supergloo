@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
-	. "github.com/solo-io/supergloo/pkg/install/shared"
+	. "github.com/solo-io/supergloo/pkg2/install/shared"
 	"github.com/solo-io/supergloo/test/utils"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/solo-io/supergloo/pkg/install/shared"
+	"github.com/solo-io/supergloo/pkg2/install/shared"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	"k8s.io/api/extensions/v1beta1"

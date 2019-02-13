@@ -11,12 +11,12 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/test/setup"
 	"github.com/solo-io/supergloo/cli/test/utils"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 var _ = Describe("Get", func() {
 	var (
-		namespace         string
+		namespace string
 	)
 	BeforeEach(func() {
 		namespace = "a" + testutils.RandString(6)
@@ -48,7 +48,7 @@ var _ = Describe("Get", func() {
 func writeRouteRule(routingRules v1.RoutingRuleClient, namespace string) {
 	rrMeta := core.Metadata{Name: "rrrr", Namespace: namespace}
 	rr1, err := routingRules.Write(&v1.RoutingRule{
-		Metadata:   rrMeta,
+		Metadata: rrMeta,
 		Destinations: []*core.ResourceRef{{
 			Name:      namespace + "-reviews-9080",
 			Namespace: namespace,

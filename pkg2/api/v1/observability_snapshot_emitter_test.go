@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	config_prometheus_io "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

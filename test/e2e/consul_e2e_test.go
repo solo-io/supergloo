@@ -12,11 +12,11 @@ import (
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
 
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"github.com/hashicorp/consul/api"
 
-	"github.com/solo-io/supergloo/pkg/install"
+	"github.com/solo-io/supergloo/pkg2/install"
 
 	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/test/util"
@@ -28,9 +28,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/consul"
-	consulSync "github.com/solo-io/supergloo/pkg/translator/consul"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/install/consul"
+	consulSync "github.com/solo-io/supergloo/pkg2/translator/consul"
 
 	kubecore "k8s.io/api/core/v1"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/solo-kit/test/helpers"
-	"github.com/solo-io/supergloo/pkg/install/helm"
+	"github.com/solo-io/supergloo/pkg2/install/helm"
 	"github.com/solo-io/supergloo/test/utils"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -8,7 +8,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/config"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
 	yaml "gopkg.in/yaml.v2"
 )
 

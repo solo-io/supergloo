@@ -11,24 +11,24 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 
-	"github.com/solo-io/supergloo/pkg/factory"
-	kube_client "github.com/solo-io/supergloo/pkg/kube"
+	"github.com/solo-io/supergloo/pkg2/factory"
+	kube_client "github.com/solo-io/supergloo/pkg2/kube"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
 	"github.com/solo-io/solo-kit/test/helpers"
-	"github.com/solo-io/supergloo/pkg/constants"
+	"github.com/solo-io/supergloo/pkg2/constants"
 
-	"github.com/solo-io/supergloo/pkg/secret"
+	"github.com/solo-io/supergloo/pkg2/secret"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/supergloo/pkg2/install/istio"
 	kubecore "k8s.io/api/core/v1"
 	kubemeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/supergloo/pkg/install"
+	"github.com/solo-io/supergloo/pkg2/install"
 
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 	"github.com/solo-io/supergloo/test/util"
 
 	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -38,10 +38,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	istioSync "github.com/solo-io/supergloo/pkg/translator/istio"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	istioSync "github.com/solo-io/supergloo/pkg2/translator/istio"
 
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 )
 
 /*
