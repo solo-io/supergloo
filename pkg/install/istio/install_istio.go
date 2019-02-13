@@ -1,10 +1,7 @@
 package istio
 
 import (
-	"bytes"
 	"context"
-	"strings"
-	"text/template"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/supergloo/pkg/install/helm"
@@ -92,39 +89,12 @@ func InstallIstio(ctx context.Context, opts InstallOptions) error {
 		return errors.Errorf("%v is not a supported istio version. available versions and their chart locations: %v", version, supportedIstioVersions)
 	}
 
-	helmValueOverrides, err := template.New("istio-" + version).Parse(installInfo.valuesTemplate)
-	if err != nil {
-		return errors.Wrapf(err, "")
-	}
-
-	valuesBuf := &bytes.Buffer{}
-	if err := helmValueOverrides.Execute(valuesBuf, opts); err != nil {
-		return errors.Wrapf(err, "internal error: rendering helm values")
-	}
-
-	manifests, err := helm.RenderManifests(
+	return helm.Install(
 		ctx,
-		installInfo.chartPath,
-		valuesBuf.String(),
 		releaseName(namespace, version),
 		namespace,
-		"", // NOTE(ilackarms): use helm default
-		true,
+		installInfo.chartPath,
+		installInfo.valuesTemplate,
+		opts,
 	)
-	if err != nil {
-		return errors.Wrapf(err, "rendering manifests")
-	}
-
-	for i, m := range manifests {
-		// replace all instances of istio-system with the target namespace
-		// based on instructions at https://istio.io/blog/2018/soft-multitenancy/#multiple-istio-control-planes
-		m.Content = strings.Replace(m.Content, "istio-system", namespace, -1)
-		manifests[i] = m
-	}
-
-	if err := helm.CreateFromManifests(ctx, namespace, manifests); err != nil {
-		return errors.Wrapf(err, "creating istio from manifests")
-	}
-
-	return nil
 }

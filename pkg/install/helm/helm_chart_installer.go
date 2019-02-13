@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"text/template"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -200,4 +201,42 @@ func DeleteFromManifests(ctx context.Context, namespace string, manifests Manife
 func IsNoKindMatch(err error) bool {
 	_, ok := err.(*meta.NoKindMatchError)
 	return ok
+}
+
+func Install(ctx context.Context, releaseName, namespace, chartPath, valuesTemplate string, valuesData interface{}) error {
+	helmValueOverrides, err := template.New("install-overrides").Parse(valuesTemplate)
+	if err != nil {
+		return errors.Wrapf(err, "")
+	}
+
+	valuesBuf := &bytes.Buffer{}
+	if err := helmValueOverrides.Execute(valuesBuf, valuesData); err != nil {
+		return errors.Wrapf(err, "internal error: rendering helm values")
+	}
+
+	manifests, err := RenderManifests(
+		ctx,
+		chartPath,
+		valuesBuf.String(),
+		releaseName,
+		namespace,
+		"", // NOTE(ilackarms): use helm default
+		true,
+	)
+	if err != nil {
+		return errors.Wrapf(err, "rendering manifests")
+	}
+
+	for i, m := range manifests {
+		// replace all instances of istio-system with the target namespace
+		// based on instructions at https://istio.io/blog/2018/soft-multitenancy/#multiple-istio-control-planes
+		m.Content = strings.Replace(m.Content, "istio-system", namespace, -1)
+		manifests[i] = m
+	}
+
+	if err := CreateFromManifests(ctx, namespace, manifests); err != nil {
+		return errors.Wrapf(err, "creating istio from manifests")
+	}
+
+	return nil
 }
