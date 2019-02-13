@@ -73,9 +73,6 @@ func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 str
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.Encryption).To(Equal(input.Encryption))
-	Expect(r1.Observability).To(Equal(input.Observability))
-	Expect(r1.Policy).To(Equal(input.Policy))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

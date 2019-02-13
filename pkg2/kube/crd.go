@@ -2,7 +2,7 @@ package kube
 
 import (
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/supergloo/pkg/install/shared"
+	"github.com/solo-io/supergloo/pkg2/install/shared"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

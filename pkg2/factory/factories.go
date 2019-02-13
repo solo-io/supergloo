@@ -2,7 +2,7 @@ package factory
 
 import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"k8s.io/client-go/kubernetes"
 )

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"

@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/get/printers"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	superglooV1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	k8sApiExt "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

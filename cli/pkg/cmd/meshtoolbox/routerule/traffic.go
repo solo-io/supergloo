@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/common/iutil"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	superglooV1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 func EnsureTrafficShifting(irOpts *options.InputTrafficShifting, opts *options.Options) error {

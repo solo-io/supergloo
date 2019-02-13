@@ -3,9 +3,9 @@ package util
 import (
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/constants"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/constants"
 )
 
 func GetRef(namespace, name string) *core.ResourceRef {

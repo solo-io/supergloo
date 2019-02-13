@@ -43,6 +43,7 @@ func (r *VirtualService) Hash() uint64 {
 		r.Http,
 		r.Tls,
 		r.Tcp,
+		r.ConfigScope,
 	)
 }
 
@@ -165,9 +166,9 @@ func (o *VirtualService) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*VirtualService)
 }
 
-var VirtualServiceCrd = crd.NewCrd("networking.istio.io",
+var VirtualServiceCrd = crd.NewCrd("istio.networking.v1alpha3",
 	"virtualservices",
-	"networking.istio.io",
+	"istio.networking.v1alpha3",
 	"v1alpha3",
 	"VirtualService",
 	"virtualservice",

@@ -78,6 +78,7 @@ func VirtualServiceClientTest(namespace string, client VirtualServiceClient, nam
 	Expect(r1.Http).To(Equal(input.Http))
 	Expect(r1.Tls).To(Equal(input.Tls))
 	Expect(r1.Tcp).To(Equal(input.Tcp))
+	Expect(r1.ConfigScope).To(Equal(input.ConfigScope))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

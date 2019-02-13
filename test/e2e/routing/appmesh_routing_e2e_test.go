@@ -16,7 +16,7 @@ import (
 	awsappmesh "github.com/aws/aws-sdk-go/service/appmesh"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
-	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+	"github.com/solo-io/supergloo/pkg2/translator/appmesh"
 	"k8s.io/client-go/kubernetes"
 
 	. "github.com/onsi/ginkgo"
@@ -27,8 +27,8 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	testsetup "github.com/solo-io/solo-kit/test/setup"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/setup"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/setup"
 	"github.com/solo-io/supergloo/test/utils"
 )
 

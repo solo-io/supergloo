@@ -2,7 +2,7 @@ package routerule
 
 import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	superglooV1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 func EnsureHeaderManipulation(irOpts *options.InputHeaderManipulation, opts *options.Options) error {

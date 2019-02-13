@@ -39,16 +39,6 @@ func (r *RoutingRule) Hash() uint64 {
 	return hashutils.HashAll(
 		metaCopy,
 		r.TargetMesh,
-		r.Sources,
-		r.Destinations,
-		r.RequestMatchers,
-		r.TrafficShifting,
-		r.FaultInjection,
-		r.Timeout,
-		r.Retries,
-		r.CorsPolicy,
-		r.Mirror,
-		r.HeaderManipulaition,
 	)
 }
 

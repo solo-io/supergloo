@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/supergloo/pkg/install/helm"
+	"github.com/solo-io/supergloo/pkg2/install/helm"
 )
 
 const (

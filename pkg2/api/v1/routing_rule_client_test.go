@@ -74,16 +74,6 @@ func RoutingRuleClientTest(namespace string, client RoutingRuleClient, name1, na
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
 	Expect(r1.TargetMesh).To(Equal(input.TargetMesh))
-	Expect(r1.Sources).To(Equal(input.Sources))
-	Expect(r1.Destinations).To(Equal(input.Destinations))
-	Expect(r1.RequestMatchers).To(Equal(input.RequestMatchers))
-	Expect(r1.TrafficShifting).To(Equal(input.TrafficShifting))
-	Expect(r1.FaultInjection).To(Equal(input.FaultInjection))
-	Expect(r1.Timeout).To(Equal(input.Timeout))
-	Expect(r1.Retries).To(Equal(input.Retries))
-	Expect(r1.CorsPolicy).To(Equal(input.CorsPolicy))
-	Expect(r1.Mirror).To(Equal(input.Mirror))
-	Expect(r1.HeaderManipulaition).To(Equal(input.HeaderManipulaition))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

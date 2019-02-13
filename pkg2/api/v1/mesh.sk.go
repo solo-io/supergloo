@@ -38,10 +38,6 @@ func (r *Mesh) Hash() uint64 {
 	metaCopy.ResourceVersion = ""
 	return hashutils.HashAll(
 		metaCopy,
-		r.Encryption,
-		r.Observability,
-		r.Policy,
-		r.MeshType,
 	)
 }
 
@@ -169,6 +165,6 @@ var MeshCrd = crd.NewCrd("supergloo.solo.io",
 	"supergloo.solo.io",
 	"v1",
 	"Mesh",
-	"mesh",
+	"m",
 	false,
 	&Mesh{})

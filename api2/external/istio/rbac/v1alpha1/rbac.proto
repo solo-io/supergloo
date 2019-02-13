@@ -82,7 +82,7 @@ syntax = "proto3";
 // ```
 package rbac.istio.io;
 
-option go_package = "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1";
+option go_package = "github.com/solo-io/supergloo/pkg2/api/external/istio/rbac/v1alpha1";
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "gogoproto/gogo.proto";

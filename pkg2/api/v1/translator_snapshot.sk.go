@@ -4,7 +4,7 @@ package v1
 
 import (
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"

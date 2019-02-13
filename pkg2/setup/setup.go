@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	kube_client "github.com/solo-io/supergloo/pkg/kube"
-	"github.com/solo-io/supergloo/pkg/secret"
+	kube_client "github.com/solo-io/supergloo/pkg2/kube"
+	"github.com/solo-io/supergloo/pkg2/secret"
 
-	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+	"github.com/solo-io/supergloo/pkg2/translator/appmesh"
 
-	factory2 "github.com/solo-io/supergloo/pkg/factory"
+	factory2 "github.com/solo-io/supergloo/pkg2/factory"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
@@ -22,12 +22,12 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
-	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install"
-	"github.com/solo-io/supergloo/pkg/translator/consul"
-	"github.com/solo-io/supergloo/pkg/translator/istio"
-	"github.com/solo-io/supergloo/pkg/translator/linkerd2"
+	prometheusv1 "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/install"
+	"github.com/solo-io/supergloo/pkg2/translator/consul"
+	"github.com/solo-io/supergloo/pkg2/translator/istio"
+	"github.com/solo-io/supergloo/pkg2/translator/linkerd2"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 )

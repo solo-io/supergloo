@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/supergloo/pkg2/install/istio"
 	"github.com/solo-io/supergloo/test/util"
 
 	. "github.com/onsi/ginkgo"
@@ -18,9 +18,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 	testsetup "github.com/solo-io/solo-kit/test/setup"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/setup"
+	"github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/setup"
 	"github.com/solo-io/supergloo/test/utils"
 )
 

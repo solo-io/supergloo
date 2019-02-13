@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	v10 "github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
+	v10 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 // MockSecretSyncer is a mock of SecretSyncer interface

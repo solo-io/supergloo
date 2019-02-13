@@ -1,6 +1,6 @@
 syntax = "proto3";
 package config.prometheus.io;
-option go_package = "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1";
+option go_package = "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1";
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/struct.proto";

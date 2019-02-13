@@ -7,7 +7,7 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	superglooV1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 

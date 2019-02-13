@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	config_prometheus_io "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	config_prometheus_io "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"

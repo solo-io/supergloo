@@ -6,7 +6,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
-	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	prometheusv1 "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -76,6 +76,7 @@ func DestinationRuleClientTest(namespace string, client DestinationRuleClient, n
 	Expect(r1.Host).To(Equal(input.Host))
 	Expect(r1.TrafficPolicy).To(Equal(input.TrafficPolicy))
 	Expect(r1.Subsets).To(Equal(input.Subsets))
+	Expect(r1.ConfigScope).To(Equal(input.ConfigScope))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

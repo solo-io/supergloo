@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/solo-io/supergloo/pkg/setup"
+	. "github.com/solo-io/supergloo/pkg2/setup"
 )
 
 // TODO: ilackarms: make this test runnable (now it blocks forever)
