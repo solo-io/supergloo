@@ -9,7 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	"github.com/solo-io/supergloo/pkg/constants"
+	"github.com/solo-io/supergloo/pkg2/constants"
 	"github.com/spf13/cobra"
 	k8s "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

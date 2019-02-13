@@ -3,7 +3,7 @@ package shared_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/supergloo/pkg/install/shared"
+	. "github.com/solo-io/supergloo/pkg2/install/shared"
 	"github.com/solo-io/supergloo/test/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"

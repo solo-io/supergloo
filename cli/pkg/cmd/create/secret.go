@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 	"github.com/spf13/cobra"
 )
 

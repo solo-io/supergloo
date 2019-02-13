@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"github.com/solo-io/supergloo/pkg2/translator/utils"
 
 	"github.com/mitchellh/hashstructure"
 	"github.com/solo-io/solo-kit/pkg/utils/nameutils"
@@ -18,8 +18,8 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 type MeshRoutingSyncer struct {

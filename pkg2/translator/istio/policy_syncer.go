@@ -21,8 +21,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg2/api/external/istio/rbac/v1alpha1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 type PolicySyncer struct {

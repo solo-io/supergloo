@@ -41,6 +41,7 @@ func (r *DestinationRule) Hash() uint64 {
 		r.Host,
 		r.TrafficPolicy,
 		r.Subsets,
+		r.ConfigScope,
 	)
 }
 
@@ -163,9 +164,9 @@ func (o *DestinationRule) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*DestinationRule)
 }
 
-var DestinationRuleCrd = crd.NewCrd("networking.istio.io",
+var DestinationRuleCrd = crd.NewCrd("istio.networking.v1alpha3",
 	"destinationrules",
-	"networking.istio.io",
+	"istio.networking.v1alpha3",
 	"v1alpha3",
 	"DestinationRule",
 	"destinationrule",

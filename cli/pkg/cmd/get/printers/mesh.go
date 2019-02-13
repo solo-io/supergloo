@@ -8,7 +8,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/solo-io/solo-kit/pkg/utils/cliutils"
 	"github.com/solo-io/supergloo/cli/pkg/common"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 func MeshTable(list *v1.MeshList, output string, template string) error {

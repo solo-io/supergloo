@@ -6,12 +6,12 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/kube"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg2/kube"
 )
 
 // If you change this interface, you have to rerun mockgen

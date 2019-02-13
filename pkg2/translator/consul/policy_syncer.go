@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
 
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 const (

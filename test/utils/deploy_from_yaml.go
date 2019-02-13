@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/solo-io/supergloo/pkg/install/shared"
+	"github.com/solo-io/supergloo/pkg2/install/shared"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

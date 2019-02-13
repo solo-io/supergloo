@@ -10,24 +10,24 @@ import (
 
 	"github.com/pkg/errors"
 
-	factory2 "github.com/solo-io/supergloo/pkg/factory"
+	factory2 "github.com/solo-io/supergloo/pkg2/factory"
 
-	"github.com/solo-io/supergloo/pkg/secret"
+	"github.com/solo-io/supergloo/pkg2/secret"
 
-	"github.com/solo-io/supergloo/pkg/install/helm"
+	"github.com/solo-io/supergloo/pkg2/install/helm"
 
 	"github.com/hashicorp/consul/api"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	gloo "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	istiosecret "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiosecret "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 	"k8s.io/client-go/kubernetes"
 
 	kubecore "k8s.io/api/core/v1"
@@ -40,7 +40,7 @@ import (
 	// love me google.
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 )
 
 var kubeConfig *rest.Config

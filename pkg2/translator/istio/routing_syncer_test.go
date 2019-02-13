@@ -11,9 +11,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	. "github.com/solo-io/supergloo/pkg/translator/istio"
+	"github.com/solo-io/supergloo/pkg2/api/external/istio/networking/v1alpha3"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	. "github.com/solo-io/supergloo/pkg2/translator/istio"
 )
 
 var _ = Describe("RoutingSyncer", func() {

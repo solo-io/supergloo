@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 const (

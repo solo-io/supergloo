@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/common"
 	"github.com/solo-io/supergloo/cli/pkg/nsutil"
-	superglooV1 "github.com/solo-io/supergloo/pkg/api/v1"
+	superglooV1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	"github.com/spf13/cobra"
 )
 

@@ -3,10 +3,10 @@ package install
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/constants"
+	"github.com/solo-io/supergloo/pkg2/constants"
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 

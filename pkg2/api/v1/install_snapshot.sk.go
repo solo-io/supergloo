@@ -3,7 +3,7 @@
 package v1
 
 import (
-	encryption_istio_io "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
+	encryption_istio_io "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
 
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"

@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
-	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"github.com/solo-io/supergloo/pkg2/translator/utils"
 
 	"github.com/mitchellh/hashstructure"
 
@@ -25,7 +25,7 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 )
 
 // NOTE: copy-pasted from discovery/pkg/fds/discoveries/aws/aws.go

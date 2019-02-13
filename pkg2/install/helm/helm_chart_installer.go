@@ -17,7 +17,7 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/avast/retry-go"
-	kubecrds "github.com/solo-io/supergloo/pkg/kube"
+	kubecrds "github.com/solo-io/supergloo/pkg2/kube"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/go-utils/contextutils"

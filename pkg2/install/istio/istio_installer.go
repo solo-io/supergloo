@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/solo-io/supergloo/pkg/kube"
-	"github.com/solo-io/supergloo/pkg/secret"
+	"github.com/solo-io/supergloo/pkg2/kube"
+	"github.com/solo-io/supergloo/pkg2/secret"
 
 	"github.com/solo-io/solo-kit/pkg/errors"
-	istiov1 "github.com/solo-io/supergloo/pkg/api/external/istio/encryption/v1"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	istiov1 "github.com/solo-io/supergloo/pkg2/api/external/istio/encryption/v1"
+	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 )
 
