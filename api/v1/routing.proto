@@ -1,0 +1,28 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+message RoutingRule {
+    option (core.solo.io.resource).short_name = "rr";
+    option (core.solo.io.resource).plural_name = "routingrules";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by supergloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // target where we apply this rule. this can be a mesh group or an individual mesh
+    core.solo.io.ResourceRef target_mesh = 1;
+}
