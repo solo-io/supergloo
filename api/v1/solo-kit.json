@@ -1,0 +1,38 @@
+{
+  "title": "SupaGloo",
+  "name": "supergloo.solo.io",
+  "docs_dir": "../../docs",
+  "version": "v1",
+  "resource_groups": {
+    "config.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "MeshGroup",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "RoutingRule",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "TlsSecret",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "DestinationRule",
+        "package": "istio.networking.v1alpha3"
+      },
+      {
+        "name": "VirtualService",
+        "package": "istio.networking.v1alpha3"
+      }
+    ]
+  }
+}
