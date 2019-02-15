@@ -196,11 +196,7 @@ func (t *translator) applyRules(
 			continue
 		}
 
-		istioMatcher, err := createIstioMatcher(sourceLabelSets, destinationPort, matcher)
-		if err != nil {
-			report(err, "invalid matcher")
-			continue
-		}
+		istioMatcher := createIstioMatcher(sourceLabelSets, destinationPort, matcher)
 
 		route := t.createRoute(
 			params,
@@ -314,7 +310,7 @@ func (t *translator) createRoute(
 	return out
 }
 
-func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, matcher []*gloov1.Matcher) ([]*v1alpha3.HTTPMatchRequest, error) {
+func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, matcher []*gloov1.Matcher) []*v1alpha3.HTTPMatchRequest {
 	var istioMatcher []*v1alpha3.HTTPMatchRequest
 
 	// override for default istioMatcher
@@ -322,7 +318,6 @@ func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, ma
 	case len(matcher) == 0 && len(sourceLabelSets) == 0:
 		// default, catch-all istioMatcher is simply nil
 	case len(matcher) == 0 && len(sourceLabelSets) > 0:
-		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, sourceLabels := range sourceLabelSets {
 			istioMatcher = append(istioMatcher, convertMatcher(sourceLabels, destPort, &gloov1.Matcher{
 				PathSpecifier: &gloov1.Matcher_Prefix{
@@ -331,19 +326,17 @@ func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, ma
 			}))
 		}
 	case matcher != nil && len(sourceLabelSets) == 0:
-		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, match := range matcher {
 			istioMatcher = append(istioMatcher, convertMatcher(nil, destPort, match))
 		}
 	case matcher != nil && len(sourceLabelSets) > 0:
-		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, match := range matcher {
 			for _, source := range sourceLabelSets {
 				istioMatcher = append(istioMatcher, convertMatcher(source, destPort, match))
 			}
 		}
 	}
-	return istioMatcher, nil
+	return istioMatcher
 }
 
 func convertMatcher(sourceSelector map[string]string, destPort uint32, match *gloov1.Matcher) *v1alpha3.HTTPMatchRequest {

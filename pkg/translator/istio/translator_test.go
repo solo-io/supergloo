@@ -148,3 +148,56 @@ var _ = Describe("convertMatcher", func() {
 		}))
 	})
 })
+
+var _ = Describe("createIstioMatcher", func() {
+	Context("yes matcher, yes source labels", func() {
+		It("creates a copy of each matcher for each set of source labels", func() {
+			istioMatchers := createIstioMatcher(
+				[]map[string]string{
+					{"app": "details"},
+					{"app": "reviews"},
+				}, 1234, []*gloov1.Matcher{
+					{
+						PathSpecifier: &gloov1.Matcher_Exact{
+							Exact: "hi",
+						},
+					},
+					{
+						PathSpecifier: &gloov1.Matcher_Exact{
+							Exact: "bye",
+						},
+					},
+				})
+			Expect(istioMatchers).To(Equal([]*v1alpha3.HTTPMatchRequest{
+				{
+					Uri: &v1alpha3.StringMatch{
+						MatchType: &v1alpha3.StringMatch_Exact{Exact: "hi"},
+					},
+					Port:         1234,
+					SourceLabels: map[string]string{"app": "details"},
+				},
+				{
+					Uri: &v1alpha3.StringMatch{
+						MatchType: &v1alpha3.StringMatch_Exact{Exact: "hi"},
+					},
+					Port:         1234,
+					SourceLabels: map[string]string{"app": "reviews"},
+				},
+				{
+					Uri: &v1alpha3.StringMatch{
+						MatchType: &v1alpha3.StringMatch_Exact{Exact: "bye"},
+					},
+					Port:         1234,
+					SourceLabels: map[string]string{"app": "details"},
+				},
+				{
+					Uri: &v1alpha3.StringMatch{
+						MatchType: &v1alpha3.StringMatch_Exact{Exact: "bye"},
+					},
+					Port:         1234,
+					SourceLabels: map[string]string{"app": "reviews"},
+				},
+			}))
+		})
+	})
+})
