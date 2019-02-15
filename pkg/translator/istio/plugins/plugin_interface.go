@@ -25,13 +25,11 @@ type Params struct {
 type EncryptionPlugin interface {
 	Plugin
 	ProcessDestinationRule(params Params, in v1.EncryptionRuleSpec, out *v1alpha3.DestinationRule) error
-	ProcessVirtualService(params Params, in v1.EncryptionRuleSpec, out *v1alpha3.VirtualService) error
 }
 
 type RoutingPlugin interface {
 	Plugin
-	ProcessDestinationRule(params Params, in v1.RoutingRuleSpec, out *v1alpha3.DestinationRule) error
-	ProcessVirtualService(params Params, in v1.RoutingRuleSpec, out *v1alpha3.VirtualService) error
+	ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error
 }
 
 type registry struct {

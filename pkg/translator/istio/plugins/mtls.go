@@ -32,7 +32,3 @@ func (p *MtlsPlugin) ProcessDestinationRule(params Params, in v1.EncryptionRuleS
 	}
 	return nil
 }
-
-func (p *MtlsPlugin) ProcessVirtualService(params Params, in v1.EncryptionRuleSpec, out *v1alpha3.VirtualService) error {
-	return nil
-}
