@@ -46,6 +46,7 @@ var _ = Describe("V1Emitter", func() {
 		meshGroupClient       MeshGroupClient
 		upstreamClient        gloo_solo_io.UpstreamClient
 		routingRuleClient     RoutingRuleClient
+		encryptionRuleClient  EncryptionRuleClient
 		tlsSecretClient       TlsSecretClient
 		destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient
 		virtualServiceClient  istio_networking_v1alpha3.VirtualServiceClient
@@ -94,6 +95,14 @@ var _ = Describe("V1Emitter", func() {
 		}
 		routingRuleClient, err = NewRoutingRuleClient(routingRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
+		// EncryptionRule Constructor
+		encryptionRuleClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         EncryptionRuleCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(),
+		}
+		encryptionRuleClient, err = NewEncryptionRuleClient(encryptionRuleClientFactory)
+		Expect(err).NotTo(HaveOccurred())
 		// TlsSecret Constructor
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
@@ -119,7 +128,7 @@ var _ = Describe("V1Emitter", func() {
 		}
 		virtualServiceClient, err = istio_networking_v1alpha3.NewVirtualServiceClient(virtualServiceClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient)
+		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, encryptionRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -369,6 +378,64 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotRoutingrules(nil, RoutingRuleList{routingRule1a, routingRule1b, routingRule2a, routingRule2b})
+
+		/*
+			EncryptionRule
+		*/
+
+		assertSnapshotEcryptionrules := func(expectEcryptionrules EncryptionRuleList, unexpectEcryptionrules EncryptionRuleList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectEcryptionrules {
+						if _, err := snap.Ecryptionrules.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectEcryptionrules {
+						if _, err := snap.Ecryptionrules.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := encryptionRuleClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := encryptionRuleClient.List(namespace2, clients.ListOpts{})
+					combined := nsList1.ByNamespace()
+					combined.Add(nsList2...)
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		encryptionRule1a, err := encryptionRuleClient.Write(NewEncryptionRule(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		encryptionRule1b, err := encryptionRuleClient.Write(NewEncryptionRule(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotEcryptionrules(EncryptionRuleList{encryptionRule1a, encryptionRule1b}, nil)
+		encryptionRule2a, err := encryptionRuleClient.Write(NewEncryptionRule(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		encryptionRule2b, err := encryptionRuleClient.Write(NewEncryptionRule(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotEcryptionrules(EncryptionRuleList{encryptionRule1a, encryptionRule1b, encryptionRule2a, encryptionRule2b}, nil)
+
+		err = encryptionRuleClient.Delete(encryptionRule2a.Metadata.Namespace, encryptionRule2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = encryptionRuleClient.Delete(encryptionRule2b.Metadata.Namespace, encryptionRule2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotEcryptionrules(EncryptionRuleList{encryptionRule1a, encryptionRule1b}, EncryptionRuleList{encryptionRule2a, encryptionRule2b})
+
+		err = encryptionRuleClient.Delete(encryptionRule1a.Metadata.Namespace, encryptionRule1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = encryptionRuleClient.Delete(encryptionRule1b.Metadata.Namespace, encryptionRule1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotEcryptionrules(nil, EncryptionRuleList{encryptionRule1a, encryptionRule1b, encryptionRule2a, encryptionRule2b})
 
 		/*
 			TlsSecret

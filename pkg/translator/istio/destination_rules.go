@@ -15,14 +15,9 @@ import (
 // then a subset for every unique set of labels therein
 func destinationRulesFromUpstreams(writeNamespace string, upstreams gloov1.UpstreamList) (v1alpha3.DestinationRuleList, error) {
 	var destinationRules v1alpha3.DestinationRuleList
-	labelsByHost := make(map[string][]map[string]string)
-	for _, us := range upstreams {
-		labels := utils.GetLabelsForUpstream(us)
-		host, err := utils.GetHostForUpstream(us)
-		if err != nil {
-			return nil, errors.Wrapf(err, "getting host for upstream")
-		}
-		labelsByHost[host] = append(labelsByHost[host], labels)
+	labelsByHost, err := labelsByHost(upstreams)
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting hostnames and labels for upstreams")
 	}
 	for host, labelSets := range labelsByHost {
 		var subsets []*v1alpha3.Subset
@@ -68,4 +63,17 @@ func sanitizeName(name string) string {
 	name = strings.Replace(name, " ", "-", -1)
 	name = strings.Replace(name, "\n", "", -1)
 	return name
+}
+
+func labelsByHost(upstreams gloov1.UpstreamList) (map[string][]map[string]string, error) {
+	labelsByHost := make(map[string][]map[string]string)
+	for _, us := range upstreams {
+		labels := utils.GetLabelsForUpstream(us)
+		host, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		labelsByHost[host] = append(labelsByHost[host], labels)
+	}
+	return labelsByHost, nil
 }

@@ -10,8 +10,10 @@ import (
 
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
+	types "github.com/gogo/protobuf/types"
+	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -25,6 +27,13 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
+// a routing rule applies some L7 routing features to an existing mesh
+// routing rules specify the following:
+// for all requests:
+// - originating from from **source pods**
+// - sent to **destination pods**
+// - matching one or more **request matcher**
+// apply the specified RoutingRuleSpec
 type RoutingRule struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation
@@ -32,10 +41,22 @@ type RoutingRule struct {
 	// Metadata contains the object metadata for this resource
 	Metadata core.Metadata `protobuf:"bytes,101,opt,name=metadata,proto3" json:"metadata"`
 	// target where we apply this rule. this can be a mesh group or an individual mesh
-	TargetMesh           *core.ResourceRef `protobuf:"bytes,1,opt,name=target_mesh,json=targetMesh,proto3" json:"target_mesh,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	TargetMesh *core.ResourceRef `protobuf:"bytes,1,opt,name=target_mesh,json=targetMesh,proto3" json:"target_mesh,omitempty"`
+	// requests originating from these pods will have the rule applied
+	// leave empty to have all pods in the mesh apply these rules
+	SourceSelector *PodSelector `protobuf:"bytes,2,opt,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
+	// requests destined for these pods will have the rule applied
+	// leave empty to apply to all destination pods in the mesh
+	DestinationSelector *PodSelector `protobuf:"bytes,3,opt,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
+	// if specified, this rule will only apply to http requests
+	// in the mesh matching these parameters
+	RequestMatchers []*v1.Matcher `protobuf:"bytes,4,rep,name=RequestMatchers,proto3" json:"RequestMatchers,omitempty"`
+	// contains the configuration that will be applied to
+	// selected pods within the target mesh(es)
+	Spec                 *RoutingRuleSpec `protobuf:"bytes,5,opt,name=spec,proto3" json:"spec,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
 func (m *RoutingRule) Reset()         { *m = RoutingRule{} }
@@ -83,8 +104,758 @@ func (m *RoutingRule) GetTargetMesh() *core.ResourceRef {
 	return nil
 }
 
+func (m *RoutingRule) GetSourceSelector() *PodSelector {
+	if m != nil {
+		return m.SourceSelector
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetDestinationSelector() *PodSelector {
+	if m != nil {
+		return m.DestinationSelector
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetRequestMatchers() []*v1.Matcher {
+	if m != nil {
+		return m.RequestMatchers
+	}
+	return nil
+}
+
+func (m *RoutingRule) GetSpec() *RoutingRuleSpec {
+	if m != nil {
+		return m.Spec
+	}
+	return nil
+}
+
+// specifies the method by which to select pods
+// with in a mesh for the application of routing rules
+type PodSelector struct {
+	// specify the type of selector to use with selectorType
+	//
+	// Types that are valid to be assigned to SelectorType:
+	//	*PodSelector_LabelSelector_
+	//	*PodSelector_UpstreamSelector_
+	//	*PodSelector_NamespaceSelector_
+	SelectorType         isPodSelector_SelectorType `protobuf_oneof:"selector_type"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *PodSelector) Reset()         { *m = PodSelector{} }
+func (m *PodSelector) String() string { return proto.CompactTextString(m) }
+func (*PodSelector) ProtoMessage()    {}
+func (*PodSelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{1}
+}
+func (m *PodSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PodSelector.Unmarshal(m, b)
+}
+func (m *PodSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PodSelector.Marshal(b, m, deterministic)
+}
+func (m *PodSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PodSelector.Merge(m, src)
+}
+func (m *PodSelector) XXX_Size() int {
+	return xxx_messageInfo_PodSelector.Size(m)
+}
+func (m *PodSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_PodSelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PodSelector proto.InternalMessageInfo
+
+type isPodSelector_SelectorType interface {
+	isPodSelector_SelectorType()
+	Equal(interface{}) bool
+}
+
+type PodSelector_LabelSelector_ struct {
+	LabelSelector *PodSelector_LabelSelector `protobuf:"bytes,1,opt,name=label_selector,json=labelSelector,proto3,oneof"`
+}
+type PodSelector_UpstreamSelector_ struct {
+	UpstreamSelector *PodSelector_UpstreamSelector `protobuf:"bytes,2,opt,name=upstream_selector,json=upstreamSelector,proto3,oneof"`
+}
+type PodSelector_NamespaceSelector_ struct {
+	NamespaceSelector *PodSelector_NamespaceSelector `protobuf:"bytes,3,opt,name=namespace_selector,json=namespaceSelector,proto3,oneof"`
+}
+
+func (*PodSelector_LabelSelector_) isPodSelector_SelectorType()     {}
+func (*PodSelector_UpstreamSelector_) isPodSelector_SelectorType()  {}
+func (*PodSelector_NamespaceSelector_) isPodSelector_SelectorType() {}
+
+func (m *PodSelector) GetSelectorType() isPodSelector_SelectorType {
+	if m != nil {
+		return m.SelectorType
+	}
+	return nil
+}
+
+func (m *PodSelector) GetLabelSelector() *PodSelector_LabelSelector {
+	if x, ok := m.GetSelectorType().(*PodSelector_LabelSelector_); ok {
+		return x.LabelSelector
+	}
+	return nil
+}
+
+func (m *PodSelector) GetUpstreamSelector() *PodSelector_UpstreamSelector {
+	if x, ok := m.GetSelectorType().(*PodSelector_UpstreamSelector_); ok {
+		return x.UpstreamSelector
+	}
+	return nil
+}
+
+func (m *PodSelector) GetNamespaceSelector() *PodSelector_NamespaceSelector {
+	if x, ok := m.GetSelectorType().(*PodSelector_NamespaceSelector_); ok {
+		return x.NamespaceSelector
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*PodSelector) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _PodSelector_OneofMarshaler, _PodSelector_OneofUnmarshaler, _PodSelector_OneofSizer, []interface{}{
+		(*PodSelector_LabelSelector_)(nil),
+		(*PodSelector_UpstreamSelector_)(nil),
+		(*PodSelector_NamespaceSelector_)(nil),
+	}
+}
+
+func _PodSelector_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*PodSelector)
+	// selector_type
+	switch x := m.SelectorType.(type) {
+	case *PodSelector_LabelSelector_:
+		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.LabelSelector); err != nil {
+			return err
+		}
+	case *PodSelector_UpstreamSelector_:
+		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.UpstreamSelector); err != nil {
+			return err
+		}
+	case *PodSelector_NamespaceSelector_:
+		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.NamespaceSelector); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("PodSelector.SelectorType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _PodSelector_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*PodSelector)
+	switch tag {
+	case 1: // selector_type.label_selector
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(PodSelector_LabelSelector)
+		err := b.DecodeMessage(msg)
+		m.SelectorType = &PodSelector_LabelSelector_{msg}
+		return true, err
+	case 2: // selector_type.upstream_selector
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(PodSelector_UpstreamSelector)
+		err := b.DecodeMessage(msg)
+		m.SelectorType = &PodSelector_UpstreamSelector_{msg}
+		return true, err
+	case 3: // selector_type.namespace_selector
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(PodSelector_NamespaceSelector)
+		err := b.DecodeMessage(msg)
+		m.SelectorType = &PodSelector_NamespaceSelector_{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _PodSelector_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*PodSelector)
+	// selector_type
+	switch x := m.SelectorType.(type) {
+	case *PodSelector_LabelSelector_:
+		s := proto.Size(x.LabelSelector)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *PodSelector_UpstreamSelector_:
+		s := proto.Size(x.UpstreamSelector)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *PodSelector_NamespaceSelector_:
+		s := proto.Size(x.NamespaceSelector)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+// select pods by their labels
+type PodSelector_LabelSelector struct {
+	LabelsToMatch        map[string]string `protobuf:"bytes,1,rep,name=labels_to_match,json=labelsToMatch,proto3" json:"labels_to_match,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *PodSelector_LabelSelector) Reset()         { *m = PodSelector_LabelSelector{} }
+func (m *PodSelector_LabelSelector) String() string { return proto.CompactTextString(m) }
+func (*PodSelector_LabelSelector) ProtoMessage()    {}
+func (*PodSelector_LabelSelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{1, 0}
+}
+func (m *PodSelector_LabelSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PodSelector_LabelSelector.Unmarshal(m, b)
+}
+func (m *PodSelector_LabelSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PodSelector_LabelSelector.Marshal(b, m, deterministic)
+}
+func (m *PodSelector_LabelSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PodSelector_LabelSelector.Merge(m, src)
+}
+func (m *PodSelector_LabelSelector) XXX_Size() int {
+	return xxx_messageInfo_PodSelector_LabelSelector.Size(m)
+}
+func (m *PodSelector_LabelSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_PodSelector_LabelSelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PodSelector_LabelSelector proto.InternalMessageInfo
+
+func (m *PodSelector_LabelSelector) GetLabelsToMatch() map[string]string {
+	if m != nil {
+		return m.LabelsToMatch
+	}
+	return nil
+}
+
+// select pods based on their services or subsets of services.
+// upstream CRDs will be created by discovery corresponding to
+// kubernetes services and the available subsets of those services
+type PodSelector_UpstreamSelector struct {
+	// apply the selector to one or more of their upstreams by adding their refs here
+	Upstreams            []core.ResourceRef `protobuf:"bytes,1,rep,name=upstreams,proto3" json:"upstreams"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *PodSelector_UpstreamSelector) Reset()         { *m = PodSelector_UpstreamSelector{} }
+func (m *PodSelector_UpstreamSelector) String() string { return proto.CompactTextString(m) }
+func (*PodSelector_UpstreamSelector) ProtoMessage()    {}
+func (*PodSelector_UpstreamSelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{1, 1}
+}
+func (m *PodSelector_UpstreamSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PodSelector_UpstreamSelector.Unmarshal(m, b)
+}
+func (m *PodSelector_UpstreamSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PodSelector_UpstreamSelector.Marshal(b, m, deterministic)
+}
+func (m *PodSelector_UpstreamSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PodSelector_UpstreamSelector.Merge(m, src)
+}
+func (m *PodSelector_UpstreamSelector) XXX_Size() int {
+	return xxx_messageInfo_PodSelector_UpstreamSelector.Size(m)
+}
+func (m *PodSelector_UpstreamSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_PodSelector_UpstreamSelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PodSelector_UpstreamSelector proto.InternalMessageInfo
+
+func (m *PodSelector_UpstreamSelector) GetUpstreams() []core.ResourceRef {
+	if m != nil {
+		return m.Upstreams
+	}
+	return nil
+}
+
+// select all pods in these namespaces
+type PodSelector_NamespaceSelector struct {
+	Namespaces           []string `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PodSelector_NamespaceSelector) Reset()         { *m = PodSelector_NamespaceSelector{} }
+func (m *PodSelector_NamespaceSelector) String() string { return proto.CompactTextString(m) }
+func (*PodSelector_NamespaceSelector) ProtoMessage()    {}
+func (*PodSelector_NamespaceSelector) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{1, 2}
+}
+func (m *PodSelector_NamespaceSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PodSelector_NamespaceSelector.Unmarshal(m, b)
+}
+func (m *PodSelector_NamespaceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PodSelector_NamespaceSelector.Marshal(b, m, deterministic)
+}
+func (m *PodSelector_NamespaceSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PodSelector_NamespaceSelector.Merge(m, src)
+}
+func (m *PodSelector_NamespaceSelector) XXX_Size() int {
+	return xxx_messageInfo_PodSelector_NamespaceSelector.Size(m)
+}
+func (m *PodSelector_NamespaceSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_PodSelector_NamespaceSelector.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PodSelector_NamespaceSelector proto.InternalMessageInfo
+
+func (m *PodSelector_NamespaceSelector) GetNamespaces() []string {
+	if m != nil {
+		return m.Namespaces
+	}
+	return nil
+}
+
+// the routing configuration that will be applied to the mesh(es)
+type RoutingRuleSpec struct {
+	// a routing rule can have one of several types
+	//
+	// Types that are valid to be assigned to RuleType:
+	//	*RoutingRuleSpec_TrafficShifting
+	//	*RoutingRuleSpec_FaultInjection
+	//	*RoutingRuleSpec_RequestTimeout
+	//	*RoutingRuleSpec_Retries
+	//	*RoutingRuleSpec_CorsPolicy
+	//	*RoutingRuleSpec_Mirror
+	//	*RoutingRuleSpec_HeaderManipulaition
+	RuleType             isRoutingRuleSpec_RuleType `protobuf_oneof:"rule_type"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *RoutingRuleSpec) Reset()         { *m = RoutingRuleSpec{} }
+func (m *RoutingRuleSpec) String() string { return proto.CompactTextString(m) }
+func (*RoutingRuleSpec) ProtoMessage()    {}
+func (*RoutingRuleSpec) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{2}
+}
+func (m *RoutingRuleSpec) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RoutingRuleSpec.Unmarshal(m, b)
+}
+func (m *RoutingRuleSpec) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RoutingRuleSpec.Marshal(b, m, deterministic)
+}
+func (m *RoutingRuleSpec) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RoutingRuleSpec.Merge(m, src)
+}
+func (m *RoutingRuleSpec) XXX_Size() int {
+	return xxx_messageInfo_RoutingRuleSpec.Size(m)
+}
+func (m *RoutingRuleSpec) XXX_DiscardUnknown() {
+	xxx_messageInfo_RoutingRuleSpec.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RoutingRuleSpec proto.InternalMessageInfo
+
+type isRoutingRuleSpec_RuleType interface {
+	isRoutingRuleSpec_RuleType()
+	Equal(interface{}) bool
+}
+
+type RoutingRuleSpec_TrafficShifting struct {
+	TrafficShifting *TrafficShifting `protobuf:"bytes,1,opt,name=traffic_shifting,json=trafficShifting,proto3,oneof"`
+}
+type RoutingRuleSpec_FaultInjection struct {
+	FaultInjection *v1alpha3.HTTPFaultInjection `protobuf:"bytes,2,opt,name=fault_injection,json=faultInjection,proto3,oneof"`
+}
+type RoutingRuleSpec_RequestTimeout struct {
+	RequestTimeout *types.Duration `protobuf:"bytes,7,opt,name=request_timeout,json=requestTimeout,proto3,oneof"`
+}
+type RoutingRuleSpec_Retries struct {
+	Retries *v1alpha3.HTTPRetry `protobuf:"bytes,8,opt,name=retries,proto3,oneof"`
+}
+type RoutingRuleSpec_CorsPolicy struct {
+	CorsPolicy *v1alpha3.CorsPolicy `protobuf:"bytes,10,opt,name=cors_policy,json=corsPolicy,proto3,oneof"`
+}
+type RoutingRuleSpec_Mirror struct {
+	Mirror *v1.Destination `protobuf:"bytes,9,opt,name=mirror,proto3,oneof"`
+}
+type RoutingRuleSpec_HeaderManipulaition struct {
+	HeaderManipulaition *HeaderManipulation `protobuf:"bytes,12,opt,name=header_manipulaition,json=headerManipulaition,proto3,oneof"`
+}
+
+func (*RoutingRuleSpec_TrafficShifting) isRoutingRuleSpec_RuleType()     {}
+func (*RoutingRuleSpec_FaultInjection) isRoutingRuleSpec_RuleType()      {}
+func (*RoutingRuleSpec_RequestTimeout) isRoutingRuleSpec_RuleType()      {}
+func (*RoutingRuleSpec_Retries) isRoutingRuleSpec_RuleType()             {}
+func (*RoutingRuleSpec_CorsPolicy) isRoutingRuleSpec_RuleType()          {}
+func (*RoutingRuleSpec_Mirror) isRoutingRuleSpec_RuleType()              {}
+func (*RoutingRuleSpec_HeaderManipulaition) isRoutingRuleSpec_RuleType() {}
+
+func (m *RoutingRuleSpec) GetRuleType() isRoutingRuleSpec_RuleType {
+	if m != nil {
+		return m.RuleType
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetTrafficShifting() *TrafficShifting {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_TrafficShifting); ok {
+		return x.TrafficShifting
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetFaultInjection() *v1alpha3.HTTPFaultInjection {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_FaultInjection); ok {
+		return x.FaultInjection
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetRequestTimeout() *types.Duration {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_RequestTimeout); ok {
+		return x.RequestTimeout
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetRetries() *v1alpha3.HTTPRetry {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_Retries); ok {
+		return x.Retries
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetCorsPolicy() *v1alpha3.CorsPolicy {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_CorsPolicy); ok {
+		return x.CorsPolicy
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetMirror() *v1.Destination {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_Mirror); ok {
+		return x.Mirror
+	}
+	return nil
+}
+
+func (m *RoutingRuleSpec) GetHeaderManipulaition() *HeaderManipulation {
+	if x, ok := m.GetRuleType().(*RoutingRuleSpec_HeaderManipulaition); ok {
+		return x.HeaderManipulaition
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*RoutingRuleSpec) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _RoutingRuleSpec_OneofMarshaler, _RoutingRuleSpec_OneofUnmarshaler, _RoutingRuleSpec_OneofSizer, []interface{}{
+		(*RoutingRuleSpec_TrafficShifting)(nil),
+		(*RoutingRuleSpec_FaultInjection)(nil),
+		(*RoutingRuleSpec_RequestTimeout)(nil),
+		(*RoutingRuleSpec_Retries)(nil),
+		(*RoutingRuleSpec_CorsPolicy)(nil),
+		(*RoutingRuleSpec_Mirror)(nil),
+		(*RoutingRuleSpec_HeaderManipulaition)(nil),
+	}
+}
+
+func _RoutingRuleSpec_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*RoutingRuleSpec)
+	// rule_type
+	switch x := m.RuleType.(type) {
+	case *RoutingRuleSpec_TrafficShifting:
+		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.TrafficShifting); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_FaultInjection:
+		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.FaultInjection); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_RequestTimeout:
+		_ = b.EncodeVarint(7<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.RequestTimeout); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_Retries:
+		_ = b.EncodeVarint(8<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Retries); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_CorsPolicy:
+		_ = b.EncodeVarint(10<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.CorsPolicy); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_Mirror:
+		_ = b.EncodeVarint(9<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Mirror); err != nil {
+			return err
+		}
+	case *RoutingRuleSpec_HeaderManipulaition:
+		_ = b.EncodeVarint(12<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.HeaderManipulaition); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("RoutingRuleSpec.RuleType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _RoutingRuleSpec_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*RoutingRuleSpec)
+	switch tag {
+	case 1: // rule_type.traffic_shifting
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(TrafficShifting)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_TrafficShifting{msg}
+		return true, err
+	case 2: // rule_type.fault_injection
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(v1alpha3.HTTPFaultInjection)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_FaultInjection{msg}
+		return true, err
+	case 7: // rule_type.request_timeout
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(types.Duration)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_RequestTimeout{msg}
+		return true, err
+	case 8: // rule_type.retries
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(v1alpha3.HTTPRetry)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_Retries{msg}
+		return true, err
+	case 10: // rule_type.cors_policy
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(v1alpha3.CorsPolicy)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_CorsPolicy{msg}
+		return true, err
+	case 9: // rule_type.mirror
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(v1.Destination)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_Mirror{msg}
+		return true, err
+	case 12: // rule_type.header_manipulaition
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(HeaderManipulation)
+		err := b.DecodeMessage(msg)
+		m.RuleType = &RoutingRuleSpec_HeaderManipulaition{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _RoutingRuleSpec_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*RoutingRuleSpec)
+	// rule_type
+	switch x := m.RuleType.(type) {
+	case *RoutingRuleSpec_TrafficShifting:
+		s := proto.Size(x.TrafficShifting)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_FaultInjection:
+		s := proto.Size(x.FaultInjection)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_RequestTimeout:
+		s := proto.Size(x.RequestTimeout)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_Retries:
+		s := proto.Size(x.Retries)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_CorsPolicy:
+		s := proto.Size(x.CorsPolicy)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_Mirror:
+		s := proto.Size(x.Mirror)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *RoutingRuleSpec_HeaderManipulaition:
+		s := proto.Size(x.HeaderManipulaition)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+// requests for this rule will be routed to these destinations
+type TrafficShifting struct {
+	// split traffic between these subsets based on their weights
+	// weights should add to 100
+	Destinations         *v1.MultiDestination `protobuf:"bytes,1,opt,name=destinations,proto3" json:"destinations,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *TrafficShifting) Reset()         { *m = TrafficShifting{} }
+func (m *TrafficShifting) String() string { return proto.CompactTextString(m) }
+func (*TrafficShifting) ProtoMessage()    {}
+func (*TrafficShifting) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{3}
+}
+func (m *TrafficShifting) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficShifting.Unmarshal(m, b)
+}
+func (m *TrafficShifting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficShifting.Marshal(b, m, deterministic)
+}
+func (m *TrafficShifting) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficShifting.Merge(m, src)
+}
+func (m *TrafficShifting) XXX_Size() int {
+	return xxx_messageInfo_TrafficShifting.Size(m)
+}
+func (m *TrafficShifting) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficShifting.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficShifting proto.InternalMessageInfo
+
+func (m *TrafficShifting) GetDestinations() *v1.MultiDestination {
+	if m != nil {
+		return m.Destinations
+	}
+	return nil
+}
+
+// manipulate request and response headers
+type HeaderManipulation struct {
+	// HTTP headers to remove before returning a response to the caller.
+	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
+	// Additional HTTP headers to add before returning a response to the
+	// caller.
+	AppendResponseHeaders map[string]string `protobuf:"bytes,13,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// HTTP headers to remove before forwarding a request to the
+	// destination service.
+	RemoveRequestHeaders []string `protobuf:"bytes,14,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
+	// Additional HTTP headers to add before forwarding a request to the
+	// destination service.
+	AppendRequestHeaders map[string]string `protobuf:"bytes,15,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *HeaderManipulation) Reset()         { *m = HeaderManipulation{} }
+func (m *HeaderManipulation) String() string { return proto.CompactTextString(m) }
+func (*HeaderManipulation) ProtoMessage()    {}
+func (*HeaderManipulation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_29316bfaa5f4ba1a, []int{4}
+}
+func (m *HeaderManipulation) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HeaderManipulation.Unmarshal(m, b)
+}
+func (m *HeaderManipulation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HeaderManipulation.Marshal(b, m, deterministic)
+}
+func (m *HeaderManipulation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeaderManipulation.Merge(m, src)
+}
+func (m *HeaderManipulation) XXX_Size() int {
+	return xxx_messageInfo_HeaderManipulation.Size(m)
+}
+func (m *HeaderManipulation) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeaderManipulation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeaderManipulation proto.InternalMessageInfo
+
+func (m *HeaderManipulation) GetRemoveResponseHeaders() []string {
+	if m != nil {
+		return m.RemoveResponseHeaders
+	}
+	return nil
+}
+
+func (m *HeaderManipulation) GetAppendResponseHeaders() map[string]string {
+	if m != nil {
+		return m.AppendResponseHeaders
+	}
+	return nil
+}
+
+func (m *HeaderManipulation) GetRemoveRequestHeaders() []string {
+	if m != nil {
+		return m.RemoveRequestHeaders
+	}
+	return nil
+}
+
+func (m *HeaderManipulation) GetAppendRequestHeaders() map[string]string {
+	if m != nil {
+		return m.AppendRequestHeaders
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*RoutingRule)(nil), "supergloo.solo.io.RoutingRule")
+	proto.RegisterType((*PodSelector)(nil), "supergloo.solo.io.PodSelector")
+	proto.RegisterType((*PodSelector_LabelSelector)(nil), "supergloo.solo.io.PodSelector.LabelSelector")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.PodSelector.LabelSelector.LabelsToMatchEntry")
+	proto.RegisterType((*PodSelector_UpstreamSelector)(nil), "supergloo.solo.io.PodSelector.UpstreamSelector")
+	proto.RegisterType((*PodSelector_NamespaceSelector)(nil), "supergloo.solo.io.PodSelector.NamespaceSelector")
+	proto.RegisterType((*RoutingRuleSpec)(nil), "supergloo.solo.io.RoutingRuleSpec")
+	proto.RegisterType((*TrafficShifting)(nil), "supergloo.solo.io.TrafficShifting")
+	proto.RegisterType((*HeaderManipulation)(nil), "supergloo.solo.io.HeaderManipulation")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HeaderManipulation.AppendRequestHeadersEntry")
+	proto.RegisterMapType((map[string]string)(nil), "supergloo.solo.io.HeaderManipulation.AppendResponseHeadersEntry")
 }
 
 func init() {
@@ -92,27 +863,74 @@ func init() {
 }
 
 var fileDescriptor_29316bfaa5f4ba1a = []byte{
-	// 317 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xc1, 0x4e, 0x32, 0x31,
-	0x14, 0x85, 0xff, 0xf9, 0x33, 0x21, 0xa6, 0x18, 0x13, 0x27, 0xc4, 0x20, 0x0b, 0x34, 0x6e, 0x74,
-	0x21, 0xd3, 0x80, 0x1b, 0xc3, 0x92, 0x3d, 0x9b, 0xba, 0x73, 0x63, 0x0a, 0x5c, 0x4a, 0xc3, 0xc0,
-	0x6d, 0x6e, 0x5b, 0xdd, 0xf3, 0x34, 0x3e, 0x8a, 0x7b, 0xf7, 0x2e, 0x7c, 0x03, 0xde, 0xc0, 0x4c,
-	0xa7, 0x43, 0x42, 0xa2, 0x06, 0x57, 0xed, 0xcd, 0x39, 0x5f, 0x7a, 0x7a, 0x72, 0x59, 0x5f, 0x69,
-	0xb7, 0xf0, 0x93, 0x7c, 0x8a, 0x2b, 0x6e, 0xb1, 0xc0, 0x9e, 0x46, 0x6e, 0xbd, 0x01, 0x52, 0x05,
-	0x22, 0x97, 0x46, 0xf3, 0xe7, 0x3e, 0x27, 0xf4, 0x4e, 0xaf, 0x55, 0x6e, 0x08, 0x1d, 0x66, 0xa7,
-	0x3b, 0x3d, 0x2f, 0x89, 0x5c, 0x63, 0xa7, 0xa5, 0x50, 0x61, 0x50, 0x79, 0x79, 0xab, 0x8c, 0x9d,
-	0xae, 0x42, 0x54, 0x05, 0xf0, 0x30, 0x4d, 0xfc, 0x9c, 0xcf, 0x3c, 0x49, 0xa7, 0x71, 0xfd, 0x93,
-	0xfe, 0x42, 0xd2, 0x18, 0x20, 0x1b, 0xf5, 0x6f, 0xb3, 0x95, 0xe7, 0x52, 0xbb, 0x3a, 0xda, 0x0a,
-	0x9c, 0x9c, 0x49, 0x27, 0x23, 0xc2, 0x0f, 0x40, 0xac, 0x93, 0xce, 0xd7, 0x6f, 0xdc, 0x1e, 0x00,
-	0x10, 0xcc, 0xff, 0x90, 0xa8, 0x9e, 0x2b, 0xe4, 0xea, 0x3d, 0x61, 0x4d, 0x51, 0xf5, 0x27, 0x7c,
-	0x01, 0xd9, 0x80, 0x35, 0xaa, 0x00, 0xed, 0xd9, 0x65, 0x72, 0xd3, 0x1c, 0xb4, 0xf2, 0x29, 0x12,
-	0xd4, 0x4d, 0xe6, 0x0f, 0x41, 0x1b, 0xa5, 0x6f, 0x1f, 0x17, 0xff, 0x44, 0x74, 0x66, 0xf7, 0xec,
-	0xa8, 0xfe, 0x67, 0x1b, 0x02, 0x75, 0xb6, 0x4f, 0x8d, 0xa3, 0x1a, 0xb9, 0x9d, 0x3b, 0x1b, 0xb2,
-	0xa6, 0x93, 0xa4, 0xc0, 0x3d, 0xad, 0xc0, 0x2e, 0xda, 0x49, 0x80, 0xcf, 0xf7, 0x61, 0x01, 0x16,
-	0x3d, 0x4d, 0x41, 0xc0, 0x5c, 0xb0, 0xca, 0x3d, 0x06, 0xbb, 0x18, 0x76, 0x36, 0xdb, 0x34, 0x65,
-	0xff, 0x89, 0x36, 0xdb, 0xf4, 0x24, 0x3b, 0x8e, 0x4b, 0x40, 0xbe, 0x00, 0x3b, 0xea, 0xbd, 0x7e,
-	0x76, 0x93, 0xc7, 0xeb, 0x5f, 0x97, 0xc7, 0x2c, 0x55, 0xec, 0x64, 0xd2, 0x08, 0x5d, 0xdc, 0x7d,
-	0x05, 0x00, 0x00, 0xff, 0xff, 0xac, 0x1c, 0x7b, 0x50, 0x6e, 0x02, 0x00, 0x00,
+	// 1062 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x56, 0xcb, 0x6e, 0x1b, 0x37,
+	0x17, 0x96, 0x6c, 0xc5, 0x89, 0x8e, 0x6c, 0xcb, 0x66, 0x64, 0x67, 0xa2, 0x85, 0xff, 0xc0, 0xf8,
+	0x8b, 0x66, 0x11, 0xcf, 0xd4, 0x76, 0x11, 0x18, 0x06, 0x8a, 0xb8, 0xae, 0xdb, 0xa8, 0x40, 0xdd,
+	0x3a, 0x63, 0x1b, 0x28, 0xb2, 0xe8, 0x80, 0x1e, 0x1d, 0x49, 0xac, 0x47, 0xc3, 0x29, 0xc9, 0x51,
+	0xa2, 0x6d, 0x16, 0x7d, 0x96, 0x2e, 0xfa, 0x04, 0x7d, 0x82, 0x3e, 0x45, 0x17, 0x5d, 0x75, 0x9b,
+	0x07, 0x28, 0x50, 0x0c, 0xc9, 0x91, 0x47, 0x17, 0xdf, 0x56, 0x12, 0x79, 0xce, 0xf7, 0xf1, 0x3b,
+	0x17, 0x9e, 0x21, 0x6c, 0x77, 0x99, 0xea, 0xa5, 0x17, 0x6e, 0xc8, 0xfb, 0x9e, 0xe4, 0x11, 0xdf,
+	0x62, 0xdc, 0x93, 0x69, 0x82, 0xa2, 0x1b, 0x71, 0xee, 0xd1, 0x84, 0x79, 0x83, 0x6d, 0x4f, 0xf0,
+	0x54, 0xb1, 0xb8, 0xeb, 0x26, 0x82, 0x2b, 0x4e, 0x56, 0x47, 0x76, 0x37, 0x43, 0xb8, 0x8c, 0x37,
+	0x1b, 0x5d, 0xde, 0xe5, 0xda, 0xea, 0x65, 0xff, 0x8c, 0x63, 0x73, 0xa3, 0xcb, 0x79, 0x37, 0x42,
+	0x4f, 0xaf, 0x2e, 0xd2, 0x8e, 0xd7, 0x4e, 0x05, 0x55, 0x8c, 0xc7, 0xd7, 0xd9, 0xdf, 0x09, 0x9a,
+	0x24, 0x28, 0xa4, 0xb5, 0xef, 0xcd, 0xd0, 0xa6, 0x65, 0x25, 0x82, 0xff, 0x8c, 0xa1, 0x92, 0x5e,
+	0x51, 0x64, 0x22, 0xf8, 0xfb, 0xa1, 0x45, 0x7a, 0x4c, 0x2a, 0xc6, 0xbd, 0x18, 0xd5, 0x3b, 0x2e,
+	0x2e, 0x59, 0xdc, 0xf5, 0x06, 0xdb, 0x34, 0x4a, 0x7a, 0x74, 0xd7, 0x1b, 0x30, 0xa1, 0x52, 0x1a,
+	0x05, 0x12, 0xc5, 0x80, 0x85, 0x68, 0x01, 0x33, 0xd3, 0x90, 0xfd, 0x5e, 0x32, 0x95, 0x1f, 0xd0,
+	0x47, 0x45, 0xdb, 0x54, 0xd1, 0xfc, 0x8c, 0x3b, 0x40, 0xa4, 0xa2, 0x2a, 0xcd, 0xc3, 0x79, 0x71,
+	0x07, 0x80, 0xc0, 0xce, 0x3d, 0x14, 0xe5, 0x6b, 0x03, 0xd9, 0xfc, 0x67, 0x1e, 0x6a, 0xbe, 0x29,
+	0x95, 0x9f, 0x46, 0x48, 0x76, 0x60, 0xc1, 0x08, 0x70, 0xda, 0xcf, 0xca, 0xcf, 0x6b, 0x3b, 0x0d,
+	0x37, 0xe4, 0x02, 0xf3, 0xa2, 0xb9, 0xa7, 0xda, 0x76, 0x58, 0xf9, 0xf3, 0xaf, 0xff, 0x95, 0x7c,
+	0xeb, 0x49, 0xf6, 0xe0, 0x51, 0x1e, 0xa7, 0x83, 0x1a, 0xb5, 0x3e, 0x8e, 0x3a, 0xb6, 0x56, 0x8b,
+	0x1b, 0x79, 0x93, 0x7d, 0xa8, 0x29, 0x2a, 0xba, 0xa8, 0x82, 0x3e, 0xca, 0x9e, 0x53, 0xd6, 0xe0,
+	0xa7, 0xe3, 0x60, 0x1f, 0x25, 0x4f, 0x45, 0x88, 0x3e, 0x76, 0x7c, 0x30, 0xde, 0xc7, 0x28, 0x7b,
+	0xe4, 0x35, 0xd4, 0x8d, 0x21, 0x90, 0x18, 0x61, 0xa8, 0xb8, 0x70, 0xe6, 0x34, 0x7e, 0xc3, 0x9d,
+	0x6a, 0x36, 0xf7, 0x84, 0xb7, 0x4f, 0xad, 0x97, 0xbf, 0x6c, 0x60, 0xf9, 0x9a, 0xbc, 0x81, 0x46,
+	0x1b, 0xa5, 0x62, 0xb1, 0xee, 0xb3, 0x2b, 0xb6, 0xf9, 0x3b, 0xb1, 0x3d, 0x2e, 0x60, 0x47, 0x94,
+	0xaf, 0xa0, 0xee, 0xe3, 0x2f, 0x29, 0x4a, 0x75, 0x4c, 0x55, 0xd8, 0x43, 0x21, 0x9d, 0xca, 0xb3,
+	0xf9, 0xe7, 0xb5, 0x9d, 0x35, 0x77, 0x8c, 0xc8, 0x5a, 0xfd, 0x49, 0x6f, 0xf2, 0x12, 0x2a, 0x32,
+	0xc1, 0xd0, 0x79, 0xa0, 0x35, 0x6c, 0xce, 0xd0, 0x50, 0x28, 0xda, 0x69, 0x82, 0xa1, 0xaf, 0xfd,
+	0xf7, 0x9b, 0x1f, 0x3e, 0x56, 0x2a, 0x30, 0x27, 0xc4, 0x87, 0x8f, 0x95, 0x65, 0xb2, 0x68, 0x2f,
+	0xa1, 0x48, 0x23, 0x94, 0x9b, 0xff, 0x56, 0xa0, 0x56, 0x50, 0x4e, 0xce, 0x61, 0x39, 0xa2, 0x17,
+	0x18, 0x5d, 0x45, 0x6c, 0xf2, 0xff, 0xe2, 0xe6, 0x88, 0xdd, 0xef, 0x32, 0x50, 0xbe, 0x6a, 0x95,
+	0xfc, 0xa5, 0xa8, 0xb8, 0x41, 0x7e, 0x82, 0xd5, 0x34, 0x91, 0x4a, 0x20, 0xed, 0x4f, 0x56, 0xc6,
+	0xbb, 0x85, 0xf9, 0xdc, 0xe2, 0x0a, 0xe4, 0x2b, 0xe9, 0xc4, 0x1e, 0xa1, 0x40, 0x62, 0xda, 0x47,
+	0x99, 0xd0, 0x62, 0xe9, 0x4d, 0xb1, 0x3e, 0xbb, 0xe5, 0x80, 0xef, 0x73, 0x60, 0xe1, 0x84, 0xd5,
+	0x78, 0x72, 0xb3, 0xf9, 0x47, 0x19, 0x96, 0xc6, 0xa2, 0x24, 0x5d, 0xa8, 0xeb, 0x28, 0x65, 0xa0,
+	0x78, 0xd0, 0xcf, 0xaa, 0xe4, 0x94, 0x75, 0x41, 0x5f, 0xdd, 0x27, 0x59, 0x66, 0x25, 0xcf, 0xb8,
+	0xae, 0xf3, 0xd7, 0xb1, 0x12, 0x43, 0x9b, 0xbd, 0x7c, 0xaf, 0x79, 0x00, 0x64, 0xda, 0x89, 0xac,
+	0xc0, 0xfc, 0x25, 0x0e, 0x75, 0x7d, 0xaa, 0x7e, 0xf6, 0x97, 0x34, 0xe0, 0xc1, 0x80, 0x46, 0x29,
+	0xea, 0xcc, 0x56, 0x7d, 0xb3, 0xd8, 0x9f, 0xdb, 0x2b, 0x37, 0xdf, 0xc0, 0xca, 0x64, 0x1e, 0xc9,
+	0x17, 0x50, 0xcd, 0xf3, 0x28, 0xad, 0xf0, 0xeb, 0x6f, 0x99, 0xbd, 0xa5, 0x57, 0x88, 0xe6, 0x2e,
+	0xac, 0x4e, 0x65, 0x8e, 0x6c, 0x00, 0x8c, 0x32, 0x67, 0x48, 0xab, 0x7e, 0x61, 0xe7, 0xb0, 0x0e,
+	0x4b, 0x79, 0x75, 0x02, 0x35, 0x4c, 0x70, 0xf3, 0xf7, 0x0a, 0xd4, 0x27, 0xba, 0x96, 0xfc, 0x00,
+	0x2b, 0x4a, 0xd0, 0x4e, 0x87, 0x85, 0x81, 0xec, 0xb1, 0x4e, 0x66, 0xb3, 0x5d, 0x38, 0xab, 0xe7,
+	0xcf, 0x8c, 0xeb, 0xa9, 0xf5, 0x6c, 0x95, 0xfc, 0xba, 0x1a, 0xdf, 0x22, 0x3f, 0x42, 0xbd, 0x43,
+	0xd3, 0x48, 0x05, 0x2c, 0xce, 0xc6, 0x3d, 0xe3, 0xb1, 0xed, 0xbd, 0x2d, 0x57, 0xcf, 0x77, 0xf7,
+	0x6a, 0xbe, 0xbb, 0xf9, 0x7c, 0x77, 0x5b, 0x67, 0x67, 0x27, 0xdf, 0x64, 0xa8, 0x6f, 0x73, 0x50,
+	0xab, 0xe4, 0x2f, 0x77, 0xc6, 0x76, 0xc8, 0x11, 0xd4, 0x85, 0xb9, 0xa5, 0x81, 0x62, 0x7d, 0xe4,
+	0xa9, 0x72, 0x1e, 0xda, 0x79, 0x65, 0xbe, 0x49, 0x6e, 0xfe, 0x4d, 0x72, 0x8f, 0xec, 0x37, 0x2b,
+	0x63, 0xb1, 0x98, 0x33, 0x03, 0x21, 0x07, 0xf0, 0x50, 0xa0, 0x12, 0x0c, 0xa5, 0xf3, 0x48, 0xa3,
+	0xff, 0x7f, 0x8b, 0x2e, 0x1f, 0x95, 0x18, 0xb6, 0x4a, 0x7e, 0x0e, 0x23, 0x2d, 0xa8, 0x85, 0x5c,
+	0xc8, 0x20, 0xe1, 0x11, 0x0b, 0x87, 0x0e, 0x68, 0x96, 0x4f, 0x6e, 0x60, 0xf9, 0x8a, 0x0b, 0x79,
+	0xa2, 0x9d, 0x5b, 0x25, 0x1f, 0xc2, 0xd1, 0x8a, 0xec, 0xc2, 0x42, 0x9f, 0x09, 0xc1, 0x85, 0x53,
+	0xcd, 0x03, 0x29, 0x66, 0xfb, 0xe8, 0x6a, 0xb0, 0xb5, 0x4a, 0xbe, 0x75, 0x25, 0x6f, 0xa1, 0xd1,
+	0x43, 0xda, 0x46, 0x11, 0xf4, 0x69, 0xcc, 0x92, 0x34, 0xa2, 0x4c, 0x67, 0x79, 0xd1, 0xea, 0x98,
+	0xae, 0x5a, 0x4b, 0xbb, 0x1f, 0x5b, 0x6f, 0x4b, 0xf7, 0xb8, 0x37, 0xb6, 0xab, 0x39, 0x0e, 0x6b,
+	0x50, 0xcd, 0x46, 0x95, 0x69, 0x97, 0x73, 0xa8, 0x4f, 0xd4, 0x9b, 0x1c, 0xc2, 0x62, 0x61, 0xda,
+	0x4a, 0xdb, 0x29, 0x1b, 0x13, 0x33, 0x35, 0x8d, 0x14, 0x2b, 0x68, 0xf7, 0xc7, 0x30, 0x9b, 0xbf,
+	0x56, 0x80, 0x4c, 0x2b, 0x22, 0x2f, 0xe1, 0x89, 0xc0, 0x3e, 0x1f, 0x60, 0x20, 0x50, 0x26, 0x3c,
+	0x96, 0x18, 0x18, 0x85, 0xd2, 0x59, 0xd4, 0xad, 0xbd, 0x66, 0xcc, 0xbe, 0xb5, 0x1a, 0x0a, 0x49,
+	0xde, 0xc3, 0x93, 0xec, 0xfd, 0x11, 0xb7, 0xa7, 0x71, 0x4b, 0xfa, 0x9e, 0x1d, 0xdc, 0x29, 0x23,
+	0xee, 0x97, 0x9a, 0x64, 0x82, 0xdd, 0x4c, 0x88, 0x35, 0x3a, 0xcb, 0x46, 0x3e, 0x87, 0xf5, 0x91,
+	0x62, 0xd3, 0x96, 0xf9, 0xc1, 0xcb, 0x5a, 0x70, 0x23, 0x17, 0xac, 0x8d, 0x39, 0x2a, 0x85, 0xf5,
+	0x91, 0xde, 0x71, 0x54, 0xfd, 0xda, 0x79, 0x76, 0x83, 0xdc, 0x22, 0xb7, 0x51, 0xdb, 0xa0, 0x33,
+	0x4c, 0xcd, 0x16, 0x34, 0xaf, 0x8f, 0xf0, 0x5e, 0xe3, 0xed, 0x35, 0x3c, 0xbd, 0xf6, 0xf0, 0xfb,
+	0x10, 0x1d, 0x6e, 0xfd, 0xf6, 0xf7, 0x46, 0xf9, 0xed, 0xa7, 0x37, 0xbe, 0x65, 0x93, 0xcb, 0xae,
+	0x7d, 0x37, 0x5d, 0x2c, 0xe8, 0xdb, 0xbd, 0xfb, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xbf, 0x5c,
+	0x1b, 0x51, 0xfd, 0x0a, 0x00, 0x00,
 }
 
 func (this *RoutingRule) Equal(that interface{}) bool {
@@ -142,6 +960,508 @@ func (this *RoutingRule) Equal(that interface{}) bool {
 	}
 	if !this.TargetMesh.Equal(that1.TargetMesh) {
 		return false
+	}
+	if !this.SourceSelector.Equal(that1.SourceSelector) {
+		return false
+	}
+	if !this.DestinationSelector.Equal(that1.DestinationSelector) {
+		return false
+	}
+	if len(this.RequestMatchers) != len(that1.RequestMatchers) {
+		return false
+	}
+	for i := range this.RequestMatchers {
+		if !this.RequestMatchers[i].Equal(that1.RequestMatchers[i]) {
+			return false
+		}
+	}
+	if !this.Spec.Equal(that1.Spec) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector)
+	if !ok {
+		that2, ok := that.(PodSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.SelectorType == nil {
+		if this.SelectorType != nil {
+			return false
+		}
+	} else if this.SelectorType == nil {
+		return false
+	} else if !this.SelectorType.Equal(that1.SelectorType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_LabelSelector_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_LabelSelector_)
+	if !ok {
+		that2, ok := that.(PodSelector_LabelSelector_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.LabelSelector.Equal(that1.LabelSelector) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_UpstreamSelector_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_UpstreamSelector_)
+	if !ok {
+		that2, ok := that.(PodSelector_UpstreamSelector_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.UpstreamSelector.Equal(that1.UpstreamSelector) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_NamespaceSelector_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_NamespaceSelector_)
+	if !ok {
+		that2, ok := that.(PodSelector_NamespaceSelector_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.NamespaceSelector.Equal(that1.NamespaceSelector) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_LabelSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_LabelSelector)
+	if !ok {
+		that2, ok := that.(PodSelector_LabelSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.LabelsToMatch) != len(that1.LabelsToMatch) {
+		return false
+	}
+	for i := range this.LabelsToMatch {
+		if this.LabelsToMatch[i] != that1.LabelsToMatch[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_UpstreamSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_UpstreamSelector)
+	if !ok {
+		that2, ok := that.(PodSelector_UpstreamSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Upstreams) != len(that1.Upstreams) {
+		return false
+	}
+	for i := range this.Upstreams {
+		if !this.Upstreams[i].Equal(&that1.Upstreams[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *PodSelector_NamespaceSelector) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PodSelector_NamespaceSelector)
+	if !ok {
+		that2, ok := that.(PodSelector_NamespaceSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Namespaces) != len(that1.Namespaces) {
+		return false
+	}
+	for i := range this.Namespaces {
+		if this.Namespaces[i] != that1.Namespaces[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.RuleType == nil {
+		if this.RuleType != nil {
+			return false
+		}
+	} else if this.RuleType == nil {
+		return false
+	} else if !this.RuleType.Equal(that1.RuleType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_TrafficShifting) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_TrafficShifting)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_TrafficShifting)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.TrafficShifting.Equal(that1.TrafficShifting) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_FaultInjection) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_FaultInjection)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_FaultInjection)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.FaultInjection.Equal(that1.FaultInjection) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_RequestTimeout) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_RequestTimeout)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_RequestTimeout)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.RequestTimeout.Equal(that1.RequestTimeout) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_Retries) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_Retries)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_Retries)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Retries.Equal(that1.Retries) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_CorsPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_CorsPolicy)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_CorsPolicy)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.CorsPolicy.Equal(that1.CorsPolicy) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_Mirror) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_Mirror)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_Mirror)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Mirror.Equal(that1.Mirror) {
+		return false
+	}
+	return true
+}
+func (this *RoutingRuleSpec_HeaderManipulaition) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RoutingRuleSpec_HeaderManipulaition)
+	if !ok {
+		that2, ok := that.(RoutingRuleSpec_HeaderManipulaition)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.HeaderManipulaition.Equal(that1.HeaderManipulaition) {
+		return false
+	}
+	return true
+}
+func (this *TrafficShifting) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficShifting)
+	if !ok {
+		that2, ok := that.(TrafficShifting)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Destinations.Equal(that1.Destinations) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *HeaderManipulation) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HeaderManipulation)
+	if !ok {
+		that2, ok := that.(HeaderManipulation)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
+		return false
+	}
+	for i := range this.RemoveResponseHeaders {
+		if this.RemoveResponseHeaders[i] != that1.RemoveResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendResponseHeaders) != len(that1.AppendResponseHeaders) {
+		return false
+	}
+	for i := range this.AppendResponseHeaders {
+		if this.AppendResponseHeaders[i] != that1.AppendResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.RemoveRequestHeaders) != len(that1.RemoveRequestHeaders) {
+		return false
+	}
+	for i := range this.RemoveRequestHeaders {
+		if this.RemoveRequestHeaders[i] != that1.RemoveRequestHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendRequestHeaders) != len(that1.AppendRequestHeaders) {
+		return false
+	}
+	for i := range this.AppendRequestHeaders {
+		if this.AppendRequestHeaders[i] != that1.AppendRequestHeaders[i] {
+			return false
+		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
