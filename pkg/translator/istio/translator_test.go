@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	. "github.com/onsi/ginkgo"
@@ -26,7 +28,7 @@ var _ = Describe("Translator", func() {
 	})
 })
 
-var _ = Describe("appliedToDestination", func() {
+var _ = Describe("appliesToDestination", func() {
 	Context("upstream selector match", func() {
 		It("returns true", func() {
 			applies, err := appliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
@@ -115,5 +117,34 @@ var _ = Describe("labelSetsForSelector", func() {
 				{"version": "v3", "app": "reviews"},
 			}))
 		})
+	})
+})
+
+var _ = Describe("convertMatcher", func() {
+	It("converts a gloo match to an istio match", func() {
+		istioMatch := convertMatcher(map[string]string{"app": "details", "version": "v1"}, 1234, &gloov1.Matcher{
+			PathSpecifier: &gloov1.Matcher_Exact{
+				Exact: "hi",
+			},
+			Methods: []string{"GET", "ME", "OUTTA", "HERE"},
+			Headers: []*gloov1.HeaderMatcher{
+				{Name: "k", Value: "v", Regex: true},
+				{Name: "a", Value: "z", Regex: false},
+			},
+		})
+		Expect(istioMatch).To(Equal(&v1alpha3.HTTPMatchRequest{
+			Uri: &v1alpha3.StringMatch{
+				MatchType: &v1alpha3.StringMatch_Exact{Exact: "hi"},
+			},
+			Method: &v1alpha3.StringMatch{
+				MatchType: &v1alpha3.StringMatch_Regex{Regex: "GET|ME|OUTTA|HERE"},
+			},
+			Headers: map[string]*v1alpha3.StringMatch{
+				"a": {MatchType: &v1alpha3.StringMatch_Exact{Exact: "z"}},
+				"k": {MatchType: &v1alpha3.StringMatch_Regex{Regex: "v"}},
+			},
+			Port:         1234,
+			SourceLabels: map[string]string{"app": "details", "version": "v1"},
+		}))
 	})
 })

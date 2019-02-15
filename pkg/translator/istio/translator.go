@@ -78,9 +78,31 @@ func (rbm rulesByMatcher) sort() []v1.RoutingRuleList {
 	return rulesForHash
 }
 
+type labelsPortTuple struct {
+	labels map[string]string
+	port   uint32
+}
+
+func labelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]labelsPortTuple, error) {
+	labelsByHost := make(map[string][]labelsPortTuple)
+	for _, us := range upstreams {
+		labels := utils.GetLabelsForUpstream(us)
+		host, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		port, err := utils.GetPortForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting port for upstream")
+		}
+		labelsByHost[host] = append(labelsByHost[host], labelsPortTuple{labels: labels, port: port})
+	}
+	return labelsByHost, nil
+}
+
 // produces a complete istio config
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (*MeshConfig, reporter.ResourceErrors, error) {
-	destinationHostsAndLabels, err := labelsByHost(snapshot.Upstreams.List())
+	destinationHostsPortsAndLabels, err := labelsAndPortsByHost(snapshot.Upstreams.List())
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "internal error: getting hosts from upstreams")
 	}
@@ -109,20 +131,28 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	var destinationRules v1alpha3.DestinationRuleList
 	var virtualServices v1alpha3.VirtualServiceList
-	for destinationHost, destinationLabelSets := range destinationHostsAndLabels {
-		dr := initDestinationRule(t.writeNamespace, destinationHost, destinationLabelSets)
+	for destinationHost, destinationPortAndLabelSets := range destinationHostsPortsAndLabels {
+		var labelSets []map[string]string
+		for _, set := range destinationPortAndLabelSets {
+			labelSets = append(labelSets, set.labels)
+		}
+		dr := initDestinationRule(t.writeNamespace, destinationHost, labelSets)
 		destinationRules = append(destinationRules, dr)
 
 		vs := initVirtualService(t.writeNamespace, destinationHost)
 
-		t.applyRules(
-			params,
-			destinationHost,
-			rulesPerMatcher,
-			upstreams,
-			resourceErrs,
-			vs,
-		)
+		// add a rule for each dest port
+		for _, set := range destinationPortAndLabelSets {
+			t.applyRules(
+				params,
+				destinationHost,
+				set.port,
+				rulesPerMatcher,
+				upstreams,
+				resourceErrs,
+				vs,
+			)
+		}
 
 		virtualServices = append(virtualServices, vs)
 	}
@@ -136,6 +166,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 func (t *translator) applyRules(
 	params plugins.Params,
 	destinationHost string,
+	destinationPort uint32,
 	rulesPerMatcher rulesByMatcher,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
@@ -165,7 +196,7 @@ func (t *translator) applyRules(
 			continue
 		}
 
-		istioMatcher, err := createIstioMatcher(sourceLabelSets, matcher)
+		istioMatcher, err := createIstioMatcher(sourceLabelSets, destinationPort, matcher)
 		if err != nil {
 			report(err, "invalid matcher")
 			continue
@@ -283,7 +314,7 @@ func (t *translator) createRoute(
 	return out
 }
 
-func createIstioMatcher(sourceLabelSets []map[string]string, matcher []*gloov1.Matcher) ([]*v1alpha3.HTTPMatchRequest, error) {
+func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, matcher []*gloov1.Matcher) ([]*v1alpha3.HTTPMatchRequest, error) {
 	var istioMatcher []*v1alpha3.HTTPMatchRequest
 
 	// override for default istioMatcher
@@ -293,7 +324,7 @@ func createIstioMatcher(sourceLabelSets []map[string]string, matcher []*gloov1.M
 	case len(matcher) == 0 && len(sourceLabelSets) > 0:
 		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, sourceLabels := range sourceLabelSets {
-			istioMatcher = append(istioMatcher, convertMatcher(sourceLabels, &gloov1.Matcher{
+			istioMatcher = append(istioMatcher, convertMatcher(sourceLabels, destPort, &gloov1.Matcher{
 				PathSpecifier: &gloov1.Matcher_Prefix{
 					Prefix: "/",
 				},
@@ -302,20 +333,20 @@ func createIstioMatcher(sourceLabelSets []map[string]string, matcher []*gloov1.M
 	case matcher != nil && len(sourceLabelSets) == 0:
 		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, match := range matcher {
-			istioMatcher = append(istioMatcher, convertMatcher(nil, match))
+			istioMatcher = append(istioMatcher, convertMatcher(nil, destPort, match))
 		}
 	case matcher != nil && len(sourceLabelSets) > 0:
 		istioMatcher = []*v1alpha3.HTTPMatchRequest{}
 		for _, match := range matcher {
 			for _, source := range sourceLabelSets {
-				istioMatcher = append(istioMatcher, convertMatcher(source, match))
+				istioMatcher = append(istioMatcher, convertMatcher(source, destPort, match))
 			}
 		}
 	}
 	return istioMatcher, nil
 }
 
-func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1alpha3.HTTPMatchRequest {
+func convertMatcher(sourceSelector map[string]string, destPort uint32, match *gloov1.Matcher) *v1alpha3.HTTPMatchRequest {
 	var uri *v1alpha3.StringMatch
 	if match.PathSpecifier != nil {
 		switch path := match.PathSpecifier.(type) {
@@ -371,6 +402,7 @@ func convertMatcher(sourceSelector map[string]string, match *gloov1.Matcher) *v1
 		Method:       methods,
 		Headers:      headers,
 		SourceLabels: sourceSelector,
+		Port:         destPort,
 	}
 }
 
