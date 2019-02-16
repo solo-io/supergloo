@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
-func BookInfoUpstrams() v1.UpstreamList {
+func BookInfoUpstreams() v1.UpstreamList {
 	return v1.UpstreamList{
 		&v1.Upstream{
 			UpstreamSpec: &v1.UpstreamSpec{

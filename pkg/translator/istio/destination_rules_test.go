@@ -9,7 +9,7 @@ import (
 
 var _ = Describe("DestinationRules", func() {
 	It("creates one desintaion rule per host, with one subset per unique set of labels", func() {
-		inputUpstreams := inputs.BookInfoUpstrams()
+		inputUpstreams := inputs.BookInfoUpstreams()
 		dests, err := destinationRulesFromUpstreams("ns", inputUpstreams)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(dests).To(HaveLen(4))

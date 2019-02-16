@@ -3,6 +3,9 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
+
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -19,7 +22,7 @@ var _ = Describe("Translator", func() {
 	It("gahagafaga", func() {
 		t := NewTranslator("hi", nil)
 		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstrams()},
+			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
 			Routingrules: map[string]v1.RoutingRuleList{"": inputs.BookInfoRoutingRules("")},
 		})
 		Expect(meshConfig).NotTo(HaveOccurred())
@@ -39,7 +42,7 @@ var _ = Describe("appliesToDestination", func() {
 						},
 					},
 				},
-			}, inputs.BookInfoUpstrams())
+			}, inputs.BookInfoUpstreams())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -52,7 +55,7 @@ var _ = Describe("appliesToDestination", func() {
 						Namespaces: []string{"default"},
 					},
 				},
-			}, inputs.BookInfoUpstrams())
+			}, inputs.BookInfoUpstreams())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -65,7 +68,7 @@ var _ = Describe("appliesToDestination", func() {
 						LabelsToMatch: map[string]string{"version": "v1", "app": "details"},
 					},
 				},
-			}, inputs.BookInfoUpstrams())
+			}, inputs.BookInfoUpstreams())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -85,7 +88,7 @@ var _ = Describe("labelSetsForSelector", func() {
 						},
 					},
 				},
-			}, inputs.BookInfoUpstrams())
+			}, inputs.BookInfoUpstreams())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(labelSets).To(Equal([]map[string]string{
 				{"version": "v1", "app": "details"},
@@ -102,7 +105,7 @@ var _ = Describe("labelSetsForSelector", func() {
 						Namespaces: []string{"default"},
 					},
 				},
-			}, inputs.BookInfoUpstrams())
+			}, inputs.BookInfoUpstreams())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(labelSets).To(Equal([]map[string]string{
 				{"app": "details"},
@@ -198,6 +201,56 @@ var _ = Describe("createIstioMatcher", func() {
 					SourceLabels: map[string]string{"app": "reviews"},
 				},
 			}))
+		})
+	})
+})
+
+type testRoutingPlugin struct {
+	collectedRoutes []*v1alpha3.HTTPRoute
+}
+
+func (t *testRoutingPlugin) Init(params plugins.InitParams) error {
+	return nil
+}
+
+func (t *testRoutingPlugin) ProcessRoute(params plugins.Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
+	t.collectedRoutes = append(t.collectedRoutes, out)
+	return nil
+}
+
+var _ = Describe("createRoute", func() {
+	Context("with a route plugin", func() {
+		It("creates an http route with the corresponding destination, and calls the plugin for each route", func() {
+			resourceErrs := make(reporter.ResourceErrors)
+			plug := testRoutingPlugin{}
+			t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+			route := t.createRoute(
+				plugins.Params{Ctx: context.TODO()},
+				"details.default.svc.cluster.local",
+				inputs.BookInfoRoutingRules("pie"),
+				createIstioMatcher(
+					[]map[string]string{
+						{"app": "details"},
+						{"app": "reviews"},
+					}, 1234, []*gloov1.Matcher{
+						{
+							PathSpecifier: &gloov1.Matcher_Exact{
+								Exact: "hi",
+							},
+						},
+						{
+							PathSpecifier: &gloov1.Matcher_Exact{
+								Exact: "bye",
+							},
+						},
+					}),
+				inputs.BookInfoUpstreams(),
+				resourceErrs,
+			)
+			Expect(route.Route).To(HaveLen(1))
+			Expect(route.Route[0].Destination.Host).To(Equal("details.default.svc.cluster.local"))
+			Expect(plug.collectedRoutes).To(HaveLen(1))
+			Expect(plug.collectedRoutes[0]).To(Equal(route))
 		})
 	})
 })

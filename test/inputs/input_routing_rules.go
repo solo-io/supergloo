@@ -1,6 +1,9 @@
 package inputs
 
 import (
+	"time"
+
+	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
@@ -19,6 +22,11 @@ func BookInfoRoutingRules(namespace string) v1.RoutingRuleList {
 							"app": "reviews",
 						},
 					},
+				},
+			},
+			Spec: &v1.RoutingRuleSpec{
+				RuleType: &v1.RoutingRuleSpec_RequestTimeout{
+					RequestTimeout: types.DurationProto(time.Second * 10),
 				},
 			},
 		},
