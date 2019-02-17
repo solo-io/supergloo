@@ -3,46 +3,31 @@ package istio
 import (
 	"strings"
 
-	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
-// creates a destination rule for every host
-// then a subset for every unique set of labels therein
-func destinationRulesFromUpstreams(writeNamespace string, upstreams gloov1.UpstreamList) (v1alpha3.DestinationRuleList, error) {
-	var destinationRules v1alpha3.DestinationRuleList
-	labelsByHost, err := labelsByHost(upstreams)
-	if err != nil {
-		return nil, errors.Wrapf(err, "getting hostnames and labels for upstreams")
-	}
-	for host, labelSets := range labelsByHost {
-		var subsets []*v1alpha3.Subset
-		for _, labels := range labelSets {
-			if len(labels) == 0 {
-				continue
-			}
-			subsets = append(subsets, &v1alpha3.Subset{
-				Name:   subsetName(labels),
-				Labels: labels,
-			})
+func initDestinationRule(writeNamespace, host string, labelSets []map[string]string) *v1alpha3.DestinationRule {
+
+	var subsets []*v1alpha3.Subset
+	for _, labels := range labelSets {
+		if len(labels) == 0 {
+			continue
 		}
-		var trafficPolicy *v1alpha3.TrafficPolicy
-		destinationRules = append(destinationRules, &v1alpha3.DestinationRule{
-			Metadata: core.Metadata{
-				Namespace: writeNamespace,
-				Name:      host,
-			},
-			Host:          host,
-			TrafficPolicy: trafficPolicy,
-			Subsets:       subsets,
+		subsets = append(subsets, &v1alpha3.Subset{
+			Name:   subsetName(labels),
+			Labels: labels,
 		})
 	}
-
-	return destinationRules.Sort(), nil
+	return &v1alpha3.DestinationRule{
+		Metadata: core.Metadata{
+			Namespace: writeNamespace,
+			Name:      host,
+		},
+		Host:    host,
+		Subsets: subsets,
+	}
 }
 
 func subsetName(labels map[string]string) string {
@@ -63,17 +48,4 @@ func sanitizeName(name string) string {
 	name = strings.Replace(name, " ", "-", -1)
 	name = strings.Replace(name, "\n", "", -1)
 	return name
-}
-
-func labelsByHost(upstreams gloov1.UpstreamList) (map[string][]map[string]string, error) {
-	labelsByHost := make(map[string][]map[string]string)
-	for _, us := range upstreams {
-		labels := utils.GetLabelsForUpstream(us)
-		host, err := utils.GetHostForUpstream(us)
-		if err != nil {
-			return nil, errors.Wrapf(err, "getting host for upstream")
-		}
-		labelsByHost[host] = append(labelsByHost[host], labels)
-	}
-	return labelsByHost, nil
 }
