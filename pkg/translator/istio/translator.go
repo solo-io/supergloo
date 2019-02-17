@@ -113,7 +113,14 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		for _, set := range destinationPortAndLabelSets {
 			labelSets = append(labelSets, set.labels)
 		}
-		dr := initDestinationRule(t.writeNamespace, destinationHost, labelSets)
+
+		dr := t.makeDestinatioRuleForHost(ctx,
+			params,
+			destinationHost,
+			labelSets,
+			encryptionRules,
+			resourceErrs,
+		)
 		destinationRules = append(destinationRules, dr)
 
 		vs := t.makeVirtualServiceForHost(ctx,
