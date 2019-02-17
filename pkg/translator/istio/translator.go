@@ -98,7 +98,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
 	resourceErrs.Accept(encryptionRules.AsInputResources()...)
 
-	istioConfig := &MeshConfig{}
 	params := plugins.Params{
 		Ctx:      ctx,
 		Snapshot: snapshot,
@@ -117,7 +116,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		dr := initDestinationRule(t.writeNamespace, destinationHost, labelSets)
 		destinationRules = append(destinationRules, dr)
 
-		t.configureVirtualService(ctx,
+		vs := t.makeVirtualServiceForHost(ctx,
 			params,
 			destinationHost,
 			destinationPortAndLabelSets,
@@ -129,9 +128,13 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		virtualServices = append(virtualServices, vs)
 	}
 
-	istioConfig.Sort()
+	meshConfig := &MeshConfig{
+		VirtualServices: virtualServices,
+		DesinationRules: destinationRules,
+	}
+	meshConfig.Sort()
 
-	return istioConfig, resourceErrs, nil
+	return meshConfig, resourceErrs, nil
 }
 
 func labelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]labelsPortTuple, error) {

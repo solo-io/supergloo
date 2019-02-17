@@ -251,14 +251,29 @@ type subset struct {
 	name   string
 	labels map[string]string
 }
+type virtualService struct {
+	host   string
+	routes []route
+}
+
+type route struct {
+	matches []match
+}
+
+type match struct {
+	sourceLabels map[string]string
+	port         uint32
+}
 
 var _ = Describe("Translator", func() {
 	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
 		plug := testRoutingPlugin{}
+		inputRoutingRules := inputs.BookInfoRoutingRules("z")
+
 		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
 		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
 			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
-			Routingrules: map[string]v1.RoutingRuleList{"": inputs.BookInfoRoutingRules("z")},
+			Routingrules: map[string]v1.RoutingRuleList{"": inputRoutingRules},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshConfig).NotTo(BeNil())
@@ -303,7 +318,41 @@ var _ = Describe("Translator", func() {
 				Expect(meshConfig.DesinationRules[i].Subsets[j].Name).To(Equal(sub.name))
 				Expect(meshConfig.DesinationRules[i].Subsets[j].Labels).To(Equal(sub.labels))
 			}
+
+			Expect(meshConfig.VirtualServices).To(HaveLen(4))
+			for i, expected := range []virtualService{
+				{"details.default.svc.cluster.local",
+					[]route{{[]match{{
+						map[string]string{"app": "reviews"}, 9080,
+					}}}}},
+				{"productpage.default.svc.cluster.local",
+					[]route{{[]match{{
+						map[string]string{"app": "reviews"}, 9080,
+					}}}}},
+				{"ratings.default.svc.cluster.local",
+					[]route{{[]match{{
+						map[string]string{"app": "reviews"}, 9080,
+					}}}}},
+				{"reviews.default.svc.cluster.local",
+					[]route{{[]match{{
+						map[string]string{"app": "reviews"}, 9080,
+					}}}}},
+			} {
+				Expect(meshConfig.VirtualServices[i].Metadata.Name).To(Equal(expected.host))
+				Expect(meshConfig.VirtualServices[i].Hosts).To(Equal([]string{expected.host}))
+				Expect(meshConfig.VirtualServices[i].Gateways).To(Equal([]string{"mesh"}))
+				Expect(meshConfig.VirtualServices[i].Http).To(HaveLen(len(inputRoutingRules)))
+				for j, rr := range inputRoutingRules {
+					if reqMatchers := len(rr.RequestMatchers); reqMatchers > 0 {
+						Expect(meshConfig.VirtualServices[i].Http[j].Match).To(HaveLen(reqMatchers))
+					} else {
+						Expect(meshConfig.VirtualServices[i].Http[j].Match[0].Port).To(Equal(expected.routes[j].matches[0].port))
+						Expect(meshConfig.VirtualServices[i].Http[j].Match[0].SourceLabels).To(Equal(expected.routes[j].matches[0].sourceLabels))
+					}
+				}
+			}
 		}
+
 		Expect(resourceErrs).NotTo(BeNil())
 	})
 })
