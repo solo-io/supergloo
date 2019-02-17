@@ -18,19 +18,6 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-var _ = Describe("Translator", func() {
-	It("gahagafaga", func() {
-		t := NewTranslator("hi", nil)
-		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
-			Routingrules: map[string]v1.RoutingRuleList{"": inputs.BookInfoRoutingRules("")},
-		})
-		Expect(meshConfig).NotTo(HaveOccurred())
-		Expect(resourceErrs).NotTo(HaveOccurred())
-		Expect(err).NotTo(HaveOccurred())
-	})
-})
-
 var _ = Describe("appliesToDestination", func() {
 	Context("upstream selector match", func() {
 		It("returns true", func() {
@@ -252,5 +239,71 @@ var _ = Describe("createRoute", func() {
 			Expect(plug.collectedRoutes).To(HaveLen(1))
 			Expect(plug.collectedRoutes[0]).To(Equal(route))
 		})
+	})
+})
+
+type destinationRule struct {
+	host    string
+	subsets []subset
+}
+
+type subset struct {
+	name   string
+	labels map[string]string
+}
+
+var _ = Describe("Translator", func() {
+	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
+		plug := testRoutingPlugin{}
+		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
+			Routingrules: map[string]v1.RoutingRuleList{"": inputs.BookInfoRoutingRules("z")},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(meshConfig).NotTo(BeNil())
+		Expect(meshConfig.DesinationRules).To(HaveLen(4))
+		// we should have 1 subset for the service selector followed by 1 subset for each set of tags
+		for i, expected := range []destinationRule{
+			{"details.default.svc.cluster.local",
+				[]subset{
+					{"app-details",
+						map[string]string{"app": "details"}},
+					{"app-details-version-v1",
+						map[string]string{"app": "details", "version": "v1"}},
+				}},
+			{"productpage.default.svc.cluster.local",
+				[]subset{
+					{"app-productpage",
+						map[string]string{"app": "productpage"}},
+					{"app-productpage-version-v1",
+						map[string]string{"app": "productpage", "version": "v1"}},
+				}},
+			{"ratings.default.svc.cluster.local",
+				[]subset{
+					{"app-ratings",
+						map[string]string{"app": "ratings"}},
+					{"app-ratings-version-v1",
+						map[string]string{"app": "ratings", "version": "v1"}},
+				}},
+			{"reviews.default.svc.cluster.local",
+				[]subset{
+					{"app-reviews",
+						map[string]string{"app": "reviews"}},
+					{"app-reviews-version-v1",
+						map[string]string{"app": "reviews", "version": "v1"}},
+					{"app-reviews-version-v2",
+						map[string]string{"app": "reviews", "version": "v2"}},
+					{"app-reviews-version-v3",
+						map[string]string{"app": "reviews", "version": "v3"}},
+				}},
+		} {
+			Expect(meshConfig.DesinationRules[i].Host).To(Equal(expected.host))
+			for j, sub := range expected.subsets {
+				Expect(meshConfig.DesinationRules[i].Subsets[j].Name).To(Equal(sub.name))
+				Expect(meshConfig.DesinationRules[i].Subsets[j].Labels).To(Equal(sub.labels))
+			}
+		}
+		Expect(resourceErrs).NotTo(BeNil())
 	})
 })

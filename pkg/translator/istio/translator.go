@@ -28,13 +28,18 @@ type MeshConfig struct {
 	VirtualServices v1alpha3.VirtualServiceList
 }
 
-type reportFunc func(error error, format string, args ...interface{})
+func (c *MeshConfig) Sort() {
+	sort.SliceStable(c.DesinationRules, func(i, j int) bool {
+		return c.DesinationRules[i].Metadata.Less(c.DesinationRules[j].Metadata)
+	})
+	sort.SliceStable(c.VirtualServices, func(i, j int) bool {
+		return c.VirtualServices[i].Metadata.Less(c.VirtualServices[j].Metadata)
+	})
+}
 
-// todo: first create all desintation rules for all subsets of each upstream
-// then we need to apply the MUTUAL or ISTIO_MUTUAL policy depending on
-// whether mtls is enabled, and if so, if the user is using a selfsignedcert
-// if MUTUAL, also need to provide the paths for the certs/keys
-// i assume these are loaded to pilot somewhere from a secret
+// first create all desintation rules for all subsets of each upstream
+// then we need to apply the ISTIO_MUTUAL policy depending on
+// whether mtls is enabled
 
 type translator struct {
 	writeNamespace string
@@ -157,10 +162,13 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		virtualServices = append(virtualServices, vs)
 	}
 
-	return &MeshConfig{
-		VirtualServices: virtualServices,
+	istioConfig := &MeshConfig{
 		DesinationRules: destinationRules,
-	}, nil, nil
+		VirtualServices: virtualServices,
+	}
+	istioConfig.Sort()
+
+	return istioConfig, resourceErrs, nil
 }
 
 func (t *translator) applyRules(
