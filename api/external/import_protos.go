@@ -62,10 +62,11 @@ var protosToImport = []importedProto{
 				pluralName:  "policies",
 			},
 			{
-				messageName: "MeshPolicy",
-				shortName:   "meshpolicy",
-				pluralName:  "meshpolicies",
-				copyFrom:    "Policy",
+				messageName:   "MeshPolicy",
+				shortName:     "meshpolicy",
+				pluralName:    "meshpolicies",
+				copyFrom:      "Policy",
+				clusterScoped: true,
 			},
 		},
 	},
@@ -94,10 +95,15 @@ func main() {
 	}
 }
 
-func soloKitOptions(shortName, pluralName string) string {
-	return fmt.Sprintf(`
+func soloKitOptions(shortName, pluralName string, clusterScoped bool) string {
+	opts := fmt.Sprintf(`
   option (core.solo.io.resource).short_name = "%v";
   option (core.solo.io.resource).plural_name = "%v";`, shortName, pluralName)
+	if clusterScoped {
+		opts += `
+  option (core.solo.io.resource).cluster_scoped = true;`
+	}
+	return opts
 }
 
 const soloKitFields = `
@@ -124,9 +130,10 @@ type importedProto struct {
 }
 
 type soloKitType struct {
-	messageName string
-	shortName   string
-	pluralName  string
+	messageName   string
+	shortName     string
+	pluralName    string
+	clusterScoped bool
 
 	// we will clone the message definition from this type
 	// required for Istio's MeshPolicy/Policy thing (same type, reuse the same proto)
@@ -154,7 +161,7 @@ func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Wri
 		}
 	}
 	for _, skt := range skTypes {
-		modifiedProto = injectSoloKit(modifiedProto, skt.messageName, skt.shortName, skt.pluralName)
+		modifiedProto = injectSoloKit(modifiedProto, skt.messageName, skt.shortName, skt.pluralName, skt.clusterScoped)
 	}
 	_, err = fmt.Fprint(out, modifiedProto)
 	return err
@@ -168,12 +175,12 @@ func replaceGoPackage(in, importPath string) string {
 	return goPackageStatementRegex.ReplaceAllString(in, fmt.Sprintf("option go_package = \"%v\";\n\n%v", importPath, soloKitImports))
 }
 
-func injectSoloKit(in, messageName, shortName, pluralName string) string {
+func injectSoloKit(in, messageName, shortName, pluralName string, clusterScoped bool) string {
 	messageDeclaration := regexp.MustCompile("message " + messageName + " {")
 	updatedMessageDeclaration := fmt.Sprintf("message %v {\n"+
 		"%v\n"+
 		"%v\n",
-		messageName, soloKitOptions(shortName, pluralName), soloKitFields)
+		messageName, soloKitOptions(shortName, pluralName, clusterScoped), soloKitFields)
 	return messageDeclaration.ReplaceAllString(in, updatedMessageDeclaration)
 }
 

@@ -193,11 +193,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 	}
 	virtualServiceChan := make(chan virtualServiceListWithNamespace)
 	/* Create channel for MeshPolicy */
-	type meshPolicyListWithNamespace struct {
-		list      istio_authentication_v1alpha1.MeshPolicyList
-		namespace string
-	}
-	meshPolicyChan := make(chan meshPolicyListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -277,17 +272,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, virtualServiceErrs, namespace+"-virtualservices")
 		}(namespace)
-		/* Setup namespaced watch for MeshPolicy */
-		meshPolicyNamespacesChan, meshPolicyErrs, err := c.meshPolicy.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, meshPolicyErrs, namespace+"-meshpolicies")
-		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -337,16 +321,21 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case virtualServiceChan <- virtualServiceListWithNamespace{list: virtualServiceList, namespace: namespace}:
 					}
-				case meshPolicyList := <-meshPolicyNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case meshPolicyChan <- meshPolicyListWithNamespace{list: meshPolicyList, namespace: namespace}:
-					}
 				}
 			}
 		}(namespace)
 	}
+	/* Setup cluster-wide watch for MeshPolicy */
+
+	meshPolicyChan, meshPolicyErrs, err := c.meshPolicy.Watch(opts)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
+	}
+	done.Add(1)
+	go func() {
+		defer done.Done()
+		errutils.AggregateErrs(ctx, errs, meshPolicyErrs, "meshpolicies")
+	}()
 
 	snapshots := make(chan *ConfigSnapshot)
 	go func() {
@@ -396,10 +385,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		      currentSnapshot.Virtualservices.Clear(virtualServiceNamespacedList.namespace)
 		      virtualServiceList := virtualServiceNamespacedList.list
 		   	currentSnapshot.Virtualservices.Add(virtualServiceList...)
-		      meshPolicyNamespacedList := <- meshPolicyChan
-		      currentSnapshot.Meshpolicies.Clear(meshPolicyNamespacedList.namespace)
-		      meshPolicyList := meshPolicyNamespacedList.list
-		   	currentSnapshot.Meshpolicies.Add(meshPolicyList...)
 		   		}
 		*/
 
@@ -473,14 +458,9 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 
 				currentSnapshot.Virtualservices.Clear(namespace)
 				currentSnapshot.Virtualservices.Add(virtualServiceList...)
-			case meshPolicyNamespacedList := <-meshPolicyChan:
+			case meshPolicyList := <-meshPolicyChan:
 				record()
-
-				namespace := meshPolicyNamespacedList.namespace
-				meshPolicyList := meshPolicyNamespacedList.list
-
-				currentSnapshot.Meshpolicies.Clear(namespace)
-				currentSnapshot.Meshpolicies.Add(meshPolicyList...)
+				currentSnapshot.Meshpolicies = meshPolicyList
 			}
 		}
 	}()

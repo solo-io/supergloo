@@ -172,5 +172,5 @@ var MeshPolicyCrd = crd.NewCrd("istio.authentication.v1alpha1",
 	"v1alpha1",
 	"MeshPolicy",
 	"meshpolicy",
-	false,
+	true,
 	&MeshPolicy{})

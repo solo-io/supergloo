@@ -378,6 +378,7 @@ message MeshPolicy {
 
   option (core.solo.io.resource).short_name = "meshpolicy";
   option (core.solo.io.resource).plural_name = "meshpolicies";
+  option (core.solo.io.resource).cluster_scoped = true;
 
   // Status indicates the validation status of this resource.
   // Status is read-only by clients, and set by supergloo during validation

@@ -134,6 +134,8 @@ var _ = Describe("V1Emitter", func() {
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
 		setup.TeardownKube(namespace2)
+		meshPolicyClient.Delete(name1, clients.DeleteOpts{})
+		meshPolicyClient.Delete(name2, clients.DeleteOpts{})
 	})
 	It("tracks snapshots on changes to any resource", func() {
 		ctx := context.Background()
@@ -564,12 +566,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshpolicies {
-						if _, err := snap.Meshpolicies.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+						if _, err := snap.Meshpolicies.Find(expected.Metadata.Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshpolicies {
-						if _, err := snap.Meshpolicies.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+						if _, err := snap.Meshpolicies.Find(unexpected.Metadata.Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -577,39 +579,29 @@ var _ = Describe("V1Emitter", func() {
 				case err := <-errs:
 					Expect(err).NotTo(HaveOccurred())
 				case <-time.After(time.Second * 10):
-					nsList1, _ := meshPolicyClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := meshPolicyClient.List(namespace2, clients.ListOpts{})
-					combined := nsList1.ByNamespace()
-					combined.Add(nsList2...)
+					nsList, _ := meshPolicyClient.List(clients.ListOpts{})
+					combined := nsList.ByNamespace()
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
 		}
 		meshPolicy1a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		meshPolicy1b, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy1b}, nil)
+		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, nil)
 		meshPolicy2a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		meshPolicy2b, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+
+		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a}, nil)
+
+		err = meshPolicyClient.Delete(meshPolicy2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy1b, meshPolicy2a, meshPolicy2b}, nil)
+		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy2a})
 
-		err = meshPolicyClient.Delete(meshPolicy2a.Metadata.Namespace, meshPolicy2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshPolicyClient.Delete(meshPolicy2b.Metadata.Namespace, meshPolicy2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshPolicyClient.Delete(meshPolicy1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy1b}, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy2a, meshPolicy2b})
-
-		err = meshPolicyClient.Delete(meshPolicy1a.Metadata.Namespace, meshPolicy1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshPolicyClient.Delete(meshPolicy1b.Metadata.Namespace, meshPolicy1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy1b, meshPolicy2a, meshPolicy2b})
+		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a})
 	})
 })
