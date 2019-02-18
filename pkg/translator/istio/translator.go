@@ -15,7 +15,8 @@ import (
 )
 
 type Translator interface {
-	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (*MeshConfig, reporter.ResourceErrors, error)
+	// translates a snapshot into a set of istio configs for each mesh
+	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error)
 }
 
 // A container for the entire set of config for a single istio mesh
@@ -84,27 +85,100 @@ type labelsPortTuple struct {
 	port   uint32
 }
 
-// produces a complete istio config
-func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (*MeshConfig, reporter.ResourceErrors, error) {
+type inputMeshConfig struct {
+	mesh  *v1.Mesh           // the mesh we're configuring
+	rules v1.RoutingRuleList // list of route rules which apply to this mesh
+}
+
+type rulesByMesh map[*v1.Mesh]v1.RoutingRuleList
+
+func splitRulesByMesh(rules v1.RoutingRuleList, meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) rulesByMesh {
+	rulesByMesh := make(rulesByMesh)
+	for _, rule := range rules {
+		targetMesh := rule.TargetMesh
+		if targetMesh == nil {
+			resourceErrs.AddError(rule, errors.Errorf("target mesh cannot be nil"))
+			continue
+		}
+		mesh, err := meshes.Find(targetMesh.Strings())
+		if err == nil {
+			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
+			continue
+		}
+		meshGroup, err := meshGroups.Find(targetMesh.Strings())
+		if err != nil {
+			resourceErrs.AddError(rule, errors.Errorf("no target mesh or mesh group found for %v", targetMesh))
+			continue
+		}
+		for _, ref := range meshGroup.Meshes {
+			if ref == nil {
+				resourceErrs.AddError(meshGroup, errors.Errorf("ref cannot be nil"))
+				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
+				continue
+			}
+			mesh, err := meshes.Find(ref.Strings())
+			if err != nil {
+				resourceErrs.AddError(meshGroup, err)
+				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
+				continue
+			}
+			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
+		}
+	}
+	return rulesByMesh
+}
+
+func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
 	routingRules := snapshot.Routingrules.List()
-	encryptionRules := snapshot.Ecryptionrules.List()
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)
 	resourceErrs.Accept(meshGroups.AsInputResources()...)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
-	resourceErrs.Accept(encryptionRules.AsInputResources()...)
+	resourceErrs.Accept(upstreams.AsInputResources()...)
+
+	routingRulesByMesh := splitRulesByMesh(routingRules, meshes, meshGroups, resourceErrs)
+
+	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
 	params := plugins.Params{
-		Ctx:      ctx,
-		Snapshot: snapshot,
+		Ctx: ctx,
 	}
+
+	for _, mesh := range meshes {
+		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		if !ok {
+			// we only want istio meshes
+			continue
+		}
+		rules := routingRulesByMesh[mesh]
+		in := inputMeshConfig{
+			mesh:  mesh,
+			rules: rules,
+		}
+		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
+		if err != nil {
+			return nil, nil, err
+		}
+		perMeshConfig[mesh] = meshConfig
+	}
+
+	return perMeshConfig, resourceErrs, nil
+}
+
+// produces a complete istio config
+func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig, upstreams gloov1.UpstreamList,
+	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
+	ctx := params.Ctx
+	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
+	routingRules := input.rules
+
 	destinationHostsPortsAndLabels, err := labelsAndPortsByHost(upstreams)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
+		return nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
 	}
 	var destinationRules v1alpha3.DestinationRuleList
 	var virtualServices v1alpha3.VirtualServiceList
@@ -118,7 +192,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 			params,
 			destinationHost,
 			labelSets,
-			encryptionRules,
+			mtlsEnabled,
 			resourceErrs,
 		)
 		destinationRules = append(destinationRules, dr)
@@ -141,7 +215,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	}
 	meshConfig.Sort()
 
-	return meshConfig, resourceErrs, nil
+	return meshConfig, nil
 }
 
 func labelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]labelsPortTuple, error) {
