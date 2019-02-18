@@ -19,7 +19,7 @@ type ConfigSnapshot struct {
 	Tlssecrets       TlssecretsByNamespace
 	Destinationrules istio_networking_v1alpha3.DestinationrulesByNamespace
 	Virtualservices  istio_networking_v1alpha3.VirtualservicesByNamespace
-	Meshpolicies     istio_authentication_v1alpha1.MeshpoliciesByNamespace
+	Meshpolicies     istio_authentication_v1alpha1.MeshPolicyList
 }
 
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
@@ -77,7 +77,7 @@ func (s ConfigSnapshot) hashVirtualservices() uint64 {
 }
 
 func (s ConfigSnapshot) hashMeshpolicies() uint64 {
-	return hashutils.HashAll(s.Meshpolicies.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshpolicies.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) HashFields() []zap.Field {

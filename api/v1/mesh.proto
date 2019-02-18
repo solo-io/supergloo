@@ -34,7 +34,8 @@ message Mesh {
 }
 
 message Istio {
-    string b = 1;
+    // where the istio control plane has been installed
+    string installation_namespace = 1;
 }
 
 // the encryption configuration that will be applied by the role
