@@ -10,6 +10,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
 	. "github.com/onsi/ginkgo"
@@ -70,7 +71,13 @@ var _ = Describe("ConfigEventLoop", func() {
 		virtualServiceClient, err := istio_networking_v1alpha3.NewVirtualServiceClient(virtualServiceClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient)
+		meshPolicyClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		meshPolicyClient, err := istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, meshPolicyClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
@@ -86,6 +93,8 @@ var _ = Describe("ConfigEventLoop", func() {
 		_, err = emitter.DestinationRule().Write(istio_networking_v1alpha3.NewDestinationRule(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.VirtualService().Write(istio_networking_v1alpha3.NewVirtualService(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.MeshPolicy().Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockConfigSyncer{}
 		el := NewConfigEventLoop(emitter, sync)

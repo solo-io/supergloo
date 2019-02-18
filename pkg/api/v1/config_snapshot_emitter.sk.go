@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
 	"go.opencensus.io/stats"
@@ -51,14 +52,15 @@ type ConfigEmitter interface {
 	TlsSecret() TlsSecretClient
 	DestinationRule() istio_networking_v1alpha3.DestinationRuleClient
 	VirtualService() istio_networking_v1alpha3.VirtualServiceClient
+	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:            meshClient,
 		meshGroup:       meshGroupClient,
@@ -67,6 +69,7 @@ func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupCl
 		tlsSecret:       tlsSecretClient,
 		destinationRule: destinationRuleClient,
 		virtualService:  virtualServiceClient,
+		meshPolicy:      meshPolicyClient,
 		forceEmit:       emit,
 	}
 }
@@ -80,6 +83,7 @@ type configEmitter struct {
 	tlsSecret       TlsSecretClient
 	destinationRule istio_networking_v1alpha3.DestinationRuleClient
 	virtualService  istio_networking_v1alpha3.VirtualServiceClient
+	meshPolicy      istio_authentication_v1alpha1.MeshPolicyClient
 }
 
 func (c *configEmitter) Register() error {
@@ -102,6 +106,9 @@ func (c *configEmitter) Register() error {
 		return err
 	}
 	if err := c.virtualService.Register(); err != nil {
+		return err
+	}
+	if err := c.meshPolicy.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -133,6 +140,10 @@ func (c *configEmitter) DestinationRule() istio_networking_v1alpha3.DestinationR
 
 func (c *configEmitter) VirtualService() istio_networking_v1alpha3.VirtualServiceClient {
 	return c.virtualService
+}
+
+func (c *configEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient {
+	return c.meshPolicy
 }
 
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
@@ -181,6 +192,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	virtualServiceChan := make(chan virtualServiceListWithNamespace)
+	/* Create channel for MeshPolicy */
+	type meshPolicyListWithNamespace struct {
+		list      istio_authentication_v1alpha1.MeshPolicyList
+		namespace string
+	}
+	meshPolicyChan := make(chan meshPolicyListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -260,6 +277,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, virtualServiceErrs, namespace+"-virtualservices")
 		}(namespace)
+		/* Setup namespaced watch for MeshPolicy */
+		meshPolicyNamespacesChan, meshPolicyErrs, err := c.meshPolicy.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshPolicyErrs, namespace+"-meshpolicies")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -308,6 +336,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 					case <-ctx.Done():
 						return
 					case virtualServiceChan <- virtualServiceListWithNamespace{list: virtualServiceList, namespace: namespace}:
+					}
+				case meshPolicyList := <-meshPolicyNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshPolicyChan <- meshPolicyListWithNamespace{list: meshPolicyList, namespace: namespace}:
 					}
 				}
 			}
@@ -362,6 +396,10 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		      currentSnapshot.Virtualservices.Clear(virtualServiceNamespacedList.namespace)
 		      virtualServiceList := virtualServiceNamespacedList.list
 		   	currentSnapshot.Virtualservices.Add(virtualServiceList...)
+		      meshPolicyNamespacedList := <- meshPolicyChan
+		      currentSnapshot.Meshpolicies.Clear(meshPolicyNamespacedList.namespace)
+		      meshPolicyList := meshPolicyNamespacedList.list
+		   	currentSnapshot.Meshpolicies.Add(meshPolicyList...)
 		   		}
 		*/
 
@@ -435,6 +473,14 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 
 				currentSnapshot.Virtualservices.Clear(namespace)
 				currentSnapshot.Virtualservices.Add(virtualServiceList...)
+			case meshPolicyNamespacedList := <-meshPolicyChan:
+				record()
+
+				namespace := meshPolicyNamespacedList.namespace
+				meshPolicyList := meshPolicyNamespacedList.list
+
+				currentSnapshot.Meshpolicies.Clear(namespace)
+				currentSnapshot.Meshpolicies.Add(meshPolicyList...)
 			}
 		}
 	}()
