@@ -45,7 +45,7 @@ message RoutingRule {
 
     // if specified, this rule will only apply to http requests
     // in the mesh matching these parameters
-    repeated gloo.solo.io.Matcher RequestMatchers = 4;
+    repeated gloo.solo.io.Matcher request_matchers = 4;
 
     // contains the configuration that will be applied to
     // selected pods within the target mesh(es)

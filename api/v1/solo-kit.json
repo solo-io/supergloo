@@ -14,16 +14,24 @@
         "package": "supergloo.solo.io"
       },
       {
-        "name": "Upstream",
-        "package": "gloo.solo.io"
+        "name": "RoutingRule",
+        "package": "supergloo.solo.io"
       },
       {
-        "name": "RoutingRule",
+        "name": "SecurityRule",
         "package": "supergloo.solo.io"
       },
       {
         "name": "TlsSecret",
         "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "Pod",
+        "package": "core.kubernetes.io"
       },
       {
         "name": "DestinationRule",

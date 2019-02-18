@@ -4,13 +4,15 @@ import (
 	"context"
 	"sort"
 
+	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -25,9 +27,15 @@ type Translator interface {
 
 // A container for the entire set of config for a single istio mesh
 type MeshConfig struct {
-	DesinationRules v1alpha3.DestinationRuleList
-	VirtualServices v1alpha3.VirtualServiceList
+	// mtls
 	MeshPolicy      *v1alpha1.MeshPolicy // meshpolicy is a singleton
+	DesinationRules v1alpha3.DestinationRuleList
+
+	// routing
+	VirtualServices v1alpha3.VirtualServiceList
+
+	// security
+	SecurityConfig
 }
 
 func (c *MeshConfig) Sort() {
@@ -51,39 +59,6 @@ func NewTranslator(plugins []plugins.Plugin) Translator {
 	return &translator{plugins: plugins}
 }
 
-// we create a routing rule for each unique matcher
-type rulesByMatcher struct {
-	rules map[uint64]v1.RoutingRuleList
-}
-
-func newRulesByMatcher(rules v1.RoutingRuleList) rulesByMatcher {
-	rbm := make(map[uint64]v1.RoutingRuleList)
-	for _, rule := range rules {
-		hash := hashutils.HashAll(
-			rule.SourceSelector,
-			rule.RequestMatchers,
-		)
-		rbm[hash] = append(rbm[hash], rule)
-	}
-
-	return rulesByMatcher{rules: rbm}
-}
-
-func (rbm rulesByMatcher) sort() []v1.RoutingRuleList {
-	var (
-		hashes       []uint64
-		rulesForHash []v1.RoutingRuleList
-	)
-	for hash, rules := range rbm.rules {
-		hashes = append(hashes, hash)
-		rulesForHash = append(rulesForHash, rules)
-	}
-	sort.SliceStable(rulesForHash, func(i, j int) bool {
-		return hashes[i] < hashes[j]
-	})
-	return rulesForHash
-}
-
 type labelsPortTuple struct {
 	labels map[string]string
 	port   uint32
@@ -94,53 +69,110 @@ type inputMeshConfig struct {
 	writeNamespace string
 	// the mesh we're configuring
 	mesh *v1.Mesh
-	// list of route rules which apply to this mesh
-	rules v1.RoutingRuleList
+	// list of rules which apply to this mesh
+	rules ruleSet
 }
 
-type rulesByMesh map[*v1.Mesh]v1.RoutingRuleList
+type meshRule interface {
+	resources.InputResource
+	GetTargetMesh() *core.ResourceRef
+}
 
-func splitRulesByMesh(rules v1.RoutingRuleList, meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) rulesByMesh {
-	rulesByMesh := make(rulesByMesh)
-	for _, rule := range rules {
-		targetMesh := rule.TargetMesh
-		if targetMesh == nil {
-			resourceErrs.AddError(rule, errors.Errorf("target mesh cannot be nil"))
-			continue
+type rulesByMesh map[*v1.Mesh]ruleSet
+
+func (rbm rulesByMesh) addRule(ctx context.Context, rule meshRule, meshes v1.MeshList, meshGroups v1.MeshGroupList) error {
+	var appendRule func(*v1.Mesh)
+
+	switch r := rule.(type) {
+	case *v1.RoutingRule:
+		appendRule = func(mesh *v1.Mesh) {
+			rule := rbm[mesh]
+			rule.routing = append(rule.routing, r)
+			rbm[mesh] = rule
 		}
-		mesh, err := meshes.Find(targetMesh.Strings())
-		if err == nil {
-			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
-			continue
+	case *v1.SecurityRule:
+		appendRule = func(mesh *v1.Mesh) {
+			rule := rbm[mesh]
+			rule.security = append(rule.security, r)
+			rbm[mesh] = rule
 		}
-		meshGroup, err := meshGroups.Find(targetMesh.Strings())
+	default:
+		return errors.Errorf("internal error: cannot append rule type %v", rule)
+	}
+
+	targetMesh := rule.GetTargetMesh()
+	if targetMesh == nil {
+		return errors.Errorf("target mesh cannot be nil")
+	}
+	mesh, err := meshes.Find(targetMesh.Strings())
+	if err == nil {
+		appendRule(mesh)
+		return nil
+	}
+	meshGroup, err := meshGroups.Find(targetMesh.Strings())
+	if err != nil {
+		return errors.Errorf("no target mesh or mesh group found for %v", targetMesh)
+	}
+	for _, ref := range meshGroup.Meshes {
+		if ref == nil {
+			return errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref())
+		}
+		mesh, err := meshes.Find(ref.Strings())
 		if err != nil {
-			resourceErrs.AddError(rule, errors.Errorf("no target mesh or mesh group found for %v", targetMesh))
+			return errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref())
+		}
+		appendRule(mesh)
+	}
+
+	return nil
+}
+
+type ruleSet struct {
+	routing  v1.RoutingRuleList
+	security v1.SecurityRuleList
+}
+
+func splitRulesByMesh(ctx context.Context, routingRules v1.RoutingRuleList, securityRules v1.SecurityRuleList, meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) rulesByMesh {
+	rulesByMesh := make(rulesByMesh)
+
+	for _, rule := range routingRules {
+		if err := rulesByMesh.addRule(ctx, rule, meshes, meshGroups); err != nil {
+			resourceErrs.AddError(rule, err)
 			continue
 		}
-		for _, ref := range meshGroup.Meshes {
-			if ref == nil {
-				resourceErrs.AddError(meshGroup, errors.Errorf("ref cannot be nil"))
-				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
-				continue
-			}
-			mesh, err := meshes.Find(ref.Strings())
-			if err != nil {
-				resourceErrs.AddError(meshGroup, err)
-				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
-				continue
-			}
-			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
+	}
+	for _, rule := range securityRules {
+		if err := rulesByMesh.addRule(ctx, rule, meshes, meshGroups); err != nil {
+			resourceErrs.AddError(rule, err)
+			continue
 		}
 	}
 	return rulesByMesh
+}
+
+// TODO (ilackarms) move to the top-level translator
+func validateMeshGroups(meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) {
+	for _, mg := range meshGroups {
+		for _, ref := range mg.Meshes {
+			if ref == nil {
+				resourceErrs.AddError(mg, errors.Errorf("ref cannot be nil"))
+				continue
+			}
+			if _, err := meshes.Find(ref.Strings()); err != nil {
+				resourceErrs.AddError(mg, err)
+				continue
+			}
+		}
+	}
 }
 
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
+	pods := snapshot.Pods.List()
 	routingRules := snapshot.Routingrules.List()
+	securityRules := snapshot.Securityrules.List()
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)
@@ -148,7 +180,9 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
 	resourceErrs.Accept(upstreams.AsInputResources()...)
 
-	routingRulesByMesh := splitRulesByMesh(routingRules, meshes, meshGroups, resourceErrs)
+	validateMeshGroups(meshes, meshGroups, resourceErrs)
+
+	routingRulesByMesh := splitRulesByMesh(ctx, routingRules, securityRules, meshes, meshGroups, resourceErrs)
 
 	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
@@ -169,7 +203,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 			mesh:           mesh,
 			rules:          rules,
 		}
-		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
+		meshConfig, err := t.translateMesh(params, in, upstreams, pods, resourceErrs)
 		if err != nil {
 			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
 			continue
@@ -181,11 +215,15 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 }
 
 // produces a complete istio config
-func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig, upstreams gloov1.UpstreamList,
+func (t *translator) translateMesh(
+	params plugins.Params,
+	input inputMeshConfig,
+	upstreams gloov1.UpstreamList,
+	pods customkube.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
 	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
-	routingRules := input.rules
+	rules := input.rules
 
 	destinationHostsPortsAndLabels, err := labelsAndPortsByHost(upstreams)
 	if err != nil {
@@ -214,7 +252,7 @@ func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig,
 			input.writeNamespace,
 			destinationHost,
 			destinationPortAndLabelSets,
-			routingRules,
+			rules.routing,
 			upstreams,
 			resourceErrs,
 		)
@@ -238,10 +276,19 @@ func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig,
 		}
 	}
 
+	securityConfig := createSecurityConfig(
+		input.writeNamespace,
+		input.rules.security,
+		upstreams,
+		pods,
+		resourceErrs,
+	)
+
 	meshConfig := &MeshConfig{
 		VirtualServices: virtualServices,
 		DesinationRules: destinationRules,
 		MeshPolicy:      meshPolicy,
+		SecurityConfig:  securityConfig,
 	}
 	meshConfig.Sort()
 

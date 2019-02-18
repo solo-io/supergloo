@@ -1,5 +1,10 @@
 {
-  "title": "Istio Networking",
-  "name": "istio.networking.v1alpha3",
-  "version": "v1alpha3"
+    "title": "",
+    "description": "",
+    "name": "istio.networking.v1alpha3",
+    "version": "v1alpha3",
+    "docs_dir": "",
+    "resource_groups": null,
+    "ProjectFile": "",
+    "GoPackage": ""
 }
