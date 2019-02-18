@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 
@@ -227,7 +229,7 @@ var _ = Describe("createRoute", func() {
 		It("creates an http route with the corresponding destination, and calls the plugin for each route", func() {
 			resourceErrs := make(reporter.ResourceErrors)
 			plug := testRoutingPlugin{}
-			t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+			t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 			route := t.createRoute(
 				plugins.Params{Ctx: context.TODO()},
 				"details.default.svc.cluster.local",
@@ -289,7 +291,7 @@ var _ = Describe("Translator", func() {
 		ref := istioMesh.Metadata.Ref()
 		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", &ref)
 
-		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 		configPerMesh, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
 			Meshes:       map[string]v1.MeshList{"": {istioMesh}},
 			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
@@ -374,6 +376,14 @@ var _ = Describe("Translator", func() {
 				}
 			}
 		}
+		Expect(meshConfig.MeshPolicy).NotTo(BeNil())
+		Expect(meshConfig.MeshPolicy.Metadata.Name).To(Equal("default"))
+		Expect(meshConfig.MeshPolicy.Peers).To(HaveLen(1))
+		Expect(meshConfig.MeshPolicy.Peers[0].Params).To(Equal(&v1alpha1.PeerAuthenticationMethod_Mtls{
+			Mtls: &v1alpha1.MutualTls{
+				Mode: v1alpha1.MutualTls_STRICT,
+			},
+		}))
 
 		Expect(resourceErrs).NotTo(BeNil())
 	})

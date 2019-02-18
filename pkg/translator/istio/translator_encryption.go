@@ -17,12 +17,13 @@ import (
 func (t *translator) makeDestinatioRuleForHost(
 	ctx context.Context,
 	params plugins.Params,
+	writeNamespace string,
 	host string,
 	labelSets []map[string]string,
 	enableMtls bool,
 	resourceErrs reporter.ResourceErrors,
 ) *v1alpha3.DestinationRule {
-	dr := initDestinationRule(ctx, t.writeNamespace, host, labelSets, enableMtls)
+	dr := initDestinationRule(ctx, writeNamespace, host, labelSets, enableMtls)
 
 	return dr
 }

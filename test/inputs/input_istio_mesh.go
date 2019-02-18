@@ -13,7 +13,7 @@ func IstioMesh(namespace string, secretRef *core.ResourceRef) *v1.Mesh {
 		},
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.Istio{
-				B: "TODO",
+				InstallationNamespace: "istio-was-installed-herr",
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

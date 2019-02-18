@@ -21,6 +21,7 @@ import (
 func (t *translator) makeVirtualServiceForHost(
 	ctx context.Context,
 	params plugins.Params,
+	writeNamespace string,
 	host string,
 	destinationPortAndLabelSets []labelsPortTuple,
 	routingRules v1.RoutingRuleList,
@@ -33,7 +34,7 @@ func (t *translator) makeVirtualServiceForHost(
 	// on the virtual service that contains all the relevant rules
 	rulesPerMatcher := newRulesByMatcher(routingRules)
 
-	vs := initVirtualService(t.writeNamespace, host)
+	vs := initVirtualService(writeNamespace, host)
 
 	// add a rule for each dest port
 	for _, set := range destinationPortAndLabelSets {
