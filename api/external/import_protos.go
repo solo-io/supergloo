@@ -7,6 +7,7 @@ This file is used to import external api protos
 //go:generate go run import_protos.go
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/code-generator/model"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 )
 
@@ -70,6 +72,28 @@ var protosToImport = []importedProto{
 			},
 		},
 	},
+	{
+		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/rbac/v1alpha1/rbac.proto",
+		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1",
+		skTypes: []soloKitType{
+			{
+				messageName: "ServiceRole",
+				shortName:   "servicerole",
+				pluralName:  "serviceroles",
+			},
+			{
+				messageName: "ServiceRoleBinding",
+				shortName:   "servicerolebinding",
+				pluralName:  "servicerolebindings",
+			},
+			{
+				messageName:   "RbacConfig",
+				shortName:     "rbacconfig",
+				pluralName:    "rbacconfigs",
+				clusterScoped: true,
+			},
+		},
+	},
 }
 
 func main() {
@@ -89,7 +113,16 @@ func main() {
 				log.Fatalf("%v", err)
 			}
 		}
-		if err := importIstioProto(imp.file, imp.importPath, imp.skTypes, out); err != nil {
+		// create solo-kit.json for each imoportPath
+		soloKitConfig, err := importIstioProto(imp.file, imp.importPath, imp.skTypes, out)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		b, err := json.MarshalIndent(soloKitConfig, "", "    ")
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(outDir, "solo-kit.json"), b, 0644); err != nil {
 			log.Fatalf("%v", err)
 		}
 	}
@@ -140,18 +173,18 @@ type soloKitType struct {
 	copyFrom string
 }
 
-func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Writer) error {
+func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Writer) (*model.ProjectConfig, error) {
 	resp, err := http.Get(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return errors.Errorf("request failed with status code %v", resp.StatusCode)
+		return nil, errors.Errorf("request failed with status code %v", resp.StatusCode)
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	modifiedProto := replaceGoPackage(string(b), importPath)
 	// duplicate messages first if necessary
@@ -163,8 +196,27 @@ func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Wri
 	for _, skt := range skTypes {
 		modifiedProto = injectSoloKit(modifiedProto, skt.messageName, skt.shortName, skt.pluralName, skt.clusterScoped)
 	}
-	_, err = fmt.Fprint(out, modifiedProto)
-	return err
+	if _, err := fmt.Fprint(out, modifiedProto); err != nil {
+		return nil, err
+	}
+	protoPackage, err := detectProtoPackage(modifiedProto)
+	if err != nil {
+		return nil, err
+	}
+	return &model.ProjectConfig{
+		Name:    protoPackage,
+		Version: filepath.Base(importPath),
+	}, nil
+}
+
+var protoPackageStatementRegex = regexp.MustCompile(`package (.*);`)
+
+func detectProtoPackage(protoContents string) (string, error) {
+	matches := protoPackageStatementRegex.FindStringSubmatch(protoContents)
+	if len(matches) != 2 {
+		return "", errors.Errorf("invalid package statement: %v", matches)
+	}
+	return matches[1], nil
 }
 
 var goPackageStatementRegex = regexp.MustCompile(`option go_package.*=.*;`)

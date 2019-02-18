@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -17,6 +19,39 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 	"k8s.io/apimachinery/pkg/labels"
 )
+
+// we create a routing rule for each unique matcher
+type rulesByMatcher struct {
+	rules map[uint64]v1.RoutingRuleList
+}
+
+func newRulesByMatcher(rules v1.RoutingRuleList) rulesByMatcher {
+	rbm := make(map[uint64]v1.RoutingRuleList)
+	for _, rule := range rules {
+		hash := hashutils.HashAll(
+			rule.SourceSelector,
+			rule.RequestMatchers,
+		)
+		rbm[hash] = append(rbm[hash], rule)
+	}
+
+	return rulesByMatcher{rules: rbm}
+}
+
+func (rbm rulesByMatcher) sort() []v1.RoutingRuleList {
+	var (
+		hashes       []uint64
+		rulesForHash []v1.RoutingRuleList
+	)
+	for hash, rules := range rbm.rules {
+		hashes = append(hashes, hash)
+		rulesForHash = append(rulesForHash, rules)
+	}
+	sort.SliceStable(rulesForHash, func(i, j int) bool {
+		return hashes[i] < hashes[j]
+	})
+	return rulesForHash
+}
 
 func (t *translator) makeVirtualServiceForHost(
 	ctx context.Context,
@@ -116,50 +151,16 @@ func initVirtualService(writeNamespace, host string) *v1alpha3.VirtualService {
 }
 
 func labelSetsFromSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]map[string]string, error) {
-
-	if selector == nil {
-		return nil, nil
+	selectedUpstreams, err := utils.UpstreamsForSelector(selector, upstreams)
+	if err != nil {
+		return nil, errors.Wrapf(err, "selecting upstreams")
 	}
 
 	var labelSets []map[string]string
-
-	switch selector := selector.SelectorType.(type) {
-
-	case *v1.PodSelector_LabelSelector_:
-
-		return []map[string]string{selector.LabelSelector.LabelsToMatch}, nil
-
-	case *v1.PodSelector_UpstreamSelector_:
-
-		for _, ref := range selector.UpstreamSelector.Upstreams {
-
-			us, err := upstreams.Find(ref.Strings())
-			if err != nil {
-				return nil, errors.Wrapf(err, "invalid selector")
-			}
-
-			labelSets = append(labelSets, utils.GetLabelsForUpstream(us))
-		}
-
-	case *v1.PodSelector_NamespaceSelector_:
-
-		for _, us := range upstreams {
-			var usInSelectedNamespace bool
-			for _, ns := range selector.NamespaceSelector.Namespaces {
-				namespaceForUpstream := utils.GetNamespaceForUpstream(us)
-				if ns == namespaceForUpstream {
-					usInSelectedNamespace = true
-					break
-				}
-			}
-			if !usInSelectedNamespace {
-				continue
-			}
-
-			labelSets = append(labelSets, utils.GetLabelsForUpstream(us))
-
-		}
+	for _, us := range selectedUpstreams {
+		labelSets = append(labelSets, utils.GetLabelsForUpstream(us))
 	}
+
 	return labelSets, nil
 }
 
@@ -366,7 +367,7 @@ func appliesToDestination(destinationHost string, destinationSelector *v1.PodSel
 			}
 
 			upstreamLabels := utils.GetLabelsForUpstream(us)
-			labelsMatch := labels.AreLabelsInWhiteList(upstreamLabels, selector.LabelSelector.LabelsToMatch)
+			labelsMatch := labels.SelectorFromSet(selector.LabelSelector.LabelsToMatch).Matches(labels.Set(upstreamLabels))
 			if !labelsMatch {
 				continue
 			}

@@ -14,19 +14,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-func (t *translator) makeDestinatioRuleForHost(
-	ctx context.Context,
-	params plugins.Params,
-	writeNamespace string,
-	host string,
-	labelSets []map[string]string,
-	enableMtls bool,
-	resourceErrs reporter.ResourceErrors,
-) *v1alpha3.DestinationRule {
-	dr := initDestinationRule(ctx, writeNamespace, host, labelSets, enableMtls)
-
-	return dr
-}
+const kubeApiserverHost = "kubernetes.default.svc.cluster.local"
 
 func initDestinationRule(ctx context.Context, writeNamespace, host string, labelSets []map[string]string, enableMtls bool) *v1alpha3.DestinationRule {
 	// ensure uniqueness of subset names
@@ -54,6 +42,12 @@ func initDestinationRule(ctx context.Context, writeNamespace, host string, label
 			Tls: &v1alpha3.TLSSettings{
 				Mode: v1alpha3.TLSSettings_ISTIO_MUTUAL, // plain old mutual ain't supported yet
 			},
+		}
+
+		// special case: enable traffic leaving the mesh to the local kube apiserver
+		// https://istio.io/docs/tasks/security/authn-policy/#request-from-istio-services-to-kubernetes-api-server
+		if host == kubeApiserverHost {
+			trafficPolicy.Tls.Mode = v1alpha3.TLSSettings_DISABLE
 		}
 	}
 	return &v1alpha3.DestinationRule{
@@ -91,4 +85,18 @@ func sanitizeName(name string) string {
 	}
 	name = strings.Replace(name, ".", "-", -1)
 	return name
+}
+
+func (t *translator) makeDestinatioRuleForHost(
+	ctx context.Context,
+	params plugins.Params,
+	writeNamespace string,
+	host string,
+	labelSets []map[string]string,
+	enableMtls bool,
+	resourceErrs reporter.ResourceErrors,
+) *v1alpha3.DestinationRule {
+	dr := initDestinationRule(ctx, writeNamespace, host, labelSets, enableMtls)
+
+	return dr
 }

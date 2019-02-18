@@ -12,6 +12,7 @@ import (
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -41,22 +42,34 @@ var _ = Describe("ConfigEventLoop", func() {
 		meshGroupClient, err := NewMeshGroupClient(meshGroupClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		upstreamClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		routingRuleClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 		routingRuleClient, err := NewRoutingRuleClient(routingRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
+		securityRuleClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		securityRuleClient, err := NewSecurityRuleClient(securityRuleClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
 		tlsSecretClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 		tlsSecretClient, err := NewTlsSecretClient(tlsSecretClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		upstreamClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		podClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		podClient, err := core_kubernetes_io.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		destinationRuleClientFactory := &factory.MemoryResourceClientFactory{
@@ -77,18 +90,22 @@ var _ = Describe("ConfigEventLoop", func() {
 		meshPolicyClient, err := istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, meshPolicyClient)
+		emitter = NewConfigEmitter(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, destinationRuleClient, virtualServiceClient, meshPolicyClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.MeshGroup().Write(NewMeshGroup(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.RoutingRule().Write(NewRoutingRule(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.SecurityRule().Write(NewSecurityRule(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.TlsSecret().Write(NewTlsSecret(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Pod().Write(core_kubernetes_io.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.DestinationRule().Write(istio_networking_v1alpha3.NewDestinationRule(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
