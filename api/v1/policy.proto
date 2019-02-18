@@ -3,12 +3,9 @@ package supergloo.solo.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/duration.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/supergloo/api/v1/selector.proto";
-import "github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto";
-import "istio/networking/v1alpha3/virtual_service.proto";
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
@@ -21,7 +18,7 @@ import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 // - sent to **destination pods**
 // - matching one or more **request matcher**
 // apply the specified RoutingRuleSpec
-message RoutingRule {
+message Policy {
     option (core.solo.io.resource).short_name = "rr";
     option (core.solo.io.resource).plural_name = "routingrules";
 
@@ -52,12 +49,45 @@ message RoutingRule {
     RoutingRuleSpec spec = 5;
 }
 
+// specifies the method by which to select pods
+// with in a mesh for the application of routing rules
+message PodSelector {
+
+    // select pods by their labels
+    message LabelSelector {
+        map<string, string> labels_to_match = 1;
+    }
+
+    // select pods based on their services or subsets of services.
+    // upstream CRDs will be created by discovery corresponding to
+    // kubernetes services and the available subsets of those services
+    message UpstreamSelector {
+        // apply the selector to one or more of their upstreams by adding their refs here
+        repeated core.solo.io.ResourceRef upstreams = 1 [(gogoproto.nullable) = false];
+    }
+
+    // select all pods in these namespaces
+    message NamespaceSelector {
+        repeated string namespaces = 1;
+    }
+
+    // specify the type of selector to use with selectorType
+    oneof selector_type {
+        // select pods by their labels
+        LabelSelector label_selector = 1;
+
+        // select pods by their corresponding upstreams
+        UpstreamSelector upstream_selector = 2;
+
+        // select all pods within one or more namespaces
+        NamespaceSelector namespace_selector = 3;
+    }
+}
+
 // the routing configuration that will be applied to the mesh(es)
 message RoutingRuleSpec {
 
     // a routing rule can have one of several types
-    // Note: types imported from istio will be replaced with our own
-    // simpler types, this is just a place to start from
     oneof rule_type {
 
         // enables traffic shifting, i.e. to reroute requests to a different service,
@@ -83,14 +113,14 @@ message RoutingRuleSpec {
         gloo.solo.io.Destination mirror = 9;
 
         // manipulate request and response headers
-        HeaderManipulation header_manipulation = 12;
+        HeaderManipulation header_manipulaition = 12;
     }
 }
 
 // requests for this rule will be routed to these destinations
 message TrafficShifting {
     // split traffic between these subsets based on their weights
-    // weights are relative to the sum of the weights
+    // weights should add to 100
     gloo.solo.io.MultiDestination destinations = 1;
 }
 

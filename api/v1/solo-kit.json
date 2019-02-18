@@ -32,6 +32,10 @@
       {
         "name": "VirtualService",
         "package": "istio.networking.v1alpha3"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authorization.v1alpha1"
       }
     ]
   }
