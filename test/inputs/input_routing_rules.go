@@ -8,13 +8,14 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-func BookInfoRoutingRules(namespace string) v1.RoutingRuleList {
+func BookInfoRoutingRules(namespace string, targetMesh *core.ResourceRef) v1.RoutingRuleList {
 	return v1.RoutingRuleList{
 		{
 			Metadata: core.Metadata{
 				Namespace: namespace,
 				Name:      "rule-applied-to-reviews",
 			},
+			TargetMesh: targetMesh,
 			SourceSelector: &v1.PodSelector{
 				SelectorType: &v1.PodSelector_LabelSelector_{
 					LabelSelector: &v1.PodSelector_LabelSelector{

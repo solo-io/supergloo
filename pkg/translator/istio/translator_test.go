@@ -214,7 +214,7 @@ var _ = Describe("createRoute", func() {
 			route := t.createRoute(
 				plugins.Params{Ctx: context.TODO()},
 				"details.default.svc.cluster.local",
-				inputs.BookInfoRoutingRules("pie"),
+				inputs.BookInfoRoutingRules("pie", nil),
 				createIstioMatcher(
 					[]map[string]string{
 						{"app": "details"},
@@ -268,14 +268,19 @@ type match struct {
 var _ = Describe("Translator", func() {
 	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
 		plug := testRoutingPlugin{}
-		inputRoutingRules := inputs.BookInfoRoutingRules("z")
+		istioMesh := inputs.IstioMesh("fresh", nil)
+		ref := istioMesh.Metadata.Ref()
+		inputRoutingRules := inputs.BookInfoRoutingRules("z", &ref)
 
 		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
-		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+		configPerMesh, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Meshes:       map[string]v1.MeshList{"": {istioMesh}},
 			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
 			Routingrules: map[string]v1.RoutingRuleList{"": inputRoutingRules},
 		})
 		Expect(err).NotTo(HaveOccurred())
+		Expect(configPerMesh).To(HaveKey(istioMesh))
+		meshConfig := configPerMesh[istioMesh]
 		Expect(meshConfig).NotTo(BeNil())
 		Expect(meshConfig.DesinationRules).To(HaveLen(4))
 		// we should have 1 subset for the service selector followed by 1 subset for each set of tags

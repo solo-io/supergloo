@@ -4,9 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 
 	"github.com/solo-io/go-utils/stringutils"
@@ -19,33 +17,15 @@ func (t *translator) makeDestinatioRuleForHost(
 	params plugins.Params,
 	host string,
 	labelSets []map[string]string,
-	encryptionRules v1.EncryptionRuleList,
+	enableMtls bool,
 	resourceErrs reporter.ResourceErrors,
 ) *v1alpha3.DestinationRule {
-	dr := initDestinationRule(t.writeNamespace, host, labelSets)
-
-	for _, er := range encryptionRules {
-
-		// add a rule for each dest port
-		for _, plug := range t.plugins {
-			encryptionPlugin, ok := plug.(plugins.EncryptionPlugin)
-			if !ok {
-				continue
-			}
-			if er.Spec == nil {
-				resourceErrs.AddError(er, errors.Errorf("spec cannot be empty"))
-				continue
-			}
-			if err := encryptionPlugin.ProcessDestinationRule(params, *er.Spec, dr); err != nil {
-				resourceErrs.AddError(er, errors.Wrapf(err, "applying destination rule failed"))
-			}
-		}
-	}
+	dr := initDestinationRule(t.writeNamespace, host, labelSets, enableMtls)
 
 	return dr
 }
 
-func initDestinationRule(writeNamespace, host string, labelSets []map[string]string) *v1alpha3.DestinationRule {
+func initDestinationRule(writeNamespace, host string, labelSets []map[string]string, enableMtls bool) *v1alpha3.DestinationRule {
 
 	var subsets []*v1alpha3.Subset
 	for _, labels := range labelSets {
@@ -57,13 +37,22 @@ func initDestinationRule(writeNamespace, host string, labelSets []map[string]str
 			Labels: labels,
 		})
 	}
+	var trafficPolicy *v1alpha3.TrafficPolicy
+	if enableMtls {
+		trafficPolicy = &v1alpha3.TrafficPolicy{
+			Tls: &v1alpha3.TLSSettings{
+				Mode: v1alpha3.TLSSettings_ISTIO_MUTUAL, // plain old mutual ain't supported yet
+			},
+		}
+	}
 	return &v1alpha3.DestinationRule{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
 			Name:      host,
 		},
-		Host:    host,
-		Subsets: subsets,
+		Host:          host,
+		Subsets:       subsets,
+		TrafficPolicy: trafficPolicy,
 	}
 }
 

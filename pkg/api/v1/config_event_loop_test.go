@@ -52,12 +52,6 @@ var _ = Describe("ConfigEventLoop", func() {
 		routingRuleClient, err := NewRoutingRuleClient(routingRuleClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		encryptionRuleClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		encryptionRuleClient, err := NewEncryptionRuleClient(encryptionRuleClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		tlsSecretClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -76,7 +70,7 @@ var _ = Describe("ConfigEventLoop", func() {
 		virtualServiceClient, err := istio_networking_v1alpha3.NewVirtualServiceClient(virtualServiceClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, encryptionRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient)
+		emitter = NewConfigEmitter(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
@@ -86,8 +80,6 @@ var _ = Describe("ConfigEventLoop", func() {
 		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.RoutingRule().Write(NewRoutingRule(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.EncryptionRule().Write(NewEncryptionRule(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.TlsSecret().Write(NewTlsSecret(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
