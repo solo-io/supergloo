@@ -387,18 +387,6 @@ message MeshPolicy {
   core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
 
-
-  option (core.solo.io.resource).short_name = "policy";
-  option (core.solo.io.resource).plural_name = "policies";
-
-  // Status indicates the validation status of this resource.
-  // Status is read-only by clients, and set by supergloo during validation
-  core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
-
-  // Metadata contains the object metadata for this resource
-  core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
-
-
   // List rules to select workloads that the policy should be applied on.
   // If empty, policy will be used on all workloads in the same namespace.
   repeated TargetSelector targets = 1;

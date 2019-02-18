@@ -147,10 +147,13 @@ func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Wri
 		return err
 	}
 	modifiedProto := replaceGoPackage(string(b), importPath)
+	// duplicate messages first if necessary
 	for _, skt := range skTypes {
 		if skt.copyFrom != "" {
 			modifiedProto = duplicateMessage(modifiedProto, skt.messageName, skt.copyFrom)
 		}
+	}
+	for _, skt := range skTypes {
 		modifiedProto = injectSoloKit(modifiedProto, skt.messageName, skt.shortName, skt.pluralName)
 	}
 	_, err = fmt.Fprint(out, modifiedProto)

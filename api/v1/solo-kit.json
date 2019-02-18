@@ -35,7 +35,7 @@
       },
       {
         "name": "MeshPolicy",
-        "package": "istio.authorization.v1alpha1"
+        "package": "istio.authentication.v1alpha1"
       }
     ]
   }
