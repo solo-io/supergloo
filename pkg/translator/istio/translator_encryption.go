@@ -7,15 +7,11 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
-
 	"github.com/solo-io/go-utils/stringutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
 func (t *translator) makeDestinatioRuleForHost(
@@ -23,33 +19,15 @@ func (t *translator) makeDestinatioRuleForHost(
 	params plugins.Params,
 	host string,
 	labelSets []map[string]string,
-	encryptionRules v1.EncryptionRuleList,
+	enableMtls bool,
 	resourceErrs reporter.ResourceErrors,
 ) *v1alpha3.DestinationRule {
-	dr := initDestinationRule(ctx, t.writeNamespace, host, labelSets)
-
-	for _, er := range encryptionRules {
-
-		// add a rule for each dest port
-		for _, plug := range t.plugins {
-			encryptionPlugin, ok := plug.(plugins.EncryptionPlugin)
-			if !ok {
-				continue
-			}
-			if er.Spec == nil {
-				resourceErrs.AddError(er, errors.Errorf("spec cannot be empty"))
-				continue
-			}
-			if err := encryptionPlugin.ProcessDestinationRule(params, *er.Spec, dr); err != nil {
-				resourceErrs.AddError(er, errors.Wrapf(err, "applying destination rule failed"))
-			}
-		}
-	}
+	dr := initDestinationRule(ctx, t.writeNamespace, host, labelSets, enableMtls)
 
 	return dr
 }
 
-func initDestinationRule(ctx context.Context, writeNamespace, host string, labelSets []map[string]string) *v1alpha3.DestinationRule {
+func initDestinationRule(ctx context.Context, writeNamespace, host string, labelSets []map[string]string, enableMtls bool) *v1alpha3.DestinationRule {
 	// ensure uniqueness of subset names
 	usedSubsetNames := make(map[string]struct{})
 	var subsets []*v1alpha3.Subset
@@ -69,13 +47,22 @@ func initDestinationRule(ctx context.Context, writeNamespace, host string, label
 			Labels: labels,
 		})
 	}
+	var trafficPolicy *v1alpha3.TrafficPolicy
+	if enableMtls {
+		trafficPolicy = &v1alpha3.TrafficPolicy{
+			Tls: &v1alpha3.TLSSettings{
+				Mode: v1alpha3.TLSSettings_ISTIO_MUTUAL, // plain old mutual ain't supported yet
+			},
+		}
+	}
 	return &v1alpha3.DestinationRule{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
 			Name:      host,
 		},
-		Host:    host,
-		Subsets: subsets,
+		Host:          host,
+		Subsets:       subsets,
+		TrafficPolicy: trafficPolicy,
 	}
 }
 
