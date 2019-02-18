@@ -52,6 +52,23 @@ var protosToImport = []importedProto{
 		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/gateway.proto",
 		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
 	},
+	{
+		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/authentication/v1alpha1/policy.proto",
+		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1",
+		skTypes: []soloKitType{
+			{
+				messageName: "Policy",
+				shortName:   "policy",
+				pluralName:  "policies",
+			},
+			{
+				messageName: "MeshPolicy",
+				shortName:   "meshpolicy",
+				pluralName:  "meshpolicies",
+				copyFrom:    "Policy",
+			},
+		},
+	},
 }
 
 func main() {
@@ -110,6 +127,10 @@ type soloKitType struct {
 	messageName string
 	shortName   string
 	pluralName  string
+
+	// we will clone the message definition from this type
+	// required for Istio's MeshPolicy/Policy thing (same type, reuse the same proto)
+	copyFrom string
 }
 
 func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Writer) error {
@@ -127,6 +148,9 @@ func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Wri
 	}
 	modifiedProto := replaceGoPackage(string(b), importPath)
 	for _, skt := range skTypes {
+		if skt.copyFrom != "" {
+			modifiedProto = duplicateMessage(modifiedProto, skt.messageName, skt.copyFrom)
+		}
 		modifiedProto = injectSoloKit(modifiedProto, skt.messageName, skt.shortName, skt.pluralName)
 	}
 	_, err = fmt.Fprint(out, modifiedProto)
@@ -148,4 +172,15 @@ func injectSoloKit(in, messageName, shortName, pluralName string) string {
 		"%v\n",
 		messageName, soloKitOptions(shortName, pluralName), soloKitFields)
 	return messageDeclaration.ReplaceAllString(in, updatedMessageDeclaration)
+}
+
+func duplicateMessage(in, destMessage, sourceMessage string) string {
+	entireMessageDefinition := regexp.MustCompile(`(?s)message ` + sourceMessage + ` \{.+?\n\}`)
+	duplicate := entireMessageDefinition.FindString(in)
+	renamed := "// " + destMessage + " copied from " + sourceMessage + "\n" + strings.Replace(duplicate, sourceMessage, destMessage, -1)
+	in = entireMessageDefinition.ReplaceAllString(in,
+		duplicate+
+			"\n\n"+
+			renamed)
+	return in
 }
