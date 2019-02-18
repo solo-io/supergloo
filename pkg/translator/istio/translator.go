@@ -4,6 +4,10 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/hashutils"
@@ -23,6 +27,7 @@ type Translator interface {
 type MeshConfig struct {
 	DesinationRules v1alpha3.DestinationRuleList
 	VirtualServices v1alpha3.VirtualServiceList
+	MeshPolicy      *v1alpha1.MeshPolicy // meshpolicy is a singleton
 }
 
 func (c *MeshConfig) Sort() {
@@ -39,12 +44,11 @@ func (c *MeshConfig) Sort() {
 // whether mtls is enabled
 
 type translator struct {
-	writeNamespace string
-	plugins        []plugins.Plugin
+	plugins []plugins.Plugin
 }
 
-func NewTranslator(writeNamespace string, plugins []plugins.Plugin) Translator {
-	return &translator{writeNamespace: writeNamespace, plugins: plugins}
+func NewTranslator(plugins []plugins.Plugin) Translator {
+	return &translator{plugins: plugins}
 }
 
 // we create a routing rule for each unique matcher
@@ -86,8 +90,12 @@ type labelsPortTuple struct {
 }
 
 type inputMeshConfig struct {
-	mesh  *v1.Mesh           // the mesh we're configuring
-	rules v1.RoutingRuleList // list of route rules which apply to this mesh
+	// where crds should be written. this is normally the mesh installation namespace
+	writeNamespace string
+	// the mesh we're configuring
+	mesh *v1.Mesh
+	// list of route rules which apply to this mesh
+	rules v1.RoutingRuleList
 }
 
 type rulesByMesh map[*v1.Mesh]v1.RoutingRuleList
@@ -149,15 +157,17 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	}
 
 	for _, mesh := range meshes {
-		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			// we only want istio meshes
 			continue
 		}
+		writeNamespace := istio.Istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
-			mesh:  mesh,
-			rules: rules,
+			writeNamespace: writeNamespace,
+			mesh:           mesh,
+			rules:          rules,
 		}
 		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
 		if err != nil {
@@ -190,6 +200,7 @@ func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig,
 
 		dr := t.makeDestinatioRuleForHost(ctx,
 			params,
+			input.writeNamespace,
 			destinationHost,
 			labelSets,
 			mtlsEnabled,
@@ -199,6 +210,7 @@ func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig,
 
 		vs := t.makeVirtualServiceForHost(ctx,
 			params,
+			input.writeNamespace,
 			destinationHost,
 			destinationPortAndLabelSets,
 			routingRules,
@@ -209,9 +221,26 @@ func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig,
 		virtualServices = append(virtualServices, vs)
 	}
 
+	var meshPolicy *v1alpha1.MeshPolicy
+	if mtlsEnabled {
+		meshPolicy = &v1alpha1.MeshPolicy{
+			Metadata: core.Metadata{
+				// the required name for istio MeshPolicy
+				// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
+				Name: "default",
+			},
+			Peers: []*v1alpha1.PeerAuthenticationMethod{{
+				Params: &v1alpha1.PeerAuthenticationMethod_Mtls{Mtls: &v1alpha1.MutualTls{
+					Mode: v1alpha1.MutualTls_STRICT,
+				}},
+			}},
+		}
+	}
+
 	meshConfig := &MeshConfig{
 		VirtualServices: virtualServices,
 		DesinationRules: destinationRules,
+		MeshPolicy:      meshPolicy,
 	}
 	meshConfig.Sort()
 
