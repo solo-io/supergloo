@@ -115,7 +115,7 @@ var _ = Describe("labelSetsFromSelector", func() {
 var _ = Describe("initDestinationRule", func() {
 	Context("input mesh has encryption enabled", func() {
 		It("creates a destination rule with tls setting ISTIO_MUTUAL", func() {
-			dr := initDestinationRule("ns", "host", nil, true)
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, true)
 			Expect(dr.TrafficPolicy).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_ISTIO_MUTUAL))
@@ -123,7 +123,7 @@ var _ = Describe("initDestinationRule", func() {
 	})
 	Context("input mesh has encryption disabled", func() {
 		It("creates a destination rule with no tls setting", func() {
-			dr := initDestinationRule("ns", "host", nil, false)
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, false)
 			Expect(dr.TrafficPolicy).To(BeNil())
 		})
 	})
