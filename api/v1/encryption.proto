@@ -1,0 +1,50 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+message EncryptionRule {
+    option (core.solo.io.resource).short_name = "er";
+    option (core.solo.io.resource).plural_name = "ecryptionrules";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by supergloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // target where we apply this rule. this can be a mesh group or an individual mesh
+    core.solo.io.ResourceRef target_mesh = 1;
+
+    // contains the configuration that will be applied to the target mesh
+    EncryptionRuleSpec spec = 2;
+}
+
+// the encryption configuration that will be applied by the role
+message EncryptionRuleSpec {
+
+    // whether or not mutual TLS will be enabled between pods
+    bool mtls_enabled = 1;
+
+    // if set, rootCertificate will override the root certificate used by the mesh
+    // to encrypt mtls connections.
+    //
+    // The structure of the secret must be a standard kubernetes TLS secret
+    // such as can be created via `kubectl create secret tls`
+    //
+    // if mtlsEnabled is false, this field is ignored
+    // If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
+    core.solo.io.ResourceRef root_certificate = 2;
+
+
+}

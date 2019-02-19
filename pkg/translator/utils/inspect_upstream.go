@@ -16,6 +16,15 @@ func GetLabelsForUpstream(us *gloov1.Upstream) map[string]string {
 	return us.Metadata.Labels
 }
 
+func GetNamespaceForUpstream(us *gloov1.Upstream) string {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Kube:
+		return specType.Kube.ServiceNamespace
+	}
+	// default to using the labels from the upstream
+	return us.Metadata.Namespace
+}
+
 func GetHostForUpstream(us *gloov1.Upstream) (string, error) {
 	hosts, err := GetHostsForUpstream(us)
 	if err != nil {
@@ -26,6 +35,7 @@ func GetHostForUpstream(us *gloov1.Upstream) (string, error) {
 	}
 	return hosts[0], nil
 }
+
 func GetHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
 	switch specType := us.UpstreamSpec.UpstreamType.(type) {
 	case *gloov1.UpstreamSpec_Aws:

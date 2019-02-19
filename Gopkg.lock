@@ -1121,14 +1121,16 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:252c57395296f17e05745b2336a0b6ac0af6c71f1f837ea54a6ba37cca06254e"
+  digest = "1:aeb5e36ee94cdf68e09c26f4220dcff99eaa84d54f60f8d7172e19b5034a7084"
   name = "github.com/solo-io/go-utils"
   packages = [
     "contextutils",
     "errors",
+    "hashutils",
     "kubeinstallutils",
     "kubeutils",
     "logger",
+    "stringutils",
     "testutils",
   ]
   pruneopts = "UT"
@@ -1995,12 +1997,17 @@
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
+    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/errors",
+    "github.com/solo-io/go-utils/hashutils",
     "github.com/solo-io/go-utils/kubeutils",
+    "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
