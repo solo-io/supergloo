@@ -214,7 +214,7 @@ var _ = Describe("createRoute", func() {
 			route := t.createRoute(
 				plugins.Params{Ctx: context.TODO()},
 				"details.default.svc.cluster.local",
-				inputs.BookInfoRoutingRules("pie"),
+				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live"),
 				createIstioMatcher(
 					[]map[string]string{
 						{"app": "details"},
@@ -268,7 +268,7 @@ type match struct {
 var _ = Describe("Translator", func() {
 	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
 		plug := testRoutingPlugin{}
-		inputRoutingRules := inputs.BookInfoRoutingRules("z")
+		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live")
 
 		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
 		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{

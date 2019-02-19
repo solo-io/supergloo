@@ -116,7 +116,7 @@ message RoutingRuleSpec {
         gloo.solo.io.Destination mirror = 9;
 
         // manipulate request and response headers
-        HeaderManipulation header_manipulaition = 12;
+        HeaderManipulation header_manipulation = 12;
     }
 }
 

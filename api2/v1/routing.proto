@@ -60,7 +60,7 @@ message RoutingRule {
     gloo.solo.io.Destination mirror = 9;
 
     // manipulate request and response headers for this rule
-    HeaderManipulation header_manipulaition = 12;
+    HeaderManipulation header_manipulation = 12;
 
     // TODO:
     // - outlier detection (for destination) -> must become part of an istio destinationrule

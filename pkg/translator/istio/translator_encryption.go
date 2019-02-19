@@ -2,7 +2,11 @@ package istio
 
 import (
 	"context"
+	"crypto/md5"
+	"fmt"
 	"strings"
+
+	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -22,7 +26,7 @@ func (t *translator) makeDestinatioRuleForHost(
 	encryptionRules v1.EncryptionRuleList,
 	resourceErrs reporter.ResourceErrors,
 ) *v1alpha3.DestinationRule {
-	dr := initDestinationRule(t.writeNamespace, host, labelSets)
+	dr := initDestinationRule(ctx, t.writeNamespace, host, labelSets)
 
 	for _, er := range encryptionRules {
 
@@ -45,15 +49,23 @@ func (t *translator) makeDestinatioRuleForHost(
 	return dr
 }
 
-func initDestinationRule(writeNamespace, host string, labelSets []map[string]string) *v1alpha3.DestinationRule {
-
+func initDestinationRule(ctx context.Context, writeNamespace, host string, labelSets []map[string]string) *v1alpha3.DestinationRule {
+	// ensure uniqueness of subset names
+	usedSubsetNames := make(map[string]struct{})
 	var subsets []*v1alpha3.Subset
 	for _, labels := range labelSets {
 		if len(labels) == 0 {
 			continue
 		}
+		name := subsetName(labels)
+		if _, used := usedSubsetNames[name]; used {
+			contextutils.LoggerFrom(ctx).Errorf("internal error: generated name for destination rule "+
+				"%v had duplicate subset name %v", host, name)
+			continue
+		}
+		usedSubsetNames[name] = struct{}{}
 		subsets = append(subsets, &v1alpha3.Subset{
-			Name:   subsetName(labels),
+			Name:   name,
 			Labels: labels,
 		})
 	}
@@ -84,5 +96,11 @@ func sanitizeName(name string) string {
 	name = strings.Replace(name, ":", "-", -1)
 	name = strings.Replace(name, " ", "-", -1)
 	name = strings.Replace(name, "\n", "", -1)
+	if len(name) > 63 {
+		hash := md5.Sum([]byte(name))
+		name = fmt.Sprintf("%s-%x", name[:31], hash)
+		name = name[:63]
+	}
+	name = strings.Replace(name, ".", "-", -1)
 	return name
 }
