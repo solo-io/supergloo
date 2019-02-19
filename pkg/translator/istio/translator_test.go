@@ -62,7 +62,7 @@ var _ = Describe("appliesToDestination", func() {
 	})
 })
 
-var _ = Describe("labelSetsForSelector", func() {
+var _ = Describe("labelSetsFromSelector", func() {
 	Context("PodSelector_UpstreamSelector", func() {
 		It("returns labels for each upstream found", func() {
 			labelSets, err := labelSetsFromSelector(&v1.PodSelector{
