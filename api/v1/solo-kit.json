@@ -22,6 +22,10 @@
         "package": "supergloo.solo.io"
       },
       {
+        "name": "EncryptionRule",
+        "package": "supergloo.solo.io"
+      },
+      {
         "name": "TlsSecret",
         "package": "supergloo.solo.io"
       },

@@ -35,7 +35,7 @@ Description: rules to add features such as Fault Injection and Retries to a mesh
 "retries": .networking.istio.io.HTTPRetry
 "cors_policy": .networking.istio.io.CorsPolicy
 "mirror": .gloo.solo.io.Destination
-"header_manipulaition": .supergloo.solo.io.HeaderManipulation
+"header_manipulation": .supergloo.solo.io.HeaderManipulation
 
 ```
 
@@ -53,7 +53,7 @@ Description: rules to add features such as Fault Injection and Retries to a mesh
 | retries | [.networking.istio.io.HTTPRetry](routing.proto.sk.md#RoutingRule) | Retry policy for for this rule |  |
 | cors_policy | [.networking.istio.io.CorsPolicy](routing.proto.sk.md#RoutingRule) | Cross-Origin Resource Sharing policy (CORS) for this rule. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
 | mirror | [.gloo.solo.io.Destination](routing.proto.sk.md#RoutingRule) | Mirror HTTP traffic to a another destination for this rule. Traffic will still be sent to its original destination as normal. |  |
-| header_manipulaition | [.supergloo.solo.io.HeaderManipulation](routing.proto.sk.md#RoutingRule) | manipulate request and response headers for this rule |  |
+| header_manipulation | [.supergloo.solo.io.HeaderManipulation](routing.proto.sk.md#RoutingRule) | manipulate request and response headers for this rule |  |
   
 ### <a name="TrafficShifting">TrafficShifting</a>
 

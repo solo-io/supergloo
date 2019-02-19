@@ -7,11 +7,20 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
+import "github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto";
+import "istio/networking/v1alpha3/virtual_service.proto";
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 
+// a routing rule applies some L7 routing features to an existing mesh
+// routing rules specify the following:
+// for all requests:
+// - originating from from **source pods**
+// - sent to **destination pods**
+// - matching one or more **request matcher**
+// apply the specified RoutingRuleSpec
 message RoutingRule {
     option (core.solo.io.resource).short_name = "rr";
     option (core.solo.io.resource).plural_name = "routingrules";
@@ -25,4 +34,115 @@ message RoutingRule {
 
     // target where we apply this rule. this can be a mesh group or an individual mesh
     core.solo.io.ResourceRef target_mesh = 1;
+
+    // requests originating from these pods will have the rule applied
+    // leave empty to have all pods in the mesh apply these rules
+    PodSelector source_selector = 2;
+
+    // requests destined for these pods will have the rule applied
+    // leave empty to apply to all destination pods in the mesh
+    PodSelector destination_selector = 3;
+
+    // if specified, this rule will only apply to http requests
+    // in the mesh matching these parameters
+    repeated gloo.solo.io.Matcher RequestMatchers = 4;
+
+    // contains the configuration that will be applied to
+    // selected pods within the target mesh(es)
+    RoutingRuleSpec spec = 5;
+}
+
+// specifies the method by which to select pods
+// with in a mesh for the application of routing rules
+message PodSelector {
+
+    // select pods by their labels
+    message LabelSelector {
+        map<string, string> labels_to_match = 1;
+    }
+
+    // select pods based on their services or subsets of services.
+    // upstream CRDs will be created by discovery corresponding to
+    // kubernetes services and the available subsets of those services
+    message UpstreamSelector {
+        // apply the selector to one or more of their upstreams by adding their refs here
+        repeated core.solo.io.ResourceRef upstreams = 1 [(gogoproto.nullable) = false];
+    }
+
+    // select all pods in these namespaces
+    message NamespaceSelector {
+        repeated string namespaces = 1;
+    }
+
+    // specify the type of selector to use with selectorType
+    oneof selector_type {
+        // select pods by their labels
+        LabelSelector label_selector = 1;
+
+        // select pods by their corresponding upstreams
+        UpstreamSelector upstream_selector = 2;
+
+        // select all pods within one or more namespaces
+        NamespaceSelector namespace_selector = 3;
+    }
+}
+
+// the routing configuration that will be applied to the mesh(es)
+message RoutingRuleSpec {
+
+    // a routing rule can have one of several types
+    // Note: types imported from istio will be replaced with our own
+    // simpler types, this is just a place to start from
+    oneof rule_type {
+
+        // enables traffic shifting, i.e. to reroute requests to a different service,
+        // to a subset of pods based on their label, and/or split traffic between multiple services
+        TrafficShifting traffic_shifting = 1;
+
+        // enable fault injection on requests
+        istio.networking.v1alpha3.HTTPFaultInjection fault_injection = 2;
+
+        // set a timeout on requests
+        google.protobuf.Duration request_timeout = 7;
+
+        // set a retry policy on requests
+        istio.networking.v1alpha3.HTTPRetry retries = 8;
+
+        // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+        // for further details about cross origin resource sharing.
+        istio.networking.v1alpha3.CorsPolicy cors_policy = 10;
+
+        // Mirror HTTP traffic to a another destination. Traffic will still be sent
+        // to its original destination as normal.
+        gloo.solo.io.Destination mirror = 9;
+
+        // manipulate request and response headers
+        HeaderManipulation header_manipulation = 12;
+    }
+}
+
+// requests for this rule will be routed to these destinations
+message TrafficShifting {
+    // split traffic between these subsets based on their weights
+    // weights are relative to the sum of the weights
+    gloo.solo.io.MultiDestination destinations = 1;
+}
+
+// manipulate request and response headers
+message HeaderManipulation {
+    // HTTP headers to remove before returning a response to the caller.
+    repeated string remove_response_headers = 12;
+
+    // Additional HTTP headers to add before returning a response to the
+    // caller.
+    map<string, string> append_response_headers = 13;
+
+    // HTTP headers to remove before forwarding a request to the
+    // destination service.
+    repeated string remove_request_headers = 14;
+
+    // Additional HTTP headers to add before forwarding a request to the
+    // destination service.
+    map<string, string> append_request_headers = 15;
 }

@@ -24,7 +24,11 @@ message Mesh {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
+    message Istio {string b = 1;}
 
+    oneof mesh_type {
+        Istio istio = 1;
+    }
 }
 
 message MeshGroup {
