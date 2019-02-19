@@ -434,6 +434,8 @@ func (m *PodSelector_NamespaceSelector) GetNamespaces() []string {
 // the routing configuration that will be applied to the mesh(es)
 type RoutingRuleSpec struct {
 	// a routing rule can have one of several types
+	// Note: types imported from istio will be replaced with our own
+	// simpler types, this is just a place to start from
 	//
 	// Types that are valid to be assigned to RuleType:
 	//	*RoutingRuleSpec_TrafficShifting
@@ -736,7 +738,7 @@ func _RoutingRuleSpec_OneofSizer(msg proto.Message) (n int) {
 // requests for this rule will be routed to these destinations
 type TrafficShifting struct {
 	// split traffic between these subsets based on their weights
-	// weights should add to 100
+	// weights are relative to the sum of the weights
 	Destinations         *v1.MultiDestination `protobuf:"bytes,1,opt,name=destinations,proto3" json:"destinations,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`

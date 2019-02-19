@@ -91,6 +91,8 @@ message PodSelector {
 message RoutingRuleSpec {
 
     // a routing rule can have one of several types
+    // Note: types imported from istio will be replaced with our own
+    // simpler types, this is just a place to start from
     oneof rule_type {
 
         // enables traffic shifting, i.e. to reroute requests to a different service,
@@ -123,7 +125,7 @@ message RoutingRuleSpec {
 // requests for this rule will be routed to these destinations
 message TrafficShifting {
     // split traffic between these subsets based on their weights
-    // weights should add to 100
+    // weights are relative to the sum of the weights
     gloo.solo.io.MultiDestination destinations = 1;
 }
 
