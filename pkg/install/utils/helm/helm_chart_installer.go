@@ -201,3 +201,40 @@ func IsNoKindMatch(err error) bool {
 	_, ok := err.(*meta.NoKindMatchError)
 	return ok
 }
+
+func UpdateFromManifests(ctx context.Context, namespace string, original, updated Manifests, recreatePods bool) error {
+	kc := kube.New(nil)
+
+	originalCrdManifests, originalNonCrdManifests := original.SplitByCrds()
+	updatedCrdManifests, updatedNonCrdManifests := updated.SplitByCrds()
+
+	//crds come first
+	if len(originalCrdManifests) > 0 || len(updatedCrdManifests) > 0 {
+		originalCrdInput := originalCrdManifests.CombinedString()
+		updatedCrdInput := updatedCrdManifests.CombinedString()
+		if err := kc.Update(
+			namespace,
+			bytes.NewBufferString(originalCrdInput),
+			bytes.NewBufferString(updatedCrdInput),
+			false, false, 0, false); err != nil {
+			return err
+		}
+		if err := waitForCrds(ctx, kc, updatedCrdInput); err != nil {
+			return err
+		}
+	}
+
+	if len(originalNonCrdManifests) > 0 || len(updatedNonCrdManifests) > 0 {
+		originalNonCrdInput := originalNonCrdManifests.CombinedString()
+		updatedNonCrdInput := updatedNonCrdManifests.CombinedString()
+		if err := kc.Update(
+			namespace,
+			bytes.NewBufferString(originalNonCrdInput),
+			bytes.NewBufferString(updatedNonCrdInput),
+			true, recreatePods, 0, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

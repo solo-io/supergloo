@@ -37,6 +37,12 @@
         "name": "VirtualService",
         "package": "istio.networking.v1alpha3"
       }
+    ],
+    "install.supergloo.solo.io": [
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
+      }
     ]
   }
 }
