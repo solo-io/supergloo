@@ -171,7 +171,8 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		}
 		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
 		if err != nil {
-			return nil, nil, err
+			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
+			continue
 		}
 		perMeshConfig[mesh] = meshConfig
 	}
