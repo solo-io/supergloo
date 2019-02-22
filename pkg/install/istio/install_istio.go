@@ -10,14 +10,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
-const (
-	IstioVersion103      = "1.0.3"
-	IstioVersion103Chart = "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz"
-
-	IstioVersion105      = "1.0.5"
-	IstioVersion105Chart = "https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.5.tgz"
-)
-
 var supportedIstioVersions = map[string]versionedInstall{
 	IstioVersion103: {
 		chartPath:      IstioVersion103Chart,

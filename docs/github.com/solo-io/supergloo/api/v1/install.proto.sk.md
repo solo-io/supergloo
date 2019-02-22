@@ -27,7 +27,13 @@ weight: 5
 ---
 ### <a name="Install">Install</a>
 
+ 
+Installs represent a desired installation of a supported mesh.
+Supergloo watches for installs and synchronizes the managed installations
+with the desired configuration in the install object.
 
+Updating the configuration of an install object will cause supergloo to
+modify the corresponding mesh.
 
 ```yaml
 "status": .core.solo.io.Status
@@ -56,7 +62,8 @@ weight: 5
 ---
 ### <a name="Istio">Istio</a>
 
-
+ 
+Installation options for Istio
 
 ```yaml
 "installation_namespace": string

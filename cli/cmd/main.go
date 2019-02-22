@@ -7,7 +7,7 @@ import (
 
 	check "github.com/solo-io/go-checkpoint"
 	"github.com/solo-io/supergloo/cli/pkg/cmd"
-	"github.com/solo-io/supergloo/pkg2/version"
+	"github.com/solo-io/supergloo/pkg/version"
 )
 
 func main() {
