@@ -7,7 +7,7 @@ import (
 )
 
 func Supergloo(args string) error {
-	app := cmd.App("test")
+	app := cmd.SuperglooCli("test")
 	app.SetArgs(strings.Split(args, " "))
 	return app.Execute()
 }

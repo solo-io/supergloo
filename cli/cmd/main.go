@@ -14,7 +14,7 @@ func main() {
 	start := time.Now()
 	defer check.CallReport("supergloo", version.Version, start)
 
-	app := cmd.App(version.Version)
+	app := cmd.SuperglooCli(version.Version)
 	if err := app.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
