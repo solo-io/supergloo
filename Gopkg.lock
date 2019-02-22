@@ -1099,13 +1099,10 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:0f57553c3f76c408476e77b97054cc1ebb434fa0436513dfd259f3c7e7ad955d"
+  digest = "1:6f97deb55405c0d39eb9a087f8ff41a1bea71823e159c2094d01d49023e58708"
   name = "github.com/solo-io/gloo"
   packages = [
     "pkg/cliutil",
-    "projects/gateway/pkg/api/v1",
-    "projects/gloo/cli/pkg/helpers",
-    "projects/gloo/cli/pkg/printers",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/plugins",
     "projects/gloo/pkg/api/v1/plugins/aws",
@@ -2065,7 +2062,6 @@
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/pkg/cliutil",
-    "github.com/solo-io/gloo/projects/gloo/cli/pkg/helpers",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",

@@ -10,7 +10,42 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
+
+func MustGetNamespaces() []string {
+	ns, err := GetNamespaces()
+	if err != nil {
+		log.Fatalf("failed to list namespaces")
+	}
+	return ns
+}
+
+// Note: requires RBAC permission to list namespaces at the cluster level
+func GetNamespaces() ([]string, error) {
+	if memoryResourceClient != nil {
+		return []string{"default", "supergloo-system"}, nil
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	kubeClient, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube client")
+	}
+	var namespaces []string
+	nsList, err := kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	for _, ns := range nsList.Items {
+		namespaces = append(namespaces, ns.Name)
+	}
+	return namespaces, nil
+}
 
 var memoryResourceClient *factory.MemoryResourceClientFactory
 

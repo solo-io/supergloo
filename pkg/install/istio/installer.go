@@ -79,8 +79,8 @@ func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, err
 			Namespace: install.Metadata.Namespace,
 			Name:      install.Metadata.Name,
 		},
-		MeshType: &v1.Mesh_Istio_{
-			Istio: &v1.Mesh_Istio{
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.Istio{
 				// TODO
 			},
 		},

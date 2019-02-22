@@ -36,16 +36,17 @@ var _ = Describe("Install", func() {
 				grafana bool) {
 
 				err := utils.Supergloo("install istio " +
-					fmt.Sprintf("--name %v ", name) +
+					fmt.Sprintf("--name=%v ", name) +
 					fmt.Sprintf("--installation-namespace istio ") +
-					fmt.Sprintf("--version 1.0.3 ") +
-					fmt.Sprintf("--mtls %v ", mtls) +
-					fmt.Sprintf("--auto-inject %v ", autoInject) +
-					fmt.Sprintf("--grafana %v ", grafana) +
-					fmt.Sprintf("--prometheus %v ", prometheus) +
-					fmt.Sprintf("--jaeger %v", jaeger))
-				if version != "1.0.3" && version != "1.0.5" {
+					fmt.Sprintf("--version=%v ", version) +
+					fmt.Sprintf("--mtls=%v ", mtls) +
+					fmt.Sprintf("--auto-inject=%v ", autoInject) +
+					fmt.Sprintf("--grafana=%v ", grafana) +
+					fmt.Sprintf("--prometheus=%v ", prometheus) +
+					fmt.Sprintf("--jaeger=%v", jaeger))
+				if version == "badver" {
 					Expect(err).To(HaveOccurred())
+					return
 				}
 
 				Expect(err).NotTo(HaveOccurred())
@@ -60,9 +61,9 @@ var _ = Describe("Install", func() {
 				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
 			}
 
-			installAndVerifyIstio("1", "ns", "1.0.3", true, true, true, true, true)
-			installAndVerifyIstio("1", "ns", "1.0.5", false, false, false, false, false)
-			installAndVerifyIstio("1", "ns", "badver", false, false, false, false, false)
+			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
+			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
+			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
 		})
 	})
 })

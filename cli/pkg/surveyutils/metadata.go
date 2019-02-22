@@ -2,8 +2,8 @@ package surveyutils
 
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
-	"github.com/solo-io/gloo/projects/gloo/cli/pkg/helpers"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 )
 
 func SurveyMetadata(meta *core.Metadata) error {
