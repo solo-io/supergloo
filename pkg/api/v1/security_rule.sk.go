@@ -122,14 +122,6 @@ func (list SecurityRuleList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list SecurityRuleList) ByNamespace() SecurityrulesByNamespace {
-	byNamespace := make(SecurityrulesByNamespace)
-	for _, securityRule := range list {
-		byNamespace.Add(securityRule)
-	}
-	return byNamespace
-}
-
 func (byNamespace SecurityrulesByNamespace) Add(securityRule ...*SecurityRule) {
 	for _, item := range securityRule {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -149,7 +141,11 @@ func (byNamespace SecurityrulesByNamespace) List() SecurityRuleList {
 }
 
 func (byNamespace SecurityrulesByNamespace) Clone() SecurityrulesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(SecurityrulesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &SecurityRule{}

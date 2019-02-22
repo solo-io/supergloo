@@ -123,14 +123,6 @@ func (list MeshPolicyList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list MeshPolicyList) ByNamespace() MeshpoliciesByNamespace {
-	byNamespace := make(MeshpoliciesByNamespace)
-	for _, meshPolicy := range list {
-		byNamespace.Add(meshPolicy)
-	}
-	return byNamespace
-}
-
 func (byNamespace MeshpoliciesByNamespace) Add(meshPolicy ...*MeshPolicy) {
 	for _, item := range meshPolicy {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -150,7 +142,11 @@ func (byNamespace MeshpoliciesByNamespace) List() MeshPolicyList {
 }
 
 func (byNamespace MeshpoliciesByNamespace) Clone() MeshpoliciesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(MeshpoliciesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &MeshPolicy{}

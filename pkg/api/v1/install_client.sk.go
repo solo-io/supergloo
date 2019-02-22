@@ -12,11 +12,11 @@ import (
 type InstallClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
-	Read(name string, opts clients.ReadOpts) (*Install, error)
+	Read(namespace, name string, opts clients.ReadOpts) (*Install, error)
 	Write(resource *Install, opts clients.WriteOpts) (*Install, error)
-	Delete(name string, opts clients.DeleteOpts) error
-	List(opts clients.ListOpts) (InstallList, error)
-	Watch(opts clients.WatchOpts) (<-chan InstallList, <-chan error, error)
+	Delete(namespace, name string, opts clients.DeleteOpts) error
+	List(namespace string, opts clients.ListOpts) (InstallList, error)
+	Watch(namespace string, opts clients.WatchOpts) (<-chan InstallList, <-chan error, error)
 }
 
 type installClient struct {
@@ -52,10 +52,10 @@ func (client *installClient) Register() error {
 	return client.rc.Register()
 }
 
-func (client *installClient) Read(name string, opts clients.ReadOpts) (*Install, error) {
+func (client *installClient) Read(namespace, name string, opts clients.ReadOpts) (*Install, error) {
 	opts = opts.WithDefaults()
 
-	resource, err := client.rc.Read("", name, opts)
+	resource, err := client.rc.Read(namespace, name, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -71,26 +71,26 @@ func (client *installClient) Write(install *Install, opts clients.WriteOpts) (*I
 	return resource.(*Install), nil
 }
 
-func (client *installClient) Delete(name string, opts clients.DeleteOpts) error {
+func (client *installClient) Delete(namespace, name string, opts clients.DeleteOpts) error {
 	opts = opts.WithDefaults()
 
-	return client.rc.Delete("", name, opts)
+	return client.rc.Delete(namespace, name, opts)
 }
 
-func (client *installClient) List(opts clients.ListOpts) (InstallList, error) {
+func (client *installClient) List(namespace string, opts clients.ListOpts) (InstallList, error) {
 	opts = opts.WithDefaults()
 
-	resourceList, err := client.rc.List("", opts)
+	resourceList, err := client.rc.List(namespace, opts)
 	if err != nil {
 		return nil, err
 	}
 	return convertToInstall(resourceList), nil
 }
 
-func (client *installClient) Watch(opts clients.WatchOpts) (<-chan InstallList, <-chan error, error) {
+func (client *installClient) Watch(namespace string, opts clients.WatchOpts) (<-chan InstallList, <-chan error, error) {
 	opts = opts.WithDefaults()
 
-	resourcesChan, errs, initErr := client.rc.Watch("", opts)
+	resourcesChan, errs, initErr := client.rc.Watch(namespace, opts)
 	if initErr != nil {
 		return nil, nil, initErr
 	}

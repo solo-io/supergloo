@@ -121,14 +121,6 @@ func (list RbacConfigList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list RbacConfigList) ByNamespace() RbacconfigsByNamespace {
-	byNamespace := make(RbacconfigsByNamespace)
-	for _, rbacConfig := range list {
-		byNamespace.Add(rbacConfig)
-	}
-	return byNamespace
-}
-
 func (byNamespace RbacconfigsByNamespace) Add(rbacConfig ...*RbacConfig) {
 	for _, item := range rbacConfig {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -148,7 +140,11 @@ func (byNamespace RbacconfigsByNamespace) List() RbacConfigList {
 }
 
 func (byNamespace RbacconfigsByNamespace) Clone() RbacconfigsByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(RbacconfigsByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &RbacConfig{}

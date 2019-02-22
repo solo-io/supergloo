@@ -73,12 +73,40 @@ func (c *installEmitter) Install() InstallClient {
 }
 
 func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error) {
+
+	if len(watchNamespaces) == 0 {
+		watchNamespaces = []string{""}
+	}
+
+	for _, ns := range watchNamespaces {
+		if ns == "" && len(watchNamespaces) > 1 {
+			return nil, nil, errors.Errorf("the \"\" namespace is used to watch all namespaces. Snapshots can either be tracked for " +
+				"specific namespaces or \"\" AllNamespaces, but not both.")
+		}
+	}
+
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
 	/* Create channel for Install */
+	type installListWithNamespace struct {
+		list      InstallList
+		namespace string
+	}
+	installChan := make(chan installListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
+		/* Setup namespaced watch for Install */
+		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Install watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -86,21 +114,16 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				select {
 				case <-ctx.Done():
 					return
+				case installList := <-installNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					}
 				}
 			}
 		}(namespace)
 	}
-	/* Setup cluster-wide watch for Install */
-
-	installChan, installErrs, err := c.install.Watch(opts)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "starting Install watch")
-	}
-	done.Add(1)
-	go func() {
-		defer done.Done()
-		errutils.AggregateErrs(ctx, errs, installErrs, "installs")
-	}()
 
 	snapshots := make(chan *InstallSnapshot)
 	go func() {
@@ -118,13 +141,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			snapshots <- &sentSnapshot
 		}
 
-		/* TODO (yuval-k): figure out how to make this work to avoid a stale snapshot.
-		// construct the first snapshot from all the configs that are currently there
-		// that guarantees that the first snapshot contains all the data.
-		for range watchNamespaces {
-		}
-		*/
-
 		for {
 			record := func() { stats.Record(ctx, mInstallSnapshotIn.M(1)) }
 
@@ -139,9 +155,13 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case installList := <-installChan:
+			case installNamespacedList := <-installChan:
 				record()
-				currentSnapshot.Installs = installList
+
+				namespace := installNamespacedList.namespace
+				installList := installNamespacedList.list
+
+				currentSnapshot.Installs[namespace] = installList
 			}
 		}
 	}()

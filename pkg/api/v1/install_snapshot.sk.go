@@ -3,12 +3,14 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"
 )
 
 type InstallSnapshot struct {
-	Installs InstallList
+	Installs InstallsByNamespace
 }
 
 func (s InstallSnapshot) Clone() InstallSnapshot {
@@ -24,7 +26,7 @@ func (s InstallSnapshot) Hash() uint64 {
 }
 
 func (s InstallSnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.AsInterfaces()...)
+	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
 }
 
 func (s InstallSnapshot) HashFields() []zap.Field {
@@ -32,4 +34,27 @@ func (s InstallSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+}
+
+type InstallSnapshotStringer struct {
+	Version  uint64
+	Installs []string
+}
+
+func (ss InstallSnapshotStringer) String() string {
+	s := fmt.Sprintf("InstallSnapshot %v\n", ss.Version)
+
+	s += fmt.Sprintf("  Installs %v\n", len(ss.Installs))
+	for _, name := range ss.Installs {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	return s
+}
+
+func (s InstallSnapshot) Stringer() InstallSnapshotStringer {
+	return InstallSnapshotStringer{
+		Version:  s.Hash(),
+		Installs: s.Installs.List().NamespacesDotNames(),
+	}
 }

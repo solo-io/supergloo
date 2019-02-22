@@ -123,14 +123,6 @@ func (list PolicyList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list PolicyList) ByNamespace() PoliciesByNamespace {
-	byNamespace := make(PoliciesByNamespace)
-	for _, policy := range list {
-		byNamespace.Add(policy)
-	}
-	return byNamespace
-}
-
 func (byNamespace PoliciesByNamespace) Add(policy ...*Policy) {
 	for _, item := range policy {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -150,7 +142,11 @@ func (byNamespace PoliciesByNamespace) List() PolicyList {
 }
 
 func (byNamespace PoliciesByNamespace) Clone() PoliciesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(PoliciesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &Policy{}

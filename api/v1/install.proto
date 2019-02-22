@@ -16,7 +16,6 @@ message Install {
 
     option (core.solo.io.resource).short_name = "i";
     option (core.solo.io.resource).plural_name = "installs";
-    option (core.solo.io.resource).cluster_scoped = true;
 
     // Status indicates the validation status of this resource.
     // Status is read-only by clients, and set by supergloo during validation

@@ -106,14 +106,6 @@ func (list PodList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list PodList) ByNamespace() PodsByNamespace {
-	byNamespace := make(PodsByNamespace)
-	for _, pod := range list {
-		byNamespace.Add(pod)
-	}
-	return byNamespace
-}
-
 func (byNamespace PodsByNamespace) Add(pod ...*Pod) {
 	for _, item := range pod {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -133,7 +125,11 @@ func (byNamespace PodsByNamespace) List() PodList {
 }
 
 func (byNamespace PodsByNamespace) Clone() PodsByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(PodsByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &Pod{}

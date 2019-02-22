@@ -168,6 +168,18 @@ func (c *configEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyCli
 }
 
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
+
+	if len(watchNamespaces) == 0 {
+		watchNamespaces = []string{""}
+	}
+
+	for _, ns := range watchNamespaces {
+		if ns == "" && len(watchNamespaces) > 1 {
+			return nil, nil, errors.Errorf("the \"\" namespace is used to watch all namespaces. Snapshots can either be tracked for " +
+				"specific namespaces or \"\" AllNamespaces, but not both.")
+		}
+	}
+
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
@@ -420,49 +432,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			snapshots <- &sentSnapshot
 		}
 
-		/* TODO (yuval-k): figure out how to make this work to avoid a stale snapshot.
-		   		// construct the first snapshot from all the configs that are currently there
-		   		// that guarantees that the first snapshot contains all the data.
-		   		for range watchNamespaces {
-		      meshNamespacedList := <- meshChan
-		      currentSnapshot.Meshes.Clear(meshNamespacedList.namespace)
-		      meshList := meshNamespacedList.list
-		   	currentSnapshot.Meshes.Add(meshList...)
-		      meshGroupNamespacedList := <- meshGroupChan
-		      currentSnapshot.Meshgroups.Clear(meshGroupNamespacedList.namespace)
-		      meshGroupList := meshGroupNamespacedList.list
-		   	currentSnapshot.Meshgroups.Add(meshGroupList...)
-		      routingRuleNamespacedList := <- routingRuleChan
-		      currentSnapshot.Routingrules.Clear(routingRuleNamespacedList.namespace)
-		      routingRuleList := routingRuleNamespacedList.list
-		   	currentSnapshot.Routingrules.Add(routingRuleList...)
-		      securityRuleNamespacedList := <- securityRuleChan
-		      currentSnapshot.Securityrules.Clear(securityRuleNamespacedList.namespace)
-		      securityRuleList := securityRuleNamespacedList.list
-		   	currentSnapshot.Securityrules.Add(securityRuleList...)
-		      tlsSecretNamespacedList := <- tlsSecretChan
-		      currentSnapshot.Tlssecrets.Clear(tlsSecretNamespacedList.namespace)
-		      tlsSecretList := tlsSecretNamespacedList.list
-		   	currentSnapshot.Tlssecrets.Add(tlsSecretList...)
-		      upstreamNamespacedList := <- upstreamChan
-		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
-		      upstreamList := upstreamNamespacedList.list
-		   	currentSnapshot.Upstreams.Add(upstreamList...)
-		      podNamespacedList := <- podChan
-		      currentSnapshot.Pods.Clear(podNamespacedList.namespace)
-		      podList := podNamespacedList.list
-		   	currentSnapshot.Pods.Add(podList...)
-		      destinationRuleNamespacedList := <- destinationRuleChan
-		      currentSnapshot.Destinationrules.Clear(destinationRuleNamespacedList.namespace)
-		      destinationRuleList := destinationRuleNamespacedList.list
-		   	currentSnapshot.Destinationrules.Add(destinationRuleList...)
-		      virtualServiceNamespacedList := <- virtualServiceChan
-		      currentSnapshot.Virtualservices.Clear(virtualServiceNamespacedList.namespace)
-		      virtualServiceList := virtualServiceNamespacedList.list
-		   	currentSnapshot.Virtualservices.Add(virtualServiceList...)
-		   		}
-		*/
-
 		for {
 			record := func() { stats.Record(ctx, mConfigSnapshotIn.M(1)) }
 
@@ -483,72 +452,63 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 				namespace := meshNamespacedList.namespace
 				meshList := meshNamespacedList.list
 
-				currentSnapshot.Meshes.Clear(namespace)
-				currentSnapshot.Meshes.Add(meshList...)
+				currentSnapshot.Meshes[namespace] = meshList
 			case meshGroupNamespacedList := <-meshGroupChan:
 				record()
 
 				namespace := meshGroupNamespacedList.namespace
 				meshGroupList := meshGroupNamespacedList.list
 
-				currentSnapshot.Meshgroups.Clear(namespace)
-				currentSnapshot.Meshgroups.Add(meshGroupList...)
+				currentSnapshot.Meshgroups[namespace] = meshGroupList
 			case routingRuleNamespacedList := <-routingRuleChan:
 				record()
 
 				namespace := routingRuleNamespacedList.namespace
 				routingRuleList := routingRuleNamespacedList.list
 
-				currentSnapshot.Routingrules.Clear(namespace)
-				currentSnapshot.Routingrules.Add(routingRuleList...)
+				currentSnapshot.Routingrules[namespace] = routingRuleList
 			case securityRuleNamespacedList := <-securityRuleChan:
 				record()
 
 				namespace := securityRuleNamespacedList.namespace
 				securityRuleList := securityRuleNamespacedList.list
 
-				currentSnapshot.Securityrules.Clear(namespace)
-				currentSnapshot.Securityrules.Add(securityRuleList...)
+				currentSnapshot.Securityrules[namespace] = securityRuleList
 			case tlsSecretNamespacedList := <-tlsSecretChan:
 				record()
 
 				namespace := tlsSecretNamespacedList.namespace
 				tlsSecretList := tlsSecretNamespacedList.list
 
-				currentSnapshot.Tlssecrets.Clear(namespace)
-				currentSnapshot.Tlssecrets.Add(tlsSecretList...)
+				currentSnapshot.Tlssecrets[namespace] = tlsSecretList
 			case upstreamNamespacedList := <-upstreamChan:
 				record()
 
 				namespace := upstreamNamespacedList.namespace
 				upstreamList := upstreamNamespacedList.list
 
-				currentSnapshot.Upstreams.Clear(namespace)
-				currentSnapshot.Upstreams.Add(upstreamList...)
+				currentSnapshot.Upstreams[namespace] = upstreamList
 			case podNamespacedList := <-podChan:
 				record()
 
 				namespace := podNamespacedList.namespace
 				podList := podNamespacedList.list
 
-				currentSnapshot.Pods.Clear(namespace)
-				currentSnapshot.Pods.Add(podList...)
+				currentSnapshot.Pods[namespace] = podList
 			case destinationRuleNamespacedList := <-destinationRuleChan:
 				record()
 
 				namespace := destinationRuleNamespacedList.namespace
 				destinationRuleList := destinationRuleNamespacedList.list
 
-				currentSnapshot.Destinationrules.Clear(namespace)
-				currentSnapshot.Destinationrules.Add(destinationRuleList...)
+				currentSnapshot.Destinationrules[namespace] = destinationRuleList
 			case virtualServiceNamespacedList := <-virtualServiceChan:
 				record()
 
 				namespace := virtualServiceNamespacedList.namespace
 				virtualServiceList := virtualServiceNamespacedList.list
 
-				currentSnapshot.Virtualservices.Clear(namespace)
-				currentSnapshot.Virtualservices.Add(virtualServiceList...)
+				currentSnapshot.Virtualservices[namespace] = virtualServiceList
 			case meshPolicyList := <-meshPolicyChan:
 				record()
 				currentSnapshot.Meshpolicies = meshPolicyList

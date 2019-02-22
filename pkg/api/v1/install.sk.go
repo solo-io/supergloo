@@ -121,14 +121,6 @@ func (list InstallList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list InstallList) ByNamespace() InstallsByNamespace {
-	byNamespace := make(InstallsByNamespace)
-	for _, install := range list {
-		byNamespace.Add(install)
-	}
-	return byNamespace
-}
-
 func (byNamespace InstallsByNamespace) Add(install ...*Install) {
 	for _, item := range install {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -148,7 +140,11 @@ func (byNamespace InstallsByNamespace) List() InstallList {
 }
 
 func (byNamespace InstallsByNamespace) Clone() InstallsByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(InstallsByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &Install{}
@@ -170,5 +166,5 @@ var InstallCrd = crd.NewCrd("supergloo.solo.io",
 	"v1",
 	"Install",
 	"i",
-	true,
+	false,
 	&Install{})

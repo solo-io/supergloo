@@ -122,14 +122,6 @@ func (list RoutingRuleList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list RoutingRuleList) ByNamespace() RoutingrulesByNamespace {
-	byNamespace := make(RoutingrulesByNamespace)
-	for _, routingRule := range list {
-		byNamespace.Add(routingRule)
-	}
-	return byNamespace
-}
-
 func (byNamespace RoutingrulesByNamespace) Add(routingRule ...*RoutingRule) {
 	for _, item := range routingRule {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -149,7 +141,11 @@ func (byNamespace RoutingrulesByNamespace) List() RoutingRuleList {
 }
 
 func (byNamespace RoutingrulesByNamespace) Clone() RoutingrulesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(RoutingrulesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &RoutingRule{}

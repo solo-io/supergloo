@@ -3,6 +3,8 @@
 package v1
 
 import (
+	"fmt"
+
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
@@ -109,4 +111,90 @@ func (s ConfigSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("meshpolicies", s.hashMeshpolicies()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+}
+
+type ConfigSnapshotStringer struct {
+	Version          uint64
+	Meshes           []string
+	Meshgroups       []string
+	Routingrules     []string
+	Securityrules    []string
+	Tlssecrets       []string
+	Upstreams        []string
+	Pods             []string
+	Destinationrules []string
+	Virtualservices  []string
+	Meshpolicies     []string
+}
+
+func (ss ConfigSnapshotStringer) String() string {
+	s := fmt.Sprintf("ConfigSnapshot %v\n", ss.Version)
+
+	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
+	for _, name := range ss.Meshes {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Meshgroups %v\n", len(ss.Meshgroups))
+	for _, name := range ss.Meshgroups {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Routingrules %v\n", len(ss.Routingrules))
+	for _, name := range ss.Routingrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Securityrules %v\n", len(ss.Securityrules))
+	for _, name := range ss.Securityrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Tlssecrets %v\n", len(ss.Tlssecrets))
+	for _, name := range ss.Tlssecrets {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Upstreams %v\n", len(ss.Upstreams))
+	for _, name := range ss.Upstreams {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Pods %v\n", len(ss.Pods))
+	for _, name := range ss.Pods {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Destinationrules %v\n", len(ss.Destinationrules))
+	for _, name := range ss.Destinationrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Virtualservices %v\n", len(ss.Virtualservices))
+	for _, name := range ss.Virtualservices {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Meshpolicies %v\n", len(ss.Meshpolicies))
+	for _, name := range ss.Meshpolicies {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	return s
+}
+
+func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
+	return ConfigSnapshotStringer{
+		Version:          s.Hash(),
+		Meshes:           s.Meshes.List().NamespacesDotNames(),
+		Meshgroups:       s.Meshgroups.List().NamespacesDotNames(),
+		Routingrules:     s.Routingrules.List().NamespacesDotNames(),
+		Securityrules:    s.Securityrules.List().NamespacesDotNames(),
+		Tlssecrets:       s.Tlssecrets.List().NamespacesDotNames(),
+		Upstreams:        s.Upstreams.List().NamespacesDotNames(),
+		Pods:             s.Pods.List().NamespacesDotNames(),
+		Destinationrules: s.Destinationrules.List().NamespacesDotNames(),
+		Virtualservices:  s.Virtualservices.List().NamespacesDotNames(),
+		Meshpolicies:     s.Meshpolicies.Names(),
+	}
 }

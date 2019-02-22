@@ -118,14 +118,6 @@ func (list ServiceRoleList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list ServiceRoleList) ByNamespace() ServicerolesByNamespace {
-	byNamespace := make(ServicerolesByNamespace)
-	for _, serviceRole := range list {
-		byNamespace.Add(serviceRole)
-	}
-	return byNamespace
-}
-
 func (byNamespace ServicerolesByNamespace) Add(serviceRole ...*ServiceRole) {
 	for _, item := range serviceRole {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -145,7 +137,11 @@ func (byNamespace ServicerolesByNamespace) List() ServiceRoleList {
 }
 
 func (byNamespace ServicerolesByNamespace) Clone() ServicerolesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(ServicerolesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &ServiceRole{}

@@ -119,14 +119,6 @@ func (list MeshList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list MeshList) ByNamespace() MeshesByNamespace {
-	byNamespace := make(MeshesByNamespace)
-	for _, mesh := range list {
-		byNamespace.Add(mesh)
-	}
-	return byNamespace
-}
-
 func (byNamespace MeshesByNamespace) Add(mesh ...*Mesh) {
 	for _, item := range mesh {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -146,7 +138,11 @@ func (byNamespace MeshesByNamespace) List() MeshList {
 }
 
 func (byNamespace MeshesByNamespace) Clone() MeshesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(MeshesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &Mesh{}
