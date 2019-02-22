@@ -12,11 +12,9 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-type istioInstaller struct{}
-
 // installs istio, returns a mesh object created for the install,
 // and updates the install itself with the inline manifest
-func (i *istioInstaller) InstallIstio(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
 	istio, ok := install.InstallType.(*v1.Install_Istio_)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid mesh type, istioInstaller only supports istio", install.Metadata.Ref())
@@ -76,9 +74,6 @@ func (i *istioInstaller) InstallIstio(ctx context.Context, install *v1.Install) 
 		return nil, errors.Wrapf(err, "converting installed mannifests to gzipped string")
 	}
 
-	// caller should expect the install to have been modified
-	install.InstalledManifest = gzipped
-
 	mesh := &v1.Mesh{
 		Metadata: core.Metadata{
 			Namespace: install.Metadata.Namespace,
@@ -90,6 +85,11 @@ func (i *istioInstaller) InstallIstio(ctx context.Context, install *v1.Install) 
 			},
 		},
 	}
+
+	// caller should expect the install to have been modified
+	install.InstalledManifest = gzipped
+	ref := mesh.Metadata.Ref()
+	install.InstalledMesh = &ref
 
 	return mesh, nil
 }

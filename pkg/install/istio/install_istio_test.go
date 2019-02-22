@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 	v1 "k8s.io/api/apps/v1"
+	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -54,11 +55,18 @@ func cleanupManifest(ns, version string, blocking bool) {
 	helm.DeleteFromManifests(context.TODO(), ns, manifests)
 }
 
-func assertDeploymentExists(namespace, name string) {
+func assertDeploymentExists(namespace, name string, exists bool) {
 	kube := MustKubeClient()
-	Eventually(func() (*v1.Deployment, error) {
-		return kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
-	}).Should(Not(BeNil()))
+	if exists {
+		EventuallyWithOffset(1, func() (*v1.Deployment, error) {
+			return kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
+		}).Should(Not(BeNil()))
+	} else {
+		EventuallyWithOffset(1, func() bool {
+			_, err := kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
+			return kubeerrs.IsNotFound(err)
+		}).Should(BeTrue())
+	}
 }
 
 var _ = Describe("installIstio", func() {
@@ -75,16 +83,10 @@ var _ = Describe("installIstio", func() {
 			defer cleanupManifest(ns, t.opts.Version, blocking[0])
 			manifests, err := installIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
-			if t.opts.Observability.EnablePrometheus {
-				assertDeploymentExists(ns, "prometheus")
-			}
-			if t.opts.Observability.EnableGrafana {
-				assertDeploymentExists(ns, "grafana")
-			}
-			if t.opts.Observability.EnableJaeger {
-				assertDeploymentExists(ns, "istio-tracing")
-			}
-			Expect(manifests).To(HaveKey("istio/charts/pilot/templates/deployment.yaml"))
+			assertDeploymentExists(ns, "prometheus", t.opts.Observability.EnablePrometheus)
+			assertDeploymentExists(ns, "grafana", t.opts.Observability.EnableGrafana)
+			assertDeploymentExists(ns, "istio-tracing", t.opts.Observability.EnableJaeger)
+			Expect(manifestsHaveKey(manifests, "istio/charts/pilot/templates/deployment.yaml")).To(BeTrue())
 		},
 
 		table.Entry("istio 1.0.3 enable all", test{
@@ -117,3 +119,12 @@ var _ = Describe("installIstio", func() {
 		}, false),
 	)
 })
+
+func manifestsHaveKey(manifests helm.Manifests, key string) bool {
+	for _, man := range manifests {
+		if man.Name == key {
+			return true
+		}
+	}
+	return false
+}
