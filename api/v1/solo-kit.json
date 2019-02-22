@@ -1,7 +1,7 @@
 {
   "title": "SupaGloo",
   "name": "supergloo.solo.io",
-  "docs_dir": "../../docs",
+  "docs_dir": "docs",
   "version": "v1",
   "resource_groups": {
     "config.supergloo.solo.io": [
@@ -14,20 +14,24 @@
         "package": "supergloo.solo.io"
       },
       {
-        "name": "Upstream",
-        "package": "gloo.solo.io"
-      },
-      {
         "name": "RoutingRule",
         "package": "supergloo.solo.io"
       },
       {
-        "name": "EncryptionRule",
+        "name": "SecurityRule",
         "package": "supergloo.solo.io"
       },
       {
         "name": "TlsSecret",
         "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "Pod",
+        "package": "core.kubernetes.io"
       },
       {
         "name": "DestinationRule",
@@ -36,6 +40,16 @@
       {
         "name": "VirtualService",
         "package": "istio.networking.v1alpha3"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authentication.v1alpha1"
+      }
+    ],
+    "install.supergloo.solo.io": [
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
       }
     ]
   }

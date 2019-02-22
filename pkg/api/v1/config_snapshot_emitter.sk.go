@@ -7,7 +7,9 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -46,29 +48,33 @@ type ConfigEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	MeshGroup() MeshGroupClient
-	Upstream() gloo_solo_io.UpstreamClient
 	RoutingRule() RoutingRuleClient
-	EncryptionRule() EncryptionRuleClient
+	SecurityRule() SecurityRuleClient
 	TlsSecret() TlsSecretClient
+	Upstream() gloo_solo_io.UpstreamClient
+	Pod() core_kubernetes_io.PodClient
 	DestinationRule() istio_networking_v1alpha3.DestinationRuleClient
 	VirtualService() istio_networking_v1alpha3.VirtualServiceClient
+	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, encryptionRuleClient EncryptionRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, upstreamClient, routingRuleClient, encryptionRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, destinationRuleClient, virtualServiceClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, encryptionRuleClient EncryptionRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:            meshClient,
 		meshGroup:       meshGroupClient,
-		upstream:        upstreamClient,
 		routingRule:     routingRuleClient,
-		encryptionRule:  encryptionRuleClient,
+		securityRule:    securityRuleClient,
 		tlsSecret:       tlsSecretClient,
+		upstream:        upstreamClient,
+		pod:             podClient,
 		destinationRule: destinationRuleClient,
 		virtualService:  virtualServiceClient,
+		meshPolicy:      meshPolicyClient,
 		forceEmit:       emit,
 	}
 }
@@ -77,12 +83,14 @@ type configEmitter struct {
 	forceEmit       <-chan struct{}
 	mesh            MeshClient
 	meshGroup       MeshGroupClient
-	upstream        gloo_solo_io.UpstreamClient
 	routingRule     RoutingRuleClient
-	encryptionRule  EncryptionRuleClient
+	securityRule    SecurityRuleClient
 	tlsSecret       TlsSecretClient
+	upstream        gloo_solo_io.UpstreamClient
+	pod             core_kubernetes_io.PodClient
 	destinationRule istio_networking_v1alpha3.DestinationRuleClient
 	virtualService  istio_networking_v1alpha3.VirtualServiceClient
+	meshPolicy      istio_authentication_v1alpha1.MeshPolicyClient
 }
 
 func (c *configEmitter) Register() error {
@@ -92,22 +100,28 @@ func (c *configEmitter) Register() error {
 	if err := c.meshGroup.Register(); err != nil {
 		return err
 	}
-	if err := c.upstream.Register(); err != nil {
-		return err
-	}
 	if err := c.routingRule.Register(); err != nil {
 		return err
 	}
-	if err := c.encryptionRule.Register(); err != nil {
+	if err := c.securityRule.Register(); err != nil {
 		return err
 	}
 	if err := c.tlsSecret.Register(); err != nil {
+		return err
+	}
+	if err := c.upstream.Register(); err != nil {
+		return err
+	}
+	if err := c.pod.Register(); err != nil {
 		return err
 	}
 	if err := c.destinationRule.Register(); err != nil {
 		return err
 	}
 	if err := c.virtualService.Register(); err != nil {
+		return err
+	}
+	if err := c.meshPolicy.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -121,20 +135,24 @@ func (c *configEmitter) MeshGroup() MeshGroupClient {
 	return c.meshGroup
 }
 
-func (c *configEmitter) Upstream() gloo_solo_io.UpstreamClient {
-	return c.upstream
-}
-
 func (c *configEmitter) RoutingRule() RoutingRuleClient {
 	return c.routingRule
 }
 
-func (c *configEmitter) EncryptionRule() EncryptionRuleClient {
-	return c.encryptionRule
+func (c *configEmitter) SecurityRule() SecurityRuleClient {
+	return c.securityRule
 }
 
 func (c *configEmitter) TlsSecret() TlsSecretClient {
 	return c.tlsSecret
+}
+
+func (c *configEmitter) Upstream() gloo_solo_io.UpstreamClient {
+	return c.upstream
+}
+
+func (c *configEmitter) Pod() core_kubernetes_io.PodClient {
+	return c.pod
 }
 
 func (c *configEmitter) DestinationRule() istio_networking_v1alpha3.DestinationRuleClient {
@@ -145,7 +163,23 @@ func (c *configEmitter) VirtualService() istio_networking_v1alpha3.VirtualServic
 	return c.virtualService
 }
 
+func (c *configEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient {
+	return c.meshPolicy
+}
+
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
+
+	if len(watchNamespaces) == 0 {
+		watchNamespaces = []string{""}
+	}
+
+	for _, ns := range watchNamespaces {
+		if ns == "" && len(watchNamespaces) > 1 {
+			return nil, nil, errors.Errorf("the \"\" namespace is used to watch all namespaces. Snapshots can either be tracked for " +
+				"specific namespaces or \"\" AllNamespaces, but not both.")
+		}
+	}
+
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
@@ -161,30 +195,36 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	meshGroupChan := make(chan meshGroupListWithNamespace)
-	/* Create channel for Upstream */
-	type upstreamListWithNamespace struct {
-		list      gloo_solo_io.UpstreamList
-		namespace string
-	}
-	upstreamChan := make(chan upstreamListWithNamespace)
 	/* Create channel for RoutingRule */
 	type routingRuleListWithNamespace struct {
 		list      RoutingRuleList
 		namespace string
 	}
 	routingRuleChan := make(chan routingRuleListWithNamespace)
-	/* Create channel for EncryptionRule */
-	type encryptionRuleListWithNamespace struct {
-		list      EncryptionRuleList
+	/* Create channel for SecurityRule */
+	type securityRuleListWithNamespace struct {
+		list      SecurityRuleList
 		namespace string
 	}
-	encryptionRuleChan := make(chan encryptionRuleListWithNamespace)
+	securityRuleChan := make(chan securityRuleListWithNamespace)
 	/* Create channel for TlsSecret */
 	type tlsSecretListWithNamespace struct {
 		list      TlsSecretList
 		namespace string
 	}
 	tlsSecretChan := make(chan tlsSecretListWithNamespace)
+	/* Create channel for Upstream */
+	type upstreamListWithNamespace struct {
+		list      gloo_solo_io.UpstreamList
+		namespace string
+	}
+	upstreamChan := make(chan upstreamListWithNamespace)
+	/* Create channel for Pod */
+	type podListWithNamespace struct {
+		list      core_kubernetes_io.PodList
+		namespace string
+	}
+	podChan := make(chan podListWithNamespace)
 	/* Create channel for DestinationRule */
 	type destinationRuleListWithNamespace struct {
 		list      istio_networking_v1alpha3.DestinationRuleList
@@ -197,6 +237,7 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	virtualServiceChan := make(chan virtualServiceListWithNamespace)
+	/* Create channel for MeshPolicy */
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -221,17 +262,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshGroupErrs, namespace+"-meshgroups")
 		}(namespace)
-		/* Setup namespaced watch for Upstream */
-		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Upstream watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
-		}(namespace)
 		/* Setup namespaced watch for RoutingRule */
 		routingRuleNamespacesChan, routingRuleErrs, err := c.routingRule.Watch(namespace, opts)
 		if err != nil {
@@ -243,16 +273,16 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, routingRuleErrs, namespace+"-routingrules")
 		}(namespace)
-		/* Setup namespaced watch for EncryptionRule */
-		encryptionRuleNamespacesChan, encryptionRuleErrs, err := c.encryptionRule.Watch(namespace, opts)
+		/* Setup namespaced watch for SecurityRule */
+		securityRuleNamespacesChan, securityRuleErrs, err := c.securityRule.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting EncryptionRule watch")
+			return nil, nil, errors.Wrapf(err, "starting SecurityRule watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, encryptionRuleErrs, namespace+"-ecryptionrules")
+			errutils.AggregateErrs(ctx, errs, securityRuleErrs, namespace+"-securityrules")
 		}(namespace)
 		/* Setup namespaced watch for TlsSecret */
 		tlsSecretNamespacesChan, tlsSecretErrs, err := c.tlsSecret.Watch(namespace, opts)
@@ -264,6 +294,28 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, tlsSecretErrs, namespace+"-tlssecrets")
+		}(namespace)
+		/* Setup namespaced watch for Upstream */
+		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Upstream watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
+		}(namespace)
+		/* Setup namespaced watch for Pod */
+		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Pod watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
 		}(namespace)
 		/* Setup namespaced watch for DestinationRule */
 		destinationRuleNamespacesChan, destinationRuleErrs, err := c.destinationRule.Watch(namespace, opts)
@@ -306,29 +358,35 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case meshGroupChan <- meshGroupListWithNamespace{list: meshGroupList, namespace: namespace}:
 					}
-				case upstreamList := <-upstreamNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
-					}
 				case routingRuleList := <-routingRuleNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
 					case routingRuleChan <- routingRuleListWithNamespace{list: routingRuleList, namespace: namespace}:
 					}
-				case encryptionRuleList := <-encryptionRuleNamespacesChan:
+				case securityRuleList := <-securityRuleNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case encryptionRuleChan <- encryptionRuleListWithNamespace{list: encryptionRuleList, namespace: namespace}:
+					case securityRuleChan <- securityRuleListWithNamespace{list: securityRuleList, namespace: namespace}:
 					}
 				case tlsSecretList := <-tlsSecretNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
 					case tlsSecretChan <- tlsSecretListWithNamespace{list: tlsSecretList, namespace: namespace}:
+					}
+				case upstreamList := <-upstreamNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
+					}
+				case podList := <-podNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
 					}
 				case destinationRuleList := <-destinationRuleNamespacesChan:
 					select {
@@ -346,6 +404,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			}
 		}(namespace)
 	}
+	/* Setup cluster-wide watch for MeshPolicy */
+
+	meshPolicyChan, meshPolicyErrs, err := c.meshPolicy.Watch(opts)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
+	}
+	done.Add(1)
+	go func() {
+		defer done.Done()
+		errutils.AggregateErrs(ctx, errs, meshPolicyErrs, "meshpolicies")
+	}()
 
 	snapshots := make(chan *ConfigSnapshot)
 	go func() {
@@ -362,45 +431,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
-
-		/* TODO (yuval-k): figure out how to make this work to avoid a stale snapshot.
-		   		// construct the first snapshot from all the configs that are currently there
-		   		// that guarantees that the first snapshot contains all the data.
-		   		for range watchNamespaces {
-		      meshNamespacedList := <- meshChan
-		      currentSnapshot.Meshes.Clear(meshNamespacedList.namespace)
-		      meshList := meshNamespacedList.list
-		   	currentSnapshot.Meshes.Add(meshList...)
-		      meshGroupNamespacedList := <- meshGroupChan
-		      currentSnapshot.Meshgroups.Clear(meshGroupNamespacedList.namespace)
-		      meshGroupList := meshGroupNamespacedList.list
-		   	currentSnapshot.Meshgroups.Add(meshGroupList...)
-		      upstreamNamespacedList := <- upstreamChan
-		      currentSnapshot.Upstreams.Clear(upstreamNamespacedList.namespace)
-		      upstreamList := upstreamNamespacedList.list
-		   	currentSnapshot.Upstreams.Add(upstreamList...)
-		      routingRuleNamespacedList := <- routingRuleChan
-		      currentSnapshot.Routingrules.Clear(routingRuleNamespacedList.namespace)
-		      routingRuleList := routingRuleNamespacedList.list
-		   	currentSnapshot.Routingrules.Add(routingRuleList...)
-		      encryptionRuleNamespacedList := <- encryptionRuleChan
-		      currentSnapshot.Ecryptionrules.Clear(encryptionRuleNamespacedList.namespace)
-		      encryptionRuleList := encryptionRuleNamespacedList.list
-		   	currentSnapshot.Ecryptionrules.Add(encryptionRuleList...)
-		      tlsSecretNamespacedList := <- tlsSecretChan
-		      currentSnapshot.Tlssecrets.Clear(tlsSecretNamespacedList.namespace)
-		      tlsSecretList := tlsSecretNamespacedList.list
-		   	currentSnapshot.Tlssecrets.Add(tlsSecretList...)
-		      destinationRuleNamespacedList := <- destinationRuleChan
-		      currentSnapshot.Destinationrules.Clear(destinationRuleNamespacedList.namespace)
-		      destinationRuleList := destinationRuleNamespacedList.list
-		   	currentSnapshot.Destinationrules.Add(destinationRuleList...)
-		      virtualServiceNamespacedList := <- virtualServiceChan
-		      currentSnapshot.Virtualservices.Clear(virtualServiceNamespacedList.namespace)
-		      virtualServiceList := virtualServiceNamespacedList.list
-		   	currentSnapshot.Virtualservices.Add(virtualServiceList...)
-		   		}
-		*/
 
 		for {
 			record := func() { stats.Record(ctx, mConfigSnapshotIn.M(1)) }
@@ -422,64 +452,66 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 				namespace := meshNamespacedList.namespace
 				meshList := meshNamespacedList.list
 
-				currentSnapshot.Meshes.Clear(namespace)
-				currentSnapshot.Meshes.Add(meshList...)
+				currentSnapshot.Meshes[namespace] = meshList
 			case meshGroupNamespacedList := <-meshGroupChan:
 				record()
 
 				namespace := meshGroupNamespacedList.namespace
 				meshGroupList := meshGroupNamespacedList.list
 
-				currentSnapshot.Meshgroups.Clear(namespace)
-				currentSnapshot.Meshgroups.Add(meshGroupList...)
-			case upstreamNamespacedList := <-upstreamChan:
-				record()
-
-				namespace := upstreamNamespacedList.namespace
-				upstreamList := upstreamNamespacedList.list
-
-				currentSnapshot.Upstreams.Clear(namespace)
-				currentSnapshot.Upstreams.Add(upstreamList...)
+				currentSnapshot.Meshgroups[namespace] = meshGroupList
 			case routingRuleNamespacedList := <-routingRuleChan:
 				record()
 
 				namespace := routingRuleNamespacedList.namespace
 				routingRuleList := routingRuleNamespacedList.list
 
-				currentSnapshot.Routingrules.Clear(namespace)
-				currentSnapshot.Routingrules.Add(routingRuleList...)
-			case encryptionRuleNamespacedList := <-encryptionRuleChan:
+				currentSnapshot.Routingrules[namespace] = routingRuleList
+			case securityRuleNamespacedList := <-securityRuleChan:
 				record()
 
-				namespace := encryptionRuleNamespacedList.namespace
-				encryptionRuleList := encryptionRuleNamespacedList.list
+				namespace := securityRuleNamespacedList.namespace
+				securityRuleList := securityRuleNamespacedList.list
 
-				currentSnapshot.Ecryptionrules.Clear(namespace)
-				currentSnapshot.Ecryptionrules.Add(encryptionRuleList...)
+				currentSnapshot.Securityrules[namespace] = securityRuleList
 			case tlsSecretNamespacedList := <-tlsSecretChan:
 				record()
 
 				namespace := tlsSecretNamespacedList.namespace
 				tlsSecretList := tlsSecretNamespacedList.list
 
-				currentSnapshot.Tlssecrets.Clear(namespace)
-				currentSnapshot.Tlssecrets.Add(tlsSecretList...)
+				currentSnapshot.Tlssecrets[namespace] = tlsSecretList
+			case upstreamNamespacedList := <-upstreamChan:
+				record()
+
+				namespace := upstreamNamespacedList.namespace
+				upstreamList := upstreamNamespacedList.list
+
+				currentSnapshot.Upstreams[namespace] = upstreamList
+			case podNamespacedList := <-podChan:
+				record()
+
+				namespace := podNamespacedList.namespace
+				podList := podNamespacedList.list
+
+				currentSnapshot.Pods[namespace] = podList
 			case destinationRuleNamespacedList := <-destinationRuleChan:
 				record()
 
 				namespace := destinationRuleNamespacedList.namespace
 				destinationRuleList := destinationRuleNamespacedList.list
 
-				currentSnapshot.Destinationrules.Clear(namespace)
-				currentSnapshot.Destinationrules.Add(destinationRuleList...)
+				currentSnapshot.Destinationrules[namespace] = destinationRuleList
 			case virtualServiceNamespacedList := <-virtualServiceChan:
 				record()
 
 				namespace := virtualServiceNamespacedList.namespace
 				virtualServiceList := virtualServiceNamespacedList.list
 
-				currentSnapshot.Virtualservices.Clear(namespace)
-				currentSnapshot.Virtualservices.Add(virtualServiceList...)
+				currentSnapshot.Virtualservices[namespace] = virtualServiceList
+			case meshPolicyList := <-meshPolicyChan:
+				record()
+				currentSnapshot.Meshpolicies = meshPolicyList
 			}
 		}
 	}()

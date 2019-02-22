@@ -109,14 +109,6 @@ func (list TlsSecretList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list TlsSecretList) ByNamespace() TlssecretsByNamespace {
-	byNamespace := make(TlssecretsByNamespace)
-	for _, tlsSecret := range list {
-		byNamespace.Add(tlsSecret)
-	}
-	return byNamespace
-}
-
 func (byNamespace TlssecretsByNamespace) Add(tlsSecret ...*TlsSecret) {
 	for _, item := range tlsSecret {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -136,7 +128,11 @@ func (byNamespace TlssecretsByNamespace) List() TlsSecretList {
 }
 
 func (byNamespace TlssecretsByNamespace) Clone() TlssecretsByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(TlssecretsByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &TlsSecret{}

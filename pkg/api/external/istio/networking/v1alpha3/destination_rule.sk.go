@@ -121,14 +121,6 @@ func (list DestinationRuleList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list DestinationRuleList) ByNamespace() DestinationrulesByNamespace {
-	byNamespace := make(DestinationrulesByNamespace)
-	for _, destinationRule := range list {
-		byNamespace.Add(destinationRule)
-	}
-	return byNamespace
-}
-
 func (byNamespace DestinationrulesByNamespace) Add(destinationRule ...*DestinationRule) {
 	for _, item := range destinationRule {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -148,7 +140,11 @@ func (byNamespace DestinationrulesByNamespace) List() DestinationRuleList {
 }
 
 func (byNamespace DestinationrulesByNamespace) Clone() DestinationrulesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(DestinationrulesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &DestinationRule{}

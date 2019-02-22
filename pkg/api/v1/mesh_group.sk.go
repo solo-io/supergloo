@@ -118,14 +118,6 @@ func (list MeshGroupList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list MeshGroupList) ByNamespace() MeshgroupsByNamespace {
-	byNamespace := make(MeshgroupsByNamespace)
-	for _, meshGroup := range list {
-		byNamespace.Add(meshGroup)
-	}
-	return byNamespace
-}
-
 func (byNamespace MeshgroupsByNamespace) Add(meshGroup ...*MeshGroup) {
 	for _, item := range meshGroup {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -145,7 +137,11 @@ func (byNamespace MeshgroupsByNamespace) List() MeshGroupList {
 }
 
 func (byNamespace MeshgroupsByNamespace) Clone() MeshgroupsByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(MeshgroupsByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &MeshGroup{}
