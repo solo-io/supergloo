@@ -123,14 +123,6 @@ func (list VirtualServiceList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (list VirtualServiceList) ByNamespace() VirtualservicesByNamespace {
-	byNamespace := make(VirtualservicesByNamespace)
-	for _, virtualService := range list {
-		byNamespace.Add(virtualService)
-	}
-	return byNamespace
-}
-
 func (byNamespace VirtualservicesByNamespace) Add(virtualService ...*VirtualService) {
 	for _, item := range virtualService {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
@@ -150,7 +142,11 @@ func (byNamespace VirtualservicesByNamespace) List() VirtualServiceList {
 }
 
 func (byNamespace VirtualservicesByNamespace) Clone() VirtualservicesByNamespace {
-	return byNamespace.List().Clone().ByNamespace()
+	cloned := make(VirtualservicesByNamespace)
+	for ns, list := range byNamespace {
+		cloned[ns] = list.Clone()
+	}
+	return cloned
 }
 
 var _ resources.Resource = &VirtualService{}

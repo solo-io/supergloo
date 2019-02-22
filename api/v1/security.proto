@@ -1,0 +1,66 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/supergloo/api/v1/selector.proto";
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+// security rules apply ALLOW policies to communication in a mesh
+// security rules specify the following:
+// ALLOW those requests:
+// - originating from from **source pods**
+// - sent to **destination pods**
+// - matching one or more **request matcher**
+// if no security rules are present, all traffic in the mesh will be set to ALLOW
+message SecurityRule {
+    option (core.solo.io.resource).short_name = "sr";
+    option (core.solo.io.resource).plural_name = "securityrules";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by supergloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // target where we apply this rule. this can be a mesh group or an individual mesh
+    core.solo.io.ResourceRef target_mesh = 1;
+
+    // requests originating from these pods will have the rule applied
+    // leave empty to have all pods in the mesh apply these rules
+    //
+    // note that security policies are mapped to source pods by their
+    // service account. if other pods share the same service account,
+    // this security rule will apply to those pods as well.
+    //
+    // for fine-grained security policies, ensure that your
+    // service accounts properly reflect the desired
+    // boundary for your security rules
+    PodSelector source_selector = 2;
+
+    // requests destined for these pods will have the rule applied
+    // leave empty to apply to all destination pods in the mesh
+    PodSelector destination_selector = 3;
+
+    // Optional. A list of HTTP paths or gRPC methods to allow.
+    // gRPC methods must be presented as fully-qualified name in the form of
+    // "/packageName.serviceName/methodName" and are case sensitive.
+    // Exact match, prefix match, and suffix match are supported for paths.
+    // For example, the path "/books/review" matches
+    // "/books/review" (exact match), or "/books/*" (prefix match),
+    // or "*/review" (suffix match).
+    // If not specified, it allows to any path.
+    repeated string allowed_paths = 4;
+
+    // Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
+    // It is ignored in gRPC case because the value is always "POST".
+    // If set to ["*"] or not specified, it allows to any method.
+    repeated string allowed_methods = 5;
+
+}
