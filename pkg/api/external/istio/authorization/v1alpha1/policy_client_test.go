@@ -2,7 +2,7 @@
 
 // +build solokit
 
-package v1
+package v1alpha1
 
 import (
 	"time"
@@ -17,12 +17,12 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("EncryptionRuleClient", func() {
+var _ = Describe("PolicyClient", func() {
 	var (
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: EncryptionRuleCrd},
+		&typed.KubeRcTester{Crd: PolicyCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -32,7 +32,7 @@ var _ = Describe("EncryptionRuleClient", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client              EncryptionRuleClient
+				client              PolicyClient
 				err                 error
 				name1, name2, name3 = "foo" + helpers.RandString(3), "boo" + helpers.RandString(3), "goo" + helpers.RandString(3)
 			)
@@ -40,25 +40,25 @@ var _ = Describe("EncryptionRuleClient", func() {
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				factory := test.Setup(namespace)
-				client, err = NewEncryptionRuleClient(factory)
+				client, err = NewPolicyClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
-			It("CRUDs EncryptionRules "+test.Description(), func() {
-				EncryptionRuleClientTest(namespace, client, name1, name2, name3)
+			It("CRUDs Policys "+test.Description(), func() {
+				PolicyClientTest(namespace, client, name1, name2, name3)
 			})
 		})
 	}
 })
 
-func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, name1, name2, name3 string) {
+func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3 string) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := name1
-	input := NewEncryptionRule(namespace, name)
+	input := NewPolicy(namespace, name)
 	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -67,14 +67,18 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&EncryptionRule{}))
+	Expect(r1).To(BeAssignableToTypeOf(&Policy{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.TargetMesh).To(Equal(input.TargetMesh))
-	Expect(r1.Spec).To(Equal(input.Spec))
+	Expect(r1.Targets).To(Equal(input.Targets))
+	Expect(r1.Peers).To(Equal(input.Peers))
+	Expect(r1.PeerIsOptional).To(Equal(input.PeerIsOptional))
+	Expect(r1.Origins).To(Equal(input.Origins))
+	Expect(r1.OriginIsOptional).To(Equal(input.OriginIsOptional))
+	Expect(r1.PrincipalBinding).To(Equal(input.PrincipalBinding))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
@@ -94,7 +98,7 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = name2
-	input = &EncryptionRule{}
+	input = &Policy{}
 
 	input.Metadata = core.Metadata{
 		Name:      name,
@@ -117,12 +121,12 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	err = client.Delete(namespace, r2.GetMetadata().Name, clients.DeleteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
-	Eventually(func() EncryptionRuleList {
+	Eventually(func() PolicyList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).Should(ContainElement(r1))
-	Eventually(func() EncryptionRuleList {
+	Eventually(func() PolicyList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
@@ -145,7 +149,7 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 		Expect(err).NotTo(HaveOccurred())
 
 		name = name3
-		input = &EncryptionRule{}
+		input = &Policy{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
 			Name:      name,

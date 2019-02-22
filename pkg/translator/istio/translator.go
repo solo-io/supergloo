@@ -4,6 +4,10 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/hashutils"
@@ -15,13 +19,15 @@ import (
 )
 
 type Translator interface {
-	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (*MeshConfig, reporter.ResourceErrors, error)
+	// translates a snapshot into a set of istio configs for each mesh
+	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error)
 }
 
 // A container for the entire set of config for a single istio mesh
 type MeshConfig struct {
 	DesinationRules v1alpha3.DestinationRuleList
 	VirtualServices v1alpha3.VirtualServiceList
+	MeshPolicy      *v1alpha1.MeshPolicy // meshpolicy is a singleton
 }
 
 func (c *MeshConfig) Sort() {
@@ -38,12 +44,11 @@ func (c *MeshConfig) Sort() {
 // whether mtls is enabled
 
 type translator struct {
-	writeNamespace string
-	plugins        []plugins.Plugin
+	plugins []plugins.Plugin
 }
 
-func NewTranslator(writeNamespace string, plugins []plugins.Plugin) Translator {
-	return &translator{writeNamespace: writeNamespace, plugins: plugins}
+func NewTranslator(plugins []plugins.Plugin) Translator {
+	return &translator{plugins: plugins}
 }
 
 // we create a routing rule for each unique matcher
@@ -84,27 +89,107 @@ type labelsPortTuple struct {
 	port   uint32
 }
 
-// produces a complete istio config
-func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (*MeshConfig, reporter.ResourceErrors, error) {
+type inputMeshConfig struct {
+	// where crds should be written. this is normally the mesh installation namespace
+	writeNamespace string
+	// the mesh we're configuring
+	mesh *v1.Mesh
+	// list of route rules which apply to this mesh
+	rules v1.RoutingRuleList
+}
+
+type rulesByMesh map[*v1.Mesh]v1.RoutingRuleList
+
+func splitRulesByMesh(rules v1.RoutingRuleList, meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) rulesByMesh {
+	rulesByMesh := make(rulesByMesh)
+	for _, rule := range rules {
+		targetMesh := rule.TargetMesh
+		if targetMesh == nil {
+			resourceErrs.AddError(rule, errors.Errorf("target mesh cannot be nil"))
+			continue
+		}
+		mesh, err := meshes.Find(targetMesh.Strings())
+		if err == nil {
+			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
+			continue
+		}
+		meshGroup, err := meshGroups.Find(targetMesh.Strings())
+		if err != nil {
+			resourceErrs.AddError(rule, errors.Errorf("no target mesh or mesh group found for %v", targetMesh))
+			continue
+		}
+		for _, ref := range meshGroup.Meshes {
+			if ref == nil {
+				resourceErrs.AddError(meshGroup, errors.Errorf("ref cannot be nil"))
+				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
+				continue
+			}
+			mesh, err := meshes.Find(ref.Strings())
+			if err != nil {
+				resourceErrs.AddError(meshGroup, err)
+				resourceErrs.AddError(rule, errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref()))
+				continue
+			}
+			rulesByMesh[mesh] = append(rulesByMesh[mesh], rule)
+		}
+	}
+	return rulesByMesh
+}
+
+func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
 	routingRules := snapshot.Routingrules.List()
-	encryptionRules := snapshot.Ecryptionrules.List()
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)
 	resourceErrs.Accept(meshGroups.AsInputResources()...)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
-	resourceErrs.Accept(encryptionRules.AsInputResources()...)
+	resourceErrs.Accept(upstreams.AsInputResources()...)
+
+	routingRulesByMesh := splitRulesByMesh(routingRules, meshes, meshGroups, resourceErrs)
+
+	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
 	params := plugins.Params{
-		Ctx:      ctx,
-		Snapshot: snapshot,
+		Ctx: ctx,
 	}
+
+	for _, mesh := range meshes {
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		if !ok {
+			// we only want istio meshes
+			continue
+		}
+		writeNamespace := istio.Istio.InstallationNamespace
+		rules := routingRulesByMesh[mesh]
+		in := inputMeshConfig{
+			writeNamespace: writeNamespace,
+			mesh:           mesh,
+			rules:          rules,
+		}
+		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
+		if err != nil {
+			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
+			continue
+		}
+		perMeshConfig[mesh] = meshConfig
+	}
+
+	return perMeshConfig, resourceErrs, nil
+}
+
+// produces a complete istio config
+func (t *translator) translateMesh(params plugins.Params, input inputMeshConfig, upstreams gloov1.UpstreamList,
+	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
+	ctx := params.Ctx
+	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
+	routingRules := input.rules
+
 	destinationHostsPortsAndLabels, err := labelsAndPortsByHost(upstreams)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
+		return nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
 	}
 	var destinationRules v1alpha3.DestinationRuleList
 	var virtualServices v1alpha3.VirtualServiceList
@@ -116,15 +201,17 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 		dr := t.makeDestinatioRuleForHost(ctx,
 			params,
+			input.writeNamespace,
 			destinationHost,
 			labelSets,
-			encryptionRules,
+			mtlsEnabled,
 			resourceErrs,
 		)
 		destinationRules = append(destinationRules, dr)
 
 		vs := t.makeVirtualServiceForHost(ctx,
 			params,
+			input.writeNamespace,
 			destinationHost,
 			destinationPortAndLabelSets,
 			routingRules,
@@ -135,13 +222,30 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		virtualServices = append(virtualServices, vs)
 	}
 
+	var meshPolicy *v1alpha1.MeshPolicy
+	if mtlsEnabled {
+		meshPolicy = &v1alpha1.MeshPolicy{
+			Metadata: core.Metadata{
+				// the required name for istio MeshPolicy
+				// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
+				Name: "default",
+			},
+			Peers: []*v1alpha1.PeerAuthenticationMethod{{
+				Params: &v1alpha1.PeerAuthenticationMethod_Mtls{Mtls: &v1alpha1.MutualTls{
+					Mode: v1alpha1.MutualTls_STRICT,
+				}},
+			}},
+		}
+	}
+
 	meshConfig := &MeshConfig{
 		VirtualServices: virtualServices,
 		DesinationRules: destinationRules,
+		MeshPolicy:      meshPolicy,
 	}
 	meshConfig.Sort()
 
-	return meshConfig, resourceErrs, nil
+	return meshConfig, nil
 }
 
 func labelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]labelsPortTuple, error) {

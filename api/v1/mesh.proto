@@ -24,11 +24,35 @@ message Mesh {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
-    message Istio {string b = 1;}
-
     oneof mesh_type {
         Istio istio = 1;
     }
+
+    // mtls config specifies configuration options for enabling mutual
+    // tls between pods in this mesh
+    MtlsConfig mtls_config = 2;
+}
+
+message Istio {
+    // where the istio control plane has been installed
+    string installation_namespace = 1;
+}
+
+// the encryption configuration that will be applied by the role
+message MtlsConfig {
+
+    // whether or not mutual TLS should be enabled between pods in this mesh
+    bool mtls_enabled = 1;
+
+    // if set, rootCertificate will override the root certificate used by the mesh
+    // to encrypt mtls connections.
+    //
+    // The structure of the secret must be a standard kubernetes TLS secret
+    // such as can be created via `kubectl create secret tls`
+    //
+    // if mtlsEnabled is false, this field is ignored
+    // If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
+    core.solo.io.ResourceRef root_certificate = 2;
 }
 
 message MeshGroup {

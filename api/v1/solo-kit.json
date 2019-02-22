@@ -22,10 +22,6 @@
         "package": "supergloo.solo.io"
       },
       {
-        "name": "EncryptionRule",
-        "package": "supergloo.solo.io"
-      },
-      {
         "name": "TlsSecret",
         "package": "supergloo.solo.io"
       },
@@ -36,6 +32,10 @@
       {
         "name": "VirtualService",
         "package": "istio.networking.v1alpha3"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authentication.v1alpha1"
       }
     ],
     "install.supergloo.solo.io": [

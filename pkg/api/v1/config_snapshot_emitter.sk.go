@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
 	"go.opencensus.io/stats"
@@ -48,27 +49,27 @@ type ConfigEmitter interface {
 	MeshGroup() MeshGroupClient
 	Upstream() gloo_solo_io.UpstreamClient
 	RoutingRule() RoutingRuleClient
-	EncryptionRule() EncryptionRuleClient
 	TlsSecret() TlsSecretClient
 	DestinationRule() istio_networking_v1alpha3.DestinationRuleClient
 	VirtualService() istio_networking_v1alpha3.VirtualServiceClient
+	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, encryptionRuleClient EncryptionRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, upstreamClient, routingRuleClient, encryptionRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, upstreamClient, routingRuleClient, tlsSecretClient, destinationRuleClient, virtualServiceClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, encryptionRuleClient EncryptionRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, upstreamClient gloo_solo_io.UpstreamClient, routingRuleClient RoutingRuleClient, tlsSecretClient TlsSecretClient, destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient, virtualServiceClient istio_networking_v1alpha3.VirtualServiceClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:            meshClient,
 		meshGroup:       meshGroupClient,
 		upstream:        upstreamClient,
 		routingRule:     routingRuleClient,
-		encryptionRule:  encryptionRuleClient,
 		tlsSecret:       tlsSecretClient,
 		destinationRule: destinationRuleClient,
 		virtualService:  virtualServiceClient,
+		meshPolicy:      meshPolicyClient,
 		forceEmit:       emit,
 	}
 }
@@ -79,10 +80,10 @@ type configEmitter struct {
 	meshGroup       MeshGroupClient
 	upstream        gloo_solo_io.UpstreamClient
 	routingRule     RoutingRuleClient
-	encryptionRule  EncryptionRuleClient
 	tlsSecret       TlsSecretClient
 	destinationRule istio_networking_v1alpha3.DestinationRuleClient
 	virtualService  istio_networking_v1alpha3.VirtualServiceClient
+	meshPolicy      istio_authentication_v1alpha1.MeshPolicyClient
 }
 
 func (c *configEmitter) Register() error {
@@ -98,9 +99,6 @@ func (c *configEmitter) Register() error {
 	if err := c.routingRule.Register(); err != nil {
 		return err
 	}
-	if err := c.encryptionRule.Register(); err != nil {
-		return err
-	}
 	if err := c.tlsSecret.Register(); err != nil {
 		return err
 	}
@@ -108,6 +106,9 @@ func (c *configEmitter) Register() error {
 		return err
 	}
 	if err := c.virtualService.Register(); err != nil {
+		return err
+	}
+	if err := c.meshPolicy.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -129,10 +130,6 @@ func (c *configEmitter) RoutingRule() RoutingRuleClient {
 	return c.routingRule
 }
 
-func (c *configEmitter) EncryptionRule() EncryptionRuleClient {
-	return c.encryptionRule
-}
-
 func (c *configEmitter) TlsSecret() TlsSecretClient {
 	return c.tlsSecret
 }
@@ -143,6 +140,10 @@ func (c *configEmitter) DestinationRule() istio_networking_v1alpha3.DestinationR
 
 func (c *configEmitter) VirtualService() istio_networking_v1alpha3.VirtualServiceClient {
 	return c.virtualService
+}
+
+func (c *configEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient {
+	return c.meshPolicy
 }
 
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
@@ -173,12 +174,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	routingRuleChan := make(chan routingRuleListWithNamespace)
-	/* Create channel for EncryptionRule */
-	type encryptionRuleListWithNamespace struct {
-		list      EncryptionRuleList
-		namespace string
-	}
-	encryptionRuleChan := make(chan encryptionRuleListWithNamespace)
 	/* Create channel for TlsSecret */
 	type tlsSecretListWithNamespace struct {
 		list      TlsSecretList
@@ -197,6 +192,7 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	virtualServiceChan := make(chan virtualServiceListWithNamespace)
+	/* Create channel for MeshPolicy */
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -242,17 +238,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, routingRuleErrs, namespace+"-routingrules")
-		}(namespace)
-		/* Setup namespaced watch for EncryptionRule */
-		encryptionRuleNamespacesChan, encryptionRuleErrs, err := c.encryptionRule.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting EncryptionRule watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, encryptionRuleErrs, namespace+"-ecryptionrules")
 		}(namespace)
 		/* Setup namespaced watch for TlsSecret */
 		tlsSecretNamespacesChan, tlsSecretErrs, err := c.tlsSecret.Watch(namespace, opts)
@@ -318,12 +303,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case routingRuleChan <- routingRuleListWithNamespace{list: routingRuleList, namespace: namespace}:
 					}
-				case encryptionRuleList := <-encryptionRuleNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case encryptionRuleChan <- encryptionRuleListWithNamespace{list: encryptionRuleList, namespace: namespace}:
-					}
 				case tlsSecretList := <-tlsSecretNamespacesChan:
 					select {
 					case <-ctx.Done():
@@ -346,6 +325,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			}
 		}(namespace)
 	}
+	/* Setup cluster-wide watch for MeshPolicy */
+
+	meshPolicyChan, meshPolicyErrs, err := c.meshPolicy.Watch(opts)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
+	}
+	done.Add(1)
+	go func() {
+		defer done.Done()
+		errutils.AggregateErrs(ctx, errs, meshPolicyErrs, "meshpolicies")
+	}()
 
 	snapshots := make(chan *ConfigSnapshot)
 	go func() {
@@ -383,10 +373,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		      currentSnapshot.Routingrules.Clear(routingRuleNamespacedList.namespace)
 		      routingRuleList := routingRuleNamespacedList.list
 		   	currentSnapshot.Routingrules.Add(routingRuleList...)
-		      encryptionRuleNamespacedList := <- encryptionRuleChan
-		      currentSnapshot.Ecryptionrules.Clear(encryptionRuleNamespacedList.namespace)
-		      encryptionRuleList := encryptionRuleNamespacedList.list
-		   	currentSnapshot.Ecryptionrules.Add(encryptionRuleList...)
 		      tlsSecretNamespacedList := <- tlsSecretChan
 		      currentSnapshot.Tlssecrets.Clear(tlsSecretNamespacedList.namespace)
 		      tlsSecretList := tlsSecretNamespacedList.list
@@ -448,14 +434,6 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 
 				currentSnapshot.Routingrules.Clear(namespace)
 				currentSnapshot.Routingrules.Add(routingRuleList...)
-			case encryptionRuleNamespacedList := <-encryptionRuleChan:
-				record()
-
-				namespace := encryptionRuleNamespacedList.namespace
-				encryptionRuleList := encryptionRuleNamespacedList.list
-
-				currentSnapshot.Ecryptionrules.Clear(namespace)
-				currentSnapshot.Ecryptionrules.Add(encryptionRuleList...)
 			case tlsSecretNamespacedList := <-tlsSecretChan:
 				record()
 
@@ -480,6 +458,9 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 
 				currentSnapshot.Virtualservices.Clear(namespace)
 				currentSnapshot.Virtualservices.Add(virtualServiceList...)
+			case meshPolicyList := <-meshPolicyChan:
+				record()
+				currentSnapshot.Meshpolicies = meshPolicyList
 			}
 		}
 	}()

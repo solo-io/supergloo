@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 
@@ -110,6 +112,23 @@ var _ = Describe("labelSetsFromSelector", func() {
 	})
 })
 
+var _ = Describe("initDestinationRule", func() {
+	Context("input mesh has encryption enabled", func() {
+		It("creates a destination rule with tls setting ISTIO_MUTUAL", func() {
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, true)
+			Expect(dr.TrafficPolicy).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_ISTIO_MUTUAL))
+		})
+	})
+	Context("input mesh has encryption disabled", func() {
+		It("creates a destination rule with no tls setting", func() {
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, false)
+			Expect(dr.TrafficPolicy).To(BeNil())
+		})
+	})
+})
+
 var _ = Describe("convertMatcher", func() {
 	It("converts a gloo match to an istio match", func() {
 		istioMatch := convertMatcher(map[string]string{"app": "details", "version": "v1"}, 1234, &gloov1.Matcher{
@@ -210,11 +229,11 @@ var _ = Describe("createRoute", func() {
 		It("creates an http route with the corresponding destination, and calls the plugin for each route", func() {
 			resourceErrs := make(reporter.ResourceErrors)
 			plug := testRoutingPlugin{}
-			t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+			t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 			route := t.createRoute(
 				plugins.Params{Ctx: context.TODO()},
 				"details.default.svc.cluster.local",
-				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live"),
+				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", nil),
 				createIstioMatcher(
 					[]map[string]string{
 						{"app": "details"},
@@ -268,14 +287,19 @@ type match struct {
 var _ = Describe("Translator", func() {
 	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
 		plug := testRoutingPlugin{}
-		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live")
+		istioMesh := inputs.IstioMesh("fresh", nil)
+		ref := istioMesh.Metadata.Ref()
+		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", &ref)
 
-		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
-		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
+		configPerMesh, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Meshes:       map[string]v1.MeshList{"": {istioMesh}},
 			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
 			Routingrules: map[string]v1.RoutingRuleList{"": inputRoutingRules},
 		})
 		Expect(err).NotTo(HaveOccurred())
+		Expect(configPerMesh).To(HaveKey(istioMesh))
+		meshConfig := configPerMesh[istioMesh]
 		Expect(meshConfig).NotTo(BeNil())
 		Expect(meshConfig.DesinationRules).To(HaveLen(4))
 		// we should have 1 subset for the service selector followed by 1 subset for each set of tags
@@ -352,6 +376,14 @@ var _ = Describe("Translator", func() {
 				}
 			}
 		}
+		Expect(meshConfig.MeshPolicy).NotTo(BeNil())
+		Expect(meshConfig.MeshPolicy.Metadata.Name).To(Equal("default"))
+		Expect(meshConfig.MeshPolicy.Peers).To(HaveLen(1))
+		Expect(meshConfig.MeshPolicy.Peers[0].Params).To(Equal(&v1alpha1.PeerAuthenticationMethod_Mtls{
+			Mtls: &v1alpha1.MutualTls{
+				Mode: v1alpha1.MutualTls_STRICT,
+			},
+		}))
 
 		Expect(resourceErrs).NotTo(BeNil())
 	})

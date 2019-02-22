@@ -2,7 +2,7 @@
 
 // +build solokit
 
-package v1
+package v1alpha1
 
 import (
 	"time"
@@ -17,49 +17,40 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("MeshClient", func() {
-	var (
-		namespace string
-	)
+var _ = Describe("MeshPolicyClient", func() {
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: MeshCrd},
-		&typed.ConsulRcTester{},
-		&typed.FileRcTester{},
-		&typed.MemoryRcTester{},
-		&typed.VaultRcTester{},
-		&typed.KubeSecretRcTester{},
-		&typed.KubeConfigMapRcTester{},
+		&typed.KubeRcTester{Crd: MeshPolicyCrd},
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client              MeshClient
+				client              MeshPolicyClient
 				err                 error
 				name1, name2, name3 = "foo" + helpers.RandString(3), "boo" + helpers.RandString(3), "goo" + helpers.RandString(3)
 			)
 
 			BeforeEach(func() {
-				namespace = helpers.RandString(6)
-				factory := test.Setup(namespace)
-				client, err = NewMeshClient(factory)
+				factory := test.Setup("")
+				client, err = NewClusterResourceClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
-				test.Teardown(namespace)
+				client.Delete(name1, clients.DeleteOpts{})
+				client.Delete(name2, clients.DeleteOpts{})
+				client.Delete(name3, clients.DeleteOpts{})
 			})
-			It("CRUDs Meshs "+test.Description(), func() {
-				MeshClientTest(namespace, client, name1, name2, name3)
+			It("CRUDs MeshPolicys "+test.Description(), func() {
+				MeshPolicyClientTest(client, name1, name2, name3)
 			})
 		})
 	}
 })
 
-func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 string) {
+func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := name1
-	input := NewMesh(namespace, name)
-	input.Metadata.Namespace = namespace
+	input := NewMeshPolicy("", name)
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -67,13 +58,17 @@ func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 str
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&Mesh{}))
+	Expect(r1).To(BeAssignableToTypeOf(&MeshPolicy{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
-	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.MtlsConfig).To(Equal(input.MtlsConfig))
+	Expect(r1.Targets).To(Equal(input.Targets))
+	Expect(r1.Peers).To(Equal(input.Peers))
+	Expect(r1.PeerIsOptional).To(Equal(input.PeerIsOptional))
+	Expect(r1.Origins).To(Equal(input.Origins))
+	Expect(r1.OriginIsOptional).To(Equal(input.OriginIsOptional))
+	Expect(r1.PrincipalBinding).To(Equal(input.PrincipalBinding))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
@@ -85,48 +80,44 @@ func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 str
 		OverwriteExisting: true,
 	})
 	Expect(err).NotTo(HaveOccurred())
-	read, err := client.Read(namespace, name, clients.ReadOpts{})
+	read, err := client.Read(name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(read).To(Equal(r1))
-	_, err = client.Read("doesntexist", name, clients.ReadOpts{})
-	Expect(err).To(HaveOccurred())
-	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = name2
-	input = &Mesh{}
+	input = &MeshPolicy{}
 
 	input.Metadata = core.Metadata{
-		Name:      name,
-		Namespace: namespace,
+		Name: name,
 	}
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
-	list, err := client.List(namespace, clients.ListOpts{})
+	list, err := client.List(clients.ListOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list).To(ContainElement(r1))
 	Expect(list).To(ContainElement(r2))
-	err = client.Delete(namespace, "adsfw", clients.DeleteOpts{})
+	err = client.Delete("adsfw", clients.DeleteOpts{})
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsNotExist(err)).To(BeTrue())
-	err = client.Delete(namespace, "adsfw", clients.DeleteOpts{
+	err = client.Delete("adsfw", clients.DeleteOpts{
 		IgnoreNotExist: true,
 	})
 	Expect(err).NotTo(HaveOccurred())
-	err = client.Delete(namespace, r2.GetMetadata().Name, clients.DeleteOpts{})
+	err = client.Delete(r2.GetMetadata().Name, clients.DeleteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
-	Eventually(func() MeshList {
-		list, err = client.List(namespace, clients.ListOpts{})
+	Eventually(func() MeshPolicyList {
+		list, err = client.List(clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).Should(ContainElement(r1))
-	Eventually(func() MeshList {
-		list, err = client.List(namespace, clients.ListOpts{})
+	Eventually(func() MeshPolicyList {
+		list, err = client.List(clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).ShouldNot(ContainElement(r2))
-	w, errs, err := client.Watch(namespace, clients.WatchOpts{
+	w, errs, err := client.Watch(clients.WatchOpts{
 		RefreshRate: time.Hour,
 	})
 	Expect(err).NotTo(HaveOccurred())
@@ -144,11 +135,10 @@ func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 str
 		Expect(err).NotTo(HaveOccurred())
 
 		name = name3
-		input = &Mesh{}
+		input = &MeshPolicy{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
-			Name:      name,
-			Namespace: namespace,
+			Name: name,
 		}
 
 		r3, err = client.Write(input, clients.WriteOpts{})
