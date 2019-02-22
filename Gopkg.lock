@@ -1137,7 +1137,7 @@
   version = "v0.1.2"
 
 [[projects]]
-  digest = "1:22d0c89870358723813ff1908c2c1557afe4a51ba1324f11926cd806fde94a04"
+  digest = "1:beb2f62cc40d34387e711801da93fd12def470500492d04cc215eea7eb7bd917"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1146,6 +1146,7 @@
     "pkg/api/v1/clients/factory",
     "pkg/api/v1/clients/file",
     "pkg/api/v1/clients/kube",
+    "pkg/api/v1/clients/kube/cache",
     "pkg/api/v1/clients/kube/controller",
     "pkg/api/v1/clients/kube/crd",
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned",
@@ -1153,7 +1154,6 @@
     "pkg/api/v1/clients/kube/crd/client/clientset/versioned/typed/solo.io/v1",
     "pkg/api/v1/clients/kube/crd/solo.io/v1",
     "pkg/api/v1/clients/kubesecret",
-    "pkg/api/v1/clients/kubesecretplain",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
     "pkg/api/v1/reconcile",
@@ -1163,10 +1163,12 @@
     "pkg/code-generator",
     "pkg/code-generator/cmd",
     "pkg/code-generator/codegen",
-    "pkg/code-generator/codegen/funcs",
     "pkg/code-generator/codegen/templates",
     "pkg/code-generator/docgen",
-    "pkg/code-generator/docgen/templates",
+    "pkg/code-generator/docgen/funcs",
+    "pkg/code-generator/docgen/options",
+    "pkg/code-generator/docgen/templates/markdown",
+    "pkg/code-generator/docgen/templates/restructured",
     "pkg/code-generator/model",
     "pkg/code-generator/parser",
     "pkg/errors",
@@ -1185,8 +1187,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "fe6ee9a1d01b90de222fafced6098c5ac0e29d12"
-  version = "v0.2.20"
+  revision = "25c8016fed9ef58f7c53283a7a62ad661e0afb40"
+  version = "v0.2.29"
 
 [[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
@@ -1264,19 +1266,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d6d961ab02cfbc8920df1d5f6aff8cd388240d619b3947e53390d83283761047"
+  digest = "1:28c92854b02898c94c1d983db50970fb7d9b3ee31c3ae02b1c6afc665abcc46e"
   name = "golang.org/x/crypto"
   packages = [
-    "cast5",
     "ed25519",
     "ed25519/internal/edwards25519",
-    "openpgp",
-    "openpgp/armor",
-    "openpgp/clearsign",
-    "openpgp/elgamal",
-    "openpgp/errors",
-    "openpgp/packet",
-    "openpgp/s2k",
     "pbkdf2",
     "scrypt",
     "ssh/terminal",
@@ -1427,7 +1421,7 @@
   revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
 [[projects]]
-  digest = "1:bf7e2328a58176b7f29f3b425b0555745e9a18ed803f5fd8f6c2c13913a60bb4"
+  digest = "1:c3ad9841823db6da420a5625b367913b4ff54bbe60e8e3c98bd20e243e62e2d2"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1440,7 +1434,6 @@
     "encoding",
     "encoding/proto",
     "grpclog",
-    "health/grpc_health_v1",
     "internal",
     "internal/backoff",
     "internal/channelz",
@@ -1818,33 +1811,23 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:2c8293596bb0e32009b861aceac5888d983a1c3414b22a8c324a321dd61b9be4"
+  digest = "1:e7a28907613ce98653034e81dbee2ecc1ead9bc0db05a37810c1040428f2b65c"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
-    "pkg/downloader",
     "pkg/engine",
-    "pkg/getter",
-    "pkg/helm",
-    "pkg/helm/environment",
-    "pkg/helm/helmpath",
-    "pkg/helm/portforwarder",
     "pkg/hooks",
     "pkg/ignore",
     "pkg/kube",
     "pkg/manifest",
-    "pkg/plugin",
     "pkg/proto/hapi/chart",
     "pkg/proto/hapi/release",
     "pkg/proto/hapi/rudder",
     "pkg/proto/hapi/services",
     "pkg/proto/hapi/version",
-    "pkg/provenance",
     "pkg/releasetesting",
     "pkg/releaseutil",
     "pkg/renderutil",
-    "pkg/repo",
-    "pkg/resolver",
     "pkg/rudder",
     "pkg/storage",
     "pkg/storage/driver",
@@ -1853,8 +1836,6 @@
     "pkg/tiller",
     "pkg/tiller/environment",
     "pkg/timeconv",
-    "pkg/tlsutil",
-    "pkg/urlutil",
     "pkg/version",
   ]
   pruneopts = "UT"
@@ -2103,7 +2084,6 @@
     "github.com/solo-io/solo-kit/test/setup",
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
-    "github.com/spf13/pflag",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
@@ -2138,17 +2118,10 @@
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/helm/pkg/chartutil",
-    "k8s.io/helm/pkg/downloader",
-    "k8s.io/helm/pkg/getter",
-    "k8s.io/helm/pkg/helm",
-    "k8s.io/helm/pkg/helm/environment",
-    "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
     "k8s.io/helm/pkg/proto/hapi/chart",
-    "k8s.io/helm/pkg/proto/hapi/release",
     "k8s.io/helm/pkg/renderutil",
-    "k8s.io/helm/pkg/repo",
     "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
   ]
