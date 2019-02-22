@@ -45,7 +45,7 @@ var _ = Describe("Setup", func() {
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
-		// create an
+		// create an install crd, ensure our sync gets called
 		install := &v1.Install{
 			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
 		}
