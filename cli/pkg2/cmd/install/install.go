@@ -16,9 +16,13 @@ import (
 
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "install",
-		Short: `Install a mesh`,
-		Long:  `Install a mesh.`,
+		Use:     "install",
+		Aliases: []string{"i"},
+		Short:   `Install a mesh`,
+		Long: `Creates an Install CRD which the Supergloo Controller will pick up and use to install a supported mesh.
+
+Current options include:
+- Istio`,
 		Run: func(c *cobra.Command, args []string) {
 			install(opts)
 		},
@@ -26,7 +30,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	iop := &opts.Install
 	pflags := cmd.PersistentFlags()
 	// TODO(mitchdraft) - remove filename or apply it to something
-	pflags.StringVarP(&iop.MeshType, cliconstants.MeshType, "m", "", "mesh to install: istio, consul, linkerd2, appmesh")
+	pflags.StringVarP(&iop.MeshType, cliconstants.MeshType, "m", "", "mesh to install: istio")
 	pflags.StringVarP(&iop.Namespace, cliconstants.Namespace, "n", "", "namespace to install mesh into")
 	pflags.BoolVar(&iop.Mtls, cliconstants.MTLS, false, "use mTLS")
 	pflags.StringVar(&iop.SecretRef.Name, cliconstants.SecretName, "", "name of the mTLS secret")
