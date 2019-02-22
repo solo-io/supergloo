@@ -1,0 +1,42 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+// specifies a method by which to select pods
+// with in a mesh for the application of rules and policies
+message PodSelector {
+
+    // select pods by their labels
+    message LabelSelector {
+        map<string, string> labels_to_match = 1;
+    }
+
+    // select pods based on their services or subsets of services.
+    // upstream CRDs will be created by discovery corresponding to
+    // kubernetes services and the available subsets of those services
+    message UpstreamSelector {
+        // apply the selector to one or more of their upstreams by adding their refs here
+        repeated core.solo.io.ResourceRef upstreams = 1 [(gogoproto.nullable) = false];
+    }
+
+    // select all pods in these namespaces
+    message NamespaceSelector {
+        repeated string namespaces = 1;
+    }
+
+    // specify the type of selector to use with selectorType
+    oneof selector_type {
+        // select pods by their labels
+        LabelSelector label_selector = 1;
+
+        // select pods by their corresponding upstreams
+        UpstreamSelector upstream_selector = 2;
+
+        // select all pods within one or more namespaces
+        NamespaceSelector namespace_selector = 3;
+    }
+}

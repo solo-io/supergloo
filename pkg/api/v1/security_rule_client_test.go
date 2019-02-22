@@ -17,12 +17,12 @@ import (
 	"github.com/solo-io/solo-kit/test/tests/typed"
 )
 
-var _ = Describe("EncryptionRuleClient", func() {
+var _ = Describe("SecurityRuleClient", func() {
 	var (
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: EncryptionRuleCrd},
+		&typed.KubeRcTester{Crd: SecurityRuleCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -32,7 +32,7 @@ var _ = Describe("EncryptionRuleClient", func() {
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
-				client              EncryptionRuleClient
+				client              SecurityRuleClient
 				err                 error
 				name1, name2, name3 = "foo" + helpers.RandString(3), "boo" + helpers.RandString(3), "goo" + helpers.RandString(3)
 			)
@@ -40,25 +40,25 @@ var _ = Describe("EncryptionRuleClient", func() {
 			BeforeEach(func() {
 				namespace = helpers.RandString(6)
 				factory := test.Setup(namespace)
-				client, err = NewEncryptionRuleClient(factory)
+				client, err = NewSecurityRuleClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
 				test.Teardown(namespace)
 			})
-			It("CRUDs EncryptionRules "+test.Description(), func() {
-				EncryptionRuleClientTest(namespace, client, name1, name2, name3)
+			It("CRUDs SecurityRules "+test.Description(), func() {
+				SecurityRuleClientTest(namespace, client, name1, name2, name3)
 			})
 		})
 	}
 })
 
-func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, name1, name2, name3 string) {
+func SecurityRuleClientTest(namespace string, client SecurityRuleClient, name1, name2, name3 string) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := name1
-	input := NewEncryptionRule(namespace, name)
+	input := NewSecurityRule(namespace, name)
 	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -67,14 +67,17 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsExist(err)).To(BeTrue())
 
-	Expect(r1).To(BeAssignableToTypeOf(&EncryptionRule{}))
+	Expect(r1).To(BeAssignableToTypeOf(&SecurityRule{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
 	Expect(r1.TargetMesh).To(Equal(input.TargetMesh))
-	Expect(r1.Spec).To(Equal(input.Spec))
+	Expect(r1.SourceSelector).To(Equal(input.SourceSelector))
+	Expect(r1.DestinationSelector).To(Equal(input.DestinationSelector))
+	Expect(r1.AllowedPaths).To(Equal(input.AllowedPaths))
+	Expect(r1.AllowedMethods).To(Equal(input.AllowedMethods))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
@@ -94,7 +97,7 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = name2
-	input = &EncryptionRule{}
+	input = &SecurityRule{}
 
 	input.Metadata = core.Metadata{
 		Name:      name,
@@ -117,12 +120,12 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 	err = client.Delete(namespace, r2.GetMetadata().Name, clients.DeleteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
-	Eventually(func() EncryptionRuleList {
+	Eventually(func() SecurityRuleList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).Should(ContainElement(r1))
-	Eventually(func() EncryptionRuleList {
+	Eventually(func() SecurityRuleList {
 		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
@@ -145,7 +148,7 @@ func EncryptionRuleClientTest(namespace string, client EncryptionRuleClient, nam
 		Expect(err).NotTo(HaveOccurred())
 
 		name = name3
-		input = &EncryptionRule{}
+		input = &SecurityRule{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
 			Name:      name,

@@ -1,0 +1,28 @@
+syntax = "proto3";
+package core.kubernetes.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+/*
+Intermediary proto representation of a kubernetes pod.
+Used to integrate solo-kit with kubernetes API
+ */
+message Pod {
+    option (core.solo.io.resource).short_name = "pod";
+    option (core.solo.io.resource).plural_name = "pods";
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // the kubernetes pod spec, converted to a google.protobuf.Any
+    google.protobuf.Any spec = 1;
+
+    // the kubernetes pod status, converted to a google.protobuf.Any
+    google.protobuf.Any status = 2;
+}

@@ -3,8 +3,12 @@
 package v1
 
 import (
+	"fmt"
+
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"
@@ -13,24 +17,28 @@ import (
 type ConfigSnapshot struct {
 	Meshes           MeshesByNamespace
 	Meshgroups       MeshgroupsByNamespace
-	Upstreams        gloo_solo_io.UpstreamsByNamespace
 	Routingrules     RoutingrulesByNamespace
-	Ecryptionrules   EcryptionrulesByNamespace
+	Securityrules    SecurityrulesByNamespace
 	Tlssecrets       TlssecretsByNamespace
+	Upstreams        gloo_solo_io.UpstreamsByNamespace
+	Pods             core_kubernetes_io.PodsByNamespace
 	Destinationrules istio_networking_v1alpha3.DestinationrulesByNamespace
 	Virtualservices  istio_networking_v1alpha3.VirtualservicesByNamespace
+	Meshpolicies     istio_authentication_v1alpha1.MeshPolicyList
 }
 
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
 	return ConfigSnapshot{
 		Meshes:           s.Meshes.Clone(),
 		Meshgroups:       s.Meshgroups.Clone(),
-		Upstreams:        s.Upstreams.Clone(),
 		Routingrules:     s.Routingrules.Clone(),
-		Ecryptionrules:   s.Ecryptionrules.Clone(),
+		Securityrules:    s.Securityrules.Clone(),
 		Tlssecrets:       s.Tlssecrets.Clone(),
+		Upstreams:        s.Upstreams.Clone(),
+		Pods:             s.Pods.Clone(),
 		Destinationrules: s.Destinationrules.Clone(),
 		Virtualservices:  s.Virtualservices.Clone(),
+		Meshpolicies:     s.Meshpolicies.Clone(),
 	}
 }
 
@@ -38,12 +46,14 @@ func (s ConfigSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashMeshes(),
 		s.hashMeshgroups(),
-		s.hashUpstreams(),
 		s.hashRoutingrules(),
-		s.hashEcryptionrules(),
+		s.hashSecurityrules(),
 		s.hashTlssecrets(),
+		s.hashUpstreams(),
+		s.hashPods(),
 		s.hashDestinationrules(),
 		s.hashVirtualservices(),
+		s.hashMeshpolicies(),
 	)
 }
 
@@ -55,20 +65,24 @@ func (s ConfigSnapshot) hashMeshgroups() uint64 {
 	return hashutils.HashAll(s.Meshgroups.List().AsInterfaces()...)
 }
 
-func (s ConfigSnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
-}
-
 func (s ConfigSnapshot) hashRoutingrules() uint64 {
 	return hashutils.HashAll(s.Routingrules.List().AsInterfaces()...)
 }
 
-func (s ConfigSnapshot) hashEcryptionrules() uint64 {
-	return hashutils.HashAll(s.Ecryptionrules.List().AsInterfaces()...)
+func (s ConfigSnapshot) hashSecurityrules() uint64 {
+	return hashutils.HashAll(s.Securityrules.List().AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashTlssecrets() uint64 {
 	return hashutils.HashAll(s.Tlssecrets.List().AsInterfaces()...)
+}
+
+func (s ConfigSnapshot) hashUpstreams() uint64 {
+	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
+}
+
+func (s ConfigSnapshot) hashPods() uint64 {
+	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashDestinationrules() uint64 {
@@ -79,16 +93,108 @@ func (s ConfigSnapshot) hashVirtualservices() uint64 {
 	return hashutils.HashAll(s.Virtualservices.List().AsInterfaces()...)
 }
 
+func (s ConfigSnapshot) hashMeshpolicies() uint64 {
+	return hashutils.HashAll(s.Meshpolicies.AsInterfaces()...)
+}
+
 func (s ConfigSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("meshgroups", s.hashMeshgroups()))
-	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("routingrules", s.hashRoutingrules()))
-	fields = append(fields, zap.Uint64("ecryptionrules", s.hashEcryptionrules()))
+	fields = append(fields, zap.Uint64("securityrules", s.hashSecurityrules()))
 	fields = append(fields, zap.Uint64("tlssecrets", s.hashTlssecrets()))
+	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
+	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("destinationrules", s.hashDestinationrules()))
 	fields = append(fields, zap.Uint64("virtualservices", s.hashVirtualservices()))
+	fields = append(fields, zap.Uint64("meshpolicies", s.hashMeshpolicies()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+}
+
+type ConfigSnapshotStringer struct {
+	Version          uint64
+	Meshes           []string
+	Meshgroups       []string
+	Routingrules     []string
+	Securityrules    []string
+	Tlssecrets       []string
+	Upstreams        []string
+	Pods             []string
+	Destinationrules []string
+	Virtualservices  []string
+	Meshpolicies     []string
+}
+
+func (ss ConfigSnapshotStringer) String() string {
+	s := fmt.Sprintf("ConfigSnapshot %v\n", ss.Version)
+
+	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
+	for _, name := range ss.Meshes {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Meshgroups %v\n", len(ss.Meshgroups))
+	for _, name := range ss.Meshgroups {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Routingrules %v\n", len(ss.Routingrules))
+	for _, name := range ss.Routingrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Securityrules %v\n", len(ss.Securityrules))
+	for _, name := range ss.Securityrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Tlssecrets %v\n", len(ss.Tlssecrets))
+	for _, name := range ss.Tlssecrets {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Upstreams %v\n", len(ss.Upstreams))
+	for _, name := range ss.Upstreams {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Pods %v\n", len(ss.Pods))
+	for _, name := range ss.Pods {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Destinationrules %v\n", len(ss.Destinationrules))
+	for _, name := range ss.Destinationrules {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Virtualservices %v\n", len(ss.Virtualservices))
+	for _, name := range ss.Virtualservices {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Meshpolicies %v\n", len(ss.Meshpolicies))
+	for _, name := range ss.Meshpolicies {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	return s
+}
+
+func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
+	return ConfigSnapshotStringer{
+		Version:          s.Hash(),
+		Meshes:           s.Meshes.List().NamespacesDotNames(),
+		Meshgroups:       s.Meshgroups.List().NamespacesDotNames(),
+		Routingrules:     s.Routingrules.List().NamespacesDotNames(),
+		Securityrules:    s.Securityrules.List().NamespacesDotNames(),
+		Tlssecrets:       s.Tlssecrets.List().NamespacesDotNames(),
+		Upstreams:        s.Upstreams.List().NamespacesDotNames(),
+		Pods:             s.Pods.List().NamespacesDotNames(),
+		Destinationrules: s.Destinationrules.List().NamespacesDotNames(),
+		Virtualservices:  s.Virtualservices.List().NamespacesDotNames(),
+		Meshpolicies:     s.Meshpolicies.Names(),
+	}
 }
