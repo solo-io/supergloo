@@ -1,12 +1,14 @@
 package install
 
 import (
+	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/cobra"
 )
 
@@ -50,8 +52,10 @@ func installIstioSubcommand(opts *options.Options) *cobra.Command {
 			return createInstall(opts)
 		},
 	}
+	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Create.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
+	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Create.InputInstall)
 	return cmd
 }
 
@@ -71,6 +75,9 @@ func createInstall(opts *options.Options) error {
 }
 
 func installFromOpts(opts *options.Options) (*v1.Install, error) {
+	if err := validate(opts.Create.InputInstall); err != nil {
+		return nil, err
+	}
 	in := &v1.Install{
 		Metadata: opts.Create.Metadata,
 		InstallType: &v1.Install_Istio_{
@@ -79,4 +86,23 @@ func installFromOpts(opts *options.Options) (*v1.Install, error) {
 	}
 
 	return in, nil
+}
+
+func validate(in options.InputInstall) error {
+	var validVersion bool
+	for _, ver := range []string{
+		istio.IstioVersion103,
+		istio.IstioVersion105,
+	} {
+		if in.IstioInstall.IstioVersion == ver {
+			validVersion = true
+			break
+		}
+	}
+	if !validVersion {
+		return errors.Errorf("%v is not a suppported "+
+			"istio version", in.IstioInstall.IstioVersion)
+	}
+
+	return nil
 }

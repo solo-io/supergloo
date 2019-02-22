@@ -2,12 +2,13 @@ package flagutils
 
 import (
 	"fmt"
+
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/pflag"
 )
 
-func AddIstioInstallFlags(set *pflag.FlagSet, in *options.InputInstall) error {
+func AddIstioInstallFlags(set *pflag.FlagSet, in *options.InputInstall) {
 	set.StringVar(&in.IstioInstall.InstallationNamespace,
 		"installation-namespace",
 		"istio-system",
@@ -15,38 +16,35 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.InputInstall) error {
 
 	set.StringVar(&in.IstioInstall.IstioVersion,
 		"version",
-		"istio-system",
+		istio.IstioVersion105,
 		fmt.Sprintf("version of istio to install? available: %v", []string{
 			istio.IstioVersion103,
 			istio.IstioVersion105,
 		}))
 
 	set.BoolVar(&in.IstioInstall.EnableMtls,
-		"version",
+		"mtls",
 		true,
 		"enable mtls?")
 
 	set.BoolVar(&in.IstioInstall.EnableAutoInject,
-		"version",
+		"auto-inject",
 		true,
 		"enable auto-injection?")
 
 	set.BoolVar(&in.IstioInstall.InstallGrafana,
-		"version",
+		"grafana",
 		true,
 		"add grafana to the install?")
 
-
 	set.BoolVar(&in.IstioInstall.InstallPrometheus,
-		"version",
+		"prometheus",
 		true,
 		"add prometheus to the install?")
 
-
 	set.BoolVar(&in.IstioInstall.InstallJaeger,
-		"version",
+		"jaeger",
 		true,
 		"add jaeger to the install?")
 
-	return nil
 }

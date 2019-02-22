@@ -2,11 +2,12 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
-	"github.com/solo-io/go-utils/cliutils"
-	"github.com/solo-io/supergloo/pkg/api/v1"
 	"io"
 	"os"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/solo-io/go-utils/cliutils"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 func PrintInstalls(list v1.InstallList, outputType string) {
