@@ -16,18 +16,22 @@ import (
 var _ = Describe("Setup", func() {
 	var (
 		namespace string
+		ctx       context.Context
+		cancel    func()
 	)
 	BeforeEach(func() {
 		namespace = "a" + testutils.RandString(6)
 		err := setup.SetupKubeForTest(namespace)
 		Expect(err).NotTo(HaveOccurred())
+		ctx, cancel = context.WithCancel(context.TODO())
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace)
+		cancel()
 	})
 	It("runs the install event loop", func() {
 
-		cs, err := createClients(context.TODO())
+		cs, err := createClients(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		errHandler := func(err error) {
 			Expect(err).NotTo(HaveOccurred())
@@ -37,7 +41,7 @@ var _ = Describe("Setup", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err = runInstallEventLoop(context.TODO(), errHandler, cs, v1.InstallSyncers{mockSyncer})
+			err = runInstallEventLoop(ctx, errHandler, cs, v1.InstallSyncers{mockSyncer})
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
