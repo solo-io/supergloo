@@ -46,7 +46,7 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--jaeger=%v", jaeger))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
-					continue
+					return
 				}
 
 				Expect(err).NotTo(HaveOccurred())
