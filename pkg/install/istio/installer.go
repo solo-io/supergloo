@@ -12,6 +12,16 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+type Installer interface {
+	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
+}
+
+type defaultIstioInstaller struct{}
+
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+	return EnsureIstioInstall(ctx, install)
+}
+
 // installs istio, returns a mesh object created for the install,
 // and updates the install itself with the inline manifest
 func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
