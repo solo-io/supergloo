@@ -22,11 +22,6 @@ type Params struct {
 	Snapshot *v1.ConfigSnapshot
 }
 
-type EncryptionPlugin interface {
-	Plugin
-	ProcessDestinationRule(params Params, in v1.EncryptionRuleSpec, out *v1alpha3.DestinationRule) error
-}
-
 type RoutingPlugin interface {
 	Plugin
 	ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error
@@ -39,9 +34,7 @@ type registry struct {
 var globalRegistry = func(kc kubernetes.Interface) *registry {
 	reg := &registry{}
 	// plugins should be added here
-	reg.plugins = append(reg.plugins,
-		NewMltsPlugin(),
-	)
+	reg.plugins = append(reg.plugins)
 	return reg
 }
 
