@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 
@@ -30,7 +31,7 @@ func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reptor
 }
 
 func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, "istio-install-syncer")
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-install-syncer-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())
@@ -67,7 +68,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 			if err := s.meshClient.Delete(installedMesh.Namespace,
 				installedMesh.Name,
 				clients.DeleteOpts{Ctx: ctx}); err != nil {
-				logger.Errorf("deleting mesh objet %v failed after successful uninstall", installedMesh)
+				logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
 			}
 		}
 	}
@@ -99,6 +100,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 		logger.Infof("install sync successful")
 	}
 
+	// reporter should handle updates to the installs that happened during ensure
 	return s.reptorter.WriteReports(ctx, resourceErrs, nil)
 
 }
@@ -116,6 +118,7 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 			resourceErrs.AddError(in, err)
 			return nil
 		}
+		resourceErrs.Accept(in)
 		return mesh
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
