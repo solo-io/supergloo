@@ -75,7 +75,7 @@ func createClients(ctx context.Context) (*clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := installClient.Register(); err != nil {
+	if err := meshClient.Register(); err != nil {
 		return nil, err
 	}
 
