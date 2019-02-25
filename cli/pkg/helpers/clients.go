@@ -86,3 +86,35 @@ func InstallClient() (v1.InstallClient, error) {
 	}
 	return installClient, nil
 }
+
+func MustMeshClient() v1.MeshClient {
+	client, err := MeshClient()
+	if err != nil {
+		log.Fatalf("failed to create upstream client: %v", err)
+	}
+	return client
+}
+
+func MeshClient() (v1.MeshClient, error) {
+	if memoryResourceClient != nil {
+		return v1.NewMeshClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	cache := kube.NewKubeCache(context.TODO())
+	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
+		Crd:         v1.MeshCrd,
+		Cfg:         cfg,
+		SharedCache: cache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating mesh client")
+	}
+	if err := meshClient.Register(); err != nil {
+		return nil, err
+	}
+	return meshClient, nil
+}
