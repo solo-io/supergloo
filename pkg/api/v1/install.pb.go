@@ -25,6 +25,13 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
+//
+//Installs represent a desired installation of a supported mesh.
+//Supergloo watches for installs and synchronizes the managed installations
+//with the desired configuration in the install object.
+//
+//Updating the configuration of an install object will cause supergloo to
+//modify the corresponding mesh.
 type Install struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation
@@ -220,6 +227,7 @@ func _Install_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
+// Installation options for Istio
 type Install_Istio struct {
 	// which namespace to install to
 	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`

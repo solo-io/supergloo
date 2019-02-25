@@ -12,6 +12,14 @@ import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 
+/*
+Installs represent a desired installation of a supported mesh.
+Supergloo watches for installs and synchronizes the managed installations
+with the desired configuration in the install object.
+
+Updating the configuration of an install object will cause supergloo to
+modify the corresponding mesh.
+*/
 message Install {
 
     option (core.solo.io.resource).short_name = "i";
@@ -24,6 +32,7 @@ message Install {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
+    // Installation options for Istio
     message Istio {
 
         // which namespace to install to

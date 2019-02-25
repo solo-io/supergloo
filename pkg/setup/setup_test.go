@@ -11,6 +11,8 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/test/setup"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 var _ = Describe("Setup", func() {

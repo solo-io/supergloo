@@ -1,90 +1,108 @@
 package install
 
 import (
-	"fmt"
-
-	"github.com/solo-io/supergloo/cli/pkg/cliconstants"
-
-	"github.com/solo-io/supergloo/cli/pkg/common"
-
+	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
-	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/cli/pkg/flagutils"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/cobra"
 )
 
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "install",
-		Short: `Install a mesh`,
-		Long:  `Install a mesh.`,
-		Run: func(c *cobra.Command, args []string) {
-			install(opts)
-		},
+		Use:     "install",
+		Aliases: []string{"i"},
+		Short:   "install a service mesh using Supergloo",
+		Long: `Creates an Install resource which the supergloo controller 
+will use to install a service mesh.
+
+Installs represent a desired installation of a supported mesh.
+Supergloo watches for installs and synchronizes the managed installations
+with the desired configuration in the install object.
+
+Updating the configuration of an install object will cause supergloo to 
+modify the corresponding mesh.
+`,
 	}
-	iop := &opts.Install
-	pflags := cmd.PersistentFlags()
-	// TODO(mitchdraft) - remove filename or apply it to something
-	pflags.StringVarP(&iop.MeshType, cliconstants.MeshType, "m", "", "mesh to install: istio, consul, linkerd2, appmesh")
-	pflags.StringVarP(&iop.Namespace, cliconstants.Namespace, "n", "", "namespace to install mesh into")
-	pflags.BoolVar(&iop.Mtls, cliconstants.MTLS, false, "use mTLS")
-	pflags.StringVar(&iop.SecretRef.Name, cliconstants.SecretName, "", "name of the mTLS secret")
-	pflags.StringVar(&iop.SecretRef.Namespace, cliconstants.SecretNamespace, "", "namespace of the mTLS secret")
-	pflags.StringVar(&iop.AwsSecretRef.Name, "awssecret.name", "", "name of the AWS secret")
-	pflags.StringVar(&iop.AwsSecretRef.Namespace, "awssecret.namespace", "", "namespace of the AWS secret")
-	pflags.StringVar(&iop.AwsRegion, "aws-region", "", "AWS region")
+
+	cmd.AddCommand(installIstioSubcommand(opts))
 	return cmd
 }
 
-func install(opts *options.Options) {
-
-	err := qualifyFlags(opts)
-	if err != nil {
-		fmt.Println(err)
-		return
+func installIstioSubcommand(opts *options.Options) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "istio",
+		Short: "install the Istio control plane",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if opts.Interactive {
+				if err := surveyutils.SurveyMetadata(&opts.Create.Metadata); err != nil {
+					return err
+				}
+				if err := surveyutils.SurveyIstioInstall(&opts.Create.InputInstall); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return createInstall(opts)
+		},
 	}
-
-	installClient, err := common.GetInstallClient()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var installSpec *v1.Install
-	switch opts.Install.MeshType {
-	case "consul":
-		installSpec = generateConsulInstallSpecFromOpts(opts)
-	case "istio":
-		installSpec = generateIstioInstallSpecFromOpts(opts)
-	case "linkerd2":
-		installSpec = generateLinkerd2InstallSpecFromOpts(opts)
-	}
-
-	var name string
-	// App mesh is a special case that is installed in the translator syncer, until we refactor install syncer to allow non-helm installs
-	if opts.Install.MeshType == "appmesh" {
-		name, err = installAppMesh(opts)
-	} else {
-		_, err = (*installClient).Write(installSpec, clients.WriteOpts{})
-		name = installSpec.Metadata.Name
-	}
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	installationSummaryMessage(opts, name)
-	return
+	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Create.Metadata)
+	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
+	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
+	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Create.InputInstall)
+	return cmd
 }
 
-func installAppMesh(opts *options.Options) (string, error) {
-	meshClient, err := common.GetMeshClient()
+func createInstall(opts *options.Options) error {
+	in, err := installFromOpts(opts)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		return err
 	}
-	mesh := generateAppMeshInstallSpecFromOpts(opts)
-	_, err = (*meshClient).Write(mesh, clients.WriteOpts{})
-	return mesh.Metadata.Name, err
+	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{})
+	if err != nil {
+		return err
+	}
+
+	helpers.PrintInstalls(v1.InstallList{in}, opts.OutputType)
+
+	return nil
+}
+
+func installFromOpts(opts *options.Options) (*v1.Install, error) {
+	if err := validate(opts.Create.InputInstall); err != nil {
+		return nil, err
+	}
+	in := &v1.Install{
+		Metadata: opts.Create.Metadata,
+		InstallType: &v1.Install_Istio_{
+			Istio: &opts.Create.InputInstall.IstioInstall,
+		},
+	}
+
+	return in, nil
+}
+
+func validate(in options.InputInstall) error {
+	var validVersion bool
+	for _, ver := range []string{
+		istio.IstioVersion103,
+		istio.IstioVersion105,
+	} {
+		if in.IstioInstall.IstioVersion == ver {
+			validVersion = true
+			break
+		}
+	}
+	if !validVersion {
+		return errors.Errorf("%v is not a suppported "+
+			"istio version", in.IstioInstall.IstioVersion)
+	}
+
+	return nil
 }
