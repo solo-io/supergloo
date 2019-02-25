@@ -1,4 +1,4 @@
-package version_test
+package istio_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestVersion(t *testing.T) {
+func TestIstio(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Version Suite")
+	RunSpecs(t, "Istio Suite")
 }

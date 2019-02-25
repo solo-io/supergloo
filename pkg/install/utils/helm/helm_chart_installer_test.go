@@ -14,7 +14,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/supergloo/pkg2/install/helm"
+	. "github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
 var istioCrd = apiextensions.CustomResourceDefinition{}
@@ -103,6 +103,79 @@ mixer:
 			Expect(err).To(HaveOccurred())
 
 			err = DeleteFromManifests(context.TODO(), ns, manifests)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+	Context("update manifest", func() {
+		It("updates the existing deployed resources correctly", func() {
+			values := `
+mixer:
+  enabled: true #should install mixer
+
+`
+			manifests, err := RenderManifests(
+				context.TODO(),
+				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+				values,
+				"yella",
+				ns,
+				"",
+				true,
+			)
+			defer DeleteFromManifests(context.TODO(), ns, manifests)
+			Expect(err).NotTo(HaveOccurred())
+			err = CreateFromManifests(context.TODO(), ns, manifests)
+			Expect(err).NotTo(HaveOccurred())
+
+			cfg, err := kubeutils.GetConfig("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			kubeClient, err := kubernetes.NewForConfig(cfg)
+			Expect(err).NotTo(HaveOccurred())
+
+			// yes mixer
+			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = DeleteFromManifests(context.TODO(), ns, manifests)
+			Expect(err).NotTo(HaveOccurred())
+
+			// change values, verify update
+			values = `
+mixer:
+  enabled: false #should uninstall mixer
+
+`
+			updatedManifests, err := RenderManifests(
+				context.TODO(),
+				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+				values,
+				"yella",
+				ns,
+				"",
+				true,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			defer DeleteFromManifests(context.TODO(), ns, updatedManifests)
+
+			// no security crds
+			for _, man := range updatedManifests {
+				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
+			}
+
+			err = UpdateFromManifests(context.TODO(), ns, manifests, updatedManifests, false)
+			Expect(err).NotTo(HaveOccurred())
+
+			// no mixer
+			_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
+			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
+			Expect(err).To(HaveOccurred())
+			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
+			Expect(err).To(HaveOccurred())
+
+			err = DeleteFromManifests(context.TODO(), ns, updatedManifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

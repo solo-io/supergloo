@@ -1123,7 +1123,7 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:026841dfde2ad8d3040703f9fa5438ab61d52b3ae2787a6ad93a7478ae058a7c"
+  digest = "1:dabe7a857386cce7e7f5536ad98cd51e7866adaa3303c6462e449d1a2c0d6c92"
   name = "github.com/solo-io/gloo"
   packages = [
     "pkg/cliutil",
@@ -1142,8 +1142,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "e26d8c02f58d1f1536d6b73a4c9cbddf84f72588"
-  version = "v0.7.8"
+  revision = "e477246d4441ecc2cc0414f2a73039b04f37cbe0"
+  version = "v0.7.5"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1154,13 +1154,12 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:70562e0785694788cbb1f33b40d7b8d210c20cca195ddaaf412893c4e35bc7d1"
+  digest = "1:ebd1816cc115ebb56e637f068a375b2c5f8f5971fdbed6700ee5ea6d43727d38"
   name = "github.com/solo-io/go-utils"
   packages = [
     "cliutils",
     "contextutils",
     "errors",
-    "hashutils",
     "kubeinstallutils",
     "kubeutils",
     "logger",
@@ -1169,8 +1168,8 @@
     "testutils",
   ]
   pruneopts = "UT"
-  revision = "bfcbcd7a6ac100f8f96b52222d8c767a66dd0b8c"
-  version = "v0.1.4"
+  revision = "3ca3f416d2ed74c92bdfa96daeb5d530bd937a33"
+  version = "v0.1.2"
 
 [[projects]]
   digest = "1:beb2f62cc40d34387e711801da93fd12def470500492d04cc215eea7eb7bd917"
@@ -1305,19 +1304,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d6d961ab02cfbc8920df1d5f6aff8cd388240d619b3947e53390d83283761047"
+  digest = "1:28c92854b02898c94c1d983db50970fb7d9b3ee31c3ae02b1c6afc665abcc46e"
   name = "golang.org/x/crypto"
   packages = [
-    "cast5",
     "ed25519",
     "ed25519/internal/edwards25519",
-    "openpgp",
-    "openpgp/armor",
-    "openpgp/clearsign",
-    "openpgp/elgamal",
-    "openpgp/errors",
-    "openpgp/packet",
-    "openpgp/s2k",
     "pbkdf2",
     "scrypt",
     "ssh/terminal",
@@ -1468,7 +1459,7 @@
   revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
 [[projects]]
-  digest = "1:bf7e2328a58176b7f29f3b425b0555745e9a18ed803f5fd8f6c2c13913a60bb4"
+  digest = "1:c3ad9841823db6da420a5625b367913b4ff54bbe60e8e3c98bd20e243e62e2d2"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1481,7 +1472,6 @@
     "encoding",
     "encoding/proto",
     "grpclog",
-    "health/grpc_health_v1",
     "internal",
     "internal/backoff",
     "internal/channelz",
@@ -1859,33 +1849,23 @@
   revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
 
 [[projects]]
-  digest = "1:2c8293596bb0e32009b861aceac5888d983a1c3414b22a8c324a321dd61b9be4"
+  digest = "1:e7a28907613ce98653034e81dbee2ecc1ead9bc0db05a37810c1040428f2b65c"
   name = "k8s.io/helm"
   packages = [
     "pkg/chartutil",
-    "pkg/downloader",
     "pkg/engine",
-    "pkg/getter",
-    "pkg/helm",
-    "pkg/helm/environment",
-    "pkg/helm/helmpath",
-    "pkg/helm/portforwarder",
     "pkg/hooks",
     "pkg/ignore",
     "pkg/kube",
     "pkg/manifest",
-    "pkg/plugin",
     "pkg/proto/hapi/chart",
     "pkg/proto/hapi/release",
     "pkg/proto/hapi/rudder",
     "pkg/proto/hapi/services",
     "pkg/proto/hapi/version",
-    "pkg/provenance",
     "pkg/releasetesting",
     "pkg/releaseutil",
     "pkg/renderutil",
-    "pkg/repo",
-    "pkg/resolver",
     "pkg/rudder",
     "pkg/storage",
     "pkg/storage/driver",
@@ -1894,8 +1874,6 @@
     "pkg/tiller",
     "pkg/tiller/environment",
     "pkg/timeconv",
-    "pkg/tlsutil",
-    "pkg/urlutil",
     "pkg/version",
   ]
   pruneopts = "UT"
@@ -2119,7 +2097,6 @@
     "github.com/solo-io/go-utils/cliutils",
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/errors",
-    "github.com/solo-io/go-utils/hashutils",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
@@ -2127,6 +2104,7 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache",
+    "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
@@ -2178,22 +2156,17 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/client-go/informers",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/listers/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/helm/pkg/chartutil",
-    "k8s.io/helm/pkg/downloader",
-    "k8s.io/helm/pkg/getter",
-    "k8s.io/helm/pkg/helm",
-    "k8s.io/helm/pkg/helm/environment",
-    "k8s.io/helm/pkg/helm/portforwarder",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
     "k8s.io/helm/pkg/proto/hapi/chart",
-    "k8s.io/helm/pkg/proto/hapi/release",
     "k8s.io/helm/pkg/renderutil",
-    "k8s.io/helm/pkg/repo",
     "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
   ]
