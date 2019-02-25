@@ -61,6 +61,7 @@ var _ = Describe("Installer", func() {
 		install.Disabled = true
 		installedMesh, err = EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
+		Expect(installedMesh).To(BeNil())
 
 		assertDeploymentExists(ns, "pilot", false)
 

@@ -52,6 +52,7 @@ func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, err
 				return nil, errors.Wrapf(err, "uninstalling istio")
 			}
 			install.InstalledManifest = ""
+			install.InstalledMesh = nil
 		}
 		return nil, nil
 	}
