@@ -80,6 +80,14 @@
   version = "v2.16.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:3f44afe45c6c5038d9d0bec55b8b9e598b3dba2547d99ba353d7c3bb485d01fa"
+  name = "github.com/Netflix/go-expect"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9d1f4485533ba0665fa4ca2ef6f1210198f7eaae"
+
+[[projects]]
   digest = "1:d1665c44bd5db19aaee18d1b6233c99b0b9a986e8bccb24ef54747547a48027f"
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
@@ -641,6 +649,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:189c8f93f3242c4fc5902e9db5483e82f6d94ca4c35fad608f049cf5d9dada95"
+  name = "github.com/hinshun/vt10x"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d55458df857cfff952e4bf72ce1b567c5a4e141c"
+
+[[projects]]
+  branch = "master"
   digest = "1:59392ed8afb901aab4287d4894df8191722e34f3957716f4350c8c133ce99046"
   name = "github.com/hpcloud/tail"
   packages = [
@@ -746,6 +762,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
+
+[[projects]]
+  digest = "1:29d28429a93b076908a36420a7ecb2bf429d24c15a4b5e2c220ea00fc84b71af"
+  name = "github.com/kr/pty"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "db8e3cd836b82e82e0a9c8edc6896967dd31374f"
+  version = "v1.1.3"
 
 [[projects]]
   digest = "1:2e4fcf2595948ff177e421bf0b722bf6e729d0be9521c986891ed773225aeebb"
@@ -1099,10 +1123,11 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:6f97deb55405c0d39eb9a087f8ff41a1bea71823e159c2094d01d49023e58708"
+  digest = "1:dabe7a857386cce7e7f5536ad98cd51e7866adaa3303c6462e449d1a2c0d6c92"
   name = "github.com/solo-io/gloo"
   packages = [
     "pkg/cliutil",
+    "pkg/cliutil/testutil",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/plugins",
     "projects/gloo/pkg/api/v1/plugins/aws",
@@ -1113,13 +1138,12 @@
     "projects/gloo/pkg/api/v1/plugins/kubernetes",
     "projects/gloo/pkg/api/v1/plugins/rest",
     "projects/gloo/pkg/api/v1/plugins/retries",
-    "projects/gloo/pkg/api/v1/plugins/sqoop",
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "0fc0f773a1a18e7a83916dcc513ce15630b83735"
-  version = "v0.6.5"
+  revision = "e477246d4441ecc2cc0414f2a73039b04f37cbe0"
+  version = "v0.7.5"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -2062,6 +2086,7 @@
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/pkg/cliutil",
+    "github.com/solo-io/gloo/pkg/cliutil/testutil",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
