@@ -15,7 +15,7 @@ for line in $CONFIG; do
 done
 
 github_token_no_spaces=$(echo $GITHUB_TOKEN | tr -d '[:space:]')
-branch="docs-gloo-$tag"
+branch="docs-supergloo-$tag"
 
 set +x
 echo "Cloning solo-docs repo"
@@ -29,31 +29,7 @@ git config --global user.name "soloio-bot"
 if [ -d "solo-docs/supergloo/docs/v1/github.com/solo-io/supergloo" ]; then
 	rm -r solo-docs/supergloo/docs/v1/github.com/solo-io/supergloo
 fi
-cp -r docs/v1/github.com/solo-io/supergloo solo-docs/supergloo/docs/v1/github.com/solo-io/gloo
-
-# Gloo
-if [ -d "solo-docs/supergloo/docs/v1/github.com/solo-io/gloo" ]; then
-	rm -r solo-docs/supergloo/docs/v1/github.com/solo-io/gloo
-fi
-cp -r docs/v1/github.com/solo-io/gloo solo-docs/supergloo/docs/v1/github.com/solo-io/supergloo
-
-# Solo Kit
-if [ -d "solo-docs/supergloo/docs/v1/github.com/solo-io/solo-kit" ]; then
-	rm -r solo-docs/supergloo/docs/v1/github.com/solo-io/solo-kit
-fi
-cp -r docs/v1/github.com/solo-io/solo-kit solo-docs/supergloo/docs/v1/github.com/solo-io/solo-kit
-
-# Gogoproto
-if [ -d "solo-docs/supergloo/docs/v1/gogoproto" ]; then
-	rm -r solo-docs/supergloo/docs/v1/gogoproto
-fi
-cp -r docs/v1/gogoproto solo-docs/supergloo/docs/v1/gogoproto
-
-# Google
-if [ -d "solo-docs/supergloo/docs/v1/google" ]; then
-	rm -r solo-docs/supergloo/docs/v1/google
-fi
-cp -r docs/v1/google solo-docs/supergloo/docs/v1/google
+cp -r docs solo-docs/supergloo/docs
 
 (cd solo-docs && git add .)
 
