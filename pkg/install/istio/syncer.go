@@ -57,12 +57,13 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	for _, in := range disabledInstalls {
 		if in.InstalledMesh == nil {
 			// mesh was never installed
+			resourceErrs.Accept(in)
 			continue
 		}
 		installedMesh := *in.InstalledMesh
 		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
 		if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
-			resourceErrs.AddError(in, err)
+			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 		} else {
 			resourceErrs.Accept(in)
 			if err := s.meshClient.Delete(installedMesh.Namespace,
@@ -73,7 +74,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 		}
 	}
 
-	createdMesh := s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs)
+	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs)
 
 	if createdMesh != nil {
 		// update resource version if this is an overwrite
@@ -81,15 +82,17 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 			createdMesh.Metadata.Name,
 			clients.ReadOpts{Ctx: ctx}); err == nil {
 
-			logger.Infof("overwriting previous mesh %v", existingMesh.Metadata)
+			logger.Infof("overwriting previous mesh %v", existingMesh.Metadata.Ref())
 			createdMesh.Metadata.ResourceVersion = existingMesh.Metadata.ResourceVersion
-
 		}
 
-		logger.Infof("writing installed mesh %v", createdMesh.Metadata)
+		logger.Infof("writing installed mesh %v", createdMesh.Metadata.Ref())
 		if _, err := s.meshClient.Write(createdMesh,
 			clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
-
+			err := errors.Wrapf(err, "writing installed mesh object %v failed "+
+				"after successful install", createdMesh.Metadata.Ref())
+			resourceErrs.AddError(activeInstall, err)
+			logger.Errorf("%v", err)
 		}
 	}
 
@@ -107,7 +110,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) *v1.Mesh {
+	resourceErrs reporter.ResourceErrors) (*v1.Mesh, *v1.Install) {
 
 	switch {
 	case len(enabledInstalls) == 1:
@@ -115,16 +118,16 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
 		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in)
 		if err != nil {
-			resourceErrs.AddError(in, err)
-			return nil
+			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
+			return nil, nil
 		}
 		resourceErrs.Accept(in)
-		return mesh
+		return mesh, in
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
 			resourceErrs.AddError(in, errors.Errorf("multiple active istio installactions "+
 				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
 		}
 	}
-	return nil
+	return nil, nil
 }
