@@ -2,11 +2,13 @@ package setup
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -16,6 +18,10 @@ import (
 )
 
 func Main(customErrHandler func(error)) error {
+	if os.Getenv("START_STATS_SERVER") != "" {
+		stats.StartStatsServer()
+	}
+
 	rootCtx := createRootContext()
 	logger := contextutils.LoggerFrom(rootCtx)
 
