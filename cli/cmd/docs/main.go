@@ -7,6 +7,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/pkg/errors"
+
 	"github.com/solo-io/supergloo/cli/pkg/cmd"
 
 	"github.com/solo-io/supergloo/pkg/version"
@@ -56,7 +58,7 @@ func main() {
 	}
 	err := doc.GenMarkdownTreeCustom(app, "./docs/cli", renderFrontMatter, linkHandler)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "failed to generate markdown tree"))
 	}
 }
 
