@@ -1,0 +1,4 @@
+apiVersion: v1
+appVersion: "0.1.0"
+description: The official Helm Chart for SuperGloo
+name: supergloo

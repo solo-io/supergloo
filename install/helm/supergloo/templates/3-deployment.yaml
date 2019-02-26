@@ -1,0 +1,68 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: supergloo
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      supergloo: supergloo
+  template:
+    metadata:
+      labels:
+        supergloo: supergloo
+        app: supergloo
+    spec:
+      serviceAccountName: supergloo
+      containers:
+        - image: "{{ .Values.supergloo.deployment.image.repository }}:{{ .Values.supergloo.deployment.image.tag }}"
+          imagePullPolicy:  {{ .Values.supergloo.deployment.image.pullPolicy }}
+          name: supergloo
+          {{- if .Values.supergloo.deployment.stats }}
+          env:
+            - name: START_STATS_SERVER
+              value: "true"
+          {{- end}}
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: supergloo
+    supergloo: discovery
+  name: discovery
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      supergloo: discovery
+  template:
+    metadata:
+      labels:
+        supergloo: discovery
+      {{- if .Values.discovery.deployment.stats }}
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9091"
+        prometheus.io/scrape: "true"
+      {{- end}}
+    spec:
+      serviceAccountName: discovery
+      containers:
+        - image: "{{ .Values.discovery.deployment.image.repository }}:{{ .Values.discovery.deployment.image.tag }}"
+          imagePullPolicy: {{ .Values.discovery.deployment.image.pullPolicy }}
+          name: discovery
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- if .Values.discovery.deployment.stats }}
+          - name: START_STATS_SERVER
+            value: "true"
+          {{- end}}
+

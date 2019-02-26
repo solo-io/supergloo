@@ -1,0 +1,28 @@
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: supergloo-role-binding
+subjects:
+- kind: ServiceAccount
+  name: supergloo
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: supergloo
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: discovery-role-binding
+subjects:
+- kind: ServiceAccount
+  name: discovery
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: discovery
+  apiGroup: rbac.authorization.k8s.io
+
