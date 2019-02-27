@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -23,10 +25,10 @@ const specTypeUrl = "core.kubernetes.io/v1/Pod/Spec"
 
 type ResourceClient struct {
 	kube  kubernetes.Interface
-	cache CustomKubeCache
+	cache cache.KubeCoreCache
 }
 
-func NewResourceClient(kube kubernetes.Interface, cache CustomKubeCache) *ResourceClient {
+func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *ResourceClient {
 	return &ResourceClient{
 		kube:  kube,
 		cache: cache,

@@ -3,6 +3,8 @@ package kubernetes_test
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -27,7 +29,7 @@ var _ = Describe("PodBaseClient", func() {
 	})
 	It("converts a kubernetes pod to solo-kit resource", func() {
 		kube := testutils.MustKubeClient()
-		rc := NewResourceClient(kube, NewCustomKubeCache(context.TODO(), kube))
+		rc := NewResourceClient(kube, cache.NewKubeCoreCache(context.TODO(), kube))
 
 		pod, err := kube.CoreV1().Pods(namespace).Create(&kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
