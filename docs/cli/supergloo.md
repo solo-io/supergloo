@@ -20,6 +20,7 @@ supergloo configures resources watched by the Supergloo Controller.
 
 ### SEE ALSO
 
+* [supergloo init](../supergloo_init)	 - install SuperGloo to a Kubernetes cluster
 * [supergloo install](../supergloo_install)	 - install a service mesh using Supergloo
 * [supergloo uninstall](../supergloo_uninstall)	 - uninstall a service mesh using Supergloo
 

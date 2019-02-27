@@ -3,7 +3,7 @@ package flagutils
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/pflag"
 )

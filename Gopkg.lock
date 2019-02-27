@@ -1006,11 +1006,12 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:75d51eeab0df85a3cea9e1297ccd3183b20a10cb4b48c753d8ec8d113cc14250"
+  digest = "1:93a746f1060a8acbcf69344862b2ceced80f854170e1caae089b2834c5fbf7f4"
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
     "prometheus/internal",
+    "prometheus/promhttp",
   ]
   pruneopts = "UT"
   revision = "505eaef017263e299324067d40ca2c48f6a2cf50"
@@ -1123,9 +1124,10 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:dabe7a857386cce7e7f5536ad98cd51e7866adaa3303c6462e449d1a2c0d6c92"
+  digest = "1:2a353ee631751dacdc7bdb51e174fd4d6baee04015c8601a297129aa78d8c0b0"
   name = "github.com/solo-io/gloo"
   packages = [
+    "install/helm/gloo/generate",
     "pkg/cliutil",
     "pkg/cliutil/testutil",
     "projects/gloo/pkg/api/v1",
@@ -1154,7 +1156,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:ebd1816cc115ebb56e637f068a375b2c5f8f5971fdbed6700ee5ea6d43727d38"
+  digest = "1:2cbb60c398d997df7e9d1bd378ba9f06b2f3bd0e79ce2d6a172916b6dac32e6f"
   name = "github.com/solo-io/go-utils"
   packages = [
     "cliutils",
@@ -1164,6 +1166,7 @@
     "kubeutils",
     "logger",
     "protoutils",
+    "stats",
     "stringutils",
     "testutils",
   ]
@@ -1253,19 +1256,32 @@
   version = "0.2.0"
 
 [[projects]]
-  digest = "1:64c18dbf9c05549d0b0189cb0325e2145d788d1acc05735103746589c61dcff1"
+  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
+  name = "github.com/vektah/gqlgen"
+  packages = ["neelance/errors"]
+  pruneopts = "UT"
+  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
+  version = "0.3.0"
+
+[[projects]]
+  digest = "1:520b3fe2981935aec909ea78b4db76912e47235d9aea024212ffd11ae3b88dbb"
   name = "go.opencensus.io"
   packages = [
     ".",
+    "exporter/prometheus",
     "internal",
     "internal/tagencoding",
+    "plugin/ocgrpc",
     "stats",
     "stats/internal",
     "stats/view",
     "tag",
     "trace",
     "trace/internal",
+    "trace/propagation",
     "trace/tracestate",
+    "zpages",
+    "zpages/internal",
   ]
   pruneopts = "UT"
   revision = "b11f239c032624b045c4c2bfd3d1287b4012ce89"
@@ -2085,6 +2101,7 @@
     "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
+    "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
@@ -2098,6 +2115,7 @@
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/kubeutils",
+    "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -2129,6 +2147,7 @@
     "github.com/spf13/cobra",
     "github.com/spf13/cobra/doc",
     "github.com/spf13/pflag",
+    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",

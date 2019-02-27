@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/test/inputs"
 
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
