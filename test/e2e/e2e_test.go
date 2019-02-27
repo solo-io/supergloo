@@ -24,7 +24,7 @@ var _ = Describe("E2e", func() {
 			if err != nil {
 				return 0, err
 			}
-			Expect(i.Status.State).NotTo(Equal(core.Status_Rejected))
+			Expect(i.Status.Reason).To(Equal(""))
 			return i.Status.State, nil
 		}, time.Minute*2).Should(Equal(core.Status_Accepted))
 
@@ -50,7 +50,7 @@ var _ = Describe("E2e", func() {
 		Eventually(func() error {
 			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
 			return err
-		}).Should(HaveOccurred())
+		}, time.Second*20).Should(HaveOccurred())
 
 	})
 })
