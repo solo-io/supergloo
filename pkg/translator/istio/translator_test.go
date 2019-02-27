@@ -3,6 +3,10 @@ package istio
 import (
 	"context"
 
+	istiorbac "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
+
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 
@@ -25,11 +29,11 @@ var _ = Describe("appliesToDestination", func() {
 				SelectorType: &v1.PodSelector_UpstreamSelector_{
 					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
 						Upstreams: []core.ResourceRef{
-							{Name: "default-details-v1-9080", Namespace: "gloo-system"},
+							{Name: "default-details-v1-9080", Namespace: "default"},
 						},
 					},
 				},
-			}, inputs.BookInfoUpstreams())
+			}, inputs.BookInfoUpstreams("default"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -42,7 +46,7 @@ var _ = Describe("appliesToDestination", func() {
 						Namespaces: []string{"default"},
 					},
 				},
-			}, inputs.BookInfoUpstreams())
+			}, inputs.BookInfoUpstreams("default"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -55,7 +59,7 @@ var _ = Describe("appliesToDestination", func() {
 						LabelsToMatch: map[string]string{"version": "v1", "app": "details"},
 					},
 				},
-			}, inputs.BookInfoUpstreams())
+			}, inputs.BookInfoUpstreams("default"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(applies).To(BeTrue())
 		})
@@ -69,13 +73,13 @@ var _ = Describe("labelSetsFromSelector", func() {
 				SelectorType: &v1.PodSelector_UpstreamSelector_{
 					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
 						Upstreams: []core.ResourceRef{
-							{Name: "default-details-v1-9080", Namespace: "gloo-system"},
-							{Name: "default-reviews-v2-9080", Namespace: "gloo-system"},
-							{Name: "default-reviews-9080", Namespace: "gloo-system"},
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-v2-9080", Namespace: "default"},
+							{Name: "default-reviews-9080", Namespace: "default"},
 						},
 					},
 				},
-			}, inputs.BookInfoUpstreams())
+			}, inputs.BookInfoUpstreams("default"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(labelSets).To(Equal([]map[string]string{
 				{"version": "v1", "app": "details"},
@@ -92,7 +96,7 @@ var _ = Describe("labelSetsFromSelector", func() {
 						Namespaces: []string{"default"},
 					},
 				},
-			}, inputs.BookInfoUpstreams())
+			}, inputs.BookInfoUpstreams("default"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(labelSets).To(Equal([]map[string]string{
 				{"app": "details"},
@@ -106,6 +110,31 @@ var _ = Describe("labelSetsFromSelector", func() {
 				{"app": "reviews", "version": "v2"},
 				{"version": "v3", "app": "reviews"},
 			}))
+		})
+	})
+})
+
+var _ = Describe("initDestinationRule", func() {
+	Context("input mesh has encryption enabled", func() {
+		It("creates a destination rule with tls setting ISTIO_MUTUAL", func() {
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, true)
+			Expect(dr.TrafficPolicy).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_ISTIO_MUTUAL))
+		})
+	})
+	Context("input mesh has encryption enabled, input host is the kube apiserver", func() {
+		It("creates a destination rule with tls setting DISABLED", func() {
+			dr := initDestinationRule(context.TODO(), "ns", "kubernetes.default.svc.cluster.local", nil, true)
+			Expect(dr.TrafficPolicy).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
+			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_DISABLE))
+		})
+	})
+	Context("input mesh has encryption disabled", func() {
+		It("creates a destination rule with no tls setting", func() {
+			dr := initDestinationRule(context.TODO(), "ns", "host", nil, false)
+			Expect(dr.TrafficPolicy).To(BeNil())
 		})
 	})
 })
@@ -210,11 +239,11 @@ var _ = Describe("createRoute", func() {
 		It("creates an http route with the corresponding destination, and calls the plugin for each route", func() {
 			resourceErrs := make(reporter.ResourceErrors)
 			plug := testRoutingPlugin{}
-			t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
+			t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 			route := t.createRoute(
 				plugins.Params{Ctx: context.TODO()},
 				"details.default.svc.cluster.local",
-				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live"),
+				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", nil),
 				createIstioMatcher(
 					[]map[string]string{
 						{"app": "details"},
@@ -231,7 +260,7 @@ var _ = Describe("createRoute", func() {
 							},
 						},
 					}),
-				inputs.BookInfoUpstreams(),
+				inputs.BookInfoUpstreams("default"),
 				resourceErrs,
 			)
 			Expect(route.Route).To(HaveLen(1))
@@ -268,14 +297,19 @@ type match struct {
 var _ = Describe("Translator", func() {
 	It("translates a snapshot into a corresponding meshconfig, returns ResourceErrors", func() {
 		plug := testRoutingPlugin{}
-		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live")
+		istioMesh := inputs.IstioMesh("fresh", nil)
+		ref := istioMesh.Metadata.Ref()
+		inputRoutingRules := inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", &ref)
 
-		t := NewTranslator("hi", []plugins.Plugin{&plug}).(*translator)
-		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams()},
+		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
+		configPerMesh, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Meshes:       map[string]v1.MeshList{"": {istioMesh}},
+			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams("default")},
 			Routingrules: map[string]v1.RoutingRuleList{"": inputRoutingRules},
 		})
 		Expect(err).NotTo(HaveOccurred())
+		Expect(configPerMesh).To(HaveKey(istioMesh))
+		meshConfig := configPerMesh[istioMesh]
 		Expect(meshConfig).NotTo(BeNil())
 		Expect(meshConfig.DesinationRules).To(HaveLen(4))
 		// we should have 1 subset for the service selector followed by 1 subset for each set of tags
@@ -352,7 +386,226 @@ var _ = Describe("Translator", func() {
 				}
 			}
 		}
+		Expect(meshConfig.MeshPolicy).NotTo(BeNil())
+		Expect(meshConfig.MeshPolicy.Metadata.Name).To(Equal("default"))
+		Expect(meshConfig.MeshPolicy.Peers).To(HaveLen(1))
+		Expect(meshConfig.MeshPolicy.Peers[0].Params).To(Equal(&v1alpha1.PeerAuthenticationMethod_Mtls{
+			Mtls: &v1alpha1.MutualTls{
+				Mode: v1alpha1.MutualTls_STRICT,
+			},
+		}))
 
 		Expect(resourceErrs).NotTo(BeNil())
+	})
+})
+
+var _ = Describe("hostsForSelector", func() {
+	It("returns the list of hostnames for the selected upstreams", func() {
+		hosts, err := hostsForSelector(&v1.PodSelector{
+			SelectorType: &v1.PodSelector_UpstreamSelector_{
+				UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+					Upstreams: []core.ResourceRef{
+						{Name: "default-details-v1-9080", Namespace: "default"},
+						{Name: "default-reviews-v3-9080", Namespace: "default"},
+					},
+				},
+			},
+		}, inputs.BookInfoUpstreams("default"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(hosts).To(Equal([]string{
+			"details.default.svc.cluster.local",
+			"reviews.default.svc.cluster.local",
+		}))
+	})
+})
+
+var _ = Describe("createServiceRoleFromRule", func() {
+	It("creates a service role allowing access to the destinations on the specified paths and methods", func() {
+		rule := &v1.SecurityRule{
+			Metadata: core.Metadata{
+				Namespace: "should-inherit-this-namespace",
+				Name:      "should-inherit-this-name",
+			},
+			SourceSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-v3-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			DestinationSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-productpage-v1-9080", Namespace: "default"},
+							{Name: "default-ratings-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			AllowedMethods: []string{"GET", "POST"},
+			AllowedPaths:   []string{"/a", "/b"},
+		}
+		serviceRole, err := createServiceRoleFromRule(
+			"somenamespace",
+			rule,
+			inputs.BookInfoUpstreams("default"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(serviceRole.Metadata.Name).To(Equal(rule.Metadata.Namespace + "." + rule.Metadata.Name))
+		Expect(serviceRole.Rules).To(HaveLen(1))
+		Expect(serviceRole.Rules[0].Paths).To(Equal(rule.AllowedPaths))
+		Expect(serviceRole.Rules[0].Methods).To(Equal(rule.AllowedMethods))
+		Expect(serviceRole.Rules[0].Services).To(Equal([]string{
+			"productpage.default.svc.cluster.local",
+			"ratings.default.svc.cluster.local",
+		}))
+	})
+})
+var _ = Describe("getSubjectsForSelector", func() {
+	It("extracts the service account name from each pod which is selected", func() {
+		subjects, err := getSubjectsForSelector(
+			&v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-v3-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			inputs.BookInfoUpstreams("default"),
+			inputs.BookInfoPods("default"),
+		)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(subjects).To(Equal([]*istiorbac.Subject{
+			{Properties: map[string]string{"source.principal": "cluster.local/ns/default/sa/details-v1-pod-1"}},
+			{Properties: map[string]string{"source.principal": "cluster.local/ns/default/sa/reviews-v3-pod-1"}},
+		}))
+	})
+})
+
+var _ = Describe("createServiceRoleBinding", func() {
+	It("creates a service role allowing access to the destinations on the specified paths and methods", func() {
+		serviceRoleBinding, err := createServiceRoleBinding(
+			"somename",
+			"somenamespace",
+			&v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-v3-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			inputs.BookInfoUpstreams("default"),
+			inputs.BookInfoPods("default"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(serviceRoleBinding.Metadata.Name).To(Equal("somename"))
+		Expect(serviceRoleBinding.RoleRef.Kind).To(Equal("ServiceRole"))
+		Expect(serviceRoleBinding.RoleRef.Name).To(Equal("somename"))
+		Expect(serviceRoleBinding.Subjects).To(Equal([]*istiorbac.Subject{
+			{Properties: map[string]string{"source.principal": "cluster.local/ns/default/sa/details-v1-pod-1"}},
+			{Properties: map[string]string{"source.principal": "cluster.local/ns/default/sa/reviews-v3-pod-1"}},
+		}))
+	})
+})
+
+var _ = Describe("createSecurityConfig", func() {
+	It("creates a complete config with serviceroles, servicerolebindings, and rbacconfig", func() {
+		rule11 := &v1.SecurityRule{
+			Metadata: core.Metadata{
+				Namespace: "ns1",
+				Name:      "rule1",
+			},
+			SourceSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-v3-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			DestinationSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-productpage-v1-9080", Namespace: "default"},
+							{Name: "default-ratings-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			AllowedMethods: []string{"GET", "POST"},
+			AllowedPaths:   []string{"/a", "/b"},
+		}
+
+		rule12 := &v1.SecurityRule{
+			Metadata: core.Metadata{
+				Namespace: "ns1",
+				Name:      "rule2",
+			},
+			SourceSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-productpage-v1-9080", Namespace: "default"},
+							{Name: "default-ratings-v1-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			DestinationSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{Name: "default-details-v1-9080", Namespace: "default"},
+							{Name: "default-reviews-9080", Namespace: "default"},
+						},
+					},
+				},
+			},
+			AllowedMethods: []string{"GET", "POST"},
+			AllowedPaths:   []string{"/a", "/b"},
+		}
+
+		rules := v1.SecurityRuleList{rule11, rule12}
+
+		resourceErrs := make(reporter.ResourceErrors)
+
+		securityConfig := createSecurityConfig(
+			"somenamespace",
+			rules,
+			inputs.BookInfoUpstreams("default"),
+			inputs.BookInfoPods("default"),
+			resourceErrs,
+		)
+		Expect(securityConfig.RbacConfig).NotTo(BeNil())
+		Expect(securityConfig.RbacConfig.Metadata.Name).To(Equal("default"))
+		Expect(securityConfig.RbacConfig.Mode).To(Equal(istiorbac.RbacConfig_ON))
+		Expect(securityConfig.RbacConfig.EnforcementMode).To(Equal(istiorbac.EnforcementMode_ENFORCED))
+		Expect(securityConfig.ServiceRoles).To(HaveLen(2))
+		Expect(securityConfig.ServiceRoles[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "." + rule11.Metadata.Name))
+		Expect(securityConfig.ServiceRoles[0].Rules[0].Services).To(Equal([]string{
+			"productpage.default.svc.cluster.local",
+			"ratings.default.svc.cluster.local",
+		}))
+		Expect(securityConfig.ServiceRoles[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "." + rule12.Metadata.Name))
+		Expect(securityConfig.ServiceRoles[1].Rules[0].Services).To(Equal([]string{
+			"details.default.svc.cluster.local",
+			"reviews.default.svc.cluster.local",
+		}))
+		Expect(securityConfig.ServiceRoleBindings).To(HaveLen(2))
+		Expect(securityConfig.ServiceRoleBindings[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "." + rule11.Metadata.Name))
+		Expect(securityConfig.ServiceRoleBindings[0].RoleRef.Name).To(Equal(securityConfig.ServiceRoles[0].Metadata.Name))
+		Expect(securityConfig.ServiceRoleBindings[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "." + rule12.Metadata.Name))
+		Expect(securityConfig.ServiceRoleBindings[1].RoleRef.Name).To(Equal(securityConfig.ServiceRoles[1].Metadata.Name))
 	})
 })
