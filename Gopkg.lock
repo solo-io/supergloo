@@ -1156,7 +1156,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:2cbb60c398d997df7e9d1bd378ba9f06b2f3bd0e79ce2d6a172916b6dac32e6f"
+  digest = "1:21bab8ef8ff7f1b8311a0e3ee48e2a4dd373e2ecca308ee3e5e05131e53dec9d"
   name = "github.com/solo-io/go-utils"
   packages = [
     "cliutils",
@@ -1171,8 +1171,8 @@
     "testutils",
   ]
   pruneopts = "UT"
-  revision = "3ca3f416d2ed74c92bdfa96daeb5d530bd937a33"
-  version = "v0.1.2"
+  revision = "186d703b9e1cb307573e36d0a178f564f0f3b861"
+  version = "v0.2.1"
 
 [[projects]]
   digest = "1:beb2f62cc40d34387e711801da93fd12def470500492d04cc215eea7eb7bd917"
