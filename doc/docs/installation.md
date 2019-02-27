@@ -22,7 +22,7 @@ curl -sL https://run.solo.io/supergloo/install | sh
 
 Alternatively, you can download the CLI directly via the [SuperGloo releases page](https://github.com/solo-io/supergloo/releases).
 
-Next, add SupetGloo to your path with:
+Next, add SuperGloo to your path with:
 
 ```
 export PATH=$PATH:$HOME/.supergloo/bin
