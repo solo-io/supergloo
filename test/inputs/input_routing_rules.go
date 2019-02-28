@@ -3,6 +3,8 @@ package inputs
 import (
 	"time"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -28,6 +30,28 @@ func BookInfoRoutingRules(namespace string, targetMesh *core.ResourceRef) v1.Rou
 			Spec: &v1.RoutingRuleSpec{
 				RuleType: &v1.RoutingRuleSpec_RequestTimeout{
 					RequestTimeout: types.DurationProto(time.Second * 10),
+				},
+			},
+		},
+	}
+}
+
+func TrafficShiftingRuleSpec(destinations ...core.ResourceRef) *v1.RoutingRuleSpec {
+	var dests []*gloov1.WeightedDestination
+	for i, d := range destinations {
+		dests = append(dests, &gloov1.WeightedDestination{
+			Destination: &gloov1.Destination{
+				Upstream: d,
+			},
+			Weight: uint32(i + 1),
+		})
+	}
+
+	return &v1.RoutingRuleSpec{
+		RuleType: &v1.RoutingRuleSpec_TrafficShifting{
+			TrafficShifting: &v1.TrafficShifting{
+				Destinations: &gloov1.MultiDestination{
+					Destinations: dests,
 				},
 			},
 		},
