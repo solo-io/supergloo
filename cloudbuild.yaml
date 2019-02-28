@@ -1,18 +1,19 @@
 steps:
 
-#  - name: 'gcr.io/cloud-builders/wget'
-#    entrypoint: ./ci/spell.sh
-#    args: ['check']
-#    waitFor: ['-']
-#    env:
-#      - 'LSCOMMAND=find * -path gopath -prune -o -print'
-#    id: 'check-spelling'
   # Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
   # These two steps should populate the cache
   - name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
     args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/supergloo/supergloo-dep.tar.gz | tar -xzf -']
     id: 'download-untar-dep-cache'
+    waitFor: ['-']
+
+  # Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
+  # These two steps should populate the cache
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: 'bash'
+    args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/supergloo/supergloo-gocache.tar.gz | tar -xzf -']
+    id: 'download-untar-gocache-cache'
     waitFor: ['-']
 
   # Run dep to set up the project so it can be built and tested
@@ -53,7 +54,7 @@ steps:
       - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', '-p', 'pkg', 'test/e2e']
-    waitFor: ['setup-helm']
+    waitFor: ['setup-helm', 'download-untar-gogache-cache']
     id: 'test'
 
   # Build everything
