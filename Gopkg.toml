@@ -30,9 +30,7 @@
 
 [[override]]
   name = "github.com/solo-io/solo-kit"
-#  version = "v0.2.29"
-  # TODO (ilackarms): update this when solo kit pr is merged
-  revision = "a4ca777cefafa91b4acd00a880a45143b3926ea4"
+  version = "v0.2.31"
 
 [[override]]
   branch = "master"

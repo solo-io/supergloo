@@ -29,7 +29,9 @@ var _ = Describe("PodBaseClient", func() {
 	})
 	It("converts a kubernetes pod to solo-kit resource", func() {
 		kube := testutils.MustKubeClient()
-		rc := NewResourceClient(kube, cache.NewKubeCoreCache(context.TODO(), kube))
+		kcache, err := cache.NewKubeCoreCache(context.TODO(), kube)
+		Expect(err).NotTo(HaveOccurred())
+		rc := NewResourceClient(kube, kcache)
 
 		pod, err := kube.CoreV1().Pods(namespace).Create(&kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
