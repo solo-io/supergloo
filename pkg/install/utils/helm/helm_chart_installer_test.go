@@ -25,16 +25,16 @@ var istioCrd = apiextensions.CustomResourceDefinition{}
 
 var _ = Describe("HelmChartInstaller", func() {
 	var (
-		ns string
-		kc kubernetes.Interface
+		ns         string
+		kubeClient kubernetes.Interface
 	)
 	BeforeEach(func() {
-		kc = testutils2.MustKubeClient()
+		kubeClient = testutils2.MustKubeClient()
 		// wait for all services in the previous namespace to be torn down
 		// important because of a race caused by nodeport conflcit
 		if ns != "" {
 			Eventually(Expect(func() []kubev1.Service {
-				svcs, err := kc.CoreV1().Services(ns).List(v1.ListOptions{})
+				svcs, err := kubeClient.CoreV1().Services(ns).List(v1.ListOptions{})
 				Expect(err).NotTo(HaveOccurred())
 				return svcs.Items
 			}), time.Second*30).Should(BeEmpty())
@@ -136,12 +136,6 @@ mixer:
 			defer DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 			err = CreateFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer
