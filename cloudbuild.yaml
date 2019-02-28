@@ -8,6 +8,14 @@ steps:
     id: 'download-untar-dep-cache'
     waitFor: ['-']
 
+  # Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
+  # These two steps should populate the cache
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: 'bash'
+    args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/supergloo/supergloo-gocache.tar.gz | tar -xzf -']
+    id: 'download-untar-go-cache'
+    waitFor: ['-']
+
   # Run dep to set up the project so it can be built and tested
   # Dep modifies workspace so that the code is moved into the PROJECT_ROOT
   # All steps after this must set GOPATH
@@ -17,7 +25,7 @@ steps:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GIT_SSH_CONFIG=FALSE'
     id: 'dep'
-    waitFor: ['download-untar-dep-cache']
+    waitFor: ['download-untar-dep-cache', 'download-untar-go-cache']
 
   # run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
