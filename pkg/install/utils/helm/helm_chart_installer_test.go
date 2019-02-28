@@ -2,6 +2,10 @@ package helm_test
 
 import (
 	"context"
+	"time"
+
+	testutils2 "github.com/solo-io/supergloo/test/testutils"
+	kubev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/testutils"
@@ -20,8 +24,24 @@ import (
 var istioCrd = apiextensions.CustomResourceDefinition{}
 
 var _ = Describe("HelmChartInstaller", func() {
-	var ns string
+	var (
+		ns         string
+		kubeClient kubernetes.Interface
+	)
 	BeforeEach(func() {
+		kubeClient = testutils2.MustKubeClient()
+		// wait for all services in the previous namespace to be torn down
+		// important because of a race caused by nodeport conflcit
+		if ns != "" {
+			Eventually(func() []kubev1.Service {
+				svcs, err := kubeClient.CoreV1().Services(ns).List(v1.ListOptions{})
+				if err != nil {
+					// namespace is gone
+					return []kubev1.Service{}
+				}
+				return svcs.Items
+			}, time.Second*30).Should(BeEmpty())
+		}
 		ns = "test" + testutils.RandString(5)
 	})
 	AfterEach(func() {
@@ -46,12 +66,6 @@ mixer:
 			defer DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 			err = CreateFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer
@@ -125,12 +139,6 @@ mixer:
 			defer DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 			err = CreateFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer

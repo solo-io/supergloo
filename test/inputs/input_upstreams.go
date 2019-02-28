@@ -9,14 +9,14 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
-func BookInfoUpstreams() v1.UpstreamList {
+func BookInfoUpstreams(namespace string) v1.UpstreamList {
 	return v1.UpstreamList{
 		&v1.Upstream{
 			UpstreamSpec: &v1.UpstreamSpec{
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "details",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "details",
@@ -26,7 +26,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-details-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "details",
 					"discovered_by": "kubernetesplugin",
@@ -38,7 +38,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "details",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v1",
@@ -49,7 +49,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-details-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "details",
 					"discovered_by": "kubernetesplugin",
@@ -61,7 +61,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "productpage",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "productpage",
@@ -71,7 +71,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-productpage-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "productpage",
 					"discovered_by": "kubernetesplugin",
@@ -83,7 +83,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "productpage",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "productpage",
@@ -94,7 +94,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-productpage-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "productpage",
 					"discovered_by": "kubernetesplugin",
@@ -106,7 +106,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "ratings",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "ratings",
@@ -116,7 +116,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-ratings-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "ratings",
 					"discovered_by": "kubernetesplugin",
@@ -128,7 +128,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "ratings",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "ratings",
@@ -139,7 +139,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-ratings-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "ratings",
 					"discovered_by": "kubernetesplugin",
@@ -151,7 +151,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "reviews",
@@ -161,7 +161,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "reviews",
 					"discovered_by": "kubernetesplugin",
@@ -173,7 +173,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v1",
@@ -184,7 +184,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "reviews",
 					"discovered_by": "kubernetesplugin",
@@ -196,7 +196,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "reviews",
@@ -207,7 +207,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v2-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"app":           "reviews",
@@ -219,7 +219,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v3",
@@ -230,7 +230,7 @@ func BookInfoUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v3-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"app":           "reviews",
@@ -240,14 +240,14 @@ func BookInfoUpstreams() v1.UpstreamList {
 	}
 }
 
-func InputUpstreams() v1.UpstreamList {
+func InputUpstreams(namespace string) v1.UpstreamList {
 	return v1.UpstreamList{
 		&v1.Upstream{
 			UpstreamSpec: &v1.UpstreamSpec{
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "details",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "details",
@@ -257,7 +257,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-details-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "details",
 					"discovered_by": "kubernetesplugin",
@@ -269,7 +269,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "details",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v1",
@@ -280,7 +280,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-details-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "details",
 					"discovered_by": "kubernetesplugin",
@@ -292,7 +292,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "kubernetes",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x000001bb,
 						Selector:         map[string]string{},
 						ServiceSpec:      (*plugins.ServiceSpec)(nil),
@@ -301,7 +301,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-kubernetes-443",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"component":     "apiserver",
 					"discovered_by": "kubernetesplugin",
@@ -314,7 +314,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "petstore",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00001f90,
 						Selector: map[string]string{
 							"app": "petstore",
@@ -425,7 +425,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-petstore-8080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"service":       "petstore",
@@ -437,7 +437,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "productpage",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "productpage",
@@ -447,7 +447,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-productpage-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "productpage",
 					"discovered_by": "kubernetesplugin",
@@ -459,7 +459,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "productpage",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "productpage",
@@ -470,7 +470,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-productpage-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "productpage",
 					"discovered_by": "kubernetesplugin",
@@ -482,7 +482,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "ratings",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "ratings",
@@ -492,7 +492,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-ratings-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "ratings",
 					"discovered_by": "kubernetesplugin",
@@ -504,7 +504,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "ratings",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "ratings",
@@ -515,7 +515,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-ratings-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "ratings",
 					"discovered_by": "kubernetesplugin",
@@ -527,7 +527,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app": "reviews",
@@ -537,7 +537,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "reviews",
 					"discovered_by": "kubernetesplugin",
@@ -549,7 +549,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v1",
@@ -560,7 +560,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v1-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "reviews",
 					"discovered_by": "kubernetesplugin",
@@ -572,7 +572,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"app":     "reviews",
@@ -583,7 +583,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v2-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"app":           "reviews",
@@ -595,7 +595,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "reviews",
-						ServiceNamespace: "default",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00002378,
 						Selector: map[string]string{
 							"version": "v3",
@@ -606,7 +606,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "default-reviews-v3-9080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"app":           "reviews",
@@ -618,7 +618,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "gateway-proxy",
-						ServiceNamespace: "gloo-system",
+						ServiceNamespace: namespace,
 						ServicePort:      0x00001f90,
 						Selector: map[string]string{
 							"gloo": "gateway-proxy",
@@ -628,7 +628,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "gloo-system-gateway-proxy-8080",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"app":           "gloo",
 					"discovered_by": "kubernetesplugin",
@@ -641,7 +641,7 @@ func InputUpstreams() v1.UpstreamList {
 				UpstreamType: &v1.UpstreamSpec_Kube{
 					Kube: &kubernetes.UpstreamSpec{
 						ServiceName:      "gloo",
-						ServiceNamespace: "gloo-system",
+						ServiceNamespace: namespace,
 						ServicePort:      0x000026f9,
 						Selector: map[string]string{
 							"gloo": "gloo",
@@ -651,7 +651,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "gloo-system-gloo-9977",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"discovered_by": "kubernetesplugin",
 					"gloo":          "gloo",
@@ -674,7 +674,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "kube-system-kube-dns-53",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"kubernetes.io/cluster-service": "true",
 					"kubernetes.io/name":            "KubeDNS",
@@ -698,7 +698,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "kube-system-kubernetes-dashboard-80",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"addonmanager.kubernetes.io/mode":        "Reconcile",
 					"app":                                    "kubernetes-dashboard",
@@ -725,7 +725,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "kube-system-kubernetes-dashboard-reconcile-v1-10-1-80",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"kubernetes.io/minikube-addons":          "dashboard",
 					"kubernetes.io/minikube-addons-endpoint": "dashboard",
@@ -751,7 +751,7 @@ func InputUpstreams() v1.UpstreamList {
 			},
 			Metadata: core.Metadata{
 				Name:      "kube-system-tiller-deploy-44134",
-				Namespace: "gloo-system",
+				Namespace: namespace,
 				Labels: map[string]string{
 					"name":          "tiller",
 					"app":           "helm",
