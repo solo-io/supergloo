@@ -28,7 +28,7 @@ steps:
       - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', '-p', 'pkg']
-    waitFor: ['download-untar-dep-cache']
+    waitFor: ['dep']
     id: 'test'
 
 timeout: 6600s
