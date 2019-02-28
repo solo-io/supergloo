@@ -30,7 +30,7 @@
 
 [[override]]
   name = "github.com/solo-io/solo-kit"
-  version = "v0.2.31"
+  version = "v0.3.0"
 
 [[override]]
   branch = "master"
