@@ -2,10 +2,8 @@ package helm_test
 
 import (
 	"context"
-	"time"
 
 	testutils2 "github.com/solo-io/supergloo/test/testutils"
-	kubev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/testutils"
@@ -33,14 +31,7 @@ var _ = Describe("HelmChartInstaller", func() {
 		// wait for all services in the previous namespace to be torn down
 		// important because of a race caused by nodeport conflcit
 		if ns != "" {
-			Eventually(func() []kubev1.Service {
-				svcs, err := kubeClient.CoreV1().Services(ns).List(v1.ListOptions{})
-				if err != nil {
-					// namespace is gone
-					return []kubev1.Service{}
-				}
-				return svcs.Items
-			}, time.Second*30).Should(BeEmpty())
+			testutils2.WaitForIstioTeardown(ns)
 		}
 		ns = "test" + testutils.RandString(5)
 	})
