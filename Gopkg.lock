@@ -1172,7 +1172,7 @@
   version = "v0.1.2"
 
 [[projects]]
-  digest = "1:beb2f62cc40d34387e711801da93fd12def470500492d04cc215eea7eb7bd917"
+  digest = "1:2c71caffc0613f152d49ed730b49d3b2e673b450eef6f0e37f9eb3a31a0cd9cc"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1222,8 +1222,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "25c8016fed9ef58f7c53283a7a62ad661e0afb40"
-  version = "v0.2.29"
+  revision = "b6ba2b73a5eb3b82fe9fb6076c5a1f9ea8b9d10c"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:e01b05ba901239c783dfe56450bcde607fc858908529868259c9a8765dc176d0"
@@ -2104,7 +2104,6 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache",
-    "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
@@ -2156,9 +2155,7 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/client-go/informers",
     "k8s.io/client-go/kubernetes",
-    "k8s.io/client-go/listers/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
