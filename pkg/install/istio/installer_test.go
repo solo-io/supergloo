@@ -2,13 +2,11 @@ package istio
 
 import (
 	"context"
-	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testutils2 "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/solo-kit/test/helpers"
-	kubev1 "k8s.io/api/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,14 +20,7 @@ var _ = Describe("Installer", func() {
 		// wait for all services in the previous namespace to be torn down
 		// important because of a race caused by nodeport conflcit
 		if ns != "" {
-			Eventually(func() []kubev1.Service {
-				svcs, err := MustKubeClient().CoreV1().Services(ns).List(metav1.ListOptions{})
-				if err != nil {
-					// namespace is gone
-					return []kubev1.Service{}
-				}
-				return svcs.Items
-			}, time.Second*30).Should(BeEmpty())
+			testutils2.WaitForIstioTeardown(ns)
 		}
 		ns = "a" + helpers.RandString(5)
 	})

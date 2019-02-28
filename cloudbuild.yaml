@@ -13,7 +13,7 @@ steps:
   - name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
     args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/supergloo/supergloo-gocache.tar.gz | tar -xzf -']
-    id: 'download-untar-gocache-cache'
+    id: 'download-untar-go-cache'
     waitFor: ['-']
 
   # Run dep to set up the project so it can be built and tested
@@ -42,8 +42,8 @@ steps:
       - gs://supergloo-helm/
       - './_output/helm'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['make-helm-dir']
     id: 'setup-helm'
+    waitFor: ['make-helm-dir']
 
   # run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
@@ -54,7 +54,7 @@ steps:
       - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', '-p', 'pkg', 'test/e2e']
-    waitFor: ['setup-helm', 'download-untar-gogache-cache']
+    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
   # Build everything
@@ -67,6 +67,7 @@ steps:
     secretEnv: ['DOCKER_HUB_PASSWORD']
     id: 'docker-login'
     waitFor: ['test']
+
   - name: 'gcr.io/$PROJECT_ID/go-make'
     args: ['docker']
     env:
@@ -76,6 +77,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['docker-login']
     id: 'compile'
+
   - name: 'gcr.io/$PROJECT_ID/go-make'
     args: ['docker-push', 'manifest', 'release']
     env:

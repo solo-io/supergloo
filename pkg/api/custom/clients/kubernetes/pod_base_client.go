@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"
@@ -19,9 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
-
-const statusTypeUrl = "core.kubernetes.io/v1/Pod/Status"
-const specTypeUrl = "core.kubernetes.io/v1/Pod/Spec"
 
 type ResourceClient struct {
 	kube  kubernetes.Interface
@@ -40,19 +36,12 @@ func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "marshalling kube pod object")
 	}
-	spec := &types.Any{
-		TypeUrl: specTypeUrl,
-		Value:   rawSpec,
-	}
+	spec := string(rawSpec)
 	rawStatus, err := json.Marshal(pod.Status)
 	if err != nil {
 		return nil, errors.Wrapf(err, "marshalling kube pod object")
 	}
-	status := &types.Any{
-		TypeUrl: statusTypeUrl,
-		Value:   rawStatus,
-	}
-
+	status := string(rawStatus)
 	resource := &v1.Pod{
 		Spec:   spec,
 		Status: status,
@@ -68,14 +57,11 @@ func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
 	if !ok {
 		return nil, errors.Errorf("internal error: invalid resource %v passed to pod-only client", resources.Kind(resource))
 	}
-	if podResource.Spec == nil {
-		return nil, errors.Errorf("internal error: %v pod spec cannot be nil", podResource.GetMetadata().Ref())
-	}
 	var pod kubev1.Pod
-	if err := json.Unmarshal(podResource.Spec.Value, &pod.Spec); err != nil {
+	if err := json.Unmarshal([]byte(podResource.Spec), &pod.Spec); err != nil {
 		return nil, errors.Wrapf(err, "unmarshalling kube pod spec data")
 	}
-	if err := json.Unmarshal(podResource.Status.Value, &pod.Status); err != nil {
+	if err := json.Unmarshal([]byte(podResource.Status), &pod.Status); err != nil {
 		return nil, errors.Wrapf(err, "unmarshalling kube pod status data")
 	}
 

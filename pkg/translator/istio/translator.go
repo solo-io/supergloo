@@ -178,6 +178,10 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	resourceErrs.Accept(meshes.AsInputResources()...)
 	resourceErrs.Accept(meshGroups.AsInputResources()...)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
+
+	// TODO (ilackarms): when we support installing Gloo
+	// ensure that we handle race condition with upstream
+	// reporting.
 	resourceErrs.Accept(upstreams.AsInputResources()...)
 
 	validateMeshGroups(meshes, meshGroups, resourceErrs)
