@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	valuesTemplate = "install/helm/supergloo/values-defaults.yaml"
-	valuesOutput   = "install/helm/supergloo/values.yaml"
-	chartTemplate  = "install/helm/supergloo/Chart-template.yaml"
-	chartOutput    = "install/helm/supergloo/Chart.yaml"
+	defaultValues = "install/helm/supergloo/values-defaults.yaml"
+	valuesOutput  = "install/helm/supergloo/values.yaml"
+	chartTemplate = "install/helm/supergloo/Chart-template.yaml"
+	chartOutput   = "install/helm/supergloo/Chart.yaml"
 
 	neverPull    = "Never"
 	alwaysPull   = "Always"
@@ -77,7 +77,7 @@ func writeYaml(obj interface{}, path string) error {
 }
 
 func generateValuesYaml(version, pullPolicy, outputFile string) error {
-	config, err := readConfig(valuesTemplate)
+	config, err := readConfig(defaultValues)
 	if err != nil {
 		return err
 	}
