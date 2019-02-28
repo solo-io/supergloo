@@ -22,11 +22,14 @@ var _ = Describe("Installer", func() {
 		// wait for all services in the previous namespace to be torn down
 		// important because of a race caused by nodeport conflcit
 		if ns != "" {
-			Eventually(Expect(func() []kubev1.Service {
+			Eventually(func() []kubev1.Service {
 				svcs, err := MustKubeClient().CoreV1().Services(ns).List(metav1.ListOptions{})
-				Expect(err).NotTo(HaveOccurred())
+				if err != nil {
+					// namespace is gone
+					return []kubev1.Service{}
+				}
 				return svcs.Items
-			}), time.Second*30).Should(BeEmpty())
+			}, time.Second*30).Should(BeEmpty())
 		}
 		ns = "a" + helpers.RandString(5)
 	})
