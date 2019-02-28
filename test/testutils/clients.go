@@ -15,7 +15,6 @@ func MustKubeClient() kubernetes.Interface {
 	return kubeClient
 }
 
-
 func MustApiExtsClient() apiexts.Interface {
 	restConfig, err := kubeutils.GetConfig("", "")
 	gomega.ExpectWithOffset(1, err).NotTo(gomega.HaveOccurred())
