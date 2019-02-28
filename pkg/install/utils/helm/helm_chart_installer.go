@@ -12,7 +12,9 @@ import (
 	"strings"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
 
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
@@ -106,9 +108,19 @@ func CreateFromManifests(ctx context.Context, namespace string, manifests Manife
 	//crds come first
 	if len(crdManifests) > 0 {
 		crdInput := crdManifests.CombinedString()
-		if err := kc.Create(namespace, bytes.NewBufferString(crdInput), 0, false); err != nil {
+		infos, err := kc.BuildUnstructured(namespace, bytes.NewBufferString(crdInput))
+		if err != nil {
 			return err
 		}
+		for _, info := range infos {
+			helper := resource.NewHelper(info.Client, info.Mapping)
+			if _, err := helper.Create(info.Namespace, true, info.Object, nil); err != nil {
+				if !apierrors.IsAlreadyExists(err) {
+					return errors.Wrapf(err, "creating %v", info.Object)
+				}
+			}
+		}
+
 		if err := waitForCrds(ctx, kc, crdInput); err != nil {
 			return err
 		}

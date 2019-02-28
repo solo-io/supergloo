@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	testutils2 "github.com/solo-io/supergloo/test/testutils"
+
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/solo-kit/test/helpers"
 
@@ -15,6 +17,11 @@ import (
 var _ = Describe("Installer", func() {
 	var ns string
 	BeforeEach(func() {
+		// wait for all services in the previous namespace to be torn down
+		// important because of a race caused by nodeport conflcit
+		if ns != "" {
+			testutils2.WaitForIstioTeardown(ns)
+		}
 		ns = "a" + helpers.RandString(5)
 	})
 	AfterEach(func() {

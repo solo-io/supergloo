@@ -104,9 +104,11 @@ var _ = Describe("V1Emitter", func() {
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
+		kcache, err := cache.NewKubeCoreCache(context.TODO(), kube)
+		Expect(err).NotTo(HaveOccurred())
 		tlsSecretClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
-			Cache:     cache.NewKubeCoreCache(context.TODO(), kube),
+			Cache:     kcache,
 		}
 		tlsSecretClient, err = NewTlsSecretClient(tlsSecretClientFactory)
 		Expect(err).NotTo(HaveOccurred())
@@ -122,9 +124,11 @@ var _ = Describe("V1Emitter", func() {
 		kube, err = kubernetes.NewForConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
+		kcache, err := cache.NewKubeCoreCache(context.TODO(), kube)
+		Expect(err).NotTo(HaveOccurred())
 		podClientFactory := &factory.KubeConfigMapClientFactory{
 			Clientset: kube,
-			Cache:     cache.NewKubeCoreCache(context.TODO(), kube),
+			Cache:     kcache,
 		}
 		podClient, err = core_kubernetes_io.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
