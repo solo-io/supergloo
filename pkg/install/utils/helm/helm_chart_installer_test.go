@@ -3,6 +3,8 @@ package helm_test
 import (
 	"context"
 
+	testutils2 "github.com/solo-io/supergloo/test/testutils"
+
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
@@ -20,8 +22,17 @@ import (
 var istioCrd = apiextensions.CustomResourceDefinition{}
 
 var _ = Describe("HelmChartInstaller", func() {
-	var ns string
+	var (
+		ns         string
+		kubeClient kubernetes.Interface
+	)
 	BeforeEach(func() {
+		kubeClient = testutils2.MustKubeClient()
+		// wait for all services in the previous namespace to be torn down
+		// important because of a race caused by nodeport conflcit
+		if ns != "" {
+			testutils2.WaitForIstioTeardown(ns)
+		}
 		ns = "test" + testutils.RandString(5)
 	})
 	AfterEach(func() {
@@ -46,12 +57,6 @@ mixer:
 			defer DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 			err = CreateFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer
@@ -127,19 +132,10 @@ mixer:
 			err = CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
-			Expect(err).NotTo(HaveOccurred())
-
 			// yes mixer
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
-			Expect(err).NotTo(HaveOccurred())
-
-			err = DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			// change values, verify update
