@@ -138,9 +138,6 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = DeleteFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
 			// change values, verify update
 			values = `
 mixer:
