@@ -47,6 +47,7 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--jaeger=%v", jaeger))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
 					return
 				}
 
@@ -96,7 +97,7 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--name=%v ", name) +
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
-
+			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
 		})
 	})
 })
