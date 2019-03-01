@@ -81,9 +81,9 @@ var _ = Describe("installIstio", func() {
 		})
 		It("calls an update when a previous install is present", func() {
 			t := t()
-			var actualManifests, updateManifests helm.Manifests
+			var createManifests, updateManifests helm.Manifests
 			hi := newMockHelm(func(ctx context.Context, namespace string, manifests helm.Manifests) error {
-				actualManifests = manifests
+				createManifests = manifests
 				return nil
 			}, nil, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
 				updateManifests = updated
@@ -94,9 +94,10 @@ var _ = Describe("installIstio", func() {
 			t.opts.Observability.EnableJaeger = true
 			_, err := installer.installIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualManifests).NotTo(BeEmpty())
+			Expect(createManifests).NotTo(BeEmpty())
+			Expect(manifestsHaveKey(createManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeTrue())
 
-			t.opts.previousInstall = actualManifests
+			t.opts.previousInstall = createManifests
 
 			t.opts.Observability.EnableJaeger = false
 			_, err = installer.installIstio(context.TODO(), t.opts)
