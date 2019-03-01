@@ -58,7 +58,7 @@ func UseMemoryClients() {
 func MustInstallClient() v1.InstallClient {
 	client, err := InstallClient()
 	if err != nil {
-		log.Fatalf("failed to create upstream client: %v", err)
+		log.Fatalf("failed to create install client: %v", err)
 	}
 	return client
 }
@@ -90,7 +90,7 @@ func InstallClient() (v1.InstallClient, error) {
 func MustMeshClient() v1.MeshClient {
 	client, err := MeshClient()
 	if err != nil {
-		log.Fatalf("failed to create upstream client: %v", err)
+		log.Fatalf("failed to create mesh client: %v", err)
 	}
 	return client
 }
@@ -117,4 +117,20 @@ func MeshClient() (v1.MeshClient, error) {
 		return nil, err
 	}
 	return meshClient, nil
+}
+
+func MustKubeClient() kubernetes.Interface {
+	client, err := KubeClient()
+	if err != nil {
+		log.Fatalf("failed to create kube client: %v", err)
+	}
+	return client
+}
+
+func KubeClient() (kubernetes.Interface, error) {
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	return kubernetes.NewForConfig(cfg)
 }

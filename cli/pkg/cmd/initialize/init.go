@@ -8,6 +8,11 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	v1 "k8s.io/api/core/v1"
+	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -17,7 +22,7 @@ import (
 )
 
 const (
-	sgChartUriTemplate = "https://storage.googleapis.com/solo-public-helm/charts/supergloo-%s.tgz"
+	sgChartUriTemplate = "https://storage.googleapis.com/supergloo-helm/charts/supergloo-%s.tgz"
 )
 
 func Cmd(opts *options.Options) *cobra.Command {
@@ -54,6 +59,13 @@ func installSuperGloo(opts *options.Options) error {
 	values, err := readValues(opts.Init.HelmValues)
 	if err != nil {
 		return errors.Wrapf(err, "reading custom values")
+	}
+
+	kube := helpers.MustKubeClient()
+	if _, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: opts.Init.InstallNamespace},
+	}); err != nil && !kubeerrs.IsAlreadyExists(err) {
+		return errors.Wrapf(err, "creating namespace")
 	}
 
 	manifests, err := helm.RenderManifests(opts.Ctx,
