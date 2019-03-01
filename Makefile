@@ -159,7 +159,7 @@ install/manifest/supergloo.yaml: helm-template
 # Release
 #----------------------------------------------------------------------------------
 GH_ORG:=solo-io
-GH_REPO:=sqoop
+GH_REPO:=supergloo
 
 # For now, expecting people using the release to start from a supergloo-cli CLI we provide, not
 # installing the binaries locally / directly. So only uploading the CLI binaries to Github.

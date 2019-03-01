@@ -35,6 +35,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['dep']
     id: 'make-helm-dir'
+
   - name: gcr.io/cloud-builders/gsutil
     args:
       - rsync

@@ -18,7 +18,7 @@
 #
 
 # Check dependencies.
-set -e
+set -ex
 xargs=$(which gxargs || which xargs)
 
 # Validate settings.

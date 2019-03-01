@@ -8,9 +8,9 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("init", func() {
+var _ = PDescribe("init", func() {
 	It("successfully installs supergloo to the cluster", func() {
-		err := utils.Supergloo("init")
+		err := utils.Supergloo("init --release v0.0.0")
 		Expect(err).NotTo(HaveOccurred())
 
 		kube := testutils.MustKubeClient()
