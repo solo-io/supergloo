@@ -77,7 +77,7 @@ func releaseName(namespace, version string) string {
 }
 
 // returns the installed manifests
-func installIstio(ctx context.Context, opts installOptions) (helm.Manifests, error) {
+func (i *defaultIstioInstaller) installIstio(ctx context.Context, opts installOptions) (helm.Manifests, error) {
 	if err := opts.validate(); err != nil {
 		return nil, errors.Wrapf(err, "invalid install options")
 	}
@@ -120,11 +120,11 @@ func installIstio(ctx context.Context, opts installOptions) (helm.Manifests, err
 
 	// perform upgrade instead
 	if len(opts.previousInstall) > 0 {
-		if err := helm.UpdateFromManifests(ctx, namespace, opts.previousInstall, manifests, true); err != nil {
+		if err := i.helmInstaller.UpdateFromManifests(ctx, namespace, opts.previousInstall, manifests, true); err != nil {
 			return nil, errors.Wrapf(err, "creating istio from manifests")
 		}
 	} else {
-		if err := helm.CreateFromManifests(ctx, namespace, manifests); err != nil {
+		if err := i.helmInstaller.CreateFromManifests(ctx, namespace, manifests); err != nil {
 			return nil, errors.Wrapf(err, "creating istio from manifests")
 		}
 	}
