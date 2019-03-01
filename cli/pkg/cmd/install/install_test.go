@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/test/inputs"
 )
 
 var _ = Describe("Install", func() {
@@ -46,6 +47,7 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--jaeger=%v", jaeger))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
 					return
 				}
 
@@ -64,6 +66,39 @@ var _ = Describe("Install", func() {
 			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
 			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
 			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
+		})
+		It("should enable an existing + disabled install", func() {
+			name := "input"
+			namespace := "ns"
+			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", true)
+			ic := helpers.MustInstallClient()
+			_, err := ic.Write(inst, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = utils.Supergloo("install istio " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--namespace=%v ", namespace))
+			Expect(err).NotTo(HaveOccurred())
+
+			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updatedInstall.Disabled).To(BeFalse())
+
+		})
+		It("should error enable on existing enabled install", func() {
+			name := "input"
+			namespace := "ns"
+			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			ic := helpers.MustInstallClient()
+			_, err := ic.Write(inst, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = utils.Supergloo("install istio " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--namespace=%v ", namespace))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
+
 		})
 	})
 })

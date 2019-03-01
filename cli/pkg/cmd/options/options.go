@@ -13,7 +13,8 @@ type Options struct {
 	Interactive bool
 	OutputType  string
 
-	Create Create
+	Install   Create
+	Uninstall Uninstall
 }
 
 type Create struct {
@@ -23,4 +24,8 @@ type Create struct {
 
 type InputInstall struct {
 	IstioInstall v1.Install_Istio
+}
+
+type Uninstall struct {
+	Metadata core.Metadata
 }
