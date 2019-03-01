@@ -145,7 +145,7 @@ helm-template:
 	mkdir -p $(MANIFEST_DIR)
 	go run install/helm/supergloo/generate-values.go $(VERSION)
 
-update-helm-chart:
+update-helm-chart: helm-template
 ifeq ($(RELEASE),"true")
 	mkdir -p $(HELM_SYNC_DIR)/charts
 	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_DIR)/supergloo

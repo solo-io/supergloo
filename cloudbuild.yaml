@@ -36,6 +36,16 @@ steps:
     waitFor: ['dep']
     id: 'make-helm-dir'
 
+  - name: gcr.io/cloud-builders/gsutil
+    args:
+      - rsync
+      - -r
+      - gs://supergloo-helm/
+      - './_output/helm'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    waitFor: ['make-helm-dir']
+    id: 'setup-helm'
+
   # run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
     env:
