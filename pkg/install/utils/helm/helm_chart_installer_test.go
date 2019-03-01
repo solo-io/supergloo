@@ -175,4 +175,25 @@ mixer:
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+	Context("re-create crds", func() {
+		It("does not error on alreadyexists", func() {
+			manifests, err := RenderManifests(
+				context.TODO(),
+				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+				"",
+				"",
+				ns,
+				"",
+				true,
+			)
+			crdManifests, _ := manifests.SplitByCrds()
+			defer DeleteFromManifests(context.TODO(), ns, crdManifests)
+
+			err = CreateFromManifests(context.TODO(), ns, crdManifests)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = CreateFromManifests(context.TODO(), ns, crdManifests)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
 })
