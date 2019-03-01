@@ -2,8 +2,8 @@ package surveyutils
 
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 

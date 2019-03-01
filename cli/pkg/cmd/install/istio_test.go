@@ -98,7 +98,6 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
-
 		})
 	})
 })
