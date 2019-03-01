@@ -3,8 +3,8 @@ package surveyutils
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/vektah/gqlgen/neelance/errors"
 )

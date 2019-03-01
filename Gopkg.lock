@@ -1155,9 +1155,10 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:bcb4f837af4551c56c2a9cda13c8931b5fdb5e1979a70cac13186774b8d7e3dc"
+  digest = "1:6989872146dfe9e0438a00338e6103b29e9213cb03c240d91c990b9951181069"
   name = "github.com/solo-io/go-utils"
   packages = [
+    "clidoc",
     "cliutils",
     "contextutils",
     "errors",
@@ -1169,8 +1170,8 @@
     "testutils",
   ]
   pruneopts = "UT"
-  revision = "594125e202450886dd6cc80a925e3d824950843c"
-  version = "v0.2.5"
+  revision = "d691aec5ebf933da195a78e2f5cd0d3357c772de"
+  version = "v0.2.9"
 
 [[projects]]
   digest = "1:2c71caffc0613f152d49ed730b49d3b2e673b450eef6f0e37f9eb3a31a0cd9cc"
@@ -2104,6 +2105,7 @@
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
     "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/clidoc",
     "github.com/solo-io/go-utils/cliutils",
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/errors",
@@ -2136,7 +2138,6 @@
     "github.com/solo-io/solo-kit/test/setup",
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
-    "github.com/spf13/cobra/doc",
     "github.com/spf13/pflag",
     "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
