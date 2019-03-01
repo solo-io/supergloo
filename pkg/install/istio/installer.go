@@ -16,15 +16,11 @@ type Installer interface {
 	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
 }
 
-type defaultIstioInstaller struct{}
-
-func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
-	return EnsureIstioInstall(ctx, install)
+type defaultIstioInstaller struct {
+	helmInstaller helm.Installer
 }
 
-// installs istio, returns a mesh object created for the install,
-// and updates the install itself with the inline manifest
-func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
 	istio, ok := install.InstallType.(*v1.Install_Istio_)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid mesh type, istioInstaller only supports istio", install.Metadata.Ref())
@@ -48,7 +44,7 @@ func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, err
 	if install.Disabled {
 		if len(previousInstall) > 0 {
 			logger.Infof("deleting previous istio install")
-			if err := helm.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
+			if err := i.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
 				return nil, errors.Wrapf(err, "uninstalling istio")
 			}
 			install.InstalledManifest = ""
@@ -75,7 +71,7 @@ func EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, err
 	}
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := installIstio(ctx, opts)
+	manifests, err := i.installIstio(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}

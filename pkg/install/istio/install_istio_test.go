@@ -2,122 +2,110 @@ package istio
 
 import (
 	"context"
-	"time"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
-	v1 "k8s.io/api/apps/v1"
-	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
-
-// TODO(move to utils package)
-func MustKubeClient() kubernetes.Interface {
-	restConfig, err := kubeutils.GetConfig("", "")
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-	kubeClient, err := kubernetes.NewForConfig(restConfig)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred())
-	return kubeClient
-}
-
-func cleanupManifest(ns, version string, blocking bool) {
-	defer func() {
-		testutils.TeardownKube(ns)
-		if !blocking {
-			return
-		}
-
-		kube := MustKubeClient()
-
-		// wait for ns to be removed
-		Eventually(func() error {
-			_, err := kube.CoreV1().Namespaces().Get(ns, metav1.GetOptions{})
-			return err
-		}, time.Minute).Should(Not(BeNil()))
-	}()
-	chart := supportedIstioVersions[version].chartPath
-	manifests, err := helm.RenderManifests(
-		context.TODO(),
-		chart,
-		"",
-		"test",
-		ns,
-		"",
-		true,
-	)
-	Expect(err).NotTo(HaveOccurred())
-	helm.DeleteFromManifests(context.TODO(), ns, manifests)
-}
-
-func assertDeploymentExists(namespace, name string, exists bool) {
-	kube := MustKubeClient()
-	if exists {
-		EventuallyWithOffset(1, func() (*v1.Deployment, error) {
-			return kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
-		}).Should(Not(BeNil()))
-	} else {
-		EventuallyWithOffset(1, func() bool {
-			_, err := kube.AppsV1().Deployments(namespace).Get(name, metav1.GetOptions{})
-			return kubeerrs.IsNotFound(err)
-		}).Should(BeTrue())
-	}
-}
 
 var _ = Describe("installIstio", func() {
 	type test struct {
 		opts installOptions
 	}
-	table.DescribeTable("multiple istio versions",
-		func(t test, blocking ...bool) {
-			if len(blocking) == 0 {
-				blocking = []bool{true}
-			}
-			ns := "a" + helpers.RandString(5)
-			t.opts.Namespace = ns
-			defer cleanupManifest(ns, t.opts.Version, blocking[0])
-			manifests, err := installIstio(context.TODO(), t.opts)
-			Expect(err).NotTo(HaveOccurred())
-			assertDeploymentExists(ns, "prometheus", t.opts.Observability.EnablePrometheus)
-			assertDeploymentExists(ns, "grafana", t.opts.Observability.EnableGrafana)
-			assertDeploymentExists(ns, "istio-tracing", t.opts.Observability.EnableJaeger)
-			Expect(manifestsHaveKey(manifests, "istio/charts/pilot/templates/deployment.yaml")).To(BeTrue())
-		},
+	t := func() test {
+		return test{
+			opts: installOptions{
+				Namespace: "test",
+				Version:   IstioVersion103,
+				Mtls: mtlsInstallOptions{
+					Enabled:        true,
+					SelfSignedCert: true,
+				},
+				Observability: observabilityInstallOptions{
+					EnableGrafana:    false,
+					EnableJaeger:     true,
+					EnablePrometheus: false,
+				},
+			},
+		}
+	}
+	Context("invalid opts", func() {
+		It("errors on version", func() {
+			t := t()
+			t.opts.Version = ""
+			hi := newMockHelm(nil, nil, nil)
+			installer := &defaultIstioInstaller{helmInstaller: hi}
+			_, err := installer.installIstio(context.TODO(), t.opts)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("must provide istio install version"))
+		})
+		It("errors on version", func() {
+			t := t()
+			t.opts.Version = "asdf"
+			hi := newMockHelm(nil, nil, nil)
+			installer := &defaultIstioInstaller{helmInstaller: hi}
+			_, err := installer.installIstio(context.TODO(), t.opts)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("is not a supported istio version"))
+		})
+		It("errors on namespace", func() {
+			t := t()
+			t.opts.Namespace = ""
+			hi := newMockHelm(nil, nil, nil)
+			installer := &defaultIstioInstaller{helmInstaller: hi}
+			_, err := installer.installIstio(context.TODO(), t.opts)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("must provide istio install namespace"))
+		})
+	})
+	Context("valid opts", func() {
+		It("calls the helm installer with correct charts for the opts", func() {
+			t := t()
+			var actualManifests helm.Manifests
+			hi := newMockHelm(func(ctx context.Context, namespace string, manifests helm.Manifests) error {
+				actualManifests = manifests
+				return nil
+			}, nil, nil)
+			installer := &defaultIstioInstaller{helmInstaller: hi}
 
-		table.Entry("istio 1.0.3 enable all", test{
-			opts: installOptions{
-				Version: IstioVersion103,
-				Mtls: mtlsInstallOptions{
-					Enabled:        true,
-					SelfSignedCert: true,
-				},
-				Observability: observabilityInstallOptions{
-					EnableGrafana:    true,
-					EnableJaeger:     true,
-					EnablePrometheus: true,
-				},
-			},
-		}),
-		table.Entry("istio 1.0.5 enable all", test{
-			opts: installOptions{
-				Version: IstioVersion105,
-				Mtls: mtlsInstallOptions{
-					Enabled:        true,
-					SelfSignedCert: true,
-				},
-				Observability: observabilityInstallOptions{
-					EnableGrafana:    true,
-					EnableJaeger:     true,
-					EnablePrometheus: true,
-				},
-			},
-		}, false),
-	)
+			t.opts.Observability.EnableJaeger = true
+			_, err := installer.installIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualManifests).NotTo(BeEmpty())
+
+			t.opts.Observability.EnableJaeger = false
+			_, err = installer.installIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualManifests).NotTo(BeEmpty())
+			Expect(manifestsHaveKey(actualManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeFalse())
+		})
+		It("calls an update when a previous install is present", func() {
+			t := t()
+			var createManifests, updateManifests helm.Manifests
+			hi := newMockHelm(func(ctx context.Context, namespace string, manifests helm.Manifests) error {
+				createManifests = manifests
+				return nil
+			}, nil, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
+				updateManifests = updated
+				return nil
+			})
+			installer := &defaultIstioInstaller{helmInstaller: hi}
+
+			t.opts.Observability.EnableJaeger = true
+			_, err := installer.installIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(createManifests).NotTo(BeEmpty())
+			Expect(manifestsHaveKey(createManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeTrue())
+
+			t.opts.previousInstall = createManifests
+
+			t.opts.Observability.EnableJaeger = false
+			_, err = installer.installIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updateManifests).NotTo(BeEmpty())
+			Expect(manifestsHaveKey(updateManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeFalse())
+		})
+	})
 })
 
 func manifestsHaveKey(manifests helm.Manifests, key string) bool {
@@ -127,4 +115,32 @@ func manifestsHaveKey(manifests helm.Manifests, key string) bool {
 		}
 	}
 	return false
+}
+
+type mockHelm struct {
+	create func(ctx context.Context, namespace string, manifests helm.Manifests) error
+	delete func(ctx context.Context, namespace string, manifests helm.Manifests) error
+	update func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error
+}
+
+func newMockHelm(create func(ctx context.Context, namespace string, manifests helm.Manifests) error,
+	delete func(ctx context.Context, namespace string, manifests helm.Manifests) error,
+	update func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error) *mockHelm {
+	return &mockHelm{
+		create: create,
+		delete: delete,
+		update: update,
+	}
+}
+
+func (h *mockHelm) CreateFromManifests(ctx context.Context, namespace string, manifests helm.Manifests) error {
+	return h.create(ctx, namespace, manifests)
+}
+
+func (h *mockHelm) DeleteFromManifests(ctx context.Context, namespace string, manifests helm.Manifests) error {
+	return h.delete(ctx, namespace, manifests)
+}
+
+func (h *mockHelm) UpdateFromManifests(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
+	return h.update(ctx, namespace, original, updated, recreatePods)
 }

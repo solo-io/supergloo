@@ -25,6 +25,7 @@ var _ = Describe("HelmChartInstaller", func() {
 	var (
 		ns         string
 		kubeClient kubernetes.Interface
+		inst       = NewHelmInstaller()
 	)
 	BeforeEach(func() {
 		kubeClient = testutils2.MustKubeClient()
@@ -54,9 +55,9 @@ mixer:
 				"",
 				true,
 			)
-			defer DeleteFromManifests(context.TODO(), ns, manifests)
+			defer inst.DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
-			err = CreateFromManifests(context.TODO(), ns, manifests)
+			err = inst.CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer
@@ -65,7 +66,7 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = DeleteFromManifests(context.TODO(), ns, manifests)
+			err = inst.DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("handles value overrides correctly", func() {
@@ -84,14 +85,14 @@ mixer:
 				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			defer DeleteFromManifests(context.TODO(), ns, manifests)
+			defer inst.DeleteFromManifests(context.TODO(), ns, manifests)
 
 			// no security crds
 			for _, man := range manifests {
 				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
 			}
 
-			err = CreateFromManifests(context.TODO(), ns, manifests)
+			err = inst.CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			cfg, err := kubeutils.GetConfig("", "")
@@ -107,7 +108,7 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).To(HaveOccurred())
 
-			err = DeleteFromManifests(context.TODO(), ns, manifests)
+			err = inst.DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
@@ -127,9 +128,9 @@ mixer:
 				"",
 				true,
 			)
-			defer DeleteFromManifests(context.TODO(), ns, manifests)
+			defer inst.DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
-			err = CreateFromManifests(context.TODO(), ns, manifests)
+			err = inst.CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
 			// yes mixer
@@ -154,14 +155,14 @@ mixer:
 				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			defer DeleteFromManifests(context.TODO(), ns, updatedManifests)
+			defer inst.DeleteFromManifests(context.TODO(), ns, updatedManifests)
 
 			// no security crds
 			for _, man := range updatedManifests {
 				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
 			}
 
-			err = UpdateFromManifests(context.TODO(), ns, manifests, updatedManifests, false)
+			err = inst.UpdateFromManifests(context.TODO(), ns, manifests, updatedManifests, false)
 			Expect(err).NotTo(HaveOccurred())
 
 			// no mixer
@@ -171,7 +172,28 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).To(HaveOccurred())
 
-			err = DeleteFromManifests(context.TODO(), ns, updatedManifests)
+			err = inst.DeleteFromManifests(context.TODO(), ns, updatedManifests)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+	Context("re-create crds", func() {
+		It("does not error on alreadyexists", func() {
+			manifests, err := RenderManifests(
+				context.TODO(),
+				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
+				"",
+				"",
+				ns,
+				"",
+				true,
+			)
+			crdManifests, _ := manifests.SplitByCrds()
+			defer inst.DeleteFromManifests(context.TODO(), ns, crdManifests)
+
+			err = inst.CreateFromManifests(context.TODO(), ns, crdManifests)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = inst.CreateFromManifests(context.TODO(), ns, crdManifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

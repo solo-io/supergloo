@@ -3,31 +3,30 @@ package istio
 import (
 	"context"
 
-	testutils2 "github.com/solo-io/supergloo/test/testutils"
-
-	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/solo-kit/test/helpers"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
 var _ = Describe("Installer", func() {
-	var ns string
+	var createdManifests, deletedManifests, updatedManifests helm.Manifests
 	BeforeEach(func() {
-		// wait for all services in the previous namespace to be torn down
-		// important because of a race caused by nodeport conflcit
-		if ns != "" {
-			testutils2.WaitForIstioTeardown(ns)
-		}
-		ns = "a" + helpers.RandString(5)
+		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
 	})
-	AfterEach(func() {
-		testutils.TeardownKube(ns)
-	})
-
+	installer := defaultIstioInstaller{helmInstaller: newMockHelm(
+		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
+			createdManifests = manifests
+			return nil
+		}, func(ctx context.Context, namespace string, manifests helm.Manifests) error {
+			deletedManifests = manifests
+			return nil
+		}, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
+			updatedManifests = updated
+			return nil
+		})}
+	ns := "ns"
 	It("installs, upgrades, and uninstalls from an install object", func() {
 		installConfig := &v1.Install_Istio_{
 			Istio: &v1.Install_Istio{
@@ -41,36 +40,41 @@ var _ = Describe("Installer", func() {
 			Disabled:    false,
 			InstallType: installConfig,
 		}
-		installedMesh, err := EnsureIstioInstall(context.TODO(), install)
+
+		installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
 
 		// installed manifest should be set
 		Expect(install.InstalledManifest).NotTo(HaveLen(0))
+		installedManifests, err := helm.NewManifestsFromGzippedString(install.InstalledManifest)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(installedManifests).To(Equal(createdManifests))
 
 		// should be set by install
 		Expect(install.InstalledMesh).NotTo(BeNil())
 		Expect(*install.InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
 
-		assertDeploymentExists(ns, "prometheus", false)
-
 		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
 
 		// enable prometheus
 		installConfig.Istio.InstallPrometheus = true
-
-		installedMesh, err = EnsureIstioInstall(context.TODO(), install)
+		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 
-		assertDeploymentExists(ns, "prometheus", true)
+		// update should propogate thru
+		Expect(install.InstalledManifest).NotTo(HaveLen(0))
+		installedManifests, err = helm.NewManifestsFromGzippedString(install.InstalledManifest)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(installedManifests).To(Equal(updatedManifests))
 
 		// uninstall should work
 		install.Disabled = true
-		installedMesh, err = EnsureIstioInstall(context.TODO(), install)
+		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedMesh).To(BeNil())
+		Expect(install.InstalledManifest).To(HaveLen(0))
 
-		assertDeploymentExists(ns, "pilot", false)
-
+		Expect(deletedManifests).To(Equal(updatedManifests))
 	})
 })
