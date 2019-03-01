@@ -13,8 +13,17 @@ type Options struct {
 	Interactive bool
 	OutputType  string
 
+	Init      Init
 	Install   Create
 	Uninstall Uninstall
+}
+
+type Init struct {
+	HelmChartOverride string
+	HelmValues        string
+	InstallNamespace  string
+	ReleaseVersion    string
+	DryRun            bool
 }
 
 type Create struct {
