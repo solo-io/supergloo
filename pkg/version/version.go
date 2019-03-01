@@ -1,4 +1,15 @@
 package version
 
-// This value is overwritten by the linker
-var Version = "undefined"
+var (
+	UndefinedVersion = "undefined"
+
+	// default version set if running without setting TAGGED_VERSION in env
+	DevVersion = "dev"
+
+	// This will be set by the linker during build
+	Version = UndefinedVersion
+)
+
+func IsReleaseVersion() bool {
+	return Version != UndefinedVersion && Version != DevVersion
+}
