@@ -3,7 +3,6 @@ package core.kubernetes.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
@@ -20,9 +19,9 @@ message Pod {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
-    // the kubernetes pod spec, converted to a google.protobuf.Any
-    google.protobuf.Any spec = 1;
+    // the kubernetes pod spec as an inline json string
+    string spec = 1;
 
-    // the kubernetes pod status, converted to a google.protobuf.Any
-    google.protobuf.Any status = 2;
+    // the kubernetes pod status as an inline json string
+    string status = 2;
 }

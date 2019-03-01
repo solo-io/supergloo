@@ -1,0 +1,26 @@
+########################################################################
+###                                                                  ###
+###                        Supergloo                                 ###
+###                                                                  ###
+########################################################################
+
+# This file is used by the generate-values.go script to create
+# the standard values.yaml which is shipped with the SuperGloo chart.
+
+rbac:
+  create: true
+
+supergloo:
+  deployment:
+    image:
+      repository: soloio/supergloo
+      pullPolicy: Always
+    stats: true
+
+discovery:
+  deployment:
+    image:
+      repository: soloio/discovery
+      tag: 0.8.1
+      pullPolicy: Always
+    stats: true

@@ -30,7 +30,7 @@ func (i *mockIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1
 		return nil, nil
 	}
 	i.enabledInstalls = append(i.enabledInstalls, install)
-	return &v1.Mesh{}, nil
+	return &v1.Mesh{Metadata: install.Metadata}, nil
 }
 
 type failingMeshClient struct {
@@ -211,7 +211,7 @@ var _ = Describe("Syncer", func() {
 			i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(i2.Status.State).To(Equal(core.Status_Rejected))
-			Expect(i2.Status.Reason).To(ContainSubstring("writing installed mesh object { } failed after successful install"))
+			Expect(i2.Status.Reason).To(ContainSubstring("writing installed mesh object {b b} failed after successful install"))
 		})
 	})
 })

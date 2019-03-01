@@ -18,8 +18,7 @@ type Plugin interface {
 }
 
 type Params struct {
-	Ctx      context.Context
-	Snapshot *v1.ConfigSnapshot
+	Ctx context.Context
 }
 
 type RoutingPlugin interface {

@@ -1,0 +1,8 @@
+# helm
+requirements.lock
+charts
+Chart.yaml
+values.yaml
+requirements.yaml
+
+manifest/
