@@ -64,7 +64,7 @@ func installSuperGloo(opts *options.Options) error {
 	kube := helpers.MustKubeClient()
 	if _, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: opts.Init.InstallNamespace},
-	}); err != nil && kubeerrs.IsAlreadyExists(err) {
+	}); err != nil && !kubeerrs.IsAlreadyExists(err) {
 		return errors.Wrapf(err, "creating namespace")
 	}
 
