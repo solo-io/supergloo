@@ -1123,9 +1123,10 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:dabe7a857386cce7e7f5536ad98cd51e7866adaa3303c6462e449d1a2c0d6c92"
+  digest = "1:2a353ee631751dacdc7bdb51e174fd4d6baee04015c8601a297129aa78d8c0b0"
   name = "github.com/solo-io/gloo"
   packages = [
+    "install/helm/gloo/generate",
     "pkg/cliutil",
     "pkg/cliutil/testutil",
     "projects/gloo/pkg/api/v1",
@@ -1251,6 +1252,14 @@
   pruneopts = "UT"
   revision = "a5dbd03a2245d554160e3ae6bfdcf969fe58b431"
   version = "0.2.0"
+
+[[projects]]
+  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
+  name = "github.com/vektah/gqlgen"
+  packages = ["neelance/errors"]
+  pruneopts = "UT"
+  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
+  version = "0.3.0"
 
 [[projects]]
   digest = "1:64c18dbf9c05549d0b0189cb0325e2145d788d1acc05735103746589c61dcff1"
@@ -2085,6 +2094,7 @@
     "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
+    "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
@@ -2128,6 +2138,7 @@
     "github.com/spf13/cobra",
     "github.com/spf13/cobra/doc",
     "github.com/spf13/pflag",
+    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
@@ -2155,6 +2166,7 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/cli-runtime/pkg/genericclioptions/resource",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
