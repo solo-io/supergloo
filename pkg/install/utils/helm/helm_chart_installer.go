@@ -35,6 +35,34 @@ import (
 	"k8s.io/helm/pkg/timeconv"
 )
 
+// an interface allowing these methods to be mocked
+type Installer interface {
+	// create the resources described in the manifest
+	CreateFromManifests(ctx context.Context, namespace string, manifests Manifests) error
+	// delete the resources described in the manifest
+	DeleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error
+	// perform a diff and apply patches to migrate from original to updated manifests
+	UpdateFromManifests(ctx context.Context, namespace string, original, updated Manifests, recreatePods bool) error
+}
+
+type helmInstaller struct{}
+
+func NewHelmInstaller() Installer {
+	return &helmInstaller{}
+}
+
+func (*helmInstaller) CreateFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
+	return createFromManifests(ctx, namespace, manifests)
+}
+
+func (*helmInstaller) DeleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
+	return deleteFromManifests(ctx, namespace, manifests)
+}
+
+func (*helmInstaller) UpdateFromManifests(ctx context.Context, namespace string, original, updated Manifests, recreatePods bool) error {
+	return updateFromManifests(ctx, namespace, original, updated, recreatePods)
+}
+
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
 func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) (Manifests, error) {
@@ -100,7 +128,7 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	return tiller.SortByKind(manifests), nil
 }
 
-func CreateFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
+func createFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
 	kc := kube.New(nil)
 
 	crdManifests, nonCrdManifests := manifests.SplitByCrds()
@@ -129,6 +157,61 @@ func CreateFromManifests(ctx context.Context, namespace string, manifests Manife
 	if len(nonCrdManifests) > 0 {
 		nonCrdInput := nonCrdManifests.CombinedString()
 		if err := kc.Create(namespace, bytes.NewBufferString(nonCrdInput), 0, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func deleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
+	kc := kube.New(nil)
+
+	for _, man := range manifests {
+		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
+
+		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
+			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
+				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
+				continue
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func updateFromManifests(ctx context.Context, namespace string, original, updated Manifests, recreatePods bool) error {
+	kc := kube.New(nil)
+
+	originalCrdManifests, originalNonCrdManifests := original.SplitByCrds()
+	updatedCrdManifests, updatedNonCrdManifests := updated.SplitByCrds()
+
+	//crds come first
+	if len(originalCrdManifests) > 0 || len(updatedCrdManifests) > 0 {
+		originalCrdInput := originalCrdManifests.CombinedString()
+		updatedCrdInput := updatedCrdManifests.CombinedString()
+		if err := kc.Update(
+			namespace,
+			bytes.NewBufferString(originalCrdInput),
+			bytes.NewBufferString(updatedCrdInput),
+			false, false, 0, false); err != nil {
+			return err
+		}
+		if err := waitForCrds(ctx, kc, updatedCrdInput); err != nil {
+			return err
+		}
+	}
+
+	if len(originalNonCrdManifests) > 0 || len(updatedNonCrdManifests) > 0 {
+		originalNonCrdInput := originalNonCrdManifests.CombinedString()
+		updatedNonCrdInput := updatedNonCrdManifests.CombinedString()
+		if err := kc.Update(
+			namespace,
+			bytes.NewBufferString(originalNonCrdInput),
+			bytes.NewBufferString(updatedNonCrdInput),
+			true, recreatePods, 0, false); err != nil {
 			return err
 		}
 	}
@@ -189,64 +272,9 @@ func isEmptyManifest(manifest string) bool {
 	return removeDashes == ""
 }
 
-func DeleteFromManifests(ctx context.Context, namespace string, manifests Manifests) error {
-	kc := kube.New(nil)
-
-	for _, man := range manifests {
-		contextutils.LoggerFrom(ctx).Infof("deleting manifest %v: %v", man.Name, man.Head)
-
-		if err := kc.Delete(namespace, bytes.NewBufferString(man.Content)); err != nil {
-			if kubeerrs.IsNotFound(err) || IsNoKindMatch(err) {
-				contextutils.LoggerFrom(ctx).Warnf("not found, skipping %v", man.Name)
-				continue
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // consider moving to kube utils/errs package?
 
 func IsNoKindMatch(err error) bool {
 	_, ok := err.(*meta.NoKindMatchError)
 	return ok
-}
-
-func UpdateFromManifests(ctx context.Context, namespace string, original, updated Manifests, recreatePods bool) error {
-	kc := kube.New(nil)
-
-	originalCrdManifests, originalNonCrdManifests := original.SplitByCrds()
-	updatedCrdManifests, updatedNonCrdManifests := updated.SplitByCrds()
-
-	//crds come first
-	if len(originalCrdManifests) > 0 || len(updatedCrdManifests) > 0 {
-		originalCrdInput := originalCrdManifests.CombinedString()
-		updatedCrdInput := updatedCrdManifests.CombinedString()
-		if err := kc.Update(
-			namespace,
-			bytes.NewBufferString(originalCrdInput),
-			bytes.NewBufferString(updatedCrdInput),
-			false, false, 0, false); err != nil {
-			return err
-		}
-		if err := waitForCrds(ctx, kc, updatedCrdInput); err != nil {
-			return err
-		}
-	}
-
-	if len(originalNonCrdManifests) > 0 || len(updatedNonCrdManifests) > 0 {
-		originalNonCrdInput := originalNonCrdManifests.CombinedString()
-		updatedNonCrdInput := updatedNonCrdManifests.CombinedString()
-		if err := kc.Update(
-			namespace,
-			bytes.NewBufferString(originalNonCrdInput),
-			bytes.NewBufferString(updatedNonCrdInput),
-			true, recreatePods, 0, false); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
