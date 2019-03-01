@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/options"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/uninstall"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,7 @@ func SuperglooCli(version string) *cobra.Command {
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
 		install.Cmd(&opts),
+		uninstall.Cmd(&opts),
 	)
 
 	return app
