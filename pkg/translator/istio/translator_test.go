@@ -240,8 +240,9 @@ var _ = Describe("createRoute", func() {
 			resourceErrs := make(reporter.ResourceErrors)
 			plug := testRoutingPlugin{}
 			t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
+			upstreams := inputs.BookInfoUpstreams("default")
 			route := t.createRoute(
-				plugins.Params{Ctx: context.TODO()},
+				plugins.Params{Ctx: context.TODO(), Upstreams: upstreams},
 				"details.default.svc.cluster.local",
 				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", nil),
 				createIstioMatcher(
@@ -260,7 +261,7 @@ var _ = Describe("createRoute", func() {
 							},
 						},
 					}),
-				inputs.BookInfoUpstreams("default"),
+				upstreams,
 				resourceErrs,
 			)
 			Expect(route.Route).To(HaveLen(1))

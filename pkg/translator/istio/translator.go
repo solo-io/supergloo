@@ -191,7 +191,8 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
 	params := plugins.Params{
-		Ctx: ctx,
+		Ctx:       ctx,
+		Upstreams: upstreams,
 	}
 
 	for _, mesh := range meshes {
