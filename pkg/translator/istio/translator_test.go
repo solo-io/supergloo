@@ -114,10 +114,10 @@ var _ = Describe("labelSetsFromSelector", func() {
 	})
 })
 
-var _ = Describe("initDestinationRule", func() {
+var _ = Describe("makeDestinationRule", func() {
 	Context("input mesh has encryption enabled", func() {
 		It("creates a destination rule with tls setting ISTIO_MUTUAL", func() {
-			dr := initDestinationRule(context.TODO(), "ns", "host", nil, true)
+			dr := makeDestinationRule(context.TODO(), "ns", "host", nil, true)
 			Expect(dr.TrafficPolicy).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_ISTIO_MUTUAL))
@@ -125,7 +125,7 @@ var _ = Describe("initDestinationRule", func() {
 	})
 	Context("input mesh has encryption enabled, input host is the kube apiserver", func() {
 		It("creates a destination rule with tls setting DISABLED", func() {
-			dr := initDestinationRule(context.TODO(), "ns", "kubernetes.default.svc.cluster.local", nil, true)
+			dr := makeDestinationRule(context.TODO(), "ns", "kubernetes.default.svc.cluster.local", nil, true)
 			Expect(dr.TrafficPolicy).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls).NotTo(BeNil())
 			Expect(dr.TrafficPolicy.Tls.Mode).To(Equal(v1alpha3.TLSSettings_DISABLE))
@@ -133,7 +133,7 @@ var _ = Describe("initDestinationRule", func() {
 	})
 	Context("input mesh has encryption disabled", func() {
 		It("creates a destination rule with no tls setting", func() {
-			dr := initDestinationRule(context.TODO(), "ns", "host", nil, false)
+			dr := makeDestinationRule(context.TODO(), "ns", "host", nil, false)
 			Expect(dr.TrafficPolicy).To(BeNil())
 		})
 	})

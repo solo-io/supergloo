@@ -242,13 +242,11 @@ func (t *translator) translateMesh(
 			labelSets = append(labelSets, set.labels)
 		}
 
-		dr := t.makeDestinatioRuleForHost(ctx,
-			params,
+		dr := makeDestinationRule(ctx,
 			input.writeNamespace,
 			destinationHost,
 			labelSets,
 			mtlsEnabled,
-			resourceErrs,
 		)
 		destinationRules = append(destinationRules, dr)
 
