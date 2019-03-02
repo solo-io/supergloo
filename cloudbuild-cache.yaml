@@ -1,0 +1,40 @@
+steps:
+- name: 'gcr.io/$PROJECT_ID/dep'
+  args: ['ensure']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+  id: 'dep'
+
+- name: 'gcr.io/$PROJECT_ID/go-make'
+  entrypoint: 'bash'
+  args: ['-c', 'tar -zvcf supergloo-dep.tar.gz ./gopath/pkg/dep']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+  - 'GOPATH=/workspace/gopath'
+
+  # run all of the tests to fill the cache
+- name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+    - 'GOPATH=/workspace/gopath'
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
+  dir: './gopath/src/github.com/solo-io/supergloo'
+  args: ['-r', '-dryRun', '-v', 'pkg', 'test/e2e']
+  waitFor: ['dep']
+  id: 'test'
+
+- name: 'gcr.io/$PROJECT_ID/go-make'
+  entrypoint: 'bash'
+  args: ['-c', 'tar -zvcf supergloo-gocache.tar.gz $(go env GOCACHE)']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+  - 'GOPATH=/workspace/gopath'
+
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'supergloo-dep.tar.gz', 'gs://solo-public-cache/supergloo/supergloo-dep.tar.gz']
+
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'supergloo-gocache.tar.gz', 'gs://solo-public-cache/supergloo/supergloo-gocache.tar.gz']
+
+timeout: 66000s
