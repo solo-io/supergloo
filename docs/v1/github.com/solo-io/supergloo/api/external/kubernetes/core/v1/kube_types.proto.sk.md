@@ -31,16 +31,16 @@ Used to integrate solo-kit with kubernetes API
 
 ```yaml
 "metadata": .core.solo.io.Metadata
-"spec": .google.protobuf.Any
-"status": .google.protobuf.Any
+"spec": string
+"status": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `spec` | [.google.protobuf.Any](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/any) | the kubernetes pod spec, converted to a google.protobuf.Any |  |
-| `status` | [.google.protobuf.Any](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/any) | the kubernetes pod status, converted to a google.protobuf.Any |  |
+| `spec` | `string` | the kubernetes pod spec as an inline json string |  |
+| `status` | `string` | the kubernetes pod status as an inline json string |  |
 
 
 

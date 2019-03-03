@@ -19,11 +19,8 @@ Updating the configuration of an install object will cause supergloo to
 modify the corresponding mesh.
 
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> master
 ### Options
 
 ```

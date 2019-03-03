@@ -30,6 +30,7 @@ weight: 5
 A gateway describes the routes to upstreams that are reachable via a specific port on the Gateway Proxy itself.
 
 ```yaml
+"ssl": bool
 "virtual_services": []core.solo.io.ResourceRef
 "bind_address": string
 "bind_port": int
@@ -41,7 +42,8 @@ A gateway describes the routes to upstreams that are reachable via a specific po
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `virtual_services` | [[]core.solo.io.ResourceRef](../../../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | names of the the virtual services, which contain the actual routes for the gateway if the list is empty, the gateway will apply all virtual services to this gateway |  |
+| `ssl` | `bool` | if set to false, only use virtual services with no ssl configured. if set to true, only use virtual services with ssl configured. |  |
+| `virtual_services` | [[]core.solo.io.ResourceRef](../../../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | names of the the virtual services, which contain the actual routes for the gateway if the list is empty, all virtual services will apply to this gateway (with accordance to tls flag above). |  |
 | `bind_address` | `string` | the bind address the gateway should serve traffic on |  |
 | `bind_port` | `int` | bind ports must not conflict across gateways in a namespace |  |
 | `plugins` | [.gloo.solo.io.ListenerPlugins](../../../../gloo/api/v1/plugins.proto.sk#ListenerPlugins) | top level plugin configuration for all routes on the gateway |  |
