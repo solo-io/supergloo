@@ -465,6 +465,22 @@
   revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
 
 [[projects]]
+  digest = "1:b4303d38d92c00af6603f3b865a9bd20e3c50cebe55489e5aeb721c26750e375"
+  name = "github.com/google/go-github"
+  packages = ["github"]
+  pruneopts = "UT"
+  revision = "7462feb2032c2da9e3b85e9b04e6853a6e9e14ca"
+  version = "v24.0.1"
+
+[[projects]]
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  pruneopts = "UT"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:3ee90c0d94da31b442dde97c99635aaafec68d0b8a3c12ee2075c6bdabeec6bb"
   name = "github.com/google/gofuzz"
@@ -982,6 +998,14 @@
   version = "v3.9.0"
 
 [[projects]]
+  digest = "1:95741de3af260a92cc5c7f3f3061e85273f5a81b5db20d4bd68da74bd521675e"
+  name = "github.com/pelletier/go-toml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:3bf17a6e6eaa6ad24152148a631d18662f7212e21637c2699bff3369b7f00fa2"
   name = "github.com/petar/GoLLRB"
@@ -1155,19 +1179,23 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:6989872146dfe9e0438a00338e6103b29e9213cb03c240d91c990b9951181069"
+  digest = "1:5058bc927f0029f0df33e75e47d484a31b0a3230e36b749793bc26f08655318e"
   name = "github.com/solo-io/go-utils"
   packages = [
+    "changelogutils",
     "clidoc",
     "cliutils",
     "contextutils",
+    "docsutils",
     "errors",
+    "githubutils",
     "kubeinstallutils",
     "kubeutils",
     "logger",
     "protoutils",
     "stringutils",
     "testutils",
+    "versionutils",
   ]
   pruneopts = "UT"
   revision = "d691aec5ebf933da195a78e2f5cd0d3357c772de"
@@ -1226,6 +1254,17 @@
   pruneopts = "UT"
   revision = "b6ba2b73a5eb3b82fe9fb6076c5a1f9ea8b9d10c"
   version = "v0.3.0"
+
+[[projects]]
+  digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
+  name = "github.com/spf13/afero"
+  packages = [
+    ".",
+    "mem",
+  ]
+  pruneopts = "UT"
+  revision = "f4711e4db9e9a1d3887343acb72b2bbfc2f686f5"
+  version = "v1.2.1"
 
 [[projects]]
   digest = "1:e01b05ba901239c783dfe56450bcde607fc858908529868259c9a8765dc176d0"
@@ -2108,6 +2147,7 @@
     "github.com/solo-io/go-utils/clidoc",
     "github.com/solo-io/go-utils/cliutils",
     "github.com/solo-io/go-utils/contextutils",
+    "github.com/solo-io/go-utils/docsutils",
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/stringutils",
