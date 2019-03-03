@@ -191,7 +191,8 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
 	params := plugins.Params{
-		Ctx: ctx,
+		Ctx:       ctx,
+		Upstreams: upstreams,
 	}
 
 	for _, mesh := range meshes {
@@ -241,13 +242,11 @@ func (t *translator) translateMesh(
 			labelSets = append(labelSets, set.labels)
 		}
 
-		dr := t.makeDestinatioRuleForHost(ctx,
-			params,
+		dr := makeDestinationRule(ctx,
 			input.writeNamespace,
 			destinationHost,
 			labelSets,
 			mtlsEnabled,
-			resourceErrs,
 		)
 		destinationRules = append(destinationRules, dr)
 

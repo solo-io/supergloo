@@ -3,6 +3,8 @@ package plugins
 import (
 	"context"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
@@ -18,7 +20,8 @@ type Plugin interface {
 }
 
 type Params struct {
-	Ctx context.Context
+	Ctx       context.Context
+	Upstreams gloov1.UpstreamList
 }
 
 type RoutingPlugin interface {
