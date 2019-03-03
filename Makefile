@@ -163,7 +163,7 @@ install/manifest/supergloo.yaml: helm-template
 #----------------------------------------------------------------------------------
 
 .PHONY: upload-github-release-assets
-upload-github-release-assets: release-binaries release=yamls
+upload-github-release-assets: supergloo-cli install/manifest/supergloo.yaml
 	go run ci/upload_github_release_assets.go
 
 .PHONY: push-docs
