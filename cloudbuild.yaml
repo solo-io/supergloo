@@ -39,7 +39,7 @@ steps:
     - 'GOPATH=/workspace/gopath'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: make
-    args: ['check-format', 'build-scripts']
+    args: ['check-format']
     waitFor: ['dep']
     id: 'check-format'
   - name: 'gcr.io/$PROJECT_ID/go-make'
