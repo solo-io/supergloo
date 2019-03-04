@@ -2,29 +2,26 @@ package surveyutils
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 
 	"github.com/solo-io/gloo/pkg/cliutil"
 	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 )
 
-func SelectUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
+func SurveyUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
 	// collect secrets list
 	usClient := helpers.MustUpstreamClient()
-	upstreams, err := usClient.List("", clients.ListOpts{})
+	upstreams, err := usClient.List("", clients.ListOpts{Ctx: ctx})
 	if err != nil {
 		return nil, err
 	}
 
 	var selected []core.ResourceRef
 	for {
-		fmt.Println("add an upstream:")
-		us, err := selectUpstreamInteractive(upstreams)
+		us, err := selectUpstreamInteractive("add an upstream (choose <done> to finish): ", upstreams)
 		if err != nil {
 			return nil, err
 		}
@@ -36,9 +33,9 @@ func SelectUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
 	}
 }
 
-const skipSelector = "<skip>"
+const skipSelector = "<done>"
 
-func selectUpstreamInteractive(upstreams v1.UpstreamList) (*v1.Upstream, error) {
+func selectUpstreamInteractive(prompt string, upstreams v1.UpstreamList) (*v1.Upstream, error) {
 	ussByKey := make(map[string]*v1.Upstream)
 	usKeys := []string{skipSelector}
 	for _, us := range upstreams {
@@ -54,7 +51,7 @@ func selectUpstreamInteractive(upstreams v1.UpstreamList) (*v1.Upstream, error) 
 
 	var usKey string
 	if err := cliutil.ChooseFromList(
-		"Choose the upstream to route to: ",
+		prompt,
 		&usKey,
 		usKeys,
 	); err != nil {
