@@ -3,6 +3,8 @@ package options
 import (
 	"context"
 
+	"github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
@@ -38,4 +40,30 @@ type InputInstall struct {
 
 type Uninstall struct {
 	Metadata core.Metadata
+}
+
+type CreateRoutingRule struct {
+	SourceSelector      Selector
+	DestinationSelector Selector
+	RequestMatchers     []options.RouteMatchers
+	RoutingRuleSpec     RoutingRuleSpec
+}
+
+const (
+	SelectorType_Labels    = "Label Selector"
+	SelectorType_Namespace = "Namespace Selector"
+	SelectorType_Upstream  = "Upstream Selector"
+)
+
+type Selector struct {
+	Enabled            bool // shows that this selecotr is non-zero
+	SelectorType       string
+	SelectedUpstreams  []core.ResourceRef
+	SelectedNamespaces []string
+	SelectedLabels     map[string]string
+}
+
+// no implemented specs yet
+type RoutingRuleSpec struct {
+	SpecType string
 }
