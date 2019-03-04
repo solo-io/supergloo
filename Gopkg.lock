@@ -1147,12 +1147,16 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:2a353ee631751dacdc7bdb51e174fd4d6baee04015c8601a297129aa78d8c0b0"
+  digest = "1:5d3e9fe49949ed49d3fc9f59efa5e578b5781aef0363b9929a240c43e21e3b30"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
     "pkg/cliutil",
     "pkg/cliutil/testutil",
+    "projects/gateway/pkg/api/v1",
+    "projects/gloo/cli/pkg/cmd/options",
+    "projects/gloo/cli/pkg/helpers",
+    "projects/gloo/cli/pkg/printers",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/plugins",
     "projects/gloo/pkg/api/v1/plugins/aws",
@@ -1165,6 +1169,7 @@
     "projects/gloo/pkg/api/v1/plugins/retries",
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
+    "projects/gloo/pkg/defaults",
   ]
   pruneopts = "UT"
   revision = "e477246d4441ecc2cc0414f2a73039b04f37cbe0"
@@ -2137,6 +2142,8 @@
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
+    "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
+    "github.com/solo-io/gloo/projects/gloo/cli/pkg/helpers",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
