@@ -8,7 +8,7 @@ weight: 5
 
 
 
-### API Reference for SupaGloo
+### API Reference for Supergloo
 
 API Version: `supergloo.solo.io.v1`
 
