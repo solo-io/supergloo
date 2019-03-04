@@ -71,7 +71,7 @@ steps:
     waitFor: ['test']
 
   - name: 'gcr.io/$PROJECT_ID/go-make'
-    args: ['docker']
+    args: ['docker', 'supergloo-cli']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
@@ -81,7 +81,7 @@ steps:
     id: 'compile'
 
   - name: 'gcr.io/$PROJECT_ID/go-make'
-    args: ['docker-push', 'manifest', 'release', 'push-docs']
+    args: ['docker-push', 'manifest', 'upload-github-release-assets', 'push-docs']
     env:
       - 'TAGGED_VERSION=$TAG_NAME'
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
