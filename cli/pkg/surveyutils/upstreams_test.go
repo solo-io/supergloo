@@ -2,6 +2,7 @@ package surveyutils_test
 
 import (
 	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
@@ -13,7 +14,7 @@ import (
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
 )
 
-var _ = FDescribe("SelectUpstreams", func() {
+var _ = Describe("SelectUpstreams", func() {
 	BeforeEach(func() {
 		helpers.UseMemoryClients()
 		for _, us := range inputs.BookInfoUpstreams("hi") {
@@ -38,11 +39,11 @@ var _ = FDescribe("SelectUpstreams", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ups).To(Equal([]core.ResourceRef{
 				{
-					Name: "default-details-9080",
+					Name:      "default-details-9080",
 					Namespace: "hi",
 				},
 				{
-					Name: "default-details-v1-9080",
+					Name:      "default-details-v1-9080",
 					Namespace: "hi",
 				},
 			}))
