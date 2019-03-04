@@ -5,17 +5,17 @@ import "github.com/solo-io/go-utils/githubutils"
 func main() {
 	assets := make([]githubutils.ReleaseAssetSpec, 4)
 	assets[0] = githubutils.ReleaseAssetSpec{
-		Name:       "supergloo-linux-amd64",
+		Name:       "supergloo-cli-linux-amd64",
 		ParentPath: "_output",
 		UploadSHA:  true,
 	}
 	assets[1] = githubutils.ReleaseAssetSpec{
-		Name:       "supergloo-darwin-amd64",
+		Name:       "supergloo-cli-darwin-amd64",
 		ParentPath: "_output",
 		UploadSHA:  true,
 	}
 	assets[2] = githubutils.ReleaseAssetSpec{
-		Name:       "supergloo-windows-amd64.exe",
+		Name:       "supergloo-cli-windows-amd64.exe",
 		ParentPath: "_output",
 		UploadSHA:  true,
 	}
