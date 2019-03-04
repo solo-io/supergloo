@@ -115,3 +115,7 @@
 [[constraint]]
   name = "github.com/solo-io/go-utils"
   version = "v0.2.4"
+
+[[constraint]]
+  name = "github.com/solo-io/gloo"
+  version = "0.9.0"

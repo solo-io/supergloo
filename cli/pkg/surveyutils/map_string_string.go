@@ -12,9 +12,10 @@ func SurveyMapStringString(in *map[string]string) error {
 	for {
 		var kvPair string
 		if err := cliutil.GetStringInput("enter a key-value pair in the format KEY=VAL. "+
-			"leave empty to finish", &kvPair); err != nil {
+			"leave empty to finish: ", &kvPair); err != nil {
 			return err
 		}
+		kvPair = strings.TrimSpace(kvPair)
 		if kvPair == "" {
 			return nil
 		}
