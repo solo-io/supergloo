@@ -1,4 +1,4 @@
-package surveyutils_test
+package surveyutils
 
 import (
 	"context"
@@ -11,8 +11,6 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/test/inputs"
-
-	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
 )
 
 // TODO: unexclude this test when c.ExpectEOF() is fixed
@@ -47,8 +45,6 @@ var _ = XDescribe("RoutingRule", func() {
 				err := SurveyRoutingRule(context.TODO(), in)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(in.SourceSelector).To(Equal(options.Selector{
-					Enabled:      true,
-					SelectorType: options.SelectorType_Upstream,
 					SelectedUpstreams: []core.ResourceRef{
 						{
 							Name:      "default-details-9080",
@@ -59,6 +55,45 @@ var _ = XDescribe("RoutingRule", func() {
 							Namespace: "hi",
 						},
 					},
+				}))
+			})
+		})
+	})
+})
+
+var _ = Describe("RoutingRule", func() {
+	BeforeEach(func() {
+		helpers.UseMemoryClients()
+		for _, us := range inputs.BookInfoUpstreams("hi") {
+			_, err := helpers.MustUpstreamClient().Write(us, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+		}
+	})
+	Context("surveyMatcher", func() {
+		It("fills in the matcher from user input", func() {
+			testutil.ExpectInteractive(func(c *testutil.Console) {
+				c.ExpectString("add a request matcher for this rule?")
+				c.SendLine("y")
+				c.ExpectString("Choose a path match type:")
+				c.PressDown()
+				c.SendLine("")
+				c.ExpectString("What path regex should we match?")
+				c.SendLine("/foo")
+				c.ExpectString("enter a key-value pair in the format KEY=VAL. leave empty to finish: ")
+				c.SendLine("")
+				c.ExpectString("HTTP Method to match for this route (empty to skip)?")
+				c.SendLine("GET")
+				c.ExpectString("HTTP Method to match for this route (empty to skip)?")
+				c.SendLine("")
+				c.ExpectString("add a request matcher for this rule?")
+				c.SendLine("N")
+				c.ExpectEOF()
+			}, func() {
+				in := &options.RequestMatchersValue{}
+				err := surveyMatcher(in)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(*in).To(Equal(options.RequestMatchersValue{
+					{PathPrefix: "", PathExact: "", PathRegex: "/foo", Methods: []string{"GET"}, HeaderMatcher: nil},
 				}))
 			})
 		})

@@ -24,6 +24,9 @@ func SurveyMapStringString(in *map[string]string) error {
 			return errors.Errorf("key-value pair must be in the format KEY=VAL, you entered %v", kvPair)
 		}
 		m := *in
+		if m == nil {
+			m = make(map[string]string)
+		}
 		m[split[0]] = split[1]
 		*in = m
 		fmt.Printf("%v\n", *in)
