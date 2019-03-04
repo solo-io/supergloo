@@ -8,7 +8,7 @@ import (
 )
 
 var _ = Describe("MapStringString", func() {
-	FIt("creates the expected map[string]string", func() {
+	XIt("creates the expected map[string]string", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("enter a key-value pair in the format KEY=VAL. leave empty to finish: ")
 			c.SendLine("foo=bar")
