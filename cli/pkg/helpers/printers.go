@@ -83,3 +83,67 @@ func installDetails(in *v1.Install) []string {
 	}
 	return details
 }
+
+func PrintRoutingRules(list v1.RoutingRuleList, outputType string) {
+	cliutils.PrintList(outputType, "", list,
+		func(data interface{}, w io.Writer) error {
+			tablePrintRoutingRules(data.(v1.RoutingRuleList), w)
+			return nil
+		}, os.Stdout)
+}
+
+func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
+
+	table := tablewriter.NewWriter(w)
+	table.SetHeader([]string{"RoutingRule", "type", "status", "details"})
+
+	for _, routingRule := range list {
+		name := routingRule.GetMetadata().Name
+		s := routingRule.Status.State.String()
+		t := routingRuleType(routingRule)
+
+		details := routingRuleDetails(routingRule)
+		if len(details) == 0 {
+			details = []string{""}
+		}
+		for i, line := range details {
+			if i == 0 {
+				table.Append([]string{name, t, s, line})
+			} else {
+				table.Append([]string{"", "", "", line})
+			}
+		}
+
+	}
+
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.Render()
+}
+
+func routingRuleType(in *v1.RoutingRule) string {
+	switch in.Spec.RuleType.(type) {
+	case *v1.RoutingRuleSpec_TrafficShifting:
+		return "TrafficShifting"
+	}
+	return "Unknown"
+}
+
+func routingRuleDetails(in *v1.RoutingRule) []string {
+	var details []string
+	add := func(s ...string) {
+		details = append(details, s...)
+	}
+	switch t := in.Spec.RuleType.(type) {
+	case *v1.RoutingRuleSpec_TrafficShifting:
+		add(
+			"destinations: ",
+		)
+		for _, dest := range t.TrafficShifting.Destinations.Destinations {
+			add(
+				fmt.Sprintf("- %v", dest.Destination.Upstream),
+				fmt.Sprintf("- weight: %v", dest.Weight),
+			)
+		}
+	}
+	return details
+}

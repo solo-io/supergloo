@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
-var _ = Describe("Install", func() {
+var _ = Describe("RoutingRule", func() {
 
 	BeforeEach(func() {
 		helpers.UseMemoryClients()
@@ -24,19 +24,19 @@ var _ = Describe("Install", func() {
 		return in
 	}
 
-	Describe("non-interactive", func() {
-		It("should create the expected install ", func() {
-			installAndVerifyIstio := func(
-				name,
-				namespace,
-				version string,
-				mtls,
-				autoInject,
-				prometheus,
-				jaeger,
-				grafana bool) {
+	It("should create the expected routing rule ", func() {
+		installAndVerifyIstio := func(
+			name,
+			namespace,
+			version string,
+			mtls,
+			autoInject,
+			prometheus,
+			jaeger,
+			grafana bool) {
 
-				err := utils.Supergloo("install istio " +
+			err := utils.Supergloo(
+				fmt.Sprintf("create routingrule %v", kind) +
 					fmt.Sprintf("--name=%v ", name) +
 					fmt.Sprintf("--installation-namespace istio ") +
 					fmt.Sprintf("--version=%v ", version) +
@@ -45,59 +45,58 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--grafana=%v ", grafana) +
 					fmt.Sprintf("--prometheus=%v ", prometheus) +
 					fmt.Sprintf("--jaeger=%v", jaeger))
-				if version == "badver" {
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
-					return
-				}
-
-				Expect(err).NotTo(HaveOccurred())
-				install := getInstall(name)
-				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Istio_{}))
-				istio := install.InstallType.(*v1.Install_Istio_)
-				Expect(istio.Istio.IstioVersion).To(Equal(version))
-				Expect(istio.Istio.EnableMtls).To(Equal(mtls))
-				Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
-				Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
-				Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
-				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
+			if version == "badver" {
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
+				return
 			}
 
-			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
-			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
-			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
-		})
-		It("should enable an existing + disabled install", func() {
-			name := "input"
-			namespace := "ns"
-			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", true)
-			ic := helpers.MustInstallClient()
-			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
+			install := getInstall(name)
+			Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Istio_{}))
+			istio := install.InstallType.(*v1.Install_Istio_)
+			Expect(istio.Istio.IstioVersion).To(Equal(version))
+			Expect(istio.Istio.EnableMtls).To(Equal(mtls))
+			Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
+			Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
+			Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
+			Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
+		}
 
-			err = utils.Supergloo("install istio " +
-				fmt.Sprintf("--name=%v ", name) +
-				fmt.Sprintf("--namespace=%v ", namespace))
-			Expect(err).NotTo(HaveOccurred())
+		installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
+		installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
+		installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
+	})
+	It("should enable an existing + disabled install", func() {
+		name := "input"
+		namespace := "ns"
+		inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", true)
+		ic := helpers.MustInstallClient()
+		_, err := ic.Write(inst, clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
 
-			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(updatedInstall.Disabled).To(BeFalse())
+		err = utils.Supergloo("install istio " +
+			fmt.Sprintf("--name=%v ", name) +
+			fmt.Sprintf("--namespace=%v ", namespace))
+		Expect(err).NotTo(HaveOccurred())
 
-		})
-		It("should error enable on existing enabled install", func() {
-			name := "input"
-			namespace := "ns"
-			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
-			ic := helpers.MustInstallClient()
-			_, err := ic.Write(inst, clients.WriteOpts{})
-			Expect(err).NotTo(HaveOccurred())
+		updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(updatedInstall.Disabled).To(BeFalse())
 
-			err = utils.Supergloo("install istio " +
-				fmt.Sprintf("--name=%v ", name) +
-				fmt.Sprintf("--namespace=%v ", namespace))
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
-		})
+	})
+	It("should error enable on existing enabled install", func() {
+		name := "input"
+		namespace := "ns"
+		inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+		ic := helpers.MustInstallClient()
+		_, err := ic.Write(inst, clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = utils.Supergloo("install istio " +
+			fmt.Sprintf("--name=%v ", name) +
+			fmt.Sprintf("--namespace=%v ", namespace))
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
 	})
 })

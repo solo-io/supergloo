@@ -1,15 +1,17 @@
 package create
 
 import (
-	"github.com/pkg/errors"
+	"context"
+	"sort"
+
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	apierrs "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -31,12 +33,52 @@ RULE:
   - MATCHING these **request matchers**
   APPLY this rule
 `,
+	}
+	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
+	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
+	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
+	flagutils.AddCreateRoutingRuleFlags(cmd.PersistentFlags(), &opts.CreateRoutingRule)
+
+	for _, rrType := range routingRuleTypes {
+		cmd.AddCommand(createRoutingRuleSubcmd(rrType, opts))
+	}
+
+	return cmd
+}
+
+var routingRuleTypes = []routingRuleSpecCommand{
+	{
+		use:   "trafficshifting",
+		alias: "ts",
+		short: "",
+		long:  ``,
+	},
+}
+
+type routingRuleSpecCommand struct {
+	use            string
+	alias          string
+	short          string
+	long           string
+	specSurveyFunc func(ctx context.Context, in *options.CreateRoutingRule) error
+	addFlagsFunc   func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
+}
+
+func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Options) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     subCmd.use,
+		Aliases: []string{subCmd.alias},
+		Short:   subCmd.alias,
+		Long:    subCmd.long,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
 				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyRoutingRule(&opts.CreateRoutingRule); err != nil {
+				if err := surveyutils.SurveyRoutingRule(opts.Ctx, &opts.CreateRoutingRule); err != nil {
+					return err
+				}
+				if err := subCmd.specSurveyFunc(opts.Ctx, &opts.CreateRoutingRule); err != nil {
 					return err
 				}
 			}
@@ -46,85 +88,122 @@ RULE:
 			return createRoutingRule(opts)
 		},
 	}
-	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
-	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
-	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
-	addCreateRoutingRuleFlags(cmd.PersistentFlags(), &opts.Create.RoutingRule)
+	subCmd.addFlagsFunc(cmd.PersistentFlags(), &opts.CreateRoutingRule.RoutingRuleSpec)
 	return cmd
 }
 
 func createRoutingRule(opts *options.Options) error {
-	// first check if install exists; if so, update and write that object
-	in, err := updateDisabledInstall(opts)
+	in, err := routingRuleFromOpts(opts)
 	if err != nil {
 		return err
 	}
-	if in == nil {
-		in, err = installFromOpts(opts)
-		if err != nil {
-			return err
-		}
-	}
-	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	in, err = helpers.MustRoutingRuleClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
 
-	helpers.PrintInstalls(v1.InstallList{in}, opts.OutputType)
+	helpers.PrintRoutingRules(v1.RoutingRuleList{in}, opts.OutputType)
 
 	return nil
 }
 
-func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
-	existingInstall, err := helpers.MustInstallClient().Read(opts.Install.Metadata.Namespace,
-		opts.Install.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
+	matchers, err := convertMatchers(opts.CreateRoutingRule.RequestMatchers)
 	if err != nil {
-		if apierrs.IsNotExist(err) {
-			return nil, nil
-		}
 		return nil, err
 	}
-	if !existingInstall.Disabled {
-		return nil, errors.Errorf("install %v is already installed and enabled", opts.Install.Metadata)
-	}
-	existingInstall.Disabled = false
-	return existingInstall, nil
-}
 
-func installFromOpts(opts *options.Options) (*v1.Install, error) {
-	if err := validate(opts.Install.InputInstall); err != nil {
-		return nil, err
-	}
-	in := &v1.Install{
-		Metadata: opts.Install.Metadata,
-		InstallType: &v1.Install_Istio_{
-			Istio: &opts.Install.InputInstall.IstioInstall,
-		},
+	in := &v1.RoutingRule{
+		Metadata:            opts.Metadata,
+		SourceSelector:      convertSelector(opts.CreateRoutingRule.SourceSelector),
+		DestinationSelector: convertSelector(opts.CreateRoutingRule.DestinationSelector),
+		RequestMatchers:     matchers,
 	}
 
 	return in, nil
 }
 
-func validate(in options.InputInstall) error {
-	var validVersion bool
-	for _, ver := range []string{
-		istio.IstioVersion103,
-		istio.IstioVersion105,
-	} {
-		if in.IstioInstall.IstioVersion == ver {
-			validVersion = true
-			break
+func convertSelector(in options.Selector) *v1.PodSelector {
+	switch {
+	case len(in.SelectedLabels) > 0:
+		return &v1.PodSelector{
+			SelectorType: &v1.PodSelector_LabelSelector_{
+				LabelSelector: &v1.PodSelector_LabelSelector{
+					LabelsToMatch: in.SelectedLabels,
+				},
+			},
+		}
+	case len(in.SelectedUpstreams) > 0:
+		return &v1.PodSelector{
+			SelectorType: &v1.PodSelector_UpstreamSelector_{
+				UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+					Upstreams: in.SelectedUpstreams,
+				},
+			},
+		}
+	case len(in.SelectedNamespaces) > 0:
+		return &v1.PodSelector{
+			SelectorType: &v1.PodSelector_NamespaceSelector_{
+				NamespaceSelector: &v1.PodSelector_NamespaceSelector{
+					Namespaces: in.SelectedNamespaces,
+				},
+			},
 		}
 	}
-	if !validVersion {
-		return errors.Errorf("%v is not a suppported "+
-			"istio version", in.IstioInstall.IstioVersion)
-	}
-
 	return nil
 }
 
-func addCreateRoutingRuleFlags(set *pflag.FlagSet, in *options.RoutingRule) {
-	set.StringVar(&in.Name, "name", "", "name for the resource")
-	set.StringVar(&in.Namespace, "namespace", "supergloo-system", "namespace for the resource")
+func convertMatchers(in options.RequestMatchersValue) ([]*gloov1.Matcher, error) {
+	var matchers []*gloov1.Matcher
+	for _, match := range in {
+		converted, err := matcherFromInput(match)
+		if err != nil {
+			return nil, err
+		}
+		matchers = append(matchers, converted)
+	}
+	return matchers, nil
+}
+
+func matcherFromInput(input options.RequestMatcher) (*gloov1.Matcher, error) {
+	m := &gloov1.Matcher{}
+	switch {
+	case input.PathExact != "":
+		if input.PathRegex != "" || input.PathPrefix != "" {
+			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+		}
+		m.PathSpecifier = &gloov1.Matcher_Exact{
+			Exact: input.PathExact,
+		}
+	case input.PathRegex != "":
+		if input.PathExact != "" || input.PathPrefix != "" {
+			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+		}
+		m.PathSpecifier = &gloov1.Matcher_Regex{
+			Regex: input.PathRegex,
+		}
+	case input.PathPrefix != "":
+		if input.PathExact != "" || input.PathRegex != "" {
+			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+		}
+		m.PathSpecifier = &gloov1.Matcher_Prefix{
+			Prefix: input.PathPrefix,
+		}
+	default:
+		return nil, errors.Errorf("must provide path prefix, path exact, or path regex for route matcher")
+	}
+	if len(input.Methods) > 0 {
+		m.Methods = input.Methods
+	}
+	for k, v := range input.HeaderMatcher {
+		m.Headers = append(m.Headers, &gloov1.HeaderMatcher{
+			Name:  k,
+			Value: v,
+			Regex: true,
+		})
+	}
+	sort.SliceStable(m.Headers, func(i, j int) bool {
+		return m.Headers[i].Name < m.Headers[j].Name
+	})
+	return m, nil
 }

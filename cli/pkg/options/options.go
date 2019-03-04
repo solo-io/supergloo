@@ -61,11 +61,6 @@ type Selector struct {
 	SelectedLabels     MapStringStringValue
 }
 
-func (s Selector) Enabled() bool {
-	return len(s.SelectedUpstreams) > 0 ||
-		len(s.SelectedLabels) > 0 || len(s.SelectedNamespaces) > 0
-}
-
 // no implemented specs yet
 type RoutingRuleSpec struct {
 	SpecType string
