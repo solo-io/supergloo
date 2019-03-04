@@ -116,15 +116,12 @@ install-cli:
 
 $(OUTPUT_DIR)/supergloo-cli-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 .PHONY: build-cli
 build-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
