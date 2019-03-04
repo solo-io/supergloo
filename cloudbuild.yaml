@@ -97,7 +97,7 @@ steps:
     waitFor: ['test']
 
   - name: 'gcr.io/$PROJECT_ID/go-make'
-    args: ['docker', 'supergloo-cli']
+    args: ['docker', 'build-cli']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
