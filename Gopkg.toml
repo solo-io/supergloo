@@ -113,5 +113,9 @@
   version = "v2.6.1"
 
 [[constraint]]
+  name = "github.com/solo-io/solo-kit"
+  version = "0.3.1"
+
+[[constraint]]
   name = "github.com/solo-io/go-utils"
   version = "0.2.10"
