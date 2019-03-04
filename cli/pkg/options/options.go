@@ -12,10 +12,12 @@ type Options struct {
 	Ctx         context.Context
 	Interactive bool
 	OutputType  string
+	Metadata    core.Metadata
 
-	Init      Init
-	Install   Create
-	Uninstall Uninstall
+	Init              Init
+	Install           Install
+	Uninstall         Uninstall
+	CreateRoutingRule CreateRoutingRule
 }
 
 type Init struct {
@@ -26,8 +28,7 @@ type Init struct {
 	DryRun            bool
 }
 
-type Create struct {
-	Metadata     core.Metadata
+type Install struct {
 	InputInstall InputInstall
 }
 

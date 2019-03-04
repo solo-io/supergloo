@@ -22,7 +22,7 @@ var _ = Describe("Metadata", func() {
 			c.ExpectEOF()
 		}, func() {
 			var meta core.Metadata
-			err := SurveyMetadata(&meta)
+			err := SurveyMetadata("test", &meta)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(meta.Name).To(Equal(name))
 			Expect(meta.Namespace).To(Equal(namespace))
