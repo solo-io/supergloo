@@ -1,7 +1,6 @@
 {
   "title": "SupaGloo",
   "name": "supergloo.solo.io",
-  "docs_dir": "docs/v1",
   "version": "v1",
   "resource_groups": {
     "config.supergloo.solo.io": [
