@@ -1,6 +1,7 @@
 package surveyutils
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/solo-io/gloo/pkg/cliutil"
@@ -8,11 +9,11 @@ import (
 	"github.com/vektah/gqlgen/neelance/errors"
 )
 
-func SurveyRoutingRule(in *options.CreateRoutingRule) error {
-	if err := surveySelector("source", &in.SourceSelector); err != nil {
+func SurveyRoutingRule(ctx context.Context, in *options.CreateRoutingRule) error {
+	if err := surveySelector(ctx, "source", &in.SourceSelector); err != nil {
 		return err
 	}
-	if err := surveySelector("source", &in.DestinationSelector); err != nil {
+	if err := surveySelector(ctx, "source", &in.DestinationSelector); err != nil {
 		return err
 	}
 
@@ -23,7 +24,7 @@ func SurveyRoutingRule(in *options.CreateRoutingRule) error {
 	return nil
 }
 
-func surveySelector(selectorName string, in *options.Selector) error {
+func surveySelector(ctx context.Context, selectorName string, in *options.Selector) error {
 	if err := cliutil.GetBoolInput(fmt.Sprintf("create a %v selector for this rule? ", selectorName), &in.Enabled); err != nil {
 		return err
 	}
@@ -45,7 +46,19 @@ func surveySelector(selectorName string, in *options.Selector) error {
 			return err
 		}
 	case options.SelectorType_Upstream:
+		fmt.Println("choose upstreams for this selector")
+		ups, err := SurveyUpstreams(ctx)
+		if err != nil {
+			return err
+		}
+		in.SelectedUpstreams = ups
 	case options.SelectorType_Namespace:
+		fmt.Println("choose namespaces for this selector")
+		nss, err := SurveyNamespaces()
+		if err != nil {
+			return err
+		}
+		in.SelectedNamespaces = nss
 	default:
 		return errors.Errorf("%v is not a known selector type", in.SelectorType)
 	}

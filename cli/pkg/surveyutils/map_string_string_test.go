@@ -8,6 +8,7 @@ import (
 )
 
 var _ = Describe("MapStringString", func() {
+	// TODO: unexclude this test when c.ExpectEOF() is fixed
 	XIt("creates the expected map[string]string", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("enter a key-value pair in the format KEY=VAL. leave empty to finish: ")
