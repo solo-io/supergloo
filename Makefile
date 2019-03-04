@@ -36,7 +36,7 @@ update-deps:
 
 .PHONY: pin-repos
 pin-repos:
-	go run pin_repos.go
+	go run ci/pin_repos.go
 
 .PHONY: check-format
 check-format:
@@ -44,7 +44,6 @@ check-format:
 
 check-spelling:
 	./ci/spell.sh check
-
 
 .PHONY: generated-code
 generated-code: $(OUTPUT_DIR)/.generated-code
@@ -117,18 +116,15 @@ install-cli:
 
 $(OUTPUT_DIR)/supergloo-cli-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
-.PHONY: supergloo-cli
-supergloo-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
+.PHONY: build-cli
+build-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
 
 #----------------------------------------------------------------------------------
 # Deployment Manifests / Helm
@@ -158,12 +154,15 @@ endif
 install/manifest/supergloo.yaml: helm-template
 	helm template install/helm/supergloo --namespace supergloo-system --name=supergloo > $@
 
+.PHONY: render-yaml
+render-yaml: install/manifest/supergloo.yaml
+
 #----------------------------------------------------------------------------------
 # Release
 #----------------------------------------------------------------------------------
 
 .PHONY: upload-github-release-assets
-upload-github-release-assets: supergloo-cli install/manifest/supergloo.yaml
+upload-github-release-assets: build-cli render-yaml
 	go run ci/upload_github_release_assets.go
 
 .PHONY: push-docs
