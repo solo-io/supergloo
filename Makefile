@@ -36,7 +36,7 @@ update-deps:
 
 .PHONY: pin-repos
 pin-repos:
-	go run pin_repos.go
+	go run ci/pin_repos.go
 
 .PHONY: check-format
 check-format:

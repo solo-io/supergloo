@@ -13,7 +13,6 @@ git add .
 git commit -m "set up dummy repo for diffing" -q
 
 git clone https://github.com/solo-io/solo-kit /workspace/gopath/src/github.com/solo-io/solo-kit
-git clone https://github.com/solo-io/supergloo /workspace/gopath/src/github.com/solo-io/supergloo
 
 make update-deps
 make pin-repos
