@@ -11,7 +11,7 @@ import (
 )
 
 func SurveyTrafficShiftingSpec(ctx context.Context, in *options.CreateRoutingRule) error {
-	ts := &v1.TrafficShifting{
+	ts := v1.TrafficShifting{
 		Destinations: &gloov1.MultiDestination{
 			Destinations: []*gloov1.WeightedDestination{},
 		},
@@ -35,6 +35,6 @@ func SurveyTrafficShiftingSpec(ctx context.Context, in *options.CreateRoutingRul
 		})
 	}
 
-	in.RoutingRuleSpec.TrafficShifting = ts
+	in.RoutingRuleSpec.TrafficShifting = options.TrafficShiftingValue(ts)
 	return nil
 }

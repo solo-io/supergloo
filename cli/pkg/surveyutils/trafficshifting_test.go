@@ -46,7 +46,7 @@ var _ = Describe("Trafficshifting", func() {
 				in := &options.CreateRoutingRule{}
 				err := SurveyTrafficShiftingSpec(context.TODO(), in)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(*in.RoutingRuleSpec.TrafficShifting).To(Equal(v1.TrafficShifting{
+				Expect(in.RoutingRuleSpec.TrafficShifting).To(Equal(v1.TrafficShifting{
 					Destinations: &gloov1.MultiDestination{
 						Destinations: []*gloov1.WeightedDestination{
 							{

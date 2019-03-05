@@ -63,5 +63,5 @@ type Selector struct {
 
 // no implemented specs yet
 type RoutingRuleSpec struct {
-	SpecType string
+	TrafficShifting TrafficShiftingValue
 }

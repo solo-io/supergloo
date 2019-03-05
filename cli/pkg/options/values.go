@@ -3,9 +3,13 @@ package options
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/vektah/gqlgen/neelance/errors"
 )
 
@@ -88,4 +92,48 @@ func (v *RequestMatchersValue) Set(s string) error {
 
 func (v *RequestMatchersValue) Type() string {
 	return "RequestMatchersValue"
+}
+
+type TrafficShiftingValue v1.TrafficShifting
+
+func (v *TrafficShiftingValue) String() string {
+	if v == nil || v.Destinations == nil {
+		return "<nil>"
+	}
+	var strs []string
+	for _, r := range v.Destinations.Destinations {
+		strs = append(strs, fmt.Sprintf("%v: %v", r.Destination.Upstream, r.Weight))
+	}
+	return "[" + strings.Join(strs, ", ") + "]"
+}
+
+func (v *TrafficShiftingValue) Set(s string) error {
+	split := strings.SplitN(s, ".", 2)
+	if len(split) != 2 {
+		return errors.Errorf("%s invalid: weighted destinations must be specified in the format <NAMESPACE>.<NAME>:WEIGHT", s)
+	}
+	namespace := split[0]
+	split = strings.SplitN(split[1], ":", 2)
+	if len(split) != 2 {
+		return errors.Errorf("%s invalid: weighted destinations must be specified in the format <NAMESPACE>.<NAME>:WEIGHT", s)
+	}
+	name := split[0]
+	weight, err := strconv.Atoi(split[1])
+	if err != nil {
+		return err
+	}
+	v.Destinations.Destinations = append(v.Destinations.Destinations, &gloov1.WeightedDestination{
+		Destination: &gloov1.Destination{
+			Upstream: core.ResourceRef{
+				Namespace: namespace,
+				Name:      name,
+			},
+		},
+		Weight: uint32(weight),
+	})
+	return nil
+}
+
+func (v *TrafficShiftingValue) Type() string {
+	return "TrafficShiftingValue"
 }
