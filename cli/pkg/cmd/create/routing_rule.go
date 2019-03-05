@@ -135,44 +135,61 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 		return nil, err
 	}
 
+	ss, err := convertSelector(opts.CreateRoutingRule.SourceSelector)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid source selector")
+	}
+
+	ds, err := convertSelector(opts.CreateRoutingRule.DestinationSelector)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid destination selector")
+	}
+
 	in := &v1.RoutingRule{
 		Metadata:            opts.Metadata,
-		SourceSelector:      convertSelector(opts.CreateRoutingRule.SourceSelector),
-		DestinationSelector: convertSelector(opts.CreateRoutingRule.DestinationSelector),
+		SourceSelector:      ss,
+		DestinationSelector: ds,
 		RequestMatchers:     matchers,
 	}
 
 	return in, nil
 }
 
-func convertSelector(in options.Selector) *v1.PodSelector {
+func convertSelector(in options.Selector) (*v1.PodSelector, error) {
+	useLabels := len(in.SelectedLabels) > 0
+	useUpstreams := len(in.SelectedUpstreams) > 0
+	useNamespaces := len(in.SelectedNamespaces) > 0
 	switch {
-	case len(in.SelectedLabels) > 0:
+	case !(useLabels || useUpstreams || useNamespaces):
+		return nil, nil
+	case (useLabels && useUpstreams) || (useLabels && useNamespaces) || (useUpstreams && useNamespaces):
+		return nil, errors.Errorf("you may only use one type of selector: upstreams, namespaces, or labels")
+	case useLabels:
 		return &v1.PodSelector{
 			SelectorType: &v1.PodSelector_LabelSelector_{
 				LabelSelector: &v1.PodSelector_LabelSelector{
 					LabelsToMatch: in.SelectedLabels,
 				},
 			},
-		}
-	case len(in.SelectedUpstreams) > 0:
+		}, nil
+	case useUpstreams:
 		return &v1.PodSelector{
 			SelectorType: &v1.PodSelector_UpstreamSelector_{
 				UpstreamSelector: &v1.PodSelector_UpstreamSelector{
 					Upstreams: in.SelectedUpstreams,
 				},
 			},
-		}
-	case len(in.SelectedNamespaces) > 0:
+		}, nil
+	case useNamespaces:
 		return &v1.PodSelector{
 			SelectorType: &v1.PodSelector_NamespaceSelector_{
 				NamespaceSelector: &v1.PodSelector_NamespaceSelector{
 					Namespaces: in.SelectedNamespaces,
 				},
 			},
-		}
+		}, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func convertMatchers(in options.RequestMatchersValue) ([]*gloov1.Matcher, error) {

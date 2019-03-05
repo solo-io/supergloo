@@ -134,7 +134,16 @@ var _ = Describe("RoutingRule", func() {
 		})
 		Context("conflicting selector types", func() {
 			It("returns an error", func() {
-
+				_, err := selectorTest("--source-upstreams ns1.us1",
+					"--source-namespaces ns2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("you may only use one type of selector: upstreams, namespaces, or labels"))
+			})
+			It("returns an error", func() {
+				_, err := selectorTest("--dest-upstreams ns3.us3",
+					"--dest-namespaces ns4")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("you may only use one type of selector: upstreams, namespaces, or labels"))
 			})
 		})
 	})
