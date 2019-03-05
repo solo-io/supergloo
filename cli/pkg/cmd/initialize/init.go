@@ -35,7 +35,7 @@ The basic SuperGloo installation is composed of single-instance deployments for 
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := installSuperGloo(opts); err != nil {
-				return errors.Wrapf(err, "installing gloo in gateway mode")
+				return errors.Wrapf(err, "installing supergloo")
 			}
 			return nil
 		},
@@ -102,7 +102,7 @@ func getReleaseVersion(opts *options.Options) (string, error) {
 		if opts.Init.ReleaseVersion == "" {
 			return "", errors.Errorf("you must provide a " +
 				"release version containing the manifest when " +
-				"running an unreleased version of glooctl.")
+				"running an unreleased version of supergloo.")
 		}
 		return opts.Init.ReleaseVersion, nil
 	}

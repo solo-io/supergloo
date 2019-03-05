@@ -14,7 +14,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/supergloo/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 #----------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ update-deps:
 
 .PHONY: pin-repos
 pin-repos:
-	go run pin_repos.go
+	go run ci/pin_repos.go
 
 .PHONY: check-format
 check-format:
@@ -44,7 +44,6 @@ check-format:
 
 check-spelling:
 	./ci/spell.sh check
-
 
 .PHONY: generated-code
 generated-code: $(OUTPUT_DIR)/.generated-code
@@ -117,15 +116,15 @@ install-cli:
 
 $(OUTPUT_DIR)/supergloo-cli-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
-	shasum -a 256 $@ > $@.sha256
+
+.PHONY: build-cli
+build-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
 
 #----------------------------------------------------------------------------------
 # Deployment Manifests / Helm
@@ -155,46 +154,16 @@ endif
 install/manifest/supergloo.yaml: helm-template
 	helm template install/helm/supergloo --namespace supergloo-system --name=supergloo > $@
 
+.PHONY: render-yaml
+render-yaml: install/manifest/supergloo.yaml
+
 #----------------------------------------------------------------------------------
 # Release
 #----------------------------------------------------------------------------------
-GH_ORG:=solo-io
-GH_REPO:=supergloo
 
-# For now, expecting people using the release to start from a supergloo-cli CLI we provide, not
-# installing the binaries locally / directly. So only uploading the CLI binaries to Github.
-# The other binaries can be built manually and used, and docker images for everything will
-# be published on release.
-RELEASE_BINARIES :=
-ifeq ($(RELEASE),"true")
-	RELEASE_BINARIES := \
-		$(OUTPUT_DIR)/supergloo-cli-linux-amd64 \
-		$(OUTPUT_DIR)/supergloo-cli-darwin-amd64 \
-		$(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
-endif
-
-RELEASE_YAMLS :=
-ifeq ($(RELEASE),"true")
-	RELEASE_YAMLS := \
-		install/manifest/supergloo.yaml
-endif
-
-.PHONY: release-binaries
-release-binaries: $(RELEASE_BINARIES)
-
-.PHONY: release-yamls
-release-yamls: $(RELEASE_YAMLS)
-
-# This is invoked by cloudbuild. When the bot gets a release notification, it kicks of a build with and provides a tag
-# variable that gets passed through to here as $TAGGED_VERSION. If no tag is provided, this is a no-op. If a tagged
-# version is provided, all the release binaries are uploaded to github.
-# Create new releases by clicking "Draft a new release" from https://github.com/solo-io/supergloo/releases
-.PHONY: release
-release: release-binaries release-yamls
-ifeq ($(RELEASE),"true")
-	@$(foreach BINARY,$(RELEASE_BINARIES),ci/upload-github-release-asset.sh owner=solo-io repo=supergloo tag=$(TAGGED_VERSION) filename=$(BINARY) sha=TRUE;)
-	@$(foreach YAML,$(RELEASE_YAMLS),ci/upload-github-release-asset.sh owner=solo-io repo=supergloo tag=$(TAGGED_VERSION) filename=$(YAML);)
-endif
+.PHONY: upload-github-release-assets
+upload-github-release-assets: build-cli render-yaml
+	go run ci/upload_github_release_assets.go
 
 .PHONY: push-docs
 push-docs:
