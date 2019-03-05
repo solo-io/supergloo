@@ -14,7 +14,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/supergloo/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 #----------------------------------------------------------------------------------
@@ -113,6 +113,9 @@ SOURCES=$(shell find . -name "*.go" | grep -v test | grep -v mock)
 .PHONY: install-cli
 install-cli:
 	cd cli/cmd && go build -ldflags=$(LDFLAGS) -o $(GOPATH)/bin/supergloo
+
+.PHONY: supergloo-cli
+supergloo-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64
 
 $(OUTPUT_DIR)/supergloo-cli-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
