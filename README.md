@@ -1,6 +1,6 @@
 
 <h1 align="center">
-    <img src="doc/docs/img/SuperGloo.png" alt="SuperGloo" width="372" height="242">
+    <img src="docs/img/SuperGloo.png" alt="SuperGloo" width="372" height="242">
   <br>
   The Service Mesh Orchestration Platform
 </h1>
