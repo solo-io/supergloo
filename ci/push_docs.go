@@ -16,6 +16,7 @@ func main() {
 			"docs/v1/gogoproto",
 			"docs/v1/google",
 		},
+		CliPrefix: "supergloo",
 	}
 	docsutils.PushDocsCli(&spec)
 }
