@@ -80,8 +80,7 @@ steps:
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
       - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    # TODO (ilackarms): add test/e2e when e2e-test pr is merged
-    args: ['-r', '-failFast', '-p', 'pkg']
+    args: ['-r', '-failFast', '-p', 'pkg', 'test/e2e']
     waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
