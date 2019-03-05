@@ -1,7 +1,6 @@
 {
   "name": "supergloo.solo.io",
   "version": "v1",
-  "docs_dir": "docs",
   "resource_groups": {
     "translator.supergloo.solo.io": [
       {

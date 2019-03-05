@@ -1147,13 +1147,12 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:839365061f7ff4db72b1e3278094634581e4414987451f10288db7245a23abbd"
+  digest = "1:8299baa8982e5a83095f69dd8c7b0cd0796817d991b3edd5ef3033c9fa4e12e0"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
     "pkg/cliutil",
     "pkg/cliutil/testutil",
-    "projects/gloo/cli/pkg/cmd/options",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/plugins",
     "projects/gloo/pkg/api/v1/plugins/aws",
@@ -1180,13 +1179,12 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:50c8bbee2553faff935cb94e2458a8ff36b7b44a1930e4994ee4c54a149a4ab3"
+  digest = "1:9ec760c95b3185b20de26bd1ee9c36208bb7fd08ddc58be00b36cc0f01a60bba"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
     "clidoc",
     "cliutils",
-    "cliutils/survey",
     "contextutils",
     "docsutils",
     "errors",
@@ -1197,15 +1195,14 @@
     "protoutils",
     "stringutils",
     "testutils",
-    "testutils/cli",
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "d691aec5ebf933da195a78e2f5cd0d3357c772de"
-  version = "v0.2.9"
+  revision = "e084fb30fbb39f78ce3dde57d5113fbf370d19ae"
+  version = "v0.2.14"
 
 [[projects]]
-  digest = "1:2c71caffc0613f152d49ed730b49d3b2e673b450eef6f0e37f9eb3a31a0cd9cc"
+  digest = "1:618225445970987ecffb9b7c55cf0f78fe8bade7f0422131b950cea20d48ee32"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1255,8 +1252,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "b6ba2b73a5eb3b82fe9fb6076c5a1f9ea8b9d10c"
-  version = "v0.3.0"
+  revision = "6dbbf377211f93ed8dbc6689bfc6cf5aa4a3f821"
+  version = "v0.3.1"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2140,7 +2137,6 @@
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
-    "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/consul",
@@ -2153,10 +2149,11 @@
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/docsutils",
     "github.com/solo-io/go-utils/errors",
+    "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
-    "github.com/solo-io/go-utils/testutils/cli",
+    "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
