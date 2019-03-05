@@ -16,6 +16,31 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var routingRuleTypes = []routingRuleSpecCommand{
+	{
+		use:   "trafficshifting",
+		alias: "ts",
+		short: "apply a traffic shifting rule",
+		long: `Traffic Shifting rules are used to divert HTTP requests sent within the mesh from their original destinations. 
+This can be used to force traffic to be sent to a specific subset of a service, a different service entirely, and/or 
+be load-balanced by weight across a variety of destinations`,
+		specSurveyFunc: surveyutils.SurveyTrafficShiftingSpec,
+		addFlagsFunc:   flagutils.AddTrafficShiftingFlags,
+		convertSpecFunc: func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error) {
+			if in.TrafficShifting.Destinations == nil || len(in.TrafficShifting.Destinations.Destinations) == 0 {
+				return nil, errors.Errorf("must provide at least 1 destination")
+			}
+			return &v1.RoutingRuleSpec{
+				RuleType: &v1.RoutingRuleSpec_TrafficShifting{
+					TrafficShifting: &v1.TrafficShifting{
+						Destinations: in.TrafficShifting.Destinations,
+					},
+				},
+			}, nil
+		},
+	},
+}
+
 func createRoutingRuleCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "routingrule",
@@ -46,22 +71,14 @@ RULE:
 	return cmd
 }
 
-var routingRuleTypes = []routingRuleSpecCommand{
-	{
-		use:   "trafficshifting",
-		alias: "ts",
-		short: "",
-		long:  ``,
-	},
-}
-
 type routingRuleSpecCommand struct {
-	use            string
-	alias          string
-	short          string
-	long           string
-	specSurveyFunc func(ctx context.Context, in *options.CreateRoutingRule) error
-	addFlagsFunc   func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
+	use             string
+	alias           string
+	short           string
+	long            string
+	specSurveyFunc  func(ctx context.Context, in *options.CreateRoutingRule) error
+	addFlagsFunc    func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
+	convertSpecFunc func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error)
 }
 
 func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Options) *cobra.Command {
@@ -85,18 +102,23 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return createRoutingRule(opts)
+			spec, err := subCmd.convertSpecFunc(opts.CreateRoutingRule.RoutingRuleSpec)
+			if err != nil {
+				return err
+			}
+			return createRoutingRule(opts, spec)
 		},
 	}
 	subCmd.addFlagsFunc(cmd.PersistentFlags(), &opts.CreateRoutingRule.RoutingRuleSpec)
 	return cmd
 }
 
-func createRoutingRule(opts *options.Options) error {
+func createRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	in, err := routingRuleFromOpts(opts)
 	if err != nil {
 		return err
 	}
+	in.Spec = spec
 	in, err = helpers.MustRoutingRuleClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err

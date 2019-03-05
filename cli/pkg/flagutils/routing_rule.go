@@ -25,7 +25,7 @@ func addSelectorFlags(prefix, direction string, set *pflag.FlagSet, in *options.
 
 	set.StringSliceVar(&in.SelectedNamespaces,
 		prefix+"-"+"namespaces",
-		[]string{"default"},
+		nil,
 		fmt.Sprintf("apply this rule to requests %v pods in these namespaces", direction))
 }
 

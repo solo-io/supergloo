@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -95,7 +96,7 @@ func PrintRoutingRules(list v1.RoutingRuleList, outputType string) {
 func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 
 	table := tablewriter.NewWriter(w)
-	table.SetHeader([]string{"RoutingRule", "type", "status", "details"})
+	table.SetHeader([]string{"RoutingRule", "type", "status", "sources", "destinations", "spec"})
 
 	for _, routingRule := range list {
 		name := routingRule.GetMetadata().Name
@@ -108,9 +109,9 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 		}
 		for i, line := range details {
 			if i == 0 {
-				table.Append([]string{name, t, s, line})
+				table.Append([]string{name, t, s, selector(routingRule.SourceSelector), selector(routingRule.DestinationSelector), line})
 			} else {
-				table.Append([]string{"", "", "", line})
+				table.Append([]string{"", "", "", "", "", line})
 			}
 		}
 
@@ -118,6 +119,29 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.Render()
+}
+
+func mustMarshal(v interface{}) string {
+	jsn, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(jsn)
+}
+
+func selector(in *v1.PodSelector) string {
+	if in == nil {
+		return "all"
+	}
+	switch t := in.SelectorType.(type) {
+	case *v1.PodSelector_LabelSelector_:
+		return fmt.Sprintf("labels: %v", mustMarshal(t.LabelSelector.LabelsToMatch))
+	case *v1.PodSelector_UpstreamSelector_:
+		return fmt.Sprintf("upstreams: %v", mustMarshal(t.UpstreamSelector.Upstreams))
+	case *v1.PodSelector_NamespaceSelector_:
+		return fmt.Sprintf("namespaces: %v", mustMarshal(t.NamespaceSelector.Namespaces))
+	}
+	return "Unknown"
 }
 
 func routingRuleType(in *v1.RoutingRule) string {
@@ -136,12 +160,12 @@ func routingRuleDetails(in *v1.RoutingRule) []string {
 	switch t := in.Spec.RuleType.(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
 		add(
-			"destinations: ",
+			"traffic shifting: ",
 		)
 		for _, dest := range t.TrafficShifting.Destinations.Destinations {
 			add(
 				fmt.Sprintf("- %v", dest.Destination.Upstream),
-				fmt.Sprintf("- weight: %v", dest.Weight),
+				fmt.Sprintf("  weight: %v", dest.Weight),
 			)
 		}
 	}

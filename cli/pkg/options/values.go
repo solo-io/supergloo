@@ -58,6 +58,9 @@ func (v *MapStringStringValue) Set(s string) error {
 		return errors.Errorf("%s invalid: map entries must be specified in the format KEY=VALUE", s)
 	}
 	m := *v
+	if m == nil {
+		m = make(MapStringStringValue)
+	}
 	m[split[0]] = split[1]
 	*v = m
 	return nil
@@ -121,6 +124,9 @@ func (v *TrafficShiftingValue) Set(s string) error {
 	weight, err := strconv.Atoi(split[1])
 	if err != nil {
 		return err
+	}
+	if v.Destinations == nil {
+		v.Destinations = &gloov1.MultiDestination{}
 	}
 	v.Destinations.Destinations = append(v.Destinations.Destinations, &gloov1.WeightedDestination{
 		Destination: &gloov1.Destination{
