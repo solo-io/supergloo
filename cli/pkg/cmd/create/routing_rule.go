@@ -204,26 +204,28 @@ func convertMatchers(in options.RequestMatchersValue) ([]*gloov1.Matcher, error)
 	return matchers, nil
 }
 
+var invalidPathsErr = errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+
 func matcherFromInput(input options.RequestMatcher) (*gloov1.Matcher, error) {
 	m := &gloov1.Matcher{}
 	switch {
 	case input.PathExact != "":
 		if input.PathRegex != "" || input.PathPrefix != "" {
-			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+			return nil, invalidPathsErr
 		}
 		m.PathSpecifier = &gloov1.Matcher_Exact{
 			Exact: input.PathExact,
 		}
 	case input.PathRegex != "":
 		if input.PathExact != "" || input.PathPrefix != "" {
-			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+			return nil, invalidPathsErr
 		}
 		m.PathSpecifier = &gloov1.Matcher_Regex{
 			Regex: input.PathRegex,
 		}
 	case input.PathPrefix != "":
 		if input.PathExact != "" || input.PathRegex != "" {
-			return nil, errors.Errorf("can only set one of path-regex, path-prefix, or path-exact")
+			return nil, invalidPathsErr
 		}
 		m.PathSpecifier = &gloov1.Matcher_Prefix{
 			Prefix: input.PathPrefix,

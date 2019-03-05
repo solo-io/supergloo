@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -172,6 +172,80 @@ var _ = Describe("RoutingRule", func() {
 					Name:      dest.Name,
 				}))
 			}
+		})
+	})
+	Context("request matcher tests", func() {
+		rmTest := func(extraArgs ...string) (*v1.RoutingRule, error) {
+			dests := []destination{{core.ResourceRef{"a", "a"}, 5}}
+			name := "ts-rr"
+
+			args := rrArgs(name, dests) + strings.Join(extraArgs, " ")
+
+			err := utils.Supergloo(args)
+			if err != nil {
+				return nil, err
+			}
+
+			routingRule := getRoutingRule(name)
+
+			return routingRule, nil
+		}
+		Context("no matcher", func() {
+			It("creates a rule with no matchers", func() {
+				routingRule, err := rmTest()
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(routingRule.RequestMatchers).To(BeEmpty())
+			})
+		})
+		Context("invalid matcher: no path types defined", func() {
+			It("returns error", func() {
+				_, err := rmTest(
+					`--request-matcher {"methods":["GET","POST"],"header_matchers":{"foo":"bar","baz":"qux"}} `,
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("must provide path prefix, path exact, or path regex for route matcher"))
+			})
+		})
+		Context("invalid matcher: multiple path types defined", func() {
+			It("returns error", func() {
+				_, err := rmTest(
+					`--request-matcher {"path_prefix":"/","path_exact":"/foo","methods":["GET","POST"],"header_matchers":{"foo":"bar","baz":"qux"}} `,
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("can only set one of path-regex, path-prefix, or path-exact"))
+			})
+		})
+		Context("valid matchers", func() {
+			It("creates a rule with a corresponding matcher for each provided matcher", func() {
+				routingRule, err := rmTest(
+					`--request-matcher {"path_prefix":"/","methods":["GET","POST"],"header_matchers":{"foo":"bar","baz":"qux"}} `,
+					`--request-matcher {"path_exact":"/foo","methods":["POST"]} `,
+				)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(routingRule.RequestMatchers).To(HaveLen(2))
+				Expect(routingRule.RequestMatchers[0]).To(Equal(&gloov1.Matcher{
+					PathSpecifier: &gloov1.Matcher_Prefix{Prefix: "/"},
+					Headers: []*gloov1.HeaderMatcher{
+						{
+							Name:  "baz",
+							Value: "qux",
+							Regex: true,
+						},
+						{
+							Name:  "foo",
+							Value: "bar",
+							Regex: true,
+						},
+					},
+					Methods: []string{"GET", "POST"},
+				}))
+				Expect(routingRule.RequestMatchers[1]).To(Equal(&gloov1.Matcher{
+					PathSpecifier: &gloov1.Matcher_Exact{Exact: "/foo"},
+					Methods:       []string{"POST"},
+				}))
+			})
 		})
 	})
 })
