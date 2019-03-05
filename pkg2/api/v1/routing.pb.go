@@ -25,7 +25,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
-type  	RoutingRule struct {
+type RoutingRule struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation
 	Status core.Status `protobuf:"bytes,100,opt,name=status,proto3" json:"status"`
