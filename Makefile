@@ -14,7 +14,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/supergloo/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 #----------------------------------------------------------------------------------
