@@ -21,10 +21,6 @@ func SurveyRoutingRule(ctx context.Context, in *options.CreateRoutingRule) error
 		return err
 	}
 
-	if err := surveySpec(&in.RoutingRuleSpec); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -149,8 +145,4 @@ func surveyMatcher(matchers *options.RequestMatchersValue) error {
 
 		*matchers = append(*matchers, match)
 	}
-}
-
-func surveySpec(spec *options.RoutingRuleSpec) error {
-	return nil
 }
