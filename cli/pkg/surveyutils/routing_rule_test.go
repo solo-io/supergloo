@@ -14,6 +14,7 @@ import (
 )
 
 // TODO: unexclude this test when c.ExpectEOF() is fixed
+// relevant issue: https://github.com/solo-io/gloo/issues/387
 var _ = XDescribe("RoutingRule", func() {
 	BeforeEach(func() {
 		helpers.UseMemoryClients()

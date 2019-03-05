@@ -6,11 +6,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/solo-io/go-utils/errors"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/vektah/gqlgen/neelance/errors"
 )
 
 type ResourceRefsValue []core.ResourceRef
@@ -87,7 +88,7 @@ func (v *RequestMatchersValue) Set(s string) error {
 	var match RequestMatcher
 	err := json.Unmarshal([]byte(s), &match)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "%s invalid: request matcher must be specified as valid request matcher json", s)
 	}
 	*v = append(*v, match)
 	return nil
