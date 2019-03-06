@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
@@ -17,7 +18,7 @@ import (
 func MustGetNamespaces() []string {
 	ns, err := GetNamespaces()
 	if err != nil {
-		log.Fatalf("failed to list namespaces")
+		log.Fatalf("failed to list namespaces: %v", err)
 	}
 	return ns
 }
@@ -28,11 +29,7 @@ func GetNamespaces() ([]string, error) {
 		return []string{"default", "supergloo-system"}, nil
 	}
 
-	cfg, err := kubeutils.GetConfig("", "")
-	if err != nil {
-		return nil, errors.Wrapf(err, "getting kube config")
-	}
-	kubeClient, err := kubernetes.NewForConfig(cfg)
+	kubeClient, err := KubeClient()
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube client")
 	}
@@ -87,6 +84,38 @@ func InstallClient() (v1.InstallClient, error) {
 	return installClient, nil
 }
 
+func MustRoutingRuleClient() v1.RoutingRuleClient {
+	client, err := RoutingRuleClient()
+	if err != nil {
+		log.Fatalf("failed to create RoutingRule client: %v", err)
+	}
+	return client
+}
+
+func RoutingRuleClient() (v1.RoutingRuleClient, error) {
+	if memoryResourceClient != nil {
+		return v1.NewRoutingRuleClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	cache := kube.NewKubeCache(context.TODO())
+	RoutingRuleClient, err := v1.NewRoutingRuleClient(&factory.KubeResourceClientFactory{
+		Crd:         v1.RoutingRuleCrd,
+		Cfg:         cfg,
+		SharedCache: cache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating RoutingRule client")
+	}
+	if err := RoutingRuleClient.Register(); err != nil {
+		return nil, err
+	}
+	return RoutingRuleClient, nil
+}
+
 func MustMeshClient() v1.MeshClient {
 	client, err := MeshClient()
 	if err != nil {
@@ -117,6 +146,38 @@ func MeshClient() (v1.MeshClient, error) {
 		return nil, err
 	}
 	return meshClient, nil
+}
+
+func MustUpstreamClient() gloov1.UpstreamClient {
+	client, err := UpstreamClient()
+	if err != nil {
+		log.Fatalf("failed to create upstream client: %v", err)
+	}
+	return client
+}
+
+func UpstreamClient() (gloov1.UpstreamClient, error) {
+	if memoryResourceClient != nil {
+		return gloov1.NewUpstreamClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	cache := kube.NewKubeCache(context.TODO())
+	upstreamClient, err := gloov1.NewUpstreamClient(&factory.KubeResourceClientFactory{
+		Crd:         gloov1.UpstreamCrd,
+		Cfg:         cfg,
+		SharedCache: cache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating upstreams client")
+	}
+	if err := upstreamClient.Register(); err != nil {
+		return nil, err
+	}
+	return upstreamClient, nil
 }
 
 func MustKubeClient() kubernetes.Interface {
