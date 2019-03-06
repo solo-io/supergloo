@@ -28,29 +28,31 @@ var _ = Describe("E2e", func() {
 			return i.Status.State, nil
 		}, time.Minute*2).Should(Equal(core.Status_Accepted))
 
-		Eventually(func() error {
-			_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
-			return err
-		}).ShouldNot(HaveOccurred())
+		eventuallyGetServiceWithError("istio-system", "istio-pilot").ShouldNot(HaveOccurred())
 
-		meshClient := helpers.MustMeshClient()
-		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
-			return err
-		}).ShouldNot(HaveOccurred())
+		eventuallyGetMeshWithError("supergloo-system", "my-istio").ShouldNot(HaveOccurred())
 
 		err = utils.Supergloo("uninstall --name=my-istio")
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(func() error {
-			_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
-			return err
-		}, time.Minute*2).Should(HaveOccurred())
+		eventuallyGetServiceWithError("istio-system", "istio-pilot").Should(HaveOccurred())
 
-		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
-			return err
-		}, time.Second*20).Should(HaveOccurred())
+		eventuallyGetMeshWithError("supergloo-system", "my-istio").Should(HaveOccurred())
 
 	})
 })
+
+func eventuallyGetServiceWithError(namespace, svcName string) GomegaAsyncAssertion {
+	return Eventually(func() error {
+		_, err := kube.CoreV1().Services(namespace).Get(svcName, metav1.GetOptions{})
+		return err
+	}, time.Minute*2)
+}
+
+func eventuallyGetMeshWithError(namespace, svcName string) GomegaAsyncAssertion {
+	meshClient := helpers.MustMeshClient()
+	return Eventually(func() error {
+		_, err := meshClient.Read(namespace, svcName, clients.ReadOpts{})
+		return err
+	}, time.Minute*2)
+}
