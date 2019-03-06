@@ -17,12 +17,13 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 
-func Main(customErrHandler func(error)) error {
+// customCtx and customErrHandler are expected to be passed by tests
+func Main(customCtx context.Context, customErrHandler func(error)) error {
 	if os.Getenv("START_STATS_SERVER") != "" {
 		stats.StartStatsServer()
 	}
 
-	rootCtx := createRootContext()
+	rootCtx := createRootContext(customCtx)
 	logger := contextutils.LoggerFrom(rootCtx)
 
 	errHandler := func(err error) {
@@ -43,8 +44,11 @@ func Main(customErrHandler func(error)) error {
 	return runInstallEventLoop(rootCtx, errHandler, clients, createInstallSyncers(clients.InstallClient, clients.MeshClient))
 }
 
-func createRootContext() context.Context {
-	rootCtx := context.Background()
+func createRootContext(customCtx context.Context) context.Context {
+	rootCtx := customCtx
+	if rootCtx == nil {
+		rootCtx = context.Background()
+	}
 	rootCtx = contextutils.WithLogger(rootCtx, "supergloo")
 	return rootCtx
 }
