@@ -13,16 +13,15 @@ var _ = Describe("Metadata", func() {
 	It("should create the expected install ", func() {
 		name, namespace := "hi", helpers.MustGetNamespaces()[1]
 		testutil.ExpectInteractive(func(c *testutil.Console) {
-			c.ExpectString("name for the resource: ")
+			c.ExpectString("name for the test resource: ")
 			c.SendLine(name)
-			c.ExpectString("namespace for the resource: ")
+			c.ExpectString("namespace for the test resource: ")
 			c.PressDown()
-			c.SendLine("")
 			c.SendLine("")
 			c.ExpectEOF()
 		}, func() {
 			var meta core.Metadata
-			err := SurveyMetadata(&meta)
+			err := SurveyMetadata("test resource", &meta)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(meta.Name).To(Equal(name))
 			Expect(meta.Namespace).To(Equal(namespace))
