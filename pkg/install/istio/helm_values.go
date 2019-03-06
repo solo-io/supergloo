@@ -1,6 +1,6 @@
 package istio
 
-// Tested working for istio 1.0.3 and 1.0.5
+// Tested working for istio 1.0.3, 1.0.5 and 1.0.6
 // be sure to test if adding new versions of istio!
 const helmValues = `
 global:

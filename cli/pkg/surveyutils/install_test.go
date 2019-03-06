@@ -37,7 +37,7 @@ var _ = Describe("Metadata", func() {
 			err := SurveyIstioInstall(&in)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(in.IstioInstall.InstallationNamespace).To(Equal(namespace))
-			Expect(in.IstioInstall.IstioVersion).To(Equal(istio.IstioVersion105))
+			Expect(in.IstioInstall.IstioVersion).To(Equal(istio.IstioVersion106))
 			Expect(in.IstioInstall.EnableMtls).To(Equal(true))
 			Expect(in.IstioInstall.EnableAutoInject).To(Equal(true))
 			Expect(in.IstioInstall.InstallGrafana).To(Equal(true))

@@ -19,6 +19,10 @@ var supportedIstioVersions = map[string]versionedInstall{
 		chartPath:      IstioVersion105Chart,
 		valuesTemplate: helmValues,
 	},
+	IstioVersion106: {
+		chartPath:      IstioVersion106Chart,
+		valuesTemplate: helmValues,
+	},
 }
 
 type versionedInstall struct {

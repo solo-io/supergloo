@@ -4,12 +4,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	apierrs "github.com/solo-io/solo-kit/pkg/errors"
+	"github.com/solo-io/supergloo/cli/pkg/constants"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/spf13/cobra"
 )
 
@@ -93,10 +93,7 @@ func installFromOpts(opts *options.Options) (*v1.Install, error) {
 
 func validate(in options.InputInstall) error {
 	var validVersion bool
-	for _, ver := range []string{
-		istio.IstioVersion103,
-		istio.IstioVersion105,
-	} {
+	for _, ver := range constants.SupportedIstioVersions {
 		if in.IstioInstall.IstioVersion == ver {
 			validVersion = true
 			break

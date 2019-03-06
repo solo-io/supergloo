@@ -31,7 +31,7 @@ var _ = Describe("Installer", func() {
 		installConfig := &v1.Install_Istio_{
 			Istio: &v1.Install_Istio{
 				InstallationNamespace: ns,
-				IstioVersion:          IstioVersion105,
+				IstioVersion:          IstioVersion106,
 			},
 		}
 
