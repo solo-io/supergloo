@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 	"github.com/solo-io/supergloo/test/inputs"
 )
@@ -39,6 +40,22 @@ var _ = Describe("IstioHttp", func() {
 
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("did not find upstream"))
+			})
+		})
+		Context("weight is 0", func() {
+			It("returns an error", func() {
+				params := Params{
+					Upstreams: inputs.BookInfoUpstreams("default"),
+				}
+				in := inputs.TrafficShiftingRuleSpec(core.ResourceRef{Name: "default-reviews-v1-9080", Namespace: "default"})
+				in.RuleType.(*v1.RoutingRuleSpec_TrafficShifting).TrafficShifting.Destinations.Destinations[0].Weight = 0
+				out := &v1alpha3.HTTPRoute{}
+
+				err := NewIstioHttpPlugin().ProcessRoute(
+					params, *in, out)
+
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("weight cannot be 0"))
 			})
 		})
 		Context("valid config", func() {

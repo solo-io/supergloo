@@ -18,6 +18,8 @@ func (p *istioHttpPlugin) Init(params InitParams) error {
 	return nil
 }
 
+var notImplementedErr = errors.Errorf("rule type not implemented")
+
 func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
 	switch rule := in.RuleType.(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
@@ -25,11 +27,17 @@ func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *
 			return errors.Wrapf(err, "processing traffic shifting rule")
 		}
 	case *v1.RoutingRuleSpec_FaultInjection:
+		return notImplementedErr
 	case *v1.RoutingRuleSpec_RequestTimeout:
+		return notImplementedErr
 	case *v1.RoutingRuleSpec_Retries:
+		return notImplementedErr
 	case *v1.RoutingRuleSpec_CorsPolicy:
+		return notImplementedErr
 	case *v1.RoutingRuleSpec_Mirror:
+		return notImplementedErr
 	case *v1.RoutingRuleSpec_HeaderManipulation:
+		return notImplementedErr
 	default:
 		return errors.Errorf("unknown rule type %v", in.RuleType)
 	}
@@ -42,36 +50,45 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, rule *v1.TrafficS
 		return errors.Errorf("traffic shifting destinations cannot be missing or empty")
 	}
 	var shiftedDestinations []*v1alpha3.HTTPRouteDestination
+
 	var totalWeights uint32
-	var totalIstioWeights int32
 	for _, dest := range rule.Destinations.Destinations {
 		totalWeights += dest.Weight
 	}
+
+	var totalIstioWeights int32
 	for i, dest := range rule.Destinations.Destinations {
+
 		if dest.Destination == nil {
 			return errors.Errorf("destination %v invalid must provide target upstream", i)
 		}
+
 		upstream, err := upstreams.Find(dest.Destination.Upstream.Strings())
 		if err != nil {
 			return errors.Wrapf(err, "invalid upstream destination")
 		}
+
 		host, err := utils.GetHostForUpstream(upstream)
 		if err != nil {
 			return errors.Wrapf(err, "could not find host for upstream")
 		}
-		var port *v1alpha3.PortSelector
+
 		intPort, err := utils.GetPortForUpstream(upstream)
 		if err != nil {
 			return errors.Wrapf(err, "could not find port for upstream")
 		}
-		if intPort > 0 {
-			port = &v1alpha3.PortSelector{
-				Port: &v1alpha3.PortSelector_Number{Number: intPort},
-			}
+		port := &v1alpha3.PortSelector{
+			Port: &v1alpha3.PortSelector_Number{Number: intPort},
 		}
+
 		labels := utils.GetLabelsForUpstream(upstream)
+		if dest.Weight == 0 {
+			return errors.Errorf("weight cannot be 0")
+		}
+
 		weight := int32(dest.Weight * 100 / totalWeights)
 		totalIstioWeights += weight
+
 		shiftedDestinations = append(shiftedDestinations, &v1alpha3.HTTPRouteDestination{
 			Destination: &v1alpha3.Destination{
 				Host:   host,

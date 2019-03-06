@@ -40,7 +40,7 @@ func TrafficShiftingRuleSpec(ups ...core.ResourceRef) *v1.RoutingRuleSpec {
 	for i, us := range ups {
 		dests = append(dests, &gloov1.WeightedDestination{
 			Destination: &gloov1.Destination{Upstream: us},
-			Weight:      uint32(i),
+			Weight:      uint32(i + 1),
 		})
 	}
 	return &v1.RoutingRuleSpec{
