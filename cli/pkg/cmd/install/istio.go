@@ -22,7 +22,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyIstioInstall(&opts.Install.InputInstall); err != nil {
+				if err := surveyutils.SurveyIstioInstall(&opts.Install); err != nil {
 					return err
 				}
 			}
@@ -35,7 +35,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
-	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install.InputInstall)
+	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install)
 	return cmd
 }
 
@@ -78,20 +78,20 @@ func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
 }
 
 func installFromOpts(opts *options.Options) (*v1.Install, error) {
-	if err := validate(opts.Install.InputInstall); err != nil {
+	if err := validate(opts.Install); err != nil {
 		return nil, err
 	}
 	in := &v1.Install{
 		Metadata: opts.Metadata,
 		InstallType: &v1.Install_Istio_{
-			Istio: &opts.Install.InputInstall.IstioInstall,
+			Istio: &opts.Install.IstioInstall,
 		},
 	}
 
 	return in, nil
 }
 
-func validate(in options.InputInstall) error {
+func validate(in options.Install) error {
 	var validVersion bool
 	for _, ver := range []string{
 		istio.IstioVersion103,
