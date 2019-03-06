@@ -24,7 +24,11 @@ modify the corresponding mesh.
 ### Options
 
 ```
-  -h, --help   help for install
+  -h, --help               help for install
+      --name string        name for the resource
+      --namespace string   namespace for the resource (default "supergloo-system")
+  -o, --output string      output format: (yaml, json, table)
+      --update             update an existing install?
 ```
 
 ### Options inherited from parent commands

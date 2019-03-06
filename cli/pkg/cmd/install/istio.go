@@ -56,7 +56,8 @@ func createInstall(opts *options.Options) error {
 		if !opts.Install.Update && !existing.Disabled {
 			return errors.Errorf("install %v is already installed and enabled", in.Metadata.Ref())
 		}
-		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading istio install from %#v to %#v", existing, in)
+		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading istio install from %s to %s",
+			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(in))
 		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
 		in.InstalledManifest = existing.InstalledManifest
 		in.InstalledMesh = existing.InstalledMesh

@@ -23,9 +23,6 @@ supergloo install istio [flags]
       --installation-namespace string   which namespace to install Istio into? (default "istio-system")
       --jaeger                          add jaeger to the install? (default true)
       --mtls                            enable mtls? (default true)
-      --name string                     name for the resource
-      --namespace string                namespace for the resource (default "supergloo-system")
-  -o, --output string                   output format: (yaml, json, table)
       --prometheus                      add prometheus to the install? (default true)
       --version string                  version of istio to install? available: [1.0.3 1.0.5] (default "1.0.5")
 ```
@@ -33,7 +30,11 @@ supergloo install istio [flags]
 ### Options inherited from parent commands
 
 ```
-  -i, --interactive   use interactive mode
+  -i, --interactive        run in interactive mode
+      --name string        name for the resource
+      --namespace string   namespace for the resource (default "supergloo-system")
+  -o, --output string      output format: (yaml, json, table)
+      --update             update an existing install?
 ```
 
 ### SEE ALSO
