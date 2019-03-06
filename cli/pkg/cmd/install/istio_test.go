@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -98,6 +99,29 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
+		})
+		It("should update existing enabled install if --upgrade set to true", func() {
+			name := "input"
+			namespace := "ns"
+			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			inst.InstalledManifest = "a previously insatlled manifest"
+			inst.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			ic := helpers.MustInstallClient()
+			_, err := ic.Write(inst, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = utils.Supergloo("install istio " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--namespace=%v ", namespace) +
+				"--mtls=true " +
+				"--upgrade=true ")
+			Expect(err).NotTo(HaveOccurred())
+
+			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updatedInstall.InstallType.(*v1.Install_Istio_).Istio.EnableMtls).To(BeTrue())
+			Expect(updatedInstall.InstalledManifest).To(Equal(inst.InstalledManifest))
+			Expect(updatedInstall.InstalledMesh).To(Equal(inst.InstalledMesh))
 		})
 	})
 })
