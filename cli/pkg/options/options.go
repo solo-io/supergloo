@@ -29,7 +29,7 @@ type Init struct {
 }
 
 type Install struct {
-	Upgrade      bool // if install exists and is enabled, upgrade with new opts
+	Update       bool // if install exists and is enabled, update with new opts
 	IstioInstall v1.Install_Istio
 }
 

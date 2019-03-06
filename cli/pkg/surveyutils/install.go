@@ -38,7 +38,7 @@ func SurveyIstioInstall(in *options.Install) error {
 		return err
 	}
 
-	if err := cliutil.GetBoolInput("upgrade an existing install? ", &in.Upgrade); err != nil {
+	if err := cliutil.GetBoolInput("update an existing install? ", &in.Update); err != nil {
 		return err
 	}
 

@@ -10,10 +10,10 @@ import (
 
 func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 
-	set.BoolVar(&in.Upgrade,
-		"upgrade",
+	set.BoolVar(&in.Update,
+		"update",
 		false,
-		"upgrade an existing install?")
+		"update an existing install?")
 
 }
 

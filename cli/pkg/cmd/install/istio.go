@@ -53,7 +53,7 @@ func createInstall(opts *options.Options) error {
 		return err
 	}
 	if existing != nil {
-		if !opts.Install.Upgrade && !existing.Disabled {
+		if !opts.Install.Update && !existing.Disabled {
 			return errors.Errorf("install %v is already installed and enabled", in.Metadata.Ref())
 		}
 		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading istio install from %#v to %#v", existing, in)

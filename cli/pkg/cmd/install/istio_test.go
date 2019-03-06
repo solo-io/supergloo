@@ -100,7 +100,7 @@ var _ = Describe("Install", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
 		})
-		It("should update existing enabled install if --upgrade set to true", func() {
+		It("should update existing enabled install if --update set to true", func() {
 			name := "input"
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
@@ -114,7 +114,7 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--name=%v ", name) +
 				fmt.Sprintf("--namespace=%v ", namespace) +
 				"--mtls=true " +
-				"--upgrade=true ")
+				"--update=true ")
 			Expect(err).NotTo(HaveOccurred())
 
 			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
