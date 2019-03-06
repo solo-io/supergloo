@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 
-func SurveyIstioInstall(in *options.InputInstall) error {
+func SurveyIstioInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.IstioInstall.InstallationNamespace, helpers.MustGetNamespaces()); err != nil {
 		return err
 	}
@@ -35,6 +35,10 @@ func SurveyIstioInstall(in *options.InputInstall) error {
 	}
 
 	if err := cliutil.GetBoolInput("add jaeger to the install? ", &in.IstioInstall.InstallJaeger); err != nil {
+		return err
+	}
+
+	if err := cliutil.GetBoolInput("upgrade an existing install? ", &in.Upgrade); err != nil {
 		return err
 	}
 
