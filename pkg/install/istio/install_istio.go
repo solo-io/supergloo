@@ -81,7 +81,7 @@ func releaseName(namespace, version string) string {
 }
 
 // returns the installed manifests
-func (i *defaultIstioInstaller) installIstio(ctx context.Context, opts installOptions) (helm.Manifests, error) {
+func (i *defaultIstioInstaller) installOrUpdateIstio(ctx context.Context, opts installOptions) (helm.Manifests, error) {
 	if err := opts.validate(); err != nil {
 		return nil, errors.Wrapf(err, "invalid install options")
 	}

@@ -71,7 +71,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	}
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := i.installIstio(ctx, opts)
+	manifests, err := i.installOrUpdateIstio(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}
