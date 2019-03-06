@@ -19,7 +19,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 		Short: "install the Istio control plane",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
-				if err := surveyutils.SurveyMetadata(&opts.Install.Metadata); err != nil {
+				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {
 					return err
 				}
 				if err := surveyutils.SurveyIstioInstall(&opts.Install.InputInstall); err != nil {
@@ -32,7 +32,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 			return createInstall(opts)
 		},
 	}
-	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Install.Metadata)
+	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install.InputInstall)
@@ -62,8 +62,8 @@ func createInstall(opts *options.Options) error {
 }
 
 func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
-	existingInstall, err := helpers.MustInstallClient().Read(opts.Install.Metadata.Namespace,
-		opts.Install.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	existingInstall, err := helpers.MustInstallClient().Read(opts.Metadata.Namespace,
+		opts.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
 	if err != nil {
 		if apierrs.IsNotExist(err) {
 			return nil, nil
@@ -71,7 +71,7 @@ func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
 		return nil, err
 	}
 	if !existingInstall.Disabled {
-		return nil, errors.Errorf("install %v is already installed and enabled", opts.Install.Metadata)
+		return nil, errors.Errorf("install %v is already installed and enabled", opts.Metadata)
 	}
 	existingInstall.Disabled = false
 	return existingInstall, nil
@@ -82,7 +82,7 @@ func installFromOpts(opts *options.Options) (*v1.Install, error) {
 		return nil, err
 	}
 	in := &v1.Install{
-		Metadata: opts.Install.Metadata,
+		Metadata: opts.Metadata,
 		InstallType: &v1.Install_Istio_{
 			Istio: &opts.Install.InputInstall.IstioInstall,
 		},

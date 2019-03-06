@@ -12,10 +12,12 @@ type Options struct {
 	Ctx         context.Context
 	Interactive bool
 	OutputType  string
+	Metadata    core.Metadata
 
-	Init      Init
-	Install   Create
-	Uninstall Uninstall
+	Init              Init
+	Install           Install
+	Uninstall         Uninstall
+	CreateRoutingRule CreateRoutingRule
 }
 
 type Init struct {
@@ -26,8 +28,7 @@ type Init struct {
 	DryRun            bool
 }
 
-type Create struct {
-	Metadata     core.Metadata
+type Install struct {
 	InputInstall InputInstall
 }
 
@@ -37,4 +38,30 @@ type InputInstall struct {
 
 type Uninstall struct {
 	Metadata core.Metadata
+}
+
+type CreateRoutingRule struct {
+	SourceSelector      Selector
+	DestinationSelector Selector
+	RequestMatchers     RequestMatchersValue
+	RoutingRuleSpec     RoutingRuleSpec
+}
+
+type RequestMatcher struct {
+	PathPrefix    string            `json:"path_prefix"`
+	PathExact     string            `json:"path_exact"`
+	PathRegex     string            `json:"path_regex"`
+	Methods       []string          `json:"methods"`
+	HeaderMatcher map[string]string `json:"header_matchers"`
+}
+
+type Selector struct {
+	SelectedUpstreams  ResourceRefsValue
+	SelectedNamespaces []string
+	SelectedLabels     MapStringStringValue
+}
+
+// no implemented specs yet
+type RoutingRuleSpec struct {
+	TrafficShifting TrafficShiftingValue
 }
