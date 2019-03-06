@@ -18,6 +18,15 @@ import (
 
 type Manifests []manifest.Manifest
 
+func (m Manifests) Find(name string) *manifest.Manifest {
+	for _, man := range m {
+		if man.Name == name {
+			return &man
+		}
+	}
+	return nil
+}
+
 func (m Manifests) CombinedString() string {
 	buf := &bytes.Buffer{}
 

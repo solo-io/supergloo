@@ -77,4 +77,49 @@ var _ = Describe("Installer", func() {
 
 		Expect(deletedManifests).To(Equal(updatedManifests))
 	})
+	Context("self signed cert option", func() {
+		It("sets self-signed cert to be false when the input mesh has a custom root cert defined", func() {
+			installConfig := &v1.Install_Istio_{
+				Istio: &v1.Install_Istio{
+					InstallationNamespace: ns,
+					IstioVersion:          IstioVersion106,
+					CustomRootCert:        &core.ResourceRef{"foo", "bar"},
+				},
+			}
+
+			install := &v1.Install{
+				Metadata:    core.Metadata{Name: "myinstall", Namespace: "myns"},
+				Disabled:    false,
+				InstallType: installConfig,
+			}
+
+			_, err := installer.EnsureIstioInstall(context.TODO(), install)
+			Expect(err).NotTo(HaveOccurred())
+
+			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
+			Expect(man).NotTo(BeNil())
+			Expect(man.Content).To(ContainSubstring("--self-signed-ca=false"))
+		})
+		It("sets self-signed cert to be true when the input mesh has no custom root cert defined", func() {
+			installConfig := &v1.Install_Istio_{
+				Istio: &v1.Install_Istio{
+					InstallationNamespace: ns,
+					IstioVersion:          IstioVersion106,
+				},
+			}
+
+			install := &v1.Install{
+				Metadata:    core.Metadata{Name: "myinstall", Namespace: "myns"},
+				Disabled:    false,
+				InstallType: installConfig,
+			}
+
+			_, err := installer.EnsureIstioInstall(context.TODO(), install)
+			Expect(err).NotTo(HaveOccurred())
+
+			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
+			Expect(man).NotTo(BeNil())
+			Expect(man.Content).To(ContainSubstring("--self-signed-ca=true"))
+		})
+	})
 })
