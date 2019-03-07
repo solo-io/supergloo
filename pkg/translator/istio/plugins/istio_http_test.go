@@ -76,24 +76,57 @@ var _ = Describe("IstioHttp", func() {
 					params, *in, out)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(out.Route).To(HaveLen(4))
-				Expect(out.Route[0].Destination.Host).To(Equal("reviews.default.svc.cluster.local"))
-				Expect(out.Route[0].Destination.Port.Port.(*v1alpha3.PortSelector_Number).Number).To(Equal(uint32(9080)))
-				Expect(out.Route[0].Destination.Subset).To(Equal("app-reviews-version-v1"))
 
-				Expect(out.Route[1].Destination.Host).To(Equal("reviews.default.svc.cluster.local"))
-				Expect(out.Route[1].Destination.Port.Port.(*v1alpha3.PortSelector_Number).Number).To(Equal(uint32(9080)))
-				Expect(out.Route[1].Destination.Subset).To(Equal("app-reviews-version-v2"))
-
-				Expect(out.Route[2].Destination.Host).To(Equal("reviews.default.svc.cluster.local"))
-				Expect(out.Route[2].Destination.Port.Port.(*v1alpha3.PortSelector_Number).Number).To(Equal(uint32(9080)))
-				Expect(out.Route[2].Destination.Subset).To(Equal("app-reviews-version-v3"))
-
-				Expect(out.Route[3].Destination.Host).To(Equal("details.default.svc.cluster.local"))
-				Expect(out.Route[3].Destination.Port.Port.(*v1alpha3.PortSelector_Number).Number).To(Equal(uint32(9080)))
-				Expect(out.Route[3].Destination.Subset).To(Equal("app-details-version-v1"))
-
-				Expect(out.Route[0].Weight + out.Route[1].Weight + out.Route[2].Weight + out.Route[3].Weight).To(Equal(int32(100)))
+				Expect(out.Route).To(Equal([]*v1alpha3.HTTPRouteDestination{
+					{
+						Destination: &v1alpha3.Destination{
+							Host:   "reviews.default.svc.cluster.local",
+							Subset: "app-reviews-version-v1",
+							Port: &v1alpha3.PortSelector{
+								Port: &v1alpha3.PortSelector_Number{
+									Number: 9080,
+								},
+							},
+						},
+						Weight: 10,
+					},
+					{
+						Destination: &v1alpha3.Destination{
+							Host:   "reviews.default.svc.cluster.local",
+							Subset: "app-reviews-version-v2",
+							Port: &v1alpha3.PortSelector{
+								Port: &v1alpha3.PortSelector_Number{
+									Number: 9080,
+								},
+							},
+						},
+						Weight: 20,
+					},
+					{
+						Destination: &v1alpha3.Destination{
+							Host:   "reviews.default.svc.cluster.local",
+							Subset: "app-reviews-version-v3",
+							Port: &v1alpha3.PortSelector{
+								Port: &v1alpha3.PortSelector_Number{
+									Number: 9080,
+								},
+							},
+						},
+						Weight: 30,
+					},
+					{
+						Destination: &v1alpha3.Destination{
+							Host:   "details.default.svc.cluster.local",
+							Subset: "app-details-version-v1",
+							Port: &v1alpha3.PortSelector{
+								Port: &v1alpha3.PortSelector_Number{
+									Number: 9080,
+								},
+							},
+						},
+						Weight: 40,
+					},
+				}))
 
 			})
 		})

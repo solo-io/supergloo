@@ -3,8 +3,6 @@ package inputs
 import (
 	"time"
 
-	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-
 	"github.com/gogo/protobuf/types"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
