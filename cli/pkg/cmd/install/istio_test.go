@@ -104,7 +104,7 @@ var _ = Describe("Install", func() {
 			name := "input"
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
-			inst.InstalledManifest = "a previously insatlled manifest"
+			inst.InstalledManifest = "a previously installed manifest"
 			inst.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := helpers.MustInstallClient()
 			_, err := ic.Write(inst, clients.WriteOpts{})
@@ -119,9 +119,30 @@ var _ = Describe("Install", func() {
 
 			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(updatedInstall.InstallType.(*v1.Install_Istio_).Istio.EnableMtls).To(BeTrue())
-			Expect(updatedInstall.InstalledManifest).To(Equal(inst.InstalledManifest))
-			Expect(updatedInstall.InstalledMesh).To(Equal(inst.InstalledMesh))
+			Expect(updatedInstall).To(Equal(&v1.Install{
+				Metadata: core.Metadata{
+					Name:            name,
+					Namespace:       namespace,
+					ResourceVersion: updatedInstall.Metadata.ResourceVersion,
+				},
+				Disabled: false,
+				InstallType: &v1.Install_Istio_{
+					Istio: &v1.Install_Istio{
+						InstallationNamespace: "istio-system",
+						IstioVersion:          "1.0.5",
+						EnableAutoInject:      true,
+						EnableMtls:            true,
+						InstallGrafana:        true,
+						InstallPrometheus:     true,
+						InstallJaeger:         true,
+					},
+				},
+				InstalledManifest: "a previously installed manifest",
+				InstalledMesh: &core.ResourceRef{
+					Name:      "installed",
+					Namespace: "mesh",
+				},
+			}))
 		})
 	})
 })
