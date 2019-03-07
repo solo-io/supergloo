@@ -1296,14 +1296,6 @@
   version = "0.2.0"
 
 [[projects]]
-  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
-  name = "github.com/vektah/gqlgen"
-  packages = ["neelance/errors"]
-  pruneopts = "UT"
-  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
-  version = "0.3.0"
-
-[[projects]]
   digest = "1:520b3fe2981935aec909ea78b4db76912e47235d9aea024212ffd11ae3b88dbb"
   name = "go.opencensus.io"
   packages = [
@@ -2190,7 +2182,6 @@
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
-    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",

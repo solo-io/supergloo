@@ -94,6 +94,7 @@ var _ = Describe("E2e", func() {
 			Path:    "/details/1",
 		}, `"author":"William Shakespeare"`, time.Minute*2)
 
+		// test uninstall works
 		err = utils.Supergloo("uninstall --name=my-istio")
 		Expect(err).NotTo(HaveOccurred())
 
