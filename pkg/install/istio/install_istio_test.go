@@ -8,7 +8,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
-var _ = Describe("installIstio", func() {
+var _ = Describe("installOrUpdateIstio", func() {
 	type test struct {
 		opts installOptions
 	}
@@ -35,7 +35,7 @@ var _ = Describe("installIstio", func() {
 			t.opts.Version = ""
 			hi := newMockHelm(nil, nil, nil)
 			installer := &defaultIstioInstaller{helmInstaller: hi}
-			_, err := installer.installIstio(context.TODO(), t.opts)
+			_, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("must provide istio install version"))
 		})
@@ -44,7 +44,7 @@ var _ = Describe("installIstio", func() {
 			t.opts.Version = "asdf"
 			hi := newMockHelm(nil, nil, nil)
 			installer := &defaultIstioInstaller{helmInstaller: hi}
-			_, err := installer.installIstio(context.TODO(), t.opts)
+			_, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("is not a supported istio version"))
 		})
@@ -53,7 +53,7 @@ var _ = Describe("installIstio", func() {
 			t.opts.Namespace = ""
 			hi := newMockHelm(nil, nil, nil)
 			installer := &defaultIstioInstaller{helmInstaller: hi}
-			_, err := installer.installIstio(context.TODO(), t.opts)
+			_, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("must provide istio install namespace"))
 		})
@@ -69,12 +69,12 @@ var _ = Describe("installIstio", func() {
 			installer := &defaultIstioInstaller{helmInstaller: hi}
 
 			t.opts.Observability.EnableJaeger = true
-			_, err := installer.installIstio(context.TODO(), t.opts)
+			_, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(actualManifests).NotTo(BeEmpty())
 
 			t.opts.Observability.EnableJaeger = false
-			_, err = installer.installIstio(context.TODO(), t.opts)
+			_, err = installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(actualManifests).NotTo(BeEmpty())
 			Expect(manifestsHaveKey(actualManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeFalse())
@@ -92,7 +92,7 @@ var _ = Describe("installIstio", func() {
 			installer := &defaultIstioInstaller{helmInstaller: hi}
 
 			t.opts.Observability.EnableJaeger = true
-			_, err := installer.installIstio(context.TODO(), t.opts)
+			_, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(createManifests).NotTo(BeEmpty())
 			Expect(manifestsHaveKey(createManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeTrue())
@@ -100,7 +100,7 @@ var _ = Describe("installIstio", func() {
 			t.opts.previousInstall = createManifests
 
 			t.opts.Observability.EnableJaeger = false
-			_, err = installer.installIstio(context.TODO(), t.opts)
+			_, err = installer.installOrUpdateIstio(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(updateManifests).NotTo(BeEmpty())
 			Expect(manifestsHaveKey(updateManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeFalse())

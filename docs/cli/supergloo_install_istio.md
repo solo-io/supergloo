@@ -24,7 +24,7 @@ supergloo install istio [flags]
       --jaeger                          add jaeger to the install? (default true)
       --mtls                            enable mtls? (default true)
       --prometheus                      add prometheus to the install? (default true)
-      --version string                  version of istio to install? available: [1.0.3 1.0.5] (default "1.0.5")
+      --version string                  version of istio to install? available: [1.0.3 1.0.5 1.0.6] (default "1.0.6")
 ```
 
 ### Options inherited from parent commands

@@ -62,6 +62,8 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		},
 		Mtls: mtlsInstallOptions{
 			Enabled: istio.Istio.EnableMtls,
+			// self signed cert is true if using the buildtin istio cert
+			SelfSignedCert: istio.Istio.CustomRootCert == nil,
 		},
 		Observability: observabilityInstallOptions{
 			EnableGrafana:    istio.Istio.InstallGrafana,
@@ -71,7 +73,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	}
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := i.installIstio(ctx, opts)
+	manifests, err := i.installOrUpdateIstio(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}

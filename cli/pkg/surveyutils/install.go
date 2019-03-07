@@ -2,19 +2,16 @@ package surveyutils
 
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
+	"github.com/solo-io/supergloo/cli/pkg/constants"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
-	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 
 func SurveyIstioInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.IstioInstall.InstallationNamespace, helpers.MustGetNamespaces()); err != nil {
 		return err
 	}
-	if err := cliutil.ChooseFromList("which version of Istio to install? ", &in.IstioInstall.IstioVersion, []string{
-		istio.IstioVersion103,
-		istio.IstioVersion105,
-	}); err != nil {
+	if err := cliutil.ChooseFromList("which version of Istio to install? ", &in.IstioInstall.IstioVersion, constants.SupportedIstioVersions); err != nil {
 		return err
 	}
 

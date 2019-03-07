@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -22,10 +23,13 @@ func TestE2e(t *testing.T) {
 }
 
 var (
-	kube kubernetes.Interface
+	kube    kubernetes.Interface
+	rootCtx context.Context
+	cancel  func()
 )
 
 var _ = BeforeSuite(func() {
+	rootCtx, cancel = context.WithCancel(context.TODO())
 	kube = testutils.MustKubeClient()
 	// create sg ns
 	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
@@ -36,7 +40,7 @@ var _ = BeforeSuite(func() {
 	// start supergloo
 	go func() {
 		defer GinkgoRecover()
-		err := setup.Main(func(e error) {
+		err := setup.Main(rootCtx, func(e error) {
 			Expect(e).NotTo(HaveOccurred())
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -44,6 +48,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	cancel()
 	kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	clusterroles, err := kube.RbacV1beta1().ClusterRoles().List(metav1.ListOptions{})

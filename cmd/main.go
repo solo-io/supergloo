@@ -20,7 +20,7 @@ func run() error {
 	start := time.Now()
 	check.CallCheck("supergloo", version.Version, start)
 	go func() {
-		errs <- setup.Main(nil)
+		errs <- setup.Main(nil, nil)
 	}()
 	return <-errs
 }
