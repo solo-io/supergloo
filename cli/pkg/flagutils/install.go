@@ -10,7 +10,16 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func AddIstioInstallFlags(set *pflag.FlagSet, in *options.InputInstall) {
+func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
+
+	set.BoolVar(&in.Update,
+		"update",
+		false,
+		"update an existing install?")
+
+}
+
+func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 	set.StringVar(&in.IstioInstall.InstallationNamespace,
 		"installation-namespace",
 		"istio-system",

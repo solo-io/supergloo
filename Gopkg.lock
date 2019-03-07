@@ -2158,6 +2158,7 @@
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/kubeutils",
+    "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
