@@ -1,6 +1,7 @@
 package install
 
 import (
+	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +24,11 @@ modify the corresponding mesh.
 
 `,
 	}
+
+	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
+	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
+	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
+	flagutils.AddInstallFlags(cmd.PersistentFlags(), &opts.Install)
 
 	cmd.AddCommand(installIstioCmd(opts))
 	return cmd

@@ -3,6 +3,8 @@ package inputs
 import (
 	"time"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/gogo/protobuf/types"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -35,12 +37,14 @@ func BookInfoRoutingRules(namespace string, targetMesh *core.ResourceRef) v1.Rou
 	}
 }
 
-func TrafficShiftingRuleSpec(ups ...core.ResourceRef) *v1.RoutingRuleSpec {
+func TrafficShiftingRuleSpec(destinations ...core.ResourceRef) *v1.RoutingRuleSpec {
 	var dests []*gloov1.WeightedDestination
-	for i, us := range ups {
+	for i, d := range destinations {
 		dests = append(dests, &gloov1.WeightedDestination{
-			Destination: &gloov1.Destination{Upstream: us},
-			Weight:      uint32(i + 1),
+			Destination: &gloov1.Destination{
+				Upstream: d,
+			},
+			Weight: uint32(i + 1),
 		})
 	}
 	return &v1.RoutingRuleSpec{

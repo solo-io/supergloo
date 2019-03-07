@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -98,6 +99,50 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
+		})
+		It("should update existing enabled install if --update set to true", func() {
+			name := "input"
+			namespace := "ns"
+			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			inst.InstalledManifest = "a previously installed manifest"
+			inst.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			ic := helpers.MustInstallClient()
+			_, err := ic.Write(inst, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			err = utils.Supergloo("install istio " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--namespace=%v ", namespace) +
+				"--mtls=true " +
+				"--update=true ")
+			Expect(err).NotTo(HaveOccurred())
+
+			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(updatedInstall).To(Equal(&v1.Install{
+				Metadata: core.Metadata{
+					Name:            name,
+					Namespace:       namespace,
+					ResourceVersion: updatedInstall.Metadata.ResourceVersion,
+				},
+				Disabled: false,
+				InstallType: &v1.Install_Istio_{
+					Istio: &v1.Install_Istio{
+						InstallationNamespace: "istio-system",
+						IstioVersion:          "1.0.5",
+						EnableAutoInject:      true,
+						EnableMtls:            true,
+						InstallGrafana:        true,
+						InstallPrometheus:     true,
+						InstallJaeger:         true,
+					},
+				},
+				InstalledManifest: "a previously installed manifest",
+				InstalledMesh: &core.ResourceRef{
+					Name:      "installed",
+					Namespace: "mesh",
+				},
+			}))
 		})
 	})
 })

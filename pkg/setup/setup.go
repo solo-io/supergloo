@@ -2,18 +2,26 @@ package setup
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 
 func Main(customErrHandler func(error)) error {
+	if os.Getenv("START_STATS_SERVER") != "" {
+		stats.StartStatsServer()
+	}
+
 	rootCtx := createRootContext()
 	logger := contextutils.LoggerFrom(rootCtx)
 
@@ -32,7 +40,7 @@ func Main(customErrHandler func(error)) error {
 		return errors.Wrap(err, "initializing clients")
 	}
 
-	return runInstallEventLoop(rootCtx, errHandler, clients, createInstallSyncers())
+	return runInstallEventLoop(rootCtx, errHandler, clients, createInstallSyncers(clients.InstallClient, clients.MeshClient))
 }
 
 func createRootContext() context.Context {
@@ -43,6 +51,7 @@ func createRootContext() context.Context {
 
 type clientset struct {
 	InstallClient v1.InstallClient
+	MeshClient    v1.MeshClient
 }
 
 func createClients(ctx context.Context) (*clientset, error) {
@@ -64,8 +73,21 @@ func createClients(ctx context.Context) (*clientset, error) {
 		return nil, err
 	}
 
+	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
+		Crd:         v1.MeshCrd,
+		Cfg:         restConfig,
+		SharedCache: kubeCache,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := meshClient.Register(); err != nil {
+		return nil, err
+	}
+
 	return &clientset{
 		InstallClient: installClient,
+		MeshClient:    meshClient,
 	}, nil
 }
 
@@ -93,6 +115,10 @@ func runInstallEventLoop(ctx context.Context, errHandler func(err error), c *cli
 }
 
 // Add install syncers here
-func createInstallSyncers() v1.InstallSyncers {
-	return v1.InstallSyncers{}
+func createInstallSyncers(installClient v1.InstallClient, meshClient v1.MeshClient) v1.InstallSyncers {
+	return v1.InstallSyncers{
+		istio.NewInstallSyncer(nil,
+			meshClient,
+			reporter.NewReporter("istio-install-reporter", installClient.BaseClient())),
+	}
 }
