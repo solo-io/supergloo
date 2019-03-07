@@ -6,8 +6,11 @@ import (
 	"io"
 	"os"
 
+	"github.com/gogo/protobuf/proto"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/solo-io/go-utils/cliutils"
+	"github.com/solo-io/go-utils/protoutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -121,8 +124,16 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 	table.Render()
 }
 
-func mustMarshal(v interface{}) string {
+func MustMarshal(v interface{}) string {
 	jsn, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(jsn)
+}
+
+func MustMarshalProto(v proto.Message) string {
+	jsn, err := protoutils.MarshalBytes(v)
 	if err != nil {
 		panic(err)
 	}
@@ -135,11 +146,11 @@ func selector(in *v1.PodSelector) string {
 	}
 	switch t := in.SelectorType.(type) {
 	case *v1.PodSelector_LabelSelector_:
-		return fmt.Sprintf("labels: %v", mustMarshal(t.LabelSelector.LabelsToMatch))
+		return fmt.Sprintf("labels: %v", MustMarshal(t.LabelSelector.LabelsToMatch))
 	case *v1.PodSelector_UpstreamSelector_:
-		return fmt.Sprintf("upstreams: %v", mustMarshal(t.UpstreamSelector.Upstreams))
+		return fmt.Sprintf("upstreams: %v", MustMarshal(t.UpstreamSelector.Upstreams))
 	case *v1.PodSelector_NamespaceSelector_:
-		return fmt.Sprintf("namespaces: %v", mustMarshal(t.NamespaceSelector.Namespaces))
+		return fmt.Sprintf("namespaces: %v", MustMarshal(t.NamespaceSelector.Namespaces))
 	}
 	return "Unknown"
 }

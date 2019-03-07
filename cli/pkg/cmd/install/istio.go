@@ -2,6 +2,7 @@ package install
 
 import (
 	"github.com/pkg/errors"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	apierrs "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
@@ -22,7 +23,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyIstioInstall(&opts.Install.InputInstall); err != nil {
+				if err := surveyutils.SurveyIstioInstall(&opts.Install); err != nil {
 					return err
 				}
 			}
@@ -35,21 +36,31 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
-	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install.InputInstall)
+	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install)
 	return cmd
 }
 
 func createInstall(opts *options.Options) error {
-	// first check if install exists; if so, update and write that object
-	in, err := updateDisabledInstall(opts)
+	in, err := installFromOpts(opts)
 	if err != nil {
 		return err
 	}
-	if in == nil {
-		in, err = installFromOpts(opts)
-		if err != nil {
-			return err
+	// check for existing install
+	// if upgrade is set, upgrade it
+	// else error
+	existing, err := getExistingInstall(opts)
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		if !opts.Install.Update && !existing.Disabled {
+			return errors.Errorf("install %v is already installed and enabled", in.Metadata.Ref())
 		}
+		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading istio install from %s to %s",
+			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(in))
+		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+		in.InstalledManifest = existing.InstalledManifest
+		in.InstalledMesh = existing.InstalledMesh
 	}
 	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
@@ -61,7 +72,10 @@ func createInstall(opts *options.Options) error {
 	return nil
 }
 
-func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
+// returns install, nil if install exists
+// returns nil, nil if install does not exist
+// returns nil, err if other error
+func getExistingInstall(opts *options.Options) (*v1.Install, error) {
 	existingInstall, err := helpers.MustInstallClient().Read(opts.Metadata.Namespace,
 		opts.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
 	if err != nil {
@@ -70,28 +84,24 @@ func updateDisabledInstall(opts *options.Options) (*v1.Install, error) {
 		}
 		return nil, err
 	}
-	if !existingInstall.Disabled {
-		return nil, errors.Errorf("install %v is already installed and enabled", opts.Metadata)
-	}
-	existingInstall.Disabled = false
 	return existingInstall, nil
 }
 
 func installFromOpts(opts *options.Options) (*v1.Install, error) {
-	if err := validate(opts.Install.InputInstall); err != nil {
+	if err := validate(opts.Install); err != nil {
 		return nil, err
 	}
 	in := &v1.Install{
 		Metadata: opts.Metadata,
 		InstallType: &v1.Install_Istio_{
-			Istio: &opts.Install.InputInstall.IstioInstall,
+			Istio: &opts.Install.IstioInstall,
 		},
 	}
 
 	return in, nil
 }
 
-func validate(in options.InputInstall) error {
+func validate(in options.Install) error {
 	var validVersion bool
 	for _, ver := range []string{
 		istio.IstioVersion103,

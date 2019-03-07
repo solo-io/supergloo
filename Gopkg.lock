@@ -1030,11 +1030,12 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:75d51eeab0df85a3cea9e1297ccd3183b20a10cb4b48c753d8ec8d113cc14250"
+  digest = "1:93a746f1060a8acbcf69344862b2ceced80f854170e1caae089b2834c5fbf7f4"
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
     "prometheus/internal",
+    "prometheus/promhttp",
   ]
   pruneopts = "UT"
   revision = "505eaef017263e299324067d40ca2c48f6a2cf50"
@@ -1179,7 +1180,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:9ec760c95b3185b20de26bd1ee9c36208bb7fd08ddc58be00b36cc0f01a60bba"
+  digest = "1:6bd1b2da233efa7ddc1a612ad8ae8dc82c6996af7f30eb5bea22954d4f0d3a1e"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1193,13 +1194,14 @@
     "kubeutils",
     "logger",
     "protoutils",
+    "stats",
     "stringutils",
     "testutils",
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "e084fb30fbb39f78ce3dde57d5113fbf370d19ae"
-  version = "v0.2.14"
+  revision = "c7ac680a3615eb8f0cdbf12b3b8d4a2df69ee687"
+  version = "v0.2.12"
 
 [[projects]]
   digest = "1:618225445970987ecffb9b7c55cf0f78fe8bade7f0422131b950cea20d48ee32"
@@ -1302,19 +1304,24 @@
   version = "0.3.0"
 
 [[projects]]
-  digest = "1:64c18dbf9c05549d0b0189cb0325e2145d788d1acc05735103746589c61dcff1"
+  digest = "1:520b3fe2981935aec909ea78b4db76912e47235d9aea024212ffd11ae3b88dbb"
   name = "go.opencensus.io"
   packages = [
     ".",
+    "exporter/prometheus",
     "internal",
     "internal/tagencoding",
+    "plugin/ocgrpc",
     "stats",
     "stats/internal",
     "stats/view",
     "tag",
     "trace",
     "trace/internal",
+    "trace/propagation",
     "trace/tracestate",
+    "zpages",
+    "zpages/internal",
   ]
   pruneopts = "UT"
   revision = "b11f239c032624b045c4c2bfd3d1287b4012ce89"
@@ -2151,6 +2158,8 @@
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/kubeutils",
+    "github.com/solo-io/go-utils/protoutils",
+    "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/go-utils/versionutils",

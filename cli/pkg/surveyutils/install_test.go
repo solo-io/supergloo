@@ -31,9 +31,11 @@ var _ = Describe("Metadata", func() {
 			c.SendLine("y")
 			c.ExpectString("add jaeger to the install? ")
 			c.SendLine("y")
+			c.ExpectString("update an existing install? ")
+			c.SendLine("y")
 			c.ExpectEOF()
 		}, func() {
-			var in options.InputInstall
+			var in options.Install
 			err := SurveyIstioInstall(&in)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(in.IstioInstall.InstallationNamespace).To(Equal(namespace))
@@ -43,6 +45,7 @@ var _ = Describe("Metadata", func() {
 			Expect(in.IstioInstall.InstallGrafana).To(Equal(true))
 			Expect(in.IstioInstall.InstallPrometheus).To(Equal(true))
 			Expect(in.IstioInstall.InstallJaeger).To(Equal(true))
+			Expect(in.Update).To(Equal(true))
 		})
 	})
 })
