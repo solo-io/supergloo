@@ -166,6 +166,10 @@ func validateMeshGroups(meshes v1.MeshList, meshGroups v1.MeshGroupList, resourc
 	}
 }
 
+/*
+Translate a snapshot into a set of MeshConfigs for each mesh
+Currently only active istio mesh is expected.
+*/
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
