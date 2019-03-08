@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
+
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/test/setup"
 	utils3 "github.com/solo-io/supergloo/test/e2e/utils"
@@ -98,15 +100,18 @@ var _ = Describe("E2e", func() {
 		err = utils.Supergloo("uninstall --name=my-istio")
 		Expect(err).NotTo(HaveOccurred())
 
+		err = nil
 		Eventually(func() error {
-			_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+			_, err = kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
 			return err
 		}, time.Minute*2).Should(HaveOccurred())
+		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
 		Eventually(func() error {
 			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
 			return err
 		}, time.Second*20).Should(HaveOccurred())
+		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
 	})
 })
