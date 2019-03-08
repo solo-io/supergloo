@@ -298,7 +298,7 @@ func (t *translator) translateMesh(
 		VirtualServices:  virtualServices,
 		DestinationRules: destinationRules,
 		MeshPolicy:       meshPolicy,
-		RbacConfig:       securityConfig,
+		SecurityConfig:   securityConfig,
 	}
 	meshConfig.Sort()
 

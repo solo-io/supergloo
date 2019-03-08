@@ -51,7 +51,7 @@ var _ = Describe("Setup", func() {
 		install := &v1.Install{
 			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
 		}
-		_, err = cs.InstallClient.Write(install, clients.WriteOpts{})
+		_, err = cs.installClient.Write(install, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.InstallSnapshot {
