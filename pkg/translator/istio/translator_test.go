@@ -312,7 +312,7 @@ var _ = Describe("Translator", func() {
 		Expect(configPerMesh).To(HaveKey(istioMesh))
 		meshConfig := configPerMesh[istioMesh]
 		Expect(meshConfig).NotTo(BeNil())
-		Expect(meshConfig.DesinationRules).To(HaveLen(4))
+		Expect(meshConfig.DestinationRules).To(HaveLen(4))
 		// we should have 1 subset for the service selector followed by 1 subset for each set of tags
 		for i, expected := range []destinationRule{
 			{"details.default.svc.cluster.local",
@@ -348,10 +348,10 @@ var _ = Describe("Translator", func() {
 						map[string]string{"app": "reviews", "version": "v3"}},
 				}},
 		} {
-			Expect(meshConfig.DesinationRules[i].Host).To(Equal(expected.host))
+			Expect(meshConfig.DestinationRules[i].Host).To(Equal(expected.host))
 			for j, sub := range expected.subsets {
-				Expect(meshConfig.DesinationRules[i].Subsets[j].Name).To(Equal(sub.name))
-				Expect(meshConfig.DesinationRules[i].Subsets[j].Labels).To(Equal(sub.labels))
+				Expect(meshConfig.DestinationRules[i].Subsets[j].Name).To(Equal(sub.name))
+				Expect(meshConfig.DestinationRules[i].Subsets[j].Labels).To(Equal(sub.labels))
 			}
 
 			Expect(meshConfig.VirtualServices).To(HaveLen(4))

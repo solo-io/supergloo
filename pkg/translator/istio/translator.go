@@ -4,6 +4,8 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
@@ -28,19 +30,19 @@ type Translator interface {
 // A container for the entire set of config for a single istio mesh
 type MeshConfig struct {
 	// mtls
-	MeshPolicy      *v1alpha1.MeshPolicy // meshpolicy is a singleton
-	DesinationRules v1alpha3.DestinationRuleList
+	MeshPolicy *v1alpha1.MeshPolicy // meshpolicy is a singleton
 
 	// routing
-	VirtualServices v1alpha3.VirtualServiceList
+	DestinationRules v1alpha3.DestinationRuleList
+	VirtualServices  v1alpha3.VirtualServiceList
 
-	// security
+	// rbac
 	SecurityConfig
 }
 
 func (c *MeshConfig) Sort() {
-	sort.SliceStable(c.DesinationRules, func(i, j int) bool {
-		return c.DesinationRules[i].Metadata.Less(c.DesinationRules[j].Metadata)
+	sort.SliceStable(c.DestinationRules, func(i, j int) bool {
+		return c.DestinationRules[i].Metadata.Less(c.DestinationRules[j].Metadata)
 	})
 	sort.SliceStable(c.VirtualServices, func(i, j int) bool {
 		return c.VirtualServices[i].Metadata.Less(c.VirtualServices[j].Metadata)
@@ -108,6 +110,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		meshConfig, err := t.translateMesh(params, in, upstreams, pods, resourceErrs)
 		if err != nil {
 			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
+			contextutils.LoggerFrom(ctx).Errorf("translating for mesh %v failed: %v", mesh.Metadata.Ref(), err)
 			continue
 		}
 		perMeshConfig[mesh] = meshConfig
@@ -292,10 +295,10 @@ func (t *translator) translateMesh(
 	)
 
 	meshConfig := &MeshConfig{
-		VirtualServices: virtualServices,
-		DesinationRules: destinationRules,
-		MeshPolicy:      meshPolicy,
-		SecurityConfig:  securityConfig,
+		VirtualServices:  virtualServices,
+		DestinationRules: destinationRules,
+		MeshPolicy:       meshPolicy,
+		RbacConfig:       securityConfig,
 	}
 	meshConfig.Sort()
 
