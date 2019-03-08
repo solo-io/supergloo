@@ -59,6 +59,63 @@ func NewTranslator(plugins []plugins.Plugin) Translator {
 	return &translator{plugins: plugins}
 }
 
+/*
+Translate a snapshot into a set of MeshConfigs for each mesh
+Currently only active istio mesh is expected.
+*/
+func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
+	meshes := snapshot.Meshes.List()
+	meshGroups := snapshot.Meshgroups.List()
+	upstreams := snapshot.Upstreams.List()
+	pods := snapshot.Pods.List()
+	routingRules := snapshot.Routingrules.List()
+	securityRules := snapshot.Securityrules.List()
+
+	resourceErrs := make(reporter.ResourceErrors)
+	resourceErrs.Accept(meshes.AsInputResources()...)
+	resourceErrs.Accept(meshGroups.AsInputResources()...)
+	resourceErrs.Accept(routingRules.AsInputResources()...)
+
+	// TODO (ilackarms): when we support installing Gloo
+	// ensure that we handle race condition with upstream
+	// reporting.
+	resourceErrs.Accept(upstreams.AsInputResources()...)
+
+	validateMeshGroups(meshes, meshGroups, resourceErrs)
+
+	routingRulesByMesh := splitRulesByMesh(ctx, routingRules, securityRules, meshes, meshGroups, resourceErrs)
+
+	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
+
+	params := plugins.Params{
+		Ctx:       ctx,
+		Upstreams: upstreams,
+	}
+
+	for _, mesh := range meshes {
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		if !ok {
+			// we only want istio meshes
+			continue
+		}
+		writeNamespace := istio.Istio.InstallationNamespace
+		rules := routingRulesByMesh[mesh]
+		in := inputMeshConfig{
+			writeNamespace: writeNamespace,
+			mesh:           mesh,
+			rules:          rules,
+		}
+		meshConfig, err := t.translateMesh(params, in, upstreams, pods, resourceErrs)
+		if err != nil {
+			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
+			continue
+		}
+		perMeshConfig[mesh] = meshConfig
+	}
+
+	return perMeshConfig, resourceErrs, nil
+}
+
 type labelsPortTuple struct {
 	labels map[string]string
 	port   uint32
@@ -164,63 +221,6 @@ func validateMeshGroups(meshes v1.MeshList, meshGroups v1.MeshGroupList, resourc
 			}
 		}
 	}
-}
-
-/*
-Translate a snapshot into a set of MeshConfigs for each mesh
-Currently only active istio mesh is expected.
-*/
-func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
-	meshes := snapshot.Meshes.List()
-	meshGroups := snapshot.Meshgroups.List()
-	upstreams := snapshot.Upstreams.List()
-	pods := snapshot.Pods.List()
-	routingRules := snapshot.Routingrules.List()
-	securityRules := snapshot.Securityrules.List()
-
-	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
-
-	// TODO (ilackarms): when we support installing Gloo
-	// ensure that we handle race condition with upstream
-	// reporting.
-	resourceErrs.Accept(upstreams.AsInputResources()...)
-
-	validateMeshGroups(meshes, meshGroups, resourceErrs)
-
-	routingRulesByMesh := splitRulesByMesh(ctx, routingRules, securityRules, meshes, meshGroups, resourceErrs)
-
-	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
-
-	params := plugins.Params{
-		Ctx:       ctx,
-		Upstreams: upstreams,
-	}
-
-	for _, mesh := range meshes {
-		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
-		if !ok {
-			// we only want istio meshes
-			continue
-		}
-		writeNamespace := istio.Istio.InstallationNamespace
-		rules := routingRulesByMesh[mesh]
-		in := inputMeshConfig{
-			writeNamespace: writeNamespace,
-			mesh:           mesh,
-			rules:          rules,
-		}
-		meshConfig, err := t.translateMesh(params, in, upstreams, pods, resourceErrs)
-		if err != nil {
-			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
-			continue
-		}
-		perMeshConfig[mesh] = meshConfig
-	}
-
-	return perMeshConfig, resourceErrs, nil
 }
 
 // produces a complete istio config
