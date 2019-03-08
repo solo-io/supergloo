@@ -107,8 +107,9 @@ var _ = Describe("E2e", func() {
 		}, time.Minute*2).Should(HaveOccurred())
 		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
+		err = nil
 		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			_, err = meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
 			return err
 		}, time.Second*20).Should(HaveOccurred())
 		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
