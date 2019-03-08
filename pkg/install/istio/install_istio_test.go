@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -104,6 +105,33 @@ var _ = Describe("installOrUpdateIstio", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(updateManifests).NotTo(BeEmpty())
 			Expect(manifestsHaveKey(updateManifests, "istio/charts/tracing/templates/service-jaeger.yaml")).To(BeFalse())
+		})
+		It("does not run update if the opts do not change", func() {
+			t := t()
+			hi := newMockHelm(func(ctx context.Context, namespace string, manifests helm.Manifests) error {
+				return nil
+			}, nil, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
+				return fmt.Errorf("i was not expected to be called")
+			})
+			installer := &defaultIstioInstaller{helmInstaller: hi}
+
+			// perform initial install
+			manifests, err := installer.installOrUpdateIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+
+			// same opts, now with a previous install
+			t.opts.previousInstall = manifests
+
+			// should be a no-op
+			// mock helm will return an error here if update is called
+			_, err = installer.installOrUpdateIstio(context.TODO(), t.opts)
+			Expect(err).NotTo(HaveOccurred())
+
+			// change a config opt
+			// now we should call update, and expect the error
+			t.opts.Mtls.Enabled = !t.opts.Mtls.Enabled
+			_, err = installer.installOrUpdateIstio(context.TODO(), t.opts)
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })
