@@ -63,8 +63,10 @@ var _ = Describe("E2e", func() {
 		err = utils3.DeployTestRunner(basicNamespace)
 		Expect(err).NotTo(HaveOccurred())
 
-		err = utils3.DeployTestRunner(namespaceWithInject)
-		Expect(err).NotTo(HaveOccurred())
+		// the sidecar injector might take some time to become available
+		Eventually(func() error {
+			return utils3.DeployTestRunner(namespaceWithInject)
+		}, time.Minute*1).ShouldNot(HaveOccurred())
 
 		err = utils3.DeployBookInfo(namespaceWithInject)
 		Expect(err).NotTo(HaveOccurred())
