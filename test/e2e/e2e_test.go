@@ -113,7 +113,7 @@ var _ = Describe("E2e", func() {
 		Eventually(func() error {
 			_, err = meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
 			return err
-		}, time.Second*20).Should(HaveOccurred())
+		}, time.Minute*2).Should(HaveOccurred())
 		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
 	})
