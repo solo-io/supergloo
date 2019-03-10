@@ -2,11 +2,11 @@ package surveyutils
 
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/vektah/gqlgen/neelance/errors"
 )
 
 func SurveyUninstall(opts *options.Options) error {

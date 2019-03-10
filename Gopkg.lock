@@ -1148,7 +1148,7 @@
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
-  digest = "1:8299baa8982e5a83095f69dd8c7b0cd0796817d991b3edd5ef3033c9fa4e12e0"
+  digest = "1:0eeed0b5e1698e3113eae85a6fa36cdcd9b304fe46a9c199dca09e884ea8ea56"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1168,8 +1168,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "5e5b0fcbf769497c7fe00db7fa5c7b839542ea00"
-  version = "v0.9.0"
+  revision = "a07620941be10029f13d6c00ddfa52bae141304a"
+  version = "v0.10.2"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1180,7 +1180,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:6bd1b2da233efa7ddc1a612ad8ae8dc82c6996af7f30eb5bea22954d4f0d3a1e"
+  digest = "1:f182e8137d513544595f2d54c60c917a93fdf2b899f2e57cb7db0e13cd19ce53"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1200,11 +1200,11 @@
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "c7ac680a3615eb8f0cdbf12b3b8d4a2df69ee687"
-  version = "v0.2.12"
+  revision = "167df0ee2b8bde9d0944f00c650f19772b25d36b"
+  version = "v0.3.1"
 
 [[projects]]
-  digest = "1:618225445970987ecffb9b7c55cf0f78fe8bade7f0422131b950cea20d48ee32"
+  digest = "1:f40baffe626835d3e02804e4a4c3c85c6990ca9665addbdfd4eaf9137d0b8544"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1254,8 +1254,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "6dbbf377211f93ed8dbc6689bfc6cf5aa4a3f821"
-  version = "v0.3.1"
+  revision = "ee9a893e29dcd97ec133b4f69782f29cf4218efd"
+  version = "v0.3.2"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -1294,14 +1294,6 @@
   pruneopts = "UT"
   revision = "a5dbd03a2245d554160e3ae6bfdcf969fe58b431"
   version = "0.2.0"
-
-[[projects]]
-  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
-  name = "github.com/vektah/gqlgen"
-  packages = ["neelance/errors"]
-  pruneopts = "UT"
-  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
-  version = "0.3.0"
 
 [[projects]]
   digest = "1:520b3fe2981935aec909ea78b4db76912e47235d9aea024212ffd11ae3b88dbb"
@@ -2190,7 +2182,6 @@
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
-    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
