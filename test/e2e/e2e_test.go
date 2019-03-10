@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	skerrors "github.com/solo-io/solo-kit/pkg/errors"
+
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/solo-io/go-utils/errors"
@@ -110,12 +112,13 @@ var _ = Describe("E2e", func() {
 		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
 		err = nil
-		Eventually(func() error {
+		Eventually(func() bool {
 			_, err = meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
-			return err
-		}, time.Minute*2).Should(HaveOccurred())
-		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
-
+			if err == nil {
+				return false
+			}
+			return skerrors.IsNotExist(err)
+		}, time.Minute*2).Should(BeTrue())
 	})
 })
 
