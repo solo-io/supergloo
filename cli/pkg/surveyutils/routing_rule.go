@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/errors"
+
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/supergloo/cli/pkg/options"
-	"github.com/vektah/gqlgen/neelance/errors"
 )
 
 func SurveyRoutingRule(ctx context.Context, in *options.CreateRoutingRule) error {

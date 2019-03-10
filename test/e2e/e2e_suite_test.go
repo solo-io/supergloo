@@ -5,16 +5,16 @@ import (
 	"strings"
 	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
-	v1 "k8s.io/api/core/v1"
+	kubev1 "k8s.io/api/core/v1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 func TestE2e(t *testing.T) {
@@ -23,16 +23,34 @@ func TestE2e(t *testing.T) {
 }
 
 var (
-	kube    kubernetes.Interface
-	rootCtx context.Context
-	cancel  func()
+	kube                                kubernetes.Interface
+	rootCtx                             context.Context
+	cancel                              func()
+	basicNamespace, namespaceWithInject string
 )
 
 var _ = BeforeSuite(func() {
+	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
+
+	_, err := helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: basicNamespace,
+		},
+	})
+	Expect(err).NotTo(HaveOccurred())
+
+	_, err = helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   namespaceWithInject,
+			Labels: map[string]string{"istio-injection": "enabled"},
+		},
+	})
+	Expect(err).NotTo(HaveOccurred())
+
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	kube = testutils.MustKubeClient()
 	// create sg ns
-	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
+	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: "supergloo-system"},
 	})
 	Expect(err).NotTo(HaveOccurred())
@@ -51,6 +69,8 @@ var _ = AfterSuite(func() {
 	cancel()
 	kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
+	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
+	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	clusterroles, err := kube.RbacV1beta1().ClusterRoles().List(metav1.ListOptions{})
 	if err == nil {
 		for _, cr := range clusterroles.Items {

@@ -122,6 +122,11 @@ func (i *defaultIstioInstaller) installOrUpdateIstio(ctx context.Context, opts i
 		manifests[i] = m
 	}
 
+	// nothing to do if the manifest hasn't changed
+	if opts.previousInstall.CombinedString() == manifests.CombinedString() {
+		return manifests, nil
+	}
+
 	// perform upgrade instead
 	if len(opts.previousInstall) > 0 {
 		if err := i.helmInstaller.UpdateFromManifests(ctx, namespace, opts.previousInstall, manifests, true); err != nil {

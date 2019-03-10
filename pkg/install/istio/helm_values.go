@@ -5,7 +5,11 @@ package istio
 const helmValues = `
 global:
   proxy:
-    autoInject: {{ .AutoInject.Enabled }}
+    {{- if .AutoInject.Enabled }}
+    autoInject: enabled
+    {{- else }}
+    autoInject: disabled
+    {{- end }}
 
   # controlPlaneMtls enabled.
   controlPlaneSecurityEnabled: {{ .Mtls.Enabled }}
