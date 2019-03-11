@@ -2,13 +2,13 @@ package setup
 
 import (
 	"context"
+	"github.com/solo-io/supergloo/pkg/registration"
 	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/registration/istio"
 )
 
 func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
@@ -19,15 +19,15 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		if err == nil {
 			return
 		}
-		logger.Errorf("config error: %v", err)
+		logger.Errorf("registration error: %v", err)
 		if customErrHandler != nil {
 			customErrHandler(err)
 		}
 	}
 
-	configSyncers := createRegistrationSyncers(cs, errHandler)
+	registrationSyncers := createRegistrationSyncers(cs, errHandler)
 
-	if err := runRegistrationEventLoop(ctx, errHandler, cs, configSyncers); err != nil {
+	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
 	}
 
@@ -37,21 +37,21 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 // Add registration syncers here
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
-		istio.NewIstioRegistrationSyncer(clientset, errHandler),
+		registration.NewRegistrationSyncer(clientset, errHandler),
 	}
 }
 
-// start the istio config event loop
+// start the registration event loop
 func runRegistrationEventLoop(ctx context.Context, errHandler func(err error), clientset *clientset.Clientset, syncers v1.RegistrationSyncer) error {
-	configEmitter := v1.NewRegistrationEmitter(clientset.Input.Mesh)
-	configEventLoop := v1.NewRegistrationEventLoop(configEmitter, syncers)
+	registrationEmitter := v1.NewRegistrationEmitter(clientset.Input.Mesh)
+	registrationEventLoop := v1.NewRegistrationEventLoop(registrationEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{
 		Ctx:         ctx,
 		RefreshRate: time.Second * 1,
 	}
 
-	configEventLoopErrs, err := configEventLoop.Run(nil, watchOpts)
+	registrationEventLoopErrs, err := registrationEventLoop.Run(nil, watchOpts)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func runRegistrationEventLoop(ctx context.Context, errHandler func(err error), c
 	go func() {
 		for {
 			select {
-			case err := <-configEventLoopErrs:
+			case err := <-registrationEventLoopErrs:
 				errHandler(err)
 			case <-ctx.Done():
 			}
