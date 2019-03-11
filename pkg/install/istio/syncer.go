@@ -17,11 +17,11 @@ import (
 type installSyncer struct {
 	istioInstaller Installer
 	meshClient     v1.MeshClient
-	reptorter      reporter.Reporter
+	reporter       reporter.Reporter
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reptorter reporter.Reporter) v1.InstallSyncer {
+func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
 	if istioInstaller == nil {
 		istioInstaller = &defaultIstioInstaller{
 			helmInstaller: helm.NewHelmInstaller(),
@@ -30,7 +30,7 @@ func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reptor
 	return &installSyncer{
 		istioInstaller: istioInstaller,
 		meshClient:     meshClient,
-		reptorter:      reptorter,
+		reporter:       reporter,
 	}
 }
 
@@ -108,7 +108,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	}
 
 	// reporter should handle updates to the installs that happened during ensure
-	return s.reptorter.WriteReports(ctx, resourceErrs, nil)
+	return s.reporter.WriteReports(ctx, resourceErrs, nil)
 
 }
 
