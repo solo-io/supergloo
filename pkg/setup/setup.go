@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
-	installsetup "github.com/solo-io/supergloo/pkg/install/istio/setup"
+	installsetup "github.com/solo-io/supergloo/pkg/install/setup"
 	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
 )
 
