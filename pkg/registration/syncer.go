@@ -2,6 +2,7 @@ package registration
 
 import (
 	"context"
+
 	"github.com/solo-io/supergloo/pkg/config/setup"
 
 	"github.com/solo-io/go-utils/contextutils"

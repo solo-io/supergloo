@@ -32,6 +32,7 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 		return err
 	}
 
+	<-rootCtx.Done()
 	return nil
 }
 

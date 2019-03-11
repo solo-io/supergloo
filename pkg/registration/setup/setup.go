@@ -2,8 +2,9 @@ package setup
 
 import (
 	"context"
-	"github.com/solo-io/supergloo/pkg/registration"
 	"time"
+
+	"github.com/solo-io/supergloo/pkg/registration"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
