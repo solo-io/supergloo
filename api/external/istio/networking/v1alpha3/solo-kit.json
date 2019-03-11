@@ -5,6 +5,7 @@
     "version": "v1alpha3",
     "docs_dir": "",
     "resource_groups": null,
+    "crd_group_override": "networking.istio.io",
     "ProjectFile": "",
     "GoPackage": ""
 }

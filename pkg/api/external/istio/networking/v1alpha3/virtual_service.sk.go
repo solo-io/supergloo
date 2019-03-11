@@ -162,9 +162,9 @@ func (o *VirtualService) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*VirtualService)
 }
 
-var VirtualServiceCrd = crd.NewCrd("istio.networking.v1alpha3",
+var VirtualServiceCrd = crd.NewCrd("networking.istio.io",
 	"virtualservices",
-	"istio.networking.v1alpha3",
+	"networking.istio.io",
 	"v1alpha3",
 	"VirtualService",
 	"virtualservice",

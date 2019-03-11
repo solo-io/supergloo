@@ -160,9 +160,9 @@ func (o *DestinationRule) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*DestinationRule)
 }
 
-var DestinationRuleCrd = crd.NewCrd("istio.networking.v1alpha3",
+var DestinationRuleCrd = crd.NewCrd("networking.istio.io",
 	"destinationrules",
-	"istio.networking.v1alpha3",
+	"networking.istio.io",
 	"v1alpha3",
 	"DestinationRule",
 	"destinationrule",
