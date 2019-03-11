@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/translator/istio"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -11,12 +13,12 @@ import (
 )
 
 type istioConfigSyncer struct {
-	translator  Translator
+	translator  istio.Translator
 	reconcilers Reconcilers
 	reporter    reporter.Reporter
 }
 
-func NewIstioConfigSyncer(translator Translator, reconcilers Reconcilers, reporter reporter.Reporter) v1.ConfigSyncer {
+func NewIstioConfigSyncer(translator istio.Translator, reconcilers Reconcilers, reporter reporter.Reporter) v1.ConfigSyncer {
 	return &istioConfigSyncer{translator: translator, reconcilers: reconcilers, reporter: reporter}
 }
 

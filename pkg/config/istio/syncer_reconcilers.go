@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/translator/istio"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -14,7 +16,7 @@ import (
 )
 
 type Reconcilers interface {
-	ReconcileAll(ctx context.Context, writeNamespace string, config *MeshConfig) error
+	ReconcileAll(ctx context.Context, writeNamespace string, config *istio.MeshConfig) error
 }
 
 type istioReconcilers struct {
@@ -46,7 +48,7 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 	}
 }
 
-func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace string, config *MeshConfig) error {
+func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace string, config *istio.MeshConfig) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
