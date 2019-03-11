@@ -38,6 +38,7 @@ var _ = Describe("HelmChartInstaller", func() {
 	})
 	AfterEach(func() {
 		testutils.TeardownKube(ns)
+		testutils2.TeardownIstio(kubeClient)
 	})
 	Context("create manifest", func() {
 		It("creates resources from a helm chart", func() {
