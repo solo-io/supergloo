@@ -51,11 +51,16 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace string, config *istio.MeshConfig) error {
 	logger := contextutils.LoggerFrom(ctx)
 
-	logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
-	s.setLabels(config.MeshPolicy)
+	// this list should always either be empty or contain the global mesh policy
+	var meshPoliciesToReconcile policyv1alpha1.MeshPolicyList
+	if config.MeshPolicy != nil {
+		logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
+		s.setLabels(config.MeshPolicy)
+		meshPoliciesToReconcile = append(meshPoliciesToReconcile, config.MeshPolicy)
+	}
 	if err := s.meshPolicyReconciler.Reconcile(
 		writeNamespace,
-		policyv1alpha1.MeshPolicyList{config.MeshPolicy}, // mesh policy is a singleton
+		meshPoliciesToReconcile, // mesh policy is a singleton
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
@@ -65,11 +70,16 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		return errors.Wrapf(err, "reconciling default mesh policy")
 	}
 
-	logger.Infof("RbacConfig: %v", config.RbacConfig.Metadata.Name)
-	s.setLabels(config.RbacConfig)
+	// this list should always either be empty or contain the global rbac config
+	var rbacConfigsToReconcile rbacv1alpha1.RbacConfigList
+	if config.MeshPolicy != nil {
+		logger.Infof("RbacConfig: %v", config.RbacConfig.Metadata.Name)
+		s.setLabels(config.RbacConfig)
+		rbacConfigsToReconcile = append(rbacConfigsToReconcile, config.RbacConfig)
+	}
 	if err := s.rbacConfigReconciler.Reconcile(
 		writeNamespace,
-		rbacv1alpha1.RbacConfigList{config.RbacConfig}, // rbac config is a singleton
+		rbacConfigsToReconcile, // rbac config is a singleton
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
