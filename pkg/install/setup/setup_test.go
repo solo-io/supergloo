@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/api/clientset"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
@@ -33,7 +35,7 @@ var _ = Describe("Setup", func() {
 	})
 	It("runs the install event loop", func() {
 
-		cs, err := createClients(ctx)
+		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		errHandler := func(err error) {
 			Expect(err).NotTo(HaveOccurred())
@@ -43,7 +45,7 @@ var _ = Describe("Setup", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err = runInstallEventLoop(ctx, errHandler, cs, v1.InstallSyncers{mockSyncer})
+			err = startEventLoop(ctx, errHandler, cs, v1.InstallSyncers{mockSyncer})
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
@@ -51,7 +53,7 @@ var _ = Describe("Setup", func() {
 		install := &v1.Install{
 			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
 		}
-		_, err = cs.InstallClient.Write(install, clients.WriteOpts{})
+		_, err = cs.Input.Install.Write(install, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.InstallSnapshot {
