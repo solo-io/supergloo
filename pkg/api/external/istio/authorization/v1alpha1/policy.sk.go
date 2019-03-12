@@ -162,9 +162,9 @@ func (o *Policy) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*Policy)
 }
 
-var PolicyCrd = crd.NewCrd("istio.authentication.v1alpha1",
+var PolicyCrd = crd.NewCrd("authentication.istio.io",
 	"policies",
-	"istio.authentication.v1alpha1",
+	"authentication.istio.io",
 	"v1alpha1",
 	"Policy",
 	"policy",

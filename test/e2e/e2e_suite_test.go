@@ -2,17 +2,14 @@ package e2e_test
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
-	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -71,43 +68,5 @@ var _ = AfterSuite(func() {
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
-	clusterroles, err := kube.RbacV1beta1().ClusterRoles().List(metav1.ListOptions{})
-	if err == nil {
-		for _, cr := range clusterroles.Items {
-			if strings.Contains(cr.Name, "istio") {
-				kube.RbacV1beta1().ClusterRoles().Delete(cr.Name, nil)
-			}
-		}
-	}
-	clusterrolebindings, err := kube.RbacV1beta1().ClusterRoleBindings().List(metav1.ListOptions{})
-	if err == nil {
-		for _, cr := range clusterrolebindings.Items {
-			if strings.Contains(cr.Name, "istio") {
-				kube.RbacV1beta1().ClusterRoleBindings().Delete(cr.Name, nil)
-			}
-		}
-	}
-	webhooks, err := kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(metav1.ListOptions{})
-	if err == nil {
-		for _, wh := range webhooks.Items {
-			if strings.Contains(wh.Name, "istio") {
-				kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(wh.Name, nil)
-			}
-		}
-	}
-
-	cfg, err := kubeutils.GetConfig("", "")
-	Expect(err).NotTo(HaveOccurred())
-
-	exts, err := apiexts.NewForConfig(cfg)
-	Expect(err).NotTo(HaveOccurred())
-
-	crds, err := exts.ApiextensionsV1beta1().CustomResourceDefinitions().List(metav1.ListOptions{})
-	if err == nil {
-		for _, cr := range crds.Items {
-			if strings.Contains(cr.Name, "istio") {
-				exts.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(cr.Name, nil)
-			}
-		}
-	}
+	testutils.TeardownIstio(kube)
 })
