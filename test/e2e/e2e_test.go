@@ -1,8 +1,11 @@
 package e2e_test
 
 import (
+	"fmt"
 	"strings"
 	"time"
+
+	"github.com/gogo/protobuf/proto"
 
 	skerrors "github.com/solo-io/solo-kit/pkg/errors"
 
@@ -22,9 +25,44 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// remove supergloo pods
+func deleteSuperglooPods() {
+	// wait until pod is gone
+	Eventually(func() error {
+		dep, err := kube.ExtensionsV1beta1().Deployments("supergloo-system").Get("supergloo", metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		dep.Spec.Replicas = proto.Int(0)
+		_, err = kube.ExtensionsV1beta1().Deployments("supergloo-system").Update(dep)
+		if err != nil {
+			return err
+		}
+		pods, err := kube.CoreV1().Pods("supergloo-system").List(metav1.ListOptions{})
+		if err != nil {
+			return err
+		}
+		for _, p := range pods.Items {
+			if strings.HasPrefix(p.Name, "supergloo") {
+				return errors.Errorf("supergloo pods still exist")
+			}
+		}
+		return nil
+	}, time.Second*60).ShouldNot(HaveOccurred())
+
+}
+
 var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
-		err := utils.Supergloo("install istio --name=my-istio --mtls=true --auto-inject=true")
+		// install discovery via cli
+		// start discovery
+		err := utils.Supergloo("init --release 0.3.1")
+		Expect(err).NotTo(HaveOccurred())
+
+		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
+		deleteSuperglooPods()
+
+		err = utils.Supergloo("install istio --name=my-istio --mtls=true --auto-inject=true")
 		Expect(err).NotTo(HaveOccurred())
 
 		installClient := helpers.MustInstallClient()
@@ -91,14 +129,24 @@ var _ = Describe("E2e", func() {
 			Service: "details." + namespaceWithInject + ".svc.cluster.local",
 			Port:    9080,
 			Path:    "/details/1",
-		}, "Recv failure: Connection reset by peer", time.Minute*2)
+		}, "Recv failure: Connection reset by peer", time.Minute*3)
 
-		// with mtls enabled, curl will succedd from injected testrunner
+		// with mtls enabled, curl will succeed from injected testrunner
 		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
 			Service: "details." + namespaceWithInject + ".svc.cluster.local",
 			Port:    9080,
 			Path:    "/details/1",
-		}, `"author":"William Shakespeare"`, time.Minute*2)
+		}, `"author":"William Shakespeare"`, time.Minute*3)
+
+		//create a traffic shifting rule, divert traffic to reviews
+		err = utils.Supergloo(fmt.Sprintf("create routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
+		Expect(err).NotTo(HaveOccurred())
+
+		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+			Service: "details." + namespaceWithInject + ".svc.cluster.local",
+			Port:    9080,
+			Path:    "/reviews/1",
+		}, `"reviewer": "Reviewer1",`, time.Minute*5)
 
 		// test uninstall works
 		err = utils.Supergloo("uninstall --name=my-istio")
