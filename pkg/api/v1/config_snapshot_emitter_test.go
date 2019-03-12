@@ -10,8 +10,6 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	istio_networking_v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -40,21 +38,18 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1            string
-		namespace2            string
-		name1, name2          = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg                   *rest.Config
-		emitter               ConfigEmitter
-		meshClient            MeshClient
-		meshGroupClient       MeshGroupClient
-		routingRuleClient     RoutingRuleClient
-		securityRuleClient    SecurityRuleClient
-		tlsSecretClient       TlsSecretClient
-		upstreamClient        gloo_solo_io.UpstreamClient
-		podClient             core_kubernetes_io.PodClient
-		destinationRuleClient istio_networking_v1alpha3.DestinationRuleClient
-		virtualServiceClient  istio_networking_v1alpha3.VirtualServiceClient
-		meshPolicyClient      istio_authentication_v1alpha1.MeshPolicyClient
+		namespace1         string
+		namespace2         string
+		name1, name2       = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg                *rest.Config
+		emitter            ConfigEmitter
+		meshClient         MeshClient
+		meshGroupClient    MeshGroupClient
+		routingRuleClient  RoutingRuleClient
+		securityRuleClient SecurityRuleClient
+		tlsSecretClient    TlsSecretClient
+		upstreamClient     gloo_solo_io.UpstreamClient
+		podClient          core_kubernetes_io.PodClient
 	)
 
 	BeforeEach(func() {
@@ -132,37 +127,11 @@ var _ = Describe("V1Emitter", func() {
 		}
 		podClient, err = core_kubernetes_io.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		// DestinationRule Constructor
-		destinationRuleClientFactory := &factory.KubeResourceClientFactory{
-			Crd:         istio_networking_v1alpha3.DestinationRuleCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(context.TODO()),
-		}
-		destinationRuleClient, err = istio_networking_v1alpha3.NewDestinationRuleClient(destinationRuleClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-		// VirtualService Constructor
-		virtualServiceClientFactory := &factory.KubeResourceClientFactory{
-			Crd:         istio_networking_v1alpha3.VirtualServiceCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(context.TODO()),
-		}
-		virtualServiceClient, err = istio_networking_v1alpha3.NewVirtualServiceClient(virtualServiceClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-		// MeshPolicy Constructor
-		meshPolicyClientFactory := &factory.KubeResourceClientFactory{
-			Crd:         istio_authentication_v1alpha1.MeshPolicyCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(context.TODO()),
-		}
-		meshPolicyClient, err = istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, destinationRuleClient, virtualServiceClient, meshPolicyClient)
+		emitter = NewConfigEmitter(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
 		setup.TeardownKube(namespace2)
-		meshPolicyClient.Delete(name1, clients.DeleteOpts{})
-		meshPolicyClient.Delete(name2, clients.DeleteOpts{})
 	})
 	It("tracks snapshots on changes to any resource", func() {
 		ctx := context.Background()
@@ -596,176 +565,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotPods(nil, core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b})
-
-		/*
-			DestinationRule
-		*/
-
-		assertSnapshotDestinationrules := func(expectDestinationrules istio_networking_v1alpha3.DestinationRuleList, unexpectDestinationrules istio_networking_v1alpha3.DestinationRuleList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectDestinationrules {
-						if _, err := snap.Destinationrules.List().Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectDestinationrules {
-						if _, err := snap.Destinationrules.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := destinationRuleClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := destinationRuleClient.List(namespace2, clients.ListOpts{})
-					combined := istio_networking_v1alpha3.DestinationrulesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		destinationRule1a, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		destinationRule1b, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b}, nil)
-		destinationRule2a, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		destinationRule2b, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b, destinationRule2a, destinationRule2b}, nil)
-
-		err = destinationRuleClient.Delete(destinationRule2a.Metadata.Namespace, destinationRule2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = destinationRuleClient.Delete(destinationRule2b.Metadata.Namespace, destinationRule2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b}, istio_networking_v1alpha3.DestinationRuleList{destinationRule2a, destinationRule2b})
-
-		err = destinationRuleClient.Delete(destinationRule1a.Metadata.Namespace, destinationRule1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = destinationRuleClient.Delete(destinationRule1b.Metadata.Namespace, destinationRule1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(nil, istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b, destinationRule2a, destinationRule2b})
-
-		/*
-			VirtualService
-		*/
-
-		assertSnapshotVirtualservices := func(expectVirtualservices istio_networking_v1alpha3.VirtualServiceList, unexpectVirtualservices istio_networking_v1alpha3.VirtualServiceList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectVirtualservices {
-						if _, err := snap.Virtualservices.List().Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectVirtualservices {
-						if _, err := snap.Virtualservices.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := virtualServiceClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := virtualServiceClient.List(namespace2, clients.ListOpts{})
-					combined := istio_networking_v1alpha3.VirtualservicesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		virtualService1a, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		virtualService1b, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b}, nil)
-		virtualService2a, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		virtualService2b, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b, virtualService2a, virtualService2b}, nil)
-
-		err = virtualServiceClient.Delete(virtualService2a.Metadata.Namespace, virtualService2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = virtualServiceClient.Delete(virtualService2b.Metadata.Namespace, virtualService2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b}, istio_networking_v1alpha3.VirtualServiceList{virtualService2a, virtualService2b})
-
-		err = virtualServiceClient.Delete(virtualService1a.Metadata.Namespace, virtualService1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = virtualServiceClient.Delete(virtualService1b.Metadata.Namespace, virtualService1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(nil, istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b, virtualService2a, virtualService2b})
-
-		/*
-			MeshPolicy
-		*/
-
-		assertSnapshotMeshpolicies := func(expectMeshpolicies istio_authentication_v1alpha1.MeshPolicyList, unexpectMeshpolicies istio_authentication_v1alpha1.MeshPolicyList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectMeshpolicies {
-						if _, err := snap.Meshpolicies.Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectMeshpolicies {
-						if _, err := snap.Meshpolicies.Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList, _ := meshPolicyClient.List(clients.ListOpts{})
-					combined := istio_authentication_v1alpha1.MeshpoliciesByNamespace{
-						"": nsList,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		meshPolicy1a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, nil)
-		meshPolicy2a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a}, nil)
-
-		err = meshPolicyClient.Delete(meshPolicy2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy2a})
-
-		err = meshPolicyClient.Delete(meshPolicy1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -1199,175 +998,5 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotPods(nil, core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b})
-
-		/*
-			DestinationRule
-		*/
-
-		assertSnapshotDestinationrules := func(expectDestinationrules istio_networking_v1alpha3.DestinationRuleList, unexpectDestinationrules istio_networking_v1alpha3.DestinationRuleList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectDestinationrules {
-						if _, err := snap.Destinationrules.List().Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectDestinationrules {
-						if _, err := snap.Destinationrules.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := destinationRuleClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := destinationRuleClient.List(namespace2, clients.ListOpts{})
-					combined := istio_networking_v1alpha3.DestinationrulesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		destinationRule1a, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		destinationRule1b, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b}, nil)
-		destinationRule2a, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		destinationRule2b, err := destinationRuleClient.Write(istio_networking_v1alpha3.NewDestinationRule(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b, destinationRule2a, destinationRule2b}, nil)
-
-		err = destinationRuleClient.Delete(destinationRule2a.Metadata.Namespace, destinationRule2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = destinationRuleClient.Delete(destinationRule2b.Metadata.Namespace, destinationRule2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b}, istio_networking_v1alpha3.DestinationRuleList{destinationRule2a, destinationRule2b})
-
-		err = destinationRuleClient.Delete(destinationRule1a.Metadata.Namespace, destinationRule1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = destinationRuleClient.Delete(destinationRule1b.Metadata.Namespace, destinationRule1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotDestinationrules(nil, istio_networking_v1alpha3.DestinationRuleList{destinationRule1a, destinationRule1b, destinationRule2a, destinationRule2b})
-
-		/*
-			VirtualService
-		*/
-
-		assertSnapshotVirtualservices := func(expectVirtualservices istio_networking_v1alpha3.VirtualServiceList, unexpectVirtualservices istio_networking_v1alpha3.VirtualServiceList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectVirtualservices {
-						if _, err := snap.Virtualservices.List().Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectVirtualservices {
-						if _, err := snap.Virtualservices.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := virtualServiceClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := virtualServiceClient.List(namespace2, clients.ListOpts{})
-					combined := istio_networking_v1alpha3.VirtualservicesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		virtualService1a, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		virtualService1b, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b}, nil)
-		virtualService2a, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		virtualService2b, err := virtualServiceClient.Write(istio_networking_v1alpha3.NewVirtualService(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b, virtualService2a, virtualService2b}, nil)
-
-		err = virtualServiceClient.Delete(virtualService2a.Metadata.Namespace, virtualService2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = virtualServiceClient.Delete(virtualService2b.Metadata.Namespace, virtualService2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b}, istio_networking_v1alpha3.VirtualServiceList{virtualService2a, virtualService2b})
-
-		err = virtualServiceClient.Delete(virtualService1a.Metadata.Namespace, virtualService1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = virtualServiceClient.Delete(virtualService1b.Metadata.Namespace, virtualService1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotVirtualservices(nil, istio_networking_v1alpha3.VirtualServiceList{virtualService1a, virtualService1b, virtualService2a, virtualService2b})
-
-		/*
-			MeshPolicy
-		*/
-
-		assertSnapshotMeshpolicies := func(expectMeshpolicies istio_authentication_v1alpha1.MeshPolicyList, unexpectMeshpolicies istio_authentication_v1alpha1.MeshPolicyList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectMeshpolicies {
-						if _, err := snap.Meshpolicies.Find(expected.Metadata.Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectMeshpolicies {
-						if _, err := snap.Meshpolicies.Find(unexpected.Metadata.Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList, _ := meshPolicyClient.List(clients.ListOpts{})
-					combined := istio_authentication_v1alpha1.MeshpoliciesByNamespace{
-						"": nsList,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		meshPolicy1a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, nil)
-		meshPolicy2a, err := meshPolicyClient.Write(istio_authentication_v1alpha1.NewMeshPolicy(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a}, nil)
-
-		err = meshPolicyClient.Delete(meshPolicy2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a}, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy2a})
-
-		err = meshPolicyClient.Delete(meshPolicy1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a})
 	})
 })

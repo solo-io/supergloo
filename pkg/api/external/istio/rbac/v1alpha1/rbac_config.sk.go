@@ -166,5 +166,5 @@ var RbacConfigCrd = crd.NewCrd("rbac.istio.io",
 	"v1alpha1",
 	"RbacConfig",
 	"rbacconfig",
-	true,
+	false,
 	&RbacConfig{})
