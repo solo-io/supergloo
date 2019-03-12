@@ -5,6 +5,7 @@
     "version": "v1alpha1",
     "docs_dir": "",
     "resource_groups": null,
+    "crd_group_override": "rbac.istio.io",
     "ProjectFile": "",
     "GoPackage": ""
 }
