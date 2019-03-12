@@ -3,7 +3,7 @@ package testutils
 import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -18,7 +18,7 @@ const (
 
 var defaultService = &coreV1.Service{
 	ObjectMeta: v1.ObjectMeta{
-		Name: lockServiceName,
+		Name:        lockServiceName,
 		Annotations: make(map[string]string),
 	},
 }
@@ -26,7 +26,7 @@ var defaultService = &coreV1.Service{
 type testClusterLocker struct {
 	clientset *kubernetes.Clientset
 	namespace string
-	buidldId string
+	buidldId  string
 }
 
 func NewTestClusterLocker(clientset *kubernetes.Clientset, namespace, buildId string) (*testClusterLocker, error) {
@@ -34,7 +34,7 @@ func NewTestClusterLocker(clientset *kubernetes.Clientset, namespace, buildId st
 		namespace = defaultNamespace
 	}
 	_, err := clientset.CoreV1().Services(namespace).Create(defaultService)
-	if err != nil && ! errors.IsAlreadyExists(err) {
+	if err != nil && !errors.IsAlreadyExists(err) {
 		return nil, err
 	}
 	return &testClusterLocker{clientset: clientset, namespace: namespace, buidldId: buildId}, nil
@@ -59,8 +59,6 @@ func (t *testClusterLocker) AcquireLock(id string) (bool, error) {
 }
 
 func (t *testClusterLocker) ReleaseLock() error {
-	watch, err := t.clientset.CoreV1().Services().Watch()
-	watch.
 	if _, err := t.clientset.CoreV1().Services(t.namespace).Get(lockServiceName, v1.GetOptions{}); err != nil {
 		return err
 	}
