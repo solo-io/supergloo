@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/go-utils/errors"
-
 	"github.com/solo-io/gloo/pkg/cliutil"
+	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 )
 
@@ -19,6 +21,10 @@ func SurveyRoutingRule(ctx context.Context, in *options.CreateRoutingRule) error
 	}
 
 	if err := surveyMatcher(&in.RequestMatchers); err != nil {
+		return err
+	}
+
+	if err := surveyMesh(ctx, &in.TargetMesh); err != nil {
 		return err
 	}
 
@@ -146,4 +152,41 @@ func surveyMatcher(matchers *options.RequestMatchersValue) error {
 
 		*matchers = append(*matchers, match)
 	}
+}
+
+func surveyMesh(ctx context.Context, mesh *options.ResourceRefValue) error {
+	meshes, err := helpers.MustMeshClient().List("", clients.ListOpts{Ctx: ctx})
+	if err != nil {
+		return err
+	}
+
+	meshesByKey := make(map[string]core.ResourceRef)
+	meshKeys := []string{}
+	for _, mesh := range meshes {
+		ref := mesh.Metadata.Ref()
+		meshesByKey[ref.Key()] = ref
+		meshKeys = append(meshKeys, ref.Key())
+	}
+
+	if len(meshKeys) == 1 {
+		return errors.Errorf("no meshes found. register or install a mesh first.")
+	}
+
+	var key string
+	if err := cliutil.ChooseFromList(
+		"select a target mesh to which to apply this rule",
+		&key,
+		meshKeys,
+	); err != nil {
+		return err
+	}
+
+	ref, ok := meshesByKey[key]
+	if !ok {
+		return errors.Errorf("internal error: upstream map missing key %v", key)
+	}
+
+	*mesh = options.ResourceRefValue(ref)
+
+	return nil
 }

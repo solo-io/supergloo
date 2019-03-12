@@ -144,3 +144,25 @@ func (v *TrafficShiftingValue) Set(s string) error {
 func (v *TrafficShiftingValue) Type() string {
 	return "TrafficShiftingValue"
 }
+
+type ResourceRefValue core.ResourceRef
+
+func (v *ResourceRefValue) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", *v)
+}
+
+func (v *ResourceRefValue) Set(s string) error {
+	split := strings.SplitN(s, ".", 2)
+	if len(split) != 2 {
+		return errors.Errorf("%s invalid: refs must be specified in the format <NAMESPACE>.<NAME>", s)
+	}
+	*v = ResourceRefValue(core.ResourceRef{Namespace: split[0], Name: split[1]})
+	return nil
+}
+
+func (v *ResourceRefValue) Type() string {
+	return "ResourceRefValue"
+}
