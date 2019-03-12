@@ -18,8 +18,17 @@ import (
 )
 
 var _ = Describe("RbacConfigClient", func() {
+	var (
+		namespace string
+	)
 	for _, test := range []typed.ResourceClientTester{
 		&typed.KubeRcTester{Crd: RbacConfigCrd},
+		&typed.ConsulRcTester{},
+		&typed.FileRcTester{},
+		&typed.MemoryRcTester{},
+		&typed.VaultRcTester{},
+		&typed.KubeSecretRcTester{},
+		&typed.KubeConfigMapRcTester{},
 	} {
 		Context("resource client backed by "+test.Description(), func() {
 			var (
@@ -29,28 +38,28 @@ var _ = Describe("RbacConfigClient", func() {
 			)
 
 			BeforeEach(func() {
-				factory := test.Setup("")
-				client, err = NewClusterResourceClient(factory)
+				namespace = helpers.RandString(6)
+				factory := test.Setup(namespace)
+				client, err = NewRbacConfigClient(factory)
 				Expect(err).NotTo(HaveOccurred())
 			})
 			AfterEach(func() {
-				client.Delete(name1, clients.DeleteOpts{})
-				client.Delete(name2, clients.DeleteOpts{})
-				client.Delete(name3, clients.DeleteOpts{})
+				test.Teardown(namespace)
 			})
 			It("CRUDs RbacConfigs "+test.Description(), func() {
-				RbacConfigClientTest(client, name1, name2, name3)
+				RbacConfigClientTest(namespace, client, name1, name2, name3)
 			})
 		})
 	}
 })
 
-func RbacConfigClientTest(client RbacConfigClient, name1, name2, name3 string) {
+func RbacConfigClientTest(namespace string, client RbacConfigClient, name1, name2, name3 string) {
 	err := client.Register()
 	Expect(err).NotTo(HaveOccurred())
 
 	name := name1
-	input := NewRbacConfig("", name)
+	input := NewRbacConfig(namespace, name)
+	input.Metadata.Namespace = namespace
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -60,6 +69,7 @@ func RbacConfigClientTest(client RbacConfigClient, name1, name2, name3 string) {
 
 	Expect(r1).To(BeAssignableToTypeOf(&RbacConfig{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
+	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
@@ -78,44 +88,48 @@ func RbacConfigClientTest(client RbacConfigClient, name1, name2, name3 string) {
 		OverwriteExisting: true,
 	})
 	Expect(err).NotTo(HaveOccurred())
-	read, err := client.Read(name, clients.ReadOpts{})
+	read, err := client.Read(namespace, name, clients.ReadOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(read).To(Equal(r1))
+	_, err = client.Read("doesntexist", name, clients.ReadOpts{})
+	Expect(err).To(HaveOccurred())
+	Expect(errors.IsNotExist(err)).To(BeTrue())
 
 	name = name2
 	input = &RbacConfig{}
 
 	input.Metadata = core.Metadata{
-		Name: name,
+		Name:      name,
+		Namespace: namespace,
 	}
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
-	list, err := client.List(clients.ListOpts{})
+	list, err := client.List(namespace, clients.ListOpts{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list).To(ContainElement(r1))
 	Expect(list).To(ContainElement(r2))
-	err = client.Delete("adsfw", clients.DeleteOpts{})
+	err = client.Delete(namespace, "adsfw", clients.DeleteOpts{})
 	Expect(err).To(HaveOccurred())
 	Expect(errors.IsNotExist(err)).To(BeTrue())
-	err = client.Delete("adsfw", clients.DeleteOpts{
+	err = client.Delete(namespace, "adsfw", clients.DeleteOpts{
 		IgnoreNotExist: true,
 	})
 	Expect(err).NotTo(HaveOccurred())
-	err = client.Delete(r2.GetMetadata().Name, clients.DeleteOpts{})
+	err = client.Delete(namespace, r2.GetMetadata().Name, clients.DeleteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
 	Eventually(func() RbacConfigList {
-		list, err = client.List(clients.ListOpts{})
+		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).Should(ContainElement(r1))
 	Eventually(func() RbacConfigList {
-		list, err = client.List(clients.ListOpts{})
+		list, err = client.List(namespace, clients.ListOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		return list
 	}, time.Second*10).ShouldNot(ContainElement(r2))
-	w, errs, err := client.Watch(clients.WatchOpts{
+	w, errs, err := client.Watch(namespace, clients.WatchOpts{
 		RefreshRate: time.Hour,
 	})
 	Expect(err).NotTo(HaveOccurred())
@@ -136,7 +150,8 @@ func RbacConfigClientTest(client RbacConfigClient, name1, name2, name3 string) {
 		input = &RbacConfig{}
 		Expect(err).NotTo(HaveOccurred())
 		input.Metadata = core.Metadata{
-			Name: name,
+			Name:      name,
+			Namespace: namespace,
 		}
 
 		r3, err = client.Write(input, clients.WriteOpts{})

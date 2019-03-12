@@ -87,10 +87,9 @@ var protosToImport = []importedProto{
 				pluralName:  "servicerolebindings",
 			},
 			{
-				messageName:   "RbacConfig",
-				shortName:     "rbacconfig",
-				pluralName:    "rbacconfigs",
-				clusterScoped: true,
+				messageName: "RbacConfig",
+				shortName:   "rbacconfig",
+				pluralName:  "rbacconfigs",
 			},
 		},
 	},

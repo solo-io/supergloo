@@ -3,7 +3,7 @@ package helm_test
 import (
 	"context"
 
-	testutils2 "github.com/solo-io/supergloo/test/testutils"
+	superglootest "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/testutils"
@@ -28,17 +28,18 @@ var _ = Describe("HelmChartInstaller", func() {
 		inst       = NewHelmInstaller()
 	)
 	BeforeEach(func() {
-		kubeClient = testutils2.MustKubeClient()
+		kubeClient = superglootest.MustKubeClient()
 		// wait for all services in the previous namespace to be torn down
 		// important because of a race caused by nodeport conflcit
 		if ns != "" {
-			testutils2.WaitForIstioTeardown(ns)
+			superglootest.WaitForIstioTeardown(ns)
 		}
 		ns = "test" + testutils.RandString(5)
 	})
 	AfterEach(func() {
 		testutils.TeardownKube(ns)
-		testutils2.TeardownIstio(kubeClient)
+		superglootest.TeardownIstio(kubeClient)
+		superglootest.WaitForIstioTeardown(ns)
 	})
 	Context("create manifest", func() {
 		It("creates resources from a helm chart", func() {
