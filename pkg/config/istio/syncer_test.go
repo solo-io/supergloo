@@ -3,6 +3,8 @@ package istio_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/config/istio"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -18,7 +20,7 @@ var _ = Describe("Syncer", func() {
 		mt := &mockTranslator{}
 		mRec := &mockReconcilers{}
 		mRep := &mockReporter{}
-		syncer := NewIstioConfigSyncer(mt, mRec, mRep)
+		syncer := istio.NewIstioConfigSyncer(mt, mRec, mRep)
 
 		err := syncer.Sync(context.TODO(), &v1.ConfigSnapshot{})
 		Expect(err).NotTo(HaveOccurred())

@@ -3,6 +3,8 @@ package istio_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/config/istio"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -26,7 +28,7 @@ var _ = Describe("SyncerReconcilers", func() {
 		destinationRuleClient    v1alpha3.DestinationRuleClient
 		virtualServiceClient     v1alpha3.VirtualServiceClient
 
-		rec Reconcilers
+		rec istio.Reconcilers
 	)
 	BeforeEach(func() {
 		mem := &factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()}
@@ -57,7 +59,7 @@ var _ = Describe("SyncerReconcilers", func() {
 		virtualServiceReconciler := v1alpha3.NewVirtualServiceReconciler(virtualServiceClient)
 
 		labels := map[string]string{"test": "labels"}
-		rec = NewIstioReconcilers(labels,
+		rec = istio.NewIstioReconcilers(labels,
 			rbacConfigReconciler,
 			serviceRoleReconciler,
 			serviceRoleBindingReconciler,
@@ -88,7 +90,7 @@ var _ = Describe("SyncerReconcilers", func() {
 		_, err = meshPolicyClient.Read(mpMeta.Name, clients.ReadOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = rbacConfigClient.Read(rbMeta.Name, clients.ReadOpts{})
+		_, err = rbacConfigClient.Read(rbMeta.Namespace, rbMeta.Name, clients.ReadOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		_, err = destinationRuleClient.Read(drMeta.Namespace, drMeta.Name, clients.ReadOpts{})
