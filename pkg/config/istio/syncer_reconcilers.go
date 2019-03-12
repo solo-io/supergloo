@@ -3,16 +3,15 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/translator/istio"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	networkingv1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
+	"github.com/solo-io/supergloo/pkg/translator/istio"
 )
 
 type Reconcilers interface {
@@ -26,8 +25,8 @@ type istioReconcilers struct {
 	serviceRoleReconciler        rbacv1alpha1.ServiceRoleReconciler
 	serviceRoleBindingReconciler rbacv1alpha1.ServiceRoleBindingReconciler
 	meshPolicyReconciler         policyv1alpha1.MeshPolicyReconciler
-	destinationRuleReconciler    v1alpha3.DestinationRuleReconciler
-	virtualServiceReconciler     v1alpha3.VirtualServiceReconciler
+	destinationRuleReconciler    networkingv1alpha3.DestinationRuleReconciler
+	virtualServiceReconciler     networkingv1alpha3.VirtualServiceReconciler
 }
 
 func NewIstioReconcilers(ownerLabels map[string]string,
@@ -35,8 +34,8 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 	serviceRoleReconciler rbacv1alpha1.ServiceRoleReconciler,
 	serviceRoleBindingReconciler rbacv1alpha1.ServiceRoleBindingReconciler,
 	meshPolicyReconciler policyv1alpha1.MeshPolicyReconciler,
-	destinationRuleReconciler v1alpha3.DestinationRuleReconciler,
-	virtualServiceReconciler v1alpha3.VirtualServiceReconciler) Reconcilers {
+	destinationRuleReconciler networkingv1alpha3.DestinationRuleReconciler,
+	virtualServiceReconciler networkingv1alpha3.VirtualServiceReconciler) Reconcilers {
 	return &istioReconcilers{
 		ownerLabels:                  ownerLabels,
 		rbacConfigReconciler:         rbacConfigReconciler,
