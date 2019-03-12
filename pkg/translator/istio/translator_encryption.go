@@ -48,7 +48,7 @@ func makeDestinationRule(ctx context.Context, writeNamespace, host string, label
 	return &v1alpha3.DestinationRule{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      host,
+			Name:      utils.SanitizeName(host),
 		},
 		Host:          host,
 		Subsets:       subsets,

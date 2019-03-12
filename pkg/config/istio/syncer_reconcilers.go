@@ -59,7 +59,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		meshPoliciesToReconcile = append(meshPoliciesToReconcile, config.MeshPolicy)
 	}
 	if err := s.meshPolicyReconciler.Reconcile(
-		writeNamespace,
+		"",
 		meshPoliciesToReconcile, // mesh policy is a singleton
 		nil,
 		clients.ListOpts{
