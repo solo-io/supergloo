@@ -162,9 +162,9 @@ func (o *MeshPolicy) DeepCopyObject() runtime.Object {
 	return resources.Clone(o).(*MeshPolicy)
 }
 
-var MeshPolicyCrd = crd.NewCrd("istio.authentication.v1alpha1",
+var MeshPolicyCrd = crd.NewCrd("authentication.istio.io",
 	"meshpolicies",
-	"istio.authentication.v1alpha1",
+	"authentication.istio.io",
 	"v1alpha1",
 	"MeshPolicy",
 	"meshpolicy",

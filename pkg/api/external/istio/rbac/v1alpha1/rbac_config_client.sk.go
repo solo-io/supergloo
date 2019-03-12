@@ -12,11 +12,11 @@ import (
 type RbacConfigClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
-	Read(name string, opts clients.ReadOpts) (*RbacConfig, error)
+	Read(namespace, name string, opts clients.ReadOpts) (*RbacConfig, error)
 	Write(resource *RbacConfig, opts clients.WriteOpts) (*RbacConfig, error)
-	Delete(name string, opts clients.DeleteOpts) error
-	List(opts clients.ListOpts) (RbacConfigList, error)
-	Watch(opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error)
+	Delete(namespace, name string, opts clients.DeleteOpts) error
+	List(namespace string, opts clients.ListOpts) (RbacConfigList, error)
+	Watch(namespace string, opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error)
 }
 
 type rbacConfigClient struct {
@@ -52,10 +52,10 @@ func (client *rbacConfigClient) Register() error {
 	return client.rc.Register()
 }
 
-func (client *rbacConfigClient) Read(name string, opts clients.ReadOpts) (*RbacConfig, error) {
+func (client *rbacConfigClient) Read(namespace, name string, opts clients.ReadOpts) (*RbacConfig, error) {
 	opts = opts.WithDefaults()
 
-	resource, err := client.rc.Read("", name, opts)
+	resource, err := client.rc.Read(namespace, name, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -71,26 +71,26 @@ func (client *rbacConfigClient) Write(rbacConfig *RbacConfig, opts clients.Write
 	return resource.(*RbacConfig), nil
 }
 
-func (client *rbacConfigClient) Delete(name string, opts clients.DeleteOpts) error {
+func (client *rbacConfigClient) Delete(namespace, name string, opts clients.DeleteOpts) error {
 	opts = opts.WithDefaults()
 
-	return client.rc.Delete("", name, opts)
+	return client.rc.Delete(namespace, name, opts)
 }
 
-func (client *rbacConfigClient) List(opts clients.ListOpts) (RbacConfigList, error) {
+func (client *rbacConfigClient) List(namespace string, opts clients.ListOpts) (RbacConfigList, error) {
 	opts = opts.WithDefaults()
 
-	resourceList, err := client.rc.List("", opts)
+	resourceList, err := client.rc.List(namespace, opts)
 	if err != nil {
 		return nil, err
 	}
 	return convertToRbacConfig(resourceList), nil
 }
 
-func (client *rbacConfigClient) Watch(opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error) {
+func (client *rbacConfigClient) Watch(namespace string, opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error) {
 	opts = opts.WithDefaults()
 
-	resourcesChan, errs, initErr := client.rc.Watch("", opts)
+	resourcesChan, errs, initErr := client.rc.Watch(namespace, opts)
 	if initErr != nil {
 		return nil, nil, initErr
 	}
