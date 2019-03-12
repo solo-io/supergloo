@@ -37,6 +37,7 @@ supergloo create routingrule trafficshifting [flags]
       --source-labels MapStringStringValue     apply this rule to requests originating from pods with these labels. format must be KEY=VALUE (default [])
       --source-namespaces strings              apply this rule to requests originating from pods in these namespaces
       --source-upstreams ResourceRefsValue     apply this rule to requests originating from these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
+      --target-mesh ResourceRefValue           select the target mesh or mesh group to which to apply this rule. format must be NAMESPACE.NAME (default { })
 ```
 
 ### SEE ALSO
