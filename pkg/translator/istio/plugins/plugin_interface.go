@@ -36,7 +36,9 @@ type registry struct {
 var globalRegistry = func(kc kubernetes.Interface) *registry {
 	reg := &registry{}
 	// plugins should be added here
-	reg.plugins = append(reg.plugins)
+	reg.plugins = append(reg.plugins,
+		NewIstioHttpPlugin(),
+	)
 	return reg
 }
 
