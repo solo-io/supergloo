@@ -13,14 +13,14 @@ rbac:
 supergloo:
   deployment:
     image:
-      repository: soloio/supergloo
+      repository: quay.io/solo-io/supergloo
       pullPolicy: Always
     stats: true
 
 discovery:
   deployment:
     image:
-      repository: soloio/discovery
-      tag: 0.8.1
+      repository: quay.io/solo-io/discovery
+      tag: 0.10.4
       pullPolicy: Always
     stats: true
