@@ -25,8 +25,9 @@ import (
 // all you should need to do is append to this!
 var protosToImport = []importedProto{
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/virtual_service.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
+		crdGroupName: "networking.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/virtual_service.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
 		skTypes: []soloKitType{
 			{
 				messageName: "VirtualService",
@@ -36,8 +37,9 @@ var protosToImport = []importedProto{
 		},
 	},
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/destination_rule.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
+		crdGroupName: "networking.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/destination_rule.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
 		skTypes: []soloKitType{
 			{
 				messageName: "DestinationRule",
@@ -47,16 +49,19 @@ var protosToImport = []importedProto{
 		},
 	},
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/sidecar.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
+		crdGroupName: "networking.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/sidecar.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
 	},
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/gateway.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
+		crdGroupName: "networking.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/networking/v1alpha3/gateway.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3",
 	},
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/authentication/v1alpha1/policy.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1",
+		crdGroupName: "authentication.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/authentication/v1alpha1/policy.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1",
 		skTypes: []soloKitType{
 			{
 				messageName: "Policy",
@@ -73,8 +78,9 @@ var protosToImport = []importedProto{
 		},
 	},
 	{
-		file:       "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/rbac/v1alpha1/rbac.proto",
-		importPath: "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1",
+		crdGroupName: "rbac.istio.io",
+		file:         "https://raw.githubusercontent.com/istio/api/056eb85d96f09441775d79283c149d93fcbd0982/rbac/v1alpha1/rbac.proto",
+		importPath:   "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1",
 		skTypes: []soloKitType{
 			{
 				messageName: "ServiceRole",
@@ -87,10 +93,9 @@ var protosToImport = []importedProto{
 				pluralName:  "servicerolebindings",
 			},
 			{
-				messageName:   "RbacConfig",
-				shortName:     "rbacconfig",
-				pluralName:    "rbacconfigs",
-				clusterScoped: true,
+				messageName: "RbacConfig",
+				shortName:   "rbacconfig",
+				pluralName:  "rbacconfigs",
 			},
 		},
 	},
@@ -117,6 +122,9 @@ func main() {
 		soloKitConfig, err := importIstioProto(imp.file, imp.importPath, imp.skTypes, out)
 		if err != nil {
 			log.Fatalf("%v", err)
+		}
+		if imp.crdGroupName != "" {
+			soloKitConfig.CrdGroupOverride = imp.crdGroupName
 		}
 		b, err := json.MarshalIndent(soloKitConfig, "", "    ")
 		if err != nil {
@@ -157,9 +165,10 @@ option (gogoproto.equal_all) = true;
 `
 
 type importedProto struct {
-	file       string
-	importPath string
-	skTypes    []soloKitType
+	crdGroupName string
+	file         string
+	importPath   string
+	skTypes      []soloKitType
 }
 
 type soloKitType struct {
@@ -209,7 +218,7 @@ func importIstioProto(file, importPath string, skTypes []soloKitType, out io.Wri
 	}, nil
 }
 
-var protoPackageStatementRegex = regexp.MustCompile(`package (.*);`)
+var protoPackageStatementRegex = regexp.MustCompile(`\bpackage\b (.*);`)
 
 func detectProtoPackage(protoContents string) (string, error) {
 	matches := protoPackageStatementRegex.FindStringSubmatch(protoContents)

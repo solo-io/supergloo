@@ -32,23 +32,17 @@
       {
         "name": "Pod",
         "package": "core.kubernetes.io"
-      },
-      {
-        "name": "DestinationRule",
-        "package": "istio.networking.v1alpha3"
-      },
-      {
-        "name": "VirtualService",
-        "package": "istio.networking.v1alpha3"
-      },
-      {
-        "name": "MeshPolicy",
-        "package": "istio.authentication.v1alpha1"
       }
     ],
     "install.supergloo.solo.io": [
       {
         "name": "Install",
+        "package": "supergloo.solo.io"
+      }
+    ],
+    "registration.supergloo.solo.io": [
+      {
+        "name": "Mesh",
         "package": "supergloo.solo.io"
       }
     ]
