@@ -61,7 +61,7 @@ func getOsGlooVersion() error {
 	if err != nil {
 		panic(err)
 	}
-	version, err := versionutils.GetVersion(glooPkg, tomlTree)
+	version, err := versionutils.GetVersion(versionutils.GlooPkg, tomlTree)
 	if err != nil {
 		return fmt.Errorf("failed to determine open source Gloo version. Cause: %v", err)
 	}
