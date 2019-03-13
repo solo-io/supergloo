@@ -2120,6 +2120,7 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
+    "github.com/google/uuid",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/iancoleman/strcase",
