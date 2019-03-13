@@ -21,7 +21,7 @@ var (
 
 var _ = BeforeSuite(func() {
 	kubeClient = testutils.MustKubeClient()
-	lock, err = testutils.NewTestClusterLocker(kubeClient, "default", "1")
+	lock, err = testutils.NewTestClusterLocker(kubeClient, "default")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 })
