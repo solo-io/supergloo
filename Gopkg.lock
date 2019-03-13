@@ -1117,11 +1117,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:f78dee1142c1e43c9288534cadfa82f21dfd9a1163b06fa0fdf872f8020f2a53"
+  digest = "1:b36a0ede02c4c2aef7df7f91cbbb7bb88a98b5d253509d4f997dda526e50c88c"
   name = "github.com/russross/blackfriday"
   packages = ["."]
   pruneopts = "UT"
-  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
+  revision = "05f3235734ad95d0016f6a23902f06461fcf567a"
+  version = "v1.5.2"
 
 [[projects]]
   digest = "1:0e792eea6c96ec55ff302ef33886acbaa5006e900fefe82689e88d96439dcd84"
@@ -1138,14 +1139,6 @@
   packages = ["zk"]
   pruneopts = "UT"
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
-
-[[projects]]
-  branch = "master"
-  digest = "1:def689e73e9252f6f7fe66834a76751a41b767e03daab299e607e7226c58a855"
-  name = "github.com/shurcooL/sanitized_anchor_name"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
 
 [[projects]]
   digest = "1:0eeed0b5e1698e3113eae85a6fa36cdcd9b304fe46a9c199dca09e884ea8ea56"
@@ -1168,8 +1161,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "a07620941be10029f13d6c00ddfa52bae141304a"
-  version = "v0.10.2"
+  revision = "18afa0fe738d3e6b593e8f16f665eede788fe9b5"
+  version = "v0.10.4"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1180,7 +1173,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:f182e8137d513544595f2d54c60c917a93fdf2b899f2e57cb7db0e13cd19ce53"
+  digest = "1:4c4288ae88ade1ec51fc09ddff1a6013561cb200bb46f6f9861654af5a574892"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1200,8 +1193,8 @@
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "167df0ee2b8bde9d0944f00c650f19772b25d36b"
-  version = "v0.3.1"
+  revision = "53120bd8b4acdb2e0486f21f5d672419c3fcd0c0"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:21204a5eeb39c42f69484103f14b5cbd4ae7cb707fdbe724f7548afa25f0516a"
