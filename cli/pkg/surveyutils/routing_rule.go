@@ -168,7 +168,7 @@ func surveyMesh(ctx context.Context, mesh *options.ResourceRefValue) error {
 		meshKeys = append(meshKeys, ref.Key())
 	}
 
-	if len(meshKeys) == 1 {
+	if len(meshKeys) == 0 {
 		return errors.Errorf("no meshes found. register or install a mesh first.")
 	}
 

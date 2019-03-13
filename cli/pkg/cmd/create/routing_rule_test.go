@@ -20,7 +20,7 @@ var _ = Describe("RoutingRule", func() {
 		weight uint32
 	}
 	rrArgs := func(name string, dests []destination) string {
-		args := fmt.Sprintf("create routingrule trafficshifting --name=%v ", name)
+		args := fmt.Sprintf("create routingrule trafficshifting --name=%v --target-mesh=my.mesh ", name)
 		for _, dest := range dests {
 			args += fmt.Sprintf("--destination=%v.%v:%v ", dest.Namespace, dest.Name, dest.weight)
 		}
@@ -29,6 +29,7 @@ var _ = Describe("RoutingRule", func() {
 
 	BeforeEach(func() {
 		helpers.UseMemoryClients()
+		helpers.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "my", Name: "mesh"}}, clients.WriteOpts{})
 	})
 
 	getRoutingRule := func(name string) *v1.RoutingRule {
@@ -46,6 +47,20 @@ var _ = Describe("RoutingRule", func() {
 			err := utils.Supergloo(args)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("must provide at least 1 destination"))
+		})
+	})
+	Context("no target mesh", func() {
+		It("returns an error", func() {
+			err := utils.Supergloo("create routingrule trafficshifting --name foo --destination=my.upstream:5")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("target mesh must be specified, provide with --target-mesh flag"))
+		})
+	})
+	Context("nonexistant target mesh", func() {
+		It("returns an error", func() {
+			err := utils.Supergloo("create routingrule trafficshifting --name foo --destination=my.upstream:5 --target-mesh notmy.mesh")
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("notmy.mesh does not exist"))
 		})
 	})
 	Context("selector tests", func() {

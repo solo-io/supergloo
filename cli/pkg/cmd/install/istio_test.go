@@ -3,6 +3,8 @@ package install_test
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/install/istio"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -129,7 +131,7 @@ var _ = Describe("Install", func() {
 				InstallType: &v1.Install_Istio_{
 					Istio: &v1.Install_Istio{
 						InstallationNamespace: "istio-system",
-						IstioVersion:          "1.0.5",
+						IstioVersion:          istio.IstioVersion106,
 						EnableAutoInject:      true,
 						EnableMtls:            true,
 						InstallGrafana:        true,

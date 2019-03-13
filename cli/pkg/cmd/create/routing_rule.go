@@ -157,6 +157,11 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 
 	ref := core.ResourceRef(opts.CreateRoutingRule.TargetMesh)
 
+	_, meshNotFoundErr := helpers.MustMeshClient().Read(ref.Namespace, ref.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	if meshNotFoundErr != nil {
+		return nil, meshNotFoundErr
+	}
+
 	in := &v1.RoutingRule{
 		Metadata:            opts.Metadata,
 		TargetMesh:          &ref,
