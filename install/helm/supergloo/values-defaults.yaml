@@ -20,7 +20,7 @@ supergloo:
 discovery:
   deployment:
     image:
-      repository: soloio/discovery
-      tag: 0.8.1
+      repository: quay.io/solo-io/discovery
+      tag: 0.10.4
       pullPolicy: Always
     stats: true
