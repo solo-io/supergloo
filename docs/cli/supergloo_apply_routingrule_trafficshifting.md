@@ -1,33 +1,35 @@
 ---
-title: "supergloo create routingrule"
+title: "supergloo apply routingrule trafficshifting"
 weight: 5
 ---
-## supergloo create routingrule
+## supergloo apply routingrule trafficshifting
 
-Create a routing rule to apply to one or more meshes.
+ts
 
 ### Synopsis
 
+Traffic Shifting rules are used to divert HTTP requests sent within the mesh from their original destinations. 
+This can be used to force traffic to be sent to a specific subset of a service, a different service entirely, and/or 
+be load-balanced by weight across a variety of destinations
 
-Each Routing Rule applies an HTTP routing feature to a mesh.
-
-Routing rules implement the following semantics:
-
-RULE:
-  FOR all HTTP Requests:
-  - FROM these **source pods**
-  - TO these **destination pods**
-  - MATCHING these **request matchers**
-  APPLY this rule
-
+```
+supergloo apply routingrule trafficshifting [flags]
+```
 
 ### Options
+
+```
+      --destination TrafficShiftingValue   append a traffic shifting destination. format must be <NAMESPACE>.<NAME>:<WEIGHT>
+  -h, --help                               help for trafficshifting
+```
+
+### Options inherited from parent commands
 
 ```
       --dest-labels MapStringStringValue       apply this rule to requests sent to pods with these labels. format must be KEY=VALUE (default [])
       --dest-namespaces strings                apply this rule to requests sent to pods in these namespaces
       --dest-upstreams ResourceRefsValue       apply this rule to requests sent to these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
-  -h, --help                                   help for routingrule
+  -i, --interactive                            run in interactive mode
       --name string                            name for the resource
       --namespace string                       namespace for the resource (default "supergloo-system")
   -o, --output string                          output format: (yaml, json, table)
@@ -38,14 +40,7 @@ RULE:
       --target-mesh ResourceRefValue           select the target mesh or mesh group to which to apply this rule. format must be NAMESPACE.NAME (default { })
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
-* [supergloo create](../supergloo_create)	 - create a rule to apply to a mesh
-* [supergloo create routingrule trafficshifting](../supergloo_create_routingrule_trafficshifting)	 - ts
+* [supergloo apply routingrule](../supergloo_apply_routingrule)	 - Apply a routing rule to one or more meshes.
 
