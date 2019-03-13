@@ -90,7 +90,7 @@ steps:
   # 3) Publish helm chart
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
-    args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password QUAY_IO_PASSWORD']
+    args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
     secretEnv: ['QUAY_IO_PASSWORD']
     id: 'docker-login'
     waitFor: ['test']
