@@ -40,6 +40,7 @@ type Uninstall struct {
 type CreateRoutingRule struct {
 	SourceSelector      Selector
 	DestinationSelector Selector
+	TargetMesh          ResourceRefValue
 	RequestMatchers     RequestMatchersValue
 	RoutingRuleSpec     RoutingRuleSpec
 }

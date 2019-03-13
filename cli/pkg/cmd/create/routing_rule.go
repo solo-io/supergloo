@@ -4,6 +4,8 @@ import (
 	"context"
 	"sort"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -118,6 +120,7 @@ func createRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err != nil {
 		return err
 	}
+
 	in.Spec = spec
 	in, err = helpers.MustRoutingRuleClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
@@ -145,8 +148,18 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 		return nil, errors.Wrapf(err, "invalid destination selector")
 	}
 
+	if opts.Metadata.Name == "" {
+		return nil, errors.Errorf("name cannot be empty, provide with --name flag")
+	}
+	if opts.CreateRoutingRule.TargetMesh.Name == "" || opts.CreateRoutingRule.TargetMesh.Namespace == "" {
+		return nil, errors.Errorf("target mesh must be specified, provide with --target-mesh flag")
+	}
+
+	ref := core.ResourceRef(opts.CreateRoutingRule.TargetMesh)
+
 	in := &v1.RoutingRule{
 		Metadata:            opts.Metadata,
+		TargetMesh:          &ref,
 		SourceSelector:      ss,
 		DestinationSelector: ds,
 		RequestMatchers:     matchers,
