@@ -21,15 +21,22 @@ func TestE2e(t *testing.T) {
 
 var (
 	kube                                kubernetes.Interface
+	lock                                *testutils.TestClusterLocker
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
 )
 
 var _ = BeforeSuite(func() {
+	kube = testutils.MustKubeClient()
+	var err error
+	lock, err = testutils.NewTestClusterLocker(kube, "default")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
+
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
 
-	_, err := helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
+	_, err = helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: basicNamespace,
 		},
@@ -45,7 +52,6 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	rootCtx, cancel = context.WithCancel(context.TODO())
-	kube = testutils.MustKubeClient()
 	// create sg ns
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: "supergloo-system"},
@@ -69,4 +75,5 @@ var _ = AfterSuite(func() {
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
+	Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
 })
