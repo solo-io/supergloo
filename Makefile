@@ -99,10 +99,10 @@ $(OUTPUT_DIR)/Dockerfile.supergloo: cmd/Dockerfile
 	cp $< $@
 
 supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DIR)/Dockerfile.supergloo
-	docker build -t soloio/supergloo:$(VERSION)  $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
+	docker build -t quay.io/solo-io/supergloo:$(VERSION)  $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
 
 supergloo-docker-push: supergloo-docker
-	docker push soloio/supergloo:$(VERSION)
+	docker push quay.io/solo-io/supergloo:$(VERSION)
 
 #----------------------------------------------------------------------------------
 # SuperGloo CLI
