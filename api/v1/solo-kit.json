@@ -39,6 +39,12 @@
         "name": "Install",
         "package": "supergloo.solo.io"
       }
+    ],
+    "registration.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      }
     ]
   }
 }
