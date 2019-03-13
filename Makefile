@@ -196,7 +196,7 @@ docker: supergloo-docker
 # docker-push is intended to be run by CI
 docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
-	docker push soloio/supergloo:$(VERSION)
+	docker push quay.io/solo-io/supergloo:$(VERSION)
 endif
 
 

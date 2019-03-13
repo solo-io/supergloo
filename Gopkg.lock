@@ -1173,7 +1173,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:4c4288ae88ade1ec51fc09ddff1a6013561cb200bb46f6f9861654af5a574892"
+  digest = "1:69e3411ba7b777f9d866c3b4ab25b39d552b222dad53492ffff2eef69c8b7f8d"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1190,6 +1190,7 @@
     "stats",
     "stringutils",
     "testutils",
+    "testutils/clusterlock",
     "versionutils",
   ]
   pruneopts = "UT"
@@ -2113,7 +2114,6 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
-    "github.com/google/uuid",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/iancoleman/strcase",
@@ -2148,6 +2148,7 @@
     "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
     "github.com/solo-io/go-utils/testutils",
+    "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",

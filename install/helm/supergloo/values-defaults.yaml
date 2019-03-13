@@ -13,7 +13,7 @@ rbac:
 supergloo:
   deployment:
     image:
-      repository: soloio/supergloo
+      repository: quay.io/solo-io/supergloo
       pullPolicy: Always
     stats: true
 
