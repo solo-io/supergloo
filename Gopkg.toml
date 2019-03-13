@@ -40,29 +40,9 @@
   branch = "master"
   name = "github.com/golang/protobuf"
 
-[[override]]
-  name = "github.com/Azure/azure-sdk-for-go"
-  revision = "bd73d950fa4440dae889bd9917bff7cef539f86e"
-
 [[constraint]]
   name = "github.com/solo-io/go-checkpoint"
   version = "0.0.4"
-
-[[override]]
-  name = "github.com/docker/distribution"
-  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
-
-[[override]]
-  name = "github.com/russross/blackfriday"
-  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
-
-[[constraint]]
-  name = "github.com/hashicorp/consul"
-  revision = "eba25a143821cec25bdb48fe64dd7b7a6152d01d"
-
-[[override]]
-  name = "github.com/miekg/dns"
-  revision = "8f269a6b16e03c80db1d823c86591177b533cc3a"
 
 [[constraint]]
   name = "github.com/prometheus/prometheus"
