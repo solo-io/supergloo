@@ -83,7 +83,7 @@ steps:
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', '-p', 'cli', 'pkg', 'test/e2e']
+    args: ['-r', '-failFast', '-p', 'cli/pkg', 'pkg', 'test/e2e']
     waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
