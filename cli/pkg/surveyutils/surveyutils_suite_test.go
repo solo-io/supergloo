@@ -14,6 +14,7 @@ func TestSurveyutils(t *testing.T) {
 	// tracking with https://github.com/solo-io/supergloo/issues/243
 	if os.Getenv("SKIP_INTERACTIVE_TESTS") == "1" {
 		log.Printf("Skipping interactive tests.")
+		return
 	}
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Surveyutils Suite")
