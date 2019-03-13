@@ -51,14 +51,23 @@ var _ = Describe("cluster lock test", func() {
 				defer GinkgoRecover()
 				lock, err := testutils.NewTestClusterLocker(kubeClient, "default")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(lock.AcquireLock(retry.Delay(2 * time.Second))).NotTo(HaveOccurred())
+				Expect(lock.AcquireLock(retry.Delay(time.Second))).NotTo(HaveOccurred())
 				Expect(*sharedString).To(Equal(""))
 				*sharedString = "hello"
-				time.Sleep(2 * time.Second)
+				time.Sleep(time.Second)
 				*sharedString = ""
 				Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
 			}()
 		}
 		wg.Wait()
+	})
+
+	It("errors our if lock isn't free after a set amount of time", func() {
+		lock, err := testutils.NewTestClusterLocker(kubeClient, "default")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(lock.AcquireLock()).NotTo(HaveOccurred())
+		lock2, err := testutils.NewTestClusterLocker(kubeClient, "default")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(lock2.AcquireLock(retry.Delay(time.Millisecond))).To(HaveOccurred())
 	})
 })
