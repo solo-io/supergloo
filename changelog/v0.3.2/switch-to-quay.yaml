@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Moves images to quay.io.
+    issueLink: https://github.com/solo-io/supergloo/issues/241
