@@ -78,9 +78,9 @@ steps:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', '-p', 'pkg', 'test/e2e']
+    args: ['-r', '-failFast', 'pkg', 'test/e2e']
     waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
