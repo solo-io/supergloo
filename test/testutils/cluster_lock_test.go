@@ -1,8 +1,6 @@
 package testutils_test
 
 import (
-	"strconv"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/test/testutils"
@@ -18,7 +16,7 @@ var _ = Describe("cluster lock test", func() {
 	})
 
 	It("can handle a single locking scenario", func() {
-		lock, err := testutils.NewTestClusterLocker(clientset, "default", "1")
+		lock, err := testutils.NewTestClusterLocker(clientset, "default")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 		Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
@@ -26,7 +24,7 @@ var _ = Describe("cluster lock test", func() {
 
 	It("can handle synchronous requests", func() {
 		for idx := 0; idx < 5; idx++ {
-			lock, err := testutils.NewTestClusterLocker(clientset, "default", strconv.Itoa(idx))
+			lock, err := testutils.NewTestClusterLocker(clientset, "default")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 			Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
@@ -35,9 +33,8 @@ var _ = Describe("cluster lock test", func() {
 
 	It("can handle concurrent requests", func() {
 		for idx := 0; idx < 5; idx++ {
-			idx := idx
 			go func() {
-				lock, err := testutils.NewTestClusterLocker(clientset, "default", strconv.Itoa(idx))
+				lock, err := testutils.NewTestClusterLocker(clientset, "default")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 				Expect(lock.ReleaseLock()).NotTo(HaveOccurred())

@@ -21,11 +21,14 @@ import (
 
 var istioCrd = apiextensions.CustomResourceDefinition{}
 
+var (
+	kubeClient kubernetes.Interface
+)
+
 var _ = Describe("HelmChartInstaller", func() {
 	var (
-		ns         string
-		kubeClient kubernetes.Interface
-		inst       = NewHelmInstaller()
+		ns   string
+		inst = NewHelmInstaller()
 	)
 	BeforeEach(func() {
 		kubeClient = superglootest.MustKubeClient()

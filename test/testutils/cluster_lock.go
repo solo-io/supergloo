@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/avast/retry-go"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -45,13 +47,13 @@ var IsLockIsUseError = func(e error) bool {
 	return e == lockInUseError
 }
 
-type testClusterLocker struct {
+type TestClusterLocker struct {
 	clientset kubernetes.Interface
 	namespace string
-	buidldId  string
+	buidldId  uuid.UUID
 }
 
-func NewTestClusterLocker(clientset kubernetes.Interface, namespace, buildId string) (*testClusterLocker, error) {
+func NewTestClusterLocker(clientset kubernetes.Interface, namespace string) (*TestClusterLocker, error) {
 	if namespace == "" {
 		namespace = defaultNamespace
 	}
@@ -59,10 +61,11 @@ func NewTestClusterLocker(clientset kubernetes.Interface, namespace, buildId str
 	if err != nil && !errors.IsAlreadyExists(err) {
 		return nil, err
 	}
-	return &testClusterLocker{clientset: clientset, namespace: namespace, buidldId: buildId}, nil
+	buildId := uuid.New()
+	return &TestClusterLocker{clientset: clientset, namespace: namespace, buidldId: buildId}, nil
 }
 
-func (t *testClusterLocker) AcquireLock(opts ...retry.Option) error {
+func (t *TestClusterLocker) AcquireLock(opts ...retry.Option) error {
 	opts = append(defaultOpts, opts...)
 	err := retry.Do(
 		func() error {
@@ -73,10 +76,10 @@ func (t *testClusterLocker) AcquireLock(opts ...retry.Option) error {
 
 			if cfgMap.Annotations == nil || len(cfgMap.Annotations) == 0 {
 				cfgMap.Annotations = map[string]string{
-					lockAnnotationKey: t.buidldId,
+					lockAnnotationKey: t.buidldId.String(),
 				}
 			} else {
-				if val, ok := cfgMap.Annotations[lockAnnotationKey]; ok && val != t.buidldId {
+				if val, ok := cfgMap.Annotations[lockAnnotationKey]; ok && val != t.buidldId.String() {
 					return lockInUseError
 				}
 			}
@@ -95,7 +98,7 @@ func (t *testClusterLocker) AcquireLock(opts ...retry.Option) error {
 
 }
 
-func (t *testClusterLocker) ReleaseLock() error {
+func (t *TestClusterLocker) ReleaseLock() error {
 	if _, err := t.clientset.CoreV1().ConfigMaps(t.namespace).Get(lockServiceName, v1.GetOptions{}); err != nil {
 		return err
 	}
