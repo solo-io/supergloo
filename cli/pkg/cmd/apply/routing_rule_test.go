@@ -1,4 +1,4 @@
-package create_test
+package apply_test
 
 import (
 	"fmt"
@@ -13,14 +13,13 @@ import (
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
-
 var _ = Describe("RoutingRule", func() {
 	type destination struct {
 		core.ResourceRef
 		weight uint32
 	}
 	rrArgs := func(name string, dests []destination) string {
-		args := fmt.Sprintf("create routingrule trafficshifting --name=%v --target-mesh=my.mesh ", name)
+		args := fmt.Sprintf("apply routingrule trafficshifting --name=%v --target-mesh=my.mesh ", name)
 		for _, dest := range dests {
 			args += fmt.Sprintf("--destination=%v.%v:%v ", dest.Namespace, dest.Name, dest.weight)
 		}
@@ -51,14 +50,14 @@ var _ = Describe("RoutingRule", func() {
 	})
 	Context("no target mesh", func() {
 		It("returns an error", func() {
-			err := utils.Supergloo("create routingrule trafficshifting --name foo --destination=my.upstream:5")
+			err := utils.Supergloo("apply routingrule trafficshifting --name foo --destination=my.upstream:5")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("target mesh must be specified, provide with --target-mesh flag"))
 		})
 	})
 	Context("nonexistant target mesh", func() {
 		It("returns an error", func() {
-			err := utils.Supergloo("create routingrule trafficshifting --name foo --destination=my.upstream:5 --target-mesh notmy.mesh")
+			err := utils.Supergloo("apply routingrule trafficshifting --name foo --destination=my.upstream:5 --target-mesh notmy.mesh")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("notmy.mesh does not exist"))
 		})
@@ -187,6 +186,39 @@ var _ = Describe("RoutingRule", func() {
 					Name:      dest.Name,
 				}))
 			}
+		})
+	})
+	Context("overwrite previous rule", func() {
+		It("updates an existing rule with the same name", func() {
+
+			t := func(dests []destination) {
+				name := "ts-rr"
+
+				args := rrArgs(name, dests)
+
+				err := utils.Supergloo(args)
+				Expect(err).NotTo(HaveOccurred())
+
+				routingRule := getRoutingRule(name)
+
+				Expect(routingRule.Spec.RuleType).To(BeAssignableToTypeOf(&v1.RoutingRuleSpec_TrafficShifting{}))
+				ts := routingRule.Spec.RuleType.(*v1.RoutingRuleSpec_TrafficShifting)
+				Expect(ts.TrafficShifting.Destinations.Destinations).To(HaveLen(len(dests)))
+				for i, dest := range dests {
+					Expect(ts.TrafficShifting.Destinations.Destinations[i].Weight).To(Equal(dest.weight))
+					Expect(ts.TrafficShifting.Destinations.Destinations[i].Destination.Upstream).To(Equal(core.ResourceRef{
+						Namespace: dest.Namespace,
+						Name:      dest.Name,
+					}))
+				}
+			}
+			t([]destination{
+				{core.ResourceRef{"do", "a"}, 5},
+			})
+			t([]destination{
+				{core.ResourceRef{"do", "a"}, 5},
+				{core.ResourceRef{"barrel", "roll"}, 55},
+			})
 		})
 	})
 	Context("request matcher tests", func() {

@@ -1,4 +1,4 @@
-package create
+package apply
 
 import (
 	"context"
@@ -43,11 +43,11 @@ be load-balanced by weight across a variety of destinations`,
 	},
 }
 
-func createRoutingRuleCmd(opts *options.Options) *cobra.Command {
+func applyRoutingRuleCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "routingrule",
 		Aliases: []string{"rr"},
-		Short:   "Create a routing rule to apply to one or more meshes.",
+		Short:   "Apply a routing rule to one or more meshes.",
 		Long: `
 Each Routing Rule applies an HTTP routing feature to a mesh.
 
@@ -120,9 +120,15 @@ func createRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err != nil {
 		return err
 	}
+	rr := helpers.MustRoutingRuleClient()
+	existing, err := rr.Read(in.Metadata.Namespace, in.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	if err == nil {
+		// perform update
+		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+	}
 
 	in.Spec = spec
-	in, err = helpers.MustRoutingRuleClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	in, err = rr.Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
