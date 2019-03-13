@@ -124,7 +124,12 @@ $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
 
 .PHONY: build-cli
+ifeq ($(RELEASE),"true")
 build-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
+else
+build-cli:
+	go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
+endif
 
 #----------------------------------------------------------------------------------
 # Deployment Manifests / Helm
