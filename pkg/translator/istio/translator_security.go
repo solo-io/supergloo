@@ -50,7 +50,7 @@ func createServiceRoleFromRule(writeNamespace string, rule *v1.SecurityRule, ups
 	return &v1alpha1.ServiceRole{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      rule.Metadata.Namespace + "." + rule.Metadata.Name,
+			Name:      rule.Metadata.Namespace + "-" + rule.Metadata.Name,
 		},
 		Rules: []*v1alpha1.AccessRule{{
 			Services: serviceNames,

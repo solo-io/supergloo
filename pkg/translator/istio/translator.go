@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"reflect"
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -77,11 +78,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	resourceErrs.Accept(meshes.AsInputResources()...)
 	resourceErrs.Accept(meshGroups.AsInputResources()...)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
-
-	// TODO (ilackarms): when we support installing Gloo
-	// ensure that we handle race condition with upstream
-	// reporting.
-	resourceErrs.Accept(upstreams.AsInputResources()...)
 
 	validateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -245,7 +241,14 @@ func (t *translator) translateMesh(
 	var virtualServices v1alpha3.VirtualServiceList
 	for destinationHost, destinationPortAndLabelSets := range destinationHostsPortsAndLabels {
 		var labelSets []map[string]string
+		// must find unique label sets; they will be repeated for multiple ports
+	findUniqueSets:
 		for _, set := range destinationPortAndLabelSets {
+			for _, existing := range labelSets {
+				if reflect.DeepEqual(set.labels, existing) {
+					continue findUniqueSets
+				}
+			}
 			labelSets = append(labelSets, set.labels)
 		}
 

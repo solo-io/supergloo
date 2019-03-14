@@ -16,7 +16,7 @@ func SurveyRoutingRule(ctx context.Context, in *options.CreateRoutingRule) error
 	if err := surveySelector(ctx, "source", &in.SourceSelector); err != nil {
 		return err
 	}
-	if err := surveySelector(ctx, "source", &in.DestinationSelector); err != nil {
+	if err := surveySelector(ctx, "destination", &in.DestinationSelector); err != nil {
 		return err
 	}
 

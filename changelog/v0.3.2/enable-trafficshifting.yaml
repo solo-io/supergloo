@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Enable configuring routing rules in SuperGloo with support for TrafficShifting
+    issueLink: https://github.com/solo-io/supergloo/issues/251

@@ -90,8 +90,11 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		},
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.Istio{
-				// TODO
+				InstallationNamespace: installNamespace,
 			},
+		},
+		MtlsConfig: &v1.MtlsConfig{
+			MtlsEnabled: istio.Istio.EnableMtls,
 		},
 	}
 

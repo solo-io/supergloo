@@ -136,6 +136,15 @@ func (t *translator) applyRouteRules(
 
 	sortByMatcherSpecificity(istioRoutes)
 
+	if len(istioRoutes) == 0 {
+		// create a default route that sends all traffic to the destination host
+		istioRoutes = []*v1alpha3.HTTPRoute{{
+			Route: []*v1alpha3.HTTPRouteDestination{{
+				Destination: &v1alpha3.Destination{Host: destinationHost}},
+			}},
+		}
+	}
+
 	out.Http = istioRoutes
 }
 
@@ -143,7 +152,7 @@ func initVirtualService(writeNamespace, host string) *v1alpha3.VirtualService {
 	return &v1alpha3.VirtualService{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      host,
+			Name:      utils.SanitizeName(host),
 		},
 		Hosts:    []string{host},
 		Gateways: []string{"mesh"},

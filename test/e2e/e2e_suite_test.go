@@ -2,8 +2,10 @@ package e2e_test
 
 import (
 	"context"
+	"log"
 	"testing"
 
+	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
@@ -33,18 +35,20 @@ var _ = BeforeSuite(func() {
 	var err error
 	lock, err = clusterlock.NewTestClusterLocker(kube, "default")
 	Expect(err).NotTo(HaveOccurred())
-	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
+	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
+		log.Printf("waiting to acquire lock with err: %v", err)
+	}))).NotTo(HaveOccurred())
 
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
-
-	_, err = helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
+	kube = helpers.MustKubeClient()
+	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: basicNamespace,
 		},
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	_, err = helpers.MustKubeClient().CoreV1().Namespaces().Create(&kubev1.Namespace{
+	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   namespaceWithInject,
 			Labels: map[string]string{"istio-injection": "enabled"},
@@ -63,6 +67,8 @@ var _ = BeforeSuite(func() {
 	go func() {
 		defer GinkgoRecover()
 		err := setup.Main(rootCtx, func(e error) {
+			defer GinkgoRecover()
+			return
 			Expect(e).NotTo(HaveOccurred())
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -70,11 +76,14 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	cancel()
+	if cancel != nil {
+		defer cancel()
+	}
 	kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
 	Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
+	log.Printf("done!")
 })

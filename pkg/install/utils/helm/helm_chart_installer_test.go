@@ -2,10 +2,10 @@ package helm_test
 
 import (
 	"context"
+	"strings"
 
 	superglootest "github.com/solo-io/supergloo/test/testutils"
 
-	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,6 +71,11 @@ mixer:
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
+			// does not error on crds already existing
+			crdManifests, _ := manifests.SplitByCrds()
+			err = inst.CreateFromManifests(context.TODO(), ns, crdManifests)
+			Expect(err).NotTo(HaveOccurred())
+
 			err = inst.DeleteFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 		})
@@ -90,31 +95,23 @@ mixer:
 				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
-			defer inst.DeleteFromManifests(context.TODO(), ns, manifests)
 
-			// no security crds
 			for _, man := range manifests {
+				// no security crds
 				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
+
+				// no mixer-policy
+				Expect(man.Content).NotTo(ContainSubstring(`apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: istio-policy`))
+				// no mixer-telemetry
+				Expect(man.Content).NotTo(ContainSubstring(`apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: istio-telemetry`))
 			}
 
-			err = inst.CreateFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			cfg, err := kubeutils.GetConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			kubeClient, err := kubernetes.NewForConfig(cfg)
-			Expect(err).NotTo(HaveOccurred())
-
-			// no mixer
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
-			Expect(err).To(HaveOccurred())
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
-			Expect(err).To(HaveOccurred())
-
-			err = inst.DeleteFromManifests(context.TODO(), ns, manifests)
-			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 	Context("update manifest", func() {
@@ -138,68 +135,26 @@ mixer:
 			err = inst.CreateFromManifests(context.TODO(), ns, manifests)
 			Expect(err).NotTo(HaveOccurred())
 
-			// yes mixer
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
-			Expect(err).NotTo(HaveOccurred())
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
-			Expect(err).NotTo(HaveOccurred())
-
-			// change values, verify update
-			values = `
-mixer:
-  enabled: false #should uninstall mixer
-
-`
-			updatedManifests, err := RenderManifests(
-				context.TODO(),
-				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
-				values,
-				"yella",
-				ns,
-				"",
-				true,
-			)
-			Expect(err).NotTo(HaveOccurred())
-			defer inst.DeleteFromManifests(context.TODO(), ns, updatedManifests)
-
-			// no security crds
-			for _, man := range updatedManifests {
-				Expect(man.Content).NotTo(ContainSubstring("policies.authentication.istio.io"))
+			var foundMixerPolicy, foundMixerTelemetry bool
+			for _, man := range manifests {
+				// yes mixer-policy
+				if strings.Contains(man.Content, `apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: istio-policy`) {
+					foundMixerPolicy = true
+				}
+				if strings.Contains(man.Content, `apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: istio-telemetry`) {
+					foundMixerTelemetry = true
+				}
 			}
 
-			err = inst.UpdateFromManifests(context.TODO(), ns, manifests, updatedManifests, false)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(foundMixerPolicy).To(BeTrue())
+			Expect(foundMixerTelemetry).To(BeTrue())
 
-			// no mixer
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("mixer", v1.GetOptions{})
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
-			Expect(err).To(HaveOccurred())
-			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
-			Expect(err).To(HaveOccurred())
-
-			err = inst.DeleteFromManifests(context.TODO(), ns, updatedManifests)
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
-	Context("re-create crds", func() {
-		It("does not error on alreadyexists", func() {
-			manifests, err := RenderManifests(
-				context.TODO(),
-				"https://s3.amazonaws.com/supergloo.solo.io/istio-1.0.3.tgz",
-				"",
-				"",
-				ns,
-				"",
-				true,
-			)
-			crdManifests, _ := manifests.SplitByCrds()
-			defer inst.DeleteFromManifests(context.TODO(), ns, crdManifests)
-
-			err = inst.CreateFromManifests(context.TODO(), ns, crdManifests)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = inst.CreateFromManifests(context.TODO(), ns, crdManifests)
-			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })

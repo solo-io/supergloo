@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/translator/utils"
+
 	istiorbac "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -373,7 +375,7 @@ var _ = Describe("Translator", func() {
 						map[string]string{"app": "reviews"}, 9080,
 					}}}}},
 			} {
-				Expect(meshConfig.VirtualServices[i].Metadata.Name).To(Equal(expected.host))
+				Expect(meshConfig.VirtualServices[i].Metadata.Name).To(Equal(utils.SanitizeName(expected.host)))
 				Expect(meshConfig.VirtualServices[i].Hosts).To(Equal([]string{expected.host}))
 				Expect(meshConfig.VirtualServices[i].Gateways).To(Equal([]string{"mesh"}))
 				Expect(meshConfig.VirtualServices[i].Http).To(HaveLen(len(inputRoutingRules)))
@@ -455,7 +457,7 @@ var _ = Describe("createServiceRoleFromRule", func() {
 			rule,
 			inputs.BookInfoUpstreams("default"))
 		Expect(err).NotTo(HaveOccurred())
-		Expect(serviceRole.Metadata.Name).To(Equal(rule.Metadata.Namespace + "." + rule.Metadata.Name))
+		Expect(serviceRole.Metadata.Name).To(Equal(rule.Metadata.Namespace + "-" + rule.Metadata.Name))
 		Expect(serviceRole.Rules).To(HaveLen(1))
 		Expect(serviceRole.Rules[0].Paths).To(Equal(rule.AllowedPaths))
 		Expect(serviceRole.Rules[0].Methods).To(Equal(rule.AllowedMethods))
@@ -593,20 +595,20 @@ var _ = Describe("createSecurityConfig", func() {
 		Expect(securityConfig.RbacConfig.Mode).To(Equal(istiorbac.RbacConfig_ON))
 		Expect(securityConfig.RbacConfig.EnforcementMode).To(Equal(istiorbac.EnforcementMode_ENFORCED))
 		Expect(securityConfig.ServiceRoles).To(HaveLen(2))
-		Expect(securityConfig.ServiceRoles[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "." + rule11.Metadata.Name))
+		Expect(securityConfig.ServiceRoles[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "-" + rule11.Metadata.Name))
 		Expect(securityConfig.ServiceRoles[0].Rules[0].Services).To(Equal([]string{
 			"productpage.default.svc.cluster.local",
 			"ratings.default.svc.cluster.local",
 		}))
-		Expect(securityConfig.ServiceRoles[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "." + rule12.Metadata.Name))
+		Expect(securityConfig.ServiceRoles[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "-" + rule12.Metadata.Name))
 		Expect(securityConfig.ServiceRoles[1].Rules[0].Services).To(Equal([]string{
 			"details.default.svc.cluster.local",
 			"reviews.default.svc.cluster.local",
 		}))
 		Expect(securityConfig.ServiceRoleBindings).To(HaveLen(2))
-		Expect(securityConfig.ServiceRoleBindings[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "." + rule11.Metadata.Name))
+		Expect(securityConfig.ServiceRoleBindings[0].Metadata.Name).To(Equal(rule11.Metadata.Namespace + "-" + rule11.Metadata.Name))
 		Expect(securityConfig.ServiceRoleBindings[0].RoleRef.Name).To(Equal(securityConfig.ServiceRoles[0].Metadata.Name))
-		Expect(securityConfig.ServiceRoleBindings[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "." + rule12.Metadata.Name))
+		Expect(securityConfig.ServiceRoleBindings[1].Metadata.Name).To(Equal(rule12.Metadata.Namespace + "-" + rule12.Metadata.Name))
 		Expect(securityConfig.ServiceRoleBindings[1].RoleRef.Name).To(Equal(securityConfig.ServiceRoles[1].Metadata.Name))
 	})
 })

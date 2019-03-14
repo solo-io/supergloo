@@ -16,7 +16,7 @@ import (
 func TestRunnerCurlEventuallyShouldRespond(ctx context.Context, testrunnerNamespace string, opts setup.CurlOpts, substr string, timeout time.Duration) {
 	// for some useful-ish output
 	tick := time.Tick(timeout / 10)
-	gomega.Eventually(func() string {
+	gomega.EventuallyWithOffset(1, func() string {
 		res, err := TestRunnerCurl(testrunnerNamespace, opts)
 		if err != nil {
 			res = err.Error()

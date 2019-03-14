@@ -19,6 +19,7 @@ func SubsetName(labels map[string]string) string {
 }
 
 func SanitizeName(name string) string {
+	name = strings.Replace(name, "/", "-", -1)
 	name = strings.Replace(name, ".", "-", -1)
 	name = strings.Replace(name, "[", "", -1)
 	name = strings.Replace(name, "]", "", -1)
@@ -31,5 +32,6 @@ func SanitizeName(name string) string {
 		name = name[:63]
 	}
 	name = strings.Replace(name, ".", "-", -1)
+	name = strings.ToLower(name)
 	return name
 }
