@@ -5,6 +5,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
@@ -33,7 +34,9 @@ var _ = BeforeSuite(func() {
 	var err error
 	lock, err = testutils.NewTestClusterLocker(kube, "default")
 	Expect(err).NotTo(HaveOccurred())
-	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
+	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
+		log.Printf("waiting to acquire lock with err: %v", err)
+	}))).NotTo(HaveOccurred())
 
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
 	kube = helpers.MustKubeClient()
