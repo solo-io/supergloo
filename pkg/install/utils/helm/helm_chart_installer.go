@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/solo-kit/pkg/utils/kubeinstallutils"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/genericclioptions/resource"
@@ -19,7 +21,6 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/avast/retry-go"
-	kubecrds "github.com/solo-io/supergloo/pkg2/kube"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -220,7 +221,7 @@ func updateFromManifests(ctx context.Context, namespace string, original, update
 }
 
 func waitForCrds(ctx context.Context, kc *kube.Client, manifestContent string) error {
-	crds, err := kubecrds.CrdsFromManifest(manifestContent)
+	crds, err := kubeinstallutils.CrdsFromManifest(manifestContent)
 	if err != nil {
 		return errors.Wrapf(err, "failed parsing crds from manifest")
 	}
