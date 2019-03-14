@@ -124,6 +124,7 @@ var _ = Describe("E2e", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
+		waitUntilOkFile()
 		// with mtls in strict mode, curl will fail from non-injected testrunner
 		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
 			Service: "details." + namespaceWithInject + ".svc.cluster.local",

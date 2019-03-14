@@ -78,9 +78,12 @@ steps:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
+      # we DISABLE interactive tests as they appear to fail our current ci environment
+      # tracking with https://github.com/solo-io/supergloo/issues/243
+      - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', '-p', 'pkg', 'test/e2e']
+    args: ['-r', '-failFast', 'cli/pkg', 'pkg', 'test/e2e']
     waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
@@ -137,3 +140,6 @@ secrets:
       FIREBASE_TOKEN: CiQABlzmSc0BWpPfrGRtDscrxOfp9ZBkZO9fkO79tjEmA14c8ZESVwCCPGSG8uZtLSmFucmEEJGJ0080ON7Zw5TjLe2YdwuxnSOA5YzZryVwLFAMzRmfb6OBxyThTZKvGZzgfXyv6CeLwYX0exk20u7k2bnrWbFHO0Aa4TiQqw==
 
 timeout: 6600s
+tags: ['supergloo']
+options:
+  machineType: 'N1_HIGHCPU_8'

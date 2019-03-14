@@ -1,4 +1,4 @@
-package create_test
+package apply_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestInstall(t *testing.T) {
+func TestApply(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Install Suite")
+	RunSpecs(t, "Apply Suite")
 }
