@@ -138,8 +138,8 @@ var _ = Describe("E2e", func() {
 			Path:    "/details/1",
 		}, `"author":"William Shakespeare"`, time.Minute*3)
 
-		//create a traffic shifting rule, divert traffic to reviews
-		err = utils.Supergloo(fmt.Sprintf("create routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
+		//apply a traffic shifting rule, divert traffic to reviews
+		err = utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
 		Expect(err).NotTo(HaveOccurred())
 
 		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
