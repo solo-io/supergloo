@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
       - name: supergloo
-        image: soloio/supergloo:dev
+        image: quay.io/solo-io/supergloo:dev
         imagePullPolicy: Always
 ---
 ### Deployment

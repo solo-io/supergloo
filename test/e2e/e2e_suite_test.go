@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/solo-io/go-utils/testutils/clusterlock"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"

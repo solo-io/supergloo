@@ -1161,8 +1161,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "a07620941be10029f13d6c00ddfa52bae141304a"
-  version = "v0.10.2"
+  revision = "18afa0fe738d3e6b593e8f16f665eede788fe9b5"
+  version = "v0.10.4"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -2114,7 +2114,6 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
-    "github.com/google/uuid",
     "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/iancoleman/strcase",
