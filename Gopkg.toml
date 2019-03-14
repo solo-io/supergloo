@@ -45,10 +45,6 @@
   version = "0.0.4"
 
 [[constraint]]
-  name = "github.com/prometheus/prometheus"
-  version = "2.6.1"
-
-[[constraint]]
   name = "github.com/solo-io/solo-kit"
   version = "0.3.4"
 
