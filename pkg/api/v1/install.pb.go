@@ -10,7 +10,6 @@ import (
 
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
@@ -43,19 +42,18 @@ type Install struct {
 	// not to install this mesh, or uninstall an active install
 	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
 	// Types that are valid to be assigned to InstallType:
-	//	*Install_Istio_
-	//	*Install_Custom_
+	//	*Install_Mesh
+	//	*Install_Ingress
 	InstallType isInstall_InstallType `protobuf_oneof:"install_type"`
+	// which namespace to install to
+	InstallationNamespace string `protobuf:"bytes,4,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
 	// gzipped inline string containing the applied manifest
 	// read-only, set by the server after successful installation.
 	// TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb)
-	InstalledManifest string `protobuf:"bytes,5,opt,name=installed_manifest,json=installedManifest,proto3" json:"installed_manifest,omitempty"`
-	// reference to the Mesh crd that was created from this install
-	// read-only, set by the server after successful installation.
-	InstalledMesh        *core.ResourceRef `protobuf:"bytes,6,opt,name=installed_mesh,json=installedMesh,proto3" json:"installed_mesh,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	InstalledManifest    string   `protobuf:"bytes,5,opt,name=installed_manifest,json=installedManifest,proto3" json:"installed_manifest,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *Install) Reset()         { *m = Install{} }
@@ -87,15 +85,15 @@ type isInstall_InstallType interface {
 	Equal(interface{}) bool
 }
 
-type Install_Istio_ struct {
-	Istio *Install_Istio `protobuf:"bytes,2,opt,name=istio,proto3,oneof"`
+type Install_Mesh struct {
+	Mesh *MeshInstall `protobuf:"bytes,2,opt,name=mesh,proto3,oneof"`
 }
-type Install_Custom_ struct {
-	Custom *Install_Custom `protobuf:"bytes,3,opt,name=custom,proto3,oneof"`
+type Install_Ingress struct {
+	Ingress *IngressInstall `protobuf:"bytes,3,opt,name=ingress,proto3,oneof"`
 }
 
-func (*Install_Istio_) isInstall_InstallType()  {}
-func (*Install_Custom_) isInstall_InstallType() {}
+func (*Install_Mesh) isInstall_InstallType()    {}
+func (*Install_Ingress) isInstall_InstallType() {}
 
 func (m *Install) GetInstallType() isInstall_InstallType {
 	if m != nil {
@@ -125,18 +123,25 @@ func (m *Install) GetDisabled() bool {
 	return false
 }
 
-func (m *Install) GetIstio() *Install_Istio {
-	if x, ok := m.GetInstallType().(*Install_Istio_); ok {
-		return x.Istio
+func (m *Install) GetMesh() *MeshInstall {
+	if x, ok := m.GetInstallType().(*Install_Mesh); ok {
+		return x.Mesh
 	}
 	return nil
 }
 
-func (m *Install) GetCustom() *Install_Custom {
-	if x, ok := m.GetInstallType().(*Install_Custom_); ok {
-		return x.Custom
+func (m *Install) GetIngress() *IngressInstall {
+	if x, ok := m.GetInstallType().(*Install_Ingress); ok {
+		return x.Ingress
 	}
 	return nil
+}
+
+func (m *Install) GetInstallationNamespace() string {
+	if m != nil {
+		return m.InstallationNamespace
+	}
+	return ""
 }
 
 func (m *Install) GetInstalledManifest() string {
@@ -146,18 +151,11 @@ func (m *Install) GetInstalledManifest() string {
 	return ""
 }
 
-func (m *Install) GetInstalledMesh() *core.ResourceRef {
-	if m != nil {
-		return m.InstalledMesh
-	}
-	return nil
-}
-
 // XXX_OneofFuncs is for the internal use of the proto package.
 func (*Install) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
 	return _Install_OneofMarshaler, _Install_OneofUnmarshaler, _Install_OneofSizer, []interface{}{
-		(*Install_Istio_)(nil),
-		(*Install_Custom_)(nil),
+		(*Install_Mesh)(nil),
+		(*Install_Ingress)(nil),
 	}
 }
 
@@ -165,14 +163,14 @@ func _Install_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	m := msg.(*Install)
 	// install_type
 	switch x := m.InstallType.(type) {
-	case *Install_Istio_:
+	case *Install_Mesh:
 		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Istio); err != nil {
+		if err := b.EncodeMessage(x.Mesh); err != nil {
 			return err
 		}
-	case *Install_Custom_:
+	case *Install_Ingress:
 		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Custom); err != nil {
+		if err := b.EncodeMessage(x.Ingress); err != nil {
 			return err
 		}
 	case nil:
@@ -185,21 +183,21 @@ func _Install_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 func _Install_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
 	m := msg.(*Install)
 	switch tag {
-	case 2: // install_type.istio
+	case 2: // install_type.mesh
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
-		msg := new(Install_Istio)
+		msg := new(MeshInstall)
 		err := b.DecodeMessage(msg)
-		m.InstallType = &Install_Istio_{msg}
+		m.InstallType = &Install_Mesh{msg}
 		return true, err
-	case 3: // install_type.custom
+	case 3: // install_type.ingress
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
-		msg := new(Install_Custom)
+		msg := new(IngressInstall)
 		err := b.DecodeMessage(msg)
-		m.InstallType = &Install_Custom_{msg}
+		m.InstallType = &Install_Ingress{msg}
 		return true, err
 	default:
 		return false, nil
@@ -210,13 +208,13 @@ func _Install_OneofSizer(msg proto.Message) (n int) {
 	m := msg.(*Install)
 	// install_type
 	switch x := m.InstallType.(type) {
-	case *Install_Istio_:
-		s := proto.Size(x.Istio)
+	case *Install_Mesh:
+		s := proto.Size(x.Mesh)
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
-	case *Install_Custom_:
-		s := proto.Size(x.Custom)
+	case *Install_Ingress:
+		s := proto.Size(x.Ingress)
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
@@ -228,9 +226,7 @@ func _Install_OneofSizer(msg proto.Message) (n int) {
 }
 
 // Installation options for Istio
-type Install_Istio struct {
-	// which namespace to install to
-	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
+type Istio struct {
 	// which version of the istio helm chart to install
 	// ignored if using custom helm chart
 	IstioVersion string `protobuf:"bytes,2,opt,name=istio_version,json=istioVersion,proto3" json:"istio_version,omitempty"`
@@ -253,143 +249,383 @@ type Install_Istio struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Install_Istio) Reset()         { *m = Install_Istio{} }
-func (m *Install_Istio) String() string { return proto.CompactTextString(m) }
-func (*Install_Istio) ProtoMessage()    {}
-func (*Install_Istio) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b058d98c63047dc, []int{0, 0}
+func (m *Istio) Reset()         { *m = Istio{} }
+func (m *Istio) String() string { return proto.CompactTextString(m) }
+func (*Istio) ProtoMessage()    {}
+func (*Istio) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b058d98c63047dc, []int{1}
 }
-func (m *Install_Istio) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Install_Istio.Unmarshal(m, b)
+func (m *Istio) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Istio.Unmarshal(m, b)
 }
-func (m *Install_Istio) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Install_Istio.Marshal(b, m, deterministic)
+func (m *Istio) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Istio.Marshal(b, m, deterministic)
 }
-func (m *Install_Istio) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Install_Istio.Merge(m, src)
+func (m *Istio) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Istio.Merge(m, src)
 }
-func (m *Install_Istio) XXX_Size() int {
-	return xxx_messageInfo_Install_Istio.Size(m)
+func (m *Istio) XXX_Size() int {
+	return xxx_messageInfo_Istio.Size(m)
 }
-func (m *Install_Istio) XXX_DiscardUnknown() {
-	xxx_messageInfo_Install_Istio.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Install_Istio proto.InternalMessageInfo
-
-func (m *Install_Istio) GetInstallationNamespace() string {
-	if m != nil {
-		return m.InstallationNamespace
-	}
-	return ""
+func (m *Istio) XXX_DiscardUnknown() {
+	xxx_messageInfo_Istio.DiscardUnknown(m)
 }
 
-func (m *Install_Istio) GetIstioVersion() string {
+var xxx_messageInfo_Istio proto.InternalMessageInfo
+
+func (m *Istio) GetIstioVersion() string {
 	if m != nil {
 		return m.IstioVersion
 	}
 	return ""
 }
 
-func (m *Install_Istio) GetEnableAutoInject() bool {
+func (m *Istio) GetEnableAutoInject() bool {
 	if m != nil {
 		return m.EnableAutoInject
 	}
 	return false
 }
 
-func (m *Install_Istio) GetEnableMtls() bool {
+func (m *Istio) GetEnableMtls() bool {
 	if m != nil {
 		return m.EnableMtls
 	}
 	return false
 }
 
-func (m *Install_Istio) GetCustomRootCert() *core.ResourceRef {
+func (m *Istio) GetCustomRootCert() *core.ResourceRef {
 	if m != nil {
 		return m.CustomRootCert
 	}
 	return nil
 }
 
-func (m *Install_Istio) GetInstallGrafana() bool {
+func (m *Istio) GetInstallGrafana() bool {
 	if m != nil {
 		return m.InstallGrafana
 	}
 	return false
 }
 
-func (m *Install_Istio) GetInstallPrometheus() bool {
+func (m *Istio) GetInstallPrometheus() bool {
 	if m != nil {
 		return m.InstallPrometheus
 	}
 	return false
 }
 
-func (m *Install_Istio) GetInstallJaeger() bool {
+func (m *Istio) GetInstallJaeger() bool {
 	if m != nil {
 		return m.InstallJaeger
 	}
 	return false
 }
 
-// note: currently unimplemented
-type Install_Custom struct {
-	// supergloo will attempt to
-	// install this helm chart.
-	// format should be a URI accessible to supergloo
-	CustomHelmChart string `protobuf:"bytes,9,opt,name=custom_helm_chart,json=customHelmChart,proto3" json:"custom_helm_chart,omitempty"`
-	// optional. if specified,
-	// these values will be used
-	// when rendering the helm chart
-	CustomHelmValues     string   `protobuf:"bytes,10,opt,name=custom_helm_values,json=customHelmValues,proto3" json:"custom_helm_values,omitempty"`
+type MeshInstall struct {
+	// Types that are valid to be assigned to InstallType:
+	//	*MeshInstall_IstioMesh
+	InstallType isMeshInstall_InstallType `protobuf_oneof:"install_type"`
+	// reference to the Mesh crd that was created from this install
+	// read-only, set by the server after successful installation.
+	InstalledMesh        *core.ResourceRef `protobuf:"bytes,6,opt,name=installed_mesh,json=installedMesh,proto3" json:"installed_mesh,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *MeshInstall) Reset()         { *m = MeshInstall{} }
+func (m *MeshInstall) String() string { return proto.CompactTextString(m) }
+func (*MeshInstall) ProtoMessage()    {}
+func (*MeshInstall) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b058d98c63047dc, []int{2}
+}
+func (m *MeshInstall) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshInstall.Unmarshal(m, b)
+}
+func (m *MeshInstall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshInstall.Marshal(b, m, deterministic)
+}
+func (m *MeshInstall) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshInstall.Merge(m, src)
+}
+func (m *MeshInstall) XXX_Size() int {
+	return xxx_messageInfo_MeshInstall.Size(m)
+}
+func (m *MeshInstall) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshInstall.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshInstall proto.InternalMessageInfo
+
+type isMeshInstall_InstallType interface {
+	isMeshInstall_InstallType()
+	Equal(interface{}) bool
+}
+
+type MeshInstall_IstioMesh struct {
+	IstioMesh *Istio `protobuf:"bytes,2,opt,name=istio_mesh,json=istioMesh,proto3,oneof"`
+}
+
+func (*MeshInstall_IstioMesh) isMeshInstall_InstallType() {}
+
+func (m *MeshInstall) GetInstallType() isMeshInstall_InstallType {
+	if m != nil {
+		return m.InstallType
+	}
+	return nil
+}
+
+func (m *MeshInstall) GetIstioMesh() *Istio {
+	if x, ok := m.GetInstallType().(*MeshInstall_IstioMesh); ok {
+		return x.IstioMesh
+	}
+	return nil
+}
+
+func (m *MeshInstall) GetInstalledMesh() *core.ResourceRef {
+	if m != nil {
+		return m.InstalledMesh
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*MeshInstall) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _MeshInstall_OneofMarshaler, _MeshInstall_OneofUnmarshaler, _MeshInstall_OneofSizer, []interface{}{
+		(*MeshInstall_IstioMesh)(nil),
+	}
+}
+
+func _MeshInstall_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*MeshInstall)
+	// install_type
+	switch x := m.InstallType.(type) {
+	case *MeshInstall_IstioMesh:
+		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.IstioMesh); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("MeshInstall.InstallType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _MeshInstall_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*MeshInstall)
+	switch tag {
+	case 2: // install_type.istio_mesh
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(Istio)
+		err := b.DecodeMessage(msg)
+		m.InstallType = &MeshInstall_IstioMesh{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _MeshInstall_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*MeshInstall)
+	// install_type
+	switch x := m.InstallType.(type) {
+	case *MeshInstall_IstioMesh:
+		s := proto.Size(x.IstioMesh)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+type IngressInstall struct {
+	// Types that are valid to be assigned to InstallType:
+	//	*IngressInstall_Gloo
+	InstallType isIngressInstall_InstallType `protobuf_oneof:"install_type"`
+	// reference to the Mesh crd which this ingress is pointing
+	// read-only. if specified, this ingress will share policy, routing,
+	// and mtls configuration with the target mesh. this is required to
+	// connect to mtls-secured services via the ingress
+	IngressMesh *core.ResourceRef `protobuf:"bytes,2,opt,name=ingress_mesh,json=ingressMesh,proto3" json:"ingress_mesh,omitempty"`
+	// reference to the Ingress crd that was created from this install
+	// read-only, set by the server after successful installation.
+	InstalledIngress     *core.ResourceRef `protobuf:"bytes,3,opt,name=installed_ingress,json=installedIngress,proto3" json:"installed_ingress,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *IngressInstall) Reset()         { *m = IngressInstall{} }
+func (m *IngressInstall) String() string { return proto.CompactTextString(m) }
+func (*IngressInstall) ProtoMessage()    {}
+func (*IngressInstall) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b058d98c63047dc, []int{3}
+}
+func (m *IngressInstall) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_IngressInstall.Unmarshal(m, b)
+}
+func (m *IngressInstall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_IngressInstall.Marshal(b, m, deterministic)
+}
+func (m *IngressInstall) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_IngressInstall.Merge(m, src)
+}
+func (m *IngressInstall) XXX_Size() int {
+	return xxx_messageInfo_IngressInstall.Size(m)
+}
+func (m *IngressInstall) XXX_DiscardUnknown() {
+	xxx_messageInfo_IngressInstall.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_IngressInstall proto.InternalMessageInfo
+
+type isIngressInstall_InstallType interface {
+	isIngressInstall_InstallType()
+	Equal(interface{}) bool
+}
+
+type IngressInstall_Gloo struct {
+	Gloo *GlooIngress `protobuf:"bytes,1,opt,name=gloo,proto3,oneof"`
+}
+
+func (*IngressInstall_Gloo) isIngressInstall_InstallType() {}
+
+func (m *IngressInstall) GetInstallType() isIngressInstall_InstallType {
+	if m != nil {
+		return m.InstallType
+	}
+	return nil
+}
+
+func (m *IngressInstall) GetGloo() *GlooIngress {
+	if x, ok := m.GetInstallType().(*IngressInstall_Gloo); ok {
+		return x.Gloo
+	}
+	return nil
+}
+
+func (m *IngressInstall) GetIngressMesh() *core.ResourceRef {
+	if m != nil {
+		return m.IngressMesh
+	}
+	return nil
+}
+
+func (m *IngressInstall) GetInstalledIngress() *core.ResourceRef {
+	if m != nil {
+		return m.InstalledIngress
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*IngressInstall) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _IngressInstall_OneofMarshaler, _IngressInstall_OneofUnmarshaler, _IngressInstall_OneofSizer, []interface{}{
+		(*IngressInstall_Gloo)(nil),
+	}
+}
+
+func _IngressInstall_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*IngressInstall)
+	// install_type
+	switch x := m.InstallType.(type) {
+	case *IngressInstall_Gloo:
+		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Gloo); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("IngressInstall.InstallType has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _IngressInstall_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*IngressInstall)
+	switch tag {
+	case 1: // install_type.gloo
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(GlooIngress)
+		err := b.DecodeMessage(msg)
+		m.InstallType = &IngressInstall_Gloo{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _IngressInstall_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*IngressInstall)
+	// install_type
+	switch x := m.InstallType.(type) {
+	case *IngressInstall_Gloo:
+		s := proto.Size(x.Gloo)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+type GlooIngress struct {
+	// which version of the gloo helm chart to install
+	// ignored if using custom helm chart
+	GlooVersion          string   `protobuf:"bytes,2,opt,name=gloo_version,json=glooVersion,proto3" json:"gloo_version,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Install_Custom) Reset()         { *m = Install_Custom{} }
-func (m *Install_Custom) String() string { return proto.CompactTextString(m) }
-func (*Install_Custom) ProtoMessage()    {}
-func (*Install_Custom) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b058d98c63047dc, []int{0, 1}
+func (m *GlooIngress) Reset()         { *m = GlooIngress{} }
+func (m *GlooIngress) String() string { return proto.CompactTextString(m) }
+func (*GlooIngress) ProtoMessage()    {}
+func (*GlooIngress) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b058d98c63047dc, []int{4}
 }
-func (m *Install_Custom) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Install_Custom.Unmarshal(m, b)
+func (m *GlooIngress) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GlooIngress.Unmarshal(m, b)
 }
-func (m *Install_Custom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Install_Custom.Marshal(b, m, deterministic)
+func (m *GlooIngress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GlooIngress.Marshal(b, m, deterministic)
 }
-func (m *Install_Custom) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Install_Custom.Merge(m, src)
+func (m *GlooIngress) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GlooIngress.Merge(m, src)
 }
-func (m *Install_Custom) XXX_Size() int {
-	return xxx_messageInfo_Install_Custom.Size(m)
+func (m *GlooIngress) XXX_Size() int {
+	return xxx_messageInfo_GlooIngress.Size(m)
 }
-func (m *Install_Custom) XXX_DiscardUnknown() {
-	xxx_messageInfo_Install_Custom.DiscardUnknown(m)
+func (m *GlooIngress) XXX_DiscardUnknown() {
+	xxx_messageInfo_GlooIngress.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Install_Custom proto.InternalMessageInfo
+var xxx_messageInfo_GlooIngress proto.InternalMessageInfo
 
-func (m *Install_Custom) GetCustomHelmChart() string {
+func (m *GlooIngress) GetGlooVersion() string {
 	if m != nil {
-		return m.CustomHelmChart
-	}
-	return ""
-}
-
-func (m *Install_Custom) GetCustomHelmValues() string {
-	if m != nil {
-		return m.CustomHelmValues
+		return m.GlooVersion
 	}
 	return ""
 }
 
 func init() {
 	proto.RegisterType((*Install)(nil), "supergloo.solo.io.Install")
-	proto.RegisterType((*Install_Istio)(nil), "supergloo.solo.io.Install.Istio")
-	proto.RegisterType((*Install_Custom)(nil), "supergloo.solo.io.Install.Custom")
+	proto.RegisterType((*Istio)(nil), "supergloo.solo.io.Istio")
+	proto.RegisterType((*MeshInstall)(nil), "supergloo.solo.io.MeshInstall")
+	proto.RegisterType((*IngressInstall)(nil), "supergloo.solo.io.IngressInstall")
+	proto.RegisterType((*GlooIngress)(nil), "supergloo.solo.io.GlooIngress")
 }
 
 func init() {
@@ -397,48 +633,51 @@ func init() {
 }
 
 var fileDescriptor_7b058d98c63047dc = []byte{
-	// 654 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xcd, 0x4e, 0xdb, 0x4c,
-	0x14, 0x25, 0x10, 0x42, 0x32, 0xfc, 0x66, 0x04, 0xc8, 0x64, 0x01, 0xf9, 0xf8, 0x54, 0x81, 0x2a,
-	0xb0, 0x45, 0xab, 0x4a, 0x88, 0x6e, 0xda, 0x64, 0x01, 0x54, 0xa2, 0xaa, 0xa6, 0x12, 0x8b, 0x6e,
-	0xac, 0x89, 0x73, 0xed, 0x0c, 0xd8, 0xbe, 0xd6, 0xcc, 0x98, 0xaa, 0x5b, 0x9e, 0xa1, 0x0f, 0xd1,
-	0x47, 0xe9, 0x53, 0xb0, 0xe8, 0x1b, 0xd0, 0x45, 0xd7, 0x95, 0xc7, 0xe3, 0x10, 0xd4, 0x96, 0xd2,
-	0x55, 0x32, 0xf7, 0x9c, 0x73, 0xe7, 0x9e, 0x73, 0x6d, 0x93, 0x83, 0x48, 0xe8, 0x51, 0x3e, 0x70,
-	0x03, 0x4c, 0x3c, 0x85, 0x31, 0xee, 0x0b, 0xf4, 0x54, 0x9e, 0x81, 0x8c, 0x62, 0x44, 0x8f, 0x67,
-	0xc2, 0xbb, 0x3a, 0xf0, 0x44, 0xaa, 0x34, 0x8f, 0x63, 0x37, 0x93, 0xa8, 0x91, 0xb6, 0xc7, 0xb8,
-	0x5b, 0x28, 0x5c, 0x81, 0x9d, 0xd5, 0x08, 0x23, 0x34, 0xa8, 0x57, 0xfc, 0x2b, 0x89, 0x9d, 0xcd,
-	0x08, 0x31, 0x8a, 0xc1, 0x33, 0xa7, 0x41, 0x1e, 0x7a, 0xc3, 0x5c, 0x72, 0x2d, 0x30, 0xfd, 0x13,
-	0xfe, 0x51, 0xf2, 0x2c, 0x03, 0xa9, 0x2c, 0xfe, 0xdb, 0xd9, 0x8a, 0xdf, 0x4b, 0xa1, 0xab, 0xd1,
-	0x12, 0xd0, 0x7c, 0xc8, 0x35, 0xb7, 0x12, 0xef, 0x11, 0x12, 0xa5, 0xb9, 0xce, 0xab, 0x3b, 0xf6,
-	0x1e, 0x21, 0x90, 0x10, 0xfe, 0xc3, 0x44, 0xd5, 0xb9, 0x94, 0x6c, 0x7f, 0x9e, 0x23, 0x73, 0xa7,
-	0x65, 0x7e, 0xf4, 0x98, 0x34, 0xca, 0xcb, 0x9d, 0x61, 0xb7, 0xb6, 0x3b, 0xff, 0x6c, 0xd5, 0x0d,
-	0x50, 0x42, 0x95, 0xa2, 0xfb, 0xde, 0x60, 0xbd, 0x8d, 0xaf, 0x37, 0x5b, 0x53, 0xdf, 0x6f, 0xb6,
-	0xda, 0x1a, 0x94, 0x1e, 0x8a, 0x30, 0x3c, 0xda, 0x16, 0x51, 0x8a, 0x12, 0xb6, 0x99, 0x95, 0xd3,
-	0x43, 0xd2, 0xac, 0x8c, 0x3b, 0x60, 0x5a, 0xad, 0xdf, 0x6f, 0x75, 0x66, 0xd1, 0x5e, 0xbd, 0x68,
-	0xc6, 0xc6, 0x6c, 0xda, 0x21, 0xcd, 0xa1, 0x50, 0x7c, 0x10, 0xc3, 0xd0, 0xa9, 0x75, 0x6b, 0xbb,
-	0x4d, 0x36, 0x3e, 0xd3, 0x43, 0x32, 0x2b, 0x94, 0x16, 0xe8, 0x4c, 0x9b, 0x96, 0x5d, 0xf7, 0x97,
-	0x45, 0xbb, 0xd6, 0x89, 0x7b, 0x5a, 0xf0, 0x4e, 0xa6, 0x58, 0x29, 0xa0, 0x2f, 0x49, 0x23, 0xc8,
-	0x95, 0xc6, 0xc4, 0x99, 0x31, 0xd2, 0xff, 0x1e, 0x90, 0xf6, 0x0d, 0xf1, 0x64, 0x8a, 0x59, 0x09,
-	0xdd, 0x27, 0xd4, 0x3e, 0x60, 0x30, 0xf4, 0x13, 0x9e, 0x8a, 0x10, 0x94, 0x76, 0x66, 0xbb, 0xb5,
-	0xdd, 0x16, 0x6b, 0x8f, 0x91, 0x33, 0x0b, 0xd0, 0x57, 0x64, 0x69, 0x82, 0x0e, 0x6a, 0xe4, 0x34,
-	0xcc, 0x9d, 0x1b, 0xf7, 0x13, 0x60, 0xa0, 0x30, 0x97, 0x01, 0x30, 0x08, 0xd9, 0xe2, 0x5d, 0x17,
-	0x50, 0xa3, 0xce, 0x8f, 0x69, 0x32, 0x6b, 0x0c, 0xd0, 0x17, 0x64, 0xdd, 0x42, 0xe6, 0xb9, 0xf4,
-	0x53, 0x9e, 0x80, 0xca, 0x78, 0x00, 0x26, 0x9b, 0x16, 0x5b, 0x9b, 0x44, 0xdf, 0x56, 0x20, 0xfd,
-	0x9f, 0x2c, 0x1a, 0xdf, 0xfe, 0x15, 0x48, 0x25, 0x30, 0x35, 0x81, 0xb5, 0xd8, 0x82, 0x29, 0x9e,
-	0x97, 0x35, 0xba, 0x47, 0x28, 0xa4, 0x45, 0xb0, 0x3e, 0xcf, 0x35, 0xfa, 0x22, 0xbd, 0x80, 0x40,
-	0x9b, 0x7c, 0x9a, 0x6c, 0xa5, 0x44, 0x5e, 0xe7, 0x1a, 0x4f, 0x4d, 0x9d, 0x6e, 0x91, 0x79, 0xcb,
-	0x4e, 0x74, 0xac, 0x9c, 0xba, 0xa1, 0x91, 0xb2, 0x74, 0xa6, 0x63, 0x45, 0xfb, 0x64, 0xa5, 0xcc,
-	0xcb, 0x97, 0x88, 0xda, 0x0f, 0x40, 0x6a, 0xa7, 0xf5, 0x37, 0xe3, 0x4b, 0xa5, 0x84, 0x21, 0xea,
-	0x3e, 0x48, 0x4d, 0x77, 0xc8, 0xb2, 0x75, 0xe4, 0x47, 0x92, 0x87, 0x3c, 0xe5, 0x26, 0xbc, 0x26,
-	0xab, 0x22, 0x3d, 0x2e, 0xab, 0x13, 0x3b, 0xf1, 0x33, 0x89, 0x09, 0xe8, 0x11, 0xe4, 0xca, 0x99,
-	0x33, 0xdc, 0x6a, 0x27, 0xef, 0xc6, 0x00, 0x7d, 0x32, 0xde, 0x89, 0x7f, 0xc1, 0x21, 0x02, 0xe9,
-	0x34, 0x0d, 0xb5, 0x0a, 0xfe, 0x8d, 0x29, 0x76, 0x06, 0xa4, 0x51, 0x6e, 0x9f, 0x3e, 0x25, 0x6d,
-	0xeb, 0x66, 0x04, 0x71, 0xe2, 0x07, 0x23, 0x6e, 0xed, 0xb4, 0xd8, 0x72, 0x09, 0x9c, 0x40, 0x9c,
-	0xf4, 0x8b, 0x72, 0x11, 0xe4, 0x24, 0xf7, 0x8a, 0xc7, 0x39, 0x28, 0x87, 0x18, 0xf2, 0xca, 0x1d,
-	0xf9, 0xdc, 0xd4, 0x8f, 0xd6, 0xae, 0x6f, 0xeb, 0x33, 0xa4, 0x26, 0xae, 0x6f, 0xeb, 0x84, 0x36,
-	0xed, 0xfd, 0xaa, 0xb7, 0x44, 0x16, 0xaa, 0x09, 0xf5, 0xa7, 0x0c, 0x7a, 0xfb, 0x5f, 0xbe, 0x6d,
-	0xd6, 0x3e, 0xec, 0x3c, 0xf8, 0xf5, 0xcb, 0x2e, 0x23, 0xfb, 0x52, 0x0f, 0x1a, 0xe6, 0x65, 0x7e,
-	0xfe, 0x33, 0x00, 0x00, 0xff, 0xff, 0xae, 0xe1, 0xc6, 0xde, 0x2f, 0x05, 0x00, 0x00,
+	// 695 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xcd, 0x4e, 0xdb, 0x4a,
+	0x14, 0xc6, 0x10, 0x82, 0x33, 0x81, 0x5c, 0x18, 0x01, 0x32, 0x2c, 0xf8, 0xc9, 0xd5, 0x15, 0x2c,
+	0xc0, 0xbe, 0xf4, 0x47, 0x6a, 0x51, 0x2b, 0xb5, 0x41, 0x2a, 0xa4, 0x52, 0xaa, 0xca, 0x95, 0xba,
+	0xe8, 0xc6, 0x1a, 0x9c, 0x13, 0x67, 0xc0, 0xf6, 0x58, 0x33, 0x63, 0xa4, 0x6e, 0x79, 0x8c, 0x3e,
+	0x41, 0xd5, 0x97, 0xe8, 0xb6, 0x0f, 0x51, 0xb1, 0xe8, 0x1b, 0xd0, 0x27, 0xa8, 0x66, 0x3c, 0x36,
+	0x49, 0x89, 0x28, 0x5d, 0x65, 0x72, 0xbe, 0xf3, 0x7d, 0x73, 0x7e, 0x3e, 0x0f, 0x3a, 0x88, 0xa8,
+	0x1c, 0xe6, 0xa7, 0x6e, 0xc8, 0x12, 0x4f, 0xb0, 0x98, 0xed, 0x53, 0xe6, 0x89, 0x3c, 0x03, 0x1e,
+	0xc5, 0x8c, 0x79, 0x24, 0xa3, 0xde, 0xc5, 0x81, 0x47, 0x53, 0x21, 0x49, 0x1c, 0xbb, 0x19, 0x67,
+	0x92, 0xe1, 0xa5, 0x0a, 0x77, 0x15, 0xc3, 0xa5, 0x6c, 0x7d, 0x39, 0x62, 0x11, 0xd3, 0xa8, 0xa7,
+	0x4e, 0x45, 0xe2, 0xfa, 0x44, 0x6d, 0xf5, 0x7b, 0x4e, 0x65, 0x29, 0x9d, 0x80, 0x24, 0x7d, 0x22,
+	0x89, 0xa1, 0x78, 0xf7, 0xa0, 0x08, 0x49, 0x64, 0x2e, 0x0c, 0x61, 0xef, 0x1e, 0x04, 0x0e, 0x83,
+	0xbf, 0xa8, 0xa8, 0xfc, 0x5f, 0x50, 0xda, 0x5f, 0x66, 0xd0, 0x5c, 0xb7, 0xe8, 0x1f, 0x1f, 0xa3,
+	0x7a, 0x71, 0xb9, 0xd3, 0xdf, 0xb2, 0x76, 0x9b, 0x0f, 0x96, 0xdd, 0x90, 0x71, 0x28, 0xa7, 0xe0,
+	0xbe, 0xd3, 0x58, 0x67, 0xed, 0xdb, 0xd5, 0xe6, 0xd4, 0xcf, 0xab, 0xcd, 0x25, 0x09, 0x42, 0xf6,
+	0xe9, 0x60, 0x70, 0xd8, 0xa6, 0x51, 0xca, 0x38, 0xb4, 0x7d, 0x43, 0xc7, 0x4f, 0x90, 0x5d, 0x36,
+	0xee, 0x80, 0x96, 0x5a, 0x1d, 0x97, 0xea, 0x19, 0xb4, 0x53, 0x53, 0x62, 0x7e, 0x95, 0x8d, 0xd7,
+	0x91, 0xdd, 0xa7, 0x82, 0x9c, 0xc6, 0xd0, 0x77, 0xac, 0x2d, 0x6b, 0xd7, 0xf6, 0xab, 0xff, 0xf8,
+	0x11, 0xaa, 0x25, 0x20, 0x86, 0xce, 0xb4, 0x56, 0xdc, 0x70, 0x6f, 0xed, 0xc9, 0xed, 0x81, 0x18,
+	0x9a, 0x66, 0x4e, 0xa6, 0x7c, 0x9d, 0x8d, 0x9f, 0xa3, 0x39, 0x9a, 0x46, 0x1c, 0x84, 0x70, 0x66,
+	0x34, 0x71, 0x7b, 0x02, 0xb1, 0x5b, 0x64, 0xdc, 0x70, 0x4b, 0x0e, 0x7e, 0x8c, 0x56, 0x8d, 0x3d,
+	0x88, 0xa4, 0x2c, 0x0d, 0x52, 0x92, 0x80, 0xc8, 0x48, 0x08, 0x4e, 0x6d, 0xcb, 0xda, 0x6d, 0xf8,
+	0x2b, 0xa3, 0xe8, 0x9b, 0x12, 0xc4, 0xfb, 0x08, 0x1b, 0x00, 0xfa, 0x41, 0x42, 0x52, 0x3a, 0x00,
+	0x21, 0x9d, 0x59, 0x4d, 0x59, 0xaa, 0x90, 0x9e, 0x01, 0x0e, 0x57, 0x2e, 0xaf, 0x6b, 0x33, 0xc8,
+	0xa2, 0x97, 0xd7, 0x35, 0x84, 0x6d, 0x83, 0x8b, 0x4e, 0x0b, 0xcd, 0x9b, 0x73, 0x20, 0x3f, 0x66,
+	0xd0, 0xfe, 0x3a, 0x8d, 0x66, 0xbb, 0x42, 0x52, 0x86, 0xff, 0x45, 0x0b, 0x54, 0x1d, 0x82, 0x0b,
+	0xe0, 0x82, 0xb2, 0x54, 0x0f, 0xa5, 0xe1, 0xcf, 0xeb, 0xe0, 0xfb, 0x22, 0x86, 0xf7, 0x10, 0x86,
+	0x54, 0xcd, 0x2e, 0x20, 0xb9, 0x64, 0x01, 0x4d, 0xcf, 0x20, 0x94, 0x7a, 0x0a, 0xb6, 0xbf, 0x58,
+	0x20, 0x2f, 0x73, 0xc9, 0xba, 0x3a, 0x8e, 0x37, 0x51, 0xd3, 0x64, 0x27, 0x32, 0x16, 0xba, 0x3d,
+	0xdb, 0x47, 0x45, 0xa8, 0x27, 0x63, 0x81, 0x8f, 0xd0, 0x62, 0x98, 0x0b, 0xc9, 0x92, 0x80, 0x33,
+	0x26, 0x83, 0x10, 0xb8, 0x74, 0x1a, 0x7a, 0xa4, 0x6b, 0xe3, 0xdb, 0xf5, 0x41, 0xb0, 0x9c, 0x87,
+	0xe0, 0xc3, 0xc0, 0x6f, 0x15, 0x14, 0x9f, 0x31, 0x79, 0x04, 0x5c, 0xe2, 0x1d, 0xf4, 0x4f, 0xd9,
+	0x52, 0xc4, 0xc9, 0x80, 0xa4, 0xc4, 0xa9, 0xeb, 0x9b, 0x5a, 0x26, 0x7c, 0x5c, 0x44, 0x47, 0x26,
+	0x18, 0x64, 0x9c, 0x25, 0x20, 0x87, 0x90, 0x0b, 0x67, 0x4e, 0xe7, 0x96, 0x13, 0x7c, 0x5b, 0x01,
+	0xf8, 0x3f, 0x54, 0x0a, 0x04, 0x67, 0x04, 0x22, 0xe0, 0x8e, 0xad, 0x53, 0x17, 0x4c, 0xf4, 0xb5,
+	0x0e, 0xb6, 0x3f, 0x59, 0xa8, 0x39, 0xe2, 0x12, 0xfc, 0x14, 0xa1, 0x62, 0x8e, 0x23, 0xce, 0x72,
+	0x26, 0x19, 0x44, 0x25, 0x9d, 0x4c, 0xf9, 0x0d, 0x9d, 0xad, 0x14, 0xf0, 0x8b, 0xea, 0x46, 0xb5,
+	0x62, 0x45, 0xaf, 0xff, 0x69, 0x18, 0x0b, 0x37, 0x9b, 0x07, 0x31, 0xbc, 0xb5, 0xde, 0xef, 0x16,
+	0x6a, 0x8d, 0x3b, 0x51, 0x79, 0x5e, 0xd5, 0xa1, 0xbf, 0x85, 0xc9, 0x9e, 0x3f, 0x8e, 0x19, 0x33,
+	0x24, 0xe5, 0x79, 0x85, 0xe1, 0x67, 0x4a, 0x58, 0x87, 0x46, 0xfb, 0xba, 0xa3, 0xb0, 0xa6, 0x49,
+	0xd7, 0x8d, 0xbd, 0x42, 0x37, 0x0e, 0x0d, 0xc6, 0xbf, 0x9d, 0x3b, 0x24, 0x16, 0x2b, 0x8e, 0xa9,
+	0xe6, 0x56, 0x7b, 0xff, 0xa3, 0xe6, 0x48, 0xb1, 0x78, 0x1b, 0xcd, 0xab, 0x62, 0x7f, 0x73, 0x70,
+	0x53, 0xc5, 0x8c, 0x81, 0x3b, 0xfb, 0x9f, 0x7f, 0x6c, 0x58, 0x1f, 0x76, 0xee, 0x7c, 0xc3, 0xb3,
+	0xf3, 0xc8, 0x3c, 0x6d, 0xa7, 0x75, 0xfd, 0xa4, 0x3d, 0xfc, 0x15, 0x00, 0x00, 0xff, 0xff, 0x80,
+	0xcd, 0x61, 0x4b, 0xf5, 0x05, 0x00, 0x00,
 }
 
 func (this *Install) Equal(that interface{}) bool {
@@ -478,10 +717,10 @@ func (this *Install) Equal(that interface{}) bool {
 	} else if !this.InstallType.Equal(that1.InstallType) {
 		return false
 	}
-	if this.InstalledManifest != that1.InstalledManifest {
+	if this.InstallationNamespace != that1.InstallationNamespace {
 		return false
 	}
-	if !this.InstalledMesh.Equal(that1.InstalledMesh) {
+	if this.InstalledManifest != that1.InstalledManifest {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -489,14 +728,14 @@ func (this *Install) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *Install_Istio_) Equal(that interface{}) bool {
+func (this *Install_Mesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Install_Istio_)
+	that1, ok := that.(*Install_Mesh)
 	if !ok {
-		that2, ok := that.(Install_Istio_)
+		that2, ok := that.(Install_Mesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -508,19 +747,19 @@ func (this *Install_Istio_) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.Istio.Equal(that1.Istio) {
+	if !this.Mesh.Equal(that1.Mesh) {
 		return false
 	}
 	return true
 }
-func (this *Install_Custom_) Equal(that interface{}) bool {
+func (this *Install_Ingress) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Install_Custom_)
+	that1, ok := that.(*Install_Ingress)
 	if !ok {
-		that2, ok := that.(Install_Custom_)
+		that2, ok := that.(Install_Ingress)
 		if ok {
 			that1 = &that2
 		} else {
@@ -532,19 +771,19 @@ func (this *Install_Custom_) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.Custom.Equal(that1.Custom) {
+	if !this.Ingress.Equal(that1.Ingress) {
 		return false
 	}
 	return true
 }
-func (this *Install_Istio) Equal(that interface{}) bool {
+func (this *Istio) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Install_Istio)
+	that1, ok := that.(*Istio)
 	if !ok {
-		that2, ok := that.(Install_Istio)
+		that2, ok := that.(Istio)
 		if ok {
 			that1 = &that2
 		} else {
@@ -554,9 +793,6 @@ func (this *Install_Istio) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
-		return false
-	}
-	if this.InstallationNamespace != that1.InstallationNamespace {
 		return false
 	}
 	if this.IstioVersion != that1.IstioVersion {
@@ -585,14 +821,14 @@ func (this *Install_Istio) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *Install_Custom) Equal(that interface{}) bool {
+func (this *MeshInstall) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Install_Custom)
+	that1, ok := that.(*MeshInstall)
 	if !ok {
-		that2, ok := that.(Install_Custom)
+		that2, ok := that.(MeshInstall)
 		if ok {
 			that1 = &that2
 		} else {
@@ -604,10 +840,130 @@ func (this *Install_Custom) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.CustomHelmChart != that1.CustomHelmChart {
+	if that1.InstallType == nil {
+		if this.InstallType != nil {
+			return false
+		}
+	} else if this.InstallType == nil {
+		return false
+	} else if !this.InstallType.Equal(that1.InstallType) {
 		return false
 	}
-	if this.CustomHelmValues != that1.CustomHelmValues {
+	if !this.InstalledMesh.Equal(that1.InstalledMesh) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MeshInstall_IstioMesh) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MeshInstall_IstioMesh)
+	if !ok {
+		that2, ok := that.(MeshInstall_IstioMesh)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.IstioMesh.Equal(that1.IstioMesh) {
+		return false
+	}
+	return true
+}
+func (this *IngressInstall) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IngressInstall)
+	if !ok {
+		that2, ok := that.(IngressInstall)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.InstallType == nil {
+		if this.InstallType != nil {
+			return false
+		}
+	} else if this.InstallType == nil {
+		return false
+	} else if !this.InstallType.Equal(that1.InstallType) {
+		return false
+	}
+	if !this.IngressMesh.Equal(that1.IngressMesh) {
+		return false
+	}
+	if !this.InstalledIngress.Equal(that1.InstalledIngress) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *IngressInstall_Gloo) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IngressInstall_Gloo)
+	if !ok {
+		that2, ok := that.(IngressInstall_Gloo)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Gloo.Equal(that1.Gloo) {
+		return false
+	}
+	return true
+}
+func (this *GlooIngress) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*GlooIngress)
+	if !ok {
+		that2, ok := that.(GlooIngress)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.GlooVersion != that1.GlooVersion {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

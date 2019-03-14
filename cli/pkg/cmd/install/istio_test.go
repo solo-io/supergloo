@@ -3,6 +3,7 @@ package install_test
 import (
 	"fmt"
 
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
@@ -11,7 +12,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -56,14 +56,13 @@ var _ = Describe("Install", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				install := getInstall(name)
-				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Istio_{}))
-				istio := install.InstallType.(*v1.Install_Istio_)
-				Expect(istio.Istio.IstioVersion).To(Equal(version))
-				Expect(istio.Istio.EnableMtls).To(Equal(mtls))
-				Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
-				Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
-				Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
-				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
+				istio := MustIstioInstall(install)
+				Expect(istio.IstioMesh.IstioVersion).To(Equal(version))
+				Expect(istio.IstioMesh.EnableMtls).To(Equal(mtls))
+				Expect(istio.IstioMesh.EnableAutoInject).To(Equal(autoInject))
+				Expect(istio.IstioMesh.InstallPrometheus).To(Equal(prometheus))
+				Expect(istio.IstioMesh.InstallJaeger).To(Equal(jaeger))
+				Expect(istio.IstioMesh.InstallGrafana).To(Equal(grafana))
 			}
 
 			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
@@ -106,8 +105,10 @@ var _ = Describe("Install", func() {
 			name := "input"
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
+			mesh := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
-			inst.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			mesh.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := helpers.MustInstallClient()
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -127,24 +128,35 @@ var _ = Describe("Install", func() {
 					Namespace:       namespace,
 					ResourceVersion: updatedInstall.Metadata.ResourceVersion,
 				},
-				Disabled: false,
-				InstallType: &v1.Install_Istio_{
-					Istio: &v1.Install_Istio{
-						InstallationNamespace: "istio-system",
-						IstioVersion:          istio.IstioVersion106,
-						EnableAutoInject:      true,
-						EnableMtls:            true,
-						InstallGrafana:        true,
-						InstallPrometheus:     true,
-						InstallJaeger:         true,
+				InstallationNamespace: "istio-system",
+				Disabled:              false,
+				InstallType: &v1.Install_Mesh{
+					Mesh: &v1.MeshInstall{
+						InstalledMesh: &core.ResourceRef{
+							Name:      "installed",
+							Namespace: "mesh",
+						},
+						InstallType: &v1.MeshInstall_IstioMesh{
+							IstioMesh: &v1.Istio{
+								IstioVersion:      istio.IstioVersion106,
+								EnableAutoInject:  true,
+								EnableMtls:        true,
+								InstallGrafana:    true,
+								InstallPrometheus: true,
+								InstallJaeger:     true,
+							},
+						},
 					},
-				},
-				InstalledManifest: "a previously installed manifest",
-				InstalledMesh: &core.ResourceRef{
-					Name:      "installed",
-					Namespace: "mesh",
 				},
 			}))
 		})
 	})
 })
+
+func MustIstioInstall(install *v1.Install) *v1.MeshInstall_IstioMesh {
+	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
+	mesh := install.InstallType.(*v1.Install_Mesh)
+	Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
+	istio := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	return istio
+}

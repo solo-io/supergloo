@@ -3,8 +3,6 @@ package supergloo.solo.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/duration.proto";
-import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
@@ -46,7 +44,7 @@ message Install {
     }
 
     // which namespace to install to
-    string installation_namespace = 2;
+    string installation_namespace = 4;
 
     // gzipped inline string containing the applied manifest
     // read-only, set by the server after successful installation.
@@ -89,7 +87,7 @@ message MeshInstall {
 
     oneof install_type {
         // install
-        Istio istio = 2;
+        Istio istio_mesh = 2;
 
     }
 
@@ -104,9 +102,11 @@ message IngressInstall {
         GlooIngress gloo = 1;
 
     }
-    
+
     // reference to the Mesh crd which this ingress is pointing
-    // read-only.
+    // read-only. if specified, this ingress will share policy, routing,
+    // and mtls configuration with the target mesh. this is required to
+    // connect to mtls-secured services via the ingress
     core.solo.io.ResourceRef ingress_mesh = 2;
     // reference to the Ingress crd that was created from this install
     // read-only, set by the server after successful installation.

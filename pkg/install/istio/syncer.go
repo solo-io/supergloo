@@ -45,40 +45,56 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
-	var enabledInstalls, disabledInstalls v1.InstallList
+	var enabledMeshInstalls, disabledMeshInstalls v1.InstallList
+	var enabledIngressInstalls, disabledIngressInstalls v1.InstallList
 	for _, install := range installs {
-		_, isIstio := install.InstallType.(*v1.Install_Istio_)
-		if isIstio {
+		_, isMesh := install.InstallType.(*v1.Install_Mesh)
+		if isMesh {
 			if install.Disabled {
-				disabledInstalls = append(disabledInstalls, install)
+				disabledMeshInstalls = append(disabledMeshInstalls, install)
 			} else {
-				enabledInstalls = append(enabledInstalls, install)
+				enabledMeshInstalls = append(enabledMeshInstalls, install)
+			}
+
+		}
+		_, isIngress := install.InstallType.(*v1.Install_Ingress)
+		if isIngress {
+			if install.Disabled {
+				disabledIngressInstalls = append(disabledIngressInstalls, install)
+			} else {
+				enabledIngressInstalls = append(enabledIngressInstalls, install)
 			}
 		}
 	}
 
+	// split installs by which are active, inactive (istio only)
+	// if more than 1 active install, they get errored
 	// perform uninstalls first
-	for _, in := range disabledInstalls {
-		if in.InstalledMesh == nil {
-			// mesh was never installed
-			resourceErrs.Accept(in)
-			continue
-		}
-		installedMesh := *in.InstalledMesh
-		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-		if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
-			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
-		} else {
-			resourceErrs.Accept(in)
-			if err := s.meshClient.Delete(installedMesh.Namespace,
-				installedMesh.Name,
-				clients.DeleteOpts{Ctx: ctx}); err != nil {
-				logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
+	for _, in := range disabledMeshInstalls {
+		installMesh, isMesh := in.InstallType.(*v1.Install_Mesh)
+		if isMesh {
+			if installMesh.Mesh.InstalledMesh == nil {
+				// mesh was never installed
+				resourceErrs.Accept(in)
+				continue
+			}
+			installedMesh := *installMesh.Mesh.InstalledMesh
+			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
+			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
+				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
+			} else {
+				resourceErrs.Accept(in)
+				if err := s.meshClient.Delete(installedMesh.Namespace,
+					installedMesh.Name,
+					clients.DeleteOpts{Ctx: ctx}); err != nil {
+					logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
+				}
 			}
 		}
+
 	}
 
-	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs)
+	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledMeshInstalls, resourceErrs)
 
 	if createdMesh != nil {
 		// update resource version if this is an overwrite

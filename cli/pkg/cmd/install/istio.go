@@ -60,7 +60,11 @@ func createInstall(opts *options.Options) error {
 			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(in))
 		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
 		in.InstalledManifest = existing.InstalledManifest
-		in.InstalledMesh = existing.InstalledMesh
+		existingMesh, existingIsMesh := existing.InstallType.(*v1.Install_Mesh)
+		inMesh, inIsMesh := in.InstallType.(*v1.Install_Mesh)
+		if existingIsMesh && inIsMesh {
+			inMesh.Mesh = existingMesh.Mesh
+		}
 	}
 	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
@@ -93,8 +97,12 @@ func installFromOpts(opts *options.Options) (*v1.Install, error) {
 	}
 	in := &v1.Install{
 		Metadata: opts.Metadata,
-		InstallType: &v1.Install_Istio_{
-			Istio: &opts.Install.IstioInstall,
+		InstallType: &v1.Install_Mesh{
+			Mesh: &v1.MeshInstall{
+				InstallType: &v1.MeshInstall_IstioMesh{
+					IstioMesh: &opts.Install.IstioInstall,
+				},
+			},
 		},
 	}
 

@@ -51,9 +51,17 @@ func tablePrintInstalls(list v1.InstallList, w io.Writer) {
 }
 
 func installType(in *v1.Install) string {
-	switch in.InstallType.(type) {
-	case *v1.Install_Istio_:
-		return "Istio"
+	switch installType := in.InstallType.(type) {
+	case *v1.Install_Mesh:
+		switch installType.Mesh.InstallType.(type) {
+		case *v1.MeshInstall_IstioMesh:
+			return "Istio Mesh"
+		}
+	case *v1.Install_Ingress:
+		switch installType.Ingress.InstallType.(type) {
+		case *v1.IngressInstall_Gloo:
+			return "Gloo Ingress"
+		}
 	}
 	return "Unknown"
 }
@@ -66,24 +74,32 @@ func installDetails(in *v1.Install) []string {
 	add(
 		fmt.Sprintf("enabled: %v", !in.Disabled),
 	)
-	switch t := in.InstallType.(type) {
-	case *v1.Install_Istio_:
-		add(
-			fmt.Sprintf("version: %v", t.Istio.IstioVersion),
-			fmt.Sprintf("namespace: %v", t.Istio.InstallationNamespace),
-			fmt.Sprintf("mtls enabled: %v", t.Istio.EnableMtls),
-			fmt.Sprintf("auto inject enabled: %v", t.Istio.EnableAutoInject),
-		)
-		if t.Istio.CustomRootCert != nil {
+
+	switch installType := in.InstallType.(type) {
+	case *v1.Install_Mesh:
+		switch meshType := installType.Mesh.InstallType.(type) {
+		case *v1.MeshInstall_IstioMesh:
 			add(
-				fmt.Sprintf("mtls enabled: %v", t.Istio.CustomRootCert),
+				fmt.Sprintf("version: %v", meshType.IstioMesh.IstioVersion),
+				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
+				fmt.Sprintf("mtls enabled: %v", meshType.IstioMesh.EnableMtls),
+				fmt.Sprintf("auto inject enabled: %v", meshType.IstioMesh.EnableAutoInject),
+			)
+			if meshType.IstioMesh.CustomRootCert != nil {
+				add(
+					fmt.Sprintf("mtls enabled: %v", meshType.IstioMesh.CustomRootCert),
+				)
+			}
+			add(
+				fmt.Sprintf("grafana enabled: %v", meshType.IstioMesh.InstallGrafana),
+				fmt.Sprintf("prometheus enabled: %v", meshType.IstioMesh.InstallPrometheus),
+				fmt.Sprintf("jaeger enabled: %v", meshType.IstioMesh.InstallJaeger),
 			)
 		}
-		add(
-			fmt.Sprintf("grafana enabled: %v", t.Istio.InstallGrafana),
-			fmt.Sprintf("prometheus enabled: %v", t.Istio.InstallPrometheus),
-			fmt.Sprintf("jaeger enabled: %v", t.Istio.InstallJaeger),
-		)
+	case *v1.Install_Ingress:
+		switch installType.Ingress.InstallType.(type) {
+		case *v1.IngressInstall_Gloo:
+		}
 	}
 	return details
 }

@@ -20,7 +20,7 @@ func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 }
 
 func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
-	set.StringVar(&in.IstioInstall.InstallationNamespace,
+	set.StringVar(&in.InstallationNamespace,
 		"installation-namespace",
 		"istio-system",
 		"which namespace to install Istio into?")

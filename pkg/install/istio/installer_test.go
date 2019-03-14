@@ -28,17 +28,23 @@ var _ = Describe("Installer", func() {
 		})}
 	ns := "ns"
 	It("installs, upgrades, and uninstalls from an install object", func() {
-		installConfig := &v1.Install_Istio_{
-			Istio: &v1.Install_Istio{
-				InstallationNamespace: ns,
-				IstioVersion:          IstioVersion106,
+
+		istioConfig := &v1.MeshInstall_IstioMesh{
+			IstioMesh: &v1.Istio{
+				IstioVersion: IstioVersion106,
+			},
+		}
+		installConfig := &v1.Install_Mesh{
+			Mesh: &v1.MeshInstall{
+				InstallType: istioConfig,
 			},
 		}
 
 		install := &v1.Install{
-			Metadata:    core.Metadata{Name: "myinstall", Namespace: "myns"},
-			Disabled:    false,
-			InstallType: installConfig,
+			Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
+			Disabled:              false,
+			InstallationNamespace: ns,
+			InstallType:           installConfig,
 		}
 
 		installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install)
@@ -51,14 +57,17 @@ var _ = Describe("Installer", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedManifests).To(Equal(createdManifests))
 
+		Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
+		mesh := install.InstallType.(*v1.Install_Mesh)
 		// should be set by install
-		Expect(install.InstalledMesh).NotTo(BeNil())
-		Expect(*install.InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
+		Expect(mesh.Mesh.InstalledMesh).NotTo(BeNil())
+		Expect(*mesh.Mesh.InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
 
 		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
 
 		// enable prometheus
-		installConfig.Istio.InstallPrometheus = true
+		istioConfig.IstioMesh.InstallPrometheus = true
+		installConfig.Mesh.InstallType = istioConfig
 		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -77,20 +86,27 @@ var _ = Describe("Installer", func() {
 
 		Expect(deletedManifests).To(Equal(updatedManifests))
 	})
+
 	Context("self signed cert option", func() {
 		It("sets self-signed cert to be false when the input mesh has a custom root cert defined", func() {
-			installConfig := &v1.Install_Istio_{
-				Istio: &v1.Install_Istio{
-					InstallationNamespace: ns,
-					IstioVersion:          IstioVersion106,
-					CustomRootCert:        &core.ResourceRef{"foo", "bar"},
+
+			istioConfig := &v1.MeshInstall_IstioMesh{
+				IstioMesh: &v1.Istio{
+					IstioVersion:   IstioVersion106,
+					CustomRootCert: &core.ResourceRef{"foo", "bar"},
+				},
+			}
+			installConfig := &v1.Install_Mesh{
+				Mesh: &v1.MeshInstall{
+					InstallType: istioConfig,
 				},
 			}
 
 			install := &v1.Install{
-				Metadata:    core.Metadata{Name: "myinstall", Namespace: "myns"},
-				Disabled:    false,
-				InstallType: installConfig,
+				Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
+				Disabled:              false,
+				InstallationNamespace: ns,
+				InstallType:           installConfig,
 			}
 
 			_, err := installer.EnsureIstioInstall(context.TODO(), install)
@@ -101,17 +117,23 @@ var _ = Describe("Installer", func() {
 			Expect(man.Content).To(ContainSubstring("--self-signed-ca=false"))
 		})
 		It("sets self-signed cert to be true when the input mesh has no custom root cert defined", func() {
-			installConfig := &v1.Install_Istio_{
-				Istio: &v1.Install_Istio{
-					InstallationNamespace: ns,
-					IstioVersion:          IstioVersion106,
+
+			istioConfig := &v1.MeshInstall_IstioMesh{
+				IstioMesh: &v1.Istio{
+					IstioVersion: IstioVersion106,
+				},
+			}
+			installConfig := &v1.Install_Mesh{
+				Mesh: &v1.MeshInstall{
+					InstallType: istioConfig,
 				},
 			}
 
 			install := &v1.Install{
-				Metadata:    core.Metadata{Name: "myinstall", Namespace: "myns"},
-				Disabled:    false,
-				InstallType: installConfig,
+				Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
+				Disabled:              false,
+				InstallationNamespace: ns,
+				InstallType:           installConfig,
 			}
 
 			_, err := installer.EnsureIstioInstall(context.TODO(), install)
