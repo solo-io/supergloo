@@ -3,6 +3,7 @@ package helm_test
 import (
 	"testing"
 
+	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/test/testutils"
 
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,13 @@ func TestHelm(t *testing.T) {
 }
 
 var (
-	lock *testutils.TestClusterLocker
+	lock *clusterlock.TestClusterLocker
 	err  error
 )
 
 var _ = BeforeSuite(func() {
 	kubeClient = testutils.MustKubeClient()
-	lock, err = testutils.NewTestClusterLocker(kubeClient, "default")
+	lock, err = clusterlock.NewTestClusterLocker(kubeClient, "default")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 })

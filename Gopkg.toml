@@ -45,17 +45,13 @@
   version = "0.0.4"
 
 [[constraint]]
-  name = "github.com/prometheus/prometheus"
-  version = "2.6.1"
-
-[[constraint]]
   name = "github.com/solo-io/solo-kit"
   version = "0.3.4"
 
 [[override]]
   name = "github.com/solo-io/go-utils"
-  version = "0.3.1"
+  version = "0.5.0"
 
 [[constraint]]
   name = "github.com/solo-io/gloo"
-  version = "0.10.2"
+  version = "0.10.4"

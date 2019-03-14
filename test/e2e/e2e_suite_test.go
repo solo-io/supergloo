@@ -8,6 +8,7 @@ import (
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
@@ -23,7 +24,7 @@ func TestE2e(t *testing.T) {
 
 var (
 	kube                                kubernetes.Interface
-	lock                                *testutils.TestClusterLocker
+	lock                                *clusterlock.TestClusterLocker
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
@@ -32,7 +33,7 @@ var (
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
-	lock, err = testutils.NewTestClusterLocker(kube, "default")
+	lock, err = clusterlock.NewTestClusterLocker(kube, "default")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
 		log.Printf("waiting to acquire lock with err: %v", err)

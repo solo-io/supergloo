@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/solo-io/go-utils/versionutils"
 
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
@@ -17,9 +20,15 @@ const (
 	chartTemplate = "install/helm/supergloo/Chart-template.yaml"
 	chartOutput   = "install/helm/supergloo/Chart.yaml"
 
+	glooPkg = "github.com/solo-io/gloo"
+
 	neverPull    = "Never"
 	alwaysPull   = "Always"
 	ifNotPresent = "IfNotPresent"
+)
+
+var (
+	osGlooVersion string
 )
 
 func main() {
@@ -34,12 +43,31 @@ func main() {
 	if version == "dev" {
 		pullPolicy = neverPull
 	}
+
+	if err := getOsGlooVersion(); err != nil {
+		panic(err)
+	}
+
 	if err := generateValuesYaml(version, pullPolicy, valuesOutput); err != nil {
 		log.Fatalf("generating values.yaml failed: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
 		log.Fatalf("generating Chart.yaml failed: %v", err)
 	}
+}
+
+func getOsGlooVersion() error {
+	tomlTree, err := versionutils.ParseToml()
+	if err != nil {
+		panic(err)
+	}
+	version, err := versionutils.GetVersion(versionutils.GlooPkg, tomlTree)
+	if err != nil {
+		return fmt.Errorf("failed to determine open source Gloo version. Cause: %v", err)
+	}
+	log.Printf("Open source gloo version is: %v", version)
+	osGlooVersion = version
+	return nil
 }
 
 func readConfig(path string) (generate.Config, error) {
@@ -83,6 +111,9 @@ func generateValuesYaml(version, pullPolicy, outputFile string) error {
 	}
 	config.Supergloo.Deployment.Image.Tag = version
 	config.Supergloo.Deployment.Image.PullPolicy = pullPolicy
+
+	config.Discovery.Deployment.Image.Tag = osGlooVersion
+	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
 	return writeYaml(&config, outputFile)
 }
