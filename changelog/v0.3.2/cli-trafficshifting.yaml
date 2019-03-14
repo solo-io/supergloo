@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Set Target Mesh for routing rule from CLI
+    issueLink: https://github.com/solo-io/supergloo/issues/244
+  - type: NEW_FEATURE
+    description: Rename `create` to `apply`, allow updating existing routing rules
+    issueLink: https://github.com/solo-io/supergloo/issues/244

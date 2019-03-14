@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/test/inputs"
 
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
@@ -46,7 +45,7 @@ var _ = Describe("Trafficshifting", func() {
 				in := &options.CreateRoutingRule{}
 				err := SurveyTrafficShiftingSpec(context.TODO(), in)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(in.RoutingRuleSpec.TrafficShifting).To(Equal(v1.TrafficShifting{
+				Expect(in.RoutingRuleSpec.TrafficShifting).To(Equal(options.TrafficShiftingValue{
 					Destinations: &gloov1.MultiDestination{
 						Destinations: []*gloov1.WeightedDestination{
 							{

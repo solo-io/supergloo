@@ -12,6 +12,7 @@ func AddCreateRoutingRuleFlags(set *pflag.FlagSet, in *options.CreateRoutingRule
 	addSelectorFlags("source", "originating from", set, &in.SourceSelector)
 	addSelectorFlags("dest", "sent to", set, &in.DestinationSelector)
 	addMatcherFlags(set, in)
+	addTargetMeshFlags(set, &in.TargetMesh)
 }
 
 func addSelectorFlags(prefix, direction string, set *pflag.FlagSet, in *options.Selector) {
@@ -44,4 +45,11 @@ var exampleMatcher = func() string {
 func addMatcherFlags(set *pflag.FlagSet, in *options.CreateRoutingRule) {
 	set.Var(&in.RequestMatchers, "request-matcher", "json-formatted string which can be parsed as a "+
 		"RequestMatcher type, e.g. "+exampleMatcher)
+}
+
+func addTargetMeshFlags(set *pflag.FlagSet, in *options.ResourceRefValue) {
+	set.Var(in,
+		"target-mesh",
+		"select the target mesh or mesh group to which to apply this rule. format must be NAMESPACE.NAME",
+	)
 }

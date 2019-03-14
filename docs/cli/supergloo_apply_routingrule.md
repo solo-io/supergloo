@@ -1,10 +1,10 @@
 ---
-title: "supergloo create routingrule"
+title: "supergloo apply routingrule"
 weight: 5
 ---
-## supergloo create routingrule
+## supergloo apply routingrule
 
-Create a routing rule to apply to one or more meshes.
+Apply a routing rule to one or more meshes.
 
 ### Synopsis
 
@@ -35,6 +35,7 @@ RULE:
       --source-labels MapStringStringValue     apply this rule to requests originating from pods with these labels. format must be KEY=VALUE (default [])
       --source-namespaces strings              apply this rule to requests originating from pods in these namespaces
       --source-upstreams ResourceRefsValue     apply this rule to requests originating from these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
+      --target-mesh ResourceRefValue           select the target mesh or mesh group to which to apply this rule. format must be NAMESPACE.NAME (default { })
 ```
 
 ### Options inherited from parent commands
@@ -45,6 +46,6 @@ RULE:
 
 ### SEE ALSO
 
-* [supergloo create](../supergloo_create)	 - create a rule to apply to a mesh
-* [supergloo create routingrule trafficshifting](../supergloo_create_routingrule_trafficshifting)	 - ts
+* [supergloo apply](../supergloo_apply)	 - apply a rule to a mesh
+* [supergloo apply routingrule trafficshifting](../supergloo_apply_routingrule_trafficshifting)	 - ts
 

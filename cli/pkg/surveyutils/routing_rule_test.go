@@ -3,6 +3,8 @@ package surveyutils
 import (
 	"context"
 
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
@@ -96,6 +98,28 @@ var _ = Describe("RoutingRule", func() {
 				Expect(*in).To(Equal(options.RequestMatchersValue{
 					{PathPrefix: "", PathExact: "", PathRegex: "/foo", Methods: []string{"GET"}, HeaderMatcher: nil},
 				}))
+			})
+		})
+	})
+	Context("surveyMesh", func() {
+		It("errors if no meshes are available", func() {
+			in := &options.ResourceRefValue{}
+			err := surveyMesh(context.TODO(), in)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("no meshes found. register or install a mesh first."))
+		})
+		It("queries the user for an existing mesh to target", func() {
+			helpers.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "fam", Name: "sup"}}, clients.WriteOpts{})
+			testutil.ExpectInteractive(func(c *testutil.Console) {
+				c.ExpectString("select a target mesh to which to apply this rule")
+				c.PressDown()
+				c.SendLine("")
+				c.ExpectEOF()
+			}, func() {
+				in := &options.ResourceRefValue{}
+				err := surveyMesh(context.TODO(), in)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(*in).To(Equal(options.ResourceRefValue{Name: "sup", Namespace: "fam"}))
 			})
 		})
 	})

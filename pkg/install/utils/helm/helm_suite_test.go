@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/solo-io/go-utils/testutils/clusterlock"
-
 	"github.com/solo-io/supergloo/test/testutils"
 
 	. "github.com/onsi/ginkgo"

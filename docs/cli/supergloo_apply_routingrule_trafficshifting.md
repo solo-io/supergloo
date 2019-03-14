@@ -1,8 +1,8 @@
 ---
-title: "supergloo create routingrule trafficshifting"
+title: "supergloo apply routingrule trafficshifting"
 weight: 5
 ---
-## supergloo create routingrule trafficshifting
+## supergloo apply routingrule trafficshifting
 
 ts
 
@@ -13,7 +13,7 @@ This can be used to force traffic to be sent to a specific subset of a service, 
 be load-balanced by weight across a variety of destinations
 
 ```
-supergloo create routingrule trafficshifting [flags]
+supergloo apply routingrule trafficshifting [flags]
 ```
 
 ### Options
@@ -37,9 +37,10 @@ supergloo create routingrule trafficshifting [flags]
       --source-labels MapStringStringValue     apply this rule to requests originating from pods with these labels. format must be KEY=VALUE (default [])
       --source-namespaces strings              apply this rule to requests originating from pods in these namespaces
       --source-upstreams ResourceRefsValue     apply this rule to requests originating from these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
+      --target-mesh ResourceRefValue           select the target mesh or mesh group to which to apply this rule. format must be NAMESPACE.NAME (default { })
 ```
 
 ### SEE ALSO
 
-* [supergloo create routingrule](../supergloo_create_routingrule)	 - Create a routing rule to apply to one or more meshes.
+* [supergloo apply routingrule](../supergloo_apply_routingrule)	 - Apply a routing rule to one or more meshes.
 

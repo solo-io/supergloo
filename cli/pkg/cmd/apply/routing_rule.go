@@ -1,8 +1,10 @@
-package create
+package apply
 
 import (
 	"context"
 	"sort"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
@@ -41,11 +43,11 @@ be load-balanced by weight across a variety of destinations`,
 	},
 }
 
-func createRoutingRuleCmd(opts *options.Options) *cobra.Command {
+func applyRoutingRuleCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "routingrule",
 		Aliases: []string{"rr"},
-		Short:   "Create a routing rule to apply to one or more meshes.",
+		Short:   "Apply a routing rule to one or more meshes.",
 		Long: `
 Each Routing Rule applies an HTTP routing feature to a mesh.
 
@@ -118,8 +120,15 @@ func createRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err != nil {
 		return err
 	}
+	rr := helpers.MustRoutingRuleClient()
+	existing, err := rr.Read(in.Metadata.Namespace, in.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	if err == nil {
+		// perform update
+		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+	}
+
 	in.Spec = spec
-	in, err = helpers.MustRoutingRuleClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	in, err = rr.Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
@@ -145,8 +154,23 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 		return nil, errors.Wrapf(err, "invalid destination selector")
 	}
 
+	if opts.Metadata.Name == "" {
+		return nil, errors.Errorf("name cannot be empty, provide with --name flag")
+	}
+	if opts.CreateRoutingRule.TargetMesh.Name == "" || opts.CreateRoutingRule.TargetMesh.Namespace == "" {
+		return nil, errors.Errorf("target mesh must be specified, provide with --target-mesh flag")
+	}
+
+	ref := core.ResourceRef(opts.CreateRoutingRule.TargetMesh)
+
+	_, meshNotFoundErr := helpers.MustMeshClient().Read(ref.Namespace, ref.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	if meshNotFoundErr != nil {
+		return nil, meshNotFoundErr
+	}
+
 	in := &v1.RoutingRule{
 		Metadata:            opts.Metadata,
+		TargetMesh:          &ref,
 		SourceSelector:      ss,
 		DestinationSelector: ds,
 		RequestMatchers:     matchers,
