@@ -53,8 +53,8 @@ modify the corresponding mesh.
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `disabled` | `bool` | disables this install setting this to true will cause supergloo to not to install this mesh, or uninstall an active install |  |
-| `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | install |  |
-| `ingress` | [.supergloo.solo.io.IngressInstall](../install.proto.sk#IngressInstall) |  |  |
+| `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | service mesh |  |
+| `ingress` | [.supergloo.solo.io.IngressInstall](../install.proto.sk#IngressInstall) | ingress |  |
 | `installation_namespace` | `string` | which namespace to install to |  |
 | `installed_manifest` | `string` | gzipped inline string containing the applied manifest read-only, set by the server after successful installation. TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb) |  |
 
@@ -94,7 +94,10 @@ Installation options for Istio
 ---
 ### <a name="MeshInstall">MeshInstall</a>
 
+ 
+Generic container for mesh installs handled by supergloo
 
+Holds all configuration shared between different mesh types
 
 ```yaml
 "istio_mesh": .supergloo.solo.io.Istio
@@ -104,7 +107,7 @@ Installation options for Istio
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `istio_mesh` | [.supergloo.solo.io.Istio](../install.proto.sk#Istio) | install |  |
+| `istio_mesh` | [.supergloo.solo.io.Istio](../install.proto.sk#Istio) | install istio |  |
 | `installed_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
@@ -113,7 +116,10 @@ Installation options for Istio
 ---
 ### <a name="IngressInstall">IngressInstall</a>
 
+ 
+Generic container for ingress installs handled by supergloo
 
+Holds all configuration shared between different ingress types
 
 ```yaml
 "gloo": .supergloo.solo.io.GlooIngress
@@ -124,7 +130,7 @@ Installation options for Istio
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `gloo` | [.supergloo.solo.io.GlooIngress](../install.proto.sk#GlooIngress) |  |  |
+| `gloo` | [.supergloo.solo.io.GlooIngress](../install.proto.sk#GlooIngress) | gloo |  |
 | `ingress_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd which this ingress is pointing read-only. if specified, this ingress will share policy, routing, and mtls configuration with the target mesh. this is required to connect to mtls-secured services via the ingress |  |
 | `installed_ingress` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Ingress crd that was created from this install read-only, set by the server after successful installation. |  |
 
@@ -134,7 +140,8 @@ Installation options for Istio
 ---
 ### <a name="GlooIngress">GlooIngress</a>
 
-
+ 
+Installation options for Gloo Ingress
 
 ```yaml
 "gloo_version": string

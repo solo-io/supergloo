@@ -36,10 +36,14 @@ message Install {
     // not to install this mesh, or uninstall an active install
     bool disabled = 1;
 
+
+    // The type of object the install handles
+    // Currently support types are mesh, and ingress
     oneof install_type {
-        // install
+        // service mesh
         MeshInstall mesh = 2;
 
+        // ingress
         IngressInstall ingress = 3;
     }
 
@@ -83,10 +87,18 @@ message Istio {
 
 }
 
+
+/*
+Generic container for mesh installs handled by supergloo
+
+Holds all configuration shared between different mesh types
+*/
 message MeshInstall {
 
+    // The type of mesh to install
+    // currently only istio is supported
     oneof install_type {
-        // install
+        // install istio
         Istio istio_mesh = 2;
 
     }
@@ -96,9 +108,16 @@ message MeshInstall {
     core.solo.io.ResourceRef installed_mesh = 6;
 }
 
-message IngressInstall {
+/*
+Generic container for ingress installs handled by supergloo
 
+Holds all configuration shared between different ingress types
+*/
+message IngressInstall {
+    // The type of mesh to install
+    // currently only gloo is supported
     oneof install_type {
+        // gloo
         GlooIngress gloo = 1;
 
     }
@@ -113,6 +132,7 @@ message IngressInstall {
     core.solo.io.ResourceRef installed_ingress = 3;
 }
 
+// Installation options for Gloo Ingress
 message GlooIngress {
 
     // which version of the gloo helm chart to install

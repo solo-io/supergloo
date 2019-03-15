@@ -41,6 +41,9 @@ type Install struct {
 	// setting this to true will cause supergloo to
 	// not to install this mesh, or uninstall an active install
 	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
+	// The type of object the install handles
+	// Currently support types are mesh, and ingress
+	//
 	// Types that are valid to be assigned to InstallType:
 	//	*Install_Mesh
 	//	*Install_Ingress
@@ -322,7 +325,14 @@ func (m *Istio) GetInstallJaeger() bool {
 	return false
 }
 
+//
+//Generic container for mesh installs handled by supergloo
+//
+//Holds all configuration shared between different mesh types
 type MeshInstall struct {
+	// The type of mesh to install
+	// currently only istio is supported
+	//
 	// Types that are valid to be assigned to InstallType:
 	//	*MeshInstall_IstioMesh
 	InstallType isMeshInstall_InstallType `protobuf_oneof:"install_type"`
@@ -445,7 +455,14 @@ func _MeshInstall_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
+//
+//Generic container for ingress installs handled by supergloo
+//
+//Holds all configuration shared between different ingress types
 type IngressInstall struct {
+	// The type of mesh to install
+	// currently only gloo is supported
+	//
 	// Types that are valid to be assigned to InstallType:
 	//	*IngressInstall_Gloo
 	InstallType isIngressInstall_InstallType `protobuf_oneof:"install_type"`
@@ -580,6 +597,7 @@ func _IngressInstall_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
+// Installation options for Gloo Ingress
 type GlooIngress struct {
 	// which version of the gloo helm chart to install
 	// ignored if using custom helm chart
