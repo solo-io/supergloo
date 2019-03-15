@@ -101,22 +101,6 @@
   version = "v2.2.0"
 
 [[projects]]
-  digest = "1:133b4342322cfae184315362656d7a2a7ed960a1d089b1ee71abf19a7063c846"
-  name = "github.com/aws/aws-sdk-go"
-  packages = [
-    "aws",
-    "aws/awserr",
-    "aws/credentials",
-    "aws/endpoints",
-    "internal/ini",
-    "internal/sdkio",
-    "internal/shareddefaults",
-  ]
-  pruneopts = "UT"
-  revision = "89734ade0df0a4a437cbf4aa9c14e17daf37c5ac"
-  version = "v1.15.86"
-
-[[projects]]
   branch = "master"
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
@@ -851,18 +835,6 @@
   version = "v3.9.0"
 
 [[projects]]
-  digest = "1:89a989537dfd3868e3eea1ab8a9e40836dfa6d33b78b627a39aa5059d8919d7c"
-  name = "github.com/openshift/client-go"
-  packages = [
-    "security/clientset/versioned",
-    "security/clientset/versioned/scheme",
-    "security/clientset/versioned/typed/security/v1",
-  ]
-  pruneopts = "UT"
-  revision = "1fa528d3be060e4c7178eb69e76d37cf7e699e3c"
-  version = "v3.9.0"
-
-[[projects]]
   digest = "1:95741de3af260a92cc5c7f3f3061e85273f5a81b5db20d4bd68da74bd521675e"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
@@ -1029,7 +1001,7 @@
   version = "v0.5.0"
 
 [[projects]]
-  digest = "1:73f0bafb33b7d111c0046f068341112e622d5d67721590cef7f255dfb162e927"
+  digest = "1:f24ab58e66f054c5a53da96ebb9dcd01e6f8d00f5d4eeb6d31ca9cc0fda58368"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1071,7 +1043,6 @@
     "pkg/utils/kubeinstallutils",
     "pkg/utils/kubeutils",
     "pkg/utils/log",
-    "pkg/utils/nameutils",
     "pkg/utils/protoutils",
     "pkg/utils/stringutils",
     "test/helpers",
@@ -1916,20 +1887,16 @@
   analyzer-version = 1
   input-imports = [
     "github.com/avast/retry-go",
-    "github.com/aws/aws-sdk-go/aws",
-    "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/ghodss/yaml",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
-    "github.com/hashicorp/consul/api",
     "github.com/hashicorp/go-multierror",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/openshift/api/security/v1",
-    "github.com/openshift/client-go/security/clientset/versioned",
     "github.com/pkg/errors",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
@@ -1973,7 +1940,6 @@
     "github.com/solo-io/solo-kit/pkg/utils/kubeinstallutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
-    "github.com/solo-io/solo-kit/pkg/utils/nameutils",
     "github.com/solo-io/solo-kit/test/helpers",
     "github.com/solo-io/solo-kit/test/setup",
     "github.com/solo-io/solo-kit/test/tests/typed",
@@ -1985,10 +1951,7 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "gopkg.in/yaml.v2",
-    "k8s.io/api/apps/v1",
-    "k8s.io/api/apps/v1beta1",
     "k8s.io/api/core/v1",
-    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
@@ -2002,7 +1965,6 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
-    "k8s.io/client-go/tools/clientcmd",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",

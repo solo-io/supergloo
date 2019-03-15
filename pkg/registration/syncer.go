@@ -24,7 +24,7 @@ func NewRegistrationSyncer(clientset *clientset.Clientset, errHandler func(error
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	var enableIstioFeatures bool
 	for _, mesh := range snap.Meshes.List() {
-		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		_, ok := mesh.MeshType.(*v1.Mesh_Istio_)
 		if ok {
 			enableIstioFeatures = true
 			contextutils.LoggerFrom(ctx).Infof("detected istio installation, enabling istio config syncer")

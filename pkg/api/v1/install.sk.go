@@ -39,8 +39,8 @@ func (r *Install) Hash() uint64 {
 	return hashutils.HashAll(
 		metaCopy,
 		r.Disabled,
+		r.InstallationNamespace,
 		r.InstalledManifest,
-		r.InstalledMesh,
 		r.InstallType,
 	)
 }

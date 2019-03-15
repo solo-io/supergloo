@@ -13,7 +13,9 @@ weight: 5
 
 - [Install](#Install) **Top-Level Resource**
 - [Istio](#Istio)
-- [Custom](#Custom)
+- [MeshInstall](#MeshInstall)
+- [IngressInstall](#IngressInstall)
+- [GlooIngress](#GlooIngress)
   
 
 
@@ -39,10 +41,10 @@ modify the corresponding mesh.
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "disabled": bool
-"istio": .supergloo.solo.io.Install.Istio
-"custom": .supergloo.solo.io.Install.Custom
+"mesh": .supergloo.solo.io.MeshInstall
+"ingress": .supergloo.solo.io.IngressInstall
+"installation_namespace": string
 "installed_manifest": string
-"installed_mesh": .core.solo.io.ResourceRef
 
 ```
 
@@ -51,10 +53,10 @@ modify the corresponding mesh.
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `disabled` | `bool` | disables this install setting this to true will cause supergloo to not to install this mesh, or uninstall an active install |  |
-| `istio` | [.supergloo.solo.io.Install.Istio](../install.proto.sk#Istio) | install |  |
-| `custom` | [.supergloo.solo.io.Install.Custom](../install.proto.sk#Custom) | install a custom helm chart an associated mesh object will not be created by supergloo create the mesh object manually in a future release, supergloo will feature discovery which can discover mesh objects automatically |  |
+| `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | service mesh |  |
+| `ingress` | [.supergloo.solo.io.IngressInstall](../install.proto.sk#IngressInstall) | ingress |  |
+| `installation_namespace` | `string` | which namespace to install to |  |
 | `installed_manifest` | `string` | gzipped inline string containing the applied manifest read-only, set by the server after successful installation. TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb) |  |
-| `installed_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 
@@ -66,7 +68,6 @@ modify the corresponding mesh.
 Installation options for Istio
 
 ```yaml
-"installation_namespace": string
 "istio_version": string
 "enable_auto_inject": bool
 "enable_mtls": bool
@@ -79,7 +80,6 @@ Installation options for Istio
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installation_namespace` | `string` | which namespace to install to |  |
 | `istio_version` | `string` | which version of the istio helm chart to install ignored if using custom helm chart |  |
 | `enable_auto_inject` | `bool` | enable auto injection of pods |  |
 | `enable_mtls` | `bool` | enable mutual tls between pods |  |
@@ -92,21 +92,65 @@ Installation options for Istio
 
 
 ---
-### <a name="Custom">Custom</a>
+### <a name="MeshInstall">MeshInstall</a>
 
  
-note: currently unimplemented
+Generic container for mesh installs handled by supergloo
+
+Holds all configuration shared between different mesh types
 
 ```yaml
-"custom_helm_chart": string
-"custom_helm_values": string
+"istio_mesh": .supergloo.solo.io.Istio
+"installed_mesh": .core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `custom_helm_chart` | `string` | supergloo will attempt to install this helm chart. format should be a URI accessible to supergloo |  |
-| `custom_helm_values` | `string` | optional. if specified, these values will be used when rendering the helm chart |  |
+| `istio_mesh` | [.supergloo.solo.io.Istio](../install.proto.sk#Istio) | install istio |  |
+| `installed_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
+
+
+
+
+---
+### <a name="IngressInstall">IngressInstall</a>
+
+ 
+Generic container for ingress installs handled by supergloo
+
+Holds all configuration shared between different ingress types
+
+```yaml
+"gloo": .supergloo.solo.io.GlooIngress
+"ingress_mesh": .core.solo.io.ResourceRef
+"installed_ingress": .core.solo.io.ResourceRef
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `gloo` | [.supergloo.solo.io.GlooIngress](../install.proto.sk#GlooIngress) | gloo |  |
+| `ingress_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd which this ingress is pointing read-only. if specified, this ingress will share policy, routing, and mtls configuration with the target mesh. this is required to connect to mtls-secured services via the ingress |  |
+| `installed_ingress` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Ingress crd that was created from this install read-only, set by the server after successful installation. |  |
+
+
+
+
+---
+### <a name="GlooIngress">GlooIngress</a>
+
+ 
+Installation options for Gloo Ingress
+
+```yaml
+"gloo_version": string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `gloo_version` | `string` | which version of the gloo helm chart to install ignored if using custom helm chart |  |
 
 
 

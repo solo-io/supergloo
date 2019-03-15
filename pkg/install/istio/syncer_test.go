@@ -128,10 +128,13 @@ var _ = Describe("Syncer", func() {
 					Metadata: core.Metadata{Namespace: "a", Name: "a"},
 				}, clients.WriteOpts{})
 				ref := installedMesh.Metadata.Ref()
-				installList[0].InstalledMesh = &ref
+				install := installList[0]
+				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
+				mesh := install.InstallType.(*v1.Install_Mesh)
+				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installeSyncer := NewInstallSyncer(installer, meshClient, report)
-				err := installeSyncer.Sync(context.TODO(), snap)
+				installSyncer := NewInstallSyncer(installer, meshClient, report)
+				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(installer.disabledInstalls).To(HaveLen(1))
