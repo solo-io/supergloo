@@ -116,9 +116,9 @@ spec:
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "host": string
-"traffic_policy": .istio.networking.v1alpha3.TrafficPolicy
+"trafficPolicy": .istio.networking.v1alpha3.TrafficPolicy
 "subsets": []istio.networking.v1alpha3.Subset
-"config_scope": .istio.networking.v1alpha3.ConfigScope
+"configScope": .istio.networking.v1alpha3.ConfigScope
 
 ```
 
@@ -127,9 +127,9 @@ spec:
 | `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `host` | `string` | REQUIRED. The name of a service from the service registry. Service names are looked up from the platform's service registry (e.g., Kubernetes services, Consul services, etc.) and from the hosts declared by [ServiceEntries](#ServiceEntry). Rules defined for services that do not exist in the service registry will be ignored. *Note for Kubernetes users*: When short names are used (e.g. "reviews" instead of "reviews.default.svc.cluster.local"), Istio will interpret the short name based on the namespace of the rule, not the service. A rule in the "default" namespace containing a host "reviews will be interpreted as "reviews.default.svc.cluster.local", irrespective of the actual namespace associated with the reviews service. _To avoid potential misconfigurations, it is recommended to always use fully qualified domain names over short names._ Note that the host field applies to both HTTP and TCP services. |  |
-| `traffic_policy` | [.istio.networking.v1alpha3.TrafficPolicy](../destination_rule.proto.sk#TrafficPolicy) | Traffic policies to apply (load balancing policy, connection pool sizes, outlier detection). |  |
+| `trafficPolicy` | [.istio.networking.v1alpha3.TrafficPolicy](../destination_rule.proto.sk#TrafficPolicy) | Traffic policies to apply (load balancing policy, connection pool sizes, outlier detection). |  |
 | `subsets` | [[]istio.networking.v1alpha3.Subset](../destination_rule.proto.sk#Subset) | One or more named sets that represent individual versions of a service. Traffic policies can be overridden at subset level. |  |
-| `config_scope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#ConfigScope) | The visibility setting associated with this DestinationRule. Set to PRIVATE if this destination rule should not be exported, i.e. restrict the applicability of this destination rule to only workloads in the same namespace as the destination rule. |  |
+| `configScope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#ConfigScope) | The visibility setting associated with this DestinationRule. Set to PRIVATE if this destination rule should not be exported, i.e. restrict the applicability of this destination rule to only workloads in the same namespace as the destination rule. |  |
 
 
 
@@ -142,21 +142,21 @@ Traffic policies to apply for a specific destination, across all
 destination ports. See DestinationRule for examples.
 
 ```yaml
-"load_balancer": .istio.networking.v1alpha3.LoadBalancerSettings
-"connection_pool": .istio.networking.v1alpha3.ConnectionPoolSettings
-"outlier_detection": .istio.networking.v1alpha3.OutlierDetection
+"loadBalancer": .istio.networking.v1alpha3.LoadBalancerSettings
+"connectionPool": .istio.networking.v1alpha3.ConnectionPoolSettings
+"outlierDetection": .istio.networking.v1alpha3.OutlierDetection
 "tls": .istio.networking.v1alpha3.TLSSettings
-"port_level_settings": []istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy
+"portLevelSettings": []istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `load_balancer` | [.istio.networking.v1alpha3.LoadBalancerSettings](../destination_rule.proto.sk#LoadBalancerSettings) | Settings controlling the load balancer algorithms. |  |
-| `connection_pool` | [.istio.networking.v1alpha3.ConnectionPoolSettings](../destination_rule.proto.sk#ConnectionPoolSettings) | Settings controlling the volume of connections to an upstream service |  |
-| `outlier_detection` | [.istio.networking.v1alpha3.OutlierDetection](../destination_rule.proto.sk#OutlierDetection) | Settings controlling eviction of unhealthy hosts from the load balancing pool |  |
+| `loadBalancer` | [.istio.networking.v1alpha3.LoadBalancerSettings](../destination_rule.proto.sk#LoadBalancerSettings) | Settings controlling the load balancer algorithms. |  |
+| `connectionPool` | [.istio.networking.v1alpha3.ConnectionPoolSettings](../destination_rule.proto.sk#ConnectionPoolSettings) | Settings controlling the volume of connections to an upstream service |  |
+| `outlierDetection` | [.istio.networking.v1alpha3.OutlierDetection](../destination_rule.proto.sk#OutlierDetection) | Settings controlling eviction of unhealthy hosts from the load balancing pool |  |
 | `tls` | [.istio.networking.v1alpha3.TLSSettings](../destination_rule.proto.sk#TLSSettings) | TLS related settings for connections to the upstream service. |  |
-| `port_level_settings` | [[]istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy](../destination_rule.proto.sk#PortTrafficPolicy) | Traffic policies specific to individual ports. Note that port level settings will override the destination-level settings. Traffic settings specified at the destination-level will not be inherited when overridden by port-level settings, i.e. default values will be applied to fields omitted in port-level traffic policies. |  |
+| `portLevelSettings` | [[]istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy](../destination_rule.proto.sk#PortTrafficPolicy) | Traffic policies specific to individual ports. Note that port level settings will override the destination-level settings. Traffic settings specified at the destination-level will not be inherited when overridden by port-level settings, i.e. default values will be applied to fields omitted in port-level traffic policies. |  |
 
 
 
@@ -169,9 +169,9 @@ Traffic policies that apply to specific ports of the service
 
 ```yaml
 "port": .istio.networking.v1alpha3.PortSelector
-"load_balancer": .istio.networking.v1alpha3.LoadBalancerSettings
-"connection_pool": .istio.networking.v1alpha3.ConnectionPoolSettings
-"outlier_detection": .istio.networking.v1alpha3.OutlierDetection
+"loadBalancer": .istio.networking.v1alpha3.LoadBalancerSettings
+"connectionPool": .istio.networking.v1alpha3.ConnectionPoolSettings
+"outlierDetection": .istio.networking.v1alpha3.OutlierDetection
 "tls": .istio.networking.v1alpha3.TLSSettings
 
 ```
@@ -179,9 +179,9 @@ Traffic policies that apply to specific ports of the service
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `port` | [.istio.networking.v1alpha3.PortSelector](../virtual_service.proto.sk#PortSelector) | Specifies the port name or number of a port on the destination service on which this policy is being applied. Names must comply with DNS label syntax (rfc1035) and therefore cannot collide with numbers. If there are multiple ports on a service with the same protocol the names should be of the form <protocol-name>-<DNS label>. |  |
-| `load_balancer` | [.istio.networking.v1alpha3.LoadBalancerSettings](../destination_rule.proto.sk#LoadBalancerSettings) | Settings controlling the load balancer algorithms. |  |
-| `connection_pool` | [.istio.networking.v1alpha3.ConnectionPoolSettings](../destination_rule.proto.sk#ConnectionPoolSettings) | Settings controlling the volume of connections to an upstream service |  |
-| `outlier_detection` | [.istio.networking.v1alpha3.OutlierDetection](../destination_rule.proto.sk#OutlierDetection) | Settings controlling eviction of unhealthy hosts from the load balancing pool |  |
+| `loadBalancer` | [.istio.networking.v1alpha3.LoadBalancerSettings](../destination_rule.proto.sk#LoadBalancerSettings) | Settings controlling the load balancer algorithms. |  |
+| `connectionPool` | [.istio.networking.v1alpha3.ConnectionPoolSettings](../destination_rule.proto.sk#ConnectionPoolSettings) | Settings controlling the volume of connections to an upstream service |  |
+| `outlierDetection` | [.istio.networking.v1alpha3.OutlierDetection](../destination_rule.proto.sk#OutlierDetection) | Settings controlling eviction of unhealthy hosts from the load balancing pool |  |
 | `tls` | [.istio.networking.v1alpha3.TLSSettings](../destination_rule.proto.sk#TLSSettings) | TLS related settings for connections to the upstream service. |  |
 
 
@@ -231,7 +231,7 @@ can be used to identify a specific SNI host corresponding to the named subset.
 ```yaml
 "name": string
 "labels": map<string, string>
-"traffic_policy": .istio.networking.v1alpha3.TrafficPolicy
+"trafficPolicy": .istio.networking.v1alpha3.TrafficPolicy
 
 ```
 
@@ -239,7 +239,7 @@ can be used to identify a specific SNI host corresponding to the named subset.
 | ----- | ---- | ----------- |----------- | 
 | `name` | `string` | REQUIRED. Name of the subset. The service name and the subset name can be used for traffic splitting in a route rule. |  |
 | `labels` | `map<string, string>` | Labels apply a filter over the endpoints of a service in the service registry. See route rules for examples of usage. |  |
-| `traffic_policy` | [.istio.networking.v1alpha3.TrafficPolicy](../destination_rule.proto.sk#TrafficPolicy) | Traffic policies that apply to this subset. Subsets inherit the traffic policies specified at the DestinationRule level. Settings specified at the subset level will override the corresponding settings specified at the DestinationRule level. |  |
+| `trafficPolicy` | [.istio.networking.v1alpha3.TrafficPolicy](../destination_rule.proto.sk#TrafficPolicy) | Traffic policies that apply to this subset. Subsets inherit the traffic policies specified at the DestinationRule level. Settings specified at the subset level will override the corresponding settings specified at the DestinationRule level. |  |
 
 
 
@@ -315,16 +315,16 @@ is shipped to "region1/zone1/*" ratings service endpoints, and the rest 20% to "
 
 ```yaml
 "simple": .istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB
-"consistent_hash": .istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB
-"locality_weight_settings": []istio.networking.v1alpha3.LoadBalancerSettings.LocalityWeightSetting
+"consistentHash": .istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB
+"localityWeightSettings": []istio.networking.v1alpha3.LoadBalancerSettings.LocalityWeightSetting
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `simple` | [.istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB](../destination_rule.proto.sk#SimpleLB) |  |  |
-| `consistent_hash` | [.istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB](../destination_rule.proto.sk#ConsistentHashLB) |  |  |
-| `locality_weight_settings` | [[]istio.networking.v1alpha3.LoadBalancerSettings.LocalityWeightSetting](../destination_rule.proto.sk#LocalityWeightSetting) | Explicitly assign loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing.html?highlight=load_balancing_weight#locality-weighted-load-balancing) If empty, the locality weight is set according to the endpoints number within it. If duplicated settings are present, then the first one will take effect. |  |
+| `consistentHash` | [.istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB](../destination_rule.proto.sk#ConsistentHashLB) |  |  |
+| `localityWeightSettings` | [[]istio.networking.v1alpha3.LoadBalancerSettings.LocalityWeightSetting](../destination_rule.proto.sk#LocalityWeightSetting) | Explicitly assign loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/load_balancing.html?highlight=load_balancing_weight#locality-weighted-load-balancing) If empty, the locality weight is set according to the endpoints number within it. If duplicated settings are present, then the first one will take effect. |  |
 
 
 
@@ -341,19 +341,19 @@ lost when one or more hosts are added/removed from the destination
 service.
 
 ```yaml
-"http_header_name": string
-"http_cookie": .istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie
-"use_source_ip": bool
-"minimum_ring_size": int
+"httpHeaderName": string
+"httpCookie": .istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie
+"useSourceIp": bool
+"minimumRingSize": int
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `http_header_name` | `string` | Hash based on a specific HTTP header. |  |
-| `http_cookie` | [.istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie](../destination_rule.proto.sk#HTTPCookie) | Hash based on HTTP cookie. |  |
-| `use_source_ip` | `bool` | Hash based on the source IP address. |  |
-| `minimum_ring_size` | `int` | The minimum number of virtual nodes to use for the hash ring. Defaults to 1024. Larger ring sizes result in more granular load distributions. If the number of hosts in the load balancing pool is larger than the ring size, each host will be assigned a single virtual node. |  |
+| `httpHeaderName` | `string` | Hash based on a specific HTTP header. |  |
+| `httpCookie` | [.istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie](../destination_rule.proto.sk#HTTPCookie) | Hash based on HTTP cookie. |  |
+| `useSourceIp` | `bool` | Hash based on the source IP address. |  |
+| `minimumRingSize` | `int` | The minimum number of virtual nodes to use for the hash ring. Defaults to 1024. Larger ring sizes result in more granular load distributions. If the number of hosts in the load balancing pool is larger than the ring size, each host will be assigned a single virtual node. |  |
 
 
 
@@ -471,17 +471,17 @@ spec:
 Settings common to both HTTP and TCP upstream connections.
 
 ```yaml
-"max_connections": int
-"connect_timeout": .google.protobuf.Duration
-"tcp_keepalive": .istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive
+"maxConnections": int
+"connectTimeout": .google.protobuf.Duration
+"tcpKeepalive": .istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `max_connections` | `int` | Maximum number of HTTP1 /TCP connections to a destination host. |  |
-| `connect_timeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | TCP connection timeout. |  |
-| `tcp_keepalive` | [.istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive](../destination_rule.proto.sk#TcpKeepalive) | If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives. |  |
+| `maxConnections` | `int` | Maximum number of HTTP1 /TCP connections to a destination host. |  |
+| `connectTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | TCP connection timeout. |  |
+| `tcpKeepalive` | [.istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive](../destination_rule.proto.sk#TcpKeepalive) | If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives. |  |
 
 
 
@@ -515,19 +515,19 @@ TCP keepalive.
 Settings applicable to HTTP1.1/HTTP2/GRPC connections.
 
 ```yaml
-"http1_max_pending_requests": int
-"http2_max_requests": int
-"max_requests_per_connection": int
-"max_retries": int
+"http1MaxPendingRequests": int
+"http2MaxRequests": int
+"maxRequestsPerConnection": int
+"maxRetries": int
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `http1_max_pending_requests` | `int` | Maximum number of pending HTTP requests to a destination. Default 1024. |  |
-| `http2_max_requests` | `int` | Maximum number of requests to a backend. Default 1024. |  |
-| `max_requests_per_connection` | `int` | Maximum number of requests per connection to a backend. Setting this parameter to 1 disables keep alive. |  |
-| `max_retries` | `int` | Maximum number of retries that can be outstanding to all hosts in a cluster at a given time. Defaults to 3. |  |
+| `http1MaxPendingRequests` | `int` | Maximum number of pending HTTP requests to a destination. Default 1024. |  |
+| `http2MaxRequests` | `int` | Maximum number of requests to a backend. Default 1024. |  |
+| `maxRequestsPerConnection` | `int` | Maximum number of requests per connection to a backend. Setting this parameter to 1 disables keep alive. |  |
+| `maxRetries` | `int` | Maximum number of retries that can be outstanding to all hosts in a cluster at a given time. Defaults to 3. |  |
 
 
 
@@ -573,21 +573,21 @@ spec:
 ```
 
 ```yaml
-"consecutive_errors": int
+"consecutiveErrors": int
 "interval": .google.protobuf.Duration
-"base_ejection_time": .google.protobuf.Duration
-"max_ejection_percent": int
-"min_health_percent": int
+"baseEjectionTime": .google.protobuf.Duration
+"maxEjectionPercent": int
+"minHealthPercent": int
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `consecutive_errors` | `int` | Number of errors before a host is ejected from the connection pool. Defaults to 5. When the upstream host is accessed over HTTP, a 502, 503 or 504 return code qualifies as an error. When the upstream host is accessed over an opaque TCP connection, connect timeouts and connection error/failure events qualify as an error. |  |
+| `consecutiveErrors` | `int` | Number of errors before a host is ejected from the connection pool. Defaults to 5. When the upstream host is accessed over HTTP, a 502, 503 or 504 return code qualifies as an error. When the upstream host is accessed over an opaque TCP connection, connect timeouts and connection error/failure events qualify as an error. |  |
 | `interval` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Time interval between ejection sweep analysis. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 10s. |  |
-| `base_ejection_time` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Minimum ejection duration. A host will remain ejected for a period equal to the product of minimum ejection duration and the number of times the host has been ejected. This technique allows the system to automatically increase the ejection period for unhealthy upstream servers. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 30s. |  |
-| `max_ejection_percent` | `int` | Maximum % of hosts in the load balancing pool for the upstream service that can be ejected. Defaults to 10%. |  |
-| `min_health_percent` | `int` | Outlier detection will be enabled as long as the associated load balancing pool has at least min_health_percent hosts in healthy mode. When the percentage of healthy hosts in the load balancing pool drops below this threshold, outlier detection will be disabled and the proxy will load balance across all hosts in the pool (healthy and unhealthy). The default is 50%. |  |
+| `baseEjectionTime` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Minimum ejection duration. A host will remain ejected for a period equal to the product of minimum ejection duration and the number of times the host has been ejected. This technique allows the system to automatically increase the ejection period for unhealthy upstream servers. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 30s. |  |
+| `maxEjectionPercent` | `int` | Maximum % of hosts in the load balancing pool for the upstream service that can be ejected. Defaults to 10%. |  |
+| `minHealthPercent` | `int` | Outlier detection will be enabled as long as the associated load balancing pool has at least min_health_percent hosts in healthy mode. When the percentage of healthy hosts in the load balancing pool drops below this threshold, outlier detection will be disabled and the proxy will load balance across all hosts in the pool (healthy and unhealthy). The default is 50%. |  |
 
 
 
@@ -650,10 +650,10 @@ spec:
 
 ```yaml
 "mode": .istio.networking.v1alpha3.TLSSettings.TLSmode
-"client_certificate": string
-"private_key": string
-"ca_certificates": string
-"subject_alt_names": []string
+"clientCertificate": string
+"privateKey": string
+"caCertificates": string
+"subjectAltNames": []string
 "sni": string
 
 ```
@@ -661,10 +661,10 @@ spec:
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `mode` | [.istio.networking.v1alpha3.TLSSettings.TLSmode](../destination_rule.proto.sk#TLSmode) | REQUIRED: Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |  |
-| `client_certificate` | `string` | REQUIRED if mode is `MUTUAL`. The path to the file holding the client-side TLS certificate to use. Should be empty if mode is `ISTIO_MUTUAL`. |  |
-| `private_key` | `string` | REQUIRED if mode is `MUTUAL`. The path to the file holding the client's private key. Should be empty if mode is `ISTIO_MUTUAL`. |  |
-| `ca_certificates` | `string` | OPTIONAL: The path to the file containing certificate authority certificates to use in verifying a presented server certificate. If omitted, the proxy will not verify the server's certificate. Should be empty if mode is `ISTIO_MUTUAL`. |  |
-| `subject_alt_names` | `[]string` | A list of alternate names to verify the subject identity in the certificate. If specified, the proxy will verify that the server certificate's subject alt name matches one of the specified values. |  |
+| `clientCertificate` | `string` | REQUIRED if mode is `MUTUAL`. The path to the file holding the client-side TLS certificate to use. Should be empty if mode is `ISTIO_MUTUAL`. |  |
+| `privateKey` | `string` | REQUIRED if mode is `MUTUAL`. The path to the file holding the client's private key. Should be empty if mode is `ISTIO_MUTUAL`. |  |
+| `caCertificates` | `string` | OPTIONAL: The path to the file containing certificate authority certificates to use in verifying a presented server certificate. If omitted, the proxy will not verify the server's certificate. Should be empty if mode is `ISTIO_MUTUAL`. |  |
+| `subjectAltNames` | `[]string` | A list of alternate names to verify the subject identity in the certificate. If specified, the proxy will verify that the server certificate's subject alt name matches one of the specified values. |  |
 | `sni` | `string` | SNI string to present to the server during TLS handshake. |  |
 
 

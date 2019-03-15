@@ -268,7 +268,7 @@ spec:
 "bind": string
 "hosts": []string
 "tls": .istio.networking.v1alpha3.Server.TLSOptions
-"default_endpoint": string
+"defaultEndpoint": string
 
 ```
 
@@ -278,7 +278,7 @@ spec:
 | `bind` | `string` | $hide_from_docs The ip or the unix domain socket to which the listener should be bound to. Format: x.x.x.x or unix:///path/to/uds or unix://@foobar (Linux abstract namespace). |  |
 | `hosts` | `[]string` | REQUIRED. A list of hosts exposed by this gateway. At least one host is required. While typically applicable to HTTP services, it can also be used for TCP services using TLS with SNI. May contain a wildcard prefix for the bottom-level component of a domain name. For example `*.foo.com` matches `bar.foo.com` and `*.com` matches `bar.foo.com`, `example.com`, and so on. **Note**: A `VirtualService` that is bound to a gateway must have one or more hosts that match the hosts specified in a server. The match could be an exact match or a suffix match with the server's hosts. For example, if the server's hosts specifies "*.example.com", VirtualServices with hosts dev.example.com, prod.example.com will match. However, VirtualServices with hosts example.com or newexample.com will not match. |  |
 | `tls` | [.istio.networking.v1alpha3.Server.TLSOptions](../gateway.proto.sk#TLSOptions) | Set of TLS related options that govern the server's behavior. Use these options to control if all http requests should be redirected to https, and the TLS modes to use. |  |
-| `default_endpoint` | `string` | The loopback IP endpoint or unix domain socket to which traffic should be forwarded to by default. Format should be 127.0.0.1:PORT or unix:///path/to/socket or unix://@foobar (Linux abstract namespace). |  |
+| `defaultEndpoint` | `string` | The loopback IP endpoint or unix domain socket to which traffic should be forwarded to by default. Format should be 127.0.0.1:PORT or unix:///path/to/socket or unix://@foobar (Linux abstract namespace). |  |
 
 
 
@@ -289,29 +289,29 @@ spec:
 
 
 ```yaml
-"https_redirect": bool
+"httpsRedirect": bool
 "mode": .istio.networking.v1alpha3.Server.TLSOptions.TLSmode
-"server_certificate": string
-"private_key": string
-"ca_certificates": string
-"subject_alt_names": []string
-"min_protocol_version": .istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol
-"max_protocol_version": .istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol
-"cipher_suites": []string
+"serverCertificate": string
+"privateKey": string
+"caCertificates": string
+"subjectAltNames": []string
+"minProtocolVersion": .istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol
+"maxProtocolVersion": .istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol
+"cipherSuites": []string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `https_redirect` | `bool` | If set to true, the load balancer will send a 301 redirect for all http connections, asking the clients to use HTTPS. |  |
+| `httpsRedirect` | `bool` | If set to true, the load balancer will send a 301 redirect for all http connections, asking the clients to use HTTPS. |  |
 | `mode` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSmode](../gateway.proto.sk#TLSmode) | Optional: Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |  |
-| `server_certificate` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server-side TLS certificate to use. |  |
-| `private_key` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server's private key. |  |
-| `ca_certificates` | `string` | REQUIRED if mode is `MUTUAL`. The path to a file containing certificate authority certificates to use in verifying a presented client side certificate. |  |
-| `subject_alt_names` | `[]string` | A list of alternate names to verify the subject identity in the certificate presented by the client. |  |
-| `min_protocol_version` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Minimum TLS protocol version. |  |
-| `max_protocol_version` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Maximum TLS protocol version. |  |
-| `cipher_suites` | `[]string` | Optional: If specified, only support the specified cipher list. Otherwise default to the default cipher list supported by Envoy. |  |
+| `serverCertificate` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server-side TLS certificate to use. |  |
+| `privateKey` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server's private key. |  |
+| `caCertificates` | `string` | REQUIRED if mode is `MUTUAL`. The path to a file containing certificate authority certificates to use in verifying a presented client side certificate. |  |
+| `subjectAltNames` | `[]string` | A list of alternate names to verify the subject identity in the certificate presented by the client. |  |
+| `minProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Minimum TLS protocol version. |  |
+| `maxProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Maximum TLS protocol version. |  |
+| `cipherSuites` | `[]string` | Optional: If specified, only support the specified cipher list. Otherwise default to the default cipher list supported by Envoy. |  |
 
 
 
