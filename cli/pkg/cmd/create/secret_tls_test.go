@@ -46,6 +46,12 @@ var _ = Describe("SecretTls", func() {
 		_, err = caKey.Write([]byte(secretContent.CaKey))
 		Expect(err).NotTo(HaveOccurred())
 	})
+	AfterEach(func() {
+		os.Remove(rootCert.Name())
+		os.Remove(caCert.Name())
+		os.Remove(certChain.Name())
+		os.Remove(caKey.Name())
+	})
 
 	It("creates the tls secrets using create secret tls", func() {
 		err := utils.Supergloo(fmt.Sprintf("create secret tls --name poppy "+
