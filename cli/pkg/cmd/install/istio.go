@@ -97,7 +97,8 @@ func installFromOpts(opts *options.Options) (*v1.Install, error) {
 		return nil, err
 	}
 	in := &v1.Install{
-		Metadata: opts.Metadata,
+		Metadata:              opts.Metadata,
+		InstallationNamespace: opts.Install.InstallationNamespace,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
 				InstallType: &v1.MeshInstall_IstioMesh{
