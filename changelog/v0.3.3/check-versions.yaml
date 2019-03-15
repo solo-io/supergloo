@@ -1,6 +1,8 @@
 changelog:
   - type: DEPENDENCY_BUMP
-    description: Upgrade solo-kit to 0.3.5.
+    dependencyOwner: solo-io
+    dependencyRepo: solo-kit
+    dependencyTag: v0.3.5
+    description: Update solo-kit to version 0.3.5.
   - type: NON_USER_FACING
     description: Check version of gloo and solo-kit when generating code.
-
