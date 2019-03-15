@@ -8,7 +8,7 @@ import (
 )
 
 func SurveyIstioInstall(in *options.Install) error {
-	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.IstioInstall.InstallationNamespace, helpers.MustGetNamespaces()); err != nil {
+	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace, helpers.MustGetNamespaces()); err != nil {
 		return err
 	}
 	if err := cliutil.ChooseFromList("which version of Istio to install? ", &in.IstioInstall.IstioVersion, constants.SupportedIstioVersions); err != nil {

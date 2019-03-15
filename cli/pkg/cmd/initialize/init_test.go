@@ -21,7 +21,7 @@ var _ = Describe("init", func() {
 		kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
 	})
 	It("successfully installs supergloo to the cluster", func() {
-		err := utils.Supergloo("init --release 0.3.1")
+		err := utils.Supergloo("init --release latest")
 		Expect(err).NotTo(HaveOccurred())
 
 		kube := testutils.MustKubeClient()
@@ -43,7 +43,7 @@ var _ = Describe("init", func() {
 		}, time.Minute).Should(Equal(v12.PodRunning))
 
 		// uninstall + test dry run
-		manifest, err := utils.SuperglooOut("init --release 0.3.1 --dry-run")
+		manifest, err := utils.SuperglooOut("init --release latest --dry-run")
 		Expect(err).NotTo(HaveOccurred())
 		err = superglootest.Kubectl(bytes.NewBufferString(manifest), "delete", "-f", "-")
 		Expect(err).NotTo(HaveOccurred())

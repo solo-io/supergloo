@@ -24,6 +24,11 @@ message Mesh {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
+    message Istio {
+        // where the istio control plane has been installed
+        string installation_namespace = 1;
+    }
+
     oneof mesh_type {
         Istio istio = 1;
     }
@@ -33,10 +38,6 @@ message Mesh {
     MtlsConfig mtls_config = 2;
 }
 
-message Istio {
-    // where the istio control plane has been installed
-    string installation_namespace = 1;
-}
 
 // the encryption configuration that will be applied by the role
 message MtlsConfig {

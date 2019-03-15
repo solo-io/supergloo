@@ -3,8 +3,6 @@ package supergloo.solo.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/duration.proto";
-import "google/protobuf/wrappers.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
@@ -32,78 +30,114 @@ message Install {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
-    // Installation options for Istio
-    message Istio {
-
-        // which namespace to install to
-        string installation_namespace = 1;
-
-        // which version of the istio helm chart to install
-        // ignored if using custom helm chart
-        string istio_version = 2;
-
-        // enable auto injection of pods
-        bool enable_auto_inject = 3;
-
-        // enable mutual tls between pods
-        bool enable_mtls = 4;
-
-        // optional. set to use a custom root ca
-        // to issue certificates for mtls
-        // ignored if mtls is disabled
-        core.solo.io.ResourceRef custom_root_cert = 9;
-
-        // install grafana with istio
-        bool install_grafana = 6;
-
-        // install prometheus with istio
-        bool install_prometheus = 7;
-
-        // install jaeger with istio
-        bool install_jaeger = 8;
-
-    }
-
-    // note: currently unimplemented
-    message Custom {
-        // supergloo will attempt to
-        // install this helm chart.
-        // format should be a URI accessible to supergloo
-        string custom_helm_chart = 9;
-
-        // optional. if specified,
-        // these values will be used
-        // when rendering the helm chart
-        string custom_helm_values = 10;
-
-    }
 
     // disables this install
     // setting this to true will cause supergloo to
     // not to install this mesh, or uninstall an active install
     bool disabled = 1;
 
-    oneof install_type {
-        // install
-        Istio istio = 2;
 
-        // install a custom helm chart
-        // an associated mesh object
-        // will not be created by supergloo
-        // create the mesh object manually
-        // in a future release, supergloo
-        // will feature discovery
-        // which can discover mesh objects
-        // automatically
-        Custom custom = 3;
+    // The type of object the install handles
+    // Currently support types are mesh, and ingress
+    oneof install_type {
+        // service mesh
+        MeshInstall mesh = 2;
+
+        // ingress
+        IngressInstall ingress = 3;
     }
+
+    // which namespace to install to
+    string installation_namespace = 4;
 
     // gzipped inline string containing the applied manifest
     // read-only, set by the server after successful installation.
     // TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb)
     string installed_manifest = 5;
 
+
+}
+
+// Installation options for Istio
+message Istio {
+
+    // which version of the istio helm chart to install
+    // ignored if using custom helm chart
+    string istio_version = 2;
+
+    // enable auto injection of pods
+    bool enable_auto_inject = 3;
+
+    // enable mutual tls between pods
+    bool enable_mtls = 4;
+
+    // optional. set to use a custom root ca
+    // to issue certificates for mtls
+    // ignored if mtls is disabled
+    core.solo.io.ResourceRef custom_root_cert = 9;
+
+    // install grafana with istio
+    bool install_grafana = 6;
+
+    // install prometheus with istio
+    bool install_prometheus = 7;
+
+    // install jaeger with istio
+    bool install_jaeger = 8;
+
+}
+
+
+/*
+Generic container for mesh installs handled by supergloo
+
+Holds all configuration shared between different mesh types
+*/
+message MeshInstall {
+
+    // The type of mesh to install
+    // currently only istio is supported
+    oneof install_type {
+        // install istio
+        Istio istio_mesh = 2;
+
+    }
+
     // reference to the Mesh crd that was created from this install
     // read-only, set by the server after successful installation.
     core.solo.io.ResourceRef installed_mesh = 6;
 }
+
+/*
+Generic container for ingress installs handled by supergloo
+
+Holds all configuration shared between different ingress types
+*/
+message IngressInstall {
+    // The type of mesh to install
+    // currently only gloo is supported
+    oneof install_type {
+        // gloo
+        GlooIngress gloo = 1;
+
+    }
+
+    // reference to the Mesh crd which this ingress is pointing
+    // read-only. if specified, this ingress will share policy, routing,
+    // and mtls configuration with the target mesh. this is required to
+    // connect to mtls-secured services via the ingress
+    core.solo.io.ResourceRef ingress_mesh = 2;
+    // reference to the Ingress crd that was created from this install
+    // read-only, set by the server after successful installation.
+    core.solo.io.ResourceRef installed_ingress = 3;
+}
+
+// Installation options for Gloo Ingress
+message GlooIngress {
+
+    // which version of the gloo helm chart to install
+    // ignored if using custom helm chart
+    string gloo_version = 2;
+
+}
+

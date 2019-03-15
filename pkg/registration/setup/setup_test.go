@@ -52,7 +52,7 @@ var _ = Describe("Setup", func() {
 		// create a mesh crd, ensure our sync gets called
 		registration := &v1.Mesh{
 			Metadata: core.Metadata{Name: "myregistration", Namespace: namespace},
-			MeshType: &v1.Mesh_Istio{},
+			MeshType: &v1.Mesh_Istio_{},
 		}
 		_, err = cs.Input.Mesh.Write(registration, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

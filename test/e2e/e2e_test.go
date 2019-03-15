@@ -56,7 +56,7 @@ var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
-		err := utils.Supergloo("init --release 0.3.1")
+		err := utils.Supergloo("init --release latest")
 		Expect(err).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
@@ -111,7 +111,7 @@ var _ = Describe("E2e", func() {
 		err = utils3.DeployBookInfo(namespaceWithInject)
 		Expect(err).NotTo(HaveOccurred())
 
-		err = waitUntilPodsRunning(time.Minute*2, basicNamespace,
+		err = waitUntilPodsRunning(time.Minute*4, basicNamespace,
 			"testrunner",
 		)
 		Expect(err).NotTo(HaveOccurred())

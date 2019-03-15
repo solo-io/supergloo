@@ -42,7 +42,7 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) e
 	// added to the meshConfigs. all meshConfigs are considered to be valid
 
 	for mesh, config := range meshConfigs {
-		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio_)
 		if !ok {
 			return errors.Errorf("internal error: a non istio-mesh appeared in the mesh config snapshot")
 		}
