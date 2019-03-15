@@ -131,7 +131,7 @@ spec:
 "http": []istio.networking.v1alpha3.HTTPRoute
 "tls": []istio.networking.v1alpha3.TLSRoute
 "tcp": []istio.networking.v1alpha3.TCPRoute
-"config_scope": .istio.networking.v1alpha3.ConfigScope
+"configScope": .istio.networking.v1alpha3.ConfigScope
 
 ```
 
@@ -144,7 +144,7 @@ spec:
 | `http` | [[]istio.networking.v1alpha3.HTTPRoute](../virtual_service.proto.sk#HTTPRoute) | An ordered list of route rules for HTTP traffic. HTTP routes will be applied to platform service ports named 'http-*'/'http2-*'/'grpc-*', gateway ports with protocol HTTP/HTTP2/GRPC/ TLS-terminated-HTTPS and service entry ports using HTTP/HTTP2/GRPC protocols. The first rule matching an incoming request is used. |  |
 | `tls` | [[]istio.networking.v1alpha3.TLSRoute](../virtual_service.proto.sk#TLSRoute) | An ordered list of route rule for non-terminated TLS & HTTPS traffic. Routing is typically performed using the SNI value presented by the ClientHello message. TLS routes will be applied to platform service ports named 'https-*', 'tls-*', unterminated gateway ports using HTTPS/TLS protocols (i.e. with "passthrough" TLS mode) and service entry ports using HTTPS/TLS protocols. The first rule matching an incoming request is used. NOTE: Traffic 'https-*' or 'tls-*' ports without associated virtual service will be treated as opaque TCP traffic. |  |
 | `tcp` | [[]istio.networking.v1alpha3.TCPRoute](../virtual_service.proto.sk#TCPRoute) | An ordered list of route rules for opaque TCP traffic. TCP routes will be applied to any port that is not a HTTP or TLS port. The first rule matching an incoming request is used. |  |
-| `config_scope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#ConfigScope) | The visibility setting associated with this VirtualService. Set to PRIVATE if this virtual service should not be exported, i.e. restrict the applicability of this virtual service to only workloads in the same namespace as the virtual service. |  |
+| `configScope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#ConfigScope) | The visibility setting associated with this VirtualService. Set to PRIVATE if this virtual service should not be exported, i.e. restrict the applicability of this virtual service to only workloads in the same namespace as the virtual service. |  |
 
 
 
@@ -309,17 +309,17 @@ gRPC traffic. See VirtualService for usage examples.
 "route": []istio.networking.v1alpha3.HTTPRouteDestination
 "redirect": .istio.networking.v1alpha3.HTTPRedirect
 "rewrite": .istio.networking.v1alpha3.HTTPRewrite
-"websocket_upgrade": bool
+"websocketUpgrade": bool
 "timeout": .google.protobuf.Duration
 "retries": .istio.networking.v1alpha3.HTTPRetry
 "fault": .istio.networking.v1alpha3.HTTPFaultInjection
 "mirror": .istio.networking.v1alpha3.Destination
-"cors_policy": .istio.networking.v1alpha3.CorsPolicy
-"append_headers": map<string, string>
-"remove_response_headers": []string
-"append_response_headers": map<string, string>
-"remove_request_headers": []string
-"append_request_headers": map<string, string>
+"corsPolicy": .istio.networking.v1alpha3.CorsPolicy
+"appendHeaders": map<string, string>
+"removeResponseHeaders": []string
+"appendResponseHeaders": map<string, string>
+"removeRequestHeaders": []string
+"appendRequestHeaders": map<string, string>
 "headers": .istio.networking.v1alpha3.Headers
 
 ```
@@ -330,17 +330,17 @@ gRPC traffic. See VirtualService for usage examples.
 | `route` | [[]istio.networking.v1alpha3.HTTPRouteDestination](../virtual_service.proto.sk#HTTPRouteDestination) | A http rule can either redirect or forward (default) traffic. The forwarding target can be one of several versions of a service (see glossary in beginning of document). Weights associated with the service version determine the proportion of traffic it receives. |  |
 | `redirect` | [.istio.networking.v1alpha3.HTTPRedirect](../virtual_service.proto.sk#HTTPRedirect) | A http rule can either redirect or forward (default) traffic. If traffic passthrough option is specified in the rule, route/redirect will be ignored. The redirect primitive can be used to send a HTTP 301 redirect to a different URI or Authority. |  |
 | `rewrite` | [.istio.networking.v1alpha3.HTTPRewrite](../virtual_service.proto.sk#HTTPRewrite) | Rewrite HTTP URIs and Authority headers. Rewrite cannot be used with Redirect primitive. Rewrite will be performed before forwarding. |  |
-| `websocket_upgrade` | `bool` | Deprecated. Websocket upgrades are done automatically starting from Istio 1.0. $hide_from_docs |  |
+| `websocketUpgrade` | `bool` | Deprecated. Websocket upgrades are done automatically starting from Istio 1.0. $hide_from_docs |  |
 | `timeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Timeout for HTTP requests. |  |
 | `retries` | [.istio.networking.v1alpha3.HTTPRetry](../virtual_service.proto.sk#HTTPRetry) | Retry policy for HTTP requests. |  |
 | `fault` | [.istio.networking.v1alpha3.HTTPFaultInjection](../virtual_service.proto.sk#HTTPFaultInjection) | Fault injection policy to apply on HTTP traffic at the client side. Note that timeouts or retries will not be enabled when faults are enabled on the client side. |  |
 | `mirror` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#Destination) | Mirror HTTP traffic to a another destination in addition to forwarding the requests to the intended destination. Mirrored traffic is on a best effort basis where the sidecar/gateway will not wait for the mirrored cluster to respond before returning the response from the original destination. Statistics will be generated for the mirrored destination. |  |
-| `cors_policy` | [.istio.networking.v1alpha3.CorsPolicy](../virtual_service.proto.sk#CorsPolicy) | Cross-Origin Resource Sharing policy (CORS). Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for further details about cross origin resource sharing. |  |
-| `append_headers` | `map<string, string>` | Use of `append_headers` is deprecated. Use the `headers` field instead. |  |
-| `remove_response_headers` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
-| `append_response_headers` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
-| `remove_request_headers` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
-| `append_request_headers` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
+| `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../virtual_service.proto.sk#CorsPolicy) | Cross-Origin Resource Sharing policy (CORS). Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for further details about cross origin resource sharing. |  |
+| `appendHeaders` | `map<string, string>` | Use of `append_headers` is deprecated. Use the `headers` field instead. |  |
+| `removeResponseHeaders` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
+| `appendResponseHeaders` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
+| `removeRequestHeaders` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
+| `appendRequestHeaders` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
 | `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#Headers) | Header manipulation rules |  |
 
 
@@ -517,7 +517,7 @@ HTTPMatchRequest CANNOT be empty.
 "authority": .istio.networking.v1alpha3.StringMatch
 "headers": map<string, .istio.networking.v1alpha3.StringMatch>
 "port": int
-"source_labels": map<string, string>
+"sourceLabels": map<string, string>
 "gateways": []string
 
 ```
@@ -530,7 +530,7 @@ HTTPMatchRequest CANNOT be empty.
 | `authority` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#StringMatch) | HTTP Authority values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
 | `headers` | `map<string, .istio.networking.v1alpha3.StringMatch>` | The header keys must be lowercase and use hyphen as the separator, e.g. _x-request-id_. Header values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match **Note:** The keys `uri`, `scheme`, `method`, and `authority` will be ignored. |  |
 | `port` | `int` | Specifies the ports on the host that is being addressed. Many services only expose a single port or label ports with the protocols they support, in these cases it is not required to explicitly select the port. |  |
-| `source_labels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
+| `sourceLabels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
 | `gateways` | `[]string` | Names of gateways where the rule should be applied to. Gateway names at the top of the VirtualService (if any) are overridden. The gateway match is independent of sourceLabels. |  |
 
 
@@ -610,10 +610,10 @@ spec:
 ```yaml
 "destination": .istio.networking.v1alpha3.Destination
 "weight": int
-"remove_response_headers": []string
-"append_response_headers": map<string, string>
-"remove_request_headers": []string
-"append_request_headers": map<string, string>
+"removeResponseHeaders": []string
+"appendResponseHeaders": map<string, string>
+"removeRequestHeaders": []string
+"appendRequestHeaders": map<string, string>
 "headers": .istio.networking.v1alpha3.Headers
 
 ```
@@ -622,10 +622,10 @@ spec:
 | ----- | ---- | ----------- |----------- | 
 | `destination` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#Destination) | REQUIRED. Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to. |  |
 | `weight` | `int` | REQUIRED. The proportion of traffic to be forwarded to the service version. (0-100). Sum of weights across destinations SHOULD BE == 100. If there is only one destination in a rule, the weight value is assumed to be 100. |  |
-| `remove_response_headers` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
-| `append_response_headers` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
-| `remove_request_headers` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
-| `append_request_headers` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
+| `removeResponseHeaders` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
+| `appendResponseHeaders` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
+| `removeRequestHeaders` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
+| `appendRequestHeaders` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
 | `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#Headers) | Header manipulation rules |  |
 
 
@@ -659,20 +659,20 @@ L4 connection match attributes. Note that L4 connection matching support
 is incomplete.
 
 ```yaml
-"destination_subnets": []string
+"destinationSubnets": []string
 "port": int
-"source_subnet": string
-"source_labels": map<string, string>
+"sourceSubnet": string
+"sourceLabels": map<string, string>
 "gateways": []string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `destination_subnets` | `[]string` | IPv4 or IPv6 ip addresses of destination with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d. |  |
+| `destinationSubnets` | `[]string` | IPv4 or IPv6 ip addresses of destination with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d. |  |
 | `port` | `int` | Specifies the port on the host that is being addressed. Many services only expose a single port or label ports with the protocols they support, in these cases it is not required to explicitly select the port. |  |
-| `source_subnet` | `string` | IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d $hide_from_docs |  |
-| `source_labels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
+| `sourceSubnet` | `string` | IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d $hide_from_docs |  |
+| `sourceLabels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
 | `gateways` | `[]string` | Names of gateways where the rule should be applied to. Gateway names at the top of the VirtualService (if any) are overridden. The gateway match is independent of sourceLabels. |  |
 
 
@@ -685,22 +685,22 @@ is incomplete.
 TLS connection match attributes.
 
 ```yaml
-"sni_hosts": []string
-"destination_subnets": []string
+"sniHosts": []string
+"destinationSubnets": []string
 "port": int
-"source_subnet": string
-"source_labels": map<string, string>
+"sourceSubnet": string
+"sourceLabels": map<string, string>
 "gateways": []string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `sni_hosts` | `[]string` | REQUIRED. SNI (server name indicator) to match on. Wildcard prefixes can be used in the SNI value, e.g., *.com will match foo.example.com as well as example.com. An SNI value must be a subset (i.e., fall within the domain) of the corresponding virtual serivce's hosts. |  |
-| `destination_subnets` | `[]string` | IPv4 or IPv6 ip addresses of destination with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d. |  |
+| `sniHosts` | `[]string` | REQUIRED. SNI (server name indicator) to match on. Wildcard prefixes can be used in the SNI value, e.g., *.com will match foo.example.com as well as example.com. An SNI value must be a subset (i.e., fall within the domain) of the corresponding virtual serivce's hosts. |  |
+| `destinationSubnets` | `[]string` | IPv4 or IPv6 ip addresses of destination with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d. |  |
 | `port` | `int` | Specifies the port on the host that is being addressed. Many services only expose a single port or label ports with the protocols they support, in these cases it is not required to explicitly select the port. |  |
-| `source_subnet` | `string` | IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d $hide_from_docs |  |
-| `source_labels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
+| `sourceSubnet` | `string` | IPv4 or IPv6 ip address of source with optional subnet. E.g., a.b.c.d/xx form or just a.b.c.d $hide_from_docs |  |
+| `sourceLabels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
 | `gateways` | `[]string` | Names of gateways where the rule should be applied to. Gateway names at the top of the VirtualService (if any) are overridden. The gateway match is independent of sourceLabels. |  |
 
 
@@ -844,16 +844,16 @@ spec:
 
 ```yaml
 "attempts": int
-"per_try_timeout": .google.protobuf.Duration
-"retry_on": string
+"perTryTimeout": .google.protobuf.Duration
+"retryOn": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `attempts` | `int` | REQUIRED. Number of retries for a given request. The interval between retries will be determined automatically (25ms+). Actual number of retries attempted depends on the httpReqTimeout. |  |
-| `per_try_timeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms. |  |
-| `retry_on` | `string` | Specifies the conditions under which retry takes place. One or more policies can be specified using a ‘,’ delimited list. The supported policies can be found in <https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-on> and <https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-grpc-on> |  |
+| `perTryTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms. |  |
+| `retryOn` | `string` | Specifies the conditions under which retry takes place. One or more policies can be specified using a ‘,’ delimited list. The supported policies can be found in <https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-on> and <https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-grpc-on> |  |
 
 
 
@@ -897,23 +897,23 @@ spec:
 ```
 
 ```yaml
-"allow_origin": []string
-"allow_methods": []string
-"allow_headers": []string
-"expose_headers": []string
-"max_age": .google.protobuf.Duration
-"allow_credentials": .google.protobuf.BoolValue
+"allowOrigin": []string
+"allowMethods": []string
+"allowHeaders": []string
+"exposeHeaders": []string
+"maxAge": .google.protobuf.Duration
+"allowCredentials": .google.protobuf.BoolValue
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `allow_origin` | `[]string` | The list of origins that are allowed to perform CORS requests. The content will be serialized into the Access-Control-Allow-Origin header. Wildcard * will allow all origins. |  |
-| `allow_methods` | `[]string` | List of HTTP methods allowed to access the resource. The content will be serialized into the Access-Control-Allow-Methods header. |  |
-| `allow_headers` | `[]string` | List of HTTP headers that can be used when requesting the resource. Serialized to Access-Control-Allow-Headers header. |  |
-| `expose_headers` | `[]string` | A white list of HTTP headers that the browsers are allowed to access. Serialized into Access-Control-Expose-Headers header. |  |
-| `max_age` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Specifies how long the results of a preflight request can be cached. Translates to the `Access-Control-Max-Age` header. |  |
-| `allow_credentials` | [.google.protobuf.BoolValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/bool-value) | Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to `Access-Control-Allow-Credentials` header. |  |
+| `allowOrigin` | `[]string` | The list of origins that are allowed to perform CORS requests. The content will be serialized into the Access-Control-Allow-Origin header. Wildcard * will allow all origins. |  |
+| `allowMethods` | `[]string` | List of HTTP methods allowed to access the resource. The content will be serialized into the Access-Control-Allow-Methods header. |  |
+| `allowHeaders` | `[]string` | List of HTTP headers that can be used when requesting the resource. Serialized to Access-Control-Allow-Headers header. |  |
+| `exposeHeaders` | `[]string` | A white list of HTTP headers that the browsers are allowed to access. Serialized into Access-Control-Expose-Headers header. |  |
+| `maxAge` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Specifies how long the results of a preflight request can be cached. Translates to the `Access-Control-Max-Age` header. |  |
+| `allowCredentials` | [.google.protobuf.BoolValue](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/bool-value) | Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to `Access-Control-Allow-Credentials` header. |  |
 
 
 
@@ -983,8 +983,8 @@ percentage of requests. If left unspecified, all request will be delayed.
 
 ```yaml
 "percent": int
-"fixed_delay": .google.protobuf.Duration
-"exponential_delay": .google.protobuf.Duration
+"fixedDelay": .google.protobuf.Duration
+"exponentialDelay": .google.protobuf.Duration
 "percentage": .istio.networking.v1alpha3.Percent
 
 ```
@@ -992,8 +992,8 @@ percentage of requests. If left unspecified, all request will be delayed.
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `percent` | `int` | Percentage of requests on which the delay will be injected (0-100). Use of integer `percent` value is deprecated. Use the double `percentage` field instead. |  |
-| `fixed_delay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
-| `exponential_delay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | $hide_from_docs |  |
+| `fixedDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
+| `exponentialDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | $hide_from_docs |  |
 | `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#Percent) | Percentage of requests on which the delay will be injected. |  |
 
 
@@ -1034,9 +1034,9 @@ aborted.
 
 ```yaml
 "percent": int
-"http_status": int
-"grpc_status": string
-"http2_error": string
+"httpStatus": int
+"grpcStatus": string
+"http2Error": string
 "percentage": .istio.networking.v1alpha3.Percent
 
 ```
@@ -1044,9 +1044,9 @@ aborted.
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `percent` | `int` | Percentage of requests to be aborted with the error code provided (0-100). Use of integer `percent` value is deprecated. Use the double `percentage` field instead. |  |
-| `http_status` | `int` | REQUIRED. HTTP status code to use to abort the Http request. |  |
-| `grpc_status` | `string` | $hide_from_docs |  |
-| `http2_error` | `string` | $hide_from_docs |  |
+| `httpStatus` | `int` | REQUIRED. HTTP status code to use to abort the Http request. |  |
+| `grpcStatus` | `string` | $hide_from_docs |  |
+| `http2Error` | `string` | $hide_from_docs |  |
 | `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#Percent) | Percentage of requests to be aborted with the error code provided. |  |
 
 

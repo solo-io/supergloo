@@ -33,17 +33,17 @@ specifies a method by which to select pods
 with in a mesh for the application of rules and policies
 
 ```yaml
-"label_selector": .supergloo.solo.io.PodSelector.LabelSelector
-"upstream_selector": .supergloo.solo.io.PodSelector.UpstreamSelector
-"namespace_selector": .supergloo.solo.io.PodSelector.NamespaceSelector
+"labelSelector": .supergloo.solo.io.PodSelector.LabelSelector
+"upstreamSelector": .supergloo.solo.io.PodSelector.UpstreamSelector
+"namespaceSelector": .supergloo.solo.io.PodSelector.NamespaceSelector
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `label_selector` | [.supergloo.solo.io.PodSelector.LabelSelector](../selector.proto.sk#LabelSelector) | select pods by their labels |  |
-| `upstream_selector` | [.supergloo.solo.io.PodSelector.UpstreamSelector](../selector.proto.sk#UpstreamSelector) | select pods by their corresponding upstreams |  |
-| `namespace_selector` | [.supergloo.solo.io.PodSelector.NamespaceSelector](../selector.proto.sk#NamespaceSelector) | select all pods within one or more namespaces |  |
+| `labelSelector` | [.supergloo.solo.io.PodSelector.LabelSelector](../selector.proto.sk#LabelSelector) | select pods by their labels |  |
+| `upstreamSelector` | [.supergloo.solo.io.PodSelector.UpstreamSelector](../selector.proto.sk#UpstreamSelector) | select pods by their corresponding upstreams |  |
+| `namespaceSelector` | [.supergloo.solo.io.PodSelector.NamespaceSelector](../selector.proto.sk#NamespaceSelector) | select all pods within one or more namespaces |  |
 
 
 
@@ -55,13 +55,13 @@ with in a mesh for the application of rules and policies
 select pods by their labels
 
 ```yaml
-"labels_to_match": map<string, string>
+"labelsToMatch": map<string, string>
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `labels_to_match` | `map<string, string>` |  |  |
+| `labelsToMatch` | `map<string, string>` |  |  |
 
 
 

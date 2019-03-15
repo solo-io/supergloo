@@ -224,7 +224,7 @@ spec:
 "mode": .istio.rbac.v1alpha1.RbacConfig.Mode
 "inclusion": .istio.rbac.v1alpha1.RbacConfig.Target
 "exclusion": .istio.rbac.v1alpha1.RbacConfig.Target
-"enforcement_mode": .istio.rbac.v1alpha1.EnforcementMode
+"enforcementMode": .istio.rbac.v1alpha1.EnforcementMode
 
 ```
 
@@ -235,7 +235,7 @@ spec:
 | `mode` | [.istio.rbac.v1alpha1.RbacConfig.Mode](../rbac.proto.sk#Mode) | Istio RBAC mode. |  |
 | `inclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#Target) | A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes. |  |
 | `exclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#Target) | A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes. |  |
-| `enforcement_mode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#EnforcementMode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
+| `enforcementMode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#EnforcementMode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
 
 
 

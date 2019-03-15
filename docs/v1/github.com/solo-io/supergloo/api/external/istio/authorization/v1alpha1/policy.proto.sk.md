@@ -86,14 +86,14 @@ Describes how to match a given string. Match is case-sensitive.
 TLS authentication params.
 
 ```yaml
-"allow_tls": bool
+"allowTls": bool
 "mode": .istio.authentication.v1alpha1.MutualTls.Mode
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `allow_tls` | `bool` | WILL BE DEPRECATED, if set, will translates to `TLS_PERMISSIVE` mode. Set this flag to true to allow regular TLS (i.e without client x509 certificate). If request carries client certificate, identity will be extracted and used (set to peer identity). Otherwise, peer identity will be left unset. When the flag is false (default), request must have client certificate. |  |
+| `allowTls` | `bool` | WILL BE DEPRECATED, if set, will translates to `TLS_PERMISSIVE` mode. Set this flag to true to allow regular TLS (i.e without client x509 certificate). If request carries client certificate, identity will be extracted and used (set to peer identity). Otherwise, peer identity will be left unset. When the flag is false (default), request must have client certificate. |  |
 | `mode` | [.istio.authentication.v1alpha1.MutualTls.Mode](../policy.proto.sk#Mode) | Defines the mode of mTLS authentication. |  |
 
 
@@ -176,10 +176,10 @@ trigger_rules:
 ```yaml
 "issuer": string
 "audiences": []string
-"jwks_uri": string
-"jwt_headers": []string
-"jwt_params": []string
-"trigger_rules": []istio.authentication.v1alpha1.Jwt.TriggerRule
+"jwksUri": string
+"jwtHeaders": []string
+"jwtParams": []string
+"triggerRules": []istio.authentication.v1alpha1.Jwt.TriggerRule
 
 ```
 
@@ -187,10 +187,10 @@ trigger_rules:
 | ----- | ---- | ----------- |----------- | 
 | `issuer` | `string` | Identifies the issuer that issued the JWT. See [issuer](https://tools.ietf.org/html/rfc7519#section-4.1.1) Usually a URL or an email address. Example: https://securetoken.google.com Example: 1234567-compute@developer.gserviceaccount.com |  |
 | `audiences` | `[]string` | The list of JWT [audiences](https://tools.ietf.org/html/rfc7519#section-4.1.3). that are allowed to access. A JWT containing any of these audiences will be accepted. The service name will be accepted if audiences is empty. Example: ```yaml audiences: - bookstore_android.apps.googleusercontent.com bookstore_web.apps.googleusercontent.com ``` |  |
-| `jwks_uri` | `string` | URL of the provider's public key set to validate signature of the JWT. See [OpenID Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata). Optional if the key set document can either (a) be retrieved from [OpenID Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html) of the issuer or (b) inferred from the email domain of the issuer (e.g. a Google service account). Example: https://www.googleapis.com/oauth2/v1/certs |  |
-| `jwt_headers` | `[]string` | JWT is sent in a request header. `header` represents the header name. For example, if `header=x-goog-iap-jwt-assertion`, the header format will be x-goog-iap-jwt-assertion: <JWT>. |  |
-| `jwt_params` | `[]string` | JWT is sent in a query parameter. `query` represents the query parameter name. For example, `query=jwt_token`. |  |
-| `trigger_rules` | [[]istio.authentication.v1alpha1.Jwt.TriggerRule](../policy.proto.sk#TriggerRule) | List of trigger rules to decide if this JWT should be used to validate the request. The JWT validation happens if any one of the rules matched. If the list is not empty and none of the rules matched, authentication will skip the JWT validation. Leave this empty to always trigger the JWT validation. |  |
+| `jwksUri` | `string` | URL of the provider's public key set to validate signature of the JWT. See [OpenID Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata). Optional if the key set document can either (a) be retrieved from [OpenID Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html) of the issuer or (b) inferred from the email domain of the issuer (e.g. a Google service account). Example: https://www.googleapis.com/oauth2/v1/certs |  |
+| `jwtHeaders` | `[]string` | JWT is sent in a request header. `header` represents the header name. For example, if `header=x-goog-iap-jwt-assertion`, the header format will be x-goog-iap-jwt-assertion: <JWT>. |  |
+| `jwtParams` | `[]string` | JWT is sent in a query parameter. `query` represents the query parameter name. For example, `query=jwt_token`. |  |
+| `triggerRules` | [[]istio.authentication.v1alpha1.Jwt.TriggerRule](../policy.proto.sk#TriggerRule) | List of trigger rules to decide if this JWT should be used to validate the request. The JWT validation happens if any one of the rules matched. If the list is not empty and none of the rules matched, authentication will skip the JWT validation. Leave this empty to always trigger the JWT validation. |  |
 
 
 
@@ -203,15 +203,15 @@ Trigger rule to match against a request. The trigger rule is satisfied if
 and only if both rules, excluded_paths and include_paths are satisfied.
 
 ```yaml
-"excluded_paths": []istio.authentication.v1alpha1.StringMatch
-"included_paths": []istio.authentication.v1alpha1.StringMatch
+"excludedPaths": []istio.authentication.v1alpha1.StringMatch
+"includedPaths": []istio.authentication.v1alpha1.StringMatch
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `excluded_paths` | [[]istio.authentication.v1alpha1.StringMatch](../policy.proto.sk#StringMatch) | List of paths to be excluded from the request. The rule is satisfied if request path does not match to any of the path in this list. |  |
-| `included_paths` | [[]istio.authentication.v1alpha1.StringMatch](../policy.proto.sk#StringMatch) | List of paths that the request must include. If the list is not empty, the rule is satisfied if request path matches at least one of the path in the list. If the list is empty, the rule is ignored, in other words the rule is always satisfied. |  |
+| `excludedPaths` | [[]istio.authentication.v1alpha1.StringMatch](../policy.proto.sk#StringMatch) | List of paths to be excluded from the request. The rule is satisfied if request path does not match to any of the path in this list. |  |
+| `includedPaths` | [[]istio.authentication.v1alpha1.StringMatch](../policy.proto.sk#StringMatch) | List of paths that the request must include. If the list is not empty, the rule is satisfied if request path matches at least one of the path in the list. If the list is empty, the rule is ignored, in other words the rule is always satisfied. |  |
 
 
 
@@ -340,10 +340,10 @@ spec:
 "metadata": .core.solo.io.Metadata
 "targets": []istio.authentication.v1alpha1.TargetSelector
 "peers": []istio.authentication.v1alpha1.PeerAuthenticationMethod
-"peer_is_optional": bool
+"peerIsOptional": bool
 "origins": []istio.authentication.v1alpha1.OriginAuthenticationMethod
-"origin_is_optional": bool
-"principal_binding": .istio.authentication.v1alpha1.PrincipalBinding
+"originIsOptional": bool
+"principalBinding": .istio.authentication.v1alpha1.PrincipalBinding
 
 ```
 
@@ -353,10 +353,10 @@ spec:
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `targets` | [[]istio.authentication.v1alpha1.TargetSelector](../policy.proto.sk#TargetSelector) | List rules to select workloads that the policy should be applied on. If empty, policy will be used on all workloads in the same namespace. |  |
 | `peers` | [[]istio.authentication.v1alpha1.PeerAuthenticationMethod](../policy.proto.sk#PeerAuthenticationMethod) | List of authentication methods that can be used for peer authentication. They will be evaluated in order; the first validate one will be used to set peer identity (source.user) and other peer attributes. If none of these methods pass, request will be rejected with authentication failed error (401). Leave the list empty if peer authentication is not required |  |
-| `peer_is_optional` | `bool` | Set this flag to true to accept request (for peer authentication perspective), even when none of the peer authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for peer (peers field is empty). |  |
+| `peerIsOptional` | `bool` | Set this flag to true to accept request (for peer authentication perspective), even when none of the peer authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for peer (peers field is empty). |  |
 | `origins` | [[]istio.authentication.v1alpha1.OriginAuthenticationMethod](../policy.proto.sk#OriginAuthenticationMethod) | List of authentication methods that can be used for origin authentication. Similar to peers, these will be evaluated in order; the first validate one will be used to set origin identity and attributes (i.e request.auth.user, request.auth.issuer etc). If none of these methods pass, request will be rejected with authentication failed error (401). A method may be skipped, depends on its trigger rule. If all of these methods are skipped, origin authentication will be ignored, as if it is not defined. Leave the list empty if origin authentication is not required. |  |
-| `origin_is_optional` | `bool` | Set this flag to true to accept request (for origin authentication perspective), even when none of the origin authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for origin (origins field is empty). |  |
-| `principal_binding` | [.istio.authentication.v1alpha1.PrincipalBinding](../policy.proto.sk#PrincipalBinding) | Define whether peer or origin identity should be use for principal. Default value is USE_PEER. If peer (or origin) identity is not available, either because of peer/origin authentication is not defined, or failed, principal will be left unset. In other words, binding rule does not affect the decision to accept or reject request. |  |
+| `originIsOptional` | `bool` | Set this flag to true to accept request (for origin authentication perspective), even when none of the origin authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for origin (origins field is empty). |  |
+| `principalBinding` | [.istio.authentication.v1alpha1.PrincipalBinding](../policy.proto.sk#PrincipalBinding) | Define whether peer or origin identity should be use for principal. Default value is USE_PEER. If peer (or origin) identity is not available, either because of peer/origin authentication is not defined, or failed, principal will be left unset. In other words, binding rule does not affect the decision to accept or reject request. |  |
 
 
 
@@ -372,10 +372,10 @@ MeshPolicy copied from Policy
 "metadata": .core.solo.io.Metadata
 "targets": []istio.authentication.v1alpha1.TargetSelector
 "peers": []istio.authentication.v1alpha1.PeerAuthenticationMethod
-"peer_is_optional": bool
+"peerIsOptional": bool
 "origins": []istio.authentication.v1alpha1.OriginAuthenticationMethod
-"origin_is_optional": bool
-"principal_binding": .istio.authentication.v1alpha1.PrincipalBinding
+"originIsOptional": bool
+"principalBinding": .istio.authentication.v1alpha1.PrincipalBinding
 
 ```
 
@@ -385,10 +385,10 @@ MeshPolicy copied from Policy
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `targets` | [[]istio.authentication.v1alpha1.TargetSelector](../policy.proto.sk#TargetSelector) | List rules to select workloads that the policy should be applied on. If empty, policy will be used on all workloads in the same namespace. |  |
 | `peers` | [[]istio.authentication.v1alpha1.PeerAuthenticationMethod](../policy.proto.sk#PeerAuthenticationMethod) | List of authentication methods that can be used for peer authentication. They will be evaluated in order; the first validate one will be used to set peer identity (source.user) and other peer attributes. If none of these methods pass, request will be rejected with authentication failed error (401). Leave the list empty if peer authentication is not required |  |
-| `peer_is_optional` | `bool` | Set this flag to true to accept request (for peer authentication perspective), even when none of the peer authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for peer (peers field is empty). |  |
+| `peerIsOptional` | `bool` | Set this flag to true to accept request (for peer authentication perspective), even when none of the peer authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for peer (peers field is empty). |  |
 | `origins` | [[]istio.authentication.v1alpha1.OriginAuthenticationMethod](../policy.proto.sk#OriginAuthenticationMethod) | List of authentication methods that can be used for origin authentication. Similar to peers, these will be evaluated in order; the first validate one will be used to set origin identity and attributes (i.e request.auth.user, request.auth.issuer etc). If none of these methods pass, request will be rejected with authentication failed error (401). A method may be skipped, depends on its trigger rule. If all of these methods are skipped, origin authentication will be ignored, as if it is not defined. Leave the list empty if origin authentication is not required. |  |
-| `origin_is_optional` | `bool` | Set this flag to true to accept request (for origin authentication perspective), even when none of the origin authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for origin (origins field is empty). |  |
-| `principal_binding` | [.istio.authentication.v1alpha1.PrincipalBinding](../policy.proto.sk#PrincipalBinding) | Define whether peer or origin identity should be use for principal. Default value is USE_PEER. If peer (or origin) identity is not available, either because of peer/origin authentication is not defined, or failed, principal will be left unset. In other words, binding rule does not affect the decision to accept or reject request. |  |
+| `originIsOptional` | `bool` | Set this flag to true to accept request (for origin authentication perspective), even when none of the origin authentication methods defined above satisfied. Typically, this is used to delay the rejection decision to next layer (e.g authorization). This flag is ignored if no authentication defined for origin (origins field is empty). |  |
+| `principalBinding` | [.istio.authentication.v1alpha1.PrincipalBinding](../policy.proto.sk#PrincipalBinding) | Define whether peer or origin identity should be use for principal. Default value is USE_PEER. If peer (or origin) identity is not available, either because of peer/origin authentication is not defined, or failed, principal will be left unset. In other words, binding rule does not affect the decision to accept or reject request. |  |
 
 
 

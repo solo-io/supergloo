@@ -40,10 +40,10 @@ apply the specified RoutingRuleSpec
 ```yaml
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
-"target_mesh": .core.solo.io.ResourceRef
-"source_selector": .supergloo.solo.io.PodSelector
-"destination_selector": .supergloo.solo.io.PodSelector
-"request_matchers": []gloo.solo.io.Matcher
+"targetMesh": .core.solo.io.ResourceRef
+"sourceSelector": .supergloo.solo.io.PodSelector
+"destinationSelector": .supergloo.solo.io.PodSelector
+"requestMatchers": []gloo.solo.io.Matcher
 "spec": .supergloo.solo.io.RoutingRuleSpec
 
 ```
@@ -52,10 +52,10 @@ apply the specified RoutingRuleSpec
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `target_mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
-| `source_selector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules |  |
-| `destination_selector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
-| `request_matchers` | [[]gloo.solo.io.Matcher](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#Matcher) | if specified, this rule will only apply to http requests in the mesh matching these parameters |  |
+| `targetMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
+| `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules |  |
+| `destinationSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
+| `requestMatchers` | [[]gloo.solo.io.Matcher](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#Matcher) | if specified, this rule will only apply to http requests in the mesh matching these parameters |  |
 | `spec` | [.supergloo.solo.io.RoutingRuleSpec](../routing.proto.sk#RoutingRuleSpec) | contains the configuration that will be applied to selected pods within the target mesh(es) |  |
 
 
@@ -68,25 +68,25 @@ apply the specified RoutingRuleSpec
 the routing configuration that will be applied to the mesh(es)
 
 ```yaml
-"traffic_shifting": .supergloo.solo.io.TrafficShifting
-"fault_injection": .istio.networking.v1alpha3.HTTPFaultInjection
-"request_timeout": .google.protobuf.Duration
+"trafficShifting": .supergloo.solo.io.TrafficShifting
+"faultInjection": .istio.networking.v1alpha3.HTTPFaultInjection
+"requestTimeout": .google.protobuf.Duration
 "retries": .istio.networking.v1alpha3.HTTPRetry
-"cors_policy": .istio.networking.v1alpha3.CorsPolicy
+"corsPolicy": .istio.networking.v1alpha3.CorsPolicy
 "mirror": .gloo.solo.io.Destination
-"header_manipulation": .supergloo.solo.io.HeaderManipulation
+"headerManipulation": .supergloo.solo.io.HeaderManipulation
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `traffic_shifting` | [.supergloo.solo.io.TrafficShifting](../routing.proto.sk#TrafficShifting) | enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |  |
-| `fault_injection` | [.istio.networking.v1alpha3.HTTPFaultInjection](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#HTTPFaultInjection) | enable fault injection on requests |  |
-| `request_timeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | set a timeout on requests |  |
+| `trafficShifting` | [.supergloo.solo.io.TrafficShifting](../routing.proto.sk#TrafficShifting) | enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |  |
+| `faultInjection` | [.istio.networking.v1alpha3.HTTPFaultInjection](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#HTTPFaultInjection) | enable fault injection on requests |  |
+| `requestTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | set a timeout on requests |  |
 | `retries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#HTTPRetry) | set a retry policy on requests |  |
-| `cors_policy` | [.istio.networking.v1alpha3.CorsPolicy](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#CorsPolicy) | set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
+| `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#CorsPolicy) | set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
 | `mirror` | [.gloo.solo.io.Destination](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#Destination) | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |  |
-| `header_manipulation` | [.supergloo.solo.io.HeaderManipulation](../routing.proto.sk#HeaderManipulation) | manipulate request and response headers |  |
+| `headerManipulation` | [.supergloo.solo.io.HeaderManipulation](../routing.proto.sk#HeaderManipulation) | manipulate request and response headers |  |
 
 
 
@@ -116,19 +116,19 @@ requests for this rule will be routed to these destinations
 manipulate request and response headers
 
 ```yaml
-"remove_response_headers": []string
-"append_response_headers": map<string, string>
-"remove_request_headers": []string
-"append_request_headers": map<string, string>
+"removeResponseHeaders": []string
+"appendResponseHeaders": map<string, string>
+"removeRequestHeaders": []string
+"appendRequestHeaders": map<string, string>
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `remove_response_headers` | `[]string` | HTTP headers to remove before returning a response to the caller. |  |
-| `append_response_headers` | `map<string, string>` | Additional HTTP headers to add before returning a response to the caller. |  |
-| `remove_request_headers` | `[]string` | HTTP headers to remove before forwarding a request to the destination service. |  |
-| `append_request_headers` | `map<string, string>` | Additional HTTP headers to add before forwarding a request to the destination service. |  |
+| `removeResponseHeaders` | `[]string` | HTTP headers to remove before returning a response to the caller. |  |
+| `appendResponseHeaders` | `map<string, string>` | Additional HTTP headers to add before returning a response to the caller. |  |
+| `removeRequestHeaders` | `[]string` | HTTP headers to remove before forwarding a request to the destination service. |  |
+| `appendRequestHeaders` | `map<string, string>` | Additional HTTP headers to add before forwarding a request to the destination service. |  |
 
 
 
