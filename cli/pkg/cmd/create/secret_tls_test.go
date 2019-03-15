@@ -2,14 +2,15 @@ package create_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/test/inputs"
-	"io/ioutil"
-	"os"
 )
 
 var _ = Describe("SecretTls", func() {
