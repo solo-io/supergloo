@@ -3,6 +3,8 @@ package helpers
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -146,6 +148,39 @@ func MeshClient() (v1.MeshClient, error) {
 		return nil, err
 	}
 	return meshClient, nil
+}
+
+func MustTlsSecretClient() v1.TlsSecretClient {
+	client, err := TlsSecretClient()
+	if err != nil {
+		log.Fatalf("failed to create tlsSecret client: %v", err)
+	}
+	return client
+}
+
+func TlsSecretClient() (v1.TlsSecretClient, error) {
+	if memoryResourceClient != nil {
+		return v1.NewTlsSecretClient(memoryResourceClient)
+	}
+
+	kubeClient := MustKubeClient()
+	kubeCache, err := cache.NewKubeCoreCache(context.TODO(), kubeClient)
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating kube cache")
+	}
+
+	tlsSecretClient, err := v1.NewTlsSecretClient(&factory.KubeSecretClientFactory{
+		Clientset:    kubeClient,
+		PlainSecrets: true,
+		Cache:        kubeCache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating tlsSecret client")
+	}
+	if err := tlsSecretClient.Register(); err != nil {
+		return nil, err
+	}
+	return tlsSecretClient, nil
 }
 
 func MustUpstreamClient() gloov1.UpstreamClient {
