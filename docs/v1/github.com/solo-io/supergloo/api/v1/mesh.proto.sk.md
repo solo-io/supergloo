@@ -34,7 +34,7 @@ weight: 5
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "istio": .supergloo.solo.io.Mesh.Istio
-"mtls_config": .supergloo.solo.io.MtlsConfig
+"mtlsConfig": .supergloo.solo.io.MtlsConfig
 
 ```
 
@@ -43,7 +43,7 @@ weight: 5
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `istio` | [.supergloo.solo.io.Mesh.Istio](../mesh.proto.sk#Istio) |  |  |
-| `mtls_config` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#MtlsConfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#MtlsConfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 
 
 
@@ -54,13 +54,13 @@ weight: 5
 
 
 ```yaml
-"installation_namespace": string
+"installationNamespace": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installation_namespace` | `string` | where the istio control plane has been installed |  |
+| `installationNamespace` | `string` | where the istio control plane has been installed |  |
 
 
 
@@ -72,15 +72,15 @@ weight: 5
 the encryption configuration that will be applied by the role
 
 ```yaml
-"mtls_enabled": bool
-"root_certificate": .core.solo.io.ResourceRef
+"mtlsEnabled": bool
+"rootCertificate": .core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `mtls_enabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
-| `root_certificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
+| `mtlsEnabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
+| `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
 
 
 
