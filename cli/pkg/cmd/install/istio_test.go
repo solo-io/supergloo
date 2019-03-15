@@ -128,6 +128,7 @@ var _ = Describe("Install", func() {
 					Namespace:       namespace,
 					ResourceVersion: updatedInstall.Metadata.ResourceVersion,
 				},
+				InstalledManifest:     "a previously installed manifest",
 				InstallationNamespace: "istio-system",
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{

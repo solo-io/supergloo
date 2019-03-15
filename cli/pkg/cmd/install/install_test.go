@@ -55,7 +55,7 @@ var _ = Describe("Install", func() {
 				install := getInstall(name)
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 				mesh := install.InstallType.(*v1.Install_Mesh)
-				Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.Istio{}))
+				Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
 				istio := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
 				Expect(istio.IstioMesh.IstioVersion).To(Equal(version))
 				Expect(istio.IstioMesh.EnableMtls).To(Equal(mtls))
