@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Provide `--kubeyaml` flag for `supergloo apply routingrule` to print kubernetes-style yaml object
+    issueLink: https://github.com/solo-io/supergloo/issues/259
+

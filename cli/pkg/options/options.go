@@ -9,10 +9,11 @@ import (
 
 type Options struct {
 	// common
-	Ctx         context.Context
-	Interactive bool
-	OutputType  string
-	Metadata    core.Metadata
+	Ctx           context.Context
+	Interactive   bool
+	OutputType    string
+	Metadata      core.Metadata
+	PrintKubeYaml bool
 
 	Init              Init
 	Install           Install

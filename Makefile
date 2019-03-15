@@ -48,7 +48,7 @@ check-spelling:
 .PHONY: generated-code
 generated-code: $(OUTPUT_DIR)/.generated-code
 
-SUBDIRS:=pkg cmd
+SUBDIRS:=cli pkg cmd test
 $(OUTPUT_DIR)/.generated-code:
 	go generate ./...
 	(rm -f docs/cli/supergloo* && go run cli/cmd/docs/main.go)

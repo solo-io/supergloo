@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
+
 var _ = Describe("RoutingRule", func() {
 	type destination struct {
 		core.ResourceRef
@@ -219,6 +220,32 @@ var _ = Describe("RoutingRule", func() {
 				{core.ResourceRef{"do", "a"}, 5},
 				{core.ResourceRef{"barrel", "roll"}, 55},
 			})
+		})
+	})
+	Context("--crd flag", func() {
+		It("prints the kubernetes yaml", func() {
+			dests := []destination{
+				{core.ResourceRef{"do", "a"}, 5},
+				{core.ResourceRef{"barrel", "roll"}, 55},
+			}
+			name := "ts-rr"
+
+			args := rrArgs(name, dests)
+			args += " --kubeyaml"
+
+			out, err := utils.SuperglooOut(args)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(out).To(ContainSubstring(`apiVersion: supergloo.solo.io/v1
+kind: RoutingRule
+metadata:
+  creationTimestamp: null
+  name: ts-rr
+  namespace: supergloo-system
+spec:
+  targetMesh:
+    name: mesh
+    namespace: my
+status: {}`))
 		})
 	})
 	Context("request matcher tests", func() {

@@ -2,7 +2,10 @@ package apply
 
 import (
 	"context"
+	"fmt"
 	"sort"
+
+	"github.com/ghodss/yaml"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -65,6 +68,7 @@ RULE:
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 	flagutils.AddCreateRoutingRuleFlags(cmd.PersistentFlags(), &opts.CreateRoutingRule)
+	flagutils.AddKubeYamlFlag(cmd.PersistentFlags(), opts)
 
 	for _, rrType := range routingRuleTypes {
 		cmd.AddCommand(createRoutingRuleSubcmd(rrType, opts))
@@ -125,6 +129,15 @@ func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err == nil {
 		// perform update
 		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+	}
+
+	if opts.PrintKubeYaml {
+		raw, err := yaml.Marshal(v1.RoutingRuleCrd.KubeResource(in))
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
 	}
 
 	in.Spec = spec
