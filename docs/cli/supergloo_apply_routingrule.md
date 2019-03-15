@@ -28,6 +28,7 @@ RULE:
       --dest-namespaces strings                apply this rule to requests sent to pods in these namespaces
       --dest-upstreams ResourceRefsValue       apply this rule to requests sent to these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
   -h, --help                                   help for routingrule
+      --kubeyaml                               if true, this command will print the yaml used to create a kubernetes resource rather than directly trying to create/apply the resource
       --name string                            name for the resource
       --namespace string                       namespace for the resource (default "supergloo-system")
   -o, --output string                          output format: (yaml, json, table)
