@@ -128,7 +128,7 @@ ifeq ($(RELEASE),"true")
 build-cli: $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
 else
 build-cli:
-	go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
+	go build -ldflags=$(LDFLAGS) -o supergloo cli/cmd/main.go
 endif
 
 #----------------------------------------------------------------------------------

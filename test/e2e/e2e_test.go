@@ -56,7 +56,7 @@ var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
-		err := utils.Supergloo("init --release 0.3.2")
+		err := utils.Supergloo("init --release latest")
 		Expect(err).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
