@@ -56,7 +56,7 @@ var _ = Describe("Install", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				install := getInstall(name)
-				istio := MustIstioInstall(install)
+				istio := MustIstioInstallType(install)
 				Expect(istio.IstioMesh.IstioVersion).To(Equal(version))
 				Expect(istio.IstioMesh.EnableMtls).To(Equal(mtls))
 				Expect(istio.IstioMesh.EnableAutoInject).To(Equal(autoInject))
@@ -104,7 +104,7 @@ var _ = Describe("Install", func() {
 		It("should update existing enabled install if --update set to true", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			inst := inputs.IstioInstall(name, namespace, "istio-system", "1.0.5", false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 			mesh := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
@@ -122,7 +122,7 @@ var _ = Describe("Install", func() {
 
 			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(updatedInstall).To(Equal(&v1.Install{
+			Expect(*updatedInstall).To(Equal(v1.Install{
 				Metadata: core.Metadata{
 					Name:            name,
 					Namespace:       namespace,
@@ -154,7 +154,7 @@ var _ = Describe("Install", func() {
 	})
 })
 
-func MustIstioInstall(install *v1.Install) *v1.MeshInstall_IstioMesh {
+func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_IstioMesh {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
 	Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))

@@ -41,7 +41,7 @@ func installIstioCmd(opts *options.Options) *cobra.Command {
 }
 
 func createInstall(opts *options.Options) error {
-	in, err := installFromOpts(opts)
+	install, err := installFromOpts(opts)
 	if err != nil {
 		return err
 	}
@@ -54,24 +54,25 @@ func createInstall(opts *options.Options) error {
 	}
 	if existing != nil {
 		if !opts.Install.Update && !existing.Disabled {
-			return errors.Errorf("install %v is already installed and enabled", in.Metadata.Ref())
+			return errors.Errorf("install %v is already installed and enabled", install.Metadata.Ref())
 		}
 		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading istio install from %s to %s",
-			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(in))
-		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
-		in.InstalledManifest = existing.InstalledManifest
+			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(install))
+		install.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+		install.InstalledManifest = existing.InstalledManifest
+		install.InstallationNamespace = existing.InstallationNamespace
 		existingMesh, existingIsMesh := existing.InstallType.(*v1.Install_Mesh)
-		inMesh, inIsMesh := in.InstallType.(*v1.Install_Mesh)
-		if existingIsMesh && inIsMesh {
-			inMesh.Mesh = existingMesh.Mesh
+		installMesh, istallIsMesh := install.InstallType.(*v1.Install_Mesh)
+		if existingIsMesh && istallIsMesh {
+			installMesh.Mesh.InstalledMesh = existingMesh.Mesh.InstalledMesh
 		}
 	}
-	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	install, err = helpers.MustInstallClient().Write(install, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
 
-	helpers.PrintInstalls(v1.InstallList{in}, opts.OutputType)
+	helpers.PrintInstalls(v1.InstallList{install}, opts.OutputType)
 
 	return nil
 }
