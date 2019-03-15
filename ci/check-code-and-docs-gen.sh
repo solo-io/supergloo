@@ -37,7 +37,7 @@ fi
 
 if [[ $(git --git-dir=/workspace/gopath/src/github.com/solo-io/gloo/.git --work-tree=/workspace/gopath/src/github.com/solo-io/gloo status --porcelain | wc -l) -ne 0 ]]; then
 echo "Generating code produced a non-empty diff in the gloo repo"
-  echo "Make sure the go_import directory in protos is set to directory in solo-projects, not in gloo."
+  echo "Make sure the go_import directory in protos is set to directory in supergloo, not in gloo."
   git --git-dir=/workspace/gopath/src/github.com/solo-io/gloo/.git --work-tree=/workspace/gopath/src/github.com/solo-io/gloo status --porcelain
   git --git-dir=/workspace/gopath/src/github.com/solo-io/gloo/.git --work-tree=/workspace/gopath/src/github.com/solo-io/gloo diff | cat
   exit 1;

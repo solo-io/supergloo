@@ -1,5 +1,5 @@
 changelog:
-  - type: NON_USER_FACING
+  - type: DEPENDENCY_BUMP
     description: Upgrade solo-kit to 0.3.5.
   - type: NON_USER_FACING
     description: Check version of gloo and solo-kit when generating code.
