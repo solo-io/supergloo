@@ -4,6 +4,7 @@ vendor
 .idea
 _output/
 doc/site
+supergloo
 
 # Mac Files
 **/.DS_Store
