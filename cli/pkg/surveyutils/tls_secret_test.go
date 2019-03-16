@@ -24,7 +24,7 @@ var _ = Describe("TlsSecret", func() {
 			c.ExpectEOF()
 		}, func() {
 			var secret options.CreateTlsSecret
-			err := SurveyTlsSecret(&secret)
+			err := SurveyCreateTlsSecret(&secret)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(secret.RootCaFilename).To(Equal("/some/path/root-cert.pem"))

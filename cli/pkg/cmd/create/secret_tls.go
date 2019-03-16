@@ -23,7 +23,7 @@ func tlsCmd(opts *options.Options) *cobra.Command {
 				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyTlsSecret(&opts.CreateTlsSecret); err != nil {
+				if err := surveyutils.SurveyCreateTlsSecret(&opts.CreateTlsSecret); err != nil {
 					return err
 				}
 			}

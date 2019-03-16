@@ -6,14 +6,14 @@ import (
 	"github.com/solo-io/gloo/pkg/cliutil"
 )
 
-func SurveyTlsSecret(secret *options.CreateTlsSecret) error {
+func SurveyCreateTlsSecret(secret *options.CreateTlsSecret) error {
 	if err := cliutil.GetStringInput("path to root-cert file", &secret.RootCaFilename); err != nil {
 		return err
 	}
-	if err := cliutil.GetStringInput("path to ca-cert file", &secret.PrivateKeyFilename); err != nil {
+	if err := cliutil.GetStringInput("path to ca-cert file", &secret.CaCertFilename); err != nil {
 		return err
 	}
-	if err := cliutil.GetStringInput("path to ca-key file", &secret.CaCertFilename); err != nil {
+	if err := cliutil.GetStringInput("path to ca-key file", &secret.PrivateKeyFilename); err != nil {
 		return err
 	}
 	if err := cliutil.GetStringInput("path to cert-chain file", &secret.CertChainFilename); err != nil {
