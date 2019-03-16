@@ -22,7 +22,7 @@ var _ = Describe("RootCert", func() {
 	})
 
 	It("updates the root cert ref on an existing mesh", func() {
-		err := utils.Supergloo(fmt.Sprintf("set root cert --target-mesh "+
+		err := utils.Supergloo(fmt.Sprintf("set rootcert --target-mesh "+
 			"%v.%v --tls-secret %v.%v", mesh.Namespace, mesh.Name, secret.Namespace, secret.Name))
 		Expect(err).NotTo(HaveOccurred())
 		meshWithCert, err := helpers.MustMeshClient().Read(mesh.Namespace, mesh.Name, clients.ReadOpts{})
