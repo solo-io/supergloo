@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Set Root Cert on Target Mesh via CLI
+    issueLink: https://github.com/solo-io/supergloo/issues/266
