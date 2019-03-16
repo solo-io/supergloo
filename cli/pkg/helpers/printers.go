@@ -140,6 +140,27 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 	table.Render()
 }
 
+func PrintTlsSecrets(list v1.TlsSecretList, outputType string) {
+	cliutils.PrintList(outputType, "", list,
+		func(data interface{}, w io.Writer) error {
+			tablePrintTlsSecrets(data.(v1.TlsSecretList), w)
+			return nil
+		}, os.Stdout)
+}
+
+func tablePrintTlsSecrets(list v1.TlsSecretList, w io.Writer) {
+	table := tablewriter.NewWriter(w)
+	table.SetHeader([]string{"TlsSecret"})
+
+	for _, routingRule := range list {
+		name := routingRule.GetMetadata().Name
+		table.Append([]string{name})
+	}
+
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.Render()
+}
+
 func MustMarshal(v interface{}) string {
 	jsn, err := json.Marshal(v)
 	if err != nil {

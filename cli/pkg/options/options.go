@@ -19,6 +19,7 @@ type Options struct {
 	Install           Install
 	Uninstall         Uninstall
 	CreateRoutingRule CreateRoutingRule
+	CreateTlsSecret   CreateTlsSecret
 }
 
 type Init struct {
@@ -64,4 +65,11 @@ type Selector struct {
 // no implemented specs yet
 type RoutingRuleSpec struct {
 	TrafficShifting TrafficShiftingValue
+}
+
+type CreateTlsSecret struct {
+	RootCaFilename     string
+	PrivateKeyFilename string
+	CertChainFilename  string
+	CaCertFilename     string
 }

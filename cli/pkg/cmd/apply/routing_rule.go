@@ -112,14 +112,14 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 			if err != nil {
 				return err
 			}
-			return createRoutingRule(opts, spec)
+			return applyRoutingRule(opts, spec)
 		},
 	}
 	subCmd.addFlagsFunc(cmd.PersistentFlags(), &opts.CreateRoutingRule.RoutingRuleSpec)
 	return cmd
 }
 
-func createRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
+func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	in, err := routingRuleFromOpts(opts)
 	if err != nil {
 		return err
