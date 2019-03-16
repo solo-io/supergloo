@@ -964,8 +964,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "18afa0fe738d3e6b593e8f16f665eede788fe9b5"
-  version = "v0.10.4"
+  revision = "44cbc55c048270317200eb3eab500bfe585392b8"
+  version = "v0.10.5"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1001,7 +1001,7 @@
   version = "v0.5.0"
 
 [[projects]]
-  digest = "1:f24ab58e66f054c5a53da96ebb9dcd01e6f8d00f5d4eeb6d31ca9cc0fda58368"
+  digest = "1:b1e58acdb904fb6c8549d75aa28734f211adbc12999ef6df3705a58f2beb82e2"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1050,8 +1050,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "f4442c2c129dcdce46edf8f8821d9b330f8a167d"
-  version = "v0.3.4"
+  revision = "5814931156d118e53f46f2a67bf7ee2893321b94"
+  version = "v0.3.5"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -1892,6 +1892,7 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
+    "github.com/google/go-github/github",
     "github.com/hashicorp/go-multierror",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
