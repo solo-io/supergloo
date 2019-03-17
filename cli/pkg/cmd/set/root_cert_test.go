@@ -17,7 +17,10 @@ var _ = Describe("RootCert", func() {
 	secret := core.Metadata{Namespace: "my", Name: "secret"}
 	BeforeEach(func() {
 		helpers.UseMemoryClients()
-		helpers.MustMeshClient().Write(&v1.Mesh{Metadata: mesh}, clients.WriteOpts{})
+		helpers.MustMeshClient().Write(&v1.Mesh{
+			Metadata: mesh,
+			MeshType: &v1.Mesh_Istio_{Istio: &v1.Mesh_Istio{}},
+		}, clients.WriteOpts{})
 		helpers.MustTlsSecretClient().Write(&v1.TlsSecret{Metadata: secret}, clients.WriteOpts{})
 	})
 
@@ -30,6 +33,17 @@ var _ = Describe("RootCert", func() {
 		Expect(meshWithCert.MtlsConfig).NotTo(BeNil())
 		Expect(meshWithCert.MtlsConfig.MtlsEnabled).To(BeTrue())
 		Expect(meshWithCert.MtlsConfig.RootCertificate).NotTo(BeNil())
-		Expect(*meshWithCert.MtlsConfig.RootCertificate).To(Equal(secret))
+		Expect(*meshWithCert.MtlsConfig.RootCertificate).To(Equal(secret.Ref()))
+	})
+
+	It("sets the root cert to nil on an existing mesh if no tls secret provided", func() {
+		err := utils.Supergloo(fmt.Sprintf("set rootcert --target-mesh "+
+			"%v.%v", mesh.Namespace, mesh.Name))
+		Expect(err).NotTo(HaveOccurred())
+		meshWithCert, err := helpers.MustMeshClient().Read(mesh.Namespace, mesh.Name, clients.ReadOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(meshWithCert.MtlsConfig).NotTo(BeNil())
+		Expect(meshWithCert.MtlsConfig.MtlsEnabled).To(BeFalse()) // persists whatever was in storage
+		Expect(meshWithCert.MtlsConfig.RootCertificate).To(BeNil())
 	})
 })

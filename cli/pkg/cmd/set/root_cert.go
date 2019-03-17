@@ -55,7 +55,7 @@ func setRootCert(opts *options.Options) error {
 	}
 
 	var rootCert *core.ResourceRef
-	if secretRef.Namespace != "" && secretRef.Name != "" {
+	if secretRef.Namespace == "" && secretRef.Name == "" {
 		contextutils.LoggerFrom(opts.Ctx).Warnf("no --tls-secret set, removing root cert if set")
 	} else {
 		_, err := helpers.MustTlsSecretClient().Read(secretRef.Namespace, secretRef.Name, clients.ReadOpts{Ctx: opts.Ctx})
