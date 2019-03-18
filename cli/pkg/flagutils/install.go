@@ -6,7 +6,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/constants"
 
 	"github.com/solo-io/supergloo/cli/pkg/options"
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/supergloo/pkg/install/mesh"
 	"github.com/spf13/pflag"
 )
 
@@ -27,7 +27,7 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 
 	set.StringVar(&in.IstioInstall.IstioVersion,
 		"version",
-		istio.IstioVersion106,
+		mesh.IstioVersion106,
 		fmt.Sprintf("version of istio to install? available: %v", constants.SupportedIstioVersions))
 
 	set.BoolVar(&in.IstioInstall.EnableMtls,

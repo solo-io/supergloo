@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/supergloo/pkg/install/mesh"
 )
 
 var _ = Describe("Metadata", func() {
@@ -39,7 +39,7 @@ var _ = Describe("Metadata", func() {
 			err := SurveyIstioInstall(&in)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(in.InstallationNamespace).To(Equal(namespace))
-			Expect(in.IstioInstall.IstioVersion).To(Equal(istio.IstioVersion105))
+			Expect(in.IstioInstall.IstioVersion).To(Equal(mesh.IstioVersion105))
 			Expect(in.IstioInstall.EnableMtls).To(Equal(true))
 			Expect(in.IstioInstall.EnableAutoInject).To(Equal(true))
 			Expect(in.IstioInstall.InstallGrafana).To(Equal(true))
