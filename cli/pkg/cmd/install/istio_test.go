@@ -138,7 +138,7 @@ var _ = Describe("Install", func() {
 							Namespace: "mesh",
 						},
 						InstallType: &v1.MeshInstall_IstioMesh{
-							IstioMesh: &v1.Istio{
+							IstioMesh: &v1.IstioInstall{
 								IstioVersion:      istio.IstioVersion106,
 								EnableAutoInject:  true,
 								EnableMtls:        true,

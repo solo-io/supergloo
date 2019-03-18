@@ -1,0 +1,39 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+/*
+MeshIngress represent an existing Ingress into a supergloo supported service mesh.
+*/
+message MeshIngress {
+
+    option (core.solo.io.resource).short_name = "mi";
+    option (core.solo.io.resource).plural_name = "meshingresses";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by supergloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // type of Mesh ingress represented by this resource
+    oneof mesh_ingress_type {
+        GlooMeshIngress gloo = 1;
+    }
+
+}
+
+// Mesh ingress object for gloo
+message GlooMeshIngress {
+    // where the istio control plane has been installed
+    string installation_namespace = 1;
+}

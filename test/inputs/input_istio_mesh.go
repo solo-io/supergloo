@@ -11,8 +11,8 @@ func IstioMesh(namespace string, secretRef *core.ResourceRef) *v1.Mesh {
 			Namespace: namespace,
 			Name:      "fancy-istio",
 		},
-		MeshType: &v1.Mesh_Istio_{
-			Istio: &v1.Mesh_Istio{
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
 				InstallationNamespace: "istio-was-installed-herr",
 			},
 		},

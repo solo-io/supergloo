@@ -59,7 +59,7 @@ func installType(in *v1.Install) string {
 		}
 	case *v1.Install_Ingress:
 		switch installType.Ingress.InstallType.(type) {
-		case *v1.IngressInstall_Gloo:
+		case *v1.MeshIngressInstall_Gloo:
 			return "Gloo Ingress"
 		}
 	}
@@ -98,7 +98,7 @@ func installDetails(in *v1.Install) []string {
 		}
 	case *v1.Install_Ingress:
 		switch installType.Ingress.InstallType.(type) {
-		case *v1.IngressInstall_Gloo:
+		case *v1.MeshIngressInstall_Gloo:
 		}
 	}
 	return details

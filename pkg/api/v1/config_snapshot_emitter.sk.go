@@ -45,6 +45,7 @@ func init() {
 type ConfigEmitter interface {
 	Register() error
 	Mesh() MeshClient
+	MeshIngress() MeshIngressClient
 	MeshGroup() MeshGroupClient
 	RoutingRule() RoutingRuleClient
 	SecurityRule() SecurityRuleClient
@@ -54,13 +55,14 @@ type ConfigEmitter interface {
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient core_kubernetes_io.PodClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:         meshClient,
+		meshIngress:  meshIngressClient,
 		meshGroup:    meshGroupClient,
 		routingRule:  routingRuleClient,
 		securityRule: securityRuleClient,
@@ -74,6 +76,7 @@ func NewConfigEmitterWithEmit(meshClient MeshClient, meshGroupClient MeshGroupCl
 type configEmitter struct {
 	forceEmit    <-chan struct{}
 	mesh         MeshClient
+	meshIngress  MeshIngressClient
 	meshGroup    MeshGroupClient
 	routingRule  RoutingRuleClient
 	securityRule SecurityRuleClient
@@ -84,6 +87,9 @@ type configEmitter struct {
 
 func (c *configEmitter) Register() error {
 	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.meshIngress.Register(); err != nil {
 		return err
 	}
 	if err := c.meshGroup.Register(); err != nil {
@@ -109,6 +115,10 @@ func (c *configEmitter) Register() error {
 
 func (c *configEmitter) Mesh() MeshClient {
 	return c.mesh
+}
+
+func (c *configEmitter) MeshIngress() MeshIngressClient {
+	return c.meshIngress
 }
 
 func (c *configEmitter) MeshGroup() MeshGroupClient {
@@ -157,6 +167,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
+	/* Create channel for MeshIngress */
+	type meshIngressListWithNamespace struct {
+		list      MeshIngressList
+		namespace string
+	}
+	meshIngressChan := make(chan meshIngressListWithNamespace)
 	/* Create channel for MeshGroup */
 	type meshGroupListWithNamespace struct {
 		list      MeshGroupList
@@ -205,6 +221,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
+		}(namespace)
+		/* Setup namespaced watch for MeshIngress */
+		meshIngressNamespacesChan, meshIngressErrs, err := c.meshIngress.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting MeshIngress watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshIngressErrs, namespace+"-meshingresses")
 		}(namespace)
 		/* Setup namespaced watch for MeshGroup */
 		meshGroupNamespacesChan, meshGroupErrs, err := c.meshGroup.Watch(namespace, opts)
@@ -285,6 +312,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
 					}
+				case meshIngressList := <-meshIngressNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshIngressChan <- meshIngressListWithNamespace{list: meshIngressList, namespace: namespace}:
+					}
 				case meshGroupList := <-meshGroupNamespacesChan:
 					select {
 					case <-ctx.Done():
@@ -363,6 +396,13 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 				meshList := meshNamespacedList.list
 
 				currentSnapshot.Meshes[namespace] = meshList
+			case meshIngressNamespacedList := <-meshIngressChan:
+				record()
+
+				namespace := meshIngressNamespacedList.namespace
+				meshIngressList := meshIngressNamespacedList.list
+
+				currentSnapshot.Meshingresses[namespace] = meshIngressList
 			case meshGroupNamespacedList := <-meshGroupChan:
 				record()
 

@@ -55,6 +55,14 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := meshIngress.Register(); err != nil {
+		return nil, err
+	}
+
 	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
@@ -107,7 +115,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	return newClientset(
 		kubeClient,
-		newInputClients(install, mesh, meshGroup, upstream, routingRule, securityRule, tlsSecret),
+		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -223,6 +231,7 @@ func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCac
 type inputClients struct {
 	Install      v1.InstallClient
 	Mesh         v1.MeshClient
+	MeshIngress  v1.MeshIngressClient
 	MeshGroup    v1.MeshGroupClient
 	Upstream     gloov1.UpstreamClient
 	RoutingRule  v1.RoutingRuleClient
@@ -230,8 +239,10 @@ type inputClients struct {
 	TlsSecret    v1.TlsSecretClient
 }
 
-func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup v1.MeshGroupClient, upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
-	return &inputClients{Install: install, Mesh: mesh, MeshGroup: meshGroup, Upstream: upstream, RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
+func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
+	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	return &inputClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
+		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
 }
 
 type discoveryClients struct {
