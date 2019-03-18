@@ -1,4 +1,4 @@
-package mesh
+package istio
 
 const (
 	IstioVersion103      = "1.0.3"

@@ -3,6 +3,8 @@ package mesh
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -31,7 +33,7 @@ var _ = Describe("Installer", func() {
 
 		istioConfig := &v1.MeshInstall_IstioMesh{
 			IstioMesh: &v1.IstioInstall{
-				IstioVersion: IstioVersion106,
+				IstioVersion: istio.IstioVersion106,
 			},
 		}
 		installConfig := &v1.Install_Mesh{
@@ -92,7 +94,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   IstioVersion106,
+					IstioVersion:   istio.IstioVersion106,
 					CustomRootCert: &core.ResourceRef{"foo", "bar"},
 				},
 			}
@@ -120,7 +122,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion: IstioVersion106,
+					IstioVersion: istio.IstioVersion106,
 				},
 			}
 			installConfig := &v1.Install_Mesh{

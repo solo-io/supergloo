@@ -1,4 +1,4 @@
-package meshingress
+package gloo
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func (o installOptions) NamespaceOverride() string {
 	return "gloo-system"
 }
 
-func newInstallOptions(previousInstall helm.Manifests, installer helm.Installer, namespace string, version string) *installOptions {
+func NewInstallOptions(previousInstall helm.Manifests, installer helm.Installer, namespace string, version string) *installOptions {
 	uri := glooManifestUrl(version)
 	return &installOptions{previousInstall: previousInstall, installer: installer, namespace: namespace, version: version, uri: uri}
 }

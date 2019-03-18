@@ -1,5 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Futher work on installing gloo via supergloo
-    issueLink: https://github.com/solo-io/supergloo/issues/225
-

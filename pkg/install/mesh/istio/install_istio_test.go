@@ -1,4 +1,4 @@
-package mesh
+package istio
 
 import (
 	"context"
@@ -18,11 +18,11 @@ var _ = Describe("installOrUpdateIstio", func() {
 			opts: installOptions{
 				namespace: "test",
 				version:   IstioVersion103,
-				Mtls: mtlsInstallOptions{
+				Mtls: MtlsInstallOptions{
 					Enabled:        true,
 					SelfSignedCert: true,
 				},
-				Observability: observabilityInstallOptions{
+				Observability: ObservabilityInstallOptions{
 					EnableGrafana:    false,
 					EnableJaeger:     true,
 					EnablePrometheus: false,

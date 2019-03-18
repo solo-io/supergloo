@@ -3,6 +3,8 @@ package meshingress
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/meshingress/gloo"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/go-utils/errors"
@@ -59,7 +61,7 @@ func (installer *DefaultInstaller) EnsureIngressInstall(ctx context.Context, ins
 		return nil, nil
 	}
 
-	opts := newInstallOptions(previousInstall, installer.HelmInstaller, installNamespace, "0.11.1")
+	opts := gloo.NewInstallOptions(previousInstall, installer.HelmInstaller, installNamespace, "0.11.1")
 
 	logger.Infof("installing gloo-ingress with options: %#v", opts)
 

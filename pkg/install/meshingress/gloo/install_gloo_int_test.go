@@ -1,4 +1,4 @@
-package meshingress_test
+package gloo_test
 
 import (
 	"context"

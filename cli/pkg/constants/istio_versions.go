@@ -1,11 +1,11 @@
 package constants
 
 import (
-	"github.com/solo-io/supergloo/pkg/install/mesh"
+	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
 )
 
 var SupportedIstioVersions = []string{
-	mesh.IstioVersion103,
-	mesh.IstioVersion105,
-	mesh.IstioVersion106,
+	istio.IstioVersion103,
+	istio.IstioVersion105,
+	istio.IstioVersion106,
 }

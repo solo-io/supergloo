@@ -1,4 +1,4 @@
-package mesh
+package istio
 
 import (
 	"github.com/pkg/errors"
@@ -32,15 +32,15 @@ type installOptions struct {
 
 	version       string
 	namespace     string
-	AutoInject    autoInjectInstallOptions
-	Mtls          mtlsInstallOptions
-	Observability observabilityInstallOptions
-	Gateway       gatewayInstallOptions
+	AutoInject    AutoInjectInstallOptions
+	Mtls          MtlsInstallOptions
+	Observability ObservabilityInstallOptions
+	Gateway       GatewayInstallOptions
 }
 
-func newInstallOptions(previousInstall helm.Manifests, installer helm.Installer, version string, namespace string,
-	autoInject autoInjectInstallOptions, mtls mtlsInstallOptions, observability observabilityInstallOptions,
-	gateway gatewayInstallOptions) *installOptions {
+func NewInstallOptions(previousInstall helm.Manifests, installer helm.Installer, version string, namespace string,
+	autoInject AutoInjectInstallOptions, mtls MtlsInstallOptions, observability ObservabilityInstallOptions,
+	gateway GatewayInstallOptions) *installOptions {
 	return &installOptions{previousInstall: previousInstall, installer: installer, version: version,
 		namespace: namespace, AutoInject: autoInject, Mtls: mtls, Observability: observability, Gateway: gateway}
 }
@@ -99,23 +99,23 @@ func (o installOptions) validate() error {
 	return nil
 }
 
-type autoInjectInstallOptions struct {
+type AutoInjectInstallOptions struct {
 	Enabled bool
 }
 
-type mtlsInstallOptions struct {
+type MtlsInstallOptions struct {
 	Enabled        bool
 	SelfSignedCert bool
 }
 
-type observabilityInstallOptions struct {
+type ObservabilityInstallOptions struct {
 	EnableGrafana      bool
 	EnablePrometheus   bool
 	EnableJaeger       bool
 	EnableServiceGraph bool
 }
 
-type gatewayInstallOptions struct {
+type GatewayInstallOptions struct {
 	EnableIngress bool
 	EnableEgress  bool
 }

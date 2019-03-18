@@ -3,6 +3,8 @@ package mesh
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 
@@ -29,7 +31,7 @@ func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 		return nil, nil
 	}
 
-	istio, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	istioMesh, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
@@ -58,29 +60,29 @@ func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 		return nil, nil
 	}
 
-	version := istio.IstioMesh.IstioVersion
-	autoInjectOptions := autoInjectInstallOptions{
-		Enabled: istio.IstioMesh.EnableAutoInject,
+	version := istioMesh.IstioMesh.IstioVersion
+	autoInjectOptions := istio.AutoInjectInstallOptions{
+		Enabled: istioMesh.IstioMesh.EnableAutoInject,
 	}
-	mtlsOptions := mtlsInstallOptions{
-		Enabled: istio.IstioMesh.EnableMtls,
+	mtlsOptions := istio.MtlsInstallOptions{
+		Enabled: istioMesh.IstioMesh.EnableMtls,
 		// self signed cert is true if using the buildtin istio cert
-		SelfSignedCert: istio.IstioMesh.CustomRootCert == nil,
+		SelfSignedCert: istioMesh.IstioMesh.CustomRootCert == nil,
 	}
-	observabilityOptions := observabilityInstallOptions{
-		EnableGrafana:    istio.IstioMesh.InstallGrafana,
-		EnablePrometheus: istio.IstioMesh.InstallPrometheus,
-		EnableJaeger:     istio.IstioMesh.InstallJaeger,
+	observabilityOptions := istio.ObservabilityInstallOptions{
+		EnableGrafana:    istioMesh.IstioMesh.InstallGrafana,
+		EnablePrometheus: istioMesh.IstioMesh.InstallPrometheus,
+		EnableJaeger:     istioMesh.IstioMesh.InstallJaeger,
 	}
 
-	opts := newInstallOptions(previousInstall,
+	opts := istio.NewInstallOptions(previousInstall,
 		installer.HelmInstaller,
 		version,
 		installNamespace,
 		autoInjectOptions,
 		mtlsOptions,
 		observabilityOptions,
-		gatewayInstallOptions{},
+		istio.GatewayInstallOptions{},
 	)
 
 	logger.Infof("installing istio with options: %#v", opts)
@@ -106,7 +108,7 @@ func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{
-			MtlsEnabled: istio.IstioMesh.EnableMtls,
+			MtlsEnabled: istioMesh.IstioMesh.EnableMtls,
 		},
 	}
 

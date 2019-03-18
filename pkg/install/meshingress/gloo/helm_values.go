@@ -1,4 +1,4 @@
-package meshingress
+package gloo
 
 const helmValues = `
 discovery:
