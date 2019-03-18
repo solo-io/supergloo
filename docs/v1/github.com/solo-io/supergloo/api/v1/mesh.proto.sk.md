@@ -12,7 +12,7 @@ weight: 5
 
 
 - [Mesh](#Mesh) **Top-Level Resource**
-- [Istio](#Istio)
+- [IstioMesh](#IstioMesh)
 - [MtlsConfig](#MtlsConfig)
 - [MeshGroup](#MeshGroup) **Top-Level Resource**
   
@@ -28,12 +28,13 @@ weight: 5
 ---
 ### <a name="Mesh">Mesh</a>
 
-
+ 
+Meshes represent a currently registered service mesh.
 
 ```yaml
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
-"istio": .supergloo.solo.io.Mesh.Istio
+"istio": .supergloo.solo.io.IstioMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 
 ```
@@ -42,16 +43,17 @@ weight: 5
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `istio` | [.supergloo.solo.io.Mesh.Istio](../mesh.proto.sk#Istio) |  |  |
+| `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#IstioMesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#MtlsConfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 
 
 
 
 ---
-### <a name="Istio">Istio</a>
+### <a name="IstioMesh">IstioMesh</a>
 
-
+ 
+Mesh object representing istio
 
 ```yaml
 "installationNamespace": string

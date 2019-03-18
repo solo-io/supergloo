@@ -55,19 +55,19 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := meshGroup.Register(); err != nil {
-		return nil, err
-	}
-
 	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
 	if err := meshIngress.Register(); err != nil {
+		return nil, err
+	}
+
+	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := meshGroup.Register(); err != nil {
 		return nil, err
 	}
 
@@ -115,7 +115,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	return newClientset(
 		kubeClient,
-		newInputClients(install, mesh, meshGroup, meshIngress, upstream, routingRule, securityRule, tlsSecret),
+		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -239,8 +239,10 @@ type inputClients struct {
 	TlsSecret    v1.TlsSecretClient
 }
 
-func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup v1.MeshGroupClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
-	return &inputClients{Install: install, Mesh: mesh, MeshGroup: meshGroup, MeshIngress: meshIngress, Upstream: upstream, RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
+func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
+	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	return &inputClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
+		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
 }
 
 type discoveryClients struct {

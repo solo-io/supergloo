@@ -25,6 +25,7 @@ API Version: `supergloo.solo.io.v1`
 - [KubeService](../github.com/solo-io/gloo/projects/ingress/api/v1/service.proto.sk#KubeService)
 - [Mesh](../github.com/solo-io/supergloo/api/v1/mesh.proto.sk#Mesh)
 - [MeshGroup](../github.com/solo-io/supergloo/api/v1/mesh.proto.sk#MeshGroup)
+- [MeshIngress](../github.com/solo-io/supergloo/api/v1/ingress.proto.sk#MeshIngress)
 - [MeshPolicy](../github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto.sk#MeshPolicy)
 - [Pod](../github.com/solo-io/supergloo/api/external/kubernetes/core/v1/kube_types.proto.sk#Pod)
 - [Policy](../github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto.sk#Policy)

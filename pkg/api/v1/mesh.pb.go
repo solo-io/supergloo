@@ -26,7 +26,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 //
-//Meshes represent a currently existing service mesh.
+//Meshes represent a currently registered service mesh.
 type Mesh struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation

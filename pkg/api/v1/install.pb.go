@@ -466,11 +466,6 @@ type MeshIngressInstall struct {
 	// Types that are valid to be assigned to InstallType:
 	//	*MeshIngressInstall_Gloo
 	InstallType isMeshIngressInstall_InstallType `protobuf_oneof:"install_type"`
-	//    // reference to the Mesh crd which this ingress is pointing
-	//    // read-only. if specified, this ingress will share policy, routing,
-	//    // and mtls configuration with the target mesh. this is required to
-	//    // connect to mtls-secured services via the ingress
-	//    core.solo.io.ResourceRef ingress_mesh = 2;
 	// reference to the Ingress crd that was created from this install
 	// read-only, set by the server after successful installation.
 	InstalledIngress     *core.ResourceRef `protobuf:"bytes,3,opt,name=installed_ingress,json=installedIngress,proto3" json:"installed_ingress,omitempty"`

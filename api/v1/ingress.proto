@@ -11,7 +11,13 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 
 /*
+<<<<<<< HEAD
 MeshIngress represent an existing Ingress into a supergloo supported service mesh.
+=======
+MeshIngress represents a managed ingress (edge router) which can proxy connections
+for services in Mesh managed by SuperGloo. SuperGloo will perform additional configuration,
+if necessary, to enable proxying services which are using mTLS for communication.
+>>>>>>> 335e940b49fb0df272debdfa7156e1b694dcba84
 */
 message MeshIngress {
 
@@ -29,11 +35,12 @@ message MeshIngress {
     oneof mesh_ingress_type {
         GlooMeshIngress gloo = 1;
     }
-
+    // reference to the Mesh that this ingress is acting upon
+    core.solo.io.ResourceRef mesh = 2;
 }
 
 // Mesh ingress object for gloo
 message GlooMeshIngress {
-    // where the istio control plane has been installed
+    // where Gloo has been installed
     string installation_namespace = 1;
 }

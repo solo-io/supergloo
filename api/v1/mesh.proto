@@ -13,7 +13,7 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 
 /*
-Meshes represent a currently existing service mesh.
+Meshes represent a currently registered service mesh.
 */
 message Mesh {
 
