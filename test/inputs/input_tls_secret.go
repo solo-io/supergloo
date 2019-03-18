@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	rootCert = `-----BEGIN CERTIFICATE-----
+	RootCert = `-----BEGIN CERTIFICATE-----
 MIID7TCCAtWgAwIBAgIJAOIRDhOcxsx6MA0GCSqGSIb3DQEBCwUAMIGLMQswCQYD
 VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTESMBAGA1UEBwwJU3Vubnl2YWxl
 MQ4wDAYDVQQKDAVJc3RpbzENMAsGA1UECwwEVGVzdDEQMA4GA1UEAwwHUm9vdCBD
@@ -31,7 +31,7 @@ xAJz+w8tjrDWcf826VN14IL+/Cmqlg/rIfB5CHdwVIfWwpuGB66q/UiPegZMNs8a
 3g==
 -----END CERTIFICATE-----
 `
-	caCert = `-----BEGIN CERTIFICATE-----
+	CaCert = `-----BEGIN CERTIFICATE-----
 MIIDnzCCAoegAwIBAgIJAON1ifrBZ2/BMA0GCSqGSIb3DQEBCwUAMIGLMQswCQYD
 VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTESMBAGA1UEBwwJU3Vubnl2YWxl
 MQ4wDAYDVQQKDAVJc3RpbzENMAsGA1UECwwEVGVzdDEQMA4GA1UEAwwHUm9vdCBD
@@ -54,7 +54,7 @@ Z6HNH6gInkSSMtvC4Ptejb749PTaePRPF7ID//eq/3AH8UK50F3TQcLjEqWUsJUn
 aFKltOc+RAjzDklcUPeG4Y6eMA==
 -----END CERTIFICATE-----
 `
-	certChain = `-----BEGIN CERTIFICATE-----
+	CertChain = `-----BEGIN CERTIFICATE-----
 MIIDnzCCAoegAwIBAgIJAON1ifrBZ2/BMA0GCSqGSIb3DQEBCwUAMIGLMQswCQYD
 VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTESMBAGA1UEBwwJU3Vubnl2YWxl
 MQ4wDAYDVQQKDAVJc3RpbzENMAsGA1UECwwEVGVzdDEQMA4GA1UEAwwHUm9vdCBD
@@ -77,7 +77,7 @@ Z6HNH6gInkSSMtvC4Ptejb749PTaePRPF7ID//eq/3AH8UK50F3TQcLjEqWUsJUn
 aFKltOc+RAjzDklcUPeG4Y6eMA==
 -----END CERTIFICATE-----
 `
-	caKey = `-----BEGIN RSA PRIVATE KEY-----
+	CaKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyzCxr/xu0zy5rVBiso9ffgl00bRKvB/HF4AX9/ytmZ6Hqsy1
 3XIQk8/u/By9iCvVwXIMvyT0CbiJq/aPEj5mJUy0lzbrUs13oneXqrPXf7ir3Hzd
 Rw+SBhXlsh9zAPZJXcF93DJU3GabPKwBvGJ0IVMJPIFCuDIPwW4kFAI7R/8A5LSd
@@ -113,9 +113,9 @@ func InputTlsSecret(name, namespace string) *v1.TlsSecret {
 			Name:      name,
 			Namespace: namespace,
 		},
-		RootCert:  rootCert,
-		CaCert:    caCert,
-		CertChain: certChain,
-		CaKey:     caKey,
+		RootCert:  RootCert,
+		CaCert:    CaCert,
+		CertChain: CertChain,
+		CaKey:     CaKey,
 	}
 }
