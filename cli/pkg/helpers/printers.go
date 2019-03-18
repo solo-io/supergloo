@@ -177,7 +177,7 @@ func tablePrintMeshes(list v1.MeshList, w io.Writer) {
 		name := mesh.GetMetadata().Name
 		meshType := func() string {
 			switch mesh.MeshType.(type) {
-			case *v1.Mesh_Istio_:
+			case *v1.Mesh_Istio:
 				return "Istio"
 			}
 			return "unknown"
