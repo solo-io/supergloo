@@ -38,6 +38,7 @@ var _ = Describe("Setup", func() {
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		errHandler := func(err error) {
+			defer GinkgoRecover()
 			Expect(err).NotTo(HaveOccurred())
 		}
 
@@ -51,7 +52,8 @@ var _ = Describe("Setup", func() {
 
 		// create an install crd, ensure our sync gets called
 		install := &v1.Install{
-			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
+			Metadata:    core.Metadata{Name: "myinstall", Namespace: namespace},
+			InstallType: &v1.Install_Mesh{},
 		}
 		_, err = cs.Input.Install.Write(install, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

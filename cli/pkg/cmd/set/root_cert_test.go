@@ -19,7 +19,7 @@ var _ = Describe("RootCert", func() {
 		helpers.UseMemoryClients()
 		helpers.MustMeshClient().Write(&v1.Mesh{
 			Metadata: mesh,
-			MeshType: &v1.Mesh_Istio_{Istio: &v1.Mesh_Istio{}},
+			MeshType: &v1.Mesh_Istio{Istio: &v1.IstioMesh{}},
 		}, clients.WriteOpts{})
 		helpers.MustTlsSecretClient().Write(&v1.TlsSecret{Metadata: secret}, clients.WriteOpts{})
 	})
