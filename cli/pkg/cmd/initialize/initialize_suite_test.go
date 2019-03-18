@@ -27,5 +27,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
+	defer lock.ReleaseLock()
+	testutils.TeardownSuperGloo(testutils.MustKubeClient())
+	testutils.WaitForNamespaceTeardown("supergloo-system")
 })
