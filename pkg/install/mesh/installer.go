@@ -1,4 +1,4 @@
-package istio
+package mesh
 
 import (
 	"context"
@@ -13,26 +13,26 @@ import (
 )
 
 type Installer interface {
-	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
+	EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
 }
 
-type defaultIstioInstaller struct {
-	helmInstaller helm.Installer
+type DefaultInstaller struct {
+	HelmInstaller helm.Installer
 }
 
-func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+	ctx = contextutils.WithLogger(ctx, "istio-installer")
+	logger := contextutils.LoggerFrom(ctx)
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
-		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
+		logger.Debugf("non mesh install detected in mesh install, %v", install.Metadata.Ref())
+		return nil, nil
 	}
 
 	istio, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
-
-	ctx = contextutils.WithLogger(ctx, "istio-installer")
-	logger := contextutils.LoggerFrom(ctx)
 
 	var previousInstall helm.Manifests
 	if install.InstalledManifest != "" {
@@ -49,7 +49,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	if install.Disabled {
 		if len(previousInstall) > 0 {
 			logger.Infof("deleting previous istio install")
-			if err := i.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
+			if err := installer.HelmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
 				return nil, errors.Wrapf(err, "uninstalling istio")
 			}
 			install.InstalledManifest = ""
@@ -58,27 +58,34 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return nil, nil
 	}
 
-	opts := installOptions{
-		previousInstall: previousInstall,
-		Version:         istio.IstioMesh.IstioVersion,
-		Namespace:       installNamespace,
-		AutoInject: autoInjectInstallOptions{
-			Enabled: istio.IstioMesh.EnableAutoInject,
-		},
-		Mtls: mtlsInstallOptions{
-			Enabled: istio.IstioMesh.EnableMtls,
-			// self signed cert is true if using the buildtin istio cert
-			SelfSignedCert: istio.IstioMesh.CustomRootCert == nil,
-		},
-		Observability: observabilityInstallOptions{
-			EnableGrafana:    istio.IstioMesh.InstallGrafana,
-			EnablePrometheus: istio.IstioMesh.InstallPrometheus,
-			EnableJaeger:     istio.IstioMesh.InstallJaeger,
-		},
+	version := istio.IstioMesh.IstioVersion
+	autoInjectOptions := autoInjectInstallOptions{
+		Enabled: istio.IstioMesh.EnableAutoInject,
 	}
+	mtlsOptions := mtlsInstallOptions{
+		Enabled: istio.IstioMesh.EnableMtls,
+		// self signed cert is true if using the buildtin istio cert
+		SelfSignedCert: istio.IstioMesh.CustomRootCert == nil,
+	}
+	observabilityOptions := observabilityInstallOptions{
+		EnableGrafana:    istio.IstioMesh.InstallGrafana,
+		EnablePrometheus: istio.IstioMesh.InstallPrometheus,
+		EnableJaeger:     istio.IstioMesh.InstallJaeger,
+	}
+
+	opts := newInstallOptions(previousInstall,
+		installer.HelmInstaller,
+		version,
+		installNamespace,
+		autoInjectOptions,
+		mtlsOptions,
+		observabilityOptions,
+		gatewayInstallOptions{},
+	)
+
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := i.installOrUpdateIstio(ctx, opts)
+	manifests, err := helm.InstallOrUpdate(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}
@@ -93,8 +100,8 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 			Namespace: install.Metadata.Namespace,
 			Name:      install.Metadata.Name,
 		},
-		MeshType: &v1.Mesh_Istio_{
-			Istio: &v1.Mesh_Istio{
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNamespace,
 			},
 		},

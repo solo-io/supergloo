@@ -1,4 +1,4 @@
-package istio
+package syncer_test
 
 import (
 	"testing"
@@ -7,10 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var T *testing.T
-
-func TestIstio(t *testing.T) {
+func TestSyncer(t *testing.T) {
 	RegisterFailHandler(Fail)
-	T = t
-	RunSpecs(t, "Istio Suite")
+	RunSpecs(t, "Syncer Suite")
 }

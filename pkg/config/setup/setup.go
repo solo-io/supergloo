@@ -76,19 +76,20 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		v1alpha3.NewVirtualServiceReconciler(istioClients.VirtualService),
 	)
 
-	reporter := reporter.NewReporter("istio-config-reporter",
+	newReporter := reporter.NewReporter("istio-config-reporter",
 		cs.Input.Mesh.BaseClient(),
 		cs.Input.Upstream.BaseClient(),
 		cs.Input.RoutingRule.BaseClient(),
 		cs.Input.SecurityRule.BaseClient())
 
-	return istio.NewIstioConfigSyncer(translator, reconcilers, reporter), nil
+	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
 }
 
 // start the istio config event loop
 func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncer) error {
 	configEmitter := v1.NewConfigEmitter(
 		clientset.Input.Mesh,
+		clientset.Input.MeshIngress,
 		clientset.Input.MeshGroup,
 		clientset.Input.RoutingRule,
 		clientset.Input.SecurityRule,

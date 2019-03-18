@@ -63,6 +63,14 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := meshIngress.Register(); err != nil {
+		return nil, err
+	}
+
 	upstream, err := gloov1.NewUpstreamClient(clientForCrd(gloov1.UpstreamCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
@@ -107,7 +115,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	return newClientset(
 		kubeClient,
-		newInputClients(install, mesh, meshGroup, upstream, routingRule, securityRule, tlsSecret),
+		newInputClients(install, mesh, meshGroup, meshIngress, upstream, routingRule, securityRule, tlsSecret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -224,14 +232,15 @@ type inputClients struct {
 	Install      v1.InstallClient
 	Mesh         v1.MeshClient
 	MeshGroup    v1.MeshGroupClient
+	MeshIngress  v1.MeshIngressClient
 	Upstream     gloov1.UpstreamClient
 	RoutingRule  v1.RoutingRuleClient
 	SecurityRule v1.SecurityRuleClient
 	TlsSecret    v1.TlsSecretClient
 }
 
-func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup v1.MeshGroupClient, upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
-	return &inputClients{Install: install, Mesh: mesh, MeshGroup: meshGroup, Upstream: upstream, RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
+func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup v1.MeshGroupClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	return &inputClients{Install: install, Mesh: mesh, MeshGroup: meshGroup, MeshIngress: meshIngress, Upstream: upstream, RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
 }
 
 type discoveryClients struct {

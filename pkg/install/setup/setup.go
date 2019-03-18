@@ -4,13 +4,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/install/syncer"
+
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	istioinstall "github.com/solo-io/supergloo/pkg/install/istio"
 )
 
 func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
@@ -39,9 +40,11 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 // Add install syncers here
 func createInstallSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.InstallSyncers {
 	return v1.InstallSyncers{
-		istioinstall.NewInstallSyncer(
+		syncer.NewInstallSyncer(
+			nil,
 			nil,
 			clientset.Input.Mesh,
+			clientset.Input.MeshIngress,
 			reporter.NewReporter("istio-install-reporter", clientset.Input.Install.BaseClient()),
 		),
 	}
