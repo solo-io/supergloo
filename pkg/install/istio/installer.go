@@ -13,14 +13,14 @@ import (
 )
 
 type Installer interface {
-	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
+	EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
 }
 
 type defaultIstioInstaller struct {
 	helmInstaller helm.Installer
 }
 
-func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
@@ -58,6 +58,22 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return nil, nil
 	}
 
+	var mesh *v1.Mesh
+	if installMesh.Mesh.InstalledMesh != nil {
+		var err error
+		mesh, err = meshes.Find(installMesh.Mesh.InstalledMesh.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "installed mesh not found")
+		}
+	}
+
+	// self-signed cert is true if a rootcert is not set on either the install or the mesh
+	// mesh takes precedence because it may be updated by the user
+	selfSignedCert := istio.IstioMesh.CustomRootCert == nil
+	if mesh != nil && mesh.MtlsConfig != nil {
+		selfSignedCert = mesh.MtlsConfig.RootCertificate == nil
+	}
+
 	opts := installOptions{
 		previousInstall: previousInstall,
 		Version:         istio.IstioMesh.IstioVersion,
@@ -68,7 +84,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		Mtls: mtlsInstallOptions{
 			Enabled: istio.IstioMesh.EnableMtls,
 			// self signed cert is true if using the buildtin istio cert
-			SelfSignedCert: istio.IstioMesh.CustomRootCert == nil,
+			SelfSignedCert: selfSignedCert,
 		},
 		Observability: observabilityInstallOptions{
 			EnableGrafana:    istio.IstioMesh.InstallGrafana,
@@ -88,19 +104,28 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return nil, errors.Wrapf(err, "converting installed mannifests to gzipped string")
 	}
 
-	mesh := &v1.Mesh{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshType: &v1.Mesh_Istio_{
+	if mesh != nil {
+		mesh.MeshType = &v1.Mesh_Istio_{
 			Istio: &v1.Mesh_Istio{
 				InstallationNamespace: installNamespace,
 			},
-		},
-		MtlsConfig: &v1.MtlsConfig{
-			MtlsEnabled: istio.IstioMesh.EnableMtls,
-		},
+		}
+	} else {
+		mesh = &v1.Mesh{
+			Metadata: core.Metadata{
+				Namespace: install.Metadata.Namespace,
+				Name:      install.Metadata.Name,
+			},
+			MeshType: &v1.Mesh_Istio_{
+				Istio: &v1.Mesh_Istio{
+					InstallationNamespace: installNamespace,
+				},
+			},
+			MtlsConfig: &v1.MtlsConfig{
+				MtlsEnabled:     istio.IstioMesh.EnableMtls,
+				RootCertificate: istio.IstioMesh.CustomRootCert,
+			},
+		}
 	}
 
 	// caller should expect the install to have been modified

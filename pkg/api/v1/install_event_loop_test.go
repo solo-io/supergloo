@@ -31,10 +31,18 @@ var _ = Describe("InstallEventLoop", func() {
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewInstallEmitter(installClient)
+		meshClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		meshClient, err := NewMeshClient(meshClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewInstallEmitter(installClient, meshClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockInstallSyncer{}
 		el := NewInstallEventLoop(emitter, sync)

@@ -42,6 +42,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
+	meshes := snap.Meshes.List()
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
@@ -80,7 +81,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 			}
 			installedMesh := *installMesh.Mesh.InstalledMesh
 			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
+			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in, nil); err != nil {
 				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 			} else {
 				resourceErrs.Accept(in)
@@ -94,7 +95,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 	}
 
-	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledMeshInstalls, resourceErrs)
+	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledMeshInstalls, meshes, resourceErrs)
 
 	if createdMesh != nil {
 		// update resource version if this is an overwrite
@@ -130,13 +131,14 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
+	meshes v1.MeshList,
 	resourceErrs reporter.ResourceErrors) (*v1.Mesh, *v1.Install) {
 
 	switch {
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in)
+		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in, meshes)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
 			return nil, nil
