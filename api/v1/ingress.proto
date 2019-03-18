@@ -36,6 +36,6 @@ message MeshIngress {
 
 // Mesh ingress object for gloo
 message GlooMeshIngress {
-    // where the istio control plane has been installed
+    // where Gloo has been installed
     string installation_namespace = 1;
 }

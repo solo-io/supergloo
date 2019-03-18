@@ -25,7 +25,9 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 //
-//MeshIngress represent an existing Ingress into a supergloo supported service mesh.
+//MeshIngress represents a managed ingress (edge router) which can proxy connections
+//for services in Mesh managed by SuperGloo. SuperGloo will perform additional configuration,
+//if necessary, to enable proxying services which are using mTLS for communication.
 type MeshIngress struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation
@@ -162,7 +164,7 @@ func _MeshIngress_OneofSizer(msg proto.Message) (n int) {
 
 // Mesh ingress object for gloo
 type GlooMeshIngress struct {
-	// where the istio control plane has been installed
+	// where Gloo has been installed
 	InstallationNamespace string   `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
 	XXX_unrecognized      []byte   `json:"-"`
