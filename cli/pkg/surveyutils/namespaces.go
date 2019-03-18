@@ -5,8 +5,10 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 )
 
+const doneOption = "<done>"
+
 func SurveyNamespaces() ([]string, error) {
-	allNs := append([]string{skipSelector}, helpers.MustGetNamespaces()...)
+	allNs := append([]string{doneOption}, helpers.MustGetNamespaces()...)
 	var selected []string
 
 	for {
@@ -16,7 +18,7 @@ func SurveyNamespaces() ([]string, error) {
 		}
 
 		// the user chose done
-		if ns == skipSelector {
+		if ns == doneOption {
 			return selected, nil
 		}
 		selected = append(selected, ns)

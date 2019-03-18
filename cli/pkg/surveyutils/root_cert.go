@@ -3,8 +3,6 @@ package surveyutils
 import (
 	"context"
 
-	"github.com/solo-io/gloo/pkg/cliutil"
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
@@ -30,34 +28,7 @@ func SurveyMesh(prompt string, ctx context.Context) (core.ResourceRef, error) {
 	if err != nil {
 		return core.ResourceRef{}, err
 	}
-
-	byKey := make(map[string]core.ResourceRef)
-	var keys []string
-	for _, resource := range meshes {
-		ref := resource.Metadata.Ref()
-		byKey[ref.Key()] = ref
-		keys = append(keys, ref.Key())
-	}
-
-	if len(keys) == 0 {
-		return core.ResourceRef{}, errors.Errorf("no meshes found. create one first.")
-	}
-
-	var key string
-	if err := cliutil.ChooseFromList(
-		prompt,
-		&key,
-		keys,
-	); err != nil {
-		return core.ResourceRef{}, err
-	}
-
-	ref, ok := byKey[key]
-	if !ok {
-		return core.ResourceRef{}, errors.Errorf("internal error: mesh map missing key %v", key)
-	}
-
-	return ref, nil
+	return surveyResources("meshes", prompt, "", meshes.AsResources())
 }
 
 func SurveyTlsSecret(prompt string, ctx context.Context) (core.ResourceRef, error) {
@@ -66,31 +37,5 @@ func SurveyTlsSecret(prompt string, ctx context.Context) (core.ResourceRef, erro
 		return core.ResourceRef{}, err
 	}
 
-	byKey := make(map[string]core.ResourceRef)
-	var keys []string
-	for _, resource := range tlsSecretes {
-		ref := resource.Metadata.Ref()
-		byKey[ref.Key()] = ref
-		keys = append(keys, ref.Key())
-	}
-
-	if len(keys) == 0 {
-		return core.ResourceRef{}, errors.Errorf("no tlsSecretes found. create one first.")
-	}
-
-	var key string
-	if err := cliutil.ChooseFromList(
-		prompt,
-		&key,
-		keys,
-	); err != nil {
-		return core.ResourceRef{}, err
-	}
-
-	ref, ok := byKey[key]
-	if !ok {
-		return core.ResourceRef{}, errors.Errorf("internal error: tlsSecret map missing key %v", key)
-	}
-
-	return ref, nil
+	return surveyResources("tls secrets", prompt, "<unset custom cert>", tlsSecretes.AsResources())
 }
