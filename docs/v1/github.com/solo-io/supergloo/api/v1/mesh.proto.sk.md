@@ -29,7 +29,7 @@ weight: 5
 ### <a name="Mesh">Mesh</a>
 
  
-Meshes represent a currently existing service mesh.
+Meshes represent a currently registered service mesh.
 
 ```yaml
 "status": .core.solo.io.Status

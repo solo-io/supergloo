@@ -32,6 +32,8 @@ message MeshIngress {
         GlooMeshIngress gloo = 1;
     }
 
+    // reference to the Mesh that this ingress is acting upon
+    core.solo.io.ResourceRef mesh = 2;
 }
 
 // Mesh ingress object for gloo

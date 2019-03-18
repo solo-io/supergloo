@@ -17,6 +17,7 @@ var _ = Describe("ClientsetFromContext", func() {
 		Expect(cs.Input.Upstream).NotTo(BeNil())
 		Expect(cs.Input.Install).NotTo(BeNil())
 		Expect(cs.Input.Mesh).NotTo(BeNil())
+		Expect(cs.Input.MeshIngress).NotTo(BeNil())
 		Expect(cs.Input.MeshGroup).NotTo(BeNil())
 		Expect(cs.Input.SecurityRule).NotTo(BeNil())
 		Expect(cs.Input.TlsSecret).NotTo(BeNil())
