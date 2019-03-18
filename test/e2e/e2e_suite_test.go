@@ -79,11 +79,12 @@ var _ = AfterSuite(func() {
 	if cancel != nil {
 		defer cancel()
 	}
-	kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
+	defer lock.ReleaseLock()
+	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
-	Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
+	testutils.WaitForNamespaceTeardown("supergloo-system")
 	log.Printf("done!")
 })
