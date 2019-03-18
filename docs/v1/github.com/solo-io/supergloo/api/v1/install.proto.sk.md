@@ -12,10 +12,10 @@ weight: 5
 
 
 - [Install](#Install) **Top-Level Resource**
-- [Istio](#Istio)
+- [IstioInstall](#IstioInstall)
 - [MeshInstall](#MeshInstall)
-- [IngressInstall](#IngressInstall)
-- [GlooIngress](#GlooIngress)
+- [MeshIngressInstall](#MeshIngressInstall)
+- [GlooInstall](#GlooInstall)
   
 
 
@@ -42,7 +42,7 @@ modify the corresponding mesh.
 "metadata": .core.solo.io.Metadata
 "disabled": bool
 "mesh": .supergloo.solo.io.MeshInstall
-"ingress": .supergloo.solo.io.IngressInstall
+"ingress": .supergloo.solo.io.MeshIngressInstall
 "installationNamespace": string
 "installedManifest": string
 
@@ -54,7 +54,7 @@ modify the corresponding mesh.
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `disabled` | `bool` | disables this install setting this to true will cause supergloo to not to install this mesh, or uninstall an active install |  |
 | `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | service mesh |  |
-| `ingress` | [.supergloo.solo.io.IngressInstall](../install.proto.sk#IngressInstall) | ingress |  |
+| `ingress` | [.supergloo.solo.io.MeshIngressInstall](../install.proto.sk#MeshIngressInstall) | ingress |  |
 | `installationNamespace` | `string` | which namespace to install to |  |
 | `installedManifest` | `string` | gzipped inline string containing the applied manifest read-only, set by the server after successful installation. TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb) |  |
 
@@ -62,7 +62,7 @@ modify the corresponding mesh.
 
 
 ---
-### <a name="Istio">Istio</a>
+### <a name="IstioInstall">IstioInstall</a>
 
  
 Installation options for Istio
@@ -100,21 +100,21 @@ Generic container for mesh installs handled by supergloo
 Holds all configuration shared between different mesh types
 
 ```yaml
-"istioMesh": .supergloo.solo.io.Istio
+"istioMesh": .supergloo.solo.io.IstioInstall
 "installedMesh": .core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `istioMesh` | [.supergloo.solo.io.Istio](../install.proto.sk#Istio) | install istio |  |
+| `istioMesh` | [.supergloo.solo.io.IstioInstall](../install.proto.sk#IstioInstall) | install istio |  |
 | `installedMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 
 
 ---
-### <a name="IngressInstall">IngressInstall</a>
+### <a name="MeshIngressInstall">MeshIngressInstall</a>
 
  
 Generic container for ingress installs handled by supergloo
@@ -122,23 +122,21 @@ Generic container for ingress installs handled by supergloo
 Holds all configuration shared between different ingress types
 
 ```yaml
-"gloo": .supergloo.solo.io.GlooIngress
-"ingressMesh": .core.solo.io.ResourceRef
+"gloo": .supergloo.solo.io.GlooInstall
 "installedIngress": .core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `gloo` | [.supergloo.solo.io.GlooIngress](../install.proto.sk#GlooIngress) | gloo |  |
-| `ingressMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd which this ingress is pointing read-only. if specified, this ingress will share policy, routing, and mtls configuration with the target mesh. this is required to connect to mtls-secured services via the ingress |  |
+| `gloo` | [.supergloo.solo.io.GlooInstall](../install.proto.sk#GlooInstall) | gloo |  |
 | `installedIngress` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Ingress crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 
 
 ---
-### <a name="GlooIngress">GlooIngress</a>
+### <a name="GlooInstall">GlooInstall</a>
 
  
 Installation options for Gloo Ingress

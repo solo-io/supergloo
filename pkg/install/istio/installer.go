@@ -105,8 +105,8 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	}
 
 	if mesh != nil {
-		mesh.MeshType = &v1.Mesh_Istio_{
-			Istio: &v1.Mesh_Istio{
+		mesh.MeshType = &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNamespace,
 			},
 		}
@@ -116,8 +116,8 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 				Namespace: install.Metadata.Namespace,
 				Name:      install.Metadata.Name,
 			},
-			MeshType: &v1.Mesh_Istio_{
-				Istio: &v1.Mesh_Istio{
+			MeshType: &v1.Mesh_Istio{
+				Istio: &v1.IstioMesh{
 					InstallationNamespace: installNamespace,
 				},
 			},

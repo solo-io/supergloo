@@ -91,7 +91,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	}
 
 	for _, mesh := range meshes {
-		istio, ok := mesh.MeshType.(*v1.Mesh_Istio_)
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			// we only want istio meshes
 			continue

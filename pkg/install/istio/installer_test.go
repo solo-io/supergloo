@@ -30,7 +30,7 @@ var _ = Describe("Installer", func() {
 	It("installs, upgrades, and uninstalls from an install object", func() {
 
 		istioConfig := &v1.MeshInstall_IstioMesh{
-			IstioMesh: &v1.Istio{
+			IstioMesh: &v1.IstioInstall{
 				IstioVersion: IstioVersion106,
 			},
 		}
@@ -96,7 +96,7 @@ var _ = Describe("Installer", func() {
 		It("sets self-signed cert to be false when the input install has a custom root cert defined", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
-				IstioMesh: &v1.Istio{
+				IstioMesh: &v1.IstioInstall{
 					IstioVersion:   IstioVersion106,
 					CustomRootCert: &core.ResourceRef{"foo", "bar"},
 				},
@@ -124,7 +124,7 @@ var _ = Describe("Installer", func() {
 		It("sets self-signed cert to be true when the input install has no custom root cert defined", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
-				IstioMesh: &v1.Istio{
+				IstioMesh: &v1.IstioInstall{
 					IstioVersion: IstioVersion106,
 				},
 			}

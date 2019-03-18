@@ -44,7 +44,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 
 // start the registration event loop
 func runRegistrationEventLoop(ctx context.Context, errHandler func(err error), clientset *clientset.Clientset, syncers v1.RegistrationSyncer) error {
-	registrationEmitter := v1.NewRegistrationEmitter(clientset.Input.Mesh)
+	registrationEmitter := v1.NewRegistrationEmitter(clientset.Input.Mesh, clientset.Input.MeshIngress)
 	registrationEventLoop := v1.NewRegistrationEventLoop(registrationEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

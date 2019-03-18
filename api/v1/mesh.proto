@@ -12,6 +12,9 @@ import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 
+/*
+Meshes represent a currently registered service mesh.
+*/
 message Mesh {
 
     option (core.solo.io.resource).short_name = "m";
@@ -24,13 +27,8 @@ message Mesh {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
-    message Istio {
-        // where the istio control plane has been installed
-        string installation_namespace = 1;
-    }
-
     oneof mesh_type {
-        Istio istio = 1;
+        IstioMesh istio = 1;
     }
 
     // mtls config specifies configuration options for enabling mutual
@@ -38,6 +36,11 @@ message Mesh {
     MtlsConfig mtls_config = 2;
 }
 
+// Mesh object representing istio
+message IstioMesh {
+    // where the istio control plane has been installed
+    string installation_namespace = 1;
+}
 
 // the encryption configuration that will be applied by the role
 message MtlsConfig {
