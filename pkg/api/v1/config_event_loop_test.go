@@ -34,6 +34,12 @@ var _ = Describe("ConfigEventLoop", func() {
 		meshClient, err := NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
+		meshIngressClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		meshIngressClient, err := NewMeshIngressClient(meshIngressClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
 		meshGroupClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -70,10 +76,12 @@ var _ = Describe("ConfigEventLoop", func() {
 		podClient, err := core_kubernetes_io.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewConfigEmitter(meshClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
+		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.MeshIngress().Write(NewMeshIngress(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.MeshGroup().Write(NewMeshGroup(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

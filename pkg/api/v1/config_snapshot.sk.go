@@ -14,6 +14,7 @@ import (
 
 type ConfigSnapshot struct {
 	Meshes        MeshesByNamespace
+	Meshingresses MeshingressesByNamespace
 	Meshgroups    MeshgroupsByNamespace
 	Routingrules  RoutingrulesByNamespace
 	Securityrules SecurityrulesByNamespace
@@ -25,6 +26,7 @@ type ConfigSnapshot struct {
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
 	return ConfigSnapshot{
 		Meshes:        s.Meshes.Clone(),
+		Meshingresses: s.Meshingresses.Clone(),
 		Meshgroups:    s.Meshgroups.Clone(),
 		Routingrules:  s.Routingrules.Clone(),
 		Securityrules: s.Securityrules.Clone(),
@@ -37,6 +39,7 @@ func (s ConfigSnapshot) Clone() ConfigSnapshot {
 func (s ConfigSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashMeshes(),
+		s.hashMeshingresses(),
 		s.hashMeshgroups(),
 		s.hashRoutingrules(),
 		s.hashSecurityrules(),
@@ -48,6 +51,10 @@ func (s ConfigSnapshot) Hash() uint64 {
 
 func (s ConfigSnapshot) hashMeshes() uint64 {
 	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+}
+
+func (s ConfigSnapshot) hashMeshingresses() uint64 {
+	return hashutils.HashAll(s.Meshingresses.List().AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashMeshgroups() uint64 {
@@ -77,6 +84,7 @@ func (s ConfigSnapshot) hashPods() uint64 {
 func (s ConfigSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
+	fields = append(fields, zap.Uint64("meshingresses", s.hashMeshingresses()))
 	fields = append(fields, zap.Uint64("meshgroups", s.hashMeshgroups()))
 	fields = append(fields, zap.Uint64("routingrules", s.hashRoutingrules()))
 	fields = append(fields, zap.Uint64("securityrules", s.hashSecurityrules()))
@@ -90,6 +98,7 @@ func (s ConfigSnapshot) HashFields() []zap.Field {
 type ConfigSnapshotStringer struct {
 	Version       uint64
 	Meshes        []string
+	Meshingresses []string
 	Meshgroups    []string
 	Routingrules  []string
 	Securityrules []string
@@ -103,6 +112,11 @@ func (ss ConfigSnapshotStringer) String() string {
 
 	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
 	for _, name := range ss.Meshes {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
+	s += fmt.Sprintf("  Meshingresses %v\n", len(ss.Meshingresses))
+	for _, name := range ss.Meshingresses {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
@@ -143,6 +157,7 @@ func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
 	return ConfigSnapshotStringer{
 		Version:       s.Hash(),
 		Meshes:        s.Meshes.List().NamespacesDotNames(),
+		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
 		Meshgroups:    s.Meshgroups.List().NamespacesDotNames(),
 		Routingrules:  s.Routingrules.List().NamespacesDotNames(),
 		Securityrules: s.Securityrules.List().NamespacesDotNames(),

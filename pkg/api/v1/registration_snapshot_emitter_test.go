@@ -33,12 +33,13 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1   string
-		namespace2   string
-		name1, name2 = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg          *rest.Config
-		emitter      RegistrationEmitter
-		meshClient   MeshClient
+		namespace1        string
+		namespace2        string
+		name1, name2      = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg               *rest.Config
+		emitter           RegistrationEmitter
+		meshClient        MeshClient
+		meshIngressClient MeshIngressClient
 	)
 
 	BeforeEach(func() {
@@ -59,7 +60,15 @@ var _ = Describe("V1Emitter", func() {
 		}
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewRegistrationEmitter(meshClient)
+		// MeshIngress Constructor
+		meshIngressClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         MeshIngressCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(context.TODO()),
+		}
+		meshIngressClient, err = NewMeshIngressClient(meshIngressClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewRegistrationEmitter(meshClient, meshIngressClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -137,6 +146,66 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
+
+		/*
+			MeshIngress
+		*/
+
+		assertSnapshotMeshingresses := func(expectMeshingresses MeshIngressList, unexpectMeshingresses MeshIngressList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectMeshingresses {
+						if _, err := snap.Meshingresses.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectMeshingresses {
+						if _, err := snap.Meshingresses.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := meshIngressClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := meshIngressClient.List(namespace2, clients.ListOpts{})
+					combined := MeshingressesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		meshIngress1a, err := meshIngressClient.Write(NewMeshIngress(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		meshIngress1b, err := meshIngressClient.Write(NewMeshIngress(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, nil)
+		meshIngress2a, err := meshIngressClient.Write(NewMeshIngress(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		meshIngress2b, err := meshIngressClient.Write(NewMeshIngress(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b}, nil)
+
+		err = meshIngressClient.Delete(meshIngress2a.Metadata.Namespace, meshIngress2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshIngressClient.Delete(meshIngress2b.Metadata.Namespace, meshIngress2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, MeshIngressList{meshIngress2a, meshIngress2b})
+
+		err = meshIngressClient.Delete(meshIngress1a.Metadata.Namespace, meshIngress1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshIngressClient.Delete(meshIngress1b.Metadata.Namespace, meshIngress1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(nil, MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -210,5 +279,65 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
+
+		/*
+			MeshIngress
+		*/
+
+		assertSnapshotMeshingresses := func(expectMeshingresses MeshIngressList, unexpectMeshingresses MeshIngressList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectMeshingresses {
+						if _, err := snap.Meshingresses.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectMeshingresses {
+						if _, err := snap.Meshingresses.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := meshIngressClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := meshIngressClient.List(namespace2, clients.ListOpts{})
+					combined := MeshingressesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		meshIngress1a, err := meshIngressClient.Write(NewMeshIngress(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		meshIngress1b, err := meshIngressClient.Write(NewMeshIngress(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, nil)
+		meshIngress2a, err := meshIngressClient.Write(NewMeshIngress(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		meshIngress2b, err := meshIngressClient.Write(NewMeshIngress(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b}, nil)
+
+		err = meshIngressClient.Delete(meshIngress2a.Metadata.Namespace, meshIngress2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshIngressClient.Delete(meshIngress2b.Metadata.Namespace, meshIngress2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, MeshIngressList{meshIngress2a, meshIngress2b})
+
+		err = meshIngressClient.Delete(meshIngress1a.Metadata.Namespace, meshIngress1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshIngressClient.Delete(meshIngress1b.Metadata.Namespace, meshIngress1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshingresses(nil, MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b})
 	})
 })

@@ -90,6 +90,7 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncer) error {
 	configEmitter := v1.NewConfigEmitter(
 		clientset.Input.Mesh,
+		clientset.Input.MeshIngress,
 		clientset.Input.MeshGroup,
 		clientset.Input.RoutingRule,
 		clientset.Input.SecurityRule,
