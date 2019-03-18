@@ -1,0 +1,43 @@
+syntax = "proto3";
+package supergloo.solo.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+/*
+MeshIngress represents a managed ingress (edge router) which can proxy connections
+for services in Mesh managed by SuperGloo. SuperGloo will perform additional configuration,
+if necessary, to enable proxying services which are using mTLS for communication.
+*/
+message MeshIngress {
+
+    option (core.solo.io.resource).short_name = "mi";
+    option (core.solo.io.resource).plural_name = "meshingresses";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by supergloo during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // type of Mesh ingress represented by this resource
+    oneof mesh_ingress_type {
+        GlooMeshIngress gloo = 1;
+    }
+
+    // reference to the Mesh that this ingress is acting upon
+    core.solo.io.ResourceRef mesh = 2;
+}
+
+// Mesh ingress object for gloo
+message GlooMeshIngress {
+    // where Gloo has been installed
+    string installation_namespace = 1;
+}

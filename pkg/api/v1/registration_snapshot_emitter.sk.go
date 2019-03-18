@@ -42,27 +42,33 @@ func init() {
 type RegistrationEmitter interface {
 	Register() error
 	Mesh() MeshClient
+	MeshIngress() MeshIngressClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *RegistrationSnapshot, <-chan error, error)
 }
 
-func NewRegistrationEmitter(meshClient MeshClient) RegistrationEmitter {
-	return NewRegistrationEmitterWithEmit(meshClient, make(chan struct{}))
+func NewRegistrationEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient) RegistrationEmitter {
+	return NewRegistrationEmitterWithEmit(meshClient, meshIngressClient, make(chan struct{}))
 }
 
-func NewRegistrationEmitterWithEmit(meshClient MeshClient, emit <-chan struct{}) RegistrationEmitter {
+func NewRegistrationEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, emit <-chan struct{}) RegistrationEmitter {
 	return &registrationEmitter{
-		mesh:      meshClient,
-		forceEmit: emit,
+		mesh:        meshClient,
+		meshIngress: meshIngressClient,
+		forceEmit:   emit,
 	}
 }
 
 type registrationEmitter struct {
-	forceEmit <-chan struct{}
-	mesh      MeshClient
+	forceEmit   <-chan struct{}
+	mesh        MeshClient
+	meshIngress MeshIngressClient
 }
 
 func (c *registrationEmitter) Register() error {
 	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.meshIngress.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -70,6 +76,10 @@ func (c *registrationEmitter) Register() error {
 
 func (c *registrationEmitter) Mesh() MeshClient {
 	return c.mesh
+}
+
+func (c *registrationEmitter) MeshIngress() MeshIngressClient {
+	return c.meshIngress
 }
 
 func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *RegistrationSnapshot, <-chan error, error) {
@@ -94,6 +104,12 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
+	/* Create channel for MeshIngress */
+	type meshIngressListWithNamespace struct {
+		list      MeshIngressList
+		namespace string
+	}
+	meshIngressChan := make(chan meshIngressListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -107,6 +123,17 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
 		}(namespace)
+		/* Setup namespaced watch for MeshIngress */
+		meshIngressNamespacesChan, meshIngressErrs, err := c.meshIngress.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting MeshIngress watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshIngressErrs, namespace+"-meshingresses")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -119,6 +146,12 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 					case <-ctx.Done():
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					}
+				case meshIngressList := <-meshIngressNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshIngressChan <- meshIngressListWithNamespace{list: meshIngressList, namespace: namespace}:
 					}
 				}
 			}
@@ -162,6 +195,13 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 				meshList := meshNamespacedList.list
 
 				currentSnapshot.Meshes[namespace] = meshList
+			case meshIngressNamespacedList := <-meshIngressChan:
+				record()
+
+				namespace := meshIngressNamespacedList.namespace
+				meshIngressList := meshIngressNamespacedList.list
+
+				currentSnapshot.Meshingresses[namespace] = meshIngressList
 			}
 		}
 	}()

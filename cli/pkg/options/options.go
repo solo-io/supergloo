@@ -34,7 +34,7 @@ type Init struct {
 type Install struct {
 	Update                bool // if install exists and is enabled, update with new opts
 	InstallationNamespace string
-	IstioInstall          v1.Istio
+	IstioInstall          v1.IstioInstall
 }
 
 type Uninstall struct {
