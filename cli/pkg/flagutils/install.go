@@ -3,11 +3,10 @@ package flagutils
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
-
 	"github.com/solo-io/supergloo/cli/pkg/constants"
 
 	"github.com/solo-io/supergloo/cli/pkg/options"
+	"github.com/solo-io/supergloo/pkg/install/mesh"
 	"github.com/spf13/pflag"
 )
 
@@ -21,14 +20,14 @@ func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 }
 
 func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
-	set.StringVar(&in.InstallationNamespace,
+	set.StringVar(&in.InstallationNamespace.Istio,
 		"installation-namespace",
 		"istio-system",
 		"which namespace to install Istio into?")
 
 	set.StringVar(&in.IstioInstall.IstioVersion,
 		"version",
-		istio.IstioVersion106,
+		mesh.IstioVersion106,
 		fmt.Sprintf("version of istio to install? available: %v", constants.SupportedIstioVersions))
 
 	set.BoolVar(&in.IstioInstall.EnableMtls,
@@ -56,4 +55,17 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		true,
 		"add jaeger to the install?")
 
+}
+
+func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
+
+	set.StringVar(&in.InstallationNamespace.Gloo,
+		"installation-namespace",
+		"gloo-system",
+		"which namespace to install Gloo into?")
+
+	set.StringVar(&in.GlooIngressInstall.GlooVersion,
+		"version",
+		"latest",
+		fmt.Sprintf("version of gloo to install? available: %v", constants.SupportedGlooVersions))
 }

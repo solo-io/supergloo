@@ -152,39 +152,9 @@ func tablePrintTlsSecrets(list v1.TlsSecretList, w io.Writer) {
 	table := tablewriter.NewWriter(w)
 	table.SetHeader([]string{"TlsSecret"})
 
-	for _, tlsSecret := range list {
-		name := tlsSecret.GetMetadata().Name
+	for _, routingRule := range list {
+		name := routingRule.GetMetadata().Name
 		table.Append([]string{name})
-	}
-
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.Render()
-}
-
-func PrintMeshes(list v1.MeshList, outputType string) {
-	cliutils.PrintList(outputType, "", list,
-		func(data interface{}, w io.Writer) error {
-			tablePrintMeshes(data.(v1.MeshList), w)
-			return nil
-		}, os.Stdout)
-}
-
-func tablePrintMeshes(list v1.MeshList, w io.Writer) {
-	table := tablewriter.NewWriter(w)
-	table.SetHeader([]string{"Mesh", "Type", "mTLS"})
-
-	for _, mesh := range list {
-		name := mesh.GetMetadata().Name
-		meshType := func() string {
-			switch mesh.MeshType.(type) {
-			case *v1.Mesh_Istio:
-				return "Istio"
-			}
-			return "unknown"
-		}()
-		mtls := fmt.Sprintf("%v", mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled)
-
-		table.Append([]string{name, meshType, mtls})
 	}
 
 	table.SetAlignment(tablewriter.ALIGN_LEFT)

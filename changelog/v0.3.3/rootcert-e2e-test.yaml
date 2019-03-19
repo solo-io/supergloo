@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Adds e2e test for root cert behavior in Istio

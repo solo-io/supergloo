@@ -1,6 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: |
-      Istio Install now toggles `selfSignedCert` on the installed helm chart
-      based on the configuration of the Installed Mesh CRD
-

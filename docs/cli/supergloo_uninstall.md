@@ -27,10 +27,15 @@ supergloo uninstall [flags]
 
 ```
   -h, --help               help for uninstall
-  -i, --interactive        run in interactive mode
       --name string        name for the resource
       --namespace string   namespace for the resource (default "supergloo-system")
   -o, --output string      output format: (yaml, json, table)
+```
+
+### Options inherited from parent commands
+
+```
+  -i, --interactive   use interactive mode
 ```
 
 ### SEE ALSO

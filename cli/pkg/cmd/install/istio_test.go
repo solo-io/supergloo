@@ -3,14 +3,16 @@ package install_test
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/install/mesh"
+
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -105,9 +107,9 @@ var _ = Describe("Install", func() {
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "istio-system", "1.0.5", false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			istioMesh := inst.InstallType.(*v1.Install_Mesh)
+			meshInstall := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
-			istioMesh.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := helpers.MustInstallClient()
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -138,7 +140,7 @@ var _ = Describe("Install", func() {
 						},
 						InstallType: &v1.MeshInstall_IstioMesh{
 							IstioMesh: &v1.IstioInstall{
-								IstioVersion:      istio.IstioVersion106,
+								IstioVersion:      mesh.IstioVersion106,
 								EnableAutoInject:  true,
 								EnableMtls:        true,
 								InstallGrafana:    true,
@@ -157,6 +159,6 @@ func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_IstioMesh {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
 	Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
-	istio := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
-	return istio
+	istioMesh := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	return istioMesh
 }

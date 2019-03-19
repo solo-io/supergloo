@@ -1,22 +1,17 @@
 package cmd
 
 import (
-	"context"
-
 	"github.com/solo-io/supergloo/cli/pkg/cmd/apply"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/create"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/initialize"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
-	"github.com/solo-io/supergloo/cli/pkg/cmd/set"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/uninstall"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/spf13/cobra"
 )
 
 func SuperglooCli(version string) *cobra.Command {
-	opts := &options.Options{
-		Ctx: context.Background(),
-	}
+	var opts options.Options
 
 	app := &cobra.Command{
 		Use:   "supergloo",
@@ -26,14 +21,16 @@ func SuperglooCli(version string) *cobra.Command {
 		Version: version,
 	}
 
+	pflags := app.PersistentFlags()
+	pflags.BoolVarP(&opts.Interactive, "interactive", "i", false, "use interactive mode")
+
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
-		initialize.Cmd(opts),
-		install.Cmd(opts),
-		uninstall.Cmd(opts),
-		apply.Cmd(opts),
-		create.Cmd(opts),
-		set.Cmd(opts),
+		initialize.Cmd(&opts),
+		install.Cmd(&opts),
+		uninstall.Cmd(&opts),
+		apply.Cmd(&opts),
+		create.Cmd(&opts),
 	)
 
 	return app

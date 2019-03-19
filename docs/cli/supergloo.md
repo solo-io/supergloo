@@ -14,7 +14,8 @@ supergloo configures resources watched by the Supergloo Controller.
 ### Options
 
 ```
-  -h, --help   help for supergloo
+  -h, --help          help for supergloo
+  -i, --interactive   use interactive mode
 ```
 
 ### SEE ALSO
@@ -23,6 +24,5 @@ supergloo configures resources watched by the Supergloo Controller.
 * [supergloo create](../supergloo_create)	 - commands for creating managing resources used for SuperGloo
 * [supergloo init](../supergloo_init)	 - install SuperGloo to a Kubernetes cluster
 * [supergloo install](../supergloo_install)	 - install a service mesh using Supergloo
-* [supergloo set](../supergloo_set)	 - subcommands set a configuration parameter for one or more meshes
 * [supergloo uninstall](../supergloo_uninstall)	 - uninstall a service mesh using Supergloo
 

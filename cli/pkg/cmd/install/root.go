@@ -30,6 +30,10 @@ modify the corresponding mesh.
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 	flagutils.AddInstallFlags(cmd.PersistentFlags(), &opts.Install)
 
-	cmd.AddCommand(installIstioCmd(opts))
+	cmd.AddCommand(
+		installIstioCmd(opts),
+		installGlooIngressCmd(opts),
+	)
+
 	return cmd
 }

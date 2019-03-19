@@ -45,13 +45,13 @@ The basic SuperGloo installation is composed of single-instance deployments for 
 }
 
 func installSuperGloo(opts *options.Options) error {
-	version, err := getReleaseVersion(opts)
+	releaseVersion, err := getReleaseVersion(opts)
 	if err != nil {
 		return errors.Wrapf(err, "getting release version")
 	}
 
 	// Get location of Gloo helm chart
-	chartUri := fmt.Sprintf(sgChartUriTemplate, version)
+	chartUri := fmt.Sprintf(sgChartUriTemplate, releaseVersion)
 	if helmChartOverride := opts.Init.HelmChartOverride; helmChartOverride != "" {
 		chartUri = helmChartOverride
 	}
@@ -87,7 +87,7 @@ func installSuperGloo(opts *options.Options) error {
 		return nil
 	}
 
-	fmt.Printf("installing supergloo version %v\nusing chart uri %v\n", version, chartUri)
+	fmt.Printf("installing supergloo version %v\nusing chart uri %v\n", releaseVersion, chartUri)
 
 	if err := kubectlApply(manifest); err != nil {
 		return errors.Wrapf(err, "executing kubectl failed")
@@ -104,11 +104,11 @@ func getReleaseVersion(opts *options.Options) (string, error) {
 				"release version containing the manifest when " +
 				"running an unreleased version of supergloo.")
 		} else if opts.Init.ReleaseVersion == "latest" {
-			version, err := helpers.GetLatestVersion(opts.Ctx)
+			releaseVersion, err := helpers.GetLatestVersion("supergloo")
 			if err != nil {
-				return "", errors.Wrapf(err, "unable to retrieve latest release version from github")
+				return "", fmt.Errorf("unable to retrieve latest release version from github")
 			}
-			return version, nil
+			return releaseVersion, nil
 		}
 		return opts.Init.ReleaseVersion, nil
 	}

@@ -20,7 +20,6 @@ type Options struct {
 	Uninstall         Uninstall
 	CreateRoutingRule CreateRoutingRule
 	CreateTlsSecret   CreateTlsSecret
-	SetRootCert       SetRootCert
 }
 
 type Init struct {
@@ -31,10 +30,16 @@ type Init struct {
 	DryRun            bool
 }
 
+type InstallationNamespace struct {
+	Istio string
+	Gloo  string
+}
+
 type Install struct {
 	Update                bool // if install exists and is enabled, update with new opts
-	InstallationNamespace string
+	InstallationNamespace InstallationNamespace
 	IstioInstall          v1.IstioInstall
+	GlooIngressInstall    v1.GlooInstall
 }
 
 type Uninstall struct {
@@ -73,9 +78,4 @@ type CreateTlsSecret struct {
 	PrivateKeyFilename string
 	CertChainFilename  string
 	CaCertFilename     string
-}
-
-type SetRootCert struct {
-	TargetMesh ResourceRefValue
-	TlsSecret  ResourceRefValue
 }

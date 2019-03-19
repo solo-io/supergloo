@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: CLI enables use of GITHUB_TOKEN to increase rate limits for supergloo init
-    issueLink: https://github.com/solo-io/supergloo/issues/278

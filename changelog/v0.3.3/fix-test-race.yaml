@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Fix the test concurrency issue encountered in CI where test teardown does not block releasing the cluster lock.
-    issueLink: https://github.com/solo-io/supergloo/issues/270
