@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Bump Solo-Kit version. Fixes a warning thrown by the CLI on tls secret create
+
