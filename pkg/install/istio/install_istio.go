@@ -45,11 +45,11 @@ func NewInstallOptions(previousInstall helm.Manifests, installer helm.Installer,
 		namespace: namespace, AutoInject: autoInject, Mtls: mtls, Observability: observability, Gateway: gateway}
 }
 
-func (o installOptions) Type() string {
+func (o installOptions) InstallName() string {
 	return "istio"
 }
 
-func (o installOptions) Uri() string {
+func (o installOptions) ChartUri() string {
 	return supportedIstioVersions[o.Version()].chartPath
 }
 
@@ -59,10 +59,6 @@ func (o installOptions) Version() string {
 
 func (o installOptions) Namespace() string {
 	return o.namespace
-}
-
-func (o installOptions) NamespaceOverride() string {
-	return "istio-system"
 }
 
 func (o installOptions) Validate() error {

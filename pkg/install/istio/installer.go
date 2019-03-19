@@ -104,7 +104,8 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := helm.InstallOrUpdate(ctx, opts)
+	filterFunc := helm.ReplaceHardcodedNamespace("istio-system", installNamespace)
+	manifests, err := helm.InstallOrUpdate(ctx, opts, filterFunc)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}

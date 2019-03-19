@@ -15,16 +15,12 @@ type installOptions struct {
 	uri             string
 }
 
-func (o installOptions) NamespaceOverride() string {
-	return "gloo-system"
-}
-
 func NewInstallOptions(previousInstall helm.Manifests, installer helm.Installer, namespace string, version string) *installOptions {
 	uri := glooManifestUrl(version)
 	return &installOptions{previousInstall: previousInstall, installer: installer, namespace: namespace, version: version, uri: uri}
 }
 
-func (o installOptions) Type() string {
+func (o installOptions) InstallName() string {
 	return "gloo-ingress"
 }
 
@@ -36,7 +32,7 @@ func (o installOptions) HelmValuesTemplate() string {
 	return helmValues
 }
 
-func (o installOptions) Uri() string {
+func (o installOptions) ChartUri() string {
 	return o.uri
 }
 

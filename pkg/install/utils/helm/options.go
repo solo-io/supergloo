@@ -7,20 +7,20 @@ import (
 	"strings"
 	"text/template"
 
+	"k8s.io/helm/pkg/manifest"
+
 	"github.com/solo-io/go-utils/errors"
 )
 
 type Options interface {
 	// type of install
-	Type() string
+	InstallName() string
 	// uri of chart
-	Uri() string
+	ChartUri() string
 	// version to install
 	Version() string
 	// namespace to install into
 	Namespace() string
-	// Default namespace to override in helm template
-	NamespaceOverride() string
 	// validator function for opts
 	Validate() error
 	// previous install
@@ -31,14 +31,40 @@ type Options interface {
 	HelmValuesTemplate() string
 }
 
-func InstallOrUpdate(ctx context.Context, opts Options) (Manifests, error) {
+type ManifestFilterFunc func(input []manifest.Manifest) (output []manifest.Manifest, err error)
+
+// Returns only non-empty manifests
+var ExcludeEmptyManifests ManifestFilterFunc = func(input []manifest.Manifest) ([]manifest.Manifest, error) {
+	var output []manifest.Manifest
+	for _, manifest := range input {
+		if !isEmptyManifest(manifest.Content) {
+			output = append(output, manifest)
+		}
+
+	}
+	return output, nil
+}
+
+func ReplaceHardcodedNamespace(hardcoded, override string) ManifestFilterFunc {
+	var ReplaceFunc ManifestFilterFunc = func(input []manifest.Manifest) ([]manifest.Manifest, error) {
+		for i, m := range input {
+			// replace all instances of gloo-system with the target namespace just in case
+			m.Content = strings.Replace(m.Content, hardcoded, override, -1)
+			input[i] = m
+		}
+		return input, nil
+	}
+	return ReplaceFunc
+}
+
+func InstallOrUpdate(ctx context.Context, opts Options, filterFuncs ...ManifestFilterFunc) (Manifests, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, errors.Wrapf(err, "invalid install options")
 	}
 	version := opts.Version()
 	namespace := opts.Namespace()
 
-	helmValueOverrides, err := template.New(fmt.Sprintf("%s-%s", opts.Type(), version)).Parse(opts.HelmValuesTemplate())
+	helmValueOverrides, err := template.New(fmt.Sprintf("%s-%s", opts.InstallName(), version)).Parse(opts.HelmValuesTemplate())
 	if err != nil {
 		return nil, errors.Wrapf(err, "")
 	}
@@ -50,9 +76,9 @@ func InstallOrUpdate(ctx context.Context, opts Options) (Manifests, error) {
 
 	manifests, err := RenderManifests(
 		ctx,
-		opts.Uri(),
+		opts.ChartUri(),
 		valuesBuf.String(),
-		releaseName(opts.Type(), namespace, version),
+		releaseName(opts.InstallName(), namespace, version),
 		namespace,
 		"",
 		true,
@@ -63,20 +89,23 @@ func InstallOrUpdate(ctx context.Context, opts Options) (Manifests, error) {
 		return manifests, nil
 	}
 
-	for i, m := range manifests {
-		// replace all instances of gloo-system with the target namespace just in case
-		m.Content = strings.Replace(m.Content, opts.NamespaceOverride(), namespace, -1)
-		manifests[i] = m
+	if filterFuncs != nil {
+		for _, filterFunc := range filterFuncs {
+			manifests, err = filterFunc(manifests)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// perform upgrade instead
 	if len(opts.PreviousInstall()) > 0 {
 		if err := opts.Installer().UpdateFromManifests(ctx, namespace, opts.PreviousInstall(), manifests, true); err != nil {
-			return nil, errors.Wrapf(err, "creating %s from manifests", opts.Type())
+			return nil, errors.Wrapf(err, "creating %s from manifests", opts.InstallName())
 		}
 	} else {
 		if err := opts.Installer().CreateFromManifests(ctx, namespace, manifests); err != nil {
-			return nil, errors.Wrapf(err, "creating %s from manifests", opts.Type())
+			return nil, errors.Wrapf(err, "creating %s from manifests", opts.InstallName())
 		}
 	}
 
