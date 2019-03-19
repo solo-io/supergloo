@@ -25,13 +25,9 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 //
-//<<<<<<< HEAD
-//MeshIngress represent an existing Ingress into a supergloo supported service mesh.
-//=======
 //MeshIngress represents a managed ingress (edge router) which can proxy connections
 //for services in Mesh managed by SuperGloo. SuperGloo will perform additional configuration,
 //if necessary, to enable proxying services which are using mTLS for communication.
-//>>>>>>> 335e940b49fb0df272debdfa7156e1b694dcba84
 type MeshIngress struct {
 	// Status indicates the validation status of this resource.
 	// Status is read-only by clients, and set by supergloo during validation
