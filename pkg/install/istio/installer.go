@@ -68,10 +68,11 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	}
 
 	// self-signed cert is true if a rootcert is not set on either the install or the mesh
-	// mesh takes precedence because it may be updated by the user
+	// mesh takes precedence because it has been created from install, the expected place for config
+	// to be updated after install
 	selfSignedCert := istio.IstioMesh.CustomRootCert == nil
-	if mesh != nil && mesh.MtlsConfig != nil {
-		selfSignedCert = mesh.MtlsConfig.RootCertificate == nil
+	if mesh != nil {
+		selfSignedCert = mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil
 	}
 
 	opts := installOptions{
