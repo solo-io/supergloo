@@ -33,6 +33,9 @@ type MeshConfig struct {
 	// mtls
 	MeshPolicy *v1alpha1.MeshPolicy // meshpolicy is a singleton
 
+	// root cert
+	RootCert *v1.TlsSecret // singleton
+
 	// routing
 	DestinationRules v1alpha3.DestinationRuleList
 	VirtualServices  v1alpha3.VirtualServiceList
@@ -90,6 +93,8 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		Upstreams: upstreams,
 	}
 
+	tlsSecrets := snapshot.Tlssecrets.List()
+
 	for _, mesh := range meshes {
 		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
@@ -103,7 +108,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 			mesh:           mesh,
 			rules:          rules,
 		}
-		meshConfig, err := t.translateMesh(params, in, upstreams, pods, resourceErrs)
+		meshConfig, err := t.translateMesh(params, in, upstreams, tlsSecrets, pods, resourceErrs)
 		if err != nil {
 			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
 			contextutils.LoggerFrom(ctx).Errorf("translating for mesh %v failed: %v", mesh.Metadata.Ref(), err)
@@ -227,6 +232,7 @@ func (t *translator) translateMesh(
 	params plugins.Params,
 	input inputMeshConfig,
 	upstreams gloov1.UpstreamList,
+	tlsSecrets v1.TlsSecretList,
 	pods customkube.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
@@ -289,6 +295,26 @@ func (t *translator) translateMesh(
 		}
 	}
 
+	var rootCert *v1.TlsSecret
+	if input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.RootCertificate != nil {
+		tlsSecret, err := tlsSecrets.Find(input.mesh.MtlsConfig.RootCertificate.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "finding tls secret for mesh root cert")
+		}
+		// set cacerts secret for istio
+		// https://istio.io/docs/tasks/security/plugin-ca-cert/#plugging-in-the-existing-certificate-and-key
+		rootCert = &v1.TlsSecret{
+			Metadata: core.Metadata{
+				Namespace: input.writeNamespace,
+				Name:      "cacerts",
+			},
+			RootCert:  tlsSecret.RootCert,
+			CertChain: tlsSecret.CertChain,
+			CaCert:    tlsSecret.CaCert,
+			CaKey:     tlsSecret.CaKey,
+		}
+	}
+
 	securityConfig := createSecurityConfig(
 		input.writeNamespace,
 		input.rules.security,
@@ -302,6 +328,7 @@ func (t *translator) translateMesh(
 		DestinationRules: destinationRules,
 		MeshPolicy:       meshPolicy,
 		SecurityConfig:   securityConfig,
+		RootCert:         rootCert,
 	}
 	meshConfig.Sort()
 

@@ -400,6 +400,61 @@ var _ = Describe("Translator", func() {
 
 		Expect(resourceErrs).NotTo(BeNil())
 	})
+	It("sets the root cert on the meshconfig if specified on the mesh", func() {
+		plug := testRoutingPlugin{}
+		tlsSecret := &v1.TlsSecret{
+			Metadata:  core.Metadata{Namespace: "mynamespace", Name: "some-tls-secret"},
+			RootCert:  "RootCert",
+			CertChain: "CertChain",
+			CaCert:    "CaCert",
+			CaKey:     "CaKey",
+		}
+		secretRef := tlsSecret.Metadata.Ref()
+		istioMesh := inputs.IstioMesh("fresh", &secretRef)
+
+		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
+		configPerMesh, _, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Meshes:     map[string]v1.MeshList{"": {istioMesh}},
+			Tlssecrets: map[string]v1.TlsSecretList{"": {tlsSecret}},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(configPerMesh).To(HaveKey(istioMesh))
+		meshConfig := configPerMesh[istioMesh]
+		Expect(meshConfig).NotTo(BeNil())
+		Expect(meshConfig.RootCert).NotTo(BeNil())
+		Expect(*meshConfig.RootCert).To(Equal(v1.TlsSecret{
+			Metadata: core.Metadata{
+				Namespace: istioMesh.MeshType.(*v1.Mesh_Istio).Istio.InstallationNamespace,
+				Name:      "cacerts",
+			},
+			RootCert:  tlsSecret.RootCert,
+			CertChain: tlsSecret.CertChain,
+			CaCert:    tlsSecret.CaCert,
+			CaKey:     tlsSecret.CaKey,
+		}))
+	})
+	It("errors if the root cert is not found", func() {
+		plug := testRoutingPlugin{}
+		tlsSecret := &v1.TlsSecret{
+			Metadata:  core.Metadata{Namespace: "mynamespace", Name: "some-tls-secret"},
+			RootCert:  "RootCert",
+			CertChain: "CertChain",
+			CaCert:    "CaCert",
+			CaKey:     "CaKey",
+		}
+		secretRef := tlsSecret.Metadata.Ref()
+		istioMesh := inputs.IstioMesh("fresh", &secretRef)
+
+		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
+		_, errs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
+			Meshes:     map[string]v1.MeshList{"": {istioMesh}},
+			Tlssecrets: map[string]v1.TlsSecretList{"": {}},
+		})
+		Expect(err).NotTo(HaveOccurred())
+		err = errs.Validate()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("finding tls secret for mesh root cert"))
+	})
 })
 
 var _ = Describe("hostsForSelector", func() {

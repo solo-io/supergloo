@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Set Root Cert on Istio Mesh by reconciling cacerts TLS secret
+    issueLink: https://github.com/solo-io/supergloo/issues/266
