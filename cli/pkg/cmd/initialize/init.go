@@ -106,7 +106,7 @@ func getReleaseVersion(opts *options.Options) (string, error) {
 		} else if opts.Init.ReleaseVersion == "latest" {
 			releaseVersion, err := helpers.GetLatestVersion(opts.Ctx, "supergloo")
 			if err != nil {
-				return "", fmt.Errorf("unable to retrieve latest release version from github")
+				return "", errors.Wrapf(err, "unable to retrieve latest release version from github")
 			}
 			return releaseVersion, nil
 		}
