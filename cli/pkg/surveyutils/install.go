@@ -42,7 +42,7 @@ func SurveyIstioInstall(in *options.Install) error {
 	return nil
 }
 
-func SurveyGlooIngressInstall(in *options.Install) error {
+func SurveyGlooInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Gloo, helpers.MustGetNamespaces()); err != nil {
 		return err
 	}

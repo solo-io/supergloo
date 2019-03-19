@@ -3,9 +3,8 @@ package install_test
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/mesh"
-
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -140,7 +139,7 @@ var _ = Describe("Install", func() {
 						},
 						InstallType: &v1.MeshInstall_IstioMesh{
 							IstioMesh: &v1.IstioInstall{
-								IstioVersion:      mesh.IstioVersion106,
+								IstioVersion:      istio.IstioVersion106,
 								EnableAutoInject:  true,
 								EnableMtls:        true,
 								InstallGrafana:    true,

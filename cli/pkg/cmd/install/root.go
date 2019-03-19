@@ -32,7 +32,7 @@ modify the corresponding mesh.
 
 	cmd.AddCommand(
 		installIstioCmd(opts),
-		installGlooIngressCmd(opts),
+		installGlooCmd(opts),
 	)
 
 	return cmd
