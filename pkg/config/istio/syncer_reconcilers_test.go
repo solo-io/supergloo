@@ -3,6 +3,8 @@ package istio_test
 import (
 	"context"
 
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+
 	"github.com/solo-io/supergloo/pkg/config/istio"
 
 	. "github.com/onsi/ginkgo"
@@ -27,6 +29,7 @@ var _ = Describe("SyncerReconcilers", func() {
 		meshPolicyClient         policyv1alpha1.MeshPolicyClient
 		destinationRuleClient    v1alpha3.DestinationRuleClient
 		virtualServiceClient     v1alpha3.VirtualServiceClient
+		tlsSecretClient          v1.TlsSecretClient
 
 		rec istio.Reconcilers
 	)
@@ -58,6 +61,10 @@ var _ = Describe("SyncerReconcilers", func() {
 		Expect(err).NotTo(HaveOccurred())
 		virtualServiceReconciler := v1alpha3.NewVirtualServiceReconciler(virtualServiceClient)
 
+		tlsSecretClient, err = v1.NewTlsSecretClient(mem)
+		Expect(err).NotTo(HaveOccurred())
+		tlsSecretClientReconciler := v1.NewTlsSecretReconciler(tlsSecretClient)
+
 		labels := map[string]string{"test": "labels"}
 		rec = istio.NewIstioReconcilers(labels,
 			rbacConfigReconciler,
@@ -66,12 +73,13 @@ var _ = Describe("SyncerReconcilers", func() {
 			meshPolicyReconciler,
 			destinationRuleReconciler,
 			virtualServiceReconciler,
+			tlsSecretClientReconciler,
 		)
 	})
 
 	It("reconciles from a set of MeshConfig", func() {
 		writeNs := "write-namespace"
-		mpMeta, drMeta, vsMeta, rbMeta, srMeta, srbMeta := randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs)
+		mpMeta, drMeta, vsMeta, rbMeta, srMeta, srbMeta, tlsMeta := randomMeta(""), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs), randomMeta(writeNs)
 		config := &MeshConfig{
 			MeshPolicy:       &policyv1alpha1.MeshPolicy{Metadata: mpMeta},
 			DestinationRules: []*v1alpha3.DestinationRule{{Metadata: drMeta}},
@@ -81,6 +89,7 @@ var _ = Describe("SyncerReconcilers", func() {
 				ServiceRoleBindings: []*rbacv1alpha1.ServiceRoleBinding{{Metadata: srbMeta}},
 				RbacConfig:          &rbacv1alpha1.RbacConfig{Metadata: rbMeta},
 			},
+			RootCert: &v1.TlsSecret{Metadata: tlsMeta},
 		}
 
 		err := rec.ReconcileAll(context.TODO(), writeNs, config)
@@ -103,6 +112,9 @@ var _ = Describe("SyncerReconcilers", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		_, err = serviceRoleBindingClient.Read(srbMeta.Namespace, srbMeta.Name, clients.ReadOpts{})
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = tlsSecretClient.Read(tlsMeta.Namespace, tlsMeta.Name, clients.ReadOpts{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -27,6 +29,7 @@ type istioReconcilers struct {
 	meshPolicyReconciler         policyv1alpha1.MeshPolicyReconciler
 	destinationRuleReconciler    networkingv1alpha3.DestinationRuleReconciler
 	virtualServiceReconciler     networkingv1alpha3.VirtualServiceReconciler
+	tlsSecretReconciler          v1.TlsSecretReconciler
 }
 
 func NewIstioReconcilers(ownerLabels map[string]string,
@@ -35,7 +38,8 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 	serviceRoleBindingReconciler rbacv1alpha1.ServiceRoleBindingReconciler,
 	meshPolicyReconciler policyv1alpha1.MeshPolicyReconciler,
 	destinationRuleReconciler networkingv1alpha3.DestinationRuleReconciler,
-	virtualServiceReconciler networkingv1alpha3.VirtualServiceReconciler) Reconcilers {
+	virtualServiceReconciler networkingv1alpha3.VirtualServiceReconciler,
+	tlsSecretReconciler v1.TlsSecretReconciler) Reconcilers {
 	return &istioReconcilers{
 		ownerLabels:                  ownerLabels,
 		rbacConfigReconciler:         rbacConfigReconciler,
@@ -44,6 +48,7 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 		meshPolicyReconciler:         meshPolicyReconciler,
 		destinationRuleReconciler:    destinationRuleReconciler,
 		virtualServiceReconciler:     virtualServiceReconciler,
+		tlsSecretReconciler:          tlsSecretReconciler,
 	}
 }
 
@@ -71,7 +76,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 
 	// this list should always either be empty or contain the global rbac config
 	var rbacConfigsToReconcile rbacv1alpha1.RbacConfigList
-	if config.MeshPolicy != nil {
+	if config.RbacConfig != nil {
 		logger.Infof("RbacConfig: %v", config.RbacConfig.Metadata.Name)
 		s.setLabels(config.RbacConfig)
 		rbacConfigsToReconcile = append(rbacConfigsToReconcile, config.RbacConfig)
@@ -86,6 +91,25 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling default rbac config")
+	}
+
+	// this list should always either be empty or contain the global cacerts root cert secret
+	var tlsSecretsToReconcile v1.TlsSecretList
+	if config.RootCert != nil {
+		logger.Infof("RootCert: %v", config.RootCert.Metadata.Name)
+		s.setLabels(config.RootCert)
+		tlsSecretsToReconcile = append(tlsSecretsToReconcile, config.RootCert)
+	}
+	if err := s.tlsSecretReconciler.Reconcile(
+		writeNamespace,
+		tlsSecretsToReconcile, // root cert is a singleton
+		nil,
+		clients.ListOpts{
+			Ctx:      ctx,
+			Selector: s.ownerLabels,
+		},
+	); err != nil {
+		return errors.Wrapf(err, "reconciling cacerts root cert")
 	}
 
 	logger.Infof("DestinationRules: %v", config.DestinationRules.Names())
