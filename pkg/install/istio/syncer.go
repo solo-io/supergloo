@@ -46,32 +46,21 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
-	var enabledMeshInstalls, disabledMeshInstalls v1.InstallList
-	var enabledIngressInstalls, disabledIngressInstalls v1.InstallList
+	// split installs by which are active, inactive (istio only)
+	// if more than 1 active install, they get errored
+	var enabledInstalls, disabledInstalls v1.InstallList
 	for _, install := range installs {
-		_, isMesh := install.InstallType.(*v1.Install_Mesh)
-		if isMesh {
-			if install.Disabled {
-				disabledMeshInstalls = append(disabledMeshInstalls, install)
-			} else {
-				enabledMeshInstalls = append(enabledMeshInstalls, install)
-			}
-
-		}
-		_, isIngress := install.InstallType.(*v1.Install_Ingress)
-		if isIngress {
-			if install.Disabled {
-				disabledIngressInstalls = append(disabledIngressInstalls, install)
-			} else {
-				enabledIngressInstalls = append(enabledIngressInstalls, install)
-			}
+		if install.Disabled {
+			disabledInstalls = append(disabledInstalls, install)
+		} else {
+			enabledInstalls = append(enabledInstalls, install)
 		}
 	}
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
 	// perform uninstalls first
-	for _, in := range disabledMeshInstalls {
+	for _, in := range disabledInstalls {
 		installMesh, isMesh := in.InstallType.(*v1.Install_Mesh)
 		if isMesh {
 			if installMesh.Mesh.InstalledMesh == nil {
@@ -95,7 +84,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 	}
 
-	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledMeshInstalls, meshes, resourceErrs)
+	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
 
 	if createdMesh != nil {
 		// update resource version if this is an overwrite
@@ -147,7 +136,7 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 		return mesh, in
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
-			resourceErrs.AddError(in, errors.Errorf("multiple active istio installactions "+
+			resourceErrs.AddError(in, errors.Errorf("multiple active istio installations "+
 				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
 		}
 	}

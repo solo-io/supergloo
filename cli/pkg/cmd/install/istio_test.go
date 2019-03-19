@@ -3,15 +3,14 @@ package install_test
 import (
 	"fmt"
 
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/istio"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -106,9 +105,9 @@ var _ = Describe("Install", func() {
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "istio-system", "1.0.5", false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			mesh := inst.InstallType.(*v1.Install_Mesh)
+			istioMesh := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
-			mesh.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			istioMesh.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := helpers.MustInstallClient()
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())

@@ -231,8 +231,8 @@ func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCac
 type inputClients struct {
 	Install      v1.InstallClient
 	Mesh         v1.MeshClient
-	MeshIngress  v1.MeshIngressClient
 	MeshGroup    v1.MeshGroupClient
+	MeshIngress  v1.MeshIngressClient
 	Upstream     gloov1.UpstreamClient
 	RoutingRule  v1.RoutingRuleClient
 	SecurityRule v1.SecurityRuleClient

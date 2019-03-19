@@ -1,7 +1,9 @@
-package istio
+package istio_test
 
 import (
 	"context"
+
+	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,7 +17,7 @@ var _ = Describe("Installer", func() {
 	BeforeEach(func() {
 		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
 	})
-	installer := defaultIstioInstaller{helmInstaller: newMockHelm(
+	installer := istio.NewDefaultIstioInstaller(helm.NewMockHelm(
 		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
 			createdManifests = manifests
 			return nil
@@ -25,13 +27,13 @@ var _ = Describe("Installer", func() {
 		}, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
 			updatedManifests = updated
 			return nil
-		})}
+		}))
 	ns := "ns"
 	It("installs, upgrades, and uninstalls from an install object", func() {
 
 		istioConfig := &v1.MeshInstall_IstioMesh{
 			IstioMesh: &v1.IstioInstall{
-				IstioVersion: IstioVersion106,
+				IstioVersion: istio.IstioVersion106,
 			},
 		}
 		installConfig := &v1.Install_Mesh{
@@ -97,7 +99,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   IstioVersion106,
+					IstioVersion:   istio.IstioVersion106,
 					CustomRootCert: &core.ResourceRef{"foo", "bar"},
 				},
 			}
@@ -125,7 +127,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion: IstioVersion106,
+					IstioVersion: istio.IstioVersion106,
 				},
 			}
 			installConfig := &v1.Install_Mesh{
@@ -152,7 +154,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   IstioVersion106,
+					IstioVersion:   istio.IstioVersion106,
 					CustomRootCert: &core.ResourceRef{"foo", "bar"},
 				},
 			}

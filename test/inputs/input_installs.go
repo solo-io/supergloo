@@ -6,7 +6,6 @@ import (
 )
 
 func IstioInstall(name, namespace, installNs, version string, disabled bool) *v1.Install {
-
 	return &v1.Install{
 		Metadata:              core.Metadata{Name: name, Namespace: namespace},
 		Disabled:              disabled,
@@ -16,6 +15,23 @@ func IstioInstall(name, namespace, installNs, version string, disabled bool) *v1
 				InstallType: &v1.MeshInstall_IstioMesh{
 					IstioMesh: &v1.IstioInstall{
 						IstioVersion: version,
+					},
+				},
+			},
+		},
+	}
+}
+
+func GlooIstall(name, namespace, installNs, version string, disabled bool) *v1.Install {
+	return &v1.Install{
+		Metadata:              core.Metadata{Name: name, Namespace: namespace},
+		Disabled:              disabled,
+		InstallationNamespace: installNs,
+		InstallType: &v1.Install_Ingress{
+			Ingress: &v1.MeshIngressInstall{
+				InstallType: &v1.MeshIngressInstall_Gloo{
+					Gloo: &v1.GlooInstall{
+						GlooVersion: version,
 					},
 				},
 			},

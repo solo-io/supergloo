@@ -54,8 +54,6 @@ message Install {
     // read-only, set by the server after successful installation.
     // TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb)
     string installed_manifest = 5;
-
-
 }
 
 // Installation options for Istio

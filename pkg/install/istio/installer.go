@@ -20,6 +20,10 @@ type defaultIstioInstaller struct {
 	helmInstaller helm.Installer
 }
 
+func NewDefaultIstioInstaller(helmInstaller helm.Installer) *defaultIstioInstaller {
+	return &defaultIstioInstaller{helmInstaller: helmInstaller}
+}
+
 func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
@@ -74,28 +78,35 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	if mesh != nil {
 		selfSignedCert = mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil
 	}
-
-	opts := installOptions{
-		previousInstall: previousInstall,
-		Version:         istio.IstioMesh.IstioVersion,
-		Namespace:       installNamespace,
-		AutoInject: autoInjectInstallOptions{
-			Enabled: istio.IstioMesh.EnableAutoInject,
-		},
-		Mtls: mtlsInstallOptions{
-			Enabled: istio.IstioMesh.EnableMtls,
-			// self signed cert is true if using the buildtin istio cert
-			SelfSignedCert: selfSignedCert,
-		},
-		Observability: observabilityInstallOptions{
-			EnableGrafana:    istio.IstioMesh.InstallGrafana,
-			EnablePrometheus: istio.IstioMesh.InstallPrometheus,
-			EnableJaeger:     istio.IstioMesh.InstallJaeger,
-		},
+	mtlsOptions := mtlsInstallOptions{
+		Enabled: istio.IstioMesh.EnableMtls,
+		// self signed cert is true if using the buildtin istio cert
+		SelfSignedCert: selfSignedCert,
 	}
+	autoInjectOptions := autoInjectInstallOptions{
+		Enabled: istio.IstioMesh.EnableAutoInject,
+	}
+	observabilityOptions := observabilityInstallOptions{
+		EnableGrafana:    istio.IstioMesh.InstallGrafana,
+		EnablePrometheus: istio.IstioMesh.InstallPrometheus,
+		EnableJaeger:     istio.IstioMesh.InstallJaeger,
+	}
+
+	opts := NewInstallOptions(
+		previousInstall,
+		i.helmInstaller,
+		istio.IstioMesh.IstioVersion,
+		installNamespace,
+		autoInjectOptions,
+		mtlsOptions,
+		observabilityOptions,
+		gatewayInstallOptions{},
+	)
+
 	logger.Infof("installing istio with options: %#v", opts)
 
-	manifests, err := i.installOrUpdateIstio(ctx, opts)
+	filterFunc := helm.ReplaceHardcodedNamespace("istio-system", installNamespace)
+	manifests, err := helm.InstallOrUpdate(ctx, opts, filterFunc)
 	if err != nil {
 		return nil, errors.Wrapf(err, "installing istio")
 	}

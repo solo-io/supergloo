@@ -77,13 +77,13 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		v1.NewTlsSecretReconciler(cs.Input.TlsSecret),
 	)
 
-	reporter := reporter.NewReporter("istio-config-reporter",
+	newReporter := reporter.NewReporter("istio-config-reporter",
 		cs.Input.Mesh.BaseClient(),
 		cs.Input.Upstream.BaseClient(),
 		cs.Input.RoutingRule.BaseClient(),
 		cs.Input.SecurityRule.BaseClient())
 
-	return istio.NewIstioConfigSyncer(translator, reconcilers, reporter), nil
+	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
 }
 
 // start the istio config event loop

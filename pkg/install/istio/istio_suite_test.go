@@ -1,4 +1,4 @@
-package istio
+package istio_test
 
 import (
 	"testing"
