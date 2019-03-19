@@ -26,12 +26,6 @@ kubectl get routingrule [-n supergloo-system]
   -h, --help   help for apply
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo

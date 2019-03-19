@@ -104,9 +104,9 @@ func getReleaseVersion(opts *options.Options) (string, error) {
 				"release version containing the manifest when " +
 				"running an unreleased version of supergloo.")
 		} else if opts.Init.ReleaseVersion == "latest" {
-			version, err := helpers.GetLatestVersion()
+			version, err := helpers.GetLatestVersion(opts.Ctx)
 			if err != nil {
-				return "", fmt.Errorf("unable to retrieve latest release version from github")
+				return "", errors.Wrapf(err, "unable to retrieve latest release version from github")
 			}
 			return version, nil
 		}

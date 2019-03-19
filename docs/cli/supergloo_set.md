@@ -16,12 +16,6 @@ subcommands set a configuration parameter for one or more meshes
   -h, --help   help for set
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
