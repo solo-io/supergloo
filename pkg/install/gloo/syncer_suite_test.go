@@ -1,4 +1,4 @@
-package syncer_test
+package gloo_test
 
 import (
 	"testing"

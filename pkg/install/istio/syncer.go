@@ -1,12 +1,8 @@
-package syncer
+package istio
 
 import (
 	"context"
 	"fmt"
-
-	"github.com/solo-io/supergloo/pkg/install/meshingress"
-
-	"github.com/solo-io/supergloo/pkg/install/mesh"
 
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 
@@ -19,27 +15,20 @@ import (
 )
 
 type installSyncer struct {
-	istioInstaller mesh.Installer
-	glooInstaller  meshingress.Installer
+	istioInstaller Installer
 	meshClient     v1.MeshClient
-	ingressClient  v1.MeshIngressClient
 	reporter       reporter.Reporter
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewInstallSyncer(istioInstaller mesh.Installer, ingressInstaller meshingress.Installer, meshClient v1.MeshClient, ingressClient v1.MeshIngressClient, reporter reporter.Reporter) v1.InstallSyncer {
+func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
 	if istioInstaller == nil {
-		istioInstaller = mesh.NewDefaultInstaller(helm.NewHelmInstaller())
+		istioInstaller = NewDefaultInstaller(helm.NewHelmInstaller())
 	}
 
-	if ingressInstaller == nil {
-		ingressInstaller = meshingress.NewDefaultInstaller(helm.NewHelmInstaller())
-	}
 	return &installSyncer{
 		istioInstaller: istioInstaller,
-		glooInstaller:  ingressInstaller,
 		meshClient:     meshClient,
-		ingressClient:  ingressClient,
 		reporter:       reporter,
 	}
 }
@@ -95,7 +84,7 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 			}
 			installedMesh := *installType.Mesh.InstalledMesh
 			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-			if _, err := s.istioInstaller.EnsureMeshInstall(ctx, in); err != nil {
+			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
 				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 			} else {
 				resourceErrs.Accept(in)
@@ -105,57 +94,11 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 					logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
 				}
 			}
-		case *v1.Install_Ingress:
-			if installType.Ingress.InstalledIngress == nil {
-				// mesh was never installed
-				resourceErrs.Accept(in)
-				continue
-			}
-			installedIngress := *installType.Ingress.InstalledIngress
-			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-			if _, err := s.glooInstaller.EnsureIngressInstall(ctx, in); err != nil {
-				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
-			} else {
-				resourceErrs.Accept(in)
-				if err := s.meshClient.Delete(installedIngress.Namespace,
-					installedIngress.Name,
-					clients.DeleteOpts{Ctx: ctx}); err != nil {
-					logger.Errorf("deleting mesh object %v failed after successful uninstall", installedIngress)
-				}
-			}
 		}
 	}
 }
 
 func (s *installSyncer) handleActiveInstalls(ctx context.Context,
-	enabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
-	var (
-		istioInstallations       = make([]*v1.Install, 0)
-		glooIngressInstallations = make([]*v1.Install, 0)
-	)
-
-	for _, install := range enabledInstalls {
-		switch installType := install.InstallType.(type) {
-		case *v1.Install_Mesh:
-			switch installType.Mesh.InstallType.(type) {
-			case *v1.MeshInstall_IstioMesh:
-				istioInstallations = append(istioInstallations, install)
-			}
-		case *v1.Install_Ingress:
-			switch installType.Ingress.InstallType.(type) {
-			case *v1.MeshIngressInstall_Gloo:
-				glooIngressInstallations = append(glooIngressInstallations, install)
-			}
-		}
-	}
-
-	s.handleIstioInstalls(ctx, istioInstallations, resourceErrs)
-	s.handleGlooIngressInstalls(ctx, glooIngressInstallations, resourceErrs)
-
-}
-
-func (s *installSyncer) handleIstioInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
 	resourceErrs reporter.ResourceErrors) {
 	logger := contextutils.LoggerFrom(ctx)
@@ -167,7 +110,7 @@ func (s *installSyncer) handleIstioInstalls(ctx context.Context,
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		mesh, err := s.istioInstaller.EnsureMeshInstall(ctx, in)
+		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
 			return
@@ -201,52 +144,5 @@ func (s *installSyncer) handleIstioInstalls(ctx context.Context,
 			logger.Errorf("%v", err)
 		}
 	}
-}
 
-func (s *installSyncer) handleGlooIngressInstalls(ctx context.Context,
-	enabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
-	logger := contextutils.LoggerFrom(ctx)
-	var (
-		createdIngress *v1.MeshIngress
-		activeInstall  *v1.Install
-	)
-	switch {
-	case len(enabledInstalls) == 1:
-		in := enabledInstalls[0]
-		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		meshIngress, err := s.glooInstaller.EnsureIngressInstall(ctx, in)
-		if err != nil {
-			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
-			return
-		}
-		resourceErrs.Accept(in)
-		createdIngress = meshIngress
-		activeInstall = in
-	case len(enabledInstalls) > 1:
-		for _, in := range enabledInstalls {
-			resourceErrs.AddError(in, errors.Errorf("multiple gloo ingress installations "+
-				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
-		}
-	}
-
-	if createdIngress != nil {
-		// update resource version if this is an overwrite
-		if existingMeshIngress, err := s.ingressClient.Read(createdIngress.Metadata.Namespace,
-			createdIngress.Metadata.Name,
-			clients.ReadOpts{Ctx: ctx}); err == nil {
-
-			logger.Infof("overwriting previous mesh ingress %v", existingMeshIngress.Metadata.Ref())
-			createdIngress.Metadata.ResourceVersion = existingMeshIngress.Metadata.ResourceVersion
-		}
-
-		logger.Infof("writing installed mesh %v", createdIngress.Metadata.Ref())
-		if _, err := s.ingressClient.Write(createdIngress,
-			clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
-			err := errors.Wrapf(err, "writing installed mesh-ingress object %v failed "+
-				"after successful install", createdIngress.Metadata.Ref())
-			resourceErrs.AddError(activeInstall, err)
-			logger.Errorf("%v", err)
-		}
-	}
 }

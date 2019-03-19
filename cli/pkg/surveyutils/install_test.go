@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
-	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 )
 
 var _ = Describe("Metadata", func() {

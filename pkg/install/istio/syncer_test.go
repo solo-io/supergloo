@@ -1,9 +1,9 @@
-package syncer_test
+package istio_test
 
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/syncer"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,19 +22,7 @@ type mockInstaller struct {
 	errorOnInstall                    bool
 }
 
-func (i *mockInstaller) EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
-	if i.errorOnInstall {
-		return nil, errors.Errorf("i was told to error")
-	}
-	if install.Disabled {
-		i.disabledInstalls = append(i.disabledInstalls, install)
-		return nil, nil
-	}
-	i.enabledInstalls = append(i.enabledInstalls, install)
-	return &v1.MeshIngress{Metadata: install.Metadata}, nil
-}
-
-func (i *mockInstaller) EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (i *mockInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
 	if i.errorOnInstall {
 		return nil, errors.Errorf("i was told to error")
 	}
@@ -117,7 +105,7 @@ var _ = Describe("Syncer", func() {
 					inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
 				}
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installeSyncer := syncer.NewInstallSyncer(installer, installer, meshClient, ingressClient, report)
+				installeSyncer := istio.NewInstallSyncer(installer, meshClient, report)
 				err := installeSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -150,7 +138,7 @@ var _ = Describe("Syncer", func() {
 				mesh := install.InstallType.(*v1.Install_Mesh)
 				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installSyncer := syncer.NewInstallSyncer(installer, installer, meshClient, ingressClient, report)
+				installSyncer := istio.NewInstallSyncer(installer, meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -190,7 +178,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := syncer.NewInstallSyncer(installer, installer, meshClient, ingressClient, report)
+			installeSyncer := istio.NewInstallSyncer(installer, meshClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -220,7 +208,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := syncer.NewInstallSyncer(installer, installer, meshClient, ingressClient, report)
+			installeSyncer := istio.NewInstallSyncer(installer, meshClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 

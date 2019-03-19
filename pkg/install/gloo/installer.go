@@ -1,9 +1,7 @@
-package meshingress
+package gloo
 
 import (
 	"context"
-
-	"github.com/solo-io/supergloo/pkg/install/meshingress/gloo"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -15,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error)
+	EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error)
 }
 
 type defaultInstaller struct {
@@ -26,7 +24,7 @@ func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
 	return &defaultInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
+func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -64,7 +62,7 @@ func (installer *defaultInstaller) EnsureIngressInstall(ctx context.Context, ins
 		return nil, nil
 	}
 
-	opts := gloo.NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, "0.11.1")
+	opts := NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, "0.11.1")
 
 	logger.Infof("installing gloo-ingress with options: %#v", opts)
 

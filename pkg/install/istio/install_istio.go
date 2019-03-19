@@ -32,15 +32,15 @@ type installOptions struct {
 
 	version       string
 	namespace     string
-	AutoInject    AutoInjectInstallOptions
-	Mtls          MtlsInstallOptions
-	Observability ObservabilityInstallOptions
-	Gateway       GatewayInstallOptions
+	AutoInject    autoInjectInstallOptions
+	Mtls          mtlsInstallOptions
+	Observability observabilityInstallOptions
+	Gateway       gatewayInstallOptions
 }
 
 func NewInstallOptions(previousInstall helm.Manifests, installer helm.Installer, version string, namespace string,
-	autoInject AutoInjectInstallOptions, mtls MtlsInstallOptions, observability ObservabilityInstallOptions,
-	gateway GatewayInstallOptions) *installOptions {
+	autoInject autoInjectInstallOptions, mtls mtlsInstallOptions, observability observabilityInstallOptions,
+	gateway gatewayInstallOptions) *installOptions {
 	return &installOptions{previousInstall: previousInstall, installer: installer, version: version,
 		namespace: namespace, AutoInject: autoInject, Mtls: mtls, Observability: observability, Gateway: gateway}
 }
@@ -99,23 +99,23 @@ func (o installOptions) validate() error {
 	return nil
 }
 
-type AutoInjectInstallOptions struct {
+type autoInjectInstallOptions struct {
 	Enabled bool
 }
 
-type MtlsInstallOptions struct {
+type mtlsInstallOptions struct {
 	Enabled        bool
 	SelfSignedCert bool
 }
 
-type ObservabilityInstallOptions struct {
+type observabilityInstallOptions struct {
 	EnableGrafana      bool
 	EnablePrometheus   bool
 	EnableJaeger       bool
 	EnableServiceGraph bool
 }
 
-type GatewayInstallOptions struct {
+type gatewayInstallOptions struct {
 	EnableIngress bool
 	EnableEgress  bool
 }

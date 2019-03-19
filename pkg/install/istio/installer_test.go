@@ -1,9 +1,7 @@
-package mesh
+package istio
 
 import (
 	"context"
-
-	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,7 +31,7 @@ var _ = Describe("Installer", func() {
 
 		istioConfig := &v1.MeshInstall_IstioMesh{
 			IstioMesh: &v1.IstioInstall{
-				IstioVersion: istio.IstioVersion106,
+				IstioVersion: IstioVersion106,
 			},
 		}
 		installConfig := &v1.Install_Mesh{
@@ -49,7 +47,7 @@ var _ = Describe("Installer", func() {
 			InstallType:           installConfig,
 		}
 
-		installedMesh, err := installer.EnsureMeshInstall(context.TODO(), install)
+		installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
 
@@ -70,7 +68,7 @@ var _ = Describe("Installer", func() {
 		// enable prometheus
 		istioConfig.IstioMesh.InstallPrometheus = true
 		installConfig.Mesh.InstallType = istioConfig
-		installedMesh, err = installer.EnsureMeshInstall(context.TODO(), install)
+		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 
 		// update should propogate thru
@@ -81,7 +79,7 @@ var _ = Describe("Installer", func() {
 
 		// uninstall should work
 		install.Disabled = true
-		installedMesh, err = installer.EnsureMeshInstall(context.TODO(), install)
+		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedMesh).To(BeNil())
 		Expect(install.InstalledManifest).To(HaveLen(0))
@@ -94,7 +92,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   istio.IstioVersion106,
+					IstioVersion:   IstioVersion106,
 					CustomRootCert: &core.ResourceRef{"foo", "bar"},
 				},
 			}
@@ -111,7 +109,7 @@ var _ = Describe("Installer", func() {
 				InstallType:           installConfig,
 			}
 
-			_, err := installer.EnsureMeshInstall(context.TODO(), install)
+			_, err := installer.EnsureIstioInstall(context.TODO(), install)
 			Expect(err).NotTo(HaveOccurred())
 
 			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
@@ -122,7 +120,7 @@ var _ = Describe("Installer", func() {
 
 			istioConfig := &v1.MeshInstall_IstioMesh{
 				IstioMesh: &v1.IstioInstall{
-					IstioVersion: istio.IstioVersion106,
+					IstioVersion: IstioVersion106,
 				},
 			}
 			installConfig := &v1.Install_Mesh{
@@ -138,7 +136,7 @@ var _ = Describe("Installer", func() {
 				InstallType:           installConfig,
 			}
 
-			_, err := installer.EnsureMeshInstall(context.TODO(), install)
+			_, err := installer.EnsureIstioInstall(context.TODO(), install)
 			Expect(err).NotTo(HaveOccurred())
 
 			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")

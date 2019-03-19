@@ -3,8 +3,6 @@ package install_test
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -12,6 +10,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 

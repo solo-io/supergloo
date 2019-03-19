@@ -18,11 +18,11 @@ var _ = Describe("installOrUpdateIstio", func() {
 			opts: installOptions{
 				namespace: "test",
 				version:   IstioVersion103,
-				Mtls: MtlsInstallOptions{
+				Mtls: mtlsInstallOptions{
 					Enabled:        true,
 					SelfSignedCert: true,
 				},
-				Observability: ObservabilityInstallOptions{
+				Observability: observabilityInstallOptions{
 					EnableGrafana:    false,
 					EnableJaeger:     true,
 					EnablePrometheus: false,

@@ -1,33 +1,20 @@
-package meshingress_test
+package gloo_test
 
 import (
 	"context"
+
+	"github.com/solo-io/supergloo/pkg/install/gloo"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/meshingress"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
 var _ = Describe("mesh ingress mock installer", func() {
-	var createdManifests, deletedManifests, updatedManifests helm.Manifests
-	BeforeEach(func() {
-		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
-	})
-	installer := meshingress.NewDefaultInstaller(helm.NewMockHelm(
-		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
-			createdManifests = manifests
-			return nil
-		}, func(ctx context.Context, namespace string, manifests helm.Manifests) error {
-			deletedManifests = manifests
-			return nil
-		}, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
-			updatedManifests = updated
-			return nil
-		}))
-	ns := "ns"
+	installer := gloo.NewDefaultInstaller(helm.NewHelmInstaller())
+	ns := "gloo-system"
 	It("installs, upgrades, and uninstalls from an install object", func() {
 
 		glooConfig := &v1.MeshIngressInstall_Gloo{
@@ -48,7 +35,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 			InstallType:           installConfig,
 		}
 
-		installedIngress, err := installer.EnsureIngressInstall(context.TODO(), install)
+		installedIngress, err := installer.EnsureGlooInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedIngress.Metadata.Name).To(Equal(install.Metadata.Name))
 
@@ -56,7 +43,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 		Expect(install.InstalledManifest).NotTo(HaveLen(0))
 		installedManifests, err := helm.NewManifestsFromGzippedString(install.InstalledManifest)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(installedManifests).To(Equal(createdManifests))
+		Expect(installedManifests).NotTo(BeEmpty())
 
 		Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
 		mesh := install.InstallType.(*v1.Install_Ingress)
@@ -68,13 +55,14 @@ var _ = Describe("mesh ingress mock installer", func() {
 
 		// uninstall should work
 		install.Disabled = true
-		installedIngress, err = installer.EnsureIngressInstall(context.TODO(), install)
+		installedIngress, err = installer.EnsureGlooInstall(context.TODO(), install)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedIngress).To(BeNil())
 		Expect(install.InstalledManifest).To(HaveLen(0))
 
-		Expect(deletedManifests).To(Equal(createdManifests))
-		Expect(updatedManifests).To(HaveLen(0))
+		_, err = helm.NewManifestsFromGzippedString(install.InstalledManifest)
+		Expect(err).NotTo(HaveOccurred())
+
 	})
 
 })

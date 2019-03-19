@@ -1,9 +1,7 @@
-package mesh
+package istio
 
 import (
 	"context"
-
-	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
@@ -15,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
+	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
 }
 
 type defaultInstaller struct {
@@ -26,7 +24,7 @@ func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
 	return &defaultInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (installer *defaultInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
 	ctx = contextutils.WithLogger(ctx, "istio-installer")
 	logger := contextutils.LoggerFrom(ctx)
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
@@ -64,28 +62,28 @@ func (installer *defaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 	}
 
 	version := istioMesh.IstioMesh.IstioVersion
-	autoInjectOptions := istio.AutoInjectInstallOptions{
+	autoInjectOptions := autoInjectInstallOptions{
 		Enabled: istioMesh.IstioMesh.EnableAutoInject,
 	}
-	mtlsOptions := istio.MtlsInstallOptions{
+	mtlsOptions := mtlsInstallOptions{
 		Enabled: istioMesh.IstioMesh.EnableMtls,
 		// self signed cert is true if using the buildtin istio cert
 		SelfSignedCert: istioMesh.IstioMesh.CustomRootCert == nil,
 	}
-	observabilityOptions := istio.ObservabilityInstallOptions{
+	observabilityOptions := observabilityInstallOptions{
 		EnableGrafana:    istioMesh.IstioMesh.InstallGrafana,
 		EnablePrometheus: istioMesh.IstioMesh.InstallPrometheus,
 		EnableJaeger:     istioMesh.IstioMesh.InstallJaeger,
 	}
 
-	opts := istio.NewInstallOptions(previousInstall,
+	opts := NewInstallOptions(previousInstall,
 		installer.helmInstaller,
 		version,
 		installNamespace,
 		autoInjectOptions,
 		mtlsOptions,
 		observabilityOptions,
-		istio.GatewayInstallOptions{},
+		gatewayInstallOptions{},
 	)
 
 	logger.Infof("installing istio with options: %#v", opts)

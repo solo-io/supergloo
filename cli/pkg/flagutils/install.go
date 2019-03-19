@@ -3,7 +3,7 @@ package flagutils
 import (
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/mesh/istio"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	"github.com/solo-io/supergloo/cli/pkg/constants"
 
