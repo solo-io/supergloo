@@ -39,6 +39,7 @@ var _ = Describe("V1Emitter", func() {
 		cfg           *rest.Config
 		emitter       InstallEmitter
 		installClient InstallClient
+		meshClient    MeshClient
 	)
 
 	BeforeEach(func() {
@@ -59,7 +60,15 @@ var _ = Describe("V1Emitter", func() {
 		}
 		installClient, err = NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewInstallEmitter(installClient)
+		// Mesh Constructor
+		meshClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         MeshCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(context.TODO()),
+		}
+		meshClient, err = NewMeshClient(meshClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewInstallEmitter(installClient, meshClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -137,6 +146,66 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
+
+		/*
+			Mesh
+		*/
+
+		assertSnapshotMeshes := func(expectMeshes MeshList, unexpectMeshes MeshList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectMeshes {
+						if _, err := snap.Meshes.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectMeshes {
+						if _, err := snap.Meshes.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
+					combined := MeshesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		mesh1a, err := meshClient.Write(NewMesh(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		mesh1b, err := meshClient.Write(NewMesh(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, nil)
+		mesh2a, err := meshClient.Write(NewMesh(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		mesh2b, err := meshClient.Write(NewMesh(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
+
+		err = meshClient.Delete(mesh2a.Metadata.Namespace, mesh2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshClient.Delete(mesh2b.Metadata.Namespace, mesh2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
+
+		err = meshClient.Delete(mesh1a.Metadata.Namespace, mesh1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshClient.Delete(mesh1b.Metadata.Namespace, mesh1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -210,5 +279,65 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
+
+		/*
+			Mesh
+		*/
+
+		assertSnapshotMeshes := func(expectMeshes MeshList, unexpectMeshes MeshList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectMeshes {
+						if _, err := snap.Meshes.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectMeshes {
+						if _, err := snap.Meshes.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
+					combined := MeshesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		mesh1a, err := meshClient.Write(NewMesh(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		mesh1b, err := meshClient.Write(NewMesh(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, nil)
+		mesh2a, err := meshClient.Write(NewMesh(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		mesh2b, err := meshClient.Write(NewMesh(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
+
+		err = meshClient.Delete(mesh2a.Metadata.Namespace, mesh2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshClient.Delete(mesh2b.Metadata.Namespace, mesh2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
+
+		err = meshClient.Delete(mesh1a.Metadata.Namespace, mesh1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = meshClient.Delete(mesh1b.Metadata.Namespace, mesh1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
 	})
 })
