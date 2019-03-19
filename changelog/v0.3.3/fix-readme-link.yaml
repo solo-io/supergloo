@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Fixed link to architecture image in README file.
+
