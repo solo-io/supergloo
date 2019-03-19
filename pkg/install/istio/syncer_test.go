@@ -21,7 +21,7 @@ type mockIstioInstaller struct {
 	errorOnInstall                    bool
 }
 
-func (i *mockIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func (i *mockIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, list v1.MeshList) (*v1.Mesh, error) {
 	if i.errorOnInstall {
 		return nil, errors.Errorf("i was told to error")
 	}
