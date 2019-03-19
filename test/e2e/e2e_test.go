@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-
 	"github.com/gogo/protobuf/proto"
 
 	skerrors "github.com/solo-io/solo-kit/pkg/errors"
@@ -16,7 +14,7 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/test/setup"
 	utils3 "github.com/solo-io/supergloo/test/e2e/utils"
-	coreV1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -51,18 +49,10 @@ func deleteSuperglooPods() {
 		}
 		return nil
 	}, time.Second*60).ShouldNot(HaveOccurred())
+
 }
 
-var (
-	meshClient    v1.MeshClient
-	installClient v1.InstallClient
-)
-
 var _ = Describe("E2e", func() {
-	BeforeEach(func() {
-		meshClient = helpers.MustMeshClient()
-		installClient = helpers.MustInstallClient()
-	})
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
@@ -72,7 +62,30 @@ var _ = Describe("E2e", func() {
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		deleteSuperglooPods()
 
-		deployIstio()
+		err = utils.Supergloo("install istio --name=my-istio --mtls=true --auto-inject=true")
+		Expect(err).NotTo(HaveOccurred())
+
+		installClient := helpers.MustInstallClient()
+
+		Eventually(func() (core.Status_State, error) {
+			i, err := installClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			if err != nil {
+				return 0, err
+			}
+			Expect(i.Status.Reason).To(Equal(""))
+			return i.Status.State, nil
+		}, time.Minute*2).Should(Equal(core.Status_Accepted))
+
+		Eventually(func() error {
+			_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+			return err
+		}).ShouldNot(HaveOccurred())
+
+		meshClient := helpers.MustMeshClient()
+		Eventually(func() error {
+			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			return err
+		}).ShouldNot(HaveOccurred())
 
 		err = waitUntilPodsRunning(time.Minute*2, "istio-system",
 			"grafana",
@@ -155,40 +168,11 @@ var _ = Describe("E2e", func() {
 			return skerrors.IsNotExist(err)
 		}, time.Minute*2).Should(BeTrue())
 	})
-
 })
-
-func deployIstio() {
-	err := utils.Supergloo("install istio --name=my-istio --mtls=true --auto-inject=true")
-	Expect(err).NotTo(HaveOccurred())
-
-	Eventually(func() (core.Status_State, error) {
-		i, err := installClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
-		if err != nil {
-			return 0, err
-		}
-		Expect(i.Status.Reason).To(Equal(""))
-		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
-
-	Eventually(func() error {
-		_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
-		return err
-	}).ShouldNot(HaveOccurred())
-
-	Eventually(func() error {
-		_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
-		return err
-	}).ShouldNot(HaveOccurred())
-}
-
-func deployGloo() {
-
-}
 
 func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes ...string) error {
 	pods := helpers.MustKubeClient().CoreV1().Pods(namespace)
-	getPodStatus := func(prefix string) (*coreV1.PodPhase, error) {
+	getPodStatus := func(prefix string) (*v1.PodPhase, error) {
 		list, err := pods.List(metav1.ListOptions{})
 		if err != nil {
 			return nil, err
@@ -201,19 +185,19 @@ func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 		return nil, errors.Errorf("pod with prefix %v not found", prefix)
 	}
 	failed := time.After(timeout)
-	notYetRunning := make(map[string]coreV1.PodPhase)
+	notYetRunning := make(map[string]v1.PodPhase)
 	for {
 		select {
 		case <-failed:
 			return errors.Errorf("timed out waiting for pods to come online: %v", notYetRunning)
 		case <-time.After(time.Second / 2):
-			notYetRunning = make(map[string]coreV1.PodPhase)
+			notYetRunning = make(map[string]v1.PodPhase)
 			for _, prefix := range podPrefixes {
 				stat, err := getPodStatus(prefix)
 				if err != nil {
 					return err
 				}
-				if *stat != coreV1.PodRunning {
+				if *stat != v1.PodRunning {
 					notYetRunning[prefix] = *stat
 				}
 			}
