@@ -1,5 +1,5 @@
 changelog:
   - type: NEW_FEATURE
-    description: Enable installation of gloo ingress via supergloo
+    description: Finalize API for mesh ingress
     issueLink: https://github.com/solo-io/supergloo/issues/225
 
