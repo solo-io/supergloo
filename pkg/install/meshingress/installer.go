@@ -18,18 +18,21 @@ type Installer interface {
 	EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error)
 }
 
-type DefaultInstaller struct {
-	HelmInstaller helm.Installer
+type defaultInstaller struct {
+	helmInstaller helm.Installer
 }
 
-func (installer *DefaultInstaller) EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
+func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
+	return &defaultInstaller{helmInstaller: helmInstaller}
+}
+
+func (installer *defaultInstaller) EnsureIngressInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
 	installIngress, ok := install.InstallType.(*v1.Install_Ingress)
 	if !ok {
-		logger.Debugf("non ingress install detected in ingress install, %v", install.Metadata.Ref())
-		return nil, nil
+		return nil, errors.Errorf("non ingress install detected in ingress install, %v", install.Metadata.Ref())
 	}
 
 	_, ok = installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
@@ -52,7 +55,7 @@ func (installer *DefaultInstaller) EnsureIngressInstall(ctx context.Context, ins
 	if install.Disabled {
 		if len(previousInstall) > 0 {
 			logger.Infof("deleting previous gloo ingress install")
-			if err := installer.HelmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
+			if err := installer.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
 				return nil, errors.Wrapf(err, "uninstalling gloo ingress")
 			}
 			install.InstalledManifest = ""
@@ -61,7 +64,7 @@ func (installer *DefaultInstaller) EnsureIngressInstall(ctx context.Context, ins
 		return nil, nil
 	}
 
-	opts := gloo.NewInstallOptions(previousInstall, installer.HelmInstaller, installNamespace, "0.11.1")
+	opts := gloo.NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, "0.11.1")
 
 	logger.Infof("installing gloo-ingress with options: %#v", opts)
 

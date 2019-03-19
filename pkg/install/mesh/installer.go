@@ -18,17 +18,20 @@ type Installer interface {
 	EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
 }
 
-type DefaultInstaller struct {
-	HelmInstaller helm.Installer
+type defaultInstaller struct {
+	helmInstaller helm.Installer
 }
 
-func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
+func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
+	return &defaultInstaller{helmInstaller: helmInstaller}
+}
+
+func (installer *defaultInstaller) EnsureMeshInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
 	ctx = contextutils.WithLogger(ctx, "istio-installer")
 	logger := contextutils.LoggerFrom(ctx)
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
-		logger.Debugf("non mesh install detected in mesh install, %v", install.Metadata.Ref())
-		return nil, nil
+		return nil, errors.Errorf("non mesh install detected in mesh install, %v", install.Metadata.Ref())
 	}
 
 	istioMesh, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
@@ -51,7 +54,7 @@ func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 	if install.Disabled {
 		if len(previousInstall) > 0 {
 			logger.Infof("deleting previous istio install")
-			if err := installer.HelmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
+			if err := installer.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
 				return nil, errors.Wrapf(err, "uninstalling istio")
 			}
 			install.InstalledManifest = ""
@@ -76,7 +79,7 @@ func (installer *DefaultInstaller) EnsureMeshInstall(ctx context.Context, instal
 	}
 
 	opts := istio.NewInstallOptions(previousInstall,
-		installer.HelmInstaller,
+		installer.helmInstaller,
 		version,
 		installNamespace,
 		autoInjectOptions,

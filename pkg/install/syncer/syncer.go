@@ -29,15 +29,11 @@ type installSyncer struct {
 // calling this function with nil is valid and expected outside of tests
 func NewInstallSyncer(istioInstaller mesh.Installer, ingressInstaller meshingress.Installer, meshClient v1.MeshClient, ingressClient v1.MeshIngressClient, reporter reporter.Reporter) v1.InstallSyncer {
 	if istioInstaller == nil {
-		istioInstaller = &mesh.DefaultInstaller{
-			HelmInstaller: helm.NewHelmInstaller(),
-		}
+		istioInstaller = mesh.NewDefaultInstaller(helm.NewHelmInstaller())
 	}
 
 	if ingressInstaller == nil {
-		ingressInstaller = &meshingress.DefaultInstaller{
-			HelmInstaller: helm.NewHelmInstaller(),
-		}
+		ingressInstaller = meshingress.NewDefaultInstaller(helm.NewHelmInstaller())
 	}
 	return &installSyncer{
 		istioInstaller: istioInstaller,

@@ -17,7 +17,7 @@ var _ = Describe("Installer", func() {
 	BeforeEach(func() {
 		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
 	})
-	installer := DefaultInstaller{HelmInstaller: helm.NewMockHelm(
+	installer := defaultInstaller{helmInstaller: helm.NewMockHelm(
 		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
 			createdManifests = manifests
 			return nil

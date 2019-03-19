@@ -16,7 +16,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 	BeforeEach(func() {
 		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
 	})
-	installer := meshingress.DefaultInstaller{HelmInstaller: helm.NewMockHelm(
+	installer := meshingress.NewDefaultInstaller(helm.NewMockHelm(
 		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
 			createdManifests = manifests
 			return nil
@@ -26,7 +26,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 		}, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
 			updatedManifests = updated
 			return nil
-		})}
+		}))
 	ns := "ns"
 	It("installs, upgrades, and uninstalls from an install object", func() {
 
