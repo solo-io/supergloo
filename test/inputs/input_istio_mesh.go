@@ -6,6 +6,10 @@ import (
 )
 
 func IstioMesh(namespace string, secretRef *core.ResourceRef) *v1.Mesh {
+	return IstioMeshWithInstallNs(namespace, "istio-was-installed-herr", secretRef)
+}
+
+func IstioMeshWithInstallNs(namespace, installNs string, secretRef *core.ResourceRef) *v1.Mesh {
 	return &v1.Mesh{
 		Metadata: core.Metadata{
 			Namespace: namespace,
@@ -13,7 +17,7 @@ func IstioMesh(namespace string, secretRef *core.ResourceRef) *v1.Mesh {
 		},
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
-				InstallationNamespace: "istio-was-installed-herr",
+				InstallationNamespace: installNs,
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{
