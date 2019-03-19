@@ -74,6 +74,7 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		policyv1alpha1.NewMeshPolicyReconciler(istioClients.MeshPolicy),
 		v1alpha3.NewDestinationRuleReconciler(istioClients.DestinationRule),
 		v1alpha3.NewVirtualServiceReconciler(istioClients.VirtualService),
+		v1.NewTlsSecretReconciler(cs.Input.TlsSecret),
 	)
 
 	newReporter := reporter.NewReporter("istio-config-reporter",
