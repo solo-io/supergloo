@@ -2,8 +2,16 @@ package e2e_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/solo-io/go-utils/testutils"
+	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/solo-io/supergloo/test/inputs"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -62,13 +70,15 @@ var _ = Describe("E2e", func() {
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		deleteSuperglooPods()
 
-		err = utils.Supergloo("install istio --name=my-istio --mtls=true --auto-inject=true")
+		meshName := "my-istio"
+
+		err = utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
 		Expect(err).NotTo(HaveOccurred())
 
 		installClient := helpers.MustInstallClient()
 
 		Eventually(func() (core.Status_State, error) {
-			i, err := installClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			i, err := installClient.Read("supergloo-system", meshName, clients.ReadOpts{})
 			if err != nil {
 				return 0, err
 			}
@@ -83,7 +93,7 @@ var _ = Describe("E2e", func() {
 
 		meshClient := helpers.MustMeshClient()
 		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			_, err := meshClient.Read("supergloo-system", meshName, clients.ReadOpts{})
 			return err
 		}).ShouldNot(HaveOccurred())
 
@@ -124,6 +134,32 @@ var _ = Describe("E2e", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
+		// create tls cert here to use as custom root cert
+		certsDir, err := ioutil.TempDir("", "supergloocerts")
+		Expect(err).NotTo(HaveOccurred())
+		defer os.RemoveAll(certsDir)
+		err = writeCerts(certsDir)
+		Expect(err).NotTo(HaveOccurred())
+		secretName := "rootcert"
+		err = createTlsSecret(secretName, certsDir)
+		Expect(err).NotTo(HaveOccurred())
+
+		// update our mesh with the root cert
+		err = setRootCert(meshName, secretName)
+		Expect(err).NotTo(HaveOccurred())
+
+		var certChain string
+		Eventually(func() (string, error) {
+			rootCa, cc, err := getCerts("details", namespaceWithInject)
+			if err != nil {
+				return "", err
+			}
+			certChain = cc
+			return rootCa, nil
+		}, time.Minute*3).Should(Equal(inputs.RootCert))
+
+		Expect(certChain).To(HaveSuffix(inputs.CertChain))
+
 		// with mtls in strict mode, curl will fail from non-injected testrunner
 		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
 			Service: "details." + namespaceWithInject + ".svc.cluster.local",
@@ -161,7 +197,7 @@ var _ = Describe("E2e", func() {
 
 		err = nil
 		Eventually(func() bool {
-			_, err = meshClient.Read("supergloo-system", "my-istio", clients.ReadOpts{})
+			_, err = meshClient.Read("supergloo-system", meshName, clients.ReadOpts{})
 			if err == nil {
 				return false
 			}
@@ -207,4 +243,67 @@ func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 		}
 
 	}
+}
+
+func writeCerts(dir string) error {
+	secretContent := inputs.InputTlsSecret("", "")
+	err := ioutil.WriteFile(filepath.Join(dir, "CaCert"), []byte(secretContent.CaCert), 0644)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(dir, "CaKey"), []byte(secretContent.CaKey), 0644)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(dir, "RootCert"), []byte(secretContent.RootCert), 0644)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(dir, "CertChain"), []byte(secretContent.CertChain), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createTlsSecret(name, certDir string) error {
+	err := utils.Supergloo(
+		fmt.Sprintf("create secret tls --name %v --cacert %v --cakey %v --rootcert %v --certchain %v ", name,
+			filepath.Join(certDir, "CaCert"),
+			filepath.Join(certDir, "CaKey"),
+			filepath.Join(certDir, "RootCert"),
+			filepath.Join(certDir, "CertChain"),
+		))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func setRootCert(targetMesh, tlsSecret string) error {
+	return utils.Supergloo(
+		fmt.Sprintf("set rootcert --target-mesh supergloo-system.%v --tls-secret supergloo-system.%v", targetMesh, tlsSecret))
+}
+
+func getCerts(appLabel, namespace string) (string, string, error) {
+	pods, err := helpers.MustKubeClient().CoreV1().Pods(namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(map[string]string{"app": appLabel}).String(),
+	})
+	if err != nil {
+		return "", "", err
+	}
+	if len(pods.Items) == 0 {
+		return "", "", errors.Errorf("no pods found with label app: %v", appLabel)
+	}
+
+	// based on https://istio.io/docs/tasks/security/plugin-ca-cert/#verifying-the-new-certificates
+	rootCert, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "-c", "istio-proxy", "/bin/cat", "/etc/certs/root-cert.pem")
+	if err != nil {
+		return "", "", err
+	}
+	certChain, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "-c", "istio-proxy", "/bin/cat", "/etc/certs/cert-chain.pem")
+	if err != nil {
+		return "", "", err
+	}
+	return rootCert, certChain, nil
 }
