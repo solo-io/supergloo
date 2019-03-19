@@ -18,12 +18,6 @@ stored and managed securely called Secrets. This
   -h, --help   help for create
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo

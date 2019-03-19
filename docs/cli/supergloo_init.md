@@ -28,12 +28,6 @@ supergloo init [flags]
   -v, --values string      Provide a custom values.yaml overrides for the installed helm chart. Leave empty to use default values from the chart.
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
