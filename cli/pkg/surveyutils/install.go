@@ -46,7 +46,7 @@ func SurveyGlooInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Gloo, helpers.MustGetNamespaces()); err != nil {
 		return err
 	}
-	if err := cliutil.ChooseFromList("which version of Gloo to install? ", &in.GlooIngressInstall.GlooVersion, []string{"latest"}); err != nil {
+	if err := cliutil.ChooseFromList("which version of Gloo to install? ", &in.GlooIngressInstall.GlooVersion, constants.SupportedGlooVersions); err != nil {
 		return err
 	}
 
