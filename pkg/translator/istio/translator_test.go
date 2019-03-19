@@ -424,7 +424,7 @@ var _ = Describe("Translator", func() {
 		Expect(meshConfig.RootCert).NotTo(BeNil())
 		Expect(*meshConfig.RootCert).To(Equal(v1.TlsSecret{
 			Metadata: core.Metadata{
-				Namespace: istioMesh.MeshType.(*v1.Mesh_Istio_).Istio.InstallationNamespace,
+				Namespace: istioMesh.MeshType.(*v1.Mesh_Istio).Istio.InstallationNamespace,
 				Name:      "cacerts",
 			},
 			RootCert:  tlsSecret.RootCert,
