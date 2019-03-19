@@ -35,7 +35,7 @@ func NewInstallSyncer(gloonstaller Installer, meshClient v1.MeshClient, ingressC
 }
 
 func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-install-syncer-%v", snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("gloo-install-syncer-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())
@@ -136,7 +136,7 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 			createdIngress.Metadata.ResourceVersion = existingMeshIngress.Metadata.ResourceVersion
 		}
 
-		logger.Infof("writing installed mesh %v", createdIngress.Metadata.Ref())
+		logger.Infof("writing installed ingress %v", createdIngress.Metadata.Ref())
 		if _, err := s.ingressClient.Write(createdIngress,
 			clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
 			err := errors.Wrapf(err, "writing installed mesh-ingress object %v failed "+

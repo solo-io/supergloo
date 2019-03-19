@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMeshingress(t *testing.T) {
+func TestGloo(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Meshingress Suite")
 }

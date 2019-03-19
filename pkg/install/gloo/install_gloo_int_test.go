@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
-var _ = Describe("mesh ingress mock installer", func() {
+var _ = Describe("gloo mock installer", func() {
 	installer := gloo.NewDefaultInstaller(helm.NewHelmInstaller())
 	ns := "gloo-system"
 	It("installs, upgrades, and uninstalls from an install object", func() {

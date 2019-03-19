@@ -110,12 +110,12 @@ var _ = Describe("Syncer", func() {
 				i1, err := installClient.Read("b", "a", clients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(i1.Status.State).To(Equal(core.Status_Rejected))
-				Expect(i1.Status.Reason).To(ContainSubstring("multiple active istio installactions are not currently supported"))
+				Expect(i1.Status.Reason).To(ContainSubstring("multiple active istio installations are not currently supported"))
 
 				i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(i2.Status.State).To(Equal(core.Status_Rejected))
-				Expect(i2.Status.Reason).To(ContainSubstring("multiple active istio installactions are not currently supported"))
+				Expect(i2.Status.Reason).To(ContainSubstring("multiple active istio installations are not currently supported"))
 			})
 		})
 		Context("one active install, one inactive install with a previous install", func() {

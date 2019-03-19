@@ -77,25 +77,31 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	if mesh != nil && mesh.MtlsConfig != nil {
 		selfSignedCert = mesh.MtlsConfig.RootCertificate == nil
 	}
-
-	opts := installOptions{
-		previousInstall: previousInstall,
-		version:         istio.IstioMesh.IstioVersion,
-		namespace:       installNamespace,
-		AutoInject: autoInjectInstallOptions{
-			Enabled: istio.IstioMesh.EnableAutoInject,
-		},
-		Mtls: mtlsInstallOptions{
-			Enabled: istio.IstioMesh.EnableMtls,
-			// self signed cert is true if using the buildtin istio cert
-			SelfSignedCert: selfSignedCert,
-		},
-		Observability: observabilityInstallOptions{
-			EnableGrafana:    istio.IstioMesh.InstallGrafana,
-			EnablePrometheus: istio.IstioMesh.InstallPrometheus,
-			EnableJaeger:     istio.IstioMesh.InstallJaeger,
-		},
+	mtlsOptions := mtlsInstallOptions{
+		Enabled: istio.IstioMesh.EnableMtls,
+		// self signed cert is true if using the buildtin istio cert
+		SelfSignedCert: selfSignedCert,
 	}
+	autoInjectOptions := autoInjectInstallOptions{
+		Enabled: istio.IstioMesh.EnableAutoInject,
+	}
+	observabilityOptions := observabilityInstallOptions{
+		EnableGrafana:    istio.IstioMesh.InstallGrafana,
+		EnablePrometheus: istio.IstioMesh.InstallPrometheus,
+		EnableJaeger:     istio.IstioMesh.InstallJaeger,
+	}
+
+	opts := NewInstallOptions(
+		previousInstall,
+		i.helmInstaller,
+		istio.IstioMesh.IstioVersion,
+		installNamespace,
+		autoInjectOptions,
+		mtlsOptions,
+		observabilityOptions,
+		gatewayInstallOptions{},
+	)
+
 	logger.Infof("installing istio with options: %#v", opts)
 
 	manifests, err := helm.InstallOrUpdate(ctx, opts)

@@ -136,7 +136,7 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 		return mesh, in
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
-			resourceErrs.AddError(in, errors.Errorf("multiple active istio installactions "+
+			resourceErrs.AddError(in, errors.Errorf("multiple active istio installations "+
 				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
 		}
 	}
