@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/registration"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/registration"
+	"github.com/solo-io/supergloo/pkg/registration/istio"
 )
 
 func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
@@ -39,6 +39,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		registration.NewRegistrationSyncer(clientset, errHandler),
+		istio.NewIstioSecretDeleter(clientset.Kube),
 	}
 }
 
