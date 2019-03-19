@@ -30,7 +30,7 @@ func installGlooCmd(opts *options.Options) *cobra.Command {
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
-	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install)
+	flagutils.AddGlooIngressInstallFlags(cmd.PersistentFlags(), &opts.Install)
 	return cmd
 }
 

@@ -20,6 +20,7 @@ type Options struct {
 	Uninstall         Uninstall
 	CreateRoutingRule CreateRoutingRule
 	CreateTlsSecret   CreateTlsSecret
+	SetRootCert       SetRootCert
 }
 
 type Init struct {
@@ -78,4 +79,9 @@ type CreateTlsSecret struct {
 	PrivateKeyFilename string
 	CertChainFilename  string
 	CaCertFilename     string
+}
+
+type SetRootCert struct {
+	TargetMesh ResourceRefValue
+	TlsSecret  ResourceRefValue
 }

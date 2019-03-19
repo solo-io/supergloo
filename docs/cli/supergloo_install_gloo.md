@@ -17,14 +17,9 @@ supergloo install gloo [flags]
 ### Options
 
 ```
-      --auto-inject                     enable auto-injection? (default true)
-      --grafana                         add grafana to the install? (default true)
   -h, --help                            help for gloo
-      --installation-namespace string   which namespace to install Istio into? (default "istio-system")
-      --jaeger                          add jaeger to the install? (default true)
-      --mtls                            enable mtls? (default true)
-      --prometheus                      add prometheus to the install? (default true)
-      --version string                  version of istio to install? available: [1.0.3 1.0.5 1.0.6] (default "1.0.6")
+      --installation-namespace string   which namespace to install Gloo into? (default "gloo-system")
+      --version string                  version of gloo to install? available: [latest v0.11.1 v0.10.5] (default "latest")
 ```
 
 ### Options inherited from parent commands
