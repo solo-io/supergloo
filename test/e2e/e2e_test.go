@@ -156,11 +156,9 @@ var _ = Describe("E2e", func() {
 			}
 			certChain = cc
 			return rootCa, nil
-		}).Should(Equal(inputs.RootCert))
+		}, time.Minute*3).Should(Equal(inputs.RootCert))
 
-		Expect(certChain).To(Equal(inputs.CertChain))
-
-		waitUntilOkFile()
+		Expect(certChain).To(HaveSuffix(inputs.CertChain))
 
 		// with mtls in strict mode, curl will fail from non-injected testrunner
 		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
@@ -299,11 +297,11 @@ func getCerts(appLabel, namespace string) (string, string, error) {
 	}
 
 	// based on https://istio.io/docs/tasks/security/plugin-ca-cert/#verifying-the-new-certificates
-	rootCert, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "/bin/cat", "/etc/certs/root-cert.pem")
+	rootCert, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "-c", "istio-proxy", "/bin/cat", "/etc/certs/root-cert.pem")
 	if err != nil {
 		return "", "", err
 	}
-	certChain, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "/bin/cat", "/etc/certs/cert-chain.pem")
+	certChain, err := testutils.KubectlOut("exec", "-n", namespace, pods.Items[0].Name, "-c", "istio-proxy", "/bin/cat", "/etc/certs/cert-chain.pem")
 	if err != nil {
 		return "", "", err
 	}
