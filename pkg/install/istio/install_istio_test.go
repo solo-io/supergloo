@@ -114,8 +114,6 @@ var _ = Describe("installOrUpdateIstio", func() {
 				return fmt.Errorf("i was not expected to be called")
 			})
 			t.opts.installer = hi
-
-			// perform initial install
 			manifests, err := helm.InstallOrUpdate(context.TODO(), t.opts)
 			Expect(err).NotTo(HaveOccurred())
 

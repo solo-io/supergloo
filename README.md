@@ -14,7 +14,7 @@ SuperGloo, an open-source project to manage and orchestrate service meshes at sc
 &nbsp; [**Slack**](https://slack.solo.io) &nbsp; |
 &nbsp; [**Twitter**](https://twitter.com/soloio_inc)
 
-<BR><center><img src="doc/docs/img/architecture.png" alt="SuperGloo Architecture" width="906"></center>
+<BR><center><img src="docs/img/architecture.png" alt="SuperGloo Architecture" width="906"></center>
 
 ## Summary
 

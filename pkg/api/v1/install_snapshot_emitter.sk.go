@@ -42,16 +42,18 @@ func init() {
 type InstallEmitter interface {
 	Register() error
 	Install() InstallClient
+	Mesh() MeshClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error)
 }
 
-func NewInstallEmitter(installClient InstallClient) InstallEmitter {
-	return NewInstallEmitterWithEmit(installClient, make(chan struct{}))
+func NewInstallEmitter(installClient InstallClient, meshClient MeshClient) InstallEmitter {
+	return NewInstallEmitterWithEmit(installClient, meshClient, make(chan struct{}))
 }
 
-func NewInstallEmitterWithEmit(installClient InstallClient, emit <-chan struct{}) InstallEmitter {
+func NewInstallEmitterWithEmit(installClient InstallClient, meshClient MeshClient, emit <-chan struct{}) InstallEmitter {
 	return &installEmitter{
 		install:   installClient,
+		mesh:      meshClient,
 		forceEmit: emit,
 	}
 }
@@ -59,10 +61,14 @@ func NewInstallEmitterWithEmit(installClient InstallClient, emit <-chan struct{}
 type installEmitter struct {
 	forceEmit <-chan struct{}
 	install   InstallClient
+	mesh      MeshClient
 }
 
 func (c *installEmitter) Register() error {
 	if err := c.install.Register(); err != nil {
+		return err
+	}
+	if err := c.mesh.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -70,6 +76,10 @@ func (c *installEmitter) Register() error {
 
 func (c *installEmitter) Install() InstallClient {
 	return c.install
+}
+
+func (c *installEmitter) Mesh() MeshClient {
+	return c.mesh
 }
 
 func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error) {
@@ -94,6 +104,12 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
+	/* Create channel for Mesh */
+	type meshListWithNamespace struct {
+		list      MeshList
+		namespace string
+	}
+	meshChan := make(chan meshListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Install */
@@ -107,6 +123,17 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
 		}(namespace)
+		/* Setup namespaced watch for Mesh */
+		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Mesh watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -119,6 +146,12 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					}
+				case meshList := <-meshNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
 					}
 				}
 			}
@@ -162,6 +195,13 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				installList := installNamespacedList.list
 
 				currentSnapshot.Installs[namespace] = installList
+			case meshNamespacedList := <-meshChan:
+				record()
+
+				namespace := meshNamespacedList.namespace
+				meshList := meshNamespacedList.list
+
+				currentSnapshot.Meshes[namespace] = meshList
 			}
 		}
 	}()

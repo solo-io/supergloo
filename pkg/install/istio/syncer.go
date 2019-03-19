@@ -23,9 +23,10 @@ type installSyncer struct {
 // calling this function with nil is valid and expected outside of tests
 func NewInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
 	if istioInstaller == nil {
-		istioInstaller = NewDefaultInstaller(helm.NewHelmInstaller())
+		istioInstaller = &defaultIstioInstaller{
+			helmInstaller: helm.NewHelmInstaller(),
+		}
 	}
-
 	return &installSyncer{
 		istioInstaller: istioInstaller,
 		meshClient:     meshClient,
@@ -41,7 +42,10 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
+	meshes := snap.Meshes.List()
 
+	// split installs by which are active, inactive (istio only)
+	// if more than 1 active install, they get errored
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
 	var enabledInstalls, disabledInstalls v1.InstallList
@@ -52,39 +56,21 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 			enabledInstalls = append(enabledInstalls, install)
 		}
 	}
-	// Handle mesh installs
-	s.handleDisabledInstalls(ctx, disabledInstalls, resourceErrs)
-	s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs)
 
-	// Handle ingress installs
-
-	logger.Infof("writing reports")
-	if err := resourceErrs.Validate(); err != nil {
-		logger.Warnf("install sync failed with validation errors: %v", err)
-	} else {
-		logger.Infof("install sync successful")
-	}
-
-	// reporter should handle updates to the installs that happened during ensure
-	return s.reporter.WriteReports(ctx, resourceErrs, nil)
-}
-
-func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
-	disabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
-	logger := contextutils.LoggerFrom(ctx)
-
+	// split installs by which are active, inactive (istio only)
+	// if more than 1 active install, they get errored
+	// perform uninstalls first
 	for _, in := range disabledInstalls {
-		switch installType := in.InstallType.(type) {
-		case *v1.Install_Mesh:
-			if installType.Mesh.InstalledMesh == nil {
+		installMesh, isMesh := in.InstallType.(*v1.Install_Mesh)
+		if isMesh {
+			if installMesh.Mesh.InstalledMesh == nil {
 				// mesh was never installed
 				resourceErrs.Accept(in)
 				continue
 			}
-			installedMesh := *installType.Mesh.InstalledMesh
+			installedMesh := *installMesh.Mesh.InstalledMesh
 			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in); err != nil {
+			if _, err := s.istioInstaller.EnsureIstioInstall(ctx, in, nil); err != nil {
 				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 			} else {
 				resourceErrs.Accept(in)
@@ -95,35 +81,10 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 				}
 			}
 		}
-	}
-}
 
-func (s *installSyncer) handleActiveInstalls(ctx context.Context,
-	enabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
-	logger := contextutils.LoggerFrom(ctx)
-	var (
-		createdMesh   *v1.Mesh
-		activeInstall *v1.Install
-	)
-	switch {
-	case len(enabledInstalls) == 1:
-		in := enabledInstalls[0]
-		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in)
-		if err != nil {
-			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
-			return
-		}
-		resourceErrs.Accept(in)
-		createdMesh = mesh
-		activeInstall = in
-	case len(enabledInstalls) > 1:
-		for _, in := range enabledInstalls {
-			resourceErrs.AddError(in, errors.Errorf("multiple active istio installactions "+
-				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
-		}
 	}
+
+	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
 
 	if createdMesh != nil {
 		// update resource version if this is an overwrite
@@ -145,4 +106,39 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 		}
 	}
 
+	logger.Infof("writing reports")
+	if err := resourceErrs.Validate(); err != nil {
+		logger.Warnf("install sync failed with validation errors: %v", err)
+	} else {
+		logger.Infof("install sync successful")
+	}
+
+	// reporter should handle updates to the installs that happened during ensure
+	return s.reporter.WriteReports(ctx, resourceErrs, nil)
+
+}
+
+func (s *installSyncer) handleActiveInstalls(ctx context.Context,
+	enabledInstalls v1.InstallList,
+	meshes v1.MeshList,
+	resourceErrs reporter.ResourceErrors) (*v1.Mesh, *v1.Install) {
+
+	switch {
+	case len(enabledInstalls) == 1:
+		in := enabledInstalls[0]
+		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
+		mesh, err := s.istioInstaller.EnsureIstioInstall(ctx, in, meshes)
+		if err != nil {
+			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
+			return nil, nil
+		}
+		resourceErrs.Accept(in)
+		return mesh, in
+	case len(enabledInstalls) > 1:
+		for _, in := range enabledInstalls {
+			resourceErrs.AddError(in, errors.Errorf("multiple active istio installactions "+
+				"are not currently supported. active installs: %v", enabledInstalls.NamespacesDotNames()))
+		}
+	}
+	return nil, nil
 }

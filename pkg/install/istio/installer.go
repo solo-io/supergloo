@@ -13,29 +13,30 @@ import (
 )
 
 type Installer interface {
-	EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error)
+	EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
 }
 
-type defaultInstaller struct {
+type defaultIstioInstaller struct {
 	helmInstaller helm.Installer
 }
 
-func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
-	return &defaultInstaller{helmInstaller: helmInstaller}
+func NewDefaultIstioInstaller(helmInstaller helm.Installer) *defaultIstioInstaller {
+	return &defaultIstioInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install) (*v1.Mesh, error) {
-	ctx = contextutils.WithLogger(ctx, "istio-installer")
-	logger := contextutils.LoggerFrom(ctx)
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
-		return nil, errors.Errorf("non mesh install detected in mesh install, %v", install.Metadata.Ref())
+		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
-	istioMesh, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	istio, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
+
+	ctx = contextutils.WithLogger(ctx, "istio-installer")
+	logger := contextutils.LoggerFrom(ctx)
 
 	var previousInstall helm.Manifests
 	if install.InstalledManifest != "" {
@@ -52,7 +53,7 @@ func (installer *defaultInstaller) EnsureIstioInstall(ctx context.Context, insta
 	if install.Disabled {
 		if len(previousInstall) > 0 {
 			logger.Infof("deleting previous istio install")
-			if err := installer.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
+			if err := i.helmInstaller.DeleteFromManifests(ctx, installNamespace, previousInstall); err != nil {
 				return nil, errors.Wrapf(err, "uninstalling istio")
 			}
 			install.InstalledManifest = ""
@@ -61,31 +62,40 @@ func (installer *defaultInstaller) EnsureIstioInstall(ctx context.Context, insta
 		return nil, nil
 	}
 
-	version := istioMesh.IstioMesh.IstioVersion
-	autoInjectOptions := autoInjectInstallOptions{
-		Enabled: istioMesh.IstioMesh.EnableAutoInject,
-	}
-	mtlsOptions := mtlsInstallOptions{
-		Enabled: istioMesh.IstioMesh.EnableMtls,
-		// self signed cert is true if using the buildtin istio cert
-		SelfSignedCert: istioMesh.IstioMesh.CustomRootCert == nil,
-	}
-	observabilityOptions := observabilityInstallOptions{
-		EnableGrafana:    istioMesh.IstioMesh.InstallGrafana,
-		EnablePrometheus: istioMesh.IstioMesh.InstallPrometheus,
-		EnableJaeger:     istioMesh.IstioMesh.InstallJaeger,
+	var mesh *v1.Mesh
+	if installMesh.Mesh.InstalledMesh != nil {
+		var err error
+		mesh, err = meshes.Find(installMesh.Mesh.InstalledMesh.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "installed mesh not found")
+		}
 	}
 
-	opts := NewInstallOptions(previousInstall,
-		installer.helmInstaller,
-		version,
-		installNamespace,
-		autoInjectOptions,
-		mtlsOptions,
-		observabilityOptions,
-		gatewayInstallOptions{},
-	)
+	// self-signed cert is true if a rootcert is not set on either the install or the mesh
+	// mesh takes precedence because it may be updated by the user
+	selfSignedCert := istio.IstioMesh.CustomRootCert == nil
+	if mesh != nil && mesh.MtlsConfig != nil {
+		selfSignedCert = mesh.MtlsConfig.RootCertificate == nil
+	}
 
+	opts := installOptions{
+		previousInstall: previousInstall,
+		version:         istio.IstioMesh.IstioVersion,
+		namespace:       installNamespace,
+		AutoInject: autoInjectInstallOptions{
+			Enabled: istio.IstioMesh.EnableAutoInject,
+		},
+		Mtls: mtlsInstallOptions{
+			Enabled: istio.IstioMesh.EnableMtls,
+			// self signed cert is true if using the buildtin istio cert
+			SelfSignedCert: selfSignedCert,
+		},
+		Observability: observabilityInstallOptions{
+			EnableGrafana:    istio.IstioMesh.InstallGrafana,
+			EnablePrometheus: istio.IstioMesh.InstallPrometheus,
+			EnableJaeger:     istio.IstioMesh.InstallJaeger,
+		},
+	}
 	logger.Infof("installing istio with options: %#v", opts)
 
 	manifests, err := helm.InstallOrUpdate(ctx, opts)
@@ -98,19 +108,28 @@ func (installer *defaultInstaller) EnsureIstioInstall(ctx context.Context, insta
 		return nil, errors.Wrapf(err, "converting installed mannifests to gzipped string")
 	}
 
-	mesh := &v1.Mesh{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshType: &v1.Mesh_Istio{
+	if mesh != nil {
+		mesh.MeshType = &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNamespace,
 			},
-		},
-		MtlsConfig: &v1.MtlsConfig{
-			MtlsEnabled: istioMesh.IstioMesh.EnableMtls,
-		},
+		}
+	} else {
+		mesh = &v1.Mesh{
+			Metadata: core.Metadata{
+				Namespace: install.Metadata.Namespace,
+				Name:      install.Metadata.Name,
+			},
+			MeshType: &v1.Mesh_Istio{
+				Istio: &v1.IstioMesh{
+					InstallationNamespace: installNamespace,
+				},
+			},
+			MtlsConfig: &v1.MtlsConfig{
+				MtlsEnabled:     istio.IstioMesh.EnableMtls,
+				RootCertificate: istio.IstioMesh.CustomRootCert,
+			},
+		}
 	}
 
 	// caller should expect the install to have been modified
