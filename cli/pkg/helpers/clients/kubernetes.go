@@ -266,9 +266,8 @@ func SecretClient() (gloov1.SecretClient, error) {
 		return nil, err
 	}
 	secretClient, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
-		Clientset:    kubeClient,
-		Cache:        kubeCoreCache,
-		PlainSecrets: true,
+		Clientset: kubeClient,
+		Cache:     kubeCoreCache,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating secret client")

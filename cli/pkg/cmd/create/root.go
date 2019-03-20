@@ -10,8 +10,8 @@ func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"c"},
-		Short:   "commands for creating managing resources used for SuperGloo",
-		Long:    "commands for creating managing resources used for SuperGloo",
+		Short:   "commands for creating resources used by SuperGloo",
+		Long:    "commands for creating resources used by SuperGloo",
 	}
 
 	cmd.AddCommand(createSecretCommand(opts))

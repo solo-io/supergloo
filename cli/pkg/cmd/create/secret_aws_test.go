@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -98,6 +100,11 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 			Expect(secret).NotTo(BeNil())
 			Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))
 			Expect(secret.Metadata.Namespace).To(BeEquivalentTo("supergloo-system"))
+
+			awsSecret, ok := secret.Kind.(*v1.Secret_Aws)
+			Expect(ok).To(BeTrue())
+			Expect(awsSecret.Aws.AccessKey).To(BeEquivalentTo("valid-key"))
+			Expect(awsSecret.Aws.SecretKey).To(BeEquivalentTo("valid-secret"))
 		})
 
 		It("fails with invalid credentials", func() {
@@ -139,6 +146,11 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 				Expect(secret).NotTo(BeNil())
 				Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))
 				Expect(secret.Metadata.Namespace).To(BeEquivalentTo("my-ns"))
+
+				awsSecret, ok := secret.Kind.(*v1.Secret_Aws)
+				Expect(ok).To(BeTrue())
+				Expect(awsSecret.Aws.AccessKey).To(BeEquivalentTo("ABCD2134"))
+				Expect(awsSecret.Aws.SecretKey).To(BeEquivalentTo("cmeLK8Wc4pgSVQsfnNJWc4pgSVQd8"))
 			})
 
 			It("fails when providing a non-existing profile", func() {
@@ -174,6 +186,11 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 				Expect(secret).NotTo(BeNil())
 				Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))
 				Expect(secret.Metadata.Namespace).To(BeEquivalentTo("supergloo-system"))
+
+				awsSecret, ok := secret.Kind.(*v1.Secret_Aws)
+				Expect(ok).To(BeTrue())
+				Expect(awsSecret.Aws.AccessKey).To(BeEquivalentTo("ZYXW9876"))
+				Expect(awsSecret.Aws.SecretKey).To(BeEquivalentTo("srGfWc4pgSVQ8WWc4pgSVQk8BODMx"))
 			})
 
 			It("fails when no profile flag is provided", func() {

@@ -24,8 +24,8 @@ var _ = Describe("Creating AWS Secrets", func() {
 				var opts options.Options
 				err := surveyutils.SurveyAwsCredentials(&opts)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(opts.AwsSecret.AccessKeyId).To(BeEquivalentTo("my-key"))
-				Expect(opts.AwsSecret.SecretAccessKey).To(BeEquivalentTo("abcd1234"))
+				Expect(opts.CreateAwsSecret.AccessKeyId).To(BeEquivalentTo("my-key"))
+				Expect(opts.CreateAwsSecret.SecretAccessKey).To(BeEquivalentTo("abcd1234"))
 			})
 		})
 
@@ -44,8 +44,8 @@ var _ = Describe("Creating AWS Secrets", func() {
 				var opts options.Options
 				err := surveyutils.SurveyAwsCredentials(&opts)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(opts.AwsSecret.AccessKeyId).To(BeEquivalentTo("other-key"))
-				Expect(opts.AwsSecret.SecretAccessKey).To(BeEquivalentTo("other9876"))
+				Expect(opts.CreateAwsSecret.AccessKeyId).To(BeEquivalentTo("other-key"))
+				Expect(opts.CreateAwsSecret.SecretAccessKey).To(BeEquivalentTo("other9876"))
 			})
 		})
 
@@ -97,8 +97,8 @@ var _ = Describe("Creating AWS Secrets", func() {
 				var opts options.Options
 				err := surveyutils.SurveyAwsCredentials(&opts)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(opts.AwsSecret.AccessKeyId).To(BeEquivalentTo("my-access-key"))
-				Expect(opts.AwsSecret.SecretAccessKey).To(BeEquivalentTo("my-secret"))
+				Expect(opts.CreateAwsSecret.AccessKeyId).To(BeEquivalentTo("my-access-key"))
+				Expect(opts.CreateAwsSecret.SecretAccessKey).To(BeEquivalentTo("my-secret"))
 			})
 		})
 	})

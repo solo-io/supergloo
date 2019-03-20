@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func AddAwsSecretFlags(set *pflag.FlagSet, secret *options.AwsSecret) {
+func AddAwsSecretFlags(set *pflag.FlagSet, secret *options.CreateAwsSecret) {
 	set.StringVar(&secret.AccessKeyId, "access-key-id", "", "AWS Access Key ID")
 	set.StringVar(&secret.SecretAccessKey, "secret-access-key", "", "AWS Secret Access Key")
 	set.StringVarP(&secret.CredentialsFileLocation, "file", "f", "", "path to the AWS credentials file")

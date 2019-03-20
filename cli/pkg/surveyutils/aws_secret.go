@@ -27,10 +27,10 @@ func SurveyAwsCredentials(opts *options.Options) error {
 	}
 
 	if strings.Compare(choice, readFromInput) == 0 {
-		if err := cliutil.GetStringInput("Access Key ID", &opts.AwsSecret.AccessKeyId); err != nil {
+		if err := cliutil.GetStringInput("Access Key ID", &opts.CreateAwsSecret.AccessKeyId); err != nil {
 			return err
 		}
-		if err := cliutil.GetStringInput("Secret Access Key", &opts.AwsSecret.SecretAccessKey); err != nil {
+		if err := cliutil.GetStringInput("Secret Access Key", &opts.CreateAwsSecret.SecretAccessKey); err != nil {
 			return err
 		}
 	} else {

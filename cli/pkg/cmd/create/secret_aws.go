@@ -37,7 +37,7 @@ either directly via the correspondent flags, or by passing the location of an AW
 				return err
 			}
 
-			if opts.AwsSecret.CredentialsFileLocation != "" {
+			if opts.CreateAwsSecret.CredentialsFileLocation != "" {
 				if err := getCredentialsFromFile(opts); err != nil {
 					return err
 				}
@@ -52,8 +52,8 @@ either directly via the correspondent flags, or by passing the location of an AW
 				Metadata: opts.Metadata,
 				Kind: &gloov1.Secret_Aws{
 					Aws: &gloov1.AwsSecret{
-						AccessKey: opts.AwsSecret.AccessKeyId,
-						SecretKey: opts.AwsSecret.SecretAccessKey,
+						AccessKey: opts.CreateAwsSecret.AccessKeyId,
+						SecretKey: opts.CreateAwsSecret.SecretAccessKey,
 					},
 				},
 			}
@@ -69,7 +69,7 @@ either directly via the correspondent flags, or by passing the location of an AW
 		},
 	}
 
-	flagutils.AddAwsSecretFlags(cmd.PersistentFlags(), &opts.AwsSecret)
+	flagutils.AddAwsSecretFlags(cmd.PersistentFlags(), &opts.CreateAwsSecret)
 
 	return cmd
 }
@@ -79,10 +79,10 @@ func validateFlags(opts *options.Options) error {
 		return errors.Errorf("name cannot be empty, provide with --name flag")
 	}
 
-	if opts.AwsSecret.AccessKeyId != "" && opts.AwsSecret.SecretAccessKey == "" ||
-		opts.AwsSecret.AccessKeyId == "" && opts.AwsSecret.SecretAccessKey != "" ||
-		opts.AwsSecret.AccessKeyId != "" && opts.AwsSecret.CredentialsFileLocation != "" ||
-		opts.AwsSecret.AccessKeyId == "" && opts.AwsSecret.CredentialsFileLocation == "" {
+	if opts.CreateAwsSecret.AccessKeyId != "" && opts.CreateAwsSecret.SecretAccessKey == "" ||
+		opts.CreateAwsSecret.AccessKeyId == "" && opts.CreateAwsSecret.SecretAccessKey != "" ||
+		opts.CreateAwsSecret.AccessKeyId != "" && opts.CreateAwsSecret.CredentialsFileLocation != "" ||
+		opts.CreateAwsSecret.AccessKeyId == "" && opts.CreateAwsSecret.CredentialsFileLocation == "" {
 		return errors.Errorf("you must provide either both the --access-key-id and --secret-access-key flags or " +
 			"a credentials file via the -f flag")
 	}
@@ -91,7 +91,7 @@ func validateFlags(opts *options.Options) error {
 
 // Parses the credentials file and sets the correspondent values in the given options
 func getCredentialsFromFile(opts *options.Options) error {
-	sections, err := helpers.ParseAwsCredentialsFile(opts.AwsSecret.CredentialsFileLocation)
+	sections, err := helpers.ParseAwsCredentialsFile(opts.CreateAwsSecret.CredentialsFileLocation)
 	if err != nil {
 		return err
 	}
@@ -103,11 +103,11 @@ func getCredentialsFromFile(opts *options.Options) error {
 		return errors.Errorf("could not find any profile section in credentials file")
 	case 1:
 		section = sections[0]
-		if profile := opts.AwsSecret.CredentialsFileProfile; profile != "" && section.Name() != profile {
+		if profile := opts.CreateAwsSecret.CredentialsFileProfile; profile != "" && section.Name() != profile {
 			return errors.Errorf("could not find profile [%s] in credentials file", profile)
 		}
 	default:
-		profile := opts.AwsSecret.CredentialsFileProfile
+		profile := opts.CreateAwsSecret.CredentialsFileProfile
 		if profile == "" {
 			return errors.Errorf("found multiple profiles in credentials file. Please select the one " +
 				"you would like to use via the --profile flag")
@@ -131,7 +131,7 @@ func getCredentialsFromFile(opts *options.Options) error {
 }
 
 func verifyCredentials(opts *options.Options) error {
-	appmeshClient, err := clients.NewAppmeshClient(opts.AwsSecret.AccessKeyId, opts.AwsSecret.SecretAccessKey, "us-east-1")
+	appmeshClient, err := clients.NewAppmeshClient(opts.CreateAwsSecret.AccessKeyId, opts.CreateAwsSecret.SecretAccessKey, "us-east-1")
 	if err != nil {
 		return errors.Wrapf(err, "failed to create aws session with provided credentials")
 	}

@@ -34,11 +34,11 @@ func ParseAwsCredentialsFile(path string) ([]*ini.Section, error) {
 
 func SetAwsCredentialsFromSection(opts *options.Options, section *ini.Section) error {
 	var err error
-	opts.AwsSecret.AccessKeyId, err = getValueByKey(section, "aws_access_key_id")
+	opts.CreateAwsSecret.AccessKeyId, err = getValueByKey(section, "aws_access_key_id")
 	if err != nil {
 		return err
 	}
-	opts.AwsSecret.SecretAccessKey, err = getValueByKey(section, "aws_secret_access_key")
+	opts.CreateAwsSecret.SecretAccessKey, err = getValueByKey(section, "aws_secret_access_key")
 	if err != nil {
 		return err
 	}
