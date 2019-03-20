@@ -1,0 +1,29 @@
+syntax = "proto3";
+package config.prometheus.io;
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/struct.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+
+/*
+PrometheusConfig represents a Kubernetes ConfigMap containing a
+Prometheus config yaml stored with the key `prometheus.yaml`.
+SuperGloo uses conversion functions to convert from a configmap
+to a typed Prometheus config.
+ */
+message PrometheusConfig {
+
+    option (core.solo.io.resource).short_name = "mi";
+    option (core.solo.io.resource).plural_name = "meshingresses";
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // json_name must refer to the data key in the configmap we expect
+    google.protobuf.Struct prometheus = 1 [json_name="prometheus.yml"];
+
+}

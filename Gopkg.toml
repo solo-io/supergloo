@@ -55,3 +55,23 @@
 [[constraint]]
   name = "github.com/solo-io/gloo"
   version = "0.10.5"
+
+[[constraint]]
+  name = "github.com/prometheus/prometheus"
+  version = "2.8.0"
+
+# this override is required to make prometheus work
+[[override]]
+  name = "k8s.io/client-go"
+  version = "10.0.0"
+
+# this override is required to make prometheus work
+[[override]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  version = "23.2.0"
+
+# this override is required to make prometheus work
+[[override]]
+  name = "github.com/census-instrumentation/opencensus-proto"
+  version = "=0.1.0"
+
