@@ -3,14 +3,15 @@ package install_test
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/test/inputs"
 )
@@ -18,11 +19,11 @@ import (
 var _ = Describe("Install", func() {
 
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 	})
 
 	getInstall := func(name string) *v1.Install {
-		in, err := helpers.MustInstallClient().Read("supergloo-system", name, clients.ReadOpts{})
+		in, err := clients.MustInstallClient().Read("supergloo-system", name, skclients.ReadOpts{})
 		ExpectWithOffset(1, err).NotTo(HaveOccurred())
 		return in
 	}
@@ -73,8 +74,8 @@ var _ = Describe("Install", func() {
 			name := "input"
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", true)
-			ic := helpers.MustInstallClient()
-			_, err := ic.Write(inst, clients.WriteOpts{})
+			ic := clients.MustInstallClient()
+			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = utils.Supergloo("install istio " +
@@ -82,7 +83,7 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).NotTo(HaveOccurred())
 
-			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+			updatedInstall, err := ic.Read(namespace, name, skclients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(updatedInstall.Disabled).To(BeFalse())
 
@@ -91,8 +92,8 @@ var _ = Describe("Install", func() {
 			name := "input"
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
-			ic := helpers.MustInstallClient()
-			_, err := ic.Write(inst, clients.WriteOpts{})
+			ic := clients.MustInstallClient()
+			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = utils.Supergloo("install istio " +
@@ -109,8 +110,8 @@ var _ = Describe("Install", func() {
 			meshInstall := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
 			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
-			ic := helpers.MustInstallClient()
-			_, err := ic.Write(inst, clients.WriteOpts{})
+			ic := clients.MustInstallClient()
+			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
 			err = utils.Supergloo("install istio " +
@@ -120,7 +121,7 @@ var _ = Describe("Install", func() {
 				"--update=true ")
 			Expect(err).NotTo(HaveOccurred())
 
-			updatedInstall, err := ic.Read(namespace, name, clients.ReadOpts{})
+			updatedInstall, err := ic.Read(namespace, name, skclients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*updatedInstall).To(Equal(v1.Install{
 				Metadata: core.Metadata{
