@@ -3,14 +3,14 @@ package surveyutils
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 func SurveyUninstall(opts *options.Options) error {
-	installs, err := helpers.MustInstallClient().List("", clients.ListOpts{Ctx: opts.Ctx})
+	installs, err := clients.MustInstallClient().List("", skclients.ListOpts{Ctx: opts.Ctx})
 	if err != nil {
 		return err
 	}

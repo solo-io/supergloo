@@ -5,14 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 
-	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
-
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/mocks"
 	"github.com/solo-io/supergloo/cli/test/utils"
@@ -35,7 +33,7 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 		failMock = mocks.NewMockAppmesh(ctrl)
 		failMock.EXPECT().ListMeshes(nil).Return(nil, errors.Errorf("mock returns error")).AnyTimes()
 
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 	})
 
 	Describe("flag validation works as expected", func() {
@@ -95,7 +93,7 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 			))
 			Expect(err).NotTo(HaveOccurred())
 
-			secret, err := helpers.MustSecretClient().Read("supergloo-system", "my-secret", skclients.ReadOpts{})
+			secret, err := clients.MustSecretClient().Read("supergloo-system", "my-secret", skclients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(secret).NotTo(BeNil())
 			Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))
@@ -136,7 +134,7 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 				))
 				Expect(err).NotTo(HaveOccurred())
 
-				secret, err := helpers.MustSecretClient().Read("my-ns", "my-secret", skclients.ReadOpts{})
+				secret, err := clients.MustSecretClient().Read("my-ns", "my-secret", skclients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(secret).NotTo(BeNil())
 				Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))
@@ -171,7 +169,7 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 				))
 				Expect(err).NotTo(HaveOccurred())
 
-				secret, err := helpers.MustSecretClient().Read("supergloo-system", "my-secret", skclients.ReadOpts{})
+				secret, err := clients.MustSecretClient().Read("supergloo-system", "my-secret", skclients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(secret).NotTo(BeNil())
 				Expect(secret.Metadata.Name).To(BeEquivalentTo("my-secret"))

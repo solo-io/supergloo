@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/test/inputs"
 )
@@ -26,7 +27,7 @@ var _ = Describe("SecretTls", func() {
 		secretContent.CaKey = "CaKey"
 		secretContent.RootCert = "RootCert"
 		secretContent.CertChain = "CertChain"
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 		var err error
 		rootCert, err = ioutil.TempFile("", "rootCert")
 		Expect(err).NotTo(HaveOccurred())
@@ -62,7 +63,7 @@ var _ = Describe("SecretTls", func() {
 			certChain.Name()))
 		Expect(err).NotTo(HaveOccurred())
 
-		sec, err := helpers.MustTlsSecretClient().Read("supergloo-system", "poppy", clients.ReadOpts{})
+		sec, err := clients.MustTlsSecretClient().Read("supergloo-system", "poppy", skclients.ReadOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(sec.CaCert).To(Equal(secretContent.CaCert))
 		Expect(sec.CertChain).To(Equal(secretContent.CertChain))

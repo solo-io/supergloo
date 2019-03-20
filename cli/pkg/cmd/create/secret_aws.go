@@ -58,7 +58,7 @@ either directly via the correspondent flags, or by passing the location of an AW
 				},
 			}
 
-			secret, err := helpers.MustSecretClient().Write(secret, skclients.WriteOpts{Ctx: opts.Ctx})
+			secret, err := clients.MustSecretClient().Write(secret, skclients.WriteOpts{Ctx: opts.Ctx})
 			if err != nil {
 				return errors.Wrapf(err, "writing secret to storage")
 			}
