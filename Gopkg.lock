@@ -915,12 +915,11 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:9dd8858ae7fa91d2477ec05605b000d3c1ad65e3a1e36f9bf8f97a170c05ea05"
+  digest = "1:5f4b78246f0bcb105b1e3b2b9e22b52a57cd02f57a8078572fe27c62f4a75ff7"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
     "config",
-    "extensions/table",
     "internal/codelocation",
     "internal/containernode",
     "internal/failer",
@@ -2114,7 +2113,6 @@
     "github.com/hashicorp/go-multierror",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
-    "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
     "github.com/openshift/api/security/v1",
     "github.com/pkg/errors",
@@ -2170,7 +2168,6 @@
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
     "go.opencensus.io/trace",
-    "go.uber.org/multierr",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
     "gopkg.in/yaml.v2",

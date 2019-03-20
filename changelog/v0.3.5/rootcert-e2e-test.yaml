@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Adds internal solo-kit type to represent Prometheus Configs, along with conversion functions
