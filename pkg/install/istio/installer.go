@@ -25,18 +25,18 @@ func NewDefaultIstioInstaller(helmInstaller helm.Installer) *defaultIstioInstall
 }
 
 func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
+	ctx = contextutils.WithLogger(ctx, "istio-installer")
+	logger := contextutils.LoggerFrom(ctx)
 	installMesh, ok := install.InstallType.(*v1.Install_Mesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
+	logger.Infof("beginning istio install sync %v", installMesh)
 	istio, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
-
-	ctx = contextutils.WithLogger(ctx, "istio-installer")
-	logger := contextutils.LoggerFrom(ctx)
 
 	var previousInstall helm.Manifests
 	if install.InstalledManifest != "" {

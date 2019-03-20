@@ -33,6 +33,8 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, errors.Errorf("non ingress install detected in ingress install, %v", install.Metadata.Ref())
 	}
 
+	logger.Infof("beginning gloo install sync %v", installIngress)
+
 	glooInstall, ok := installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only gloo ingress supported currently", install.Metadata.Ref())
