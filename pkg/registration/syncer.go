@@ -2,6 +2,7 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/solo-io/supergloo/pkg/config/setup"
 
@@ -22,6 +23,12 @@ func NewRegistrationSyncer(clientset *clientset.Clientset, errHandler func(error
 }
 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("registration-sync-%v", snap.Hash()))
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infof("begin sync %v: %v", snap.Hash(), snap.Stringer())
+	defer logger.Infof("end sync %v", snap.Hash())
+	logger.Debugf("full snapshot: %v", snap)
+
 	var enableIstioFeatures bool
 	for _, mesh := range snap.Meshes.List() {
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"go.uber.org/zap"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
@@ -18,6 +20,17 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 	}
 
 	rootCtx := createRootContext(customCtx)
+
+	if os.Getenv("DEBUG_LOGGING") == "1" {
+		logconfig := zap.NewProductionConfig()
+		logconfig.Level.SetLevel(zap.DebugLevel)
+
+		logger, err := logconfig.Build()
+		if err != nil {
+			return err
+		}
+		contextutils.SetFallbackLogger(logger.Sugar())
+	}
 
 	clientSet, err := clientset.ClientsetFromContext(rootCtx)
 	if err != nil {

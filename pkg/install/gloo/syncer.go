@@ -39,6 +39,8 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())
+	logger.Debugf("full snapshot: %v", snap)
+
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
