@@ -3,7 +3,6 @@ package config.prometheus.io;
 option go_package = "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1";
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/struct.proto";
 option (gogoproto.equal_all) = true;
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
@@ -23,7 +22,8 @@ message PrometheusConfig {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
+    // inline string containing the prometheus config
     // json_name must refer to the data key in the configmap we expect
-    google.protobuf.Struct prometheus = 1 [json_name="prometheus.yml"];
+    string prometheus = 1 [json_name="prometheus.yml"];
 
 }
