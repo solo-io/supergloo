@@ -86,5 +86,7 @@ var _ = AfterSuite(func() {
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
 	testutils.WaitForNamespaceTeardown("supergloo-system")
+	testutils.WaitForNamespaceTeardown(basicNamespace)
+	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	log.Printf("done!")
 })
