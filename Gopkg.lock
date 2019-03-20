@@ -1124,7 +1124,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:0eeed0b5e1698e3113eae85a6fa36cdcd9b304fe46a9c199dca09e884ea8ea56"
+  digest = "1:b68dbcd04a6b490ec3518762964f15119872d7c4eb0f27f345063cbe1b853ccd"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1137,6 +1137,7 @@
     "projects/gloo/pkg/api/v1/plugins/consul",
     "projects/gloo/pkg/api/v1/plugins/faultinjection",
     "projects/gloo/pkg/api/v1/plugins/grpc",
+    "projects/gloo/pkg/api/v1/plugins/grpc_web",
     "projects/gloo/pkg/api/v1/plugins/kubernetes",
     "projects/gloo/pkg/api/v1/plugins/rest",
     "projects/gloo/pkg/api/v1/plugins/retries",
@@ -1144,8 +1145,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "44cbc55c048270317200eb3eab500bfe585392b8"
-  version = "v0.10.5"
+  revision = "2d50b486ac892010dcf24f724849ce851a8ebf6f"
+  version = "v0.11.3"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"

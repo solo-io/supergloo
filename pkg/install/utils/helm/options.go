@@ -84,6 +84,10 @@ func InstallOrUpdate(ctx context.Context, opts Options, filterFuncs ...ManifestF
 		true,
 	)
 
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not render manifest for version %s", version)
+	}
+
 	// nothing to do if the manifest hasn't changed
 	if opts.PreviousInstall().CombinedString() == manifests.CombinedString() {
 		return manifests, nil
