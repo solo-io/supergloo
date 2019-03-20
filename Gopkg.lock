@@ -265,41 +265,15 @@
   revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
 [[projects]]
-  digest = "1:05c885988ade841b36bd201962b40a2566c62dc64225a26e4e8b6578e56e0ce9"
+  digest = "1:53e99d883df3e940f5f0223795f300eb32b8c044f226132bfc0e74930f24ea4b"
   name = "github.com/docker/docker"
   packages = [
-    "api/types",
-    "api/types/blkiodev",
-    "api/types/container",
-    "api/types/filters",
-    "api/types/mount",
-    "api/types/network",
-    "api/types/registry",
-    "api/types/strslice",
-    "api/types/swarm",
-    "api/types/versions",
     "pkg/term",
     "pkg/term/windows",
   ]
   pruneopts = "UT"
   revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
   version = "v1.13.1"
-
-[[projects]]
-  digest = "1:ade935c55cd6d0367c843b109b09c9d748b1982952031414740750fdf94747eb"
-  name = "github.com/docker/go-connections"
-  packages = ["nat"]
-  pruneopts = "UT"
-  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
-  version = "v0.4.0"
-
-[[projects]]
-  digest = "1:6f82cacd0af5921e99bf3f46748705239b36489464f4529a1589bc895764fb18"
-  name = "github.com/docker/go-units"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "47565b4f722fb6ceae66b95f853feed578a4a51c"
-  version = "v0.3.3"
 
 [[projects]]
   branch = "master"
@@ -327,14 +301,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "d6023ce2651d8eafb5c75bb0c7167536102ec9f5"
-
-[[projects]]
-  digest = "1:bbc4aacabe6880bdbce849c64cb061b7eddf39f132af4ea2853ddd32f85fbec3"
-  name = "github.com/fatih/camelcase"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "44e46d280b43ec1531bb25252440e34f1b800b65"
-  version = "v1.0.0"
 
 [[projects]]
   digest = "1:58981659bb698cb749d5bf7316e71e2768ffed5fd35f6ba3b182dfa1fed13420"
@@ -1659,7 +1625,7 @@
   revision = "5cb15d34447165a97c76ed5a60e4e99c8a01ecfe"
 
 [[projects]]
-  digest = "1:68802413f6b2d016bc2a49fb2a66be5507bbfbae627f8b81badd30bac6c4aa26"
+  digest = "1:ace21b4261a9bc8d06b188f03ce48d1bed92ccba4890fad616cf283939f723c6"
   name = "k8s.io/apiextensions-apiserver"
   packages = [
     "pkg/apis/apiextensions",
@@ -1670,11 +1636,11 @@
     "pkg/features",
   ]
   pruneopts = "UT"
-  revision = "0cd23ebeb6882bd1cdc2cb15fc7b2d72e8a86a5b"
-  version = "kubernetes-1.12.3"
+  revision = "20c909e7c8c3fec1a0e345b1d4e57f1c1623c368"
+  version = "kubernetes-1.13.0"
 
 [[projects]]
-  digest = "1:6bc9fc1dbe1e90e7609e776cd136224eb7c947aa707cf400a3ca2c01c486d66a"
+  digest = "1:7e0da6a6b629ccfdc34c62b00db9b632a8d1bdfdc67fe57ff1a81acec6c18a01"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -1682,7 +1648,6 @@
     "pkg/api/meta",
     "pkg/api/resource",
     "pkg/api/validation",
-    "pkg/api/validation/path",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
@@ -1736,20 +1701,18 @@
   version = "kubernetes-1.12.3"
 
 [[projects]]
-  digest = "1:04cdbd302c8efca41e3fae141a824b98be2bd7ecd7178b94eb66e219633e6488"
+  digest = "1:138928c37ee6ec1be14aec46c97dab5f110ffa7e81828b9d27919df371fd8f62"
   name = "k8s.io/apiserver"
   packages = [
-    "pkg/apis/audit",
     "pkg/authentication/authenticator",
     "pkg/authentication/serviceaccount",
     "pkg/authentication/user",
-    "pkg/endpoints/request",
     "pkg/features",
     "pkg/util/feature",
   ]
   pruneopts = "UT"
-  revision = "92fdef3a232a23afb9644f6151119b5961b9feab"
-  version = "kubernetes-1.12.3"
+  revision = "9caa0299108fbdf51d3d9b8e8956834ae84dac75"
+  version = "kubernetes-1.13.0"
 
 [[projects]]
   digest = "1:7991e5074de01462e0cf6ef77060895b50e9026d16152a6e925cb99b67a1f8ae"
@@ -2009,20 +1972,12 @@
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
-  digest = "1:f57c3174af68bf510f6970b11a38d75baa061c9cadba55e9794b870d2d3354d1"
+  digest = "1:a533c51e1330839e7ee9e8d4e9d6c85fb40c9fd2ac7913c81d2e1518803308cc"
   name = "k8s.io/kubernetes"
   packages = [
-    "pkg/api/events",
     "pkg/api/legacyscheme",
-    "pkg/api/pod",
-    "pkg/api/ref",
-    "pkg/api/resource",
     "pkg/api/service",
     "pkg/api/v1/pod",
-    "pkg/apis/admissionregistration",
-    "pkg/apis/admissionregistration/install",
-    "pkg/apis/admissionregistration/v1alpha1",
-    "pkg/apis/admissionregistration/v1beta1",
     "pkg/apis/apps",
     "pkg/apis/apps/install",
     "pkg/apis/apps/v1",
@@ -2054,7 +2009,6 @@
     "pkg/apis/coordination/v1beta1",
     "pkg/apis/core",
     "pkg/apis/core/helper",
-    "pkg/apis/core/helper/qos",
     "pkg/apis/core/install",
     "pkg/apis/core/pods",
     "pkg/apis/core/v1",
@@ -2067,8 +2021,6 @@
     "pkg/apis/extensions/install",
     "pkg/apis/extensions/v1beta1",
     "pkg/apis/networking",
-    "pkg/apis/networking/install",
-    "pkg/apis/networking/v1",
     "pkg/apis/policy",
     "pkg/apis/policy/install",
     "pkg/apis/policy/v1beta1",
@@ -2091,43 +2043,19 @@
     "pkg/apis/storage/v1alpha1",
     "pkg/apis/storage/v1beta1",
     "pkg/capabilities",
-    "pkg/client/clientset_generated/internalclientset",
-    "pkg/client/clientset_generated/internalclientset/scheme",
-    "pkg/client/clientset_generated/internalclientset/typed/admissionregistration/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/apps/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/authentication/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/authorization/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/autoscaling/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/batch/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/certificates/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/coordination/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/core/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/events/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/networking/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/policy/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/scheduling/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/settings/internalversion",
-    "pkg/client/clientset_generated/internalclientset/typed/storage/internalversion",
     "pkg/controller",
     "pkg/controller/deployment/util",
-    "pkg/credentialprovider",
     "pkg/features",
     "pkg/fieldpath",
-    "pkg/generated",
-    "pkg/kubectl",
-    "pkg/kubectl/apps",
     "pkg/kubectl/cmd/get",
-    "pkg/kubectl/cmd/templates",
     "pkg/kubectl/cmd/util",
     "pkg/kubectl/cmd/util/openapi",
     "pkg/kubectl/cmd/util/openapi/validation",
+    "pkg/kubectl/generated",
     "pkg/kubectl/scheme",
-    "pkg/kubectl/util",
-    "pkg/kubectl/util/hash",
     "pkg/kubectl/util/i18n",
-    "pkg/kubectl/util/slice",
+    "pkg/kubectl/util/printers",
+    "pkg/kubectl/util/templates",
     "pkg/kubectl/util/term",
     "pkg/kubectl/validation",
     "pkg/kubelet/apis",
@@ -2135,12 +2063,7 @@
     "pkg/master/ports",
     "pkg/printers",
     "pkg/printers/internalversion",
-    "pkg/registry/rbac/validation",
-    "pkg/scheduler/algorithm",
-    "pkg/scheduler/algorithm/priorities/util",
     "pkg/scheduler/api",
-    "pkg/scheduler/cache",
-    "pkg/scheduler/util",
     "pkg/security/apparmor",
     "pkg/serviceaccount",
     "pkg/util/file",
@@ -2150,13 +2073,12 @@
     "pkg/util/net/sets",
     "pkg/util/node",
     "pkg/util/parsers",
-    "pkg/util/slice",
     "pkg/util/taints",
     "pkg/version",
   ]
   pruneopts = "UT"
-  revision = "435f92c719f279a3a67808c80521ea17d5715c66"
-  version = "v1.12.3"
+  revision = "c27b913fddd1a6c480c229191a087698aa92f0b1"
+  version = "v1.13.4"
 
 [[projects]]
   digest = "1:66d2fc6b85d80bcbed8e606a04887eedf7504ffc9a3eed0e15ecbb8b82daebf2"

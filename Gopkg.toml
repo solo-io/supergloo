@@ -67,6 +67,21 @@
 
 # this override is required to make prometheus work
 [[override]]
+  name = "k8s.io/kubernetes"
+  version = "1.13.0"
+
+# this override is required to make prometheus work
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.13.0"
+
+# this override is required to make prometheus work
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.13.0"
+
+# this override is required to make prometheus work
+[[override]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "23.2.0"
 
