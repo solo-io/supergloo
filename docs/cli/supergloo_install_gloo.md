@@ -4,11 +4,11 @@ weight: 5
 ---
 ## supergloo install gloo
 
-install gloo
+gloo installation
 
 ### Synopsis
 
-install gloo
+gloo installation
 
 ```
 supergloo install gloo [flags]

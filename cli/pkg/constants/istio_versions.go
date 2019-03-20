@@ -9,9 +9,3 @@ var SupportedIstioVersions = []string{
 	istio.IstioVersion105,
 	istio.IstioVersion106,
 }
-
-var SupportedGlooVersions = []string{
-	"latest",
-	"v0.11.1",
-	"v0.10.5",
-}

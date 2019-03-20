@@ -13,7 +13,7 @@ import (
 func installGlooCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gloo",
-		Short: "install gloo",
+		Short: "gloo installation",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
 				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {

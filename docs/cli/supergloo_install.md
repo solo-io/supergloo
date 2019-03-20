@@ -25,21 +25,16 @@ modify the corresponding mesh.
 
 ```
   -h, --help               help for install
+  -i, --interactive        run in interactive mode
       --name string        name for the resource
       --namespace string   namespace for the resource (default "supergloo-system")
   -o, --output string      output format: (yaml, json, table)
       --update             update an existing install?
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
-* [supergloo install gloo](../supergloo_install_gloo)	 - install gloo
+* [supergloo install gloo](../supergloo_install_gloo)	 - gloo installation
 * [supergloo install istio](../supergloo_install_istio)	 - install the Istio control plane
 

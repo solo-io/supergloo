@@ -26,9 +26,6 @@ func SuperglooCli(version string) *cobra.Command {
 		Version: version,
 	}
 
-	pflags := app.PersistentFlags()
-	pflags.BoolVarP(&opts.Interactive, "interactive", "i", false, "use interactive mode")
-
 	app.SuggestionsMinimumDistance = 1
 	app.AddCommand(
 		initialize.Cmd(opts),

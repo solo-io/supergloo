@@ -24,12 +24,6 @@ supergloo set rootcert [flags]
       --tls-secret ResourceRefValue    resource reference the TLS Secret (created with supergloo CLI) which you wish to use as the custom root cert for the mesh. if empty, the any existing custom root cert will be removed from this mesh. format must be <NAMESPACE>.<NAME> (default { })
 ```
 
-### Options inherited from parent commands
-
-```
-  -i, --interactive   use interactive mode
-```
-
 ### SEE ALSO
 
 * [supergloo set](../supergloo_set)	 - subcommands set a configuration parameter for one or more meshes

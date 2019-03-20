@@ -14,8 +14,7 @@ supergloo configures resources watched by the Supergloo Controller.
 ### Options
 
 ```
-  -h, --help          help for supergloo
-  -i, --interactive   use interactive mode
+  -h, --help   help for supergloo
 ```
 
 ### SEE ALSO
