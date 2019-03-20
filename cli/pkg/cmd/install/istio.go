@@ -72,7 +72,7 @@ func validateIstioInstall(in options.Install) error {
 		}
 	}
 	if !validVersion {
-		return errors.Errorf("%v is not a suppported "+
+		return errors.Errorf("%v is not a supported "+
 			"istio version", in.IstioInstall.IstioVersion)
 	}
 

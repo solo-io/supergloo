@@ -50,7 +50,7 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--jaeger=%v", jaeger))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
+					Expect(err.Error()).To(ContainSubstring("is not a supported istio version"))
 					return
 				}
 

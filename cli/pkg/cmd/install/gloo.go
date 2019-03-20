@@ -1,7 +1,9 @@
 package install
 
 import (
+	"github.com/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -43,12 +45,12 @@ func createGlooInstall(opts *options.Options) error {
 }
 
 func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
-	if err := validateGlooInstall(opts.Install); err != nil {
+	if err := validateGlooInstall(opts); err != nil {
 		return nil, err
 	}
 	in := &v1.Install{
 		Metadata:              opts.Metadata,
-		InstallationNamespace: opts.Install.InstallationNamespace.Istio,
+		InstallationNamespace: opts.Install.InstallationNamespace.Gloo,
 		InstallType: &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
 				InstallType: &v1.MeshIngressInstall_Gloo{
@@ -63,6 +65,24 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 	return in, nil
 }
 
-func validateGlooInstall(in options.Install) error {
+func validateGlooInstall(opts *options.Options) error {
+	var err error
+	version := opts.Install.GlooIngressInstall.GlooVersion
+	if version == "latest" {
+		version, err = helpers.GetLatestVersion(opts.Ctx, "gloo")
+		if err != nil {
+			return errors.Wrapf(err, "unable to get latest release version from gloo")
+		} else {
+			opts.Install.GlooIngressInstall.GlooVersion = version
+		}
+	} else {
+		version, err = helpers.IsValidVersion(opts.Ctx, "gloo", opts.Install.GlooIngressInstall.GlooVersion)
+		if err != nil {
+			return errors.Wrapf(err, "%v is not a supported gloo version", opts.Install.GlooIngressInstall.GlooVersion)
+		} else {
+			opts.Install.GlooIngressInstall.GlooVersion = version
+		}
+	}
+
 	return nil
 }

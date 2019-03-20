@@ -47,10 +47,12 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	// if more than 1 active install, they get errored
 	var enabledInstalls, disabledInstalls v1.InstallList
 	for _, install := range installs {
-		if install.Disabled {
-			disabledInstalls = append(disabledInstalls, install)
-		} else {
-			enabledInstalls = append(enabledInstalls, install)
+		if _, isIngress := install.InstallType.(*v1.Install_Ingress); isIngress {
+			if install.Disabled {
+				disabledInstalls = append(disabledInstalls, install)
+			} else {
+				enabledInstalls = append(enabledInstalls, install)
+			}
 		}
 	}
 	// Handle mesh installs
