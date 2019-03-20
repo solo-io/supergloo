@@ -44,10 +44,7 @@ func tlsCmd(opts *options.Options) *cobra.Command {
 
 func createTlsSecret(opts *options.Options) error {
 	if opts.Metadata.Name == "" {
-		return errors.Errorf("must provide --name")
-	}
-	if opts.Metadata.Namespace == "" {
-		return errors.Errorf("must provide --namespace")
+		return errors.Errorf("name cannot be empty, provide with --name flag")
 	}
 
 	// read the values

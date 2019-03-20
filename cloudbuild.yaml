@@ -61,7 +61,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['dep']
     id: 'make-helm-dir'
-
+  # 2) Fetch supergloo helm repo
   - name: gcr.io/cloud-builders/gsutil
     args:
       - rsync
@@ -72,19 +72,33 @@ steps:
     waitFor: ['make-helm-dir']
     id: 'setup-helm'
 
-  # run all of the tests
+  # Decrypt AWS access credentials
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - kms
+      - decrypt
+      - --ciphertext-file=./gopath/src/github.com/solo-io/supergloo/ci/aws_credentials.enc
+      - --plaintext-file=/workspace/aws_credentials
+      - --location=global
+      - --keyring=build
+      - --key=build-key
+    waitFor: ['dep']
+    id: 'setup-aws-creds'
+
+  # Run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
       - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
+      - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
       # we DISABLE interactive tests as they appear to fail our current ci environment
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', 'cli/pkg', 'pkg', 'test/e2e']
-    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
+    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache']
     id: 'test'
 
   # Build everything
