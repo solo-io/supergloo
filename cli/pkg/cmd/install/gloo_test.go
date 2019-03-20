@@ -2,6 +2,7 @@ package install_test
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,48 +27,32 @@ var _ = Describe("Install", func() {
 
 	Describe("non-interactive", func() {
 		It("should create the expected install ", func() {
-			installAndVerifyIstio := func(
+			installAndVerifyGloo := func(
 				name,
 				namespace,
-				version string,
-				mtls,
-				autoInject,
-				prometheus,
-				jaeger,
-				grafana bool) {
+				version string) {
 
-				err := utils.Supergloo("install istio " +
+				err := utils.Supergloo("install gloo " +
 					fmt.Sprintf("--name=%v ", name) +
-					fmt.Sprintf("--installation-namespace istio ") +
-					fmt.Sprintf("--version=%v ", version) +
-					fmt.Sprintf("--mtls=%v ", mtls) +
-					fmt.Sprintf("--auto-inject=%v ", autoInject) +
-					fmt.Sprintf("--grafana=%v ", grafana) +
-					fmt.Sprintf("--prometheus=%v ", prometheus) +
-					fmt.Sprintf("--jaeger=%v", jaeger))
+					fmt.Sprintf("--installation-namespace %s ", namespace) +
+					fmt.Sprintf("--version=%v ", version))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
+					Expect(err.Error()).To(ContainSubstring("is not a supported gloo version"))
 					return
 				}
 
 				Expect(err).NotTo(HaveOccurred())
 				install := getInstall(name)
-				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-				mesh := install.InstallType.(*v1.Install_Mesh)
-				Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
-				istio := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
-				Expect(istio.IstioMesh.IstioVersion).To(Equal(version))
-				Expect(istio.IstioMesh.EnableMtls).To(Equal(mtls))
-				Expect(istio.IstioMesh.EnableAutoInject).To(Equal(autoInject))
-				Expect(istio.IstioMesh.InstallPrometheus).To(Equal(prometheus))
-				Expect(istio.IstioMesh.InstallJaeger).To(Equal(jaeger))
-				Expect(istio.IstioMesh.InstallGrafana).To(Equal(grafana))
+				glooIngress := MustGlooInstallType(install)
+				if version != "latest" {
+					Expect(glooIngress.Gloo.GlooVersion).To(Equal(strings.TrimPrefix(version, "v")))
+				}
 			}
 
-			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
-			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
-			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
+			installAndVerifyGloo("a1a", "ns", "latest")
+			installAndVerifyGloo("b1a", "ns", "v0.10.5")
+			installAndVerifyGloo("c1a", "ns", "badver")
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"
@@ -77,8 +62,9 @@ var _ = Describe("Install", func() {
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = utils.Supergloo("install istio " +
+			err = utils.Supergloo("install gloo " +
 				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", namespace) +
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).NotTo(HaveOccurred())
 
@@ -95,12 +81,20 @@ var _ = Describe("Install", func() {
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
-			err = utils.Supergloo("install istio " +
+			err = utils.Supergloo("install gloo " +
 				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", namespace) +
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
-
 		})
 	})
 })
+
+func MustGlooInstallType(install *v1.Install) *v1.MeshIngressInstall_Gloo {
+	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
+	ingress := install.InstallType.(*v1.Install_Ingress)
+	Expect(ingress.Ingress.InstallType).To(BeAssignableToTypeOf(&v1.MeshIngressInstall_Gloo{}))
+	glooIngress := ingress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
+	return glooIngress
+}

@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("Metadata", func() {
-	It("should create the expected install ", func() {
+	It("should create the expected istio install ", func() {
 		namespace := helpers.MustGetNamespaces()[1]
 
 		testutil.ExpectInteractive(func(c *testutil.Console) {
@@ -38,7 +38,7 @@ var _ = Describe("Metadata", func() {
 			var in options.Install
 			err := SurveyIstioInstall(&in)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(in.InstallationNamespace).To(Equal(namespace))
+			Expect(in.InstallationNamespace.Istio).To(Equal(namespace))
 			Expect(in.IstioInstall.IstioVersion).To(Equal(istio.IstioVersion105))
 			Expect(in.IstioInstall.EnableMtls).To(Equal(true))
 			Expect(in.IstioInstall.EnableAutoInject).To(Equal(true))
@@ -46,6 +46,28 @@ var _ = Describe("Metadata", func() {
 			Expect(in.IstioInstall.InstallPrometheus).To(Equal(true))
 			Expect(in.IstioInstall.InstallJaeger).To(Equal(true))
 			Expect(in.Update).To(Equal(true))
+		})
+	})
+
+	It("should create the expected gloo install ", func() {
+		namespace := helpers.MustGetNamespaces()[1]
+
+		testutil.ExpectInteractive(func(c *testutil.Console) {
+			c.ExpectString("which namespace to install to? ")
+			c.PressDown()
+			c.SendLine("")
+			c.ExpectString("which version of Gloo to install? ")
+			c.SendLine("")
+			c.ExpectString("update an existing install? ")
+			c.SendLine("n")
+			c.ExpectEOF()
+		}, func() {
+			var in options.Install
+			err := SurveyGlooInstall(&in)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(in.InstallationNamespace.Gloo).To(Equal(namespace))
+			Expect(in.GlooIngressInstall.GlooVersion).To(Equal("latest"))
+			Expect(in.Update).To(Equal(false))
 		})
 	})
 })

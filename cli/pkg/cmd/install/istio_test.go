@@ -3,14 +3,15 @@ package install_test
 import (
 	"fmt"
 
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/install/istio"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -49,7 +50,7 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--jaeger=%v", jaeger))
 				if version == "badver" {
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("is not a suppported istio version"))
+					Expect(err.Error()).To(ContainSubstring("is not a supported istio version"))
 					return
 				}
 
@@ -105,9 +106,9 @@ var _ = Describe("Install", func() {
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "istio-system", "1.0.5", false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			istioMesh := inst.InstallType.(*v1.Install_Mesh)
+			meshInstall := inst.InstallType.(*v1.Install_Mesh)
 			inst.InstalledManifest = "a previously installed manifest"
-			istioMesh.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
+			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := helpers.MustInstallClient()
 			_, err := ic.Write(inst, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -157,6 +158,6 @@ func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_IstioMesh {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
 	Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
-	istio := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
-	return istio
+	istioMesh := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	return istioMesh
 }

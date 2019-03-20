@@ -21,7 +21,7 @@ func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 }
 
 func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
-	set.StringVar(&in.InstallationNamespace,
+	set.StringVar(&in.InstallationNamespace.Istio,
 		"installation-namespace",
 		"istio-system",
 		"which namespace to install Istio into?")
@@ -56,4 +56,17 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		true,
 		"add jaeger to the install?")
 
+}
+
+func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
+
+	set.StringVar(&in.InstallationNamespace.Gloo,
+		"installation-namespace",
+		"gloo-system",
+		"which namespace to install Gloo into?")
+
+	set.StringVar(&in.GlooIngressInstall.GlooVersion,
+		"version",
+		"latest",
+		fmt.Sprintf("version of gloo to install? available: %v", constants.SupportedGlooVersions))
 }

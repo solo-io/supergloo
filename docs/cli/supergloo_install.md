@@ -35,5 +35,6 @@ modify the corresponding mesh.
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
+* [supergloo install gloo](../supergloo_install_gloo)	 - gloo installation
 * [supergloo install istio](../supergloo_install_istio)	 - install the Istio control plane
 

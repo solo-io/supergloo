@@ -33,7 +33,7 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, errors.Errorf("non ingress install detected in ingress install, %v", install.Metadata.Ref())
 	}
 
-	_, ok = installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
+	glooInstall, ok := installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only gloo ingress supported currently", install.Metadata.Ref())
 	}
@@ -62,7 +62,7 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, nil
 	}
 
-	opts := NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, "0.11.1")
+	opts := NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, glooInstall.Gloo.GlooVersion)
 
 	logger.Infof("installing gloo-ingress with options: %#v", opts)
 

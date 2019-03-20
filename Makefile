@@ -51,7 +51,7 @@ generated-code: $(OUTPUT_DIR)/.generated-code
 SUBDIRS:=cli pkg cmd test
 $(OUTPUT_DIR)/.generated-code:
 	go generate ./...
-	(rm -f docs/cli/supergloo* && go run cli/cmd/docs/main.go)
+	(rm -f docs/cli/supergloo*; go run cli/cmd/docs/main.go)
 	gofmt -w $(SUBDIRS)
 	goimports -w $(SUBDIRS)
 	mkdir -p $(OUTPUT_DIR)
