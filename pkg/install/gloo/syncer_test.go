@@ -129,10 +129,10 @@ var _ = Describe("Syncer", func() {
 					inputs.GlooIstall("a", "b", "c", "versiondoesntmatter", true),
 					inputs.GlooIstall("b", "b", "c", "versiondoesntmatter", false),
 				}
-				installedMesh, _ := meshClient.Write(&v1.Mesh{
+				installedIngress, _ := ingressClient.Write(&v1.MeshIngress{
 					Metadata: core.Metadata{Namespace: "a", Name: "a"},
 				}, clients.WriteOpts{})
-				ref := installedMesh.Metadata.Ref()
+				ref := installedIngress.Metadata.Ref()
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
 				mesh := install.InstallType.(*v1.Install_Ingress)
@@ -154,7 +154,7 @@ var _ = Describe("Syncer", func() {
 				Expect(i2.Status.State).To(Equal(core.Status_Accepted))
 
 				// installed mesh should have been removed
-				_, err = meshClient.Read(installedMesh.Metadata.Namespace, installedMesh.Metadata.Name, clients.ReadOpts{})
+				_, err = meshClient.Read(installedIngress.Metadata.Namespace, installedIngress.Metadata.Name, clients.ReadOpts{})
 				Expect(err).To(HaveOccurred())
 				Expect(errors.IsNotExist(err)).To(BeTrue())
 			})
