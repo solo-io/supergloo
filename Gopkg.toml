@@ -44,9 +44,9 @@
   name = "github.com/solo-io/go-checkpoint"
   version = "0.0.4"
 
-[[override]]
+[[constraint]]
   name = "github.com/solo-io/solo-kit"
-  version = "0.3.8"
+  version = "0.3.9"
 
 [[override]]
   name = "github.com/solo-io/go-utils"
