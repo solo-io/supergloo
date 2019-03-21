@@ -13,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error)
+	EnsureGlooInstall(ctx context.Context, install *v1.Install, meshIngresses *v1.MeshIngressList) (*v1.MeshIngress, error)
 }
 
 type defaultInstaller struct {
@@ -24,7 +24,7 @@ func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
 	return &defaultInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
+func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshIngresses *v1.MeshIngressList) (*v1.MeshIngress, error) {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -62,6 +62,15 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 			installIngress.Ingress.InstalledIngress = nil
 		}
 		return nil, nil
+	}
+
+	var meshIngress *v1.MeshIngress
+	if installIngress.Ingress.InstalledIngress != nil {
+		var err error
+		meshIngress, err = meshIngresses.Find(installIngress.Ingress.InstalledIngress.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "installed ingress not found")
+		}
 	}
 
 	opts := NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, glooInstall.Gloo.GlooVersion)
