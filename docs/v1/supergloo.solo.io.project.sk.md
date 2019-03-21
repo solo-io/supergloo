@@ -29,6 +29,7 @@ API Version: `supergloo.solo.io.v1`
 - [MeshPolicy](../github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto.sk#MeshPolicy)
 - [Pod](../github.com/solo-io/supergloo/api/external/kubernetes/core/v1/kube_types.proto.sk#Pod)
 - [Policy](../github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto.sk#Policy)
+- [PrometheusConfig](../github.com/solo-io/supergloo/api/external/prometheus/v1/config.proto.sk#PrometheusConfig)
 - [Proxy](../github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto.sk#Proxy)
 - [RbacConfig](../github.com/solo-io/supergloo/api/external/istio/rbac/v1alpha1/rbac.proto.sk#RbacConfig)
 - [RoutingRule](../github.com/solo-io/supergloo/api/v1/routing.proto.sk#RoutingRule)
