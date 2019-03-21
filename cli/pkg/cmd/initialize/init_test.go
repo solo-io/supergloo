@@ -5,26 +5,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	superglootest "github.com/solo-io/supergloo/test/e2e/utils"
-	"github.com/solo-io/supergloo/test/testutils"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("init", func() {
 	AfterEach(func() {
-		kube := testutils.MustKubeClient()
+		kube := clients.MustKubeClient()
 		kube.CoreV1().Namespaces().Delete("supergloo-system", nil)
 	})
 	It("successfully installs supergloo to the cluster", func() {
 		err := utils.Supergloo("init --release latest")
 		Expect(err).NotTo(HaveOccurred())
 
-		kube := testutils.MustKubeClient()
+		kube := clients.MustKubeClient()
 		Eventually(func() error {
 			_, err := kube.CoreV1().Namespaces().Get("supergloo-system", v1.GetOptions{})
 			return err

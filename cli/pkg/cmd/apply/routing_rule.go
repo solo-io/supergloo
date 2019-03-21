@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/ghodss/yaml"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -124,8 +126,8 @@ func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err != nil {
 		return err
 	}
-	rr := helpers.MustRoutingRuleClient()
-	existing, err := rr.Read(in.Metadata.Namespace, in.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	rr := clients.MustRoutingRuleClient()
+	existing, err := rr.Read(in.Metadata.Namespace, in.Metadata.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 	if err == nil {
 		// perform update
 		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
@@ -141,7 +143,7 @@ func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	}
 
 	in.Spec = spec
-	in, err = rr.Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	in, err = rr.Write(in, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
@@ -176,7 +178,7 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 
 	ref := core.ResourceRef(opts.CreateRoutingRule.TargetMesh)
 
-	_, meshNotFoundErr := helpers.MustMeshClient().Read(ref.Namespace, ref.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	_, meshNotFoundErr := clients.MustMeshClient().Read(ref.Namespace, ref.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 	if meshNotFoundErr != nil {
 		return nil, meshNotFoundErr
 	}

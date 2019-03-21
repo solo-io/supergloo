@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Test hardening for e2e
+

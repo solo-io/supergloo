@@ -9,7 +9,7 @@ create a secret for use with SuperGloo.
 ### Synopsis
 
 SuperGloo uses secrets to authenticate to external APIs
-and manage TLS certificates used for encryption in the mesh and ingress. 
+and manage TLS certificates used for encryption in the mesh and ingress.
 
 
 ### Options
@@ -24,6 +24,7 @@ and manage TLS certificates used for encryption in the mesh and ingress.
 
 ### SEE ALSO
 
-* [supergloo create](../supergloo_create)	 - commands for creating managing resources used for SuperGloo
+* [supergloo create](../supergloo_create)	 - commands for creating resources used by SuperGloo
+* [supergloo create secret aws](../supergloo_create_secret_aws)	 - Create an AWS secret
 * [supergloo create secret tls](../supergloo_create_secret_tls)	 - create a tls secret with cert
 

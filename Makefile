@@ -33,6 +33,8 @@ update-deps:
 	go get -u github.com/gogo/protobuf/protoc-gen-gogo
 	go get -u github.com/lyft/protoc-gen-validate
 	go get -u github.com/paulvollmer/2gobytes
+	go get -u github.com/golang/mock/gomock
+	go install github.com/golang/mock/mockgen
 
 .PHONY: pin-repos
 pin-repos:

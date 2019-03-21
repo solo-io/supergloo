@@ -91,7 +91,7 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 			} else {
 				resourceErrs.Accept(in)
-				if err := s.meshClient.Delete(installedIngress.Namespace,
+				if err := s.ingressClient.Delete(installedIngress.Namespace,
 					installedIngress.Name,
 					clients.DeleteOpts{Ctx: ctx}); err != nil {
 					logger.Errorf("deleting mesh object %v failed after successful uninstall", installedIngress)

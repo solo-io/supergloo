@@ -5,13 +5,13 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
 )
 
 var _ = Describe("Metadata", func() {
 	It("should create the expected install ", func() {
-		name, namespace := "hi", helpers.MustGetNamespaces()[1]
+		name, namespace := "hi", clients.MustGetNamespaces()[1]
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("name for the test resource: ")
 			c.SendLine(name)

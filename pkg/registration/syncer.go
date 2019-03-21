@@ -27,7 +27,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if ok {
 			enableIstioFeatures = true
-			contextutils.LoggerFrom(ctx).Infof("detected istio installation, enabling istio config syncer")
+			contextutils.LoggerFrom(ctx).Infof("detected istio mesh, enabling istio config syncer")
 			break
 		}
 	}

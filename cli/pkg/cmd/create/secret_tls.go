@@ -3,8 +3,10 @@ package create
 import (
 	"io/ioutil"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -44,10 +46,7 @@ func tlsCmd(opts *options.Options) *cobra.Command {
 
 func createTlsSecret(opts *options.Options) error {
 	if opts.Metadata.Name == "" {
-		return errors.Errorf("must provide --name")
-	}
-	if opts.Metadata.Namespace == "" {
-		return errors.Errorf("must provide --namespace")
+		return errors.Errorf("name cannot be empty, provide with --name flag")
 	}
 
 	// read the values
@@ -76,9 +75,9 @@ func createTlsSecret(opts *options.Options) error {
 		CaCert:    string(caCert),
 	}
 
-	secretClient := helpers.MustTlsSecretClient()
+	secretClient := clients.MustTlsSecretClient()
 
-	secret, err = secretClient.Write(secret, clients.WriteOpts{Ctx: opts.Ctx})
+	secret, err = secretClient.Write(secret, skclients.WriteOpts{Ctx: opts.Ctx})
 	if err != nil {
 		return errors.Wrapf(err, "writing secret to storage")
 	}

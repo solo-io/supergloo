@@ -4,13 +4,11 @@ weight: 5
 ---
 ## supergloo create
 
-commands for creating managing resources used for SuperGloo
+commands for creating resources used by SuperGloo
 
 ### Synopsis
 
-SuperGloo has features which make use of data that should be 
-stored and managed securely called Secrets. This 
-
+commands for creating resources used by SuperGloo
 
 ### Options
 

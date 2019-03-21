@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
@@ -28,12 +29,12 @@ var _ = Describe("RoutingRule", func() {
 	}
 
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
-		helpers.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "my", Name: "mesh"}}, clients.WriteOpts{})
+		clients.UseMemoryClients()
+		_, _ = clients.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "my", Name: "mesh"}}, skclients.WriteOpts{})
 	})
 
 	getRoutingRule := func(name string) *v1.RoutingRule {
-		rr, err := helpers.MustRoutingRuleClient().Read("supergloo-system", name, clients.ReadOpts{})
+		rr, err := clients.MustRoutingRuleClient().Read("supergloo-system", name, skclients.ReadOpts{})
 		ExpectWithOffset(1, err).NotTo(HaveOccurred())
 		return rr
 	}

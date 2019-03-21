@@ -3,14 +3,14 @@ package surveyutils
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/test/inputs"
 )
@@ -19,9 +19,9 @@ import (
 // relevant issue: https://github.com/solo-io/gloo/issues/387
 var _ = XDescribe("RoutingRule", func() {
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 		for _, us := range inputs.BookInfoUpstreams("hi") {
-			_, err := helpers.MustUpstreamClient().Write(us, clients.WriteOpts{})
+			_, err := clients.MustUpstreamClient().Write(us, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})
@@ -66,9 +66,9 @@ var _ = XDescribe("RoutingRule", func() {
 
 var _ = Describe("RoutingRule", func() {
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 		for _, us := range inputs.BookInfoUpstreams("hi") {
-			_, err := helpers.MustUpstreamClient().Write(us, clients.WriteOpts{})
+			_, err := clients.MustUpstreamClient().Write(us, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})
@@ -109,7 +109,8 @@ var _ = Describe("RoutingRule", func() {
 			Expect(err.Error()).To(ContainSubstring("no meshes found. register or install a mesh first."))
 		})
 		It("queries the user for an existing mesh to target", func() {
-			helpers.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "fam", Name: "sup"}}, clients.WriteOpts{})
+			_, err := clients.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "fam", Name: "sup"}}, skclients.WriteOpts{})
+			Expect(err).To(HaveOccurred())
 			testutil.ExpectInteractive(func(c *testutil.Console) {
 				c.ExpectString("select a target mesh to which to apply this rule")
 				c.PressDown()

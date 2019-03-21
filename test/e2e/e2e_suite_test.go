@@ -5,11 +5,12 @@ import (
 	"log"
 	"testing"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
@@ -40,7 +41,7 @@ var _ = BeforeSuite(func() {
 	}))).NotTo(HaveOccurred())
 
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
-	kube = helpers.MustKubeClient()
+	kube = clients.MustKubeClient()
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: basicNamespace,
@@ -86,5 +87,7 @@ var _ = AfterSuite(func() {
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
 	testutils.WaitForNamespaceTeardown("supergloo-system")
+	testutils.WaitForNamespaceTeardown(basicNamespace)
+	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	log.Printf("done!")
 })

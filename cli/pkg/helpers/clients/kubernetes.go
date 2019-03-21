@@ -1,4 +1,4 @@
-package helpers
+package clients
 
 import (
 	"context"
@@ -71,11 +71,11 @@ func InstallClient() (v1.InstallClient, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
-	cache := kube.NewKubeCache(context.TODO())
+	sharedCache := kube.NewKubeCache(context.TODO())
 	installClient, err := v1.NewInstallClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.InstallCrd,
 		Cfg:         cfg,
-		SharedCache: cache,
+		SharedCache: sharedCache,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating install client")
@@ -103,11 +103,11 @@ func RoutingRuleClient() (v1.RoutingRuleClient, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
-	cache := kube.NewKubeCache(context.TODO())
+	sharedCache := kube.NewKubeCache(context.TODO())
 	RoutingRuleClient, err := v1.NewRoutingRuleClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.RoutingRuleCrd,
 		Cfg:         cfg,
-		SharedCache: cache,
+		SharedCache: sharedCache,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating RoutingRule client")
@@ -135,14 +135,14 @@ func MeshIngressClient() (v1.MeshIngressClient, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
-	cache := kube.NewKubeCache(context.TODO())
+	sharedCache := kube.NewKubeCache(context.TODO())
 	meshClient, err := v1.NewMeshIngressClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.MeshIngressCrd,
 		Cfg:         cfg,
-		SharedCache: cache,
+		SharedCache: sharedCache,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "creating mesh client")
+		return nil, errors.Wrapf(err, "creating MeshIngress client")
 	}
 	if err := meshClient.Register(); err != nil {
 		return nil, err
@@ -167,11 +167,11 @@ func MeshClient() (v1.MeshClient, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
-	cache := kube.NewKubeCache(context.TODO())
+	sharedCache := kube.NewKubeCache(context.TODO())
 	meshClient, err := v1.NewMeshClient(&factory.KubeResourceClientFactory{
 		Crd:         v1.MeshCrd,
 		Cfg:         cfg,
-		SharedCache: cache,
+		SharedCache: sharedCache,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating mesh client")
@@ -232,11 +232,11 @@ func UpstreamClient() (gloov1.UpstreamClient, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
-	cache := kube.NewKubeCache(context.TODO())
+	sharedCache := kube.NewKubeCache(context.TODO())
 	upstreamClient, err := gloov1.NewUpstreamClient(&factory.KubeResourceClientFactory{
 		Crd:         gloov1.UpstreamCrd,
 		Cfg:         cfg,
-		SharedCache: cache,
+		SharedCache: sharedCache,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating upstreams client")
@@ -245,6 +245,37 @@ func UpstreamClient() (gloov1.UpstreamClient, error) {
 		return nil, err
 	}
 	return upstreamClient, nil
+}
+
+func MustSecretClient() gloov1.SecretClient {
+	client, err := SecretClient()
+	if err != nil {
+		log.Fatalf("failed to create secret client: %v", err)
+	}
+	return client
+}
+
+func SecretClient() (gloov1.SecretClient, error) {
+	if memoryResourceClient != nil {
+		return gloov1.NewSecretClient(memoryResourceClient)
+	}
+
+	kubeClient := MustKubeClient()
+	kubeCoreCache, err := cache.NewKubeCoreCache(context.TODO(), kubeClient)
+	if err != nil {
+		return nil, err
+	}
+	secretClient, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
+		Cache:     kubeCoreCache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating secret client")
+	}
+	if err := secretClient.Register(); err != nil {
+		return nil, err
+	}
+	return secretClient, nil
 }
 
 func MustKubeClient() kubernetes.Interface {
