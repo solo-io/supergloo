@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/config/gloo"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -18,7 +20,12 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enableIstio bool) error {
+type EnabledConfigLoops struct {
+	Istio bool
+	Gloo  bool
+}
+
+func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enabled EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "config-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -32,7 +39,7 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 		}
 	}
 
-	configSyncers, err := createConfigSyncers(ctx, cs, enableIstio)
+	configSyncers, err := createConfigSyncers(ctx, cs, enabled)
 	if err != nil {
 		return err
 	}
@@ -45,15 +52,24 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enableIstio bool) (v1.ConfigSyncer, error) {
+func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled EnabledConfigLoops) (v1.ConfigSyncers, error) {
 	var syncers v1.ConfigSyncers
 
-	if enableIstio {
+	if enabled.Istio {
 		istioSyncer, err := createIstioConfigSyncer(ctx, cs)
 		if err != nil {
 			return nil, err
 		}
 		syncers = append(syncers, istioSyncer)
+	}
+
+	if enabled.Gloo {
+		glooSyncer, err := createGlooConfigSyncer(ctx, cs)
+		if err != nil {
+			return nil, err
+		}
+		syncers = append(syncers, glooSyncer)
+
 	}
 
 	return syncers, nil
@@ -86,8 +102,17 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
 }
 
+func createGlooConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+	newReporter := reporter.NewReporter("gloo-config-reporter",
+		cs.Input.Mesh.BaseClient(),
+		cs.Input.Upstream.BaseClient(),
+		cs.Input.Upstream.BaseClient())
+
+	return gloo.NewGlooConfigSyncer(newReporter, cs), nil
+}
+
 // start the istio config event loop
-func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncer) error {
+func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncers) error {
 	configEmitter := v1.NewConfigEmitter(
 		clientset.Input.Mesh,
 		clientset.Input.MeshIngress,
