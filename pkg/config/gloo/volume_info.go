@@ -11,6 +11,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var (
+	defaultMode int32 = 420
+	optional          = true
+)
+
 type DeploymentVolumeInfoList []DeploymentVolumeInfo
 
 func (list DeploymentVolumeInfoList) containsVolume(volume corev1.Volume) bool {
