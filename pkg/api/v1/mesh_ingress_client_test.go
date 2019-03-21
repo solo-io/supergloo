@@ -73,7 +73,7 @@ func MeshIngressClientTest(namespace string, client MeshIngressClient, name1, na
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.Mesh).To(Equal(input.Mesh))
+	Expect(r1.Meshes).To(Equal(input.Meshes))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

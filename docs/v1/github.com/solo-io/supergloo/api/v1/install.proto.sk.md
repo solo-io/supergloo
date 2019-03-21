@@ -143,12 +143,14 @@ Installation options for Gloo Ingress
 
 ```yaml
 "glooVersion": string
+"meshes": []string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `glooVersion` | `string` | which version of the gloo helm chart to install ignored if using custom helm chart |  |
+| `meshes` | `[]string` | which mesh for gloo to target |  |
 
 
 

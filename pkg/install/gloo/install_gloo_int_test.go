@@ -20,6 +20,7 @@ var _ = Describe("gloo mock installer", func() {
 		glooConfig := &v1.MeshIngressInstall_Gloo{
 			Gloo: &v1.GlooInstall{
 				GlooVersion: "0.11.1",
+				Meshes:      []string{"istio"},
 			},
 		}
 		installConfig := &v1.Install_Ingress{
@@ -35,9 +36,17 @@ var _ = Describe("gloo mock installer", func() {
 			InstallType:           installConfig,
 		}
 
-		installedIngress, err := installer.EnsureGlooInstall(context.TODO(), install)
+		meshes := v1.MeshList{
+			&v1.Mesh{
+				Metadata: core.Metadata{
+					Name: "istio",
+				},
+			},
+		}
+
+		meshIngress, err := installer.EnsureGlooInstall(context.TODO(), install, meshes, nil)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(installedIngress.Metadata.Name).To(Equal(install.Metadata.Name))
+		Expect(meshIngress.Metadata.Name).To(Equal(install.Metadata.Name))
 
 		// installed manifest should be set
 		Expect(install.InstalledManifest).NotTo(HaveLen(0))
@@ -46,18 +55,19 @@ var _ = Describe("gloo mock installer", func() {
 		Expect(installedManifests).NotTo(BeEmpty())
 
 		Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
-		mesh := install.InstallType.(*v1.Install_Ingress)
+		installedIngress := install.InstallType.(*v1.Install_Ingress)
 		// should be set by install
-		Expect(mesh.Ingress.InstalledIngress).NotTo(BeNil())
-		Expect(*mesh.Ingress.InstalledIngress).To(Equal(installedIngress.Metadata.Ref()))
-
-		Expect(installedIngress.Metadata.Name).To(Equal(install.Metadata.Name))
+		Expect(installedIngress.Ingress.InstalledIngress).NotTo(BeNil())
+		Expect(*installedIngress.Ingress.InstalledIngress).To(Equal(meshIngress.Metadata.Ref()))
+		Expect(meshIngress.Metadata.Name).To(Equal(install.Metadata.Name))
+		ref := meshes[0].Metadata.Ref()
+		Expect(meshIngress.Meshes).To(ContainElement(&ref))
 
 		// uninstall should work
 		install.Disabled = true
-		installedIngress, err = installer.EnsureGlooInstall(context.TODO(), install)
+		uninstalledIngress, err := installer.EnsureGlooInstall(context.TODO(), install, nil, v1.MeshIngressList{meshIngress})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(installedIngress).To(BeNil())
+		Expect(uninstalledIngress).To(BeNil())
 		Expect(install.InstalledManifest).To(HaveLen(0))
 
 		_, err = helm.NewManifestsFromGzippedString(install.InstalledManifest)

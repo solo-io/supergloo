@@ -13,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureGlooInstall(ctx context.Context, install *v1.Install, meshIngresses *v1.MeshIngressList) (*v1.MeshIngress, error)
+	EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error)
 }
 
 type defaultInstaller struct {
@@ -24,7 +24,7 @@ func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
 	return &defaultInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshIngresses *v1.MeshIngressList) (*v1.MeshIngress, error) {
+func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error) {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -87,12 +87,35 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, errors.Wrapf(err, "converting installed manifests to gzipped string")
 	}
 
-	meshIngress := &v1.MeshIngress{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshIngressType: &v1.MeshIngress_Gloo{},
+	meshRefs := make([]*core.ResourceRef, 0)
+	for _, mesh := range meshes {
+		if contains(glooInstall.Gloo.Meshes, mesh.Metadata.Name) {
+			ref := mesh.Metadata.Ref()
+			meshRefs = append(meshRefs, &ref)
+		}
+	}
+
+	if meshIngress != nil {
+		meshIngress.Meshes = meshRefs
+		meshIngress.MeshIngressType = &v1.MeshIngress_Gloo{
+			Gloo: &v1.GlooMeshIngress{
+				InstallationNamespace: install.Metadata.Namespace,
+			},
+		}
+	} else {
+
+		meshIngress = &v1.MeshIngress{
+			Metadata: core.Metadata{
+				Namespace: install.Metadata.Namespace,
+				Name:      install.Metadata.Name,
+			},
+			MeshIngressType: &v1.MeshIngress_Gloo{
+				Gloo: &v1.GlooMeshIngress{
+					InstallationNamespace: install.Metadata.Namespace,
+				},
+			},
+			Meshes: meshRefs,
+		}
 	}
 
 	// caller should expect the install to have been modified
@@ -101,4 +124,13 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 	installIngress.Ingress.InstalledIngress = &ref
 
 	return meshIngress, nil
+}
+
+func contains(arr []string, target string) bool {
+	for _, v := range arr {
+		if v == target {
+			return true
+		}
+	}
+	return false
 }

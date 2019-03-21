@@ -42,6 +42,8 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
+	meshes := snap.Meshes.List()
+	meshIngresses := snap.Meshingresses.List()
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored
@@ -56,8 +58,8 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 		}
 	}
 	// Handle mesh installs
-	s.handleDisabledInstalls(ctx, disabledInstalls, resourceErrs)
-	s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs)
+	s.handleDisabledInstalls(ctx, disabledInstalls, resourceErrs, meshes, meshIngresses)
+	s.handleActiveInstalls(ctx, enabledInstalls, resourceErrs, meshes, meshIngresses)
 
 	// Handle ingress installs
 
@@ -74,7 +76,7 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 	disabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
+	resourceErrs reporter.ResourceErrors, meshes v1.MeshList, meshIngresses v1.MeshIngressList) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	for _, in := range disabledInstalls {
@@ -87,7 +89,7 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 			}
 			installedIngress := *installType.Ingress.InstalledIngress
 			logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-			if _, err := s.glooInstaller.EnsureGlooInstall(ctx, in); err != nil {
+			if _, err := s.glooInstaller.EnsureGlooInstall(ctx, in, meshes, meshIngresses); err != nil {
 				resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 			} else {
 				resourceErrs.Accept(in)
@@ -103,7 +105,7 @@ func (s *installSyncer) handleDisabledInstalls(ctx context.Context,
 
 func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
-	resourceErrs reporter.ResourceErrors) {
+	resourceErrs reporter.ResourceErrors, meshes v1.MeshList, meshIngresses v1.MeshIngressList) {
 	logger := contextutils.LoggerFrom(ctx)
 	var (
 		createdIngress *v1.MeshIngress
@@ -113,7 +115,7 @@ func (s *installSyncer) handleActiveInstalls(ctx context.Context,
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		meshIngress, err := s.glooInstaller.EnsureGlooInstall(ctx, in)
+		meshIngress, err := s.glooInstaller.EnsureGlooInstall(ctx, in, meshes, meshIngresses)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
 			return

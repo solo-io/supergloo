@@ -130,5 +130,8 @@ message GlooInstall {
     // ignored if using custom helm chart
     string gloo_version = 2;
 
+    // which mesh for gloo to target
+    repeated string meshes = 3;
+
 }
 

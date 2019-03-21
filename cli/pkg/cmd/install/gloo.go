@@ -56,6 +56,7 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 				InstallType: &v1.MeshIngressInstall_Gloo{
 					Gloo: &v1.GlooInstall{
 						GlooVersion: opts.Install.GlooIngressInstall.GlooVersion,
+						Meshes:      []string{"istio"},
 					},
 				},
 			},

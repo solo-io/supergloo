@@ -49,7 +49,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 			InstallType:           installConfig,
 		}
 
-		installedIngress, err := installer.EnsureGlooInstall(context.TODO(), install)
+		installedIngress, err := installer.EnsureGlooInstall(context.TODO(), install, nil, nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedIngress.Metadata.Name).To(Equal(install.Metadata.Name))
 
@@ -60,16 +60,16 @@ var _ = Describe("mesh ingress mock installer", func() {
 		Expect(installedManifests).To(Equal(createdManifests))
 
 		Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
-		mesh := install.InstallType.(*v1.Install_Ingress)
+		ingressInstall := install.InstallType.(*v1.Install_Ingress)
 		// should be set by install
-		Expect(mesh.Ingress.InstalledIngress).NotTo(BeNil())
-		Expect(*mesh.Ingress.InstalledIngress).To(Equal(installedIngress.Metadata.Ref()))
+		Expect(ingressInstall.Ingress.InstalledIngress).NotTo(BeNil())
+		Expect(*ingressInstall.Ingress.InstalledIngress).To(Equal(installedIngress.Metadata.Ref()))
 
 		Expect(installedIngress.Metadata.Name).To(Equal(install.Metadata.Name))
 
 		// uninstall should work
 		install.Disabled = true
-		installedIngress, err = installer.EnsureGlooInstall(context.TODO(), install)
+		installedIngress, err = installer.EnsureGlooInstall(context.TODO(), install, nil, v1.MeshIngressList{installedIngress})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installedIngress).To(BeNil())
 		Expect(install.InstalledManifest).To(HaveLen(0))

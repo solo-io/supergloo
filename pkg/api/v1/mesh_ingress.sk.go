@@ -38,7 +38,7 @@ func (r *MeshIngress) Hash() uint64 {
 	metaCopy.ResourceVersion = ""
 	return hashutils.HashAll(
 		metaCopy,
-		r.Mesh,
+		r.Meshes,
 		r.MeshIngressType,
 	)
 }
