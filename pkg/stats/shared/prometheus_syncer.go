@@ -5,15 +5,13 @@ import (
 
 	"github.com/prometheus/prometheus/config"
 
-	"github.com/solo-io/supergloo/pkg2/kube"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/contextutils"
-	"github.com/solo-io/supergloo/pkg2/api/external/prometheus"
-	prometheusv1 "github.com/solo-io/supergloo/pkg2/api/external/prometheus/v1"
-	v1 "github.com/solo-io/supergloo/pkg2/api/v1"
+	"github.com/solo-io/supergloo/pkg/api/external/prometheus"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"go.uber.org/multierr"
 	"k8s.io/client-go/kubernetes"
 )
@@ -34,7 +32,7 @@ type PrometheusSyncer struct {
 	GetConfigMap func(*v1.Mesh) *core.ResourceRef
 }
 
-func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.TranslatorSnapshot) error {
+func (s *PrometheusSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "prometheus-syncer")
 	logger := contextutils.LoggerFrom(ctx)
 	meshes := snap.Meshes.List()
