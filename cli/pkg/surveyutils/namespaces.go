@@ -2,13 +2,13 @@ package surveyutils
 
 import (
 	"github.com/solo-io/gloo/pkg/cliutil"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 )
 
 const doneOption = "<done>"
 
 func SurveyNamespaces() ([]string, error) {
-	allNs := append([]string{doneOption}, helpers.MustGetNamespaces()...)
+	allNs := append([]string{doneOption}, clients.MustGetNamespaces()...)
 	var selected []string
 
 	for {

@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	"github.com/solo-io/supergloo/pkg/install/istio"
@@ -12,7 +12,7 @@ import (
 
 var _ = Describe("Metadata", func() {
 	It("should create the expected istio install ", func() {
-		namespace := helpers.MustGetNamespaces()[1]
+		namespace := clients.MustGetNamespaces()[1]
 
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("which namespace to install to? ")
@@ -50,7 +50,7 @@ var _ = Describe("Metadata", func() {
 	})
 
 	It("should create the expected gloo install ", func() {
-		namespace := helpers.MustGetNamespaces()[1]
+		namespace := clients.MustGetNamespaces()[1]
 
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("which namespace to install to? ")

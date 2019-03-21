@@ -3,10 +3,11 @@ package set
 import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -49,7 +50,7 @@ func setRootCert(opts *options.Options) error {
 	}
 	secretRef := core.ResourceRef(opts.SetRootCert.TlsSecret)
 
-	mesh, err := helpers.MustMeshClient().Read(meshRef.Namespace, meshRef.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	mesh, err := clients.MustMeshClient().Read(meshRef.Namespace, meshRef.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func setRootCert(opts *options.Options) error {
 	if secretRef.Namespace == "" && secretRef.Name == "" {
 		contextutils.LoggerFrom(opts.Ctx).Warnf("no --tls-secret set, removing root cert if set")
 	} else {
-		_, err := helpers.MustTlsSecretClient().Read(secretRef.Namespace, secretRef.Name, clients.ReadOpts{Ctx: opts.Ctx})
+		_, err := clients.MustTlsSecretClient().Read(secretRef.Namespace, secretRef.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 		if err != nil {
 			return err
 		}
@@ -76,7 +77,7 @@ func setRootCert(opts *options.Options) error {
 
 	mesh.MtlsConfig.RootCertificate = rootCert
 
-	mesh, err = helpers.MustMeshClient().Write(mesh, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	mesh, err = clients.MustMeshClient().Write(mesh, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}

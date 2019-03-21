@@ -3,9 +3,10 @@ package install
 import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	apierrs "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
@@ -44,7 +45,7 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		}
 
 	}
-	install, err = helpers.MustInstallClient().Write(install, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	install, err = clients.MustInstallClient().Write(install, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
@@ -58,8 +59,8 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 // returns nil, nil if install does not exist
 // returns nil, err if other error
 func getExistingInstall(opts *options.Options) (*v1.Install, error) {
-	existingInstall, err := helpers.MustInstallClient().Read(opts.Metadata.Namespace,
-		opts.Metadata.Name, clients.ReadOpts{Ctx: opts.Ctx})
+	existingInstall, err := clients.MustInstallClient().Read(opts.Metadata.Namespace,
+		opts.Metadata.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 	if err != nil {
 		if apierrs.IsNotExist(err) {
 			return nil, nil

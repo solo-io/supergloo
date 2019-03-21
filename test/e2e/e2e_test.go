@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -26,9 +28,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/test/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -75,10 +76,10 @@ var _ = Describe("E2e", func() {
 		err = utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
 		Expect(err).NotTo(HaveOccurred())
 
-		installClient := helpers.MustInstallClient()
+		installClient := clients.MustInstallClient()
 
 		Eventually(func() (core.Status_State, error) {
-			i, err := installClient.Read("supergloo-system", meshName, clients.ReadOpts{})
+			i, err := installClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
 			if err != nil {
 				return 0, err
 			}
@@ -91,9 +92,9 @@ var _ = Describe("E2e", func() {
 			return err
 		}).ShouldNot(HaveOccurred())
 
-		meshClient := helpers.MustMeshClient()
+		meshClient := clients.MustMeshClient()
 		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", meshName, clients.ReadOpts{})
+			_, err := meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
 			return err
 		}).ShouldNot(HaveOccurred())
 
@@ -197,7 +198,7 @@ var _ = Describe("E2e", func() {
 
 		err = nil
 		Eventually(func() bool {
-			_, err = meshClient.Read("supergloo-system", meshName, clients.ReadOpts{})
+			_, err = meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
 			if err == nil {
 				return false
 			}
@@ -207,7 +208,7 @@ var _ = Describe("E2e", func() {
 })
 
 func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes ...string) error {
-	pods := helpers.MustKubeClient().CoreV1().Pods(namespace)
+	pods := clients.MustKubeClient().CoreV1().Pods(namespace)
 	getPodStatus := func(prefix string) (*v1.PodPhase, error) {
 		list, err := pods.List(metav1.ListOptions{})
 		if err != nil {
@@ -286,7 +287,7 @@ func setRootCert(targetMesh, tlsSecret string) error {
 }
 
 func getCerts(appLabel, namespace string) (string, string, error) {
-	pods, err := helpers.MustKubeClient().CoreV1().Pods(namespace).List(metav1.ListOptions{
+	pods, err := clients.MustKubeClient().CoreV1().Pods(namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(map[string]string{"app": appLabel}).String(),
 	})
 	if err != nil {

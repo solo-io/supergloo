@@ -20,6 +20,7 @@ type Options struct {
 	Uninstall         Uninstall
 	CreateRoutingRule CreateRoutingRule
 	CreateTlsSecret   CreateTlsSecret
+	CreateAwsSecret   CreateAwsSecret
 	SetRootCert       SetRootCert
 }
 
@@ -79,6 +80,13 @@ type CreateTlsSecret struct {
 	PrivateKeyFilename string
 	CertChainFilename  string
 	CaCertFilename     string
+}
+
+type CreateAwsSecret struct {
+	CredentialsFileLocation string
+	CredentialsFileProfile  string
+	AccessKeyId             string
+	SecretAccessKey         string
 }
 
 type SetRootCert struct {

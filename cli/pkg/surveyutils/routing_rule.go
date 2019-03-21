@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 )
 
@@ -155,7 +156,7 @@ func surveyMatcher(matchers *options.RequestMatchersValue) error {
 }
 
 func surveyMesh(ctx context.Context, mesh *options.ResourceRefValue) error {
-	meshes, err := helpers.MustMeshClient().List("", clients.ListOpts{Ctx: ctx})
+	meshes, err := clients.MustMeshClient().List("", skclients.ListOpts{Ctx: ctx})
 	if err != nil {
 		return err
 	}
