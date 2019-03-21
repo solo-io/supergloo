@@ -31,46 +31,46 @@ steps:
 # 1) check formatting of go files
 # 2) ensure that make generated-code produces a clean diff
 
-# e2e-ginkgo is produced from https://github.com/solo-io/cloud-builders/e2e-ginkgo
-# Must set the GOPATH to tell the container the workspace has already been set up (by the dep step above)
-  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
-    env:
-    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-    - 'GOPATH=/workspace/gopath'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: make
-    args: ['check-format']
-    waitFor: ['dep']
-    id: 'check-format'
-  - name: 'gcr.io/$PROJECT_ID/go-make'
-    entrypoint: 'bash'
-    args: ['ci/check-code-and-docs-gen.sh']
-    env:
-    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-    - 'GOPATH=/workspace/gopath'
-    - 'TAGGED_VERSION=$TAG_NAME'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['dep']
-    id: 'check-code-and-docs-gen'
-
-  # Helm setup
-  # 1) Create directory to sync helm data
-  - name: gcr.io/cloud-builders/gsutil
-    entrypoint: mkdir
-    args: ['-p', './_output/helm']
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['dep']
-    id: 'make-helm-dir'
-
-  - name: gcr.io/cloud-builders/gsutil
-    args:
-      - rsync
-      - -r
-      - gs://supergloo-helm/
-      - './_output/helm'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['make-helm-dir']
-    id: 'setup-helm'
+## e2e-ginkgo is produced from https://github.com/solo-io/cloud-builders/e2e-ginkgo
+## Must set the GOPATH to tell the container the workspace has already been set up (by the dep step above)
+#  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
+#    env:
+#    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+#    - 'GOPATH=/workspace/gopath'
+#    dir: './gopath/src/github.com/solo-io/supergloo'
+#    entrypoint: make
+#    args: ['check-format']
+#    waitFor: ['dep']
+#    id: 'check-format'
+#  - name: 'gcr.io/$PROJECT_ID/go-make'
+#    entrypoint: 'bash'
+#    args: ['ci/check-code-and-docs-gen.sh']
+#    env:
+#    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+#    - 'GOPATH=/workspace/gopath'
+#    - 'TAGGED_VERSION=$TAG_NAME'
+#    dir: './gopath/src/github.com/solo-io/supergloo'
+#    waitFor: ['dep']
+#    id: 'check-code-and-docs-gen'
+#
+#  # Helm setup
+#  # 1) Create directory to sync helm data
+#  - name: gcr.io/cloud-builders/gsutil
+#    entrypoint: mkdir
+#    args: ['-p', './_output/helm']
+#    dir: './gopath/src/github.com/solo-io/supergloo'
+#    waitFor: ['dep']
+#    id: 'make-helm-dir'
+#
+#  - name: gcr.io/cloud-builders/gsutil
+#    args:
+#      - rsync
+#      - -r
+#      - gs://supergloo-helm/
+#      - './_output/helm'
+#    dir: './gopath/src/github.com/solo-io/supergloo'
+#    waitFor: ['make-helm-dir']
+#    id: 'setup-helm'
 
   # run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
@@ -84,8 +84,8 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
       - 'DEBUG_LOGGING=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', 'cli/pkg', 'pkg', 'test/e2e']
-    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache']
+    args: ['-r', '-failFast', 'test/e2e']
+    waitFor: ['dep', 'download-untar-go-cache']
     id: 'test'
 
   # Build everything

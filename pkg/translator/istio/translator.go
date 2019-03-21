@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/solo-io/solo-kit/pkg/utils/log"
+
 	"github.com/solo-io/go-utils/contextutils"
 
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
@@ -101,6 +103,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 			// we only want istio meshes
 			continue
 		}
+		log.Printf("translating istio mesh: %v", mesh)
 		writeNamespace := istio.Istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
