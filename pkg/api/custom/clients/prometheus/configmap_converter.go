@@ -21,7 +21,7 @@ func NewPrometheusConfigmapConverter() configmap.ConfigMapConverter {
 func (c *prometheusConfigmapConverter) FromKubeConfigMap(ctx context.Context, rc *configmap.ResourceClient, configMap *kubev1.ConfigMap) (resources.Resource, error) {
 	resource := rc.NewResource()
 	// we only care about prometheus configs
-	if _, isPrometheusConfig := configMap.Data["prometheus.yaml"]; isPrometheusConfig {
+	if _, isPrometheusConfig := configMap.Data["prometheus.yml"]; isPrometheusConfig {
 		return nil, nil
 	}
 	// only works for string fields
