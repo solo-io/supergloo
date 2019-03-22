@@ -1,22 +1,30 @@
 package inputs
 
 import (
-	"reflect"
-
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"gopkg.in/yaml.v2"
+	kubev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func InputPrometheusConfig(name, namespace string) *v1.PrometheusConfig {
+func PrometheusConfig(name, namespace string) *v1.PrometheusConfig {
 	return &v1.PrometheusConfig{
 		Metadata: core.Metadata{
-			Name:        name,
-			Namespace:   namespace,
-			Annotations: map[string]string{"resource_kind": reflect.TypeOf(&v1.PrometheusConfig{}).String()},
+			Name:      name,
+			Namespace: namespace,
 		},
 		Prometheus: BasicPrometheusConfig,
+	}
+}
+func PrometheusConfigMap(name, namespace string) *kubev1.ConfigMap {
+	return &kubev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Data: map[string]string{"prometheus.yml": BasicPrometheusConfig},
 	}
 }
 
