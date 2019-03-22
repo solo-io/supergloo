@@ -46,7 +46,7 @@ var _ = Describe("Setup", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err = runConfigEventLoop(ctx, cs, errHandler, mockSyncer)
+			err = runConfigEventLoop(ctx, cs, errHandler, []v1.ConfigSyncer{mockSyncer})
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
