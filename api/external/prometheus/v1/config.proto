@@ -16,8 +16,8 @@ to a typed Prometheus config.
  */
 message PrometheusConfig {
 
-    option (core.solo.io.resource).short_name = "mi";
-    option (core.solo.io.resource).plural_name = "meshingresses";
+    option (core.solo.io.resource).short_name = "pc";
+    option (core.solo.io.resource).plural_name = "prometheusconfigs";
 
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];

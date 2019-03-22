@@ -12,6 +12,8 @@ import (
 	kubev1 "k8s.io/api/core/v1"
 )
 
+const prometheusConfigmapKey = "prometheus.yml"
+
 type prometheusConfigmapConverter struct{}
 
 func NewPrometheusConfigmapConverter() configmap.ConfigMapConverter {
@@ -21,7 +23,7 @@ func NewPrometheusConfigmapConverter() configmap.ConfigMapConverter {
 func (c *prometheusConfigmapConverter) FromKubeConfigMap(ctx context.Context, rc *configmap.ResourceClient, configMap *kubev1.ConfigMap) (resources.Resource, error) {
 	resource := rc.NewResource()
 	// we only care about prometheus configs
-	if _, isPrometheusConfig := configMap.Data["prometheus.yml"]; isPrometheusConfig {
+	if _, isPrometheusConfig := configMap.Data[prometheusConfigmapKey]; !isPrometheusConfig {
 		return nil, nil
 	}
 	// only works for string fields
