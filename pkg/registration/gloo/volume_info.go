@@ -110,8 +110,9 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 			return nil, errors.Errorf("unsupported mesh type found for mesh ingress "+
 				"target mesh, %s.%s", resource.Namespace, resource.Name)
 		}
+		certVolumeName := CertVolumeName(resource)
 		volume := corev1.Volume{
-			Name: CertVolumeName(resource),
+			Name: certVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					Optional:    &optional,
@@ -121,7 +122,7 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 			},
 		}
 		volumeMount := corev1.VolumeMount{
-			Name:      tlsSecretName,
+			Name:      certVolumeName,
 			ReadOnly:  true,
 			MountPath: CertVolumePathName(resource),
 		}

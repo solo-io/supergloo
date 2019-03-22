@@ -22,7 +22,9 @@ var (
 
 var _ = Describe("gloo config syncers", func() {
 	var (
-		meshResource = &core.ResourceRef{
+		defaultMode  int32 = 420
+		optional           = true
+		meshResource       = &core.ResourceRef{
 			Name:      "istio",
 			Namespace: "istio-system",
 		}
@@ -40,6 +42,14 @@ var _ = Describe("gloo config syncers", func() {
 		volumeList = gloo.VolumeList{
 			corev1.Volume{
 				Name: gloo.CertVolumeName(meshResource),
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName:  "istio.defaut",
+						Items:       nil,
+						DefaultMode: &defaultMode,
+						Optional:    &optional,
+					},
+				},
 			},
 			corev1.Volume{
 				Name: "1",
@@ -50,7 +60,9 @@ var _ = Describe("gloo config syncers", func() {
 		}
 		mountList = gloo.VolumeMountList{
 			corev1.VolumeMount{
-				Name: gloo.CertVolumeName(meshResource),
+				Name:      gloo.CertVolumeName(meshResource),
+				ReadOnly:  true,
+				MountPath: "/etc/certs/namespace/name",
 			},
 			corev1.VolumeMount{
 				Name: "1",
@@ -135,6 +147,20 @@ var _ = Describe("gloo config syncers", func() {
 			syncer = gloo.NewGlooRegistrationSyncer(newReporter, cs)
 
 		})
+
+		var checkDeployment = func(volumes gloo.VolumeList, mounts gloo.VolumeMountList) {
+			deployment, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Get("gateway-proxy", metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(deployment.Spec.Template.Spec.Containers)).To(BeNumerically(">", 0))
+			gatewayProxyContainer := deployment.Spec.Template.Spec.Containers[0]
+			for _, v := range mounts {
+				Expect(gatewayProxyContainer.VolumeMounts).To(ContainElement(v))
+			}
+			for _, v := range volumes {
+				Expect(deployment.Spec.Template.Spec.Volumes).To(ContainElement(v))
+			}
+		}
+
 		AfterEach(func() {
 			err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Delete("gateway-proxy", &metav1.DeleteOptions{})
 			Expect(err).NotTo(HaveOccurred())
@@ -152,6 +178,7 @@ var _ = Describe("gloo config syncers", func() {
 			}
 			err = syncer.Sync(ctx, snap)
 			Expect(err).NotTo(HaveOccurred())
+			checkDeployment(volumeList, mountList)
 		})
 		It("Adds missing volume", func() {
 			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList.Remove(0), mountList.Remove(0)))
@@ -166,6 +193,7 @@ var _ = Describe("gloo config syncers", func() {
 			}
 			err = syncer.Sync(ctx, snap)
 			Expect(err).NotTo(HaveOccurred())
+			checkDeployment(volumeList, mountList)
 		})
 		It("deletes extra volume", func() {
 			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList, mountList))
@@ -180,6 +208,7 @@ var _ = Describe("gloo config syncers", func() {
 			}
 			err = syncer.Sync(ctx, snap)
 			Expect(err).NotTo(HaveOccurred())
+			checkDeployment(volumeList.Remove(0), mountList.Remove(0))
 		})
 		It("errors when mesh ins't available", func() {
 			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList, mountList))
