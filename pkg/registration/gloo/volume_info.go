@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -19,7 +19,7 @@ var (
 
 type VolumeList []corev1.Volume
 
-func (s VolumeList) remove(i int) VolumeList {
+func (s VolumeList) Remove(i int) VolumeList {
 	tmp := make(VolumeList, len(s))
 	copy(tmp, s)
 	tmp[i] = tmp[len(tmp)-1]
@@ -28,7 +28,7 @@ func (s VolumeList) remove(i int) VolumeList {
 
 type VolumeMountList []corev1.VolumeMount
 
-func (s VolumeMountList) remove(i int) VolumeMountList {
+func (s VolumeMountList) Remove(i int) VolumeMountList {
 	tmp := make(VolumeMountList, len(s))
 	copy(tmp, s)
 	tmp[i] = tmp[len(tmp)-1]
@@ -51,7 +51,7 @@ func (list DeploymentVolumeInfoList) containsVolume(volume corev1.Volume) bool {
 	return false
 }
 
-func diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (added DeploymentVolumeInfoList, deleted DeploymentVolumeInfoList) {
+func Diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (added DeploymentVolumeInfoList, deleted DeploymentVolumeInfoList) {
 	for _, new := range newList {
 		found := false
 		for _, old := range oldList {
@@ -111,7 +111,7 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 				"target mesh, %s.%s", resource.Namespace, resource.Name)
 		}
 		volume := corev1.Volume{
-			Name: certVolumeName(resource),
+			Name: CertVolumeName(resource),
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					Optional:    &optional,
@@ -123,7 +123,7 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 		volumeMount := corev1.VolumeMount{
 			Name:      tlsSecretName,
 			ReadOnly:  true,
-			MountPath: certVolumePathName(resource),
+			MountPath: CertVolumePathName(resource),
 		}
 		result[i] = DeploymentVolumeInfo{
 			VolumeMount: volumeMount,
@@ -133,10 +133,10 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 	return result, nil
 }
 
-func certVolumeName(mesh *core.ResourceRef) string {
+func CertVolumeName(mesh *core.ResourceRef) string {
 	return strings.Join([]string{mesh.Namespace, mesh.Name, certSuffix}, "_")
 }
 
-func certVolumePathName(mesh *core.ResourceRef) string {
+func CertVolumePathName(mesh *core.ResourceRef) string {
 	return filepath.Join("/etc", "certs", "namespace", "name")
 }

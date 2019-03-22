@@ -1,12 +1,23 @@
-package gloo
+package gloo_test
 
 import (
+	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/registration/gloo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+)
+
+var (
+	kubeClient kubernetes.Interface
 )
 
 var _ = Describe("gloo config syncers", func() {
@@ -26,9 +37,9 @@ var _ = Describe("gloo config syncers", func() {
 				Namespace: "istio-system",
 			},
 		}
-		volumeList = VolumeList{
+		volumeList = gloo.VolumeList{
 			corev1.Volume{
-				Name: certVolumeName(meshResource),
+				Name: gloo.CertVolumeName(meshResource),
 			},
 			corev1.Volume{
 				Name: "1",
@@ -37,9 +48,9 @@ var _ = Describe("gloo config syncers", func() {
 				Name: "2",
 			},
 		}
-		mountList = VolumeMountList{
+		mountList = gloo.VolumeMountList{
 			corev1.VolumeMount{
-				Name: certVolumeName(meshResource),
+				Name: gloo.CertVolumeName(meshResource),
 			},
 			corev1.VolumeMount{
 				Name: "1",
@@ -47,10 +58,24 @@ var _ = Describe("gloo config syncers", func() {
 			corev1.VolumeMount{
 				Name: "2",
 			},
+		}
+		glooIngress = func(meshes ...*core.ResourceRef) *v1.MeshIngress {
+			return &v1.MeshIngress{
+				MeshIngressType: &v1.MeshIngress_Gloo{
+					Gloo: &v1.GlooMeshIngress{
+						InstallationNamespace: "gloo-system",
+					},
+				},
+				Meshes: meshes,
+			}
 		}
 	)
-	var createDeployment = func(volumes VolumeList, mounts VolumeMountList) *v1beta1.Deployment {
+	var createDeployment = func(volumes gloo.VolumeList, mounts gloo.VolumeMountList) *v1beta1.Deployment {
 		return &v1beta1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "gateway-proxy",
+				Namespace: "gloo-system",
+			},
 			Spec: v1beta1.DeploymentSpec{
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
@@ -68,15 +93,15 @@ var _ = Describe("gloo config syncers", func() {
 	Context("should update", func() {
 		It("Should not update if nothing changed", func() {
 			deployment := createDeployment(volumeList, mountList)
-			update, err := ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeFalse())
 			Expect(deployment).To(Equal(createDeployment(volumeList, mountList)))
 		})
 
 		It("should update if one is removed", func() {
-			deployment := createDeployment(volumeList.remove(0), mountList.remove(0))
-			update, err := ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			deployment := createDeployment(volumeList.Remove(0), mountList.Remove(0))
+			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeTrue())
 			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
@@ -84,13 +109,90 @@ var _ = Describe("gloo config syncers", func() {
 
 		It("should update if on is added", func() {
 			deployment := createDeployment(volumeList, mountList)
-			update, err := ShouldUpdateDeployment(deployment, []*core.ResourceRef{}, v1.MeshList{})
+			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{}, v1.MeshList{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeTrue())
 			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
 		})
 	})
 
-	Context("")
+	Context("update deployments properly", func() {
+		var (
+			syncer v1.RegistrationSyncer
+			cs     *clientset.Clientset
+			ctx    context.Context
+		)
+
+		BeforeEach(func() {
+			var err error
+			ctx = context.Background()
+			cs, err = clientset.ClientsetFromContext(ctx)
+			Expect(err).NotTo(HaveOccurred())
+			cs.Kube = kubeClient
+			newReporter := reporter.NewReporter("gloo-registration-reporter",
+				cs.Input.Mesh.BaseClient(),
+				cs.Input.MeshIngress.BaseClient())
+			syncer = gloo.NewGlooRegistrationSyncer(newReporter, cs)
+
+		})
+		AfterEach(func() {
+			err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Delete("gateway-proxy", &metav1.DeleteOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
+		It("does nothing when states haven't changed", func() {
+			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList, mountList))
+			Expect(err).NotTo(HaveOccurred())
+			snap := &v1.RegistrationSnapshot{
+				Meshes: v1.MeshesByNamespace{
+					"istio-system": v1.MeshList{istioMesh},
+				},
+				Meshingresses: v1.MeshingressesByNamespace{
+					"gloo-system": v1.MeshIngressList{glooIngress(meshResource)},
+				},
+			}
+			err = syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		It("Adds missing volume", func() {
+			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList.Remove(0), mountList.Remove(0)))
+			Expect(err).NotTo(HaveOccurred())
+			snap := &v1.RegistrationSnapshot{
+				Meshes: v1.MeshesByNamespace{
+					"istio-system": v1.MeshList{istioMesh},
+				},
+				Meshingresses: v1.MeshingressesByNamespace{
+					"gloo-system": v1.MeshIngressList{glooIngress(meshResource)},
+				},
+			}
+			err = syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		It("deletes extra volume", func() {
+			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList, mountList))
+			Expect(err).NotTo(HaveOccurred())
+			snap := &v1.RegistrationSnapshot{
+				Meshes: v1.MeshesByNamespace{
+					"istio-system": v1.MeshList{istioMesh},
+				},
+				Meshingresses: v1.MeshingressesByNamespace{
+					"gloo-system": v1.MeshIngressList{glooIngress()},
+				},
+			}
+			err = syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+		})
+		It("errors when mesh ins't available", func() {
+			_, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Create(createDeployment(volumeList, mountList))
+			Expect(err).NotTo(HaveOccurred())
+			snap := &v1.RegistrationSnapshot{
+				Meshes: v1.MeshesByNamespace{},
+				Meshingresses: v1.MeshingressesByNamespace{
+					"gloo-system": v1.MeshIngressList{glooIngress(meshResource)},
+				},
+			}
+			err = syncer.Sync(ctx, snap)
+			Expect(err).To(HaveOccurred())
+		})
+	})
 
 })
