@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/config/gloo"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -63,15 +61,6 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled E
 		syncers = append(syncers, istioSyncer)
 	}
 
-	if enabled.Gloo {
-		glooSyncer, err := createGlooConfigSyncer(ctx, cs)
-		if err != nil {
-			return nil, err
-		}
-		syncers = append(syncers, glooSyncer)
-
-	}
-
 	return syncers, nil
 }
 
@@ -100,15 +89,6 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		cs.Input.SecurityRule.BaseClient())
 
 	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
-}
-
-func createGlooConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
-	newReporter := reporter.NewReporter("gloo-config-reporter",
-		cs.Input.Mesh.BaseClient(),
-		cs.Input.Upstream.BaseClient(),
-		cs.Input.Upstream.BaseClient())
-
-	return gloo.NewGlooConfigSyncer(newReporter, cs), nil
 }
 
 // start the istio config event loop

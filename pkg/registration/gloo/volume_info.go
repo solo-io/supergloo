@@ -1,22 +1,46 @@
 package gloo
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
+
+const certSuffix = "certs"
 
 var (
 	defaultMode int32 = 420
 	optional          = true
 )
 
+type VolumeList []corev1.Volume
+
+func (s VolumeList) remove(i int) VolumeList {
+	tmp := make(VolumeList, len(s))
+	copy(tmp, s)
+	tmp[i] = tmp[len(tmp)-1]
+	return tmp[:len(tmp)-1]
+}
+
+type VolumeMountList []corev1.VolumeMount
+
+func (s VolumeMountList) remove(i int) VolumeMountList {
+	tmp := make(VolumeMountList, len(s))
+	copy(tmp, s)
+	tmp[i] = tmp[len(tmp)-1]
+	return tmp[:len(tmp)-1]
+}
+
 type DeploymentVolumeInfoList []DeploymentVolumeInfo
+
+type DeploymentVolumeInfo struct {
+	Volume      corev1.Volume
+	VolumeMount corev1.VolumeMount
+}
 
 func (list DeploymentVolumeInfoList) containsVolume(volume corev1.Volume) bool {
 	for _, v := range list {
@@ -48,21 +72,16 @@ func diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (a
 			}
 		}
 		if !found {
-			deleted = append(deleted)
+			deleted = append(deleted, old)
 		}
 	}
 	return added, deleted
 }
 
-type DeploymentVolumeInfo struct {
-	Volume      corev1.Volume
-	VolumeMount corev1.VolumeMount
-}
-
-func VolumesToDeploymentInfo(volumes []corev1.Volume, mounts []corev1.VolumeMount) DeploymentVolumeInfoList {
+func VolumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) DeploymentVolumeInfoList {
 	var result DeploymentVolumeInfoList
 	for _, volume := range volumes {
-		if strings.Contains(volume.Name, "-certs") {
+		if strings.Contains(volume.Name, certSuffix) {
 			for _, mount := range mounts {
 				if mount.Name == volume.Name {
 					result = append(result, DeploymentVolumeInfo{
@@ -73,11 +92,12 @@ func VolumesToDeploymentInfo(volumes []corev1.Volume, mounts []corev1.VolumeMoun
 			}
 		}
 	}
+	return result
 }
 
 func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
 	result := make(DeploymentVolumeInfoList, len(resources))
-	for _, resource := range resources {
+	for i, resource := range resources {
 		mesh, err := meshes.Find(resource.Namespace, resource.Name)
 		if err != nil {
 			return nil, err
@@ -105,16 +125,16 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 			ReadOnly:  true,
 			MountPath: certVolumePathName(resource),
 		}
-		result = append(result, DeploymentVolumeInfo{
+		result[i] = DeploymentVolumeInfo{
 			VolumeMount: volumeMount,
 			Volume:      volume,
-		})
+		}
 	}
 	return result, nil
 }
 
 func certVolumeName(mesh *core.ResourceRef) string {
-	return fmt.Sprintf("%s-%s-certs", mesh.Name, mesh.Namespace)
+	return strings.Join([]string{mesh.Namespace, mesh.Name, certSuffix}, "_")
 }
 
 func certVolumePathName(mesh *core.ResourceRef) string {

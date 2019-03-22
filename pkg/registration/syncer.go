@@ -12,16 +12,16 @@ import (
 
 // registration syncer, activates config syncers based on registered meshes
 // enables istio config syncer as long as there's a registered istio mesh
-type IstioRegistrationSyncer struct {
+type RegistrationSyncer struct {
 	Clientset  *clientset.Clientset
 	ErrHandler func(error)
 }
 
-func NewIstioRegistrationSyncer(clientset *clientset.Clientset, errHandler func(error)) *IstioRegistrationSyncer {
-	return &IstioRegistrationSyncer{Clientset: clientset, ErrHandler: errHandler}
+func NewRegistrationSyncer(clientset *clientset.Clientset, errHandler func(error)) *RegistrationSyncer {
+	return &RegistrationSyncer{Clientset: clientset, ErrHandler: errHandler}
 }
 
-func (s *IstioRegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
+func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	var enabledFeatures setup.EnabledConfigLoops
 	for _, mesh := range snap.Meshes.List() {
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
