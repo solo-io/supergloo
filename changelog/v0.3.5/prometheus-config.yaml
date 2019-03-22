@@ -1,0 +1,8 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      adds 2 packages:
+      - stats/prometheus: includes a PrometheusConfigUpdater which ensures a set of prometheus scrape configs are present in a Prometheus configmap (read/write to storage)
+      - stats/istio: includes a utility function for rendering the scrape configs required for istio.
+
+
