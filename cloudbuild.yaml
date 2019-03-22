@@ -98,7 +98,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', 'cli/pkg', 'pkg', 'test/e2e']
-    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache']
+    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
     id: 'test'
 
   # Build everything

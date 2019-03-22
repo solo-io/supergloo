@@ -15,17 +15,17 @@ import (
 Syncs a prometheus configmap, ensuring that each provided scrape config
 Is present in the target configmap
 */
-type PrometheusConfigUpdater struct {
+type ConfigUpdater struct {
 	targetConfigmap core.ResourceRef
 	scrapeConfigs   []*config.ScrapeConfig
 	client          v1.PrometheusConfigClient
 }
 
-func NewPrometheusConfigUpdater(targetConfigmap core.ResourceRef, scrapeConfigs []*config.ScrapeConfig, client v1.PrometheusConfigClient) *PrometheusConfigUpdater {
-	return &PrometheusConfigUpdater{targetConfigmap: targetConfigmap, scrapeConfigs: scrapeConfigs, client: client}
+func NewConfigUpdater(targetConfigmap core.ResourceRef, scrapeConfigs []*config.ScrapeConfig, client v1.PrometheusConfigClient) *ConfigUpdater {
+	return &ConfigUpdater{targetConfigmap: targetConfigmap, scrapeConfigs: scrapeConfigs, client: client}
 }
 
-func (s *PrometheusConfigUpdater) EnsureScrapeConfigs(ctx context.Context) error {
+func (s *ConfigUpdater) EnsureScrapeConfigs(ctx context.Context) error {
 	oldConfig, err := s.client.Read(s.targetConfigmap.Namespace, s.targetConfigmap.Name, clients.ReadOpts{Ctx: ctx})
 	if err != nil {
 		return err
