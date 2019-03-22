@@ -94,19 +94,19 @@ func (client *prometheusConfigClient) Watch(namespace string, opts clients.Watch
 	if initErr != nil {
 		return nil, nil, initErr
 	}
-	meshingressesChan := make(chan PrometheusConfigList)
+	prometheusconfigsChan := make(chan PrometheusConfigList)
 	go func() {
 		for {
 			select {
 			case resourceList := <-resourcesChan:
-				meshingressesChan <- convertToPrometheusConfig(resourceList)
+				prometheusconfigsChan <- convertToPrometheusConfig(resourceList)
 			case <-opts.Ctx.Done():
-				close(meshingressesChan)
+				close(prometheusconfigsChan)
 				return
 			}
 		}
 	}()
-	return meshingressesChan, errs, nil
+	return prometheusconfigsChan, errs, nil
 }
 
 func convertToPrometheusConfig(resources resources.ResourceList) PrometheusConfigList {

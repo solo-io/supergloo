@@ -39,7 +39,7 @@ func (r *PrometheusConfig) Hash() uint64 {
 }
 
 type PrometheusConfigList []*PrometheusConfig
-type MeshingressesByNamespace map[string]PrometheusConfigList
+type PrometheusconfigsByNamespace map[string]PrometheusConfigList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PrometheusConfigList) Find(namespace, name string) (*PrometheusConfig, error) {
@@ -106,17 +106,17 @@ func (list PrometheusConfigList) AsInterfaces() []interface{} {
 	return asInterfaces
 }
 
-func (byNamespace MeshingressesByNamespace) Add(prometheusConfig ...*PrometheusConfig) {
+func (byNamespace PrometheusconfigsByNamespace) Add(prometheusConfig ...*PrometheusConfig) {
 	for _, item := range prometheusConfig {
 		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
 	}
 }
 
-func (byNamespace MeshingressesByNamespace) Clear(namespace string) {
+func (byNamespace PrometheusconfigsByNamespace) Clear(namespace string) {
 	delete(byNamespace, namespace)
 }
 
-func (byNamespace MeshingressesByNamespace) List() PrometheusConfigList {
+func (byNamespace PrometheusconfigsByNamespace) List() PrometheusConfigList {
 	var list PrometheusConfigList
 	for _, prometheusConfigList := range byNamespace {
 		list = append(list, prometheusConfigList...)
@@ -124,8 +124,8 @@ func (byNamespace MeshingressesByNamespace) List() PrometheusConfigList {
 	return list.Sort()
 }
 
-func (byNamespace MeshingressesByNamespace) Clone() MeshingressesByNamespace {
-	cloned := make(MeshingressesByNamespace)
+func (byNamespace PrometheusconfigsByNamespace) Clone() PrometheusconfigsByNamespace {
+	cloned := make(PrometheusconfigsByNamespace)
 	for ns, list := range byNamespace {
 		cloned[ns] = list.Clone()
 	}
@@ -146,10 +146,10 @@ func (o *PrometheusConfig) DeepCopyObject() runtime.Object {
 }
 
 var PrometheusConfigCrd = crd.NewCrd("config.prometheus.io",
-	"meshingresses",
+	"prometheusconfigs",
 	"config.prometheus.io",
 	"v1",
 	"PrometheusConfig",
-	"mi",
+	"pc",
 	false,
 	&PrometheusConfig{})
