@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: |
+      remove the need to use resource_kind annotation on prometheus configmaps
+    issueLink: https://github.com/solo-io/supergloo/issues/287
+
+

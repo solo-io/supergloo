@@ -21,7 +21,7 @@ var _ = Describe("AddScrapeConfigs", func() {
 		It("adds any missing scrape configs to the target prometheus configmap", func() {
 			client, err := v1.NewPrometheusConfigClient(&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 			Expect(err).NotTo(HaveOccurred())
-			input, err := client.Write(inputs.InputPrometheusConfig("name", "namespace"), clients.WriteOpts{})
+			input, err := client.Write(inputs.PrometheusConfig("name", "namespace"), clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			scs := inputs.InputIstioPrometheusScrapeConfigs()
 			updater := NewConfigUpdater(input.Metadata.Ref(), scs, client)
@@ -40,7 +40,7 @@ var _ = Describe("AddScrapeConfigs", func() {
 		It("performs a no-op", func() {
 			client, err := v1.NewPrometheusConfigClient(&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 			Expect(err).NotTo(HaveOccurred())
-			input, err := client.Write(inputs.InputPrometheusConfig("name", "namespace"), clients.WriteOpts{})
+			input, err := client.Write(inputs.PrometheusConfig("name", "namespace"), clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			scs := inputs.InputIstioPrometheusScrapeConfigs()
 			updater := NewConfigUpdater(input.Metadata.Ref(), scs, client)
