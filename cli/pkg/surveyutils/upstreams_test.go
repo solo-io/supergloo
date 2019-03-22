@@ -3,12 +3,13 @@ package surveyutils_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/test/inputs"
 
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
@@ -16,9 +17,9 @@ import (
 
 var _ = Describe("SelectUpstreams", func() {
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 		for _, us := range inputs.BookInfoUpstreams("hi") {
-			_, err := helpers.MustUpstreamClient().Write(us, clients.WriteOpts{})
+			_, err := clients.MustUpstreamClient().Write(us, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})

@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/olekukonko/tablewriter"
@@ -15,7 +17,7 @@ import (
 )
 
 func PrintInstalls(list v1.InstallList, outputType string) {
-	cliutils.PrintList(outputType, "", list,
+	_ = cliutils.PrintList(outputType, "", list,
 		func(data interface{}, w io.Writer) error {
 			tablePrintInstalls(data.(v1.InstallList), w)
 			return nil
@@ -105,7 +107,7 @@ func installDetails(in *v1.Install) []string {
 }
 
 func PrintRoutingRules(list v1.RoutingRuleList, outputType string) {
-	cliutils.PrintList(outputType, "", list,
+	_ = cliutils.PrintList(outputType, "", list,
 		func(data interface{}, w io.Writer) error {
 			tablePrintRoutingRules(data.(v1.RoutingRuleList), w)
 			return nil
@@ -141,7 +143,7 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 }
 
 func PrintTlsSecrets(list v1.TlsSecretList, outputType string) {
-	cliutils.PrintList(outputType, "", list,
+	_ = cliutils.PrintList(outputType, "", list,
 		func(data interface{}, w io.Writer) error {
 			tablePrintTlsSecrets(data.(v1.TlsSecretList), w)
 			return nil
@@ -161,8 +163,29 @@ func tablePrintTlsSecrets(list v1.TlsSecretList, w io.Writer) {
 	table.Render()
 }
 
+func PrintSecrets(list gloov1.SecretList, outputType string) {
+	_ = cliutils.PrintList(outputType, "", list,
+		func(data interface{}, w io.Writer) error {
+			tablePrintSecrets(data.(gloov1.SecretList), w)
+			return nil
+		}, os.Stdout)
+}
+
+func tablePrintSecrets(list gloov1.SecretList, w io.Writer) {
+	table := tablewriter.NewWriter(w)
+	table.SetHeader([]string{"Secrets"})
+
+	for _, secret := range list {
+		name := secret.GetMetadata().Name
+		table.Append([]string{name})
+	}
+
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.Render()
+}
+
 func PrintMeshes(list v1.MeshList, outputType string) {
-	cliutils.PrintList(outputType, "", list,
+	_ = cliutils.PrintList(outputType, "", list,
 		func(data interface{}, w io.Writer) error {
 			tablePrintMeshes(data.(v1.MeshList), w)
 			return nil

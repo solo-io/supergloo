@@ -3,9 +3,10 @@ package surveyutils
 import (
 	"context"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 )
 
@@ -24,7 +25,7 @@ func SurveySetRootCert(ctx context.Context, in *options.SetRootCert) error {
 }
 
 func SurveyMesh(prompt string, ctx context.Context) (core.ResourceRef, error) {
-	meshes, err := helpers.MustMeshClient().List("", clients.ListOpts{Ctx: ctx})
+	meshes, err := clients.MustMeshClient().List("", skclients.ListOpts{Ctx: ctx})
 	if err != nil {
 		return core.ResourceRef{}, err
 	}
@@ -32,7 +33,7 @@ func SurveyMesh(prompt string, ctx context.Context) (core.ResourceRef, error) {
 }
 
 func SurveyTlsSecret(prompt string, ctx context.Context) (core.ResourceRef, error) {
-	tlsSecretes, err := helpers.MustTlsSecretClient().List("", clients.ListOpts{Ctx: ctx})
+	tlsSecretes, err := clients.MustTlsSecretClient().List("", skclients.ListOpts{Ctx: ctx})
 	if err != nil {
 		return core.ResourceRef{}, err
 	}

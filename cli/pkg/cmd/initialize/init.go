@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	v1 "k8s.io/api/core/v1"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
@@ -61,7 +63,7 @@ func installSuperGloo(opts *options.Options) error {
 		return errors.Wrapf(err, "reading custom values")
 	}
 
-	kube := helpers.MustKubeClient()
+	kube := clients.MustKubeClient()
 	if _, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: opts.Init.InstallNamespace},
 	}); err != nil && !kubeerrs.IsAlreadyExists(err) {

@@ -2,9 +2,10 @@ package uninstall
 
 import (
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -50,7 +51,7 @@ func disableInstall(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
-	in, err = helpers.MustInstallClient().Write(in, clients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
+	in, err = clients.MustInstallClient().Write(in, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
 	}
@@ -61,9 +62,9 @@ func disableInstall(opts *options.Options) error {
 }
 
 func disableInstallFromOpts(opts *options.Options) (*v1.Install, error) {
-	installToDisable, err := helpers.MustInstallClient().Read(opts.Uninstall.Metadata.Namespace,
+	installToDisable, err := clients.MustInstallClient().Read(opts.Uninstall.Metadata.Namespace,
 		opts.Uninstall.Metadata.Name,
-		clients.ReadOpts{Ctx: opts.Ctx})
+		skclients.ReadOpts{Ctx: opts.Ctx})
 	if err != nil {
 		return nil, err
 	}

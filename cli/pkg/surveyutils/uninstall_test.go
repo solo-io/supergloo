@@ -3,11 +3,12 @@ package surveyutils_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/test/inputs"
 
@@ -16,7 +17,7 @@ import (
 
 var _ = Describe("Uninstall", func() {
 	BeforeEach(func() {
-		helpers.UseMemoryClients()
+		clients.UseMemoryClients()
 	})
 
 	It("should create the expected install ", func() {
@@ -26,10 +27,10 @@ var _ = Describe("Uninstall", func() {
 		namespace := "ns"
 		inst1 := inputs.IstioInstall(name1, namespace, "any", "1.0.5", false)
 		inst2 := inputs.IstioInstall(name2, namespace, "any", "1.0.5", false)
-		ic := helpers.MustInstallClient()
-		_, err := ic.Write(inst1, clients.WriteOpts{})
+		ic := clients.MustInstallClient()
+		_, err := ic.Write(inst1, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = ic.Write(inst2, clients.WriteOpts{})
+		_, err = ic.Write(inst2, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		testutil.ExpectInteractive(func(c *testutil.Console) {

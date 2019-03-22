@@ -10,10 +10,8 @@ func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"c"},
-		Short:   "commands for creating managing resources used for SuperGloo",
-		Long: `SuperGloo has features which make use of data that should be 
-stored and managed securely called Secrets. This 
-`,
+		Short:   "commands for creating resources used by SuperGloo",
+		Long:    "commands for creating resources used by SuperGloo",
 	}
 
 	cmd.AddCommand(createSecretCommand(opts))
@@ -26,7 +24,7 @@ func createSecretCommand(opts *options.Options) *cobra.Command {
 		Aliases: []string{"s"},
 		Short:   "create a secret for use with SuperGloo.",
 		Long: `SuperGloo uses secrets to authenticate to external APIs
-and manage TLS certificates used for encryption in the mesh and ingress. 
+and manage TLS certificates used for encryption in the mesh and ingress.
 `,
 	}
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
@@ -34,5 +32,6 @@ and manage TLS certificates used for encryption in the mesh and ingress.
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 
 	cmd.AddCommand(tlsCmd(opts))
+	cmd.AddCommand(awsCmd(opts))
 	return cmd
 }

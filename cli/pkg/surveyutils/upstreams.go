@@ -3,15 +3,16 @@ package surveyutils
 import (
 	"context"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/cli/pkg/helpers"
 )
 
 func SurveyUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
 	// collect secrets list
-	usClient := helpers.MustUpstreamClient()
-	upstreams, err := usClient.List("", clients.ListOpts{Ctx: ctx})
+	usClient := clients.MustUpstreamClient()
+	upstreams, err := usClient.List("", skclients.ListOpts{Ctx: ctx})
 	if err != nil {
 		return nil, err
 	}

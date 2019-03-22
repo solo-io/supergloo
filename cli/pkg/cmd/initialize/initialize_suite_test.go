@@ -3,6 +3,8 @@ package initialize_test
 import (
 	"testing"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
@@ -20,7 +22,7 @@ var (
 )
 
 var _ = BeforeSuite(func() {
-	kubeClient := testutils.MustKubeClient()
+	kubeClient := clients.MustKubeClient()
 	lock, err = clusterlock.NewTestClusterLocker(kubeClient, "default")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
@@ -28,6 +30,6 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	defer lock.ReleaseLock()
-	testutils.TeardownSuperGloo(testutils.MustKubeClient())
+	testutils.TeardownSuperGloo(clients.MustKubeClient())
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 })
