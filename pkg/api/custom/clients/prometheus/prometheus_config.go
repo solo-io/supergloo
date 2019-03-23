@@ -45,8 +45,8 @@ type Config struct {
 }
 
 // returns true if changed
-func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) bool {
-	var updated bool
+func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) int {
+	var updated int
 	for _, desiredScrapeConfig := range scrapeConfigs {
 		var found bool
 		for _, sc := range cfg.ScrapeConfigs {
@@ -59,7 +59,7 @@ func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) bool {
 			continue
 		}
 		cfg.ScrapeConfigs = append(cfg.ScrapeConfigs, desiredScrapeConfig)
-		updated = true
+		updated++
 	}
 	return updated
 }

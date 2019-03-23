@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"context"
+	"strings"
 
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/go-utils/contextutils"
@@ -12,38 +13,95 @@ import (
 )
 
 /*
-Syncs a prometheus configmap, ensuring that each provided scrape config
-Is present in the target configmap
+Ensures the target configmap contains scrape configs
 */
-type ConfigUpdater struct {
-	targetConfigmap core.ResourceRef
-	scrapeConfigs   []*config.ScrapeConfig
-	client          v1.PrometheusConfigClient
-}
-
-func NewConfigUpdater(targetConfigmap core.ResourceRef, scrapeConfigs []*config.ScrapeConfig, client v1.PrometheusConfigClient) *ConfigUpdater {
-	return &ConfigUpdater{targetConfigmap: targetConfigmap, scrapeConfigs: scrapeConfigs, client: client}
-}
-
-func (s *ConfigUpdater) EnsureScrapeConfigs(ctx context.Context) error {
-	oldConfig, err := s.client.Read(s.targetConfigmap.Namespace, s.targetConfigmap.Name, clients.ReadOpts{Ctx: ctx})
+func EnsureScrapeConfigs(ctx context.Context, meshId string, targetConfigmap core.ResourceRef, scrapeConfigs []*config.ScrapeConfig, client v1.PrometheusConfigClient) error {
+	// get the existing prometheus config
+	currentConfig, err := client.Read(targetConfigmap.Namespace, targetConfigmap.Name, clients.ReadOpts{Ctx: ctx})
 	if err != nil {
 		return err
 	}
-	promCfg, err := prometheus.ConfigFromResource(oldConfig)
+	promCfg, err := prometheus.ConfigFromResource(currentConfig)
 	if err != nil {
 		return err
 	}
-	updated := promCfg.AddScrapeConfigs(s.scrapeConfigs)
-	if !updated {
+
+	// prepend each job with the given mesh id
+	var prefixedScrapeConfigs []*config.ScrapeConfig
+	// prepend prefix to our jobs
+	// this way we can also remove our jobs later
+	for _, job := range scrapeConfigs {
+		// shallow copy to prevent modifying the input configs
+		job := *job
+		job.JobName = meshId + "-" + job.JobName
+		prefixedScrapeConfigs = append(prefixedScrapeConfigs, &job)
+	}
+
+	// update the promcfg
+	updated := promCfg.AddScrapeConfigs(prefixedScrapeConfigs)
+	if updated == 0 {
 		return nil
 	}
+
+	contextutils.LoggerFrom(ctx).Infof("added %v: %v scrape configs", targetConfigmap, updated)
+
+	// write to storage
 	updatedConfig, err := prometheus.ConfigToResource(promCfg)
 	if err != nil {
 		return err
 	}
-	updatedConfig.Metadata = oldConfig.Metadata
-	contextutils.LoggerFrom(ctx).Infof("updating configmap %v with %v scrape configs", s.targetConfigmap, len(s.scrapeConfigs))
-	_, err = s.client.Write(updatedConfig, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true})
+	updatedConfig.Metadata = currentConfig.Metadata
+
+	_, err = client.Write(updatedConfig, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true})
 	return err
+}
+
+func RemoveScrapeConfigs(ctx context.Context, meshId string, targetConfigmap core.ResourceRef, client v1.PrometheusConfigClient) error {
+	// get the existing prometheus config
+	currentConfig, err := client.Read(targetConfigmap.Namespace, targetConfigmap.Name, clients.ReadOpts{Ctx: ctx})
+	if err != nil {
+		return err
+	}
+	promCfg, err := prometheus.ConfigFromResource(currentConfig)
+	if err != nil {
+		return err
+	}
+
+	// filter out jobs with the mesh id prefix
+	var notOurJobs []*config.ScrapeConfig
+	for _, job := range promCfg.ScrapeConfigs {
+		if strings.HasPrefix(job.JobName, meshId+"-") {
+			continue
+		}
+		notOurJobs = append(notOurJobs, job)
+	}
+	// nothing to delete
+	if scrapeConfigsEqual(notOurJobs, promCfg.ScrapeConfigs) {
+		return nil
+	}
+
+	// overwrite with filtered list
+	promCfg.ScrapeConfigs = notOurJobs
+
+	// write to storage
+	updatedConfig, err := prometheus.ConfigToResource(promCfg)
+	if err != nil {
+		return err
+	}
+	updatedConfig.Metadata = currentConfig.Metadata
+
+	_, err = client.Write(updatedConfig, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true})
+	return err
+}
+
+func scrapeConfigsEqual(list1, list2 []*config.ScrapeConfig) bool {
+	if len(list1) != len(list2) {
+		return false
+	}
+	for i := range list1 {
+		if list1[i] != list2[i] {
+			return false
+		}
+	}
+	return true
 }
