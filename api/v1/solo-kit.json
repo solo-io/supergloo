@@ -46,6 +46,10 @@
       {
         "name": "Mesh",
         "package": "supergloo.solo.io"
+      },
+      {
+        "name": "MeshIngress",
+        "package": "supergloo.solo.io"
       }
     ],
     "registration.supergloo.solo.io": [

@@ -95,7 +95,7 @@ var _ = Describe("Install", func() {
 func MustGlooInstallType(install *v1.Install) *v1.MeshIngressInstall_Gloo {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
 	ingress := install.InstallType.(*v1.Install_Ingress)
-	Expect(ingress.Ingress.InstallType).To(BeAssignableToTypeOf(&v1.MeshIngressInstall_Gloo{}))
-	glooIngress := ingress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
+	Expect(ingress.Ingress.IngressInstallType).To(BeAssignableToTypeOf(&v1.MeshIngressInstall_Gloo{}))
+	glooIngress := ingress.Ingress.IngressInstallType.(*v1.MeshIngressInstall_Gloo)
 	return glooIngress
 }

@@ -33,7 +33,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	}
 
 	logger.Infof("beginning istio install sync %v", installMesh)
-	istio, ok := installMesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	istio, ok := installMesh.Mesh.MeshInstallType.(*v1.MeshInstall_IstioMesh)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}

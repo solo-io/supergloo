@@ -53,7 +53,7 @@ func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
 		InstallationNamespace: opts.Install.InstallationNamespace.Istio,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				InstallType: &v1.MeshInstall_IstioMesh{
+				MeshInstallType: &v1.MeshInstall_IstioMesh{
 					IstioMesh: &opts.Install.IstioInstall,
 				},
 			},

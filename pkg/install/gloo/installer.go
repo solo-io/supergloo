@@ -13,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error)
+	EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error)
 }
 
 type defaultInstaller struct {
@@ -24,7 +24,7 @@ func NewDefaultInstaller(helmInstaller helm.Installer) *defaultInstaller {
 	return &defaultInstaller{helmInstaller: helmInstaller}
 }
 
-func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
+func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error) {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -35,7 +35,7 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 
 	logger.Infof("beginning gloo install sync %v", installIngress)
 
-	glooInstall, ok := installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
+	glooInstall, ok := installIngress.Ingress.IngressInstallType.(*v1.MeshIngressInstall_Gloo)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only gloo ingress supported currently", install.Metadata.Ref())
 	}
@@ -78,12 +78,45 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, errors.Wrapf(err, "converting installed manifests to gzipped string")
 	}
 
-	meshIngress := &v1.MeshIngress{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshIngressType: &v1.MeshIngress_Gloo{},
+	var meshRefs []*core.ResourceRef
+	for _, glooMesh := range glooInstall.Gloo.Meshes {
+		mesh, err := meshes.Find(glooMesh.Namespace, glooMesh.Name)
+		if err == nil && mesh != nil {
+			ref := mesh.Metadata.Ref()
+			meshRefs = append(meshRefs, &ref)
+		}
+	}
+
+	var meshIngress *v1.MeshIngress
+	if installIngress.Ingress.InstalledIngress != nil {
+		var err error
+		meshIngress, err = meshIngresses.Find(installIngress.Ingress.InstalledIngress.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "installed ingress not found")
+		}
+	}
+
+	if meshIngress != nil {
+		meshIngress.Meshes = meshRefs
+		meshIngress.MeshIngressType = &v1.MeshIngress_Gloo{
+			Gloo: &v1.GlooMeshIngress{
+				InstallationNamespace: install.Metadata.Namespace,
+			},
+		}
+	} else {
+
+		meshIngress = &v1.MeshIngress{
+			Metadata: core.Metadata{
+				Namespace: install.Metadata.Namespace,
+				Name:      install.Metadata.Name,
+			},
+			MeshIngressType: &v1.MeshIngress_Gloo{
+				Gloo: &v1.GlooMeshIngress{
+					InstallationNamespace: install.Metadata.Namespace,
+				},
+			},
+			Meshes: meshRefs,
+		}
 	}
 
 	// caller should expect the install to have been modified
