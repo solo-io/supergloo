@@ -95,7 +95,7 @@ message MeshInstall {
 
     // The type of mesh to install
     // currently only istio is supported
-    oneof install_type {
+    oneof mesh_install_type {
         // install istio
         IstioInstall istio_mesh = 2;
     }
@@ -113,7 +113,7 @@ Holds all configuration shared between different ingress types
 message MeshIngressInstall {
     // The type of mesh to install
     // currently only gloo is supported
-    oneof install_type {
+    oneof ingress_install_type {
         // gloo
         GlooInstall gloo = 1;
     }
@@ -130,8 +130,8 @@ message GlooInstall {
     // ignored if using custom helm chart
     string gloo_version = 2;
 
-    // which mesh for gloo to target
-    repeated string meshes = 3;
+    // reference to the Mesh(s) that this ingress is acting upon
+    repeated core.solo.io.ResourceRef meshes = 3;
 
 }
 

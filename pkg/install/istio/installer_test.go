@@ -38,7 +38,7 @@ var _ = Describe("Installer", func() {
 		}
 		installConfig := &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				InstallType: istioConfig,
+				MeshInstallType: istioConfig,
 			},
 		}
 
@@ -74,7 +74,7 @@ var _ = Describe("Installer", func() {
 
 		// enable prometheus
 		istioConfig.IstioMesh.InstallPrometheus = true
-		installConfig.Mesh.InstallType = istioConfig
+		installConfig.Mesh.MeshInstallType = istioConfig
 		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{installedMesh})
 		Expect(err).NotTo(HaveOccurred())
 
@@ -105,7 +105,7 @@ var _ = Describe("Installer", func() {
 			}
 			installConfig := &v1.Install_Mesh{
 				Mesh: &v1.MeshInstall{
-					InstallType: istioConfig,
+					MeshInstallType: istioConfig,
 				},
 			}
 
@@ -132,7 +132,7 @@ var _ = Describe("Installer", func() {
 			}
 			installConfig := &v1.Install_Mesh{
 				Mesh: &v1.MeshInstall{
-					InstallType: istioConfig,
+					MeshInstallType: istioConfig,
 				},
 			}
 
@@ -165,8 +165,8 @@ var _ = Describe("Installer", func() {
 			ref := mesh.Metadata.Ref()
 			installConfig := &v1.Install_Mesh{
 				Mesh: &v1.MeshInstall{
-					InstallType:   istioConfig,
-					InstalledMesh: &ref,
+					MeshInstallType: istioConfig,
+					InstalledMesh:   &ref,
 				},
 			}
 

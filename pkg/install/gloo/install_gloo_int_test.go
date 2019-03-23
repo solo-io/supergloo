@@ -17,15 +17,21 @@ var _ = Describe("gloo mock installer", func() {
 	ns := "gloo-system"
 	It("installs, upgrades, and uninstalls from an install object", func() {
 
+		istioMesh := []*core.ResourceRef{
+			{
+				Namespace: "supergloo-system",
+				Name:      "istio",
+			},
+		}
 		glooConfig := &v1.MeshIngressInstall_Gloo{
 			Gloo: &v1.GlooInstall{
 				GlooVersion: "0.11.1",
-				Meshes:      []string{"istio"},
+				Meshes:      istioMesh,
 			},
 		}
 		installConfig := &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
-				InstallType: glooConfig,
+				IngressInstallType: glooConfig,
 			},
 		}
 

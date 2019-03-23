@@ -38,7 +38,7 @@ var _ = Describe("mesh ingress mock installer", func() {
 		}
 		installConfig := &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
-				InstallType: glooConfig,
+				IngressInstallType: glooConfig,
 			},
 		}
 

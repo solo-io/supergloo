@@ -35,7 +35,7 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 
 	logger.Infof("beginning gloo install sync %v", installIngress)
 
-	glooInstall, ok := installIngress.Ingress.InstallType.(*v1.MeshIngressInstall_Gloo)
+	glooInstall, ok := installIngress.Ingress.IngressInstallType.(*v1.MeshIngressInstall_Gloo)
 	if !ok {
 		return nil, errors.Errorf("%v: invalid install type, only gloo ingress supported currently", install.Metadata.Ref())
 	}
@@ -87,11 +87,14 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, errors.Wrapf(err, "converting installed manifests to gzipped string")
 	}
 
-	meshRefs := make([]*core.ResourceRef, 0)
+	var meshRefs []*core.ResourceRef
 	for _, mesh := range meshes {
-		if contains(glooInstall.Gloo.Meshes, mesh.Metadata.Name) {
-			ref := mesh.Metadata.Ref()
-			meshRefs = append(meshRefs, &ref)
+		for _, glooMesh := range glooInstall.Gloo.Meshes {
+			if glooMesh.Namespace == mesh.Metadata.Namespace &&
+				glooMesh.Name == mesh.Metadata.Name {
+				ref := mesh.Metadata.Ref()
+				meshRefs = append(meshRefs, &ref)
+			}
 		}
 	}
 

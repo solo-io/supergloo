@@ -50,7 +50,7 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled EnabledConfigLoops) (v1.ConfigSyncers, error) {
+func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled EnabledConfigLoops) (v1.ConfigSyncer, error) {
 	var syncers v1.ConfigSyncers
 
 	if enabled.Istio {
@@ -92,7 +92,7 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 }
 
 // start the istio config event loop
-func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncers) error {
+func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncer) error {
 	configEmitter := v1.NewConfigEmitter(
 		clientset.Input.Mesh,
 		clientset.Input.MeshIngress,
