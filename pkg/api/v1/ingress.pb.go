@@ -40,6 +40,7 @@ type MeshIngress struct {
 	//	*MeshIngress_Gloo
 	MeshIngressType isMeshIngress_MeshIngressType `protobuf_oneof:"mesh_ingress_type"`
 	// reference to the Mesh(s) that this ingress is acting upon
+	// enable the ingress to route to services within these mTLS-enabled meshes
 	Meshes               []*core.ResourceRef `protobuf:"bytes,2,rep,name=meshes,proto3" json:"meshes,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`

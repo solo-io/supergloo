@@ -93,7 +93,7 @@ func volumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) Deploym
 	return result
 }
 
-func resourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
+func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
 	result := make(DeploymentVolumeInfoList, len(resources))
 	for i, resource := range resources {
 		mesh, err := meshes.Find(resource.Namespace, resource.Name)

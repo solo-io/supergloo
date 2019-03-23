@@ -45,7 +45,8 @@ var _ = Describe("gloo mock installer", func() {
 		meshes := v1.MeshList{
 			&v1.Mesh{
 				Metadata: core.Metadata{
-					Name: "istio",
+					Name:      "istio",
+					Namespace: "supergloo-system",
 				},
 			},
 		}

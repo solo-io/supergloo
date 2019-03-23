@@ -87,13 +87,13 @@ func shouldUpdateDeployment(deployment *v1beta1.Deployment, targetMeshes []*core
 	gatewayProxyContainer := deployment.Spec.Template.Spec.Containers[0]
 	var mounts VolumeMountList = gatewayProxyContainer.VolumeMounts
 
-	newDeploymentVolumes, err := resourcesToDeploymentInfo(targetMeshes, meshes)
+	secretVolumeInfo, err := makeSecretVolumesForMeshes(targetMeshes, meshes)
 	if err != nil {
 		return false, err
 	}
 	oldDeploymentVolumes := volumesToDeploymentInfo(volumes, mounts)
 
-	added, deleted := diff(newDeploymentVolumes, oldDeploymentVolumes)
+	added, deleted := diff(secretVolumeInfo, oldDeploymentVolumes)
 	updated := len(added) > 0 || len(deleted) > 0
 
 	if !updated {
