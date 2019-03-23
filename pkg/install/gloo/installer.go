@@ -64,15 +64,6 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 		return nil, nil
 	}
 
-	var meshIngress *v1.MeshIngress
-	if installIngress.Ingress.InstalledIngress != nil {
-		var err error
-		meshIngress, err = meshIngresses.Find(installIngress.Ingress.InstalledIngress.Strings())
-		if err != nil {
-			return nil, errors.Wrapf(err, "installed ingress not found")
-		}
-	}
-
 	opts := NewInstallOptions(previousInstall, installer.helmInstaller, installNamespace, glooInstall.Gloo.GlooVersion)
 
 	logger.Infof("installing gloo-ingress with options: %#v", opts)
@@ -88,13 +79,20 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 	}
 
 	var meshRefs []*core.ResourceRef
-	for _, mesh := range meshes {
-		for _, glooMesh := range glooInstall.Gloo.Meshes {
-			if glooMesh.Namespace == mesh.Metadata.Namespace &&
-				glooMesh.Name == mesh.Metadata.Name {
-				ref := mesh.Metadata.Ref()
-				meshRefs = append(meshRefs, &ref)
-			}
+	for _, glooMesh := range glooInstall.Gloo.Meshes {
+		mesh, err := meshes.Find(glooMesh.Namespace, glooMesh.Name)
+		if err == nil && mesh != nil {
+			ref := mesh.Metadata.Ref()
+			meshRefs = append(meshRefs, &ref)
+		}
+	}
+
+	var meshIngress *v1.MeshIngress
+	if installIngress.Ingress.InstalledIngress != nil {
+		var err error
+		meshIngress, err = meshIngresses.Find(installIngress.Ingress.InstalledIngress.Strings())
+		if err != nil {
+			return nil, errors.Wrapf(err, "installed ingress not found")
 		}
 	}
 
@@ -127,13 +125,4 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 	installIngress.Ingress.InstalledIngress = &ref
 
 	return meshIngress, nil
-}
-
-func contains(arr []string, target string) bool {
-	for _, v := range arr {
-		if v == target {
-			return true
-		}
-	}
-	return false
 }

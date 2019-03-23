@@ -1,11 +1,10 @@
-package gloo_test
+package gloo
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/registration/gloo"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -26,9 +25,9 @@ var _ = Describe("volume info", func() {
 				Namespace: "istio-system",
 			},
 		}
-		volumeList = gloo.VolumeList{
+		volumeList = VolumeList{
 			corev1.Volume{
-				Name: gloo.CertVolumeName(meshResource),
+				Name: certVolumeName(meshResource),
 			},
 			corev1.Volume{
 				Name: "1",
@@ -37,9 +36,9 @@ var _ = Describe("volume info", func() {
 				Name: "2",
 			},
 		}
-		mountList = gloo.VolumeMountList{
+		mountList = VolumeMountList{
 			corev1.VolumeMount{
-				Name: gloo.CertVolumeName(meshResource),
+				Name: certVolumeName(meshResource),
 			},
 			corev1.VolumeMount{
 				Name: "1",
@@ -54,14 +53,14 @@ var _ = Describe("volume info", func() {
 			volumes := volumeList.Remove(0)
 			Expect(volumes).To(HaveLen(2))
 			for _, v := range volumes {
-				Expect(v.Name).NotTo(Equal(gloo.CertVolumeName(meshResource)))
+				Expect(v.Name).NotTo(Equal(certVolumeName(meshResource)))
 			}
 		})
 		It("can remove an item from a mount list", func() {
 			mounts := mountList.Remove(0)
 			Expect(mounts).To(HaveLen(2))
 			for _, v := range mounts {
-				Expect(v.Name).NotTo(Equal(gloo.CertVolumeName(meshResource)))
+				Expect(v.Name).NotTo(Equal(certVolumeName(meshResource)))
 			}
 		})
 	})
@@ -69,28 +68,28 @@ var _ = Describe("volume info", func() {
 	Context("Deployment Info", func() {
 		It("can create deployment info from volumes", func() {
 
-			deploymentList := gloo.VolumesToDeploymentInfo(volumeList, mountList)
+			deploymentList := volumesToDeploymentInfo(volumeList, mountList)
 			Expect(deploymentList).To(HaveLen(1))
-			Expect(deploymentList[0].Volume.Name).To(Equal(gloo.CertVolumeName(meshResource)))
+			Expect(deploymentList[0].Volume.Name).To(Equal(certVolumeName(meshResource)))
 		})
 		It("cam create deployment info from meshes", func() {
-			deploymentList, err := gloo.ResourcesToDeploymentInfo([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			deploymentList, err := resourcesToDeploymentInfo([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deploymentList).To(HaveLen(1))
-			Expect(deploymentList[0].Volume.Name).To(Equal(gloo.CertVolumeName(meshResource)))
+			Expect(deploymentList[0].Volume.Name).To(Equal(certVolumeName(meshResource)))
 		})
 
 		It("can diff properly", func() {
-			newDeploymentList, err := gloo.ResourcesToDeploymentInfo([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			newDeploymentList, err := resourcesToDeploymentInfo([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
-			oldDeploymentList := gloo.VolumesToDeploymentInfo(volumeList, mountList)
-			added, deleted := gloo.Diff(newDeploymentList, oldDeploymentList)
+			oldDeploymentList := volumesToDeploymentInfo(volumeList, mountList)
+			added, deleted := diff(newDeploymentList, oldDeploymentList)
 			Expect(added).To(HaveLen(0))
 			Expect(deleted).To(HaveLen(0))
-			added, deleted = gloo.Diff(newDeploymentList, gloo.DeploymentVolumeInfoList{})
+			added, deleted = diff(newDeploymentList, DeploymentVolumeInfoList{})
 			Expect(added).To(HaveLen(1))
 			Expect(deleted).To(HaveLen(0))
-			added, deleted = gloo.Diff(gloo.DeploymentVolumeInfoList{}, oldDeploymentList)
+			added, deleted = diff(DeploymentVolumeInfoList{}, oldDeploymentList)
 			Expect(added).To(HaveLen(0))
 			Expect(deleted).To(HaveLen(1))
 		})

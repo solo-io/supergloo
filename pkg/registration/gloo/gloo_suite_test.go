@@ -1,4 +1,4 @@
-package gloo_test
+package gloo
 
 import (
 	"testing"

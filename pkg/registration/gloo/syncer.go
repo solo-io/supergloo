@@ -15,23 +15,23 @@ import (
 	kubev1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type glooConfigSyncer struct {
+type glooMtlsSyncer struct {
 	cs       *clientset.Clientset
 	reporter reporter.Reporter
 }
 
 func NewGlooRegistrationSyncer(reporter reporter.Reporter, cs *clientset.Clientset) v1.RegistrationSyncer {
-	return &glooConfigSyncer{reporter: reporter, cs: cs}
+	return &glooMtlsSyncer{reporter: reporter, cs: cs}
 }
 
-func (s *glooConfigSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
+func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("gloo-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v: %v", snap.Hash(), snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("full snapshot: %v", snap)
 
-	glooMeshIngresses := make(v1.MeshIngressList, 0)
+	var glooMeshIngresses v1.MeshIngressList
 	for _, meshIngress := range snap.Meshingresses.List() {
 		if _, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo); ok {
 			glooMeshIngresses = append(glooMeshIngresses, meshIngress)
@@ -40,7 +40,7 @@ func (s *glooConfigSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapsh
 
 	errs := reporter.ResourceErrors{}
 	for _, glooIngress := range glooMeshIngresses {
-		if err := s.handleGlooMeshIngressConfig(glooIngress, snap.Meshes.List()); err != nil {
+		if err := s.handleGlooMeshIngressConfig(ctx, glooIngress, snap.Meshes.List()); err != nil {
 			errs.AddError(glooIngress, err)
 			logger.Errorf("unable to update gloo ingress %v, %s", glooIngress.Metadata, err)
 		}
@@ -50,7 +50,8 @@ func (s *glooConfigSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapsh
 	return s.reporter.WriteReports(ctx, errs, nil)
 }
 
-func (s *glooConfigSyncer) handleGlooMeshIngressConfig(ingress *v1.MeshIngress, meshes v1.MeshList) error {
+func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingress *v1.MeshIngress, meshes v1.MeshList) error {
+	logger := contextutils.LoggerFrom(ctx)
 
 	glooMeshIngress, isGloo := ingress.MeshIngressType.(*v1.MeshIngress_Gloo)
 	if !isGloo {
@@ -63,61 +64,65 @@ func (s *glooConfigSyncer) handleGlooMeshIngressConfig(ingress *v1.MeshIngress, 
 		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", glooMeshIngress.Gloo.InstallationNamespace)
 	}
 
-	update, err := ShouldUpdateDeployment(deployment, targetMeshes, meshes)
+	update, err := shouldUpdateDeployment(deployment, targetMeshes, meshes)
 	if err != nil {
 		return err
 	}
 
-	if update {
-		_, err := s.cs.Kube.ExtensionsV1beta1().Deployments(glooMeshIngress.Gloo.InstallationNamespace).Update(deployment)
-		if err != nil {
-			return errors.Wrapf(err, "unable to rewrite deployment after update")
-		}
+	if !update {
+		return nil
+	}
+
+	logger.Infof("about to modify deployment for %s.%s", deployment.Namespace, deployment.Name)
+	_, err = s.cs.Kube.ExtensionsV1beta1().Deployments(glooMeshIngress.Gloo.InstallationNamespace).Update(deployment)
+	if err != nil {
+		return errors.Wrapf(err, "unable to rewrite deployment after update")
 	}
 
 	return nil
 }
 
-func ShouldUpdateDeployment(deployment *v1beta1.Deployment, targetMeshes []*core.ResourceRef, meshes v1.MeshList) (bool, error) {
+func shouldUpdateDeployment(deployment *v1beta1.Deployment, targetMeshes []*core.ResourceRef, meshes v1.MeshList) (bool, error) {
 	var volumes VolumeList = deployment.Spec.Template.Spec.Volumes
 	gatewayProxyContainer := deployment.Spec.Template.Spec.Containers[0]
 	var mounts VolumeMountList = gatewayProxyContainer.VolumeMounts
 
-	newDeploymentVolumes, err := ResourcesToDeploymentInfo(targetMeshes, meshes)
+	newDeploymentVolumes, err := resourcesToDeploymentInfo(targetMeshes, meshes)
 	if err != nil {
 		return false, err
 	}
-	oldDeploymentVolumes := VolumesToDeploymentInfo(volumes, mounts)
+	oldDeploymentVolumes := volumesToDeploymentInfo(volumes, mounts)
 
-	added, deleted := Diff(newDeploymentVolumes, oldDeploymentVolumes)
+	added, deleted := diff(newDeploymentVolumes, oldDeploymentVolumes)
 	updated := len(added) > 0 || len(deleted) > 0
 
-	if updated {
-		for _, v := range added {
-			volumes = append(volumes, v.Volume)
-			mounts = append(mounts, v.VolumeMount)
-		}
-
-		for _, v := range deleted {
-			tempVolumes := make(VolumeList, len(volumes))
-			copy(tempVolumes, volumes)
-			for i, possibleDelete := range tempVolumes {
-				if v.Volume.Name == possibleDelete.Name {
-					volumes = volumes.Remove(i)
-				}
-			}
-
-			tempVolumeMounts := make(VolumeMountList, len(mounts))
-			copy(tempVolumeMounts, mounts)
-			for i, possibleDelete := range tempVolumeMounts {
-				if v.VolumeMount.Name == possibleDelete.Name {
-					mounts = mounts.Remove(i)
-				}
-			}
-		}
-		gatewayProxyContainer.VolumeMounts = mounts
-		deployment.Spec.Template.Spec.Containers[0] = gatewayProxyContainer
-		deployment.Spec.Template.Spec.Volumes = volumes
+	if !updated {
+		return false, nil
 	}
-	return updated, nil
+	for _, v := range added {
+		volumes = append(volumes, v.Volume)
+		mounts = append(mounts, v.VolumeMount)
+	}
+
+	for _, v := range deleted {
+		tempVolumes := make(VolumeList, len(volumes))
+		copy(tempVolumes, volumes)
+		for i, possibleDelete := range tempVolumes {
+			if v.Volume.Name == possibleDelete.Name {
+				volumes = volumes.Remove(i)
+			}
+		}
+
+		tempVolumeMounts := make(VolumeMountList, len(mounts))
+		copy(tempVolumeMounts, mounts)
+		for i, possibleDelete := range tempVolumeMounts {
+			if v.VolumeMount.Name == possibleDelete.Name {
+				mounts = mounts.Remove(i)
+			}
+		}
+	}
+	gatewayProxyContainer.VolumeMounts = mounts
+	deployment.Spec.Template.Spec.Containers[0] = gatewayProxyContainer
+	deployment.Spec.Template.Spec.Volumes = volumes
+	return true, nil
 }

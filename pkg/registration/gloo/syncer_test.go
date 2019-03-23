@@ -1,4 +1,4 @@
-package gloo_test
+package gloo
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/registration/gloo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,7 +19,7 @@ var (
 	kubeClient kubernetes.Interface
 )
 
-var _ = Describe("gloo config syncers", func() {
+var _ = Describe("gloo registration syncers", func() {
 	var (
 		defaultMode  int32 = 420
 		optional           = true
@@ -39,9 +38,9 @@ var _ = Describe("gloo config syncers", func() {
 				Namespace: "istio-system",
 			},
 		}
-		volumeList = gloo.VolumeList{
+		volumeList = VolumeList{
 			corev1.Volume{
-				Name: gloo.CertVolumeName(meshResource),
+				Name: certVolumeName(meshResource),
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
 						SecretName:  "istio.defaut",
@@ -58,9 +57,9 @@ var _ = Describe("gloo config syncers", func() {
 				Name: "2",
 			},
 		}
-		mountList = gloo.VolumeMountList{
+		mountList = VolumeMountList{
 			corev1.VolumeMount{
-				Name:      gloo.CertVolumeName(meshResource),
+				Name:      certVolumeName(meshResource),
 				ReadOnly:  true,
 				MountPath: "/etc/certs/namespace/name",
 			},
@@ -82,7 +81,7 @@ var _ = Describe("gloo config syncers", func() {
 			}
 		}
 	)
-	var createDeployment = func(volumes gloo.VolumeList, mounts gloo.VolumeMountList) *v1beta1.Deployment {
+	var createDeployment = func(volumes VolumeList, mounts VolumeMountList) *v1beta1.Deployment {
 		return &v1beta1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "gateway-proxy",
@@ -105,23 +104,23 @@ var _ = Describe("gloo config syncers", func() {
 	Context("should update", func() {
 		It("Should not update if nothing changed", func() {
 			deployment := createDeployment(volumeList, mountList)
-			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeFalse())
 			Expect(deployment).To(Equal(createDeployment(volumeList, mountList)))
 		})
 
-		It("should update if one is removed", func() {
+		It("should update if one is added", func() {
 			deployment := createDeployment(volumeList.Remove(0), mountList.Remove(0))
-			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeTrue())
-			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
+			Expect(deployment).NotTo(Equal(createDeployment(volumeList.Remove(0), mountList.Remove(0))))
 		})
 
-		It("should update if on is added", func() {
+		It("should update if one is removed", func() {
 			deployment := createDeployment(volumeList, mountList)
-			update, err := gloo.ShouldUpdateDeployment(deployment, []*core.ResourceRef{}, v1.MeshList{})
+			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{}, v1.MeshList{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeTrue())
 			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
@@ -144,11 +143,11 @@ var _ = Describe("gloo config syncers", func() {
 			newReporter := reporter.NewReporter("gloo-registration-reporter",
 				cs.Input.Mesh.BaseClient(),
 				cs.Input.MeshIngress.BaseClient())
-			syncer = gloo.NewGlooRegistrationSyncer(newReporter, cs)
+			syncer = NewGlooRegistrationSyncer(newReporter, cs)
 
 		})
 
-		var checkDeployment = func(volumes gloo.VolumeList, mounts gloo.VolumeMountList) {
+		var checkDeployment = func(volumes VolumeList, mounts VolumeMountList) {
 			deployment, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Get("gateway-proxy", metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(deployment.Spec.Template.Spec.Containers)).To(BeNumerically(">", 0))

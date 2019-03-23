@@ -22,8 +22,7 @@ type VolumeList []corev1.Volume
 func (s VolumeList) Remove(i int) VolumeList {
 	tmp := make(VolumeList, len(s))
 	copy(tmp, s)
-	tmp[i] = tmp[len(tmp)-1]
-	return tmp[:len(tmp)-1]
+	return append(tmp[:i], tmp[i+1:]...)
 }
 
 type VolumeMountList []corev1.VolumeMount
@@ -31,8 +30,7 @@ type VolumeMountList []corev1.VolumeMount
 func (s VolumeMountList) Remove(i int) VolumeMountList {
 	tmp := make(VolumeMountList, len(s))
 	copy(tmp, s)
-	tmp[i] = tmp[len(tmp)-1]
-	return tmp[:len(tmp)-1]
+	return append(tmp[:i], tmp[i+1:]...)
 }
 
 type DeploymentVolumeInfoList []DeploymentVolumeInfo
@@ -51,7 +49,7 @@ func (list DeploymentVolumeInfoList) containsVolume(volume corev1.Volume) bool {
 	return false
 }
 
-func Diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (added DeploymentVolumeInfoList, deleted DeploymentVolumeInfoList) {
+func diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (added DeploymentVolumeInfoList, deleted DeploymentVolumeInfoList) {
 	for _, new := range newList {
 		found := false
 		for _, old := range oldList {
@@ -78,7 +76,7 @@ func Diff(newList DeploymentVolumeInfoList, oldList DeploymentVolumeInfoList) (a
 	return added, deleted
 }
 
-func VolumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) DeploymentVolumeInfoList {
+func volumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) DeploymentVolumeInfoList {
 	var result DeploymentVolumeInfoList
 	for _, volume := range volumes {
 		if strings.Contains(volume.Name, certSuffix) {
@@ -95,7 +93,7 @@ func VolumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) Deploym
 	return result
 }
 
-func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
+func resourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
 	result := make(DeploymentVolumeInfoList, len(resources))
 	for i, resource := range resources {
 		mesh, err := meshes.Find(resource.Namespace, resource.Name)
@@ -110,7 +108,7 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 			return nil, errors.Errorf("unsupported mesh type found for mesh ingress "+
 				"target mesh, %s.%s", resource.Namespace, resource.Name)
 		}
-		certVolumeName := CertVolumeName(resource)
+		certVolumeName := certVolumeName(resource)
 		volume := corev1.Volume{
 			Name: certVolumeName,
 			VolumeSource: corev1.VolumeSource{
@@ -124,7 +122,7 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 		volumeMount := corev1.VolumeMount{
 			Name:      certVolumeName,
 			ReadOnly:  true,
-			MountPath: CertVolumePathName(resource),
+			MountPath: certVolumePathName(resource),
 		}
 		result[i] = DeploymentVolumeInfo{
 			VolumeMount: volumeMount,
@@ -134,10 +132,10 @@ func ResourcesToDeploymentInfo(resources []*core.ResourceRef, meshes v1.MeshList
 	return result, nil
 }
 
-func CertVolumeName(mesh *core.ResourceRef) string {
+func certVolumeName(mesh *core.ResourceRef) string {
 	return strings.Join([]string{mesh.Namespace, mesh.Name, certSuffix}, "_")
 }
 
-func CertVolumePathName(mesh *core.ResourceRef) string {
+func certVolumePathName(mesh *core.ResourceRef) string {
 	return filepath.Join("/etc", "certs", "namespace", "name")
 }
