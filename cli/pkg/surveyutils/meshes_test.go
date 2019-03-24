@@ -38,6 +38,7 @@ var _ = Describe("SelectMeshes", func() {
 	It("selects mesh from the list until skip is selected", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("add an upstream (choose <done> to finish): ")
+			c.PressDown()
 			c.SendLine("")
 			c.ExpectEOF()
 		}, func() {
