@@ -64,7 +64,7 @@ var _ = Describe("gloo registration syncers", func() {
 			corev1.VolumeMount{
 				Name:      certVolumeName(meshResource),
 				ReadOnly:  true,
-				MountPath: "/etc/certs/namespace/name",
+				MountPath: certVolumePathName(meshResource),
 			},
 			corev1.VolumeMount{
 				Name: "1",
