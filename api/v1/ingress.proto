@@ -31,8 +31,9 @@ message MeshIngress {
     oneof mesh_ingress_type {
         GlooMeshIngress gloo = 1;
     }
-    // reference to the Mesh that this ingress is acting upon
-    core.solo.io.ResourceRef mesh = 2;
+    // reference to the Mesh(s) that this ingress is acting upon
+    // enable the ingress to route to services within these mTLS-enabled meshes
+    repeated core.solo.io.ResourceRef meshes = 2;
 }
 
 // Mesh ingress object for gloo

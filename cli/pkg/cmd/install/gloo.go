@@ -2,6 +2,7 @@ package install
 
 import (
 	"github.com/pkg/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -48,14 +49,21 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 	if err := validateGlooInstall(opts); err != nil {
 		return nil, err
 	}
+	istioMesh := []*core.ResourceRef{
+		{
+			Name:      "istio",
+			Namespace: "supergloo-system",
+		},
+	}
 	in := &v1.Install{
 		Metadata:              opts.Metadata,
 		InstallationNamespace: opts.Install.InstallationNamespace.Gloo,
 		InstallType: &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
-				InstallType: &v1.MeshIngressInstall_Gloo{
+				IngressInstallType: &v1.MeshIngressInstall_Gloo{
 					Gloo: &v1.GlooInstall{
 						GlooVersion: opts.Install.GlooIngressInstall.GlooVersion,
+						Meshes:      istioMesh,
 					},
 				},
 			},

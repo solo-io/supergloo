@@ -143,12 +143,14 @@ Installation options for Gloo Ingress
 
 ```yaml
 "glooVersion": string
+"meshes": []core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `glooVersion` | `string` | which version of the gloo helm chart to install ignored if using custom helm chart |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh(s) that this ingress is acting upon |  |
 
 
 

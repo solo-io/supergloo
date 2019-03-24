@@ -18,7 +18,12 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enableIstio bool) error {
+type EnabledConfigLoops struct {
+	Istio bool
+	Gloo  bool
+}
+
+func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enabled EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "config-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -32,7 +37,7 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 		}
 	}
 
-	configSyncers, err := createConfigSyncers(ctx, cs, enableIstio)
+	configSyncers, err := createConfigSyncers(ctx, cs, enabled)
 	if err != nil {
 		return err
 	}
@@ -45,10 +50,10 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enableIstio bool) (v1.ConfigSyncer, error) {
+func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled EnabledConfigLoops) (v1.ConfigSyncer, error) {
 	var syncers v1.ConfigSyncers
 
-	if enableIstio {
+	if enabled.Istio {
 		istioSyncer, err := createIstioConfigSyncer(ctx, cs)
 		if err != nil {
 			return nil, err

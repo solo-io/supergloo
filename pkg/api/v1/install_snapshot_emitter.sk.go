@@ -43,25 +43,28 @@ type InstallEmitter interface {
 	Register() error
 	Install() InstallClient
 	Mesh() MeshClient
+	MeshIngress() MeshIngressClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error)
 }
 
-func NewInstallEmitter(installClient InstallClient, meshClient MeshClient) InstallEmitter {
-	return NewInstallEmitterWithEmit(installClient, meshClient, make(chan struct{}))
+func NewInstallEmitter(installClient InstallClient, meshClient MeshClient, meshIngressClient MeshIngressClient) InstallEmitter {
+	return NewInstallEmitterWithEmit(installClient, meshClient, meshIngressClient, make(chan struct{}))
 }
 
-func NewInstallEmitterWithEmit(installClient InstallClient, meshClient MeshClient, emit <-chan struct{}) InstallEmitter {
+func NewInstallEmitterWithEmit(installClient InstallClient, meshClient MeshClient, meshIngressClient MeshIngressClient, emit <-chan struct{}) InstallEmitter {
 	return &installEmitter{
-		install:   installClient,
-		mesh:      meshClient,
-		forceEmit: emit,
+		install:     installClient,
+		mesh:        meshClient,
+		meshIngress: meshIngressClient,
+		forceEmit:   emit,
 	}
 }
 
 type installEmitter struct {
-	forceEmit <-chan struct{}
-	install   InstallClient
-	mesh      MeshClient
+	forceEmit   <-chan struct{}
+	install     InstallClient
+	mesh        MeshClient
+	meshIngress MeshIngressClient
 }
 
 func (c *installEmitter) Register() error {
@@ -69,6 +72,9 @@ func (c *installEmitter) Register() error {
 		return err
 	}
 	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.meshIngress.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -80,6 +86,10 @@ func (c *installEmitter) Install() InstallClient {
 
 func (c *installEmitter) Mesh() MeshClient {
 	return c.mesh
+}
+
+func (c *installEmitter) MeshIngress() MeshIngressClient {
+	return c.meshIngress
 }
 
 func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error) {
@@ -110,6 +120,12 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
+	/* Create channel for MeshIngress */
+	type meshIngressListWithNamespace struct {
+		list      MeshIngressList
+		namespace string
+	}
+	meshIngressChan := make(chan meshIngressListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Install */
@@ -134,6 +150,17 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
 		}(namespace)
+		/* Setup namespaced watch for MeshIngress */
+		meshIngressNamespacesChan, meshIngressErrs, err := c.meshIngress.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting MeshIngress watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshIngressErrs, namespace+"-meshingresses")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -152,6 +179,12 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 					case <-ctx.Done():
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					}
+				case meshIngressList := <-meshIngressNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshIngressChan <- meshIngressListWithNamespace{list: meshIngressList, namespace: namespace}:
 					}
 				}
 			}
@@ -202,6 +235,13 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				meshList := meshNamespacedList.list
 
 				currentSnapshot.Meshes[namespace] = meshList
+			case meshIngressNamespacedList := <-meshIngressChan:
+				record()
+
+				namespace := meshIngressNamespacedList.namespace
+				meshIngressList := meshIngressNamespacedList.list
+
+				currentSnapshot.Meshingresses[namespace] = meshIngressList
 			}
 		}
 	}()

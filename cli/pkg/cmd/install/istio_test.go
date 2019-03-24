@@ -138,7 +138,7 @@ var _ = Describe("Install", func() {
 							Name:      "installed",
 							Namespace: "mesh",
 						},
-						InstallType: &v1.MeshInstall_IstioMesh{
+						MeshInstallType: &v1.MeshInstall_IstioMesh{
 							IstioMesh: &v1.IstioInstall{
 								IstioVersion:      istio.IstioVersion106,
 								EnableAutoInject:  true,
@@ -158,7 +158,7 @@ var _ = Describe("Install", func() {
 func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_IstioMesh {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
-	Expect(mesh.Mesh.InstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
-	istioMesh := mesh.Mesh.InstallType.(*v1.MeshInstall_IstioMesh)
+	Expect(mesh.Mesh.MeshInstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
+	istioMesh := mesh.Mesh.MeshInstallType.(*v1.MeshInstall_IstioMesh)
 	return istioMesh
 }

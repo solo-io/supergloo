@@ -28,5 +28,8 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	Expect(lock.ReleaseLock()).NotTo(HaveOccurred())
+	defer lock.ReleaseLock()
+	kubeClient := testutils.MustKubeClient()
+	kubeClient.CoreV1().Namespaces().Delete("gloo-system", nil)
+	testutils.WaitForNamespaceTeardown("gloo-system")
 })
