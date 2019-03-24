@@ -58,10 +58,6 @@ func SurveyGlooInstall(in *options.Install) error {
 	}
 	in.GlooIngressInstall.Meshes = refs
 
-	if err := cliutil.ChooseFromList("which meshes to connect with MTLS ", &in.GlooIngressInstall.GlooVersion, constants.SupportedGlooVersions); err != nil {
-		return err
-	}
-
 	if err := cliutil.GetBoolInput("update an existing install? ", &in.Update); err != nil {
 		return err
 	}

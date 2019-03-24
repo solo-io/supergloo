@@ -35,16 +35,18 @@ var _ = Describe("SelectMeshes", func() {
 		_, err := clients.MustMeshClient().Write(istioMesh, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 	})
-	It("selects mesh from the list until skip is selected", func() {
+	It("selects mesh from the list until done is selected", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
-			c.ExpectString("add an upstream (choose <done> to finish): ")
+			c.ExpectString("add a mesh (choose <done> to finish): ")
 			c.PressDown()
+			c.SendLine("")
+			c.ExpectString("add a mesh (choose <done> to finish): ")
 			c.SendLine("")
 			c.ExpectEOF()
 		}, func() {
-			ups, err := SurveyMeshes(context.TODO())
+			meshes, err := SurveyMeshes(context.TODO())
 			Expect(err).NotTo(HaveOccurred())
-			Expect(ups).To(Equal([]core.ResourceRef{
+			Expect(meshes).To(BeEquivalentTo([]*core.ResourceRef{
 				{
 					Name:      "istio",
 					Namespace: "istio-system",
