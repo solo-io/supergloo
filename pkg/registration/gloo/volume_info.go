@@ -143,9 +143,9 @@ func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshLis
 }
 
 func certVolumeName(mesh *core.ResourceRef) string {
-	return strings.Join([]string{mesh.Namespace, mesh.Name, certSuffix}, "_")
+	return strings.Join([]string{mesh.Name, certSuffix}, "-")
 }
 
 func certVolumePathName(mesh *core.ResourceRef) string {
-	return filepath.Join("/etc", "certs", "namespace", "name")
+	return filepath.Join("/etc", "certs", mesh.Namespace, mesh.Name)
 }
