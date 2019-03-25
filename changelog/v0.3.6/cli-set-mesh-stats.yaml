@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Added `supergloo set mesh stats` command to CLI. Enables configuring an existing mesh CRD.
+    issueLink: https://github.com/solo-io/supergloo/issues/281
+

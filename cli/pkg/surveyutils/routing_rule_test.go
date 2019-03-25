@@ -110,7 +110,7 @@ var _ = Describe("RoutingRule", func() {
 		})
 		It("queries the user for an existing mesh to target", func() {
 			_, err := clients.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "fam", Name: "sup"}}, skclients.WriteOpts{})
-			Expect(err).To(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			testutil.ExpectInteractive(func(c *testutil.Console) {
 				c.ExpectString("select a target mesh to which to apply this rule")
 				c.PressDown()
