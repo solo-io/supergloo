@@ -26,3 +26,28 @@ func IstioMeshWithInstallNs(namespace, installNs string, secretRef *core.Resourc
 		},
 	}
 }
+
+func IstioMeshWithInstallNsPrometheus(namespace, installNs string, secretRef *core.ResourceRef, promCfgRefs []core.ResourceRef) *v1.Mesh {
+	var monit *v1.MonitoringConfig
+	if len(promCfgRefs) > 0 {
+		monit = &v1.MonitoringConfig{
+			PrometheusConfigmaps: promCfgRefs,
+		}
+	}
+	return &v1.Mesh{
+		Metadata: core.Metadata{
+			Namespace: namespace,
+			Name:      "fancy-istio",
+		},
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
+				InstallationNamespace: installNs,
+			},
+		},
+		MtlsConfig: &v1.MtlsConfig{
+			MtlsEnabled:     true,
+			RootCertificate: secretRef,
+		},
+		MonitoringConfig: monit,
+	}
+}

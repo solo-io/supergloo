@@ -26,8 +26,8 @@ type prometheusSyncer struct {
 	scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)
 }
 
-func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient) *prometheusSyncer {
-	return &prometheusSyncer{syncerName: syncerName, client: client}
+func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient, chooseMesh func(mesh *v1.Mesh) bool, scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)) *prometheusSyncer {
+	return &prometheusSyncer{syncerName: syncerName, client: client, chooseMesh: chooseMesh, scrapeConfigs: scrapeConfigs}
 }
 
 // Ensure all prometheus configs contain scrape configs for the meshes which target them
@@ -68,14 +68,12 @@ func (s *prometheusSyncer) getPromCfgsWithMeshes(meshes v1.MeshList) map[core.Re
 		if monitoring == nil {
 			continue
 		}
-		// we only care about meshes with prometheus config stores
-		promCfg := monitoring.GetPrometheusConfigmap()
-		if promCfg == nil {
-			continue
-		}
+		promCfgs := monitoring.GetPrometheusConfigmaps()
 
-		// add this mesh to the set this prometheus should scrape
-		promConfigsWithMeshes[*promCfg] = append(promConfigsWithMeshes[*promCfg], mesh)
+		for _, promCfg := range promCfgs {
+			// add this mesh to the set this prometheus should scrape
+			promConfigsWithMeshes[promCfg] = append(promConfigsWithMeshes[promCfg], mesh)
+		}
 	}
 
 	return promConfigsWithMeshes

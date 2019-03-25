@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -46,6 +47,12 @@ type Config struct {
 	RemoteReadConfigs  []*config.RemoteReadConfig  `yaml:"remote_read,omitempty"`
 }
 
+func sortConfigs(scrapeConfigs []*config.ScrapeConfig) {
+	sort.SliceStable(scrapeConfigs, func(i, j int) bool {
+		return scrapeConfigs[i].JobName < scrapeConfigs[j].JobName
+	})
+}
+
 // returns number of added
 func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) int {
 	var added int
@@ -63,6 +70,7 @@ func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) int {
 		cfg.ScrapeConfigs = append(cfg.ScrapeConfigs, desiredScrapeConfig)
 		added++
 	}
+	sortConfigs(cfg.ScrapeConfigs)
 	return added
 }
 
@@ -80,6 +88,7 @@ func (cfg *Config) RemoveScrapeConfigs(namePrefix string) int {
 		filteredJobs = append(filteredJobs, job)
 	}
 	cfg.ScrapeConfigs = filteredJobs
+	sortConfigs(cfg.ScrapeConfigs)
 	return removed
 }
 
