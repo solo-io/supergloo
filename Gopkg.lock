@@ -1161,7 +1161,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:bb6531bd0be1e7319c9fb758cde1b2d75188b7dae2bc1d05b209332ee5eb47ea"
+  digest = "1:d8d0a6d6aef05a9ad5a5ffc6ee26b0e2edbd7a398e76c5cb3c48c5d92623acc3"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1171,6 +1171,7 @@
     "docsutils",
     "errors",
     "githubutils",
+    "hashutils",
     "kubeinstallutils",
     "kubeutils",
     "logger",
@@ -2149,6 +2150,7 @@
     "github.com/solo-io/go-utils/docsutils",
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/githubutils",
+    "github.com/solo-io/go-utils/hashutils",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",

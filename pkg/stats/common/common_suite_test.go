@@ -1,4 +1,4 @@
-package prometheus_test
+package common_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestPrometheus(t *testing.T) {
+func TestCommon(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Prometheus Suite")
+	RunSpecs(t, "Common Suite")
 }

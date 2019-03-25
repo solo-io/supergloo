@@ -14,6 +14,7 @@ weight: 5
 - [Mesh](#Mesh) **Top-Level Resource**
 - [IstioMesh](#IstioMesh)
 - [MtlsConfig](#MtlsConfig)
+- [MonitoringConfig](#MonitoringConfig)
 - [MeshGroup](#MeshGroup) **Top-Level Resource**
   
 
@@ -36,6 +37,7 @@ Meshes represent a currently registered service mesh.
 "metadata": .core.solo.io.Metadata
 "istio": .supergloo.solo.io.IstioMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
+"monitoringConfig": .supergloo.solo.io.MonitoringConfig
 
 ```
 
@@ -45,6 +47,7 @@ Meshes represent a currently registered service mesh.
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#IstioMesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#MtlsConfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
+| `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#MonitoringConfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
 
 
 
@@ -53,7 +56,7 @@ Meshes represent a currently registered service mesh.
 ### <a name="IstioMesh">IstioMesh</a>
 
  
-Mesh object representing istio
+Mesh object representing an installed Istio control plane
 
 ```yaml
 "installationNamespace": string
@@ -83,6 +86,26 @@ the encryption configuration that will be applied by the role
 | ----- | ---- | ----------- |----------- | 
 | `mtlsEnabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
 | `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
+
+
+
+
+---
+### <a name="MonitoringConfig">MonitoringConfig</a>
+
+ 
+Contains configuration options for monitoring a mesh
+Currently MonitoringConfig only contains options for configuring
+an in-cluster Prometheus instance to scrape a mesh for metrics
+
+```yaml
+"prometheusConfigmaps": []core.solo.io.ResourceRef
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `prometheusConfigmaps` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | indicates to supergloo that metrics should be propagated to one or more instances of prometheus. add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each NAMESPACE.NAME of the configmap used to configure each prometheus instance. assumes that the configmap contains a key named `prometheus.yml` whose value is the prometheus yaml config as an inline string |  |
 
 
 

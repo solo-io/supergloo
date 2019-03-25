@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: covenience methods for managing prometheus config structs
+

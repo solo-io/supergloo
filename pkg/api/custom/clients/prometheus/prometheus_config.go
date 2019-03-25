@@ -1,6 +1,9 @@
 package prometheus
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/config"
 	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
@@ -44,9 +47,15 @@ type Config struct {
 	RemoteReadConfigs  []*config.RemoteReadConfig  `yaml:"remote_read,omitempty"`
 }
 
-// returns true if changed
-func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) bool {
-	var updated bool
+func sortConfigs(scrapeConfigs []*config.ScrapeConfig) {
+	sort.SliceStable(scrapeConfigs, func(i, j int) bool {
+		return scrapeConfigs[i].JobName < scrapeConfigs[j].JobName
+	})
+}
+
+// returns number of added
+func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) int {
+	var added int
 	for _, desiredScrapeConfig := range scrapeConfigs {
 		var found bool
 		for _, sc := range cfg.ScrapeConfigs {
@@ -59,7 +68,40 @@ func (cfg *Config) AddScrapeConfigs(scrapeConfigs []*config.ScrapeConfig) bool {
 			continue
 		}
 		cfg.ScrapeConfigs = append(cfg.ScrapeConfigs, desiredScrapeConfig)
-		updated = true
+		added++
 	}
-	return updated
+	sortConfigs(cfg.ScrapeConfigs)
+	return added
+}
+
+// returns number of removed
+func (cfg *Config) RemoveScrapeConfigs(namePrefix string) int {
+	var removed int
+
+	// filter out jobs with the name prefix
+	var filteredJobs []*config.ScrapeConfig
+	for _, job := range cfg.ScrapeConfigs {
+		if strings.HasPrefix(job.JobName, namePrefix) {
+			removed++
+			continue
+		}
+		filteredJobs = append(filteredJobs, job)
+	}
+	cfg.ScrapeConfigs = filteredJobs
+	sortConfigs(cfg.ScrapeConfigs)
+	return removed
+}
+
+func AddPrefix(scrapeConfigs []*config.ScrapeConfig, prefix string) []*config.ScrapeConfig {
+	// prepend each job with the given mesh id
+	var prefixedScrapeConfigs []*config.ScrapeConfig
+	// prepend prefix to our jobs
+	// this way we can also remove our jobs later
+	for _, job := range scrapeConfigs {
+		// shallow copy to prevent modifying the input configs
+		job := *job
+		job.JobName = prefix + job.JobName
+		prefixedScrapeConfigs = append(prefixedScrapeConfigs, &job)
+	}
+	return prefixedScrapeConfigs
 }
