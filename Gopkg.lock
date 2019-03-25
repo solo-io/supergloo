@@ -1128,7 +1128,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:b68dbcd04a6b490ec3518762964f15119872d7c4eb0f27f345063cbe1b853ccd"
+  digest = "1:e0a2431435dba158715cf715165d9af010adbc5f5e5964af943a713e856ccbac"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1149,8 +1149,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "2d50b486ac892010dcf24f724849ce851a8ebf6f"
-  version = "v0.11.3"
+  revision = "fa494e2c632dfe28711e336e433da5e9fc5b6162"
+  version = "v0.13.0"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1161,7 +1161,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:69e3411ba7b777f9d866c3b4ab25b39d552b222dad53492ffff2eef69c8b7f8d"
+  digest = "1:bb6531bd0be1e7319c9fb758cde1b2d75188b7dae2bc1d05b209332ee5eb47ea"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1182,11 +1182,11 @@
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "53120bd8b4acdb2e0486f21f5d672419c3fcd0c0"
-  version = "v0.5.0"
+  revision = "94b56d174b345de8c59b6312228ccbd9c21b3581"
+  version = "v0.5.1"
 
 [[projects]]
-  digest = "1:92b765b45535edea017d683f3f5550d9de9da5b99445180f492d17f4b671b4cc"
+  digest = "1:82d2c40c88ab176cf89992166a5163072cde830880fbf0ecf598840b8ccf7dee"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1235,8 +1235,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "c2206ee6f6d45a5bb2b384a6042968729145fc89"
-  version = "v0.3.9"
+  revision = "e722533e9c1f1a41eee32a256ff5c09a20f2bd03"
+  version = "v0.3.10"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
