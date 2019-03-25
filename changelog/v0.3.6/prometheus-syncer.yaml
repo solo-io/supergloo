@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      adds a syncer implementation for generic prometheus config syncing. used by istio prometheus syncer
+
+

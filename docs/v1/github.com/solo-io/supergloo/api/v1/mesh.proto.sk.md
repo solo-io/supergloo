@@ -99,13 +99,13 @@ Currently MonitoringConfig only contains options for configuring
 an in-cluster Prometheus instance to scrape a mesh for metrics
 
 ```yaml
-"prometheusConfigmap": .core.solo.io.ResourceRef
+"prometheusConfigmaps": []core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `prometheusConfigmap` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | indicates to supergloo that metrics should be propagated to an instance of prometheus set this value to the NAMESPACE.NAME of the configmap used to configure prometheus. assumes that the configmap contains a key named `prometheus.yml` whose value is the prometheus yaml config as an inline string |  |
+| `prometheusConfigmaps` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | indicates to supergloo that metrics should be propagated to one or more instances of prometheus. add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each NAMESPACE.NAME of the configmap used to configure each prometheus instance. assumes that the configmap contains a key named `prometheus.yml` whose value is the prometheus yaml config as an inline string |  |
 
 
 
