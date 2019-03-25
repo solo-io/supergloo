@@ -1,6 +1,8 @@
 package install
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
@@ -49,22 +51,13 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 	if err := validateGlooInstall(opts); err != nil {
 		return nil, err
 	}
-	istioMesh := []*core.ResourceRef{
-		{
-			Name:      "istio",
-			Namespace: "supergloo-system",
-		},
-	}
 	in := &v1.Install{
 		Metadata:              opts.Metadata,
 		InstallationNamespace: opts.Install.InstallationNamespace.Gloo,
 		InstallType: &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
 				IngressInstallType: &v1.MeshIngressInstall_Gloo{
-					Gloo: &v1.GlooInstall{
-						GlooVersion: opts.Install.GlooIngressInstall.GlooVersion,
-						Meshes:      istioMesh,
-					},
+					Gloo: &opts.Install.GlooIngressInstall,
 				},
 			},
 		},
@@ -89,6 +82,23 @@ func validateGlooInstall(opts *options.Options) error {
 			return errors.Wrapf(err, "%v is not a supported gloo version", opts.Install.GlooIngressInstall.GlooVersion)
 		} else {
 			opts.Install.GlooIngressInstall.GlooVersion = version
+		}
+	}
+
+	if len(opts.Install.MeshIngress.Meshes) > 0 {
+		var resources []*core.ResourceRef
+		for _, v := range opts.Install.MeshIngress.Meshes {
+			splitVal := strings.Split(v, ".")
+			if len(splitVal) != 2 {
+				return errors.Errorf("mesh %s is of the incorrect format <namespace>.<name>")
+			}
+			resources = append(resources, &core.ResourceRef{
+				Name:      splitVal[1],
+				Namespace: splitVal[0],
+			})
+		}
+		if len(resources) > 0 {
+			opts.Install.GlooIngressInstall.Meshes = resources
 		}
 	}
 

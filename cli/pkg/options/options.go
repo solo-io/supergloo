@@ -42,6 +42,11 @@ type Install struct {
 	InstallationNamespace InstallationNamespace
 	IstioInstall          v1.IstioInstall
 	GlooIngressInstall    v1.GlooInstall
+	MeshIngress           MeshIngressInstall
+}
+
+type MeshIngressInstall struct {
+	Meshes []string
 }
 
 type Uninstall struct {
@@ -92,4 +97,8 @@ type CreateAwsSecret struct {
 type SetRootCert struct {
 	TargetMesh ResourceRefValue
 	TlsSecret  ResourceRefValue
+}
+
+type EditUpstream struct {
+	MtlsMeshMetadata core.ResourceRef
 }
