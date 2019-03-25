@@ -39,6 +39,7 @@ func (r *Mesh) Hash() uint64 {
 	return hashutils.HashAll(
 		metaCopy,
 		r.MtlsConfig,
+		r.MonitoringConfig,
 		r.MeshType,
 	)
 }
