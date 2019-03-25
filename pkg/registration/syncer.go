@@ -22,15 +22,24 @@ func NewRegistrationSyncer(clientset *clientset.Clientset, errHandler func(error
 }
 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
-	var enableIstioFeatures bool
+	var enabledFeatures setup.EnabledConfigLoops
 	for _, mesh := range snap.Meshes.List() {
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if ok {
-			enableIstioFeatures = true
+			enabledFeatures.Istio = true
 			contextutils.LoggerFrom(ctx).Infof("detected istio mesh, enabling istio config syncer")
 			break
 		}
 	}
 
-	return setup.RunConfigEventLoop(ctx, s.Clientset, s.ErrHandler, enableIstioFeatures)
+	for _, meshIngress := range snap.Meshingresses.List() {
+		_, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo)
+		if ok {
+			enabledFeatures.Gloo = true
+			contextutils.LoggerFrom(ctx).Infof("detected gloo mesh-ingress, enabling gloo config syncer")
+			break
+		}
+	}
+
+	return setup.RunConfigEventLoop(ctx, s.Clientset, s.ErrHandler, enabledFeatures)
 }

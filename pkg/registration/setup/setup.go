@@ -4,6 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+
+	"github.com/solo-io/supergloo/pkg/registration/gloo"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
@@ -37,9 +41,14 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 
 // Add registration syncers here
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
+	newReporter := reporter.NewReporter("gloo-registration =-reporter",
+		clientset.Input.Mesh.BaseClient(),
+		clientset.Input.MeshIngress.BaseClient())
+
 	return v1.RegistrationSyncers{
 		registration.NewRegistrationSyncer(clientset, errHandler),
 		istio.NewIstioSecretDeleter(clientset.Kube),
+		gloo.NewGlooRegistrationSyncer(newReporter, clientset),
 	}
 }
 

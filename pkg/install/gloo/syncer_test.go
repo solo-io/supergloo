@@ -22,7 +22,7 @@ type mockGlooInstaller struct {
 	errorOnInstall                    bool
 }
 
-func (i *mockGlooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install) (*v1.MeshIngress, error) {
+func (i *mockGlooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error) {
 	if i.errorOnInstall {
 		return nil, errors.Errorf("i was told to error")
 	}

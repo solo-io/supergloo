@@ -55,12 +55,12 @@ func tablePrintInstalls(list v1.InstallList, w io.Writer) {
 func installType(in *v1.Install) string {
 	switch installType := in.InstallType.(type) {
 	case *v1.Install_Mesh:
-		switch installType.Mesh.InstallType.(type) {
+		switch installType.Mesh.MeshInstallType.(type) {
 		case *v1.MeshInstall_IstioMesh:
 			return "Istio Mesh"
 		}
 	case *v1.Install_Ingress:
-		switch installType.Ingress.InstallType.(type) {
+		switch installType.Ingress.IngressInstallType.(type) {
 		case *v1.MeshIngressInstall_Gloo:
 			return "Gloo Ingress"
 		}
@@ -79,7 +79,7 @@ func installDetails(in *v1.Install) []string {
 
 	switch installType := in.InstallType.(type) {
 	case *v1.Install_Mesh:
-		switch meshType := installType.Mesh.InstallType.(type) {
+		switch meshType := installType.Mesh.MeshInstallType.(type) {
 		case *v1.MeshInstall_IstioMesh:
 			add(
 				fmt.Sprintf("version: %v", meshType.IstioMesh.IstioVersion),
@@ -99,7 +99,7 @@ func installDetails(in *v1.Install) []string {
 			)
 		}
 	case *v1.Install_Ingress:
-		switch installType.Ingress.InstallType.(type) {
+		switch installType.Ingress.IngressInstallType.(type) {
 		case *v1.MeshIngressInstall_Gloo:
 		}
 	}

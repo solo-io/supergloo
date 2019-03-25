@@ -10,14 +10,16 @@ import (
 )
 
 type InstallSnapshot struct {
-	Installs InstallsByNamespace
-	Meshes   MeshesByNamespace
+	Installs      InstallsByNamespace
+	Meshes        MeshesByNamespace
+	Meshingresses MeshingressesByNamespace
 }
 
 func (s InstallSnapshot) Clone() InstallSnapshot {
 	return InstallSnapshot{
-		Installs: s.Installs.Clone(),
-		Meshes:   s.Meshes.Clone(),
+		Installs:      s.Installs.Clone(),
+		Meshes:        s.Meshes.Clone(),
+		Meshingresses: s.Meshingresses.Clone(),
 	}
 }
 
@@ -25,6 +27,7 @@ func (s InstallSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashInstalls(),
 		s.hashMeshes(),
+		s.hashMeshingresses(),
 	)
 }
 
@@ -36,18 +39,24 @@ func (s InstallSnapshot) hashMeshes() uint64 {
 	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
 }
 
+func (s InstallSnapshot) hashMeshingresses() uint64 {
+	return hashutils.HashAll(s.Meshingresses.List().AsInterfaces()...)
+}
+
 func (s InstallSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
+	fields = append(fields, zap.Uint64("meshingresses", s.hashMeshingresses()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type InstallSnapshotStringer struct {
-	Version  uint64
-	Installs []string
-	Meshes   []string
+	Version       uint64
+	Installs      []string
+	Meshes        []string
+	Meshingresses []string
 }
 
 func (ss InstallSnapshotStringer) String() string {
@@ -63,13 +72,19 @@ func (ss InstallSnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Meshingresses %v\n", len(ss.Meshingresses))
+	for _, name := range ss.Meshingresses {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
 func (s InstallSnapshot) Stringer() InstallSnapshotStringer {
 	return InstallSnapshotStringer{
-		Version:  s.Hash(),
-		Installs: s.Installs.List().NamespacesDotNames(),
-		Meshes:   s.Meshes.List().NamespacesDotNames(),
+		Version:       s.Hash(),
+		Installs:      s.Installs.List().NamespacesDotNames(),
+		Meshes:        s.Meshes.List().NamespacesDotNames(),
+		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
 	}
 }

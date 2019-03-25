@@ -57,7 +57,7 @@ func createInstallSyncers(clientset *clientset.Clientset, errHandler func(error)
 
 // start the install event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.InstallSyncers) error {
-	installEmitter := v1.NewInstallEmitter(c.Input.Install, c.Input.Mesh)
+	installEmitter := v1.NewInstallEmitter(c.Input.Install, c.Input.Mesh, c.Input.MeshIngress)
 	installEventLoop := v1.NewInstallEventLoop(installEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{
