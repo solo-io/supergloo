@@ -1,4 +1,4 @@
-package prometheus_test
+package prometheus
 
 import (
 	"strings"
@@ -7,8 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/supergloo/test/inputs"
-
-	. "github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 )
 
 var _ = Describe("PrometheusConfig", func() {
@@ -17,6 +15,7 @@ var _ = Describe("PrometheusConfig", func() {
 		scs := inputs.InputIstioPrometheusScrapeConfigs()
 		added := cfg.AddScrapeConfigs(scs)
 		Expect(added).To(Equal(len(scs)))
+		sortConfigs(scs)
 		Expect(cfg.ScrapeConfigs).To(Equal(scs))
 	})
 	It("removes scrape configs by prefix", func() {
@@ -31,6 +30,7 @@ var _ = Describe("PrometheusConfig", func() {
 			scsWithoutIstio = append(scsWithoutIstio, sc)
 		}
 		Expect(removed).To(Equal(len(scsWithoutIstio)))
+		sortConfigs(scsWithoutIstio)
 		Expect(cfg.ScrapeConfigs).To(Equal(scsWithoutIstio))
 	})
 	It("removes scrape configs by name", func() {
