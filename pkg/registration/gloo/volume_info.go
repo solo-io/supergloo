@@ -127,7 +127,7 @@ func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshLis
 		switch mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
 			if mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled {
-				deploymentVolumeInfo = NewDeploymentVolumeInfo(resource, "istio.defaut")
+				deploymentVolumeInfo = NewDeploymentVolumeInfo(resource, "istio.default")
 			}
 		default:
 			return nil, errors.Errorf("unsupported mesh type found for mesh ingress "+

@@ -46,7 +46,7 @@ var _ = Describe("gloo registration syncers", func() {
 				Name: certVolumeName(meshResource),
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName:  "istio.defaut",
+						SecretName:  "istio.default",
 						Items:       nil,
 						DefaultMode: &defaultMode,
 						Optional:    &optional,
