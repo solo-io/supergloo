@@ -90,18 +90,18 @@ SOURCES=$(shell find . -name "*.go" | grep -v test | grep -v mock)
 ### Controller
 
 $(OUTPUT_DIR)/supergloo-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/supergloo/main.go
 	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/supergloo-darwin-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cmd/supergloo/main.go
 	shasum -a 256 $@ > $@.sha256
 
-$(OUTPUT_DIR)/Dockerfile.supergloo: cmd/Dockerfile
+$(OUTPUT_DIR)/Dockerfile.supergloo: cmd/supergloo/Dockerfile
 	cp $< $@
 
 supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DIR)/Dockerfile.supergloo
-	docker build -t quay.io/solo-io/supergloo:$(VERSION)  $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
+	docker build -t quay.io/solo-io/supergloo:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
 
 supergloo-docker-push: supergloo-docker
 	docker push quay.io/solo-io/supergloo:$(VERSION)
