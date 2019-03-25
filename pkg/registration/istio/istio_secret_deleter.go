@@ -17,6 +17,10 @@ type IstioSecretDeleter struct {
 	kube kubernetes.Interface
 }
 
+func NewIstioSecretDeleter(kube kubernetes.Interface) *IstioSecretDeleter {
+	return &IstioSecretDeleter{kube: kube}
+}
+
 func (d *IstioSecretDeleter) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-secret-deleter-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
@@ -24,22 +28,31 @@ func (d *IstioSecretDeleter) Sync(ctx context.Context, snap *v1.RegistrationSnap
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("full snapshot: %v", snap)
 
-	// collect namespaces from which we should delete citadel certs
-	var istioInstallNamespaces []string
+	var managedNamespaces []string
 
 	// delete citadel certs for any istio mesh which specifies a root cert
 	for _, mesh := range snap.Meshes.List() {
-		istioMesh, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			continue
 		}
 		if mesh.MtlsConfig == nil || !mesh.MtlsConfig.MtlsEnabled || mesh.MtlsConfig.RootCertificate == nil {
 			continue
 		}
-		istioInstallNamespaces = append(istioInstallNamespaces, istioMesh.Istio.InstallationNamespace)
+
+		// TODO (ilackarms): make managed namespaces a config option on a mesh
+		// that way we can restrict which meshes we are managing in this syncer
+		// currently we must list all namespaces and assume that istio is managing all of them
+		allNamespaces, err := listAllNamespaces(d.kube)
+		if err != nil {
+			return errors.Wrapf(err, "listing all namespaces")
+		}
+		managedNamespaces = allNamespaces
+
+		break
 	}
 
-	for _, ns := range istioInstallNamespaces {
+	for _, ns := range managedNamespaces {
 		if err := d.deleteCitadelCerts(ctx, ns); err != nil {
 			return errors.Wrapf(err, "deleting citadel certs in namespace %v", ns)
 		}
@@ -48,8 +61,16 @@ func (d *IstioSecretDeleter) Sync(ctx context.Context, snap *v1.RegistrationSnap
 	return nil
 }
 
-func NewIstioSecretDeleter(kube kubernetes.Interface) *IstioSecretDeleter {
-	return &IstioSecretDeleter{kube: kube}
+func listAllNamespaces(kube kubernetes.Interface) ([]string, error) {
+	nss, err := kube.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	var namespaces []string
+	for _, ns := range nss.Items {
+		namespaces = append(namespaces, ns.Name)
+	}
+	return namespaces, nil
 }
 
 // > To make sure the workloads obtain the new certificates promptly,
