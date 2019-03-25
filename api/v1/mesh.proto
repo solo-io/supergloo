@@ -11,6 +11,7 @@ import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+import "github.com/solo-io/supergloo/api/v1/selector.proto";
 
 /*
 Meshes represent a currently registered service mesh.
@@ -29,6 +30,7 @@ message Mesh {
 
     oneof mesh_type {
         IstioMesh istio = 1;
+        AwsAppMesh aws_app_mesh = 3;
     }
 
     // mtls config specifies configuration options for enabling mutual
@@ -41,10 +43,40 @@ message Mesh {
     MonitoringConfig monitoring_config = 3;
 }
 
-// Mesh object representing an installed Istio control plane
+// Mesh object representing Istio
 message IstioMesh {
     // where the istio control plane has been installed
     string installation_namespace = 1;
+}
+
+// Mesh object representing AWS App Mesh
+message AwsAppMesh {
+
+    // Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service.
+    core.solo.io.ResourceRef aws_secret = 1;
+
+    // The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in.
+    string region = 2;
+
+    // Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy.
+    //
+    // If set to true, supergloo will ensure that a MutatingAdmissionWebhook server with the injection logic is deployed
+    // to the cluster and that it has been registered with the Kubernetes API server via a MutatingWebhookConfiguration.
+    // This will cause the webhook to be invoked on each pod creation event.
+    bool enable_auto_inject = 3;
+
+    // Pods matching this selector will be injected with the sidecar proxy at creation time.
+    //
+    // NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector
+    PodSelector injection_selector = 4;
+
+    // If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of
+    // APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container.
+    string virtual_node_label = 5;
+
+    // Reference to the config map that contains the patch that will be applied to the spec of the pods matching the
+    // injection_selector.
+    core.solo.io.ResourceRef sidecar_patch_config_map = 6;
 }
 
 // the encryption configuration that will be applied by the role

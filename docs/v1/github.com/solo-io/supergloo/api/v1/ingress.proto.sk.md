@@ -35,7 +35,7 @@ if necessary, to enable proxying services which are using mTLS for communication
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "gloo": .supergloo.solo.io.GlooMeshIngress
-"mesh": .core.solo.io.ResourceRef
+"meshes": []core.solo.io.ResourceRef
 
 ```
 
@@ -44,7 +44,7 @@ if necessary, to enable proxying services which are using mTLS for communication
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
 | `gloo` | [.supergloo.solo.io.GlooMeshIngress](../ingress.proto.sk#GlooMeshIngress) |  |  |
-| `mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh that this ingress is acting upon |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh(s) that this ingress is acting upon enable the ingress to route to services within these mTLS-enabled meshes |  |
 
 
 
