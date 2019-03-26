@@ -8,11 +8,11 @@ weight: 5
 
 
 ### Package: `supergloo.solo.io` 
-##### Types:
+#### Types:
 
 
-- [MeshIngress](#MeshIngress) **Top-Level Resource**
-- [GlooMeshIngress](#GlooMeshIngress)
+- [MeshIngress](#meshingress) **Top-Level Resource**
+- [GlooMeshIngress](#gloomeshingress)
   
 
 
@@ -24,7 +24,7 @@ weight: 5
 
 
 ---
-### <a name="MeshIngress">MeshIngress</a>
+### MeshIngress
 
  
 MeshIngress represents a managed ingress (edge router) which can proxy connections
@@ -41,16 +41,16 @@ if necessary, to enable proxying services which are using mTLS for communication
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `gloo` | [.supergloo.solo.io.GlooMeshIngress](../ingress.proto.sk#GlooMeshIngress) |  |  |
-| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh(s) that this ingress is acting upon enable the ingress to route to services within these mTLS-enabled meshes |  |
+| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `gloo` | [.supergloo.solo.io.GlooMeshIngress](../ingress.proto.sk#gloomeshingress) |  |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Mesh(s) that this ingress is acting upon enable the ingress to route to services within these mTLS-enabled meshes |  |
 
 
 
 
 ---
-### <a name="GlooMeshIngress">GlooMeshIngress</a>
+### GlooMeshIngress
 
  
 Mesh ingress object for gloo
