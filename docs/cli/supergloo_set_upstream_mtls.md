@@ -1,23 +1,23 @@
 ---
-title: "supergloo set upstream tls"
+title: "supergloo set upstream mtls"
 weight: 5
 ---
-## supergloo set upstream tls
+## supergloo set upstream mtls
 
-edit tls settings for a Gloo upstream
+edit mtls settings for a Gloo upstream
 
 ### Synopsis
 
-edit tls settings for a Gloo upstream
+edit mtls settings for a Gloo upstream
 
 ```
-supergloo set upstream tls [flags]
+supergloo set upstream mtls [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help                    help for tls
+  -h, --help                    help for mtls
       --mesh-name string        name for the mesh
       --mesh-namespace string   namespace for the mesh (default "supergloo-system")
 ```
