@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      Adds an e2e test for gloo-istio mtls connection.
+
+
