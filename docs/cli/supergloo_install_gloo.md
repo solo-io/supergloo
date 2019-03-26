@@ -19,7 +19,7 @@ supergloo install gloo [flags]
 ```
   -h, --help                            help for gloo
       --installation-namespace string   which namespace to install Gloo into? (default "gloo-system")
-  -m, --meshes strings                  Which meshes to target (comma seperated list) <namespace>.<name> (default [supergloo-system.istio])
+  -m, --meshes strings                  Which meshes to target (comma seperated list) <namespace>.<name>
       --version string                  version of gloo to install? available: [latest v0.13.0] (default "latest")
 ```
 
