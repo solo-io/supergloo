@@ -8,10 +8,10 @@ weight: 5
 
 
 ### Package: `supergloo.solo.io` 
-##### Types:
+#### Types:
 
 
-- [SecurityRule](#SecurityRule) **Top-Level Resource**
+- [SecurityRule](#securityrule) **Top-Level Resource**
   
 
 
@@ -23,7 +23,7 @@ weight: 5
 
 
 ---
-### <a name="SecurityRule">SecurityRule</a>
+### SecurityRule
 
  
 security rules apply ALLOW policies to communication in a mesh
@@ -47,11 +47,11 @@ if no security rules are present, all traffic in the mesh will be set to ALLOW
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `targetMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
-| `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules note that security policies are mapped to source pods by their service account. if other pods share the same service account, this security rule will apply to those pods as well. for fine-grained security policies, ensure that your service accounts properly reflect the desired boundary for your security rules |  |
-| `destinationSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
+| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `targetMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
+| `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules note that security policies are mapped to source pods by their service account. if other pods share the same service account, this security rule will apply to those pods as well. for fine-grained security policies, ensure that your service accounts properly reflect the desired boundary for your security rules |  |
+| `destinationSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
 | `allowedPaths` | `[]string` | Optional. A list of HTTP paths or gRPC methods to allow. gRPC methods must be presented as fully-qualified name in the form of "/packageName.serviceName/methodName" and are case sensitive. Exact match, prefix match, and suffix match are supported for paths. For example, the path "/books/review" matches "/books/review" (exact match), or "/books/*" (prefix match), or "*/review" (suffix match). If not specified, it allows to any path. |  |
 | `allowedMethods` | `[]string` | Optional. A list of HTTP methods to allow (e.g., "GET", "POST"). It is ignored in gRPC case because the value is always "POST". If set to ["*"] or not specified, it allows to any method. |  |
 

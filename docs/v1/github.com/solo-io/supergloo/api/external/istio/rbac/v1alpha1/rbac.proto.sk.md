@@ -24,18 +24,18 @@ limitations under the License.
 
 
  
-##### Types:
+#### Types:
 
 
-- [ServiceRole](#ServiceRole) **Top-Level Resource**
-- [AccessRule](#AccessRule)
-- [Constraint](#Constraint)
-- [ServiceRoleBinding](#ServiceRoleBinding) **Top-Level Resource**
-- [Subject](#Subject)
-- [RoleRef](#RoleRef)
-- [RbacConfig](#RbacConfig) **Top-Level Resource**
-- [Target](#Target)
-- [Mode](#Mode)
+- [ServiceRole](#servicerole) **Top-Level Resource**
+- [AccessRule](#accessrule)
+- [Constraint](#constraint)
+- [ServiceRoleBinding](#servicerolebinding) **Top-Level Resource**
+- [Subject](#subject)
+- [RoleRef](#roleref)
+- [RbacConfig](#rbacconfig) **Top-Level Resource**
+- [Target](#target)
+- [Mode](#mode)
   
 
  
@@ -43,7 +43,7 @@ limitations under the License.
 ##### Enums:
 
 
-	- [EnforcementMode](#EnforcementMode)
+	- [EnforcementMode](#enforcementmode)
 
 
 
@@ -54,7 +54,7 @@ limitations under the License.
 
 
 ---
-### <a name="ServiceRole">ServiceRole</a>
+### ServiceRole
 
  
 ServiceRole specification contains a list of access rules (permissions).
@@ -70,15 +70,15 @@ of the ServiceRole is specified in "metadata" section of the ServiceRole object.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `rules` | [[]istio.rbac.v1alpha1.AccessRule](../rbac.proto.sk#AccessRule) | Required. The set of access rules (permissions) that the role has. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `rules` | [[]istio.rbac.v1alpha1.AccessRule](../rbac.proto.sk#accessrule) | Required. The set of access rules (permissions) that the role has. |  |
 
 
 
 
 ---
-### <a name="AccessRule">AccessRule</a>
+### AccessRule
 
  
 AccessRule defines a permission to access a list of services.
@@ -96,13 +96,13 @@ AccessRule defines a permission to access a list of services.
 | `services` | `[]string` | Required. A list of service names. Exact match, prefix match, and suffix match are supported for service names. For example, the service name "bookstore.mtv.cluster.local" matches "bookstore.mtv.cluster.local" (exact match), or "bookstore*" (prefix match), or "*.mtv.cluster.local" (suffix match). If set to ["*"], it refers to all services in the namespace. |  |
 | `paths` | `[]string` | Optional. A list of HTTP paths or gRPC methods. gRPC methods must be presented as fully-qualified name in the form of "/packageName.serviceName/methodName" and are case sensitive. Exact match, prefix match, and suffix match are supported for paths. For example, the path "/books/review" matches "/books/review" (exact match), or "/books/*" (prefix match), or "*/review" (suffix match). If not specified, it applies to any path. |  |
 | `methods` | `[]string` | Optional. A list of HTTP methods (e.g., "GET", "POST"). It is ignored in gRPC case because the value is always "POST". If set to ["*"] or not specified, it applies to any method. |  |
-| `constraints` | [[]istio.rbac.v1alpha1.AccessRule.Constraint](../rbac.proto.sk#Constraint) | Optional. Extra constraints in the ServiceRole specification. The above ServiceRole example shows an example of constraint "version". |  |
+| `constraints` | [[]istio.rbac.v1alpha1.AccessRule.Constraint](../rbac.proto.sk#constraint) | Optional. Extra constraints in the ServiceRole specification. The above ServiceRole example shows an example of constraint "version". |  |
 
 
 
 
 ---
-### <a name="Constraint">Constraint</a>
+### Constraint
 
  
 Definition of a custom constraint. The supported keys are listed in the "constraint and properties" page.
@@ -122,7 +122,7 @@ Definition of a custom constraint. The supported keys are listed in the "constra
 
 
 ---
-### <a name="ServiceRoleBinding">ServiceRoleBinding</a>
+### ServiceRoleBinding
 
  
 ServiceRoleBinding assigns a ServiceRole to a list of subjects.
@@ -141,17 +141,17 @@ object.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `subjects` | [[]istio.rbac.v1alpha1.Subject](../rbac.proto.sk#Subject) | Required. List of subjects that are assigned the ServiceRole object. |  |
-| `roleRef` | [.istio.rbac.v1alpha1.RoleRef](../rbac.proto.sk#RoleRef) | Required. Reference to the ServiceRole object. |  |
-| `mode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#EnforcementMode) | $hide_from_docs Indicates enforcement mode of the ServiceRoleBinding. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `subjects` | [[]istio.rbac.v1alpha1.Subject](../rbac.proto.sk#subject) | Required. List of subjects that are assigned the ServiceRole object. |  |
+| `roleRef` | [.istio.rbac.v1alpha1.RoleRef](../rbac.proto.sk#roleref) | Required. Reference to the ServiceRole object. |  |
+| `mode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#enforcementmode) | $hide_from_docs Indicates enforcement mode of the ServiceRoleBinding. |  |
 
 
 
 
 ---
-### <a name="Subject">Subject</a>
+### Subject
 
  
 Subject defines an identity. The identity is either a user or identified by a set of `properties`.
@@ -174,7 +174,7 @@ The supported keys in `properties` are listed in "constraint and properties" pag
 
 
 ---
-### <a name="RoleRef">RoleRef</a>
+### RoleRef
 
  
 RoleRef refers to a role object.
@@ -194,7 +194,7 @@ RoleRef refers to a role object.
 
 
 ---
-### <a name="RbacConfig">RbacConfig</a>
+### RbacConfig
 
  
 RbacConfig defines the global config to control Istio RBAC behavior.
@@ -230,18 +230,18 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `mode` | [.istio.rbac.v1alpha1.RbacConfig.Mode](../rbac.proto.sk#Mode) | Istio RBAC mode. |  |
-| `inclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#Target) | A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes. |  |
-| `exclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#Target) | A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes. |  |
-| `enforcementMode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#EnforcementMode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `mode` | [.istio.rbac.v1alpha1.RbacConfig.Mode](../rbac.proto.sk#mode) | Istio RBAC mode. |  |
+| `inclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#target) | A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes. |  |
+| `exclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk#target) | A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes. |  |
+| `enforcementMode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk#enforcementmode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
 
 
 
 
 ---
-### <a name="Target">Target</a>
+### Target
 
  
 Target defines a list of services or namespaces.
@@ -261,7 +261,7 @@ Target defines a list of services or namespaces.
 
 
 ---
-### <a name="Mode">Mode</a>
+### Mode
 
 
 
@@ -275,7 +275,7 @@ Target defines a list of services or namespaces.
 
 
   
-### <a name="EnforcementMode">EnforcementMode</a>
+### EnforcementMode
 
 Description: $hide_from_docs
 RBAC ServiceRoleBinding enforcement mode, used to verify new ServiceRoleBinding

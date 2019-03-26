@@ -19,7 +19,8 @@ supergloo install gloo [flags]
 ```
   -h, --help                            help for gloo
       --installation-namespace string   which namespace to install Gloo into? (default "gloo-system")
-      --version string                  version of gloo to install? available: [latest v0.11.1 v0.10.5] (default "latest")
+  -m, --meshes strings                  Which meshes to target (comma seperated list) <namespace>.<name> (default [supergloo-system.istio])
+      --version string                  version of gloo to install? available: [latest v0.13.0] (default "latest")
 ```
 
 ### Options inherited from parent commands
