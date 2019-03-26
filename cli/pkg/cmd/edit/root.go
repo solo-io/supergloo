@@ -67,7 +67,9 @@ func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println(opts.EditUpstream)
+			if err := editUpstream(opts); err != nil {
+				return err
+			}
 			return nil
 		},
 	}
@@ -97,6 +99,12 @@ func editUpstream(opts *options.Options) error {
 		},
 	}
 	us.UpstreamSpec.SslConfig = sslConfig
+	_, err = usClient.Write(us, skclients.WriteOpts{
+		OverwriteExisting: true,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "unable to save upstream %s.%s after editing ssl config", usRef.Namespace, usRef.Name)
+	}
 	return nil
 }
 
