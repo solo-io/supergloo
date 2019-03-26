@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Bounce Prometheus pods when their configmap gets updated
+    issueLink: https://github.com/solo-io/supergloo/issues/296
+
