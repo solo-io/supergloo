@@ -6,7 +6,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	. "github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	. "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
@@ -31,12 +30,7 @@ var _ = Describe("Prometheus Config Conversion", func() {
 			kubeCache, err := cache.NewKubeCoreCache(context.TODO(), kube)
 			Expect(err).NotTo(HaveOccurred())
 
-			fact := &factory.KubeConfigMapClientFactory{
-				Clientset:        kube,
-				Cache:            kubeCache,
-				PlainConfigmaps:  true,
-				CustomtConverter: NewPrometheusConfigmapConverter(),
-			}
+			fact := ResourceClientFactory(kube, kubeCache)
 			client, err = NewPrometheusConfigClient(fact)
 			Expect(err).NotTo(HaveOccurred())
 		})

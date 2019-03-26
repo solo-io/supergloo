@@ -22,6 +22,7 @@ type Options struct {
 	CreateTlsSecret   CreateTlsSecret
 	CreateAwsSecret   CreateAwsSecret
 	SetRootCert       SetRootCert
+	SetStats          SetStats
 }
 
 type Init struct {
@@ -92,4 +93,9 @@ type CreateAwsSecret struct {
 type SetRootCert struct {
 	TargetMesh ResourceRefValue
 	TlsSecret  ResourceRefValue
+}
+
+type SetStats struct {
+	TargetMesh           ResourceRefValue
+	PrometheusConfigMaps ResourceRefsValue
 }
