@@ -1,13 +1,10 @@
 package install
 
 import (
-	"strings"
-
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -89,29 +86,15 @@ func validateGlooInstall(opts *options.Options) error {
 	}
 
 	if len(opts.Install.MeshIngress.Meshes) > 0 && !opts.Interactive {
-		var resources []*core.ResourceRef
-		for _, v := range opts.Install.MeshIngress.Meshes {
-			splitVal := strings.Split(v, ".")
-			if len(splitVal) != 2 {
-				return errors.Errorf("mesh %s is of the incorrect format <namespace>.<name>", v)
-			}
-			resources = append(resources, &core.ResourceRef{
-				Name:      splitVal[1],
-				Namespace: splitVal[0],
-			})
+		meshClient := clients.MustMeshClient()
+		meshes, err := meshClient.List("", skclients.ListOpts{})
+		if err != nil {
+			return err
 		}
-		if len(resources) > 0 {
-			meshClient := clients.MustMeshClient()
-			meshes, err := meshClient.List("", skclients.ListOpts{})
-			if err != nil {
-				return err
+		for _, v := range opts.Install.MeshIngress.Meshes {
+			if _, err := meshes.Find(v.Namespace, v.Name); err != nil {
+				return errors.Wrapf(err, "mesh resource %s.%s is not a valid mesh", v.Namespace, v.Name)
 			}
-			for _, v := range resources {
-				if _, err := meshes.Find(v.Namespace, v.Name); err != nil {
-					return errors.Wrapf(err, "mesh resource %s.%s is not a valid mesh", v.Namespace, v.Name)
-				}
-			}
-			opts.Install.GlooIngressInstall.Meshes = resources
 		}
 	}
 

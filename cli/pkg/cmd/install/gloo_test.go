@@ -99,16 +99,16 @@ var _ = Describe("gloo install", func() {
 				fmt.Sprintf("--name=%v ", name) +
 				fmt.Sprintf("--installation-namespace %s ", namespace) +
 				fmt.Sprintf("--namespace=%v ", namespace) +
-				fmt.Sprintf("--meshes one.two"))
+				fmt.Sprintf("--target-meshes one.two"))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("is not a valid mesh"))
 			err = utils.Supergloo("install gloo " +
 				fmt.Sprintf("--name=%v ", name) +
 				fmt.Sprintf("--installation-namespace %s ", namespace) +
 				fmt.Sprintf("--namespace=%v ", namespace) +
-				fmt.Sprintf("--meshes one"))
+				fmt.Sprintf("--target-meshes one"))
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("is of the incorrect format"))
+			Expect(err.Error()).To(ContainSubstring("refs must be specified in the format <NAMESPACE>.<NAME>"))
 			meshClient := clients.MustMeshClient()
 			_, err = meshClient.Write(&v1.Mesh{Metadata: core.Metadata{Name: "one", Namespace: "two"}}, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -116,7 +116,7 @@ var _ = Describe("gloo install", func() {
 				fmt.Sprintf("--name=%v ", name) +
 				fmt.Sprintf("--installation-namespace %s ", namespace) +
 				fmt.Sprintf("--namespace=%v ", namespace) +
-				fmt.Sprintf("--meshes two.one"))
+				fmt.Sprintf("--target-meshes two.one"))
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

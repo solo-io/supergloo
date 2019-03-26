@@ -6,6 +6,5 @@ import (
 )
 
 func AddUpstreamTlsFlags(set *pflag.FlagSet, in *options.EditUpstream) {
-	set.StringVar(&in.MtlsMeshMetadata.Name, "mesh-name", "", "name for the mesh")
-	set.StringVar(&in.MtlsMeshMetadata.Namespace, "mesh-namespace", "supergloo-system", "namespace for the mesh")
+	set.VarP(&in.MtlsMesh, "target-mesh", "t", "target mesh")
 }

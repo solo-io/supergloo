@@ -11,7 +11,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "set",
 		Aliases: []string{"s"},
-		Short:   "set configuration parameters",
+		Short:   "update an existing resource with one or more config options",
 	}
 
 	cmd.AddCommand(

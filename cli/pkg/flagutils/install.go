@@ -70,9 +70,5 @@ func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"latest",
 		fmt.Sprintf("version of gloo to install? available: %v", constants.SupportedGlooVersions))
 
-	set.StringSliceVarP(&in.MeshIngress.Meshes,
-		"meshes",
-		"m",
-		[]string{},
-		"Which meshes to target (comma seperated list) <namespace>.<name>")
+	set.VarP(&in.MeshIngress.Meshes, "target-meshes", "t", "Which meshes to target (comma seperated list) <namespace>.<name>")
 }

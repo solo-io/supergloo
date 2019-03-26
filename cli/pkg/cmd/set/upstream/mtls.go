@@ -36,7 +36,7 @@ func setUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				opts.EditUpstream.MtlsMeshMetadata = mesh
+				opts.EditUpstream.MtlsMesh = options.ResourceRefValue(mesh)
 			}
 			if err := validateSetUpstreamCmd(opts); err != nil {
 				return err
@@ -64,7 +64,7 @@ func editUpstream(opts *options.Options) error {
 	if err != nil {
 		return errors.Wrapf(err, "unable to find upstream %s.%s", usRef.Namespace, usRef.Name)
 	}
-	meshRef := opts.EditUpstream.MtlsMeshMetadata
+	meshRef := opts.EditUpstream.MtlsMesh
 	folderRoot := "/etc/certs"
 	meshFolderPath := fmt.Sprintf("/%s/%s", meshRef.Namespace, meshRef.Name)
 	sslConfig := &v1.UpstreamSslConfig{
@@ -87,7 +87,7 @@ func editUpstream(opts *options.Options) error {
 }
 
 func validateSetUpstreamCmd(opts *options.Options) error {
-	if opts.EditUpstream.MtlsMeshMetadata.Namespace == "" || opts.EditUpstream.MtlsMeshMetadata.Name == "" {
+	if opts.EditUpstream.MtlsMesh.Namespace == "" || opts.EditUpstream.MtlsMesh.Name == "" {
 		return fmt.Errorf("mesh resource name and namespace must be specified")
 	}
 	if opts.Metadata.Namespace == "" || opts.Metadata.Name == "" {
@@ -97,7 +97,7 @@ func validateSetUpstreamCmd(opts *options.Options) error {
 	// Check validity of mesh resource
 	if !opts.Interactive {
 		meshClient := clients.MustMeshClient()
-		meshRef := opts.EditUpstream.MtlsMeshMetadata
+		meshRef := opts.EditUpstream.MtlsMesh
 		_, err := meshClient.Read(meshRef.Namespace, meshRef.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 		if err != nil {
 			return errors.Wrapf(err, "unable to find mesh %s.%s", meshRef.Namespace, meshRef.Name)

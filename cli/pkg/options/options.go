@@ -48,7 +48,7 @@ type Install struct {
 }
 
 type MeshIngressInstall struct {
-	Meshes []string
+	Meshes ResourceRefsValue
 }
 
 type Uninstall struct {
@@ -102,7 +102,7 @@ type SetRootCert struct {
 }
 
 type EditUpstream struct {
-	MtlsMeshMetadata core.ResourceRef
+	MtlsMesh ResourceRefValue
 }
 
 type SetStats struct {
