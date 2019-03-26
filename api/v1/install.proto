@@ -32,8 +32,8 @@ message Install {
 
 
     // disables this install
-    // setting this to true will cause supergloo to
-    // not install this mesh, or uninstall an active install
+    // setting this to true will cause supergloo not to
+    // install this mesh, or uninstall an active install
     bool disabled = 1;
 
 

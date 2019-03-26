@@ -3,9 +3,88 @@ package test
 import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	. "github.com/onsi/gomega"
 )
 
-var AppMeshInjectEnabled = &v1.Mesh{
+type patchConfigMap struct {
+	AsStruct *corev1.ConfigMap
+	AsString string
+}
+
+type pod struct {
+	AsStruct *corev1.Pod
+	AsString string
+}
+
+func (p *pod) ToRequest() admissionv1beta1.AdmissionReview {
+	return admissionv1beta1.AdmissionReview{
+		Request: &admissionv1beta1.AdmissionRequest{
+			Resource: metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"},
+			Object: runtime.RawExtension{
+				Raw: []byte(p.AsString),
+			},
+		},
+	}
+}
+
+type ResourcesForTest struct {
+	OneContOneInitContPatch patchConfigMap
+	NoContainerPatch        patchConfigMap
+	NoInitContainerPatch    patchConfigMap
+	EmptyPatch              patchConfigMap
+	TwoEntryPatch           patchConfigMap
+	MatchingPod             pod
+	NonMatchingPod          pod
+	AppMeshInjectEnabled    *v1.Mesh
+	AppMeshInjectDisabled   *v1.Mesh
+	AppMeshNoConfigMap      *v1.Mesh
+	AppMeshNoSelector       *v1.Mesh
+	IstioMesh               *v1.Mesh
+}
+
+func newPatchConfigMap(decoder runtime.Decoder, configMap string) patchConfigMap {
+	configMapStruct := &corev1.ConfigMap{}
+	_, _, err := decoder.Decode([]byte(configMap), nil, configMapStruct)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	return patchConfigMap{
+		AsString: configMap,
+		AsStruct: configMapStruct,
+	}
+}
+
+func newPod(decoder runtime.Decoder, podString string) pod {
+	podStruct := &corev1.Pod{}
+	_, _, err := decoder.Decode([]byte(podString), nil, podStruct)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	return pod{
+		AsString: podString,
+		AsStruct: podStruct,
+	}
+}
+
+func GetTestResources(decoder runtime.Decoder) *ResourcesForTest {
+	return &ResourcesForTest{
+		OneContOneInitContPatch: newPatchConfigMap(decoder, oneContainerOneInitContainerPatch),
+		NoContainerPatch:        newPatchConfigMap(decoder, noContainerPatch),
+		NoInitContainerPatch:    newPatchConfigMap(decoder, noInitContainerPatch),
+		EmptyPatch:              newPatchConfigMap(decoder, emptyPatch),
+		TwoEntryPatch:           newPatchConfigMap(decoder, twoEntryPatch),
+		MatchingPod:             newPod(decoder, matchingPod),
+		NonMatchingPod:          newPod(decoder, nonMatchingPod),
+		AppMeshInjectEnabled:    appMeshInjectEnabled,
+		AppMeshInjectDisabled:   appMeshInjectDisabled,
+		AppMeshNoConfigMap:      appMeshNoConfigMap,
+		AppMeshNoSelector:       appMeshNoSelector,
+		IstioMesh:               istioMesh,
+	}
+}
+
+var appMeshInjectEnabled = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -25,7 +104,7 @@ var AppMeshInjectEnabled = &v1.Mesh{
 						LabelsToMatch: map[string]string{
 							"app": "testrunner"}}}}}}}
 
-var AppMeshInjectDisabled = &v1.Mesh{
+var appMeshInjectDisabled = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -45,7 +124,7 @@ var AppMeshInjectDisabled = &v1.Mesh{
 						LabelsToMatch: map[string]string{
 							"app": "testrunner"}}}}}}}
 
-var AppMeshNoConfigMap = &v1.Mesh{
+var appMeshNoConfigMap = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -61,7 +140,7 @@ var AppMeshNoConfigMap = &v1.Mesh{
 						LabelsToMatch: map[string]string{
 							"app": "testrunner"}}}}}}}
 
-var AppMeshNoSelector = &v1.Mesh{
+var appMeshNoSelector = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -75,7 +154,7 @@ var AppMeshNoSelector = &v1.Mesh{
 				Name:      "sidecar-injector-webhook-configmap",
 				Namespace: "supergloo-system"}}}}
 
-var IstioMesh = &v1.Mesh{
+var istioMesh = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -85,7 +164,7 @@ var IstioMesh = &v1.Mesh{
 			InstallationNamespace: "supergloo-system",
 		}}}
 
-var MatchingPod = `
+var matchingPod = `
 apiVersion: v1
 kind: Pod
 metadata:
@@ -102,7 +181,7 @@ spec:
         - containerPort: 1234
 `
 
-var NonMatchingPod = `
+var nonMatchingPod = `
 apiVersion: v1
 kind: Pod
 metadata:
@@ -115,7 +194,7 @@ spec:
         - containerPort: 1234
 `
 
-var ConfigMap = `
+var oneContainerOneInitContainerPatch = `
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -156,7 +235,7 @@ data:
             value: "169.254.169.254"
 `
 
-var NoContainerPatch = `
+var noContainerPatch = `
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -168,7 +247,7 @@ data:
         image: 111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:latest
 `
 
-var NoInitContainerPatch = `
+var noInitContainerPatch = `
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -180,7 +259,7 @@ data:
         image: 111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.8.0.2-beta
 `
 
-var EmptyPatch = `
+var emptyPatch = `
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -188,7 +267,7 @@ metadata:
 data:
 `
 
-var TwoEntryPatch = `
+var twoEntryPatch = `
 apiVersion: v1
 kind: ConfigMap
 metadata:

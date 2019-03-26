@@ -211,7 +211,7 @@ func _Mesh_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
-// Mesh object representing Istio
+// Mesh object representing an installed Istio control plane
 type IstioMesh struct {
 	// where the istio control plane has been installed
 	InstallationNamespace string   `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`

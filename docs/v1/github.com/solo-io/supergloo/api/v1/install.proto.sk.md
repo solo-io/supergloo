@@ -52,7 +52,7 @@ modify the corresponding mesh.
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `disabled` | `bool` | disables this install setting this to true will cause supergloo to not install this mesh, or uninstall an active install |  |
+| `disabled` | `bool` | disables this install setting this to true will cause supergloo not to install this mesh, or uninstall an active install |  |
 | `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | service mesh |  |
 | `ingress` | [.supergloo.solo.io.MeshIngressInstall](../install.proto.sk#MeshIngressInstall) | ingress |  |
 | `installationNamespace` | `string` | which namespace to install to |  |

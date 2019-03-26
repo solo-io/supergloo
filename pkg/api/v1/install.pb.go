@@ -38,8 +38,8 @@ type Install struct {
 	// Metadata contains the object metadata for this resource
 	Metadata core.Metadata `protobuf:"bytes,101,opt,name=metadata,proto3" json:"metadata"`
 	// disables this install
-	// setting this to true will cause supergloo to
-	// not install this mesh, or uninstall an active install
+	// setting this to true will cause supergloo not to
+	// install this mesh, or uninstall an active install
 	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
 	// The type of object the install handles
 	// Currently support types are mesh, and ingress

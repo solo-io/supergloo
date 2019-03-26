@@ -1,7 +1,7 @@
 # Sidecar injector webhook
 This executable implements a `MutationAdmissionWebhook` server that injects pods with AWS App Mesh sidecar proxies. 
 The server is called by the Kubernetes API server each time a pod creation event occurs. The server determines 
-whether the to-be-created pod need to be patched with the sidecar.
+whether the to-be-created pod needs to be patched with the sidecar.
 
 ## Detailed flow
 Following are the steps the server executes when it receives a `AdmissionReview` request for a pod creation.
@@ -13,14 +13,14 @@ Following are the steps the server executes when it receives a `AdmissionReview`
     2. if it matches multiple meshes return an error, as multiple injection is currently not supported
     3. if it matches a mesh, continue
 3. Retrieve the `SidecarPatchConfigMap` specified in the mesh CRD. This config map contains the template for the patch that will be applied to the pod. 
-A missing or non-existing `SidecarPatchConfigMap` when `EnableAutoInject` is true will cause an error to be returned.
+A missing or non-existing `SidecarPatchConfigMap` when `EnableAutoInject` is `true` will cause an error to be returned.
 4. Retrieve the `VirtualNodeLabel` from the mesh CRD. The webhook will look for this label on the pod and use its value as 
 the name of the [Virtual Node](https://docs.aws.amazon.com/app-mesh/latest/userguide/virtual_nodes.html) that the pod is associated with. 
-The Virtual Node does not have to exist at this point. A missing `VirtualNodeLabel` when `EnableAutoInject` is true will cause an error to be returned.
+The Virtual Node does not have to exist at this point. A missing `VirtualNodeLabel` when `EnableAutoInject` is `true` will cause an error to be returned.
 5. The patch template is rendered with the following values:
     * `MeshName`: `name` of the mesh CRD, used to build the `APPMESH_VIRTUAL_NODE_NAME` env that is set on the sidecar proxy container.
     * `VirtualNodeName`: value of the pod label with key equal to `VirtualNodeLabel`. Also used to build the `APPMESH_VIRTUAL_NODE_NAME` env.
-    * `AwsRegion`: `Region` of the `Mesh` CRD; indicates the AWs region where the control plane for the mesh is located. 
+    * `AwsRegion`: `Region` of the `Mesh` CRD; indicates the AWS region where the control plane for the mesh is located. 
     * `AppPort`:  the `containerPort` of the container in the pod. Will be used as value for the `APPMESH_APP_PORTS` env that is set 
     on the `InitContainer` that will be added to the pod specification.
 6. Convert the rendered patch to the [JSONPatch](https://tools.ietf.org/html/rfc6902) format expected by the Kubernetes API server.

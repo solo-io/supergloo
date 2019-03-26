@@ -59,7 +59,7 @@ Meshes represent a currently registered service mesh.
 ### <a name="IstioMesh">IstioMesh</a>
 
  
-Mesh object representing Istio
+Mesh object representing an installed Istio control plane
 
 ```yaml
 "installationNamespace": string

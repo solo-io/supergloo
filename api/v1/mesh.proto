@@ -43,7 +43,7 @@ message Mesh {
     MonitoringConfig monitoring_config = 3;
 }
 
-// Mesh object representing Istio
+// Mesh object representing an installed Istio control plane
 message IstioMesh {
     // where the istio control plane has been installed
     string installation_namespace = 1;

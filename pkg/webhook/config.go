@@ -11,7 +11,7 @@ type webhookConfig struct {
 	keyFilePath  string // path to the x509 private key matching `CertFile`
 }
 
-// Webhook configuration values are read in, order of preference, from:
+// Webhook configuration values are read, in order of preference, from:
 //   1. flags passed to the go executable
 //   2. environment variables
 //   3. default location (/etc/webhook/)

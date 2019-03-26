@@ -11,10 +11,10 @@ import (
 
 var scheme = runtime.NewScheme()
 
-// Used for serializing and deserializing the types added in the blow addToScheme function.
+// Used for serializing and deserializing the types added in the below addToScheme function.
 //
-// NOTE: Codecs will not work for our CRD types (we would have to deserialize to v1.Resource and then unmarshal the
-// Spec map[string]interface{}
+// NOTE: Codecs will not work for our CRD types (we would have to deserialize to v1.Resource
+// and then unmarshal the Spec map[string]interface{})
 var Codecs = serializer.NewCodecFactory(scheme)
 
 func init() {

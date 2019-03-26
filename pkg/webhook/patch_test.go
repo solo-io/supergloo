@@ -1,7 +1,6 @@
 package webhook
 
 import (
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/webhook/test"
 
 	corev1 "k8s.io/api/core/v1"
@@ -12,51 +11,21 @@ import (
 
 var _ = Describe("create pod sidecar patches", func() {
 
-	var (
-		pod *corev1.Pod
-		configMap,
-		emptyPatchConfigMap,
-		twoEntryConfigMap,
-		noContainerConfigMap,
-		noInitContainerConfigMap *corev1.ConfigMap
-		mesh *v1.Mesh
-	)
+	var testData *test.ResourcesForTest
 
 	BeforeEach(func() {
-		deserializer := Codecs.UniversalDeserializer()
-		pod = &corev1.Pod{}
-		_, _, err := deserializer.Decode([]byte(test.MatchingPod), nil, pod)
-		Expect(err).NotTo(HaveOccurred())
-
-		configMap = &corev1.ConfigMap{}
-		_, _, err = deserializer.Decode([]byte(test.ConfigMap), nil, configMap)
-		Expect(err).NotTo(HaveOccurred())
-
-		noContainerConfigMap = &corev1.ConfigMap{}
-		_, _, err = deserializer.Decode([]byte(test.NoContainerPatch), nil, noContainerConfigMap)
-		Expect(err).NotTo(HaveOccurred())
-
-		noInitContainerConfigMap = &corev1.ConfigMap{}
-		_, _, err = deserializer.Decode([]byte(test.NoInitContainerPatch), nil, noInitContainerConfigMap)
-		Expect(err).NotTo(HaveOccurred())
-
-		emptyPatchConfigMap = &corev1.ConfigMap{}
-		_, _, err = deserializer.Decode([]byte(test.EmptyPatch), nil, emptyPatchConfigMap)
-		Expect(err).NotTo(HaveOccurred())
-
-		twoEntryConfigMap = &corev1.ConfigMap{}
-		_, _, err = deserializer.Decode([]byte(test.TwoEntryPatch), nil, emptyPatchConfigMap)
-		Expect(err).NotTo(HaveOccurred())
-
-		mesh = test.AppMeshInjectEnabled
+		testData = test.GetTestResources(Codecs.UniversalDeserializer())
 	})
 
 	It("correctly creates a patch adding one container and one initContainer", func() {
 
-		patchBytes, err := buildSidecarPatch(pod, configMap, mesh)
+		patchBytes, err := buildSidecarPatch(
+			testData.MatchingPod.AsStruct,
+			testData.OneContOneInitContPatch.AsStruct,
+			testData.AppMeshInjectEnabled)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(test.MatchingPod, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(2))
@@ -86,10 +55,10 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("correctly creates a patch adding one initContainer", func() {
-		patchBytes, err := buildSidecarPatch(pod, noContainerConfigMap, mesh)
+		patchBytes, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoContainerPatch.AsStruct, testData.AppMeshInjectEnabled)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(test.MatchingPod, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(1))
@@ -104,10 +73,10 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("correctly creates a patch adding one container", func() {
-		patchBytes, err := buildSidecarPatch(pod, noInitContainerConfigMap, mesh)
+		patchBytes, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoInitContainerPatch.AsStruct, testData.AppMeshInjectEnabled)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(test.MatchingPod, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(2))
@@ -120,13 +89,13 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("fails if the config map does not contain any data", func() {
-		_, err := buildSidecarPatch(pod, emptyPatchConfigMap, mesh)
+		_, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.EmptyPatch.AsStruct, testData.AppMeshInjectEnabled)
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("expected exactly 1 entry in config map"))
 	})
 
 	It("fails if the config map contains more than one data entry", func() {
-		_, err := buildSidecarPatch(pod, twoEntryConfigMap, mesh)
+		_, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.TwoEntryPatch.AsStruct, testData.AppMeshInjectEnabled)
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("expected exactly 1 entry in config map"))
 	})
