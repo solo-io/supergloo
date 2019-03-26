@@ -55,7 +55,7 @@ func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 				if err := surveyutils.SurveyMetadata("Upstream", &opts.Metadata); err != nil {
 					return err
 				}
-				mesh, err := surveyutils.SurveyEditUpstream(opts.Ctx)
+				mesh, err := surveyutils.SurveyMesh("select the mesh which you would like to connect to", opts.Ctx)
 				if err != nil {
 					return err
 				}
