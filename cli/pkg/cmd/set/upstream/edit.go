@@ -1,11 +1,11 @@
-package edit
+package upstream
 
 import (
 	"fmt"
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -19,32 +19,6 @@ const (
 	key       = "key.pem"
 	rootCa    = "root-cert.pem"
 )
-
-func Cmd(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "edit",
-		Aliases: []string{"e"},
-		Short:   "commands for editing resources used by SuperGloo",
-		Long:    "commands for editing resources used by SuperGloo",
-	}
-
-	cmd.AddCommand(editUpstreamCommand(opts))
-	return cmd
-}
-
-func editUpstreamCommand(opts *options.Options) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "upstream",
-		Aliases: []string{"u"},
-		Short:   "edit a Gloo upstream for use within SuperGloo.",
-	}
-	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
-	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
-	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
-
-	cmd.AddCommand(editUpstreamTlsCmd(opts))
-	return cmd
-}
 
 func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{

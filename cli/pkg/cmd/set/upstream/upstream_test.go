@@ -1,4 +1,4 @@
-package edit_test
+package upstream_test
 
 import (
 	"fmt"
@@ -30,13 +30,13 @@ var _ = Describe("edit upstream", func() {
 	})
 	Context("validation", func() {
 		It("returns err if name or namespace of mesh aren't present", func() {
-			err := utils.Supergloo("edit upstream tls --mesh-namespace one")
+			err := utils.Supergloo("set upstream tls --mesh-namespace one")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("mesh resource name and namespace must be specified"))
 		})
 
 		It("returns err if name or namespace of upstream aren't present", func() {
-			err := utils.Supergloo("edit upstream tls --namespace one --mesh-name one")
+			err := utils.Supergloo("set upstream tls --namespace one --mesh-name one")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("upstream name and namespace must be specified"))
 		})
@@ -50,7 +50,7 @@ var _ = Describe("edit upstream", func() {
 			}
 			_, err := meshClient.Write(mesh, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
-			err = utils.Supergloo("edit upstream tls --name one --mesh-name one")
+			err = utils.Supergloo("set upstream tls --name one --mesh-name one")
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unable to find mesh"))
 		})
@@ -77,7 +77,7 @@ var _ = Describe("edit upstream", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("can edit an upstream", func() {
-			err := utils.Supergloo("edit upstream tls --name one --mesh-name one")
+			err := utils.Supergloo("set upstream tls --name one --mesh-name one")
 			Expect(err).NotTo(HaveOccurred())
 			us, err := upstreamClient.Read(ns, name, skclients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())

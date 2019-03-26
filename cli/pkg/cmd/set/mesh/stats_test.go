@@ -1,4 +1,4 @@
-package set_test
+package mesh_test
 
 import (
 	"fmt"
@@ -33,7 +33,7 @@ var _ = Describe("Stats", func() {
 	})
 
 	It("updates the prometheus configmap refs on an existing mesh", func() {
-		err := utils.Supergloo(fmt.Sprintf("set stats --target-mesh %v "+
+		err := utils.Supergloo(fmt.Sprintf("set mesh stats --target-mesh %v "+
 			" --prometheus-configmap %v --prometheus-configmap %v", mesh.Ref().Key(), promCfg1.Ref().Key(), promCfg2.Ref().Key()))
 		Expect(err).NotTo(HaveOccurred())
 		meshWithCert, err := clients.MustMeshClient().Read(mesh.Namespace, mesh.Name, skclients.ReadOpts{})
@@ -46,7 +46,7 @@ var _ = Describe("Stats", func() {
 	})
 
 	It("errors if no target mesh provided the prometheus configmap refs on an existing mesh", func() {
-		err := utils.Supergloo(fmt.Sprintf("set stats "+
+		err := utils.Supergloo(fmt.Sprintf("set mesh stats "+
 			"--prometheus-configmap %v --prometheus-configmap %v", promCfg1.Ref().Key(), promCfg2.Ref().Key()))
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("must provide --target-mesh"))

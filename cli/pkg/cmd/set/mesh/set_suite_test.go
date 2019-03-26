@@ -1,4 +1,4 @@
-package edit_test
+package mesh_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEdit(t *testing.T) {
+func TestSet(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Edit Suite")
+	RunSpecs(t, "Set Suite")
 }

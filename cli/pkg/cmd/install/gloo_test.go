@@ -28,7 +28,7 @@ var _ = Describe("gloo install", func() {
 		return in
 	}
 
-	FContext("non-interactive", func() {
+	Context("non-interactive", func() {
 		It("should create the expected install ", func() {
 			installAndVerifyGloo := func(
 				name,
