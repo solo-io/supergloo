@@ -28,6 +28,9 @@ var _ = Describe("gloo registration syncers", func() {
 			Namespace: "istio-system",
 		}
 		istioMesh = &v1.Mesh{
+			MtlsConfig: &v1.MtlsConfig{
+				MtlsEnabled: true,
+			},
 			MeshType: &v1.Mesh_Istio{
 				Istio: &v1.IstioMesh{
 					InstallationNamespace: "istio-system",
@@ -43,7 +46,7 @@ var _ = Describe("gloo registration syncers", func() {
 				Name: certVolumeName(meshResource),
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
-						SecretName:  "istio.defaut",
+						SecretName:  "istio.default",
 						Items:       nil,
 						DefaultMode: &defaultMode,
 						Optional:    &optional,
@@ -61,7 +64,7 @@ var _ = Describe("gloo registration syncers", func() {
 			corev1.VolumeMount{
 				Name:      certVolumeName(meshResource),
 				ReadOnly:  true,
-				MountPath: "/etc/certs/namespace/name",
+				MountPath: certVolumePathName(meshResource),
 			},
 			corev1.VolumeMount{
 				Name: "1",
@@ -121,6 +124,30 @@ var _ = Describe("gloo registration syncers", func() {
 		It("should update if one is removed", func() {
 			deployment := createDeployment(volumeList, mountList)
 			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{}, v1.MeshList{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(update).To(BeTrue())
+			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
+		})
+
+		It("should update if mtls is enabled", func() {
+			deployment := createDeployment(volumeList.Remove(0), mountList.Remove(0))
+			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(update).To(BeTrue())
+			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))
+		})
+
+		It("should update if mtls is disabled", func() {
+			deployment := createDeployment(volumeList, mountList)
+			newMesh := &v1.Mesh{
+				MtlsConfig: &v1.MtlsConfig{
+					MtlsEnabled: false,
+				},
+				Metadata: istioMesh.Metadata,
+				MeshType: istioMesh.MeshType,
+				Status:   istioMesh.Status,
+			}
+			update, err := shouldUpdateDeployment(deployment, []*core.ResourceRef{meshResource}, v1.MeshList{newMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(update).To(BeTrue())
 			Expect(deployment).NotTo(Equal(createDeployment(volumeList, mountList)))

@@ -1,8 +1,8 @@
 ---
-title: "supergloo set stats"
+title: "supergloo set mesh stats"
 weight: 5
 ---
-## supergloo set stats
+## supergloo set mesh stats
 
 configure one or more prometheus instances to scrape a mesh for metrics.
 
@@ -11,7 +11,7 @@ configure one or more prometheus instances to scrape a mesh for metrics.
 Updates the target mesh to propagate metrics to (have them scraped by) one or more instances of Prometheus.
 
 ```
-supergloo set stats [flags]
+supergloo set mesh stats [flags]
 ```
 
 ### Options
@@ -24,5 +24,5 @@ supergloo set stats [flags]
 
 ### SEE ALSO
 
-* [supergloo set](../supergloo_set)	 - subcommands set a configuration parameter for one or more meshes
+* [supergloo set mesh](../supergloo_set_mesh)	 - subcommands set a configuration parameters for one or more meshes
 

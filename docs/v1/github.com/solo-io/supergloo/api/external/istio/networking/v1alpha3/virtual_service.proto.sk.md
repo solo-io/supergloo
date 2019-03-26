@@ -24,31 +24,31 @@ Copyright 2017-2018 Istio Authors
 
 
  
-##### Types:
+#### Types:
 
 
-- [VirtualService](#VirtualService) **Top-Level Resource**
-- [Destination](#Destination)
-- [HTTPRoute](#HTTPRoute)
-- [Headers](#Headers)
-- [HeaderOperations](#HeaderOperations)
-- [TLSRoute](#TLSRoute)
-- [TCPRoute](#TCPRoute)
-- [HTTPMatchRequest](#HTTPMatchRequest)
-- [HTTPRouteDestination](#HTTPRouteDestination)
-- [RouteDestination](#RouteDestination)
-- [L4MatchAttributes](#L4MatchAttributes)
-- [TLSMatchAttributes](#TLSMatchAttributes)
-- [HTTPRedirect](#HTTPRedirect)
-- [HTTPRewrite](#HTTPRewrite)
-- [StringMatch](#StringMatch)
-- [HTTPRetry](#HTTPRetry)
-- [CorsPolicy](#CorsPolicy)
-- [HTTPFaultInjection](#HTTPFaultInjection)
-- [Delay](#Delay)
-- [Abort](#Abort)
-- [PortSelector](#PortSelector)
-- [Percent](#Percent)
+- [VirtualService](#virtualservice) **Top-Level Resource**
+- [Destination](#destination)
+- [HTTPRoute](#httproute)
+- [Headers](#headers)
+- [HeaderOperations](#headeroperations)
+- [TLSRoute](#tlsroute)
+- [TCPRoute](#tcproute)
+- [HTTPMatchRequest](#httpmatchrequest)
+- [HTTPRouteDestination](#httproutedestination)
+- [RouteDestination](#routedestination)
+- [L4MatchAttributes](#l4matchattributes)
+- [TLSMatchAttributes](#tlsmatchattributes)
+- [HTTPRedirect](#httpredirect)
+- [HTTPRewrite](#httprewrite)
+- [StringMatch](#stringmatch)
+- [HTTPRetry](#httpretry)
+- [CorsPolicy](#corspolicy)
+- [HTTPFaultInjection](#httpfaultinjection)
+- [Delay](#delay)
+- [Abort](#abort)
+- [PortSelector](#portselector)
+- [Percent](#percent)
   
 
 
@@ -60,7 +60,7 @@ Copyright 2017-2018 Istio Authors
 
 
 ---
-### <a name="VirtualService">VirtualService</a>
+### VirtualService
 
  
 A `VirtualService` defines a set of traffic routing rules to apply when a host is
@@ -137,20 +137,20 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `hosts` | `[]string` | REQUIRED. The destination hosts to which traffic is being sent. Could be a DNS name with wildcard prefix or an IP address. Depending on the platform, short-names can also be used instead of a FQDN (i.e. has no dots in the name). In such a scenario, the FQDN of the host would be derived based on the underlying platform. **A host name can be defined by only one VirtualService**. A single VirtualService can be used to describe traffic properties for multiple HTTP and TCP ports. *Note for Kubernetes users*: When short names are used (e.g. "reviews" instead of "reviews.default.svc.cluster.local"), Istio will interpret the short name based on the namespace of the rule, not the service. A rule in the "default" namespace containing a host "reviews will be interpreted as "reviews.default.svc.cluster.local", irrespective of the actual namespace associated with the reviews service. _To avoid potential misconfigurations, it is recommended to always use fully qualified domain names over short names._ The hosts field applies to both HTTP and TCP services. Service inside the mesh, i.e., those found in the service registry, must always be referred to using their alphanumeric names. IP addresses are allowed only for services defined via the Gateway. |  |
 | `gateways` | `[]string` | The names of gateways and sidecars that should apply these routes. A single VirtualService is used for sidecars inside the mesh as well as for one or more gateways. The selection condition imposed by this field can be overridden using the source field in the match conditions of protocol-specific routes. The reserved word `mesh` is used to imply all the sidecars in the mesh. When this field is omitted, the default gateway (`mesh`) will be used, which would apply the rule to all sidecars in the mesh. If a list of gateway names is provided, the rules will apply only to the gateways. To apply the rules to both gateways and sidecars, specify `mesh` as one of the gateway names. |  |
-| `http` | [[]istio.networking.v1alpha3.HTTPRoute](../virtual_service.proto.sk#HTTPRoute) | An ordered list of route rules for HTTP traffic. HTTP routes will be applied to platform service ports named 'http-*'/'http2-*'/'grpc-*', gateway ports with protocol HTTP/HTTP2/GRPC/ TLS-terminated-HTTPS and service entry ports using HTTP/HTTP2/GRPC protocols. The first rule matching an incoming request is used. |  |
-| `tls` | [[]istio.networking.v1alpha3.TLSRoute](../virtual_service.proto.sk#TLSRoute) | An ordered list of route rule for non-terminated TLS & HTTPS traffic. Routing is typically performed using the SNI value presented by the ClientHello message. TLS routes will be applied to platform service ports named 'https-*', 'tls-*', unterminated gateway ports using HTTPS/TLS protocols (i.e. with "passthrough" TLS mode) and service entry ports using HTTPS/TLS protocols. The first rule matching an incoming request is used. NOTE: Traffic 'https-*' or 'tls-*' ports without associated virtual service will be treated as opaque TCP traffic. |  |
-| `tcp` | [[]istio.networking.v1alpha3.TCPRoute](../virtual_service.proto.sk#TCPRoute) | An ordered list of route rules for opaque TCP traffic. TCP routes will be applied to any port that is not a HTTP or TLS port. The first rule matching an incoming request is used. |  |
-| `configScope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#ConfigScope) | The visibility setting associated with this VirtualService. Set to PRIVATE if this virtual service should not be exported, i.e. restrict the applicability of this virtual service to only workloads in the same namespace as the virtual service. |  |
+| `http` | [[]istio.networking.v1alpha3.HTTPRoute](../virtual_service.proto.sk#httproute) | An ordered list of route rules for HTTP traffic. HTTP routes will be applied to platform service ports named 'http-*'/'http2-*'/'grpc-*', gateway ports with protocol HTTP/HTTP2/GRPC/ TLS-terminated-HTTPS and service entry ports using HTTP/HTTP2/GRPC protocols. The first rule matching an incoming request is used. |  |
+| `tls` | [[]istio.networking.v1alpha3.TLSRoute](../virtual_service.proto.sk#tlsroute) | An ordered list of route rule for non-terminated TLS & HTTPS traffic. Routing is typically performed using the SNI value presented by the ClientHello message. TLS routes will be applied to platform service ports named 'https-*', 'tls-*', unterminated gateway ports using HTTPS/TLS protocols (i.e. with "passthrough" TLS mode) and service entry ports using HTTPS/TLS protocols. The first rule matching an incoming request is used. NOTE: Traffic 'https-*' or 'tls-*' ports without associated virtual service will be treated as opaque TCP traffic. |  |
+| `tcp` | [[]istio.networking.v1alpha3.TCPRoute](../virtual_service.proto.sk#tcproute) | An ordered list of route rules for opaque TCP traffic. TCP routes will be applied to any port that is not a HTTP or TLS port. The first rule matching an incoming request is used. |  |
+| `configScope` | [.istio.networking.v1alpha3.ConfigScope](../sidecar.proto.sk#configscope) | The visibility setting associated with this VirtualService. Set to PRIVATE if this virtual service should not be exported, i.e. restrict the applicability of this virtual service to only workloads in the same namespace as the virtual service. |  |
 
 
 
 
 ---
-### <a name="Destination">Destination</a>
+### Destination
 
  
 Destination indicates the network addressable service to which the
@@ -292,13 +292,13 @@ spec:
 | ----- | ---- | ----------- |----------- | 
 | `host` | `string` | REQUIRED. The name of a service from the service registry. Service names are looked up from the platform's service registry (e.g., Kubernetes services, Consul services, etc.) and from the hosts declared by [ServiceEntry](#ServiceEntry). Traffic forwarded to destinations that are not found in either of the two, will be dropped. *Note for Kubernetes users*: When short names are used (e.g. "reviews" instead of "reviews.default.svc.cluster.local"), Istio will interpret the short name based on the namespace of the rule, not the service. A rule in the "default" namespace containing a host "reviews will be interpreted as "reviews.default.svc.cluster.local", irrespective of the actual namespace associated with the reviews service. _To avoid potential misconfigurations, it is recommended to always use fully qualified domain names over short names._ |  |
 | `subset` | `string` | The name of a subset within the service. Applicable only to services within the mesh. The subset must be defined in a corresponding DestinationRule. |  |
-| `port` | [.istio.networking.v1alpha3.PortSelector](../virtual_service.proto.sk#PortSelector) | Specifies the port on the host that is being addressed. If a service exposes only a single port it is not required to explicitly select the port. |  |
+| `port` | [.istio.networking.v1alpha3.PortSelector](../virtual_service.proto.sk#portselector) | Specifies the port on the host that is being addressed. If a service exposes only a single port it is not required to explicitly select the port. |  |
 
 
 
 
 ---
-### <a name="HTTPRoute">HTTPRoute</a>
+### HTTPRoute
 
  
 Describes match conditions and actions for routing HTTP/1.1, HTTP2, and
@@ -326,28 +326,28 @@ gRPC traffic. See VirtualService for usage examples.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `match` | [[]istio.networking.v1alpha3.HTTPMatchRequest](../virtual_service.proto.sk#HTTPMatchRequest) | Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
-| `route` | [[]istio.networking.v1alpha3.HTTPRouteDestination](../virtual_service.proto.sk#HTTPRouteDestination) | A http rule can either redirect or forward (default) traffic. The forwarding target can be one of several versions of a service (see glossary in beginning of document). Weights associated with the service version determine the proportion of traffic it receives. |  |
-| `redirect` | [.istio.networking.v1alpha3.HTTPRedirect](../virtual_service.proto.sk#HTTPRedirect) | A http rule can either redirect or forward (default) traffic. If traffic passthrough option is specified in the rule, route/redirect will be ignored. The redirect primitive can be used to send a HTTP 301 redirect to a different URI or Authority. |  |
-| `rewrite` | [.istio.networking.v1alpha3.HTTPRewrite](../virtual_service.proto.sk#HTTPRewrite) | Rewrite HTTP URIs and Authority headers. Rewrite cannot be used with Redirect primitive. Rewrite will be performed before forwarding. |  |
+| `match` | [[]istio.networking.v1alpha3.HTTPMatchRequest](../virtual_service.proto.sk#httpmatchrequest) | Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
+| `route` | [[]istio.networking.v1alpha3.HTTPRouteDestination](../virtual_service.proto.sk#httproutedestination) | A http rule can either redirect or forward (default) traffic. The forwarding target can be one of several versions of a service (see glossary in beginning of document). Weights associated with the service version determine the proportion of traffic it receives. |  |
+| `redirect` | [.istio.networking.v1alpha3.HTTPRedirect](../virtual_service.proto.sk#httpredirect) | A http rule can either redirect or forward (default) traffic. If traffic passthrough option is specified in the rule, route/redirect will be ignored. The redirect primitive can be used to send a HTTP 301 redirect to a different URI or Authority. |  |
+| `rewrite` | [.istio.networking.v1alpha3.HTTPRewrite](../virtual_service.proto.sk#httprewrite) | Rewrite HTTP URIs and Authority headers. Rewrite cannot be used with Redirect primitive. Rewrite will be performed before forwarding. |  |
 | `websocketUpgrade` | `bool` | Deprecated. Websocket upgrades are done automatically starting from Istio 1.0. $hide_from_docs |  |
 | `timeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | Timeout for HTTP requests. |  |
-| `retries` | [.istio.networking.v1alpha3.HTTPRetry](../virtual_service.proto.sk#HTTPRetry) | Retry policy for HTTP requests. |  |
-| `fault` | [.istio.networking.v1alpha3.HTTPFaultInjection](../virtual_service.proto.sk#HTTPFaultInjection) | Fault injection policy to apply on HTTP traffic at the client side. Note that timeouts or retries will not be enabled when faults are enabled on the client side. |  |
-| `mirror` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#Destination) | Mirror HTTP traffic to a another destination in addition to forwarding the requests to the intended destination. Mirrored traffic is on a best effort basis where the sidecar/gateway will not wait for the mirrored cluster to respond before returning the response from the original destination. Statistics will be generated for the mirrored destination. |  |
-| `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../virtual_service.proto.sk#CorsPolicy) | Cross-Origin Resource Sharing policy (CORS). Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for further details about cross origin resource sharing. |  |
+| `retries` | [.istio.networking.v1alpha3.HTTPRetry](../virtual_service.proto.sk#httpretry) | Retry policy for HTTP requests. |  |
+| `fault` | [.istio.networking.v1alpha3.HTTPFaultInjection](../virtual_service.proto.sk#httpfaultinjection) | Fault injection policy to apply on HTTP traffic at the client side. Note that timeouts or retries will not be enabled when faults are enabled on the client side. |  |
+| `mirror` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#destination) | Mirror HTTP traffic to a another destination in addition to forwarding the requests to the intended destination. Mirrored traffic is on a best effort basis where the sidecar/gateway will not wait for the mirrored cluster to respond before returning the response from the original destination. Statistics will be generated for the mirrored destination. |  |
+| `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../virtual_service.proto.sk#corspolicy) | Cross-Origin Resource Sharing policy (CORS). Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for further details about cross origin resource sharing. |  |
 | `appendHeaders` | `map<string, string>` | Use of `append_headers` is deprecated. Use the `headers` field instead. |  |
 | `removeResponseHeaders` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
 | `appendResponseHeaders` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
 | `removeRequestHeaders` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
 | `appendRequestHeaders` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
-| `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#Headers) | Header manipulation rules |  |
+| `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#headers) | Header manipulation rules |  |
 
 
 
 
 ---
-### <a name="Headers">Headers</a>
+### Headers
 
  
 Header manipulation rules
@@ -360,14 +360,14 @@ Header manipulation rules
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `request` | [.istio.networking.v1alpha3.Headers.HeaderOperations](../virtual_service.proto.sk#HeaderOperations) | Header manipulation rules to apply before forwarding a request to the destination service |  |
-| `response` | [.istio.networking.v1alpha3.Headers.HeaderOperations](../virtual_service.proto.sk#HeaderOperations) | Header manipulation rules to apply before returning a response to the caller |  |
+| `request` | [.istio.networking.v1alpha3.Headers.HeaderOperations](../virtual_service.proto.sk#headeroperations) | Header manipulation rules to apply before forwarding a request to the destination service |  |
+| `response` | [.istio.networking.v1alpha3.Headers.HeaderOperations](../virtual_service.proto.sk#headeroperations) | Header manipulation rules to apply before returning a response to the caller |  |
 
 
 
 
 ---
-### <a name="HeaderOperations">HeaderOperations</a>
+### HeaderOperations
 
  
 HeaderOperations Describes the header manipulations to apply
@@ -389,7 +389,7 @@ HeaderOperations Describes the header manipulations to apply
 
 
 ---
-### <a name="TLSRoute">TLSRoute</a>
+### TLSRoute
 
  
 Describes match conditions and actions for routing unterminated TLS
@@ -432,14 +432,14 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `match` | [[]istio.networking.v1alpha3.TLSMatchAttributes](../virtual_service.proto.sk#TLSMatchAttributes) | REQUIRED. Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
-| `route` | [[]istio.networking.v1alpha3.RouteDestination](../virtual_service.proto.sk#RouteDestination) | The destination to which the connection should be forwarded to. |  |
+| `match` | [[]istio.networking.v1alpha3.TLSMatchAttributes](../virtual_service.proto.sk#tlsmatchattributes) | REQUIRED. Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
+| `route` | [[]istio.networking.v1alpha3.RouteDestination](../virtual_service.proto.sk#routedestination) | The destination to which the connection should be forwarded to. |  |
 
 
 
 
 ---
-### <a name="TCPRoute">TCPRoute</a>
+### TCPRoute
 
  
 Describes match conditions and actions for routing TCP traffic. The
@@ -472,14 +472,14 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `match` | [[]istio.networking.v1alpha3.L4MatchAttributes](../virtual_service.proto.sk#L4MatchAttributes) | Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
-| `route` | [[]istio.networking.v1alpha3.RouteDestination](../virtual_service.proto.sk#RouteDestination) | The destination to which the connection should be forwarded to. |  |
+| `match` | [[]istio.networking.v1alpha3.L4MatchAttributes](../virtual_service.proto.sk#l4matchattributes) | Match conditions to be satisfied for the rule to be activated. All conditions inside a single match block have AND semantics, while the list of match blocks have OR semantics. The rule is matched if any one of the match blocks succeed. |  |
+| `route` | [[]istio.networking.v1alpha3.RouteDestination](../virtual_service.proto.sk#routedestination) | The destination to which the connection should be forwarded to. |  |
 
 
 
 
 ---
-### <a name="HTTPMatchRequest">HTTPMatchRequest</a>
+### HTTPMatchRequest
 
  
 HttpMatchRequest specifies a set of criterion to be met in order for the
@@ -524,10 +524,10 @@ HTTPMatchRequest CANNOT be empty.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `uri` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#StringMatch) | URI to match values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
-| `scheme` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#StringMatch) | URI Scheme values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
-| `method` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#StringMatch) | HTTP Method values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
-| `authority` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#StringMatch) | HTTP Authority values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
+| `uri` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#stringmatch) | URI to match values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
+| `scheme` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#stringmatch) | URI Scheme values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
+| `method` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#stringmatch) | HTTP Method values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
+| `authority` | [.istio.networking.v1alpha3.StringMatch](../virtual_service.proto.sk#stringmatch) | HTTP Authority values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match |  |
 | `headers` | `map<string, .istio.networking.v1alpha3.StringMatch>` | The header keys must be lowercase and use hyphen as the separator, e.g. _x-request-id_. Header values are case-sensitive and formatted as follows: - `exact: "value"` for exact string match - `prefix: "value"` for prefix-based match - `regex: "value"` for ECMAscript style regex-based match **Note:** The keys `uri`, `scheme`, `method`, and `authority` will be ignored. |  |
 | `port` | `int` | Specifies the ports on the host that is being addressed. Many services only expose a single port or label ports with the protocols they support, in these cases it is not required to explicitly select the port. |  |
 | `sourceLabels` | `map<string, string>` | One or more labels that constrain the applicability of a rule to workloads with the given labels. If the VirtualService has a list of gateways specified at the top, it should include the reserved gateway `mesh` in order for this field to be applicable. |  |
@@ -537,7 +537,7 @@ HTTPMatchRequest CANNOT be empty.
 
 
 ---
-### <a name="HTTPRouteDestination">HTTPRouteDestination</a>
+### HTTPRouteDestination
 
  
 Each routing rule is associated with one or more service versions (see
@@ -620,19 +620,19 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `destination` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#Destination) | REQUIRED. Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to. |  |
+| `destination` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#destination) | REQUIRED. Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to. |  |
 | `weight` | `int` | REQUIRED. The proportion of traffic to be forwarded to the service version. (0-100). Sum of weights across destinations SHOULD BE == 100. If there is only one destination in a rule, the weight value is assumed to be 100. |  |
 | `removeResponseHeaders` | `[]string` | Use of `remove_response_header` is deprecated. Use the `headers` field instead. |  |
 | `appendResponseHeaders` | `map<string, string>` | Use of `append_response_headers` is deprecated. Use the `headers` field instead. |  |
 | `removeRequestHeaders` | `[]string` | Use of `remove_request_headers` is deprecated. Use the `headers` field instead. |  |
 | `appendRequestHeaders` | `map<string, string>` | Use of `append_request_headers` is deprecated. Use the `headers` field instead. |  |
-| `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#Headers) | Header manipulation rules |  |
+| `headers` | [.istio.networking.v1alpha3.Headers](../virtual_service.proto.sk#headers) | Header manipulation rules |  |
 
 
 
 
 ---
-### <a name="RouteDestination">RouteDestination</a>
+### RouteDestination
 
  
 L4 routing rule weighted destination.
@@ -645,14 +645,14 @@ L4 routing rule weighted destination.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `destination` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#Destination) | REQUIRED. Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to. |  |
+| `destination` | [.istio.networking.v1alpha3.Destination](../virtual_service.proto.sk#destination) | REQUIRED. Destination uniquely identifies the instances of a service to which the request/connection should be forwarded to. |  |
 | `weight` | `int` | REQUIRED. The proportion of traffic to be forwarded to the service version. If there is only one destination in a rule, all traffic will be routed to it irrespective of the weight. |  |
 
 
 
 
 ---
-### <a name="L4MatchAttributes">L4MatchAttributes</a>
+### L4MatchAttributes
 
  
 L4 connection match attributes. Note that L4 connection matching support
@@ -679,7 +679,7 @@ is incomplete.
 
 
 ---
-### <a name="TLSMatchAttributes">TLSMatchAttributes</a>
+### TLSMatchAttributes
 
  
 TLS connection match attributes.
@@ -707,7 +707,7 @@ TLS connection match attributes.
 
 
 ---
-### <a name="HTTPRedirect">HTTPRedirect</a>
+### HTTPRedirect
 
  
 HTTPRedirect can be used to send a 301 redirect response to the caller,
@@ -749,7 +749,7 @@ spec:
 
 
 ---
-### <a name="HTTPRewrite">HTTPRewrite</a>
+### HTTPRewrite
 
  
 HTTPRewrite can be used to rewrite specific parts of a HTTP request
@@ -793,7 +793,7 @@ spec:
 
 
 ---
-### <a name="StringMatch">StringMatch</a>
+### StringMatch
 
  
 Describes how to match a given string in HTTP headers. Match is
@@ -816,7 +816,7 @@ case-sensitive.
 
 
 ---
-### <a name="HTTPRetry">HTTPRetry</a>
+### HTTPRetry
 
  
 Describes the retry policy to use when a HTTP request fails. For
@@ -859,7 +859,7 @@ spec:
 
 
 ---
-### <a name="CorsPolicy">CorsPolicy</a>
+### CorsPolicy
 
  
 Describes the Cross-Origin Resource Sharing (CORS) policy, for a given
@@ -919,7 +919,7 @@ spec:
 
 
 ---
-### <a name="HTTPFaultInjection">HTTPFaultInjection</a>
+### HTTPFaultInjection
 
  
 HTTPFaultInjection can be used to specify one or more faults to inject
@@ -939,14 +939,14 @@ both are specified simultaneously.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `delay` | [.istio.networking.v1alpha3.HTTPFaultInjection.Delay](../virtual_service.proto.sk#Delay) | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |  |
-| `abort` | [.istio.networking.v1alpha3.HTTPFaultInjection.Abort](../virtual_service.proto.sk#Abort) | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |  |
+| `delay` | [.istio.networking.v1alpha3.HTTPFaultInjection.Delay](../virtual_service.proto.sk#delay) | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |  |
+| `abort` | [.istio.networking.v1alpha3.HTTPFaultInjection.Abort](../virtual_service.proto.sk#abort) | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |  |
 
 
 
 
 ---
-### <a name="Delay">Delay</a>
+### Delay
 
  
 Delay specification is used to inject latency into the request
@@ -994,13 +994,13 @@ percentage of requests. If left unspecified, all request will be delayed.
 | `percent` | `int` | Percentage of requests on which the delay will be injected (0-100). Use of integer `percent` value is deprecated. Use the double `percentage` field instead. |  |
 | `fixedDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
 | `exponentialDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | $hide_from_docs |  |
-| `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#Percent) | Percentage of requests on which the delay will be injected. |  |
+| `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#percent) | Percentage of requests on which the delay will be injected. |  |
 
 
 
 
 ---
-### <a name="Abort">Abort</a>
+### Abort
 
  
 Abort specification is used to prematurely abort a request with a
@@ -1047,13 +1047,13 @@ aborted.
 | `httpStatus` | `int` | REQUIRED. HTTP status code to use to abort the Http request. |  |
 | `grpcStatus` | `string` | $hide_from_docs |  |
 | `http2Error` | `string` | $hide_from_docs |  |
-| `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#Percent) | Percentage of requests to be aborted with the error code provided. |  |
+| `percentage` | [.istio.networking.v1alpha3.Percent](../virtual_service.proto.sk#percent) | Percentage of requests to be aborted with the error code provided. |  |
 
 
 
 
 ---
-### <a name="PortSelector">PortSelector</a>
+### PortSelector
 
  
 PortSelector specifies the number of a port to be used for
@@ -1074,7 +1074,7 @@ matching or selection for final routing.
 
 
 ---
-### <a name="Percent">Percent</a>
+### Percent
 
  
 Percent specifies a percentage in the range of [0.0, 100.0].

@@ -1,4 +1,4 @@
-package set_test
+package upstream_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestSet(t *testing.T) {
+func TestEdit(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Set Suite")
+	RunSpecs(t, "Edit Suite")
 }

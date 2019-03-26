@@ -25,7 +25,7 @@ func NewIstioConfigSyncer(translator istio.Translator, reconcilers Reconcilers, 
 func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v: %v", snap.Hash(), snap.Stringer())
+	logger.Infof("begin sync %v", snap.Hash())
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("full snapshot: %v", snap)
 

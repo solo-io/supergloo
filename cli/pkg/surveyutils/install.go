@@ -1,6 +1,8 @@
 package surveyutils
 
 import (
+	"context"
+
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/supergloo/cli/pkg/constants"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -49,6 +51,12 @@ func SurveyGlooInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which version of Gloo to install? ", &in.GlooIngressInstall.GlooVersion, constants.SupportedGlooVersions); err != nil {
 		return err
 	}
+
+	refs, err := SurveyMeshes(context.Background())
+	if err != nil {
+		return err
+	}
+	in.GlooIngressInstall.Meshes = refs
 
 	if err := cliutil.GetBoolInput("update an existing install? ", &in.Update); err != nil {
 		return err

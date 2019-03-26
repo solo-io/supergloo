@@ -283,7 +283,7 @@ func createTlsSecret(name, certDir string) error {
 
 func setRootCert(targetMesh, tlsSecret string) error {
 	return utils.Supergloo(
-		fmt.Sprintf("set rootcert --target-mesh supergloo-system.%v --tls-secret supergloo-system.%v", targetMesh, tlsSecret))
+		fmt.Sprintf("set mesh rootcert --target-mesh supergloo-system.%v --tls-secret supergloo-system.%v", targetMesh, tlsSecret))
 }
 
 func getCerts(appLabel, namespace string) (string, string, error) {

@@ -4,11 +4,11 @@ weight: 5
 ---
 ## supergloo set
 
-subcommands set a configuration parameter for one or more meshes
+update an existing resource with one or more config options
 
 ### Synopsis
 
-subcommands set a configuration parameter for one or more meshes
+update an existing resource with one or more config options
 
 ### Options
 
@@ -19,6 +19,6 @@ subcommands set a configuration parameter for one or more meshes
 ### SEE ALSO
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
-* [supergloo set rootcert](../supergloo_set_rootcert)	 - set the root certificate used to provision client and server certificates for a mesh
-* [supergloo set stats](../supergloo_set_stats)	 - configure one or more prometheus instances to scrape a mesh for metrics.
+* [supergloo set mesh](../supergloo_set_mesh)	 - subcommands set a configuration parameters for one or more meshes
+* [supergloo set upstream](../supergloo_set_upstream)	 - edit a Gloo upstream for use within SuperGloo.
 
