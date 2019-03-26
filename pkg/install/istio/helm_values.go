@@ -75,4 +75,6 @@ servicegraph:
 tracing:
   enabled: {{ .Observability.EnableJaeger }}
 
+security:
+  enabled: true
 `

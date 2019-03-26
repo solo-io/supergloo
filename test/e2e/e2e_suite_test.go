@@ -3,8 +3,10 @@ package e2e_test
 import (
 	"context"
 	"log"
+	"strings"
 	"testing"
 
+	kubectlout "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
 	"github.com/avast/retry-go"
@@ -34,11 +36,14 @@ var (
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
-	lock, err = clusterlock.NewTestClusterLocker(kube, "default")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
-		log.Printf("waiting to acquire lock with err: %v", err)
-	}))).NotTo(HaveOccurred())
+
+	if !isUsingMinikube() {
+		lock, err = clusterlock.NewTestClusterLocker(kube, "default")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
+			log.Printf("waiting to acquire lock with err: %v", err)
+		}))).NotTo(HaveOccurred())
+	}
 
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
 	kube = clients.MustKubeClient()
@@ -80,7 +85,9 @@ var _ = AfterSuite(func() {
 	if cancel != nil {
 		defer cancel()
 	}
-	defer lock.ReleaseLock()
+	if !isUsingMinikube() {
+		defer lock.ReleaseLock()
+	}
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
@@ -91,3 +98,11 @@ var _ = AfterSuite(func() {
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	log.Printf("done!")
 })
+
+func isUsingMinikube() bool {
+	out, err := kubectlout.KubectlOut("config", "current-context")
+	if err != nil {
+		return false
+	}
+	return strings.Contains(out, "minikube")
+}
