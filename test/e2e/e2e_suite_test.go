@@ -29,6 +29,7 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
+	promNamespace                       = "prometheus-test"
 )
 
 var _ = BeforeSuite(func() {
@@ -89,5 +90,9 @@ var _ = AfterSuite(func() {
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
+	err := teardownPrometheus(promNamespace)
+	if err != nil {
+		log.Printf("failed to teardown prometheus: %v", err)
+	}
 	log.Printf("done!")
 })

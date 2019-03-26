@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	sgutils2 "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
@@ -23,7 +26,7 @@ import (
 
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/test/setup"
-	utils3 "github.com/solo-io/supergloo/test/e2e/utils"
+	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
 	v1 "k8s.io/api/core/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -34,7 +37,188 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// remove supergloo pods
+var _ = Describe("E2e", func() {
+	It("installs upgrades and uninstalls istio", func() {
+		// install discovery via cli
+		// start discovery
+		err := utils.Supergloo("init --release latest")
+		Expect(err).NotTo(HaveOccurred())
+
+		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
+		deleteSuperglooPods()
+
+		meshName := "my-istio"
+
+		testInstallIstio(meshName)
+
+		testConfigurePrometheus(meshName, promNamespace)
+
+		testCertRotation(meshName)
+
+		testMtls()
+
+		testTrafficShifting()
+
+		testUninstallIstio(meshName)
+	})
+})
+
+func testInstallIstio(meshName string) {
+	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
+	Expect(err).NotTo(HaveOccurred())
+
+	installClient := clients.MustInstallClient()
+
+	Eventually(func() (core.Status_State, error) {
+		i, err := installClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
+		if err != nil {
+			return 0, err
+		}
+		Expect(i.Status.Reason).To(Equal(""))
+		return i.Status.State, nil
+	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+
+	Eventually(func() error {
+		_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+		return err
+	}).ShouldNot(HaveOccurred())
+
+	meshClient := clients.MustMeshClient()
+	Eventually(func() error {
+		_, err := meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
+		return err
+	}).ShouldNot(HaveOccurred())
+
+	err = waitUntilPodsRunning(time.Minute*2, "istio-system",
+		"grafana",
+		"istio-citadel",
+		"istio-galley",
+		"istio-pilot",
+		"istio-policy",
+		"istio-sidecar-injector",
+		"istio-telemetry",
+		"istio-tracing",
+		"prometheus",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = sgutils.DeployTestRunner(basicNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
+	// the sidecar injector might take some time to become available
+	Eventually(func() error {
+		return sgutils.DeployTestRunner(namespaceWithInject)
+	}, time.Minute*1).ShouldNot(HaveOccurred())
+
+	err = sgutils.DeployBookInfo(namespaceWithInject)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = waitUntilPodsRunning(time.Minute*4, basicNamespace,
+		"testrunner",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = waitUntilPodsRunning(time.Minute*2, namespaceWithInject,
+		"testrunner",
+		"reviews-v1",
+		"reviews-v2",
+		"reviews-v3",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+}
+
+func testCertRotation(meshName string) {
+	// create tls cert here to use as custom root cert
+	certsDir, err := ioutil.TempDir("", "supergloocerts")
+	Expect(err).NotTo(HaveOccurred())
+	defer os.RemoveAll(certsDir)
+	err = writeCerts(certsDir)
+	Expect(err).NotTo(HaveOccurred())
+	secretName := "rootcert"
+	err = createTlsSecret(secretName, certsDir)
+	Expect(err).NotTo(HaveOccurred())
+
+	// update our mesh with the root cert
+	err = setRootCert(meshName, secretName)
+	Expect(err).NotTo(HaveOccurred())
+
+	var certChain string
+	Eventually(func() (string, error) {
+		rootCa, cc, err := getCerts("details", namespaceWithInject)
+		if err != nil {
+			return "", err
+		}
+		certChain = cc
+		return rootCa, nil
+	}, time.Minute*3).Should(Equal(inputs.RootCert))
+
+	Expect(certChain).To(HaveSuffix(inputs.CertChain))
+
+}
+
+func testMtls() {
+	// with mtls in strict mode, curl will fail from non-injected testrunner
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/details/1",
+	}, "Recv failure: Connection reset by peer", time.Minute*3)
+
+	// with mtls enabled, curl will succeed from injected testrunner
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/details/1",
+	}, `"author":"William Shakespeare"`, time.Minute*3)
+}
+
+func testTrafficShifting() {
+	//apply a traffic shifting rule, divert traffic to reviews
+	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
+	Expect(err).NotTo(HaveOccurred())
+
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/reviews/1",
+	}, `"reviewer": "Reviewer1",`, time.Minute*5)
+
+}
+
+func testUninstallIstio(meshName string) {
+	// test uninstall works
+	err := utils.Supergloo("uninstall --name=" + meshName)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = nil
+	Eventually(func() error {
+		_, err = kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+		return err
+	}, time.Minute*2).Should(HaveOccurred())
+	Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
+
+	err = nil
+	Eventually(func() bool {
+		_, err = clients.MustMeshClient().Read("supergloo-system", meshName, skclients.ReadOpts{})
+		if err == nil {
+			return false
+		}
+		return skerrors.IsNotExist(err)
+	}, time.Minute*2).Should(BeTrue())
+}
+
+func testConfigurePrometheus(meshName, promNamespace string) {
+	err := deployPrometheus(promNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = utils.Supergloo(fmt.Sprintf("set stats "+
+		"--target-mesh supergloo-system.%v "+
+		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
+	Expect(err).NotTo(HaveOccurred())
+}
+
+// remove supergloo controller pod(s)
 func deleteSuperglooPods() {
 	// wait until pod is gone
 	Eventually(func() error {
@@ -60,152 +244,6 @@ func deleteSuperglooPods() {
 	}, time.Second*60).ShouldNot(HaveOccurred())
 
 }
-
-var _ = Describe("E2e", func() {
-	It("installs upgrades and uninstalls istio", func() {
-		// install discovery via cli
-		// start discovery
-		err := utils.Supergloo("init --release latest")
-		Expect(err).NotTo(HaveOccurred())
-
-		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
-		deleteSuperglooPods()
-
-		meshName := "my-istio"
-
-		err = utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
-		Expect(err).NotTo(HaveOccurred())
-
-		installClient := clients.MustInstallClient()
-
-		Eventually(func() (core.Status_State, error) {
-			i, err := installClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
-			if err != nil {
-				return 0, err
-			}
-			Expect(i.Status.Reason).To(Equal(""))
-			return i.Status.State, nil
-		}, time.Minute*2).Should(Equal(core.Status_Accepted))
-
-		Eventually(func() error {
-			_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
-			return err
-		}).ShouldNot(HaveOccurred())
-
-		meshClient := clients.MustMeshClient()
-		Eventually(func() error {
-			_, err := meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
-			return err
-		}).ShouldNot(HaveOccurred())
-
-		err = waitUntilPodsRunning(time.Minute*2, "istio-system",
-			"grafana",
-			"istio-citadel",
-			"istio-galley",
-			"istio-pilot",
-			"istio-policy",
-			"istio-sidecar-injector",
-			"istio-telemetry",
-			"istio-tracing",
-			"prometheus",
-		)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = utils3.DeployTestRunner(basicNamespace)
-		Expect(err).NotTo(HaveOccurred())
-
-		// the sidecar injector might take some time to become available
-		Eventually(func() error {
-			return utils3.DeployTestRunner(namespaceWithInject)
-		}, time.Minute*1).ShouldNot(HaveOccurred())
-
-		err = utils3.DeployBookInfo(namespaceWithInject)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = waitUntilPodsRunning(time.Minute*4, basicNamespace,
-			"testrunner",
-		)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = waitUntilPodsRunning(time.Minute*2, namespaceWithInject,
-			"testrunner",
-			"reviews-v1",
-			"reviews-v2",
-			"reviews-v3",
-		)
-		Expect(err).NotTo(HaveOccurred())
-
-		// create tls cert here to use as custom root cert
-		certsDir, err := ioutil.TempDir("", "supergloocerts")
-		Expect(err).NotTo(HaveOccurred())
-		defer os.RemoveAll(certsDir)
-		err = writeCerts(certsDir)
-		Expect(err).NotTo(HaveOccurred())
-		secretName := "rootcert"
-		err = createTlsSecret(secretName, certsDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		// update our mesh with the root cert
-		err = setRootCert(meshName, secretName)
-		Expect(err).NotTo(HaveOccurred())
-
-		var certChain string
-		Eventually(func() (string, error) {
-			rootCa, cc, err := getCerts("details", namespaceWithInject)
-			if err != nil {
-				return "", err
-			}
-			certChain = cc
-			return rootCa, nil
-		}, time.Minute*3).Should(Equal(inputs.RootCert))
-
-		Expect(certChain).To(HaveSuffix(inputs.CertChain))
-
-		// with mtls in strict mode, curl will fail from non-injected testrunner
-		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
-			Service: "details." + namespaceWithInject + ".svc.cluster.local",
-			Port:    9080,
-			Path:    "/details/1",
-		}, "Recv failure: Connection reset by peer", time.Minute*3)
-
-		// with mtls enabled, curl will succeed from injected testrunner
-		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
-			Service: "details." + namespaceWithInject + ".svc.cluster.local",
-			Port:    9080,
-			Path:    "/details/1",
-		}, `"author":"William Shakespeare"`, time.Minute*3)
-
-		//apply a traffic shifting rule, divert traffic to reviews
-		err = utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
-		Expect(err).NotTo(HaveOccurred())
-
-		utils3.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
-			Service: "details." + namespaceWithInject + ".svc.cluster.local",
-			Port:    9080,
-			Path:    "/reviews/1",
-		}, `"reviewer": "Reviewer1",`, time.Minute*5)
-
-		// test uninstall works
-		err = utils.Supergloo("uninstall --name=my-istio")
-		Expect(err).NotTo(HaveOccurred())
-
-		err = nil
-		Eventually(func() error {
-			_, err = kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
-			return err
-		}, time.Minute*2).Should(HaveOccurred())
-		Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
-
-		err = nil
-		Eventually(func() bool {
-			_, err = meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
-			if err == nil {
-				return false
-			}
-			return skerrors.IsNotExist(err)
-		}, time.Minute*2).Should(BeTrue())
-	})
-})
 
 func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes ...string) error {
 	pods := clients.MustKubeClient().CoreV1().Pods(namespace)
@@ -283,7 +321,7 @@ func createTlsSecret(name, certDir string) error {
 
 func setRootCert(targetMesh, tlsSecret string) error {
 	return utils.Supergloo(
-		fmt.Sprintf("set mesh rootcert --target-mesh supergloo-system.%v --tls-secret supergloo-system.%v", targetMesh, tlsSecret))
+		fmt.Sprintf("set rootcert --target-mesh supergloo-system.%v --tls-secret supergloo-system.%v", targetMesh, tlsSecret))
 }
 
 func getCerts(appLabel, namespace string) (string, string, error) {
@@ -307,4 +345,60 @@ func getCerts(appLabel, namespace string) (string, string, error) {
 		return "", "", err
 	}
 	return rootCert, certChain, nil
+}
+
+func deployPrometheus(namespace string) error {
+	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: namespace},
+	})
+	if err != nil {
+		return err
+	}
+
+	manifest, err := helmTemplate("--name=prometheus",
+		"--namespace="+namespace,
+		"--set", "rbac.create=true",
+		"files/prometheus-8.9.0.tgz")
+	if err != nil {
+		return err
+	}
+
+	err = sgutils.KubectlApply(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
+}
+
+func teardownPrometheus(namespace string) error {
+	err := kube.CoreV1().Namespaces().Delete(namespace, nil)
+	if err != nil {
+		return err
+	}
+
+	manifest, err := helmTemplate("--name=prometheus",
+		"--namespace="+namespace,
+		"--set", "rbac.create=true",
+		"files/prometheus-8.9.0.tgz")
+	if err != nil {
+		return err
+	}
+
+	err = sgutils.KubectlDelete(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	sgutils2.WaitForNamespaceTeardown(namespace)
+
+	return nil
+}
+
+func helmTemplate(args ...string) (string, error) {
+	out, err := exec.Command("helm", append([]string{"template"}, args...)...).CombinedOutput()
+	if err != nil {
+		return "", errors.Wrapf(err, "helm template failed: %v", string(out))
+	}
+	return string(out), nil
 }
