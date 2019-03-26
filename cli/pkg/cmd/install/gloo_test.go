@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
@@ -14,7 +16,7 @@ import (
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
-var _ = Describe("Install", func() {
+var _ = Describe("gloo install", func() {
 
 	BeforeEach(func() {
 		clients.UseMemoryClients()
@@ -26,7 +28,7 @@ var _ = Describe("Install", func() {
 		return in
 	}
 
-	Describe("non-interactive", func() {
+	FContext("non-interactive", func() {
 		It("should create the expected install ", func() {
 			installAndVerifyGloo := func(
 				name,
@@ -52,13 +54,13 @@ var _ = Describe("Install", func() {
 			}
 
 			installAndVerifyGloo("a1a", "ns", "latest")
-			installAndVerifyGloo("b1a", "ns", "v0.10.5")
+			installAndVerifyGloo("b1a", "ns", "v0.13.0")
 			installAndVerifyGloo("c1a", "ns", "badver")
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", true)
+			inst := inputs.GlooIstall(name, namespace, "any", "v0.13.0", true)
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -77,7 +79,7 @@ var _ = Describe("Install", func() {
 		It("should error enable on existing enabled install", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.IstioInstall(name, namespace, "any", "1.0.5", false)
+			inst := inputs.GlooIstall(name, namespace, "any", "v0.13.0", false)
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -88,6 +90,34 @@ var _ = Describe("Install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("already installed and enabled"))
+		})
+
+		It("can install with a mesh reference", func() {
+			name := "input"
+			namespace := "ns"
+			err := utils.Supergloo("install gloo " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", namespace) +
+				fmt.Sprintf("--namespace=%v ", namespace) +
+				fmt.Sprintf("--meshes one.two"))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("is not a valid mesh"))
+			err = utils.Supergloo("install gloo " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", namespace) +
+				fmt.Sprintf("--namespace=%v ", namespace) +
+				fmt.Sprintf("--meshes one"))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("is of the incorrect format"))
+			meshClient := clients.MustMeshClient()
+			_, err = meshClient.Write(&v1.Mesh{Metadata: core.Metadata{Name: "one", Namespace: "two"}}, skclients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+			err = utils.Supergloo("install gloo " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", namespace) +
+				fmt.Sprintf("--namespace=%v ", namespace) +
+				fmt.Sprintf("--meshes two.one"))
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })

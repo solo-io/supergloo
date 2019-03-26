@@ -73,6 +73,6 @@ func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
 	set.StringSliceVarP(&in.MeshIngress.Meshes,
 		"meshes",
 		"m",
-		[]string{"supergloo-system.istio"},
+		[]string{},
 		"Which meshes to target (comma seperated list) <namespace>.<name>")
 }
