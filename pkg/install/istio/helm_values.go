@@ -20,6 +20,9 @@ global:
     # destination rules or service annotations.
     enabled: {{ .Mtls.Enabled }}
 
+security:
+  enabled: true
+
 #
 # ingress configuration
 #
@@ -74,7 +77,4 @@ servicegraph:
 
 tracing:
   enabled: {{ .Observability.EnableJaeger }}
-
-security:
-  enabled: true
 `
