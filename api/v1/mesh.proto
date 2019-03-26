@@ -30,7 +30,7 @@ message Mesh {
 
     oneof mesh_type {
         IstioMesh istio = 1;
-        AwsAppMesh aws_app_mesh = 3;
+        AwsAppMesh aws_app_mesh = 4;
     }
 
     // mtls config specifies configuration options for enabling mutual

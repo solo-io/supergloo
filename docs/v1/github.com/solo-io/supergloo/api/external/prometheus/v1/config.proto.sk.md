@@ -27,7 +27,7 @@ weight: 5
 
  
 PrometheusConfig represents a Kubernetes ConfigMap containing a
-Prometheus config yaml stored with the key `prometheus.yaml`.
+Prometheus config yaml stored with the key `prometheus.yml`.
 SuperGloo uses conversion functions to convert from a configmap
 to a typed Prometheus config.
 
