@@ -90,7 +90,7 @@ func validateGlooInstall(opts *options.Options) error {
 		for _, v := range opts.Install.MeshIngress.Meshes {
 			splitVal := strings.Split(v, ".")
 			if len(splitVal) != 2 {
-				return errors.Errorf("mesh %s is of the incorrect format <namespace>.<name>")
+				return errors.Errorf("mesh %s is of the incorrect format <namespace>.<name>", v)
 			}
 			resources = append(resources, &core.ResourceRef{
 				Name:      splitVal[1],

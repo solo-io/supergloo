@@ -23,6 +23,7 @@ type Options struct {
 	CreateAwsSecret   CreateAwsSecret
 	EditUpstream      EditUpstream
 	SetRootCert       SetRootCert
+	SetStats          SetStats
 }
 
 type Init struct {
@@ -102,4 +103,9 @@ type SetRootCert struct {
 
 type EditUpstream struct {
 	MtlsMeshMetadata core.ResourceRef
+}
+
+type SetStats struct {
+	TargetMesh           ResourceRefValue
+	PrometheusConfigMaps ResourceRefsValue
 }

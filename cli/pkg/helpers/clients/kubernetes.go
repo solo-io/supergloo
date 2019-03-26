@@ -3,6 +3,9 @@ package clients
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -213,6 +216,35 @@ func TlsSecretClient() (v1.TlsSecretClient, error) {
 		return nil, err
 	}
 	return tlsSecretClient, nil
+}
+
+func MustPrometheusConfigClient() prometheusv1.PrometheusConfigClient {
+	client, err := PrometheusConfigClient()
+	if err != nil {
+		log.Fatalf("failed to create prometheusConfig client: %v", err)
+	}
+	return client
+}
+
+func PrometheusConfigClient() (prometheusv1.PrometheusConfigClient, error) {
+	if memoryResourceClient != nil {
+		return prometheusv1.NewPrometheusConfigClient(memoryResourceClient)
+	}
+
+	kubeClient := MustKubeClient()
+	kubeCache, err := cache.NewKubeCoreCache(context.TODO(), kubeClient)
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating kube cache")
+	}
+
+	prometheusConfigClient, err := prometheusv1.NewPrometheusConfigClient(prometheus.ResourceClientFactory(kubeClient, kubeCache))
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating prometheusConfig client")
+	}
+	if err := prometheusConfigClient.Register(); err != nil {
+		return nil, err
+	}
+	return prometheusConfigClient, nil
 }
 
 func MustUpstreamClient() gloov1.UpstreamClient {
