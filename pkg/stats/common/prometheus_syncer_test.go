@@ -3,6 +3,12 @@ package common_test
 import (
 	"context"
 
+	kubev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
@@ -22,16 +28,19 @@ import (
 
 var _ = Describe("PrometheusSyncer", func() {
 	var client v1.PrometheusConfigClient
+	var kube kubernetes.Interface
 	BeforeEach(func() {
 		var err error
 		client, err = v1.NewPrometheusConfigClient(&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 		Expect(err).NotTo(HaveOccurred())
+		kube = fake.NewSimpleClientset()
 	})
 	Context("when mesh is chosen", func() {
-		It("adds scrape configs to that mesh's target prometheus", func() {
+		It("adds scrape configs to that mesh's target prometheus and bounces any pods using those configs", func() {
 			s := NewPrometheusSyncer(
 				"my-prometheus-syncer",
 				client,
+				kube,
 				func(mesh *sgv1.Mesh) bool {
 					return true
 				},
@@ -46,6 +55,13 @@ var _ = Describe("PrometheusSyncer", func() {
 			_, err := client.Write(cfg1, clients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			_, err = client.Write(cfg2, clients.WriteOpts{})
+			Expect(err).NotTo(HaveOccurred())
+
+			pod1, err := kube.CoreV1().Pods(cfg1.Metadata.Namespace).Create(prometheusPod("pod1", cfg1.Metadata.Ref()))
+			Expect(err).NotTo(HaveOccurred())
+			pod2, err := kube.CoreV1().Pods(cfg2.Metadata.Namespace).Create(prometheusPod("pod2", cfg2.Metadata.Ref()))
+			Expect(err).NotTo(HaveOccurred())
+			pod3, err := kube.CoreV1().Pods("ns").Create(prometheusPod("pod3", core.ResourceRef{"non-updated", "ns"}))
 			Expect(err).NotTo(HaveOccurred())
 
 			ns1, ns2, ns3 := "ns1", "ns2", "ns3"
@@ -92,6 +108,17 @@ var _ = Describe("PrometheusSyncer", func() {
 					Expect(ScContainsJob(promCfg2.ScrapeConfigs, prefix+sc.JobName)).To(BeFalse())
 				}
 			}
+
+			_, err = kube.CoreV1().Pods(pod1.Namespace).Get(pod1.Name, metav1.GetOptions{})
+			Expect(err).To(HaveOccurred())
+			Expect(errors.IsNotFound(err)).To(BeTrue())
+
+			_, err = kube.CoreV1().Pods(pod2.Namespace).Get(pod2.Name, metav1.GetOptions{})
+			Expect(err).To(HaveOccurred())
+			Expect(errors.IsNotFound(err)).To(BeTrue())
+
+			_, err = kube.CoreV1().Pods(pod3.Namespace).Get(pod3.Name, metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })
@@ -103,4 +130,26 @@ func ScContainsJob(scs []*config.ScrapeConfig, jobName string) bool {
 		}
 	}
 	return false
+}
+
+func prometheusPod(podName string, cfgRef core.ResourceRef) *kubev1.Pod {
+	return &kubev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: cfgRef.Namespace,
+			Name:      podName,
+		},
+		Spec: kubev1.PodSpec{
+			Volumes: []kubev1.Volume{
+				{
+					VolumeSource: kubev1.VolumeSource{
+						ConfigMap: &kubev1.ConfigMapVolumeSource{
+							LocalObjectReference: kubev1.LocalObjectReference{
+								Name: cfgRef.Name,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
