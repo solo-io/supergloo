@@ -152,6 +152,9 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 
 		// copy metadata for writing
 		promConfigMap.Metadata = originalCfg.Metadata
+		// copy alerts and rules configuration - we currently ignore
+		promConfigMap.Alerts = originalCfg.Alerts
+		promConfigMap.Rules = originalCfg.Rules
 
 		contextutils.LoggerFrom(ctx).Infof("prometheus %v syncing %v prometheus scrape configs", cfgRef.Key(), added)
 

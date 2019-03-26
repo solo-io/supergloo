@@ -73,6 +73,8 @@ func PrometheusConfigClientTest(namespace string, client PrometheusConfigClient,
 	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
 	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
 	Expect(r1.Prometheus).To(Equal(input.Prometheus))
+	Expect(r1.Alerts).To(Equal(input.Alerts))
+	Expect(r1.Rules).To(Equal(input.Rules))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
