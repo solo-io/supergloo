@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Added a `MutationAdmissionWebhook` server that injects to-be-created-pods with AWS App Mesh sidecar proxies.
+    issueLink: https://github.com/solo-io/supergloo/issues/299
+
