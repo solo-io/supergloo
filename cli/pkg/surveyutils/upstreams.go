@@ -30,3 +30,19 @@ func SurveyUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
 		selected = append(selected, us)
 	}
 }
+
+func SurveyEditUpstream(ctx context.Context) (core.ResourceRef, error) {
+	meshClient := clients.MustMeshClient()
+	meshes, err := meshClient.List("", skclients.ListOpts{Ctx: ctx})
+	if err != nil {
+		return core.ResourceRef{}, err
+	}
+
+	mesh, err := surveyResources("meshes", "select a mesh", "", meshes.AsResources())
+	if err != nil {
+		return core.ResourceRef{}, err
+	}
+
+	return mesh, nil
+
+}

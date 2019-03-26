@@ -21,6 +21,7 @@ type Options struct {
 	CreateRoutingRule CreateRoutingRule
 	CreateTlsSecret   CreateTlsSecret
 	CreateAwsSecret   CreateAwsSecret
+	EditUpstream      EditUpstream
 	SetRootCert       SetRootCert
 }
 
