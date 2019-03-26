@@ -2,6 +2,7 @@ package istio
 
 import (
 	"github.com/solo-io/supergloo/pkg/stats/common"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/go-utils/errors"
@@ -12,8 +13,8 @@ import (
 
 // registration-level syncer
 
-func NewIstioPrometheusSyncer(client prometheusv1.PrometheusConfigClient) v1.RegistrationSyncer {
-	return common.NewPrometheusSyncer("istio", client, chooseMesh, getScrapeConfigs)
+func NewIstioPrometheusSyncer(client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface) v1.RegistrationSyncer {
+	return common.NewPrometheusSyncer("istio", client, kube, chooseMesh, getScrapeConfigs)
 }
 
 func chooseMesh(mesh *v1.Mesh) bool {
