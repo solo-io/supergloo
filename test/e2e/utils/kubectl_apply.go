@@ -26,6 +26,10 @@ func KubectlApply(namespace, yamlStr string) error {
 	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "apply", "-n", namespace, "-f", "-")
 }
 
+func KubectlDelete(namespace, yamlStr string) error {
+	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "delete", "-n", namespace, "-f", "-")
+}
+
 func Kubectl(stdin io.Reader, args ...string) error {
 	kubectl := exec.Command("kubectl", args...)
 	if stdin != nil {

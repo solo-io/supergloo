@@ -26,4 +26,10 @@ message PrometheusConfig {
     // json_name must refer to the data key in the configmap we expect
     string prometheus = 1 [json_name="prometheus.yml"];
 
+    // inline string containing the alerts config
+    string alerts = 2;
+
+    // inline string containing the alerts config
+    string rules = 3;
+
 }
