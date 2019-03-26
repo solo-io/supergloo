@@ -3,6 +3,10 @@ package prometheus
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/protoutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/configmap"
@@ -65,4 +69,13 @@ func (c *prometheusConfigmapConverter) ToKubeConfigMap(ctx context.Context, rc *
 		ObjectMeta: meta,
 		Data:       configMapData,
 	}, nil
+}
+
+func ResourceClientFactory(kube kubernetes.Interface, kubeCache cache.KubeCoreCache) factory.ResourceClientFactory {
+	return &factory.KubeConfigMapClientFactory{
+		Clientset:        kube,
+		Cache:            kubeCache,
+		PlainConfigmaps:  true,
+		CustomtConverter: NewPrometheusConfigmapConverter(),
+	}
 }

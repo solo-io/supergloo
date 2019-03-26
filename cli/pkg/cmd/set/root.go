@@ -13,5 +13,6 @@ func Cmd(opts *options.Options) *cobra.Command {
 	}
 
 	cmd.AddCommand(setRootCertCmd(opts))
+	cmd.AddCommand(setStatsCmd(opts))
 	return cmd
 }
