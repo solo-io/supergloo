@@ -4,11 +4,11 @@ weight: 5
 ---
 ## supergloo set
 
-set configuration parameters
+update an existing resource with one or more config options
 
 ### Synopsis
 
-set configuration parameters
+update an existing resource with one or more config options
 
 ### Options
 

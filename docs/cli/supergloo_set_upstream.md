@@ -22,6 +22,6 @@ edit a Gloo upstream for use within SuperGloo.
 
 ### SEE ALSO
 
-* [supergloo set](../supergloo_set)	 - set configuration parameters
+* [supergloo set](../supergloo_set)	 - update an existing resource with one or more config options
 * [supergloo set upstream mtls](../supergloo_set_upstream_mtls)	 - edit mtls settings for a Gloo upstream
 

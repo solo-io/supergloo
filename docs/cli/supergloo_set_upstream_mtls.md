@@ -17,9 +17,8 @@ supergloo set upstream mtls [flags]
 ### Options
 
 ```
-  -h, --help                    help for mtls
-      --mesh-name string        name for the mesh
-      --mesh-namespace string   namespace for the mesh (default "supergloo-system")
+  -h, --help                           help for mtls
+  -t, --target-mesh ResourceRefValue   target mesh (default { })
 ```
 
 ### Options inherited from parent commands
