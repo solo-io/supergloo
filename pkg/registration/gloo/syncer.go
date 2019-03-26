@@ -27,7 +27,7 @@ func NewGlooRegistrationSyncer(reporter reporter.Reporter, cs *clientset.Clients
 func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("gloo-registration-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v: %v", snap.Hash(), snap.Stringer())
+	logger.Infof("begin sync %v", snap.Hash())
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("full snapshot: %v", snap)
 
