@@ -4,21 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/prometheus/prometheus/config"
+	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/go-utils/hashutils"
+	"github.com/solo-io/go-utils/stringutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/go-utils/hashutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
-
-	"github.com/prometheus/prometheus/config"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-
-	"github.com/solo-io/go-utils/contextutils"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 // registration-level syncer
@@ -172,16 +170,28 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 
 func (s *prometheusSyncer) bouncePodsWithConfigs(ctx context.Context, updatedConfigs []core.ResourceRef) error {
 	contextutils.LoggerFrom(ctx).Infof("bouncing prometheus pods with updated configmaps")
+
+	// collect pods across namespaces in which we've updated configmaps
+	var namespacesWithUpdatedPrometheusConfigs []string
+	for _, cfg := range updatedConfigs {
+		namespacesWithUpdatedPrometheusConfigs = append(namespacesWithUpdatedPrometheusConfigs, cfg.Namespace)
+	}
+	namespacesWithUpdatedPrometheusConfigs = stringutils.Unique(namespacesWithUpdatedPrometheusConfigs)
+
 	// list all pods, bounce any that mount any of the updated configmaps
-	allPods, err := s.kube.CoreV1().Pods("").List(metav1.ListOptions{})
-	if err != nil {
-		return errors.Wrapf(err, "listing all pods")
+	var allPods []kubev1.Pod
+	for _, ns := range namespacesWithUpdatedPrometheusConfigs {
+		pods, err := s.kube.CoreV1().Pods(ns).List(metav1.ListOptions{})
+		if err != nil {
+			return errors.Wrapf(err, "listing pods in ns %v", ns)
+		}
+		allPods = append(allPods, pods.Items...)
 	}
 
 	// for each pod, if it contains a volume mount with one of the updated configmaps, bounce it
 	var podsToBounce []kubev1.Pod
 findPodsToBounce:
-	for _, pod := range allPods.Items {
+	for _, pod := range allPods {
 		for _, vol := range pod.Spec.Volumes {
 			if vol.ConfigMap == nil {
 				continue
