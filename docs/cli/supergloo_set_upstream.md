@@ -1,8 +1,8 @@
 ---
-title: "supergloo edit upstream"
+title: "supergloo set upstream"
 weight: 5
 ---
-## supergloo edit upstream
+## supergloo set upstream
 
 edit a Gloo upstream for use within SuperGloo.
 
@@ -22,6 +22,6 @@ edit a Gloo upstream for use within SuperGloo.
 
 ### SEE ALSO
 
-* [supergloo edit](../supergloo_edit)	 - commands for editing resources used by SuperGloo
-* [supergloo edit upstream tls](../supergloo_edit_upstream_tls)	 - edit tls settings for a Gloo upstream
+* [supergloo set](../supergloo_set)	 - set configuration parameters
+* [supergloo set upstream tls](../supergloo_set_upstream_tls)	 - edit tls settings for a Gloo upstream
 

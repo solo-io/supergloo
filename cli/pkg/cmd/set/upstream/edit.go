@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
