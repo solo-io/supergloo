@@ -90,7 +90,7 @@ steps:
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
       - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
       # we DISABLE interactive tests as they appear to fail our current ci environment

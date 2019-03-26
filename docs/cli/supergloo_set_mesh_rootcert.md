@@ -1,8 +1,8 @@
 ---
-title: "supergloo set rootcert"
+title: "supergloo set mesh rootcert"
 weight: 5
 ---
-## supergloo set rootcert
+## supergloo set mesh rootcert
 
 set the root certificate used to provision client and server certificates for a mesh
 
@@ -13,7 +13,7 @@ as a TLS secret created with `supergloo create secret tls`.
 used to provision client and server certificates for a mesh
 
 ```
-supergloo set rootcert [flags]
+supergloo set mesh rootcert [flags]
 ```
 
 ### Options
@@ -26,5 +26,5 @@ supergloo set rootcert [flags]
 
 ### SEE ALSO
 
-* [supergloo set](../supergloo_set)	 - subcommands set a configuration parameter for one or more meshes
+* [supergloo set mesh](../supergloo_set_mesh)	 - subcommands set a configuration parameters for one or more meshes
 

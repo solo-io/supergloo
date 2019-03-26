@@ -1,4 +1,4 @@
-package set_test
+package mesh_test
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ var _ = Describe("RootCert", func() {
 	})
 
 	It("updates the root cert ref on an existing mesh", func() {
-		err := utils.Supergloo(fmt.Sprintf("set rootcert --target-mesh "+
+		err := utils.Supergloo(fmt.Sprintf("set mesh rootcert --target-mesh "+
 			"%v.%v --tls-secret %v.%v", mesh.Namespace, mesh.Name, secret.Namespace, secret.Name))
 		Expect(err).NotTo(HaveOccurred())
 		meshWithCert, err := clients.MustMeshClient().Read(mesh.Namespace, mesh.Name, skclients.ReadOpts{})
@@ -40,7 +40,7 @@ var _ = Describe("RootCert", func() {
 	})
 
 	It("sets the root cert to nil on an existing mesh if no tls secret provided", func() {
-		err := utils.Supergloo(fmt.Sprintf("set rootcert --target-mesh "+
+		err := utils.Supergloo(fmt.Sprintf("set mesh rootcert --target-mesh "+
 			"%v.%v", mesh.Namespace, mesh.Name))
 		Expect(err).NotTo(HaveOccurred())
 		meshWithCert, err := clients.MustMeshClient().Read(mesh.Namespace, mesh.Name, skclients.ReadOpts{})

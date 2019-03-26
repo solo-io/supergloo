@@ -1,4 +1,4 @@
-package set
+package mesh
 
 import (
 	"github.com/solo-io/go-utils/contextutils"

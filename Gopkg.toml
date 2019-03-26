@@ -50,11 +50,11 @@
 
 [[override]]
   name = "github.com/solo-io/go-utils"
-  version = "0.5.0"
+  version = "0.5.1"
 
 [[constraint]]
   name = "github.com/solo-io/gloo"
-  version = "0.11.2"
+  version = "0.13.0"
 
 [[constraint]]
   name = "github.com/prometheus/prometheus"

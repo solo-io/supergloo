@@ -8,14 +8,14 @@ weight: 5
 
 
 ### Package: `supergloo.solo.io` 
-##### Types:
+#### Types:
 
 
-- [Install](#Install) **Top-Level Resource**
-- [IstioInstall](#IstioInstall)
-- [MeshInstall](#MeshInstall)
-- [MeshIngressInstall](#MeshIngressInstall)
-- [GlooInstall](#GlooInstall)
+- [Install](#install) **Top-Level Resource**
+- [IstioInstall](#istioinstall)
+- [MeshInstall](#meshinstall)
+- [MeshIngressInstall](#meshingressinstall)
+- [GlooInstall](#glooinstall)
   
 
 
@@ -27,7 +27,7 @@ weight: 5
 
 
 ---
-### <a name="Install">Install</a>
+### Install
 
  
 Installs represent a desired installation of a supported mesh.
@@ -50,11 +50,11 @@ modify the corresponding mesh.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
+| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `disabled` | `bool` | disables this install setting this to true will cause supergloo to not to install this mesh, or uninstall an active install |  |
-| `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#MeshInstall) | service mesh |  |
-| `ingress` | [.supergloo.solo.io.MeshIngressInstall](../install.proto.sk#MeshIngressInstall) | ingress |  |
+| `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#meshinstall) | service mesh |  |
+| `ingress` | [.supergloo.solo.io.MeshIngressInstall](../install.proto.sk#meshingressinstall) | ingress |  |
 | `installationNamespace` | `string` | which namespace to install to |  |
 | `installedManifest` | `string` | gzipped inline string containing the applied manifest read-only, set by the server after successful installation. TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb) |  |
 
@@ -62,7 +62,7 @@ modify the corresponding mesh.
 
 
 ---
-### <a name="IstioInstall">IstioInstall</a>
+### IstioInstall
 
  
 Installation options for Istio
@@ -83,7 +83,7 @@ Installation options for Istio
 | `istioVersion` | `string` | which version of the istio helm chart to install ignored if using custom helm chart |  |
 | `enableAutoInject` | `bool` | enable auto injection of pods |  |
 | `enableMtls` | `bool` | enable mutual tls between pods |  |
-| `customRootCert` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | optional. set to use a custom root ca to issue certificates for mtls ignored if mtls is disabled |  |
+| `customRootCert` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | optional. set to use a custom root ca to issue certificates for mtls ignored if mtls is disabled |  |
 | `installGrafana` | `bool` | install grafana with istio |  |
 | `installPrometheus` | `bool` | install prometheus with istio |  |
 | `installJaeger` | `bool` | install jaeger with istio |  |
@@ -92,7 +92,7 @@ Installation options for Istio
 
 
 ---
-### <a name="MeshInstall">MeshInstall</a>
+### MeshInstall
 
  
 Generic container for mesh installs handled by supergloo
@@ -107,14 +107,14 @@ Holds all configuration shared between different mesh types
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `istioMesh` | [.supergloo.solo.io.IstioInstall](../install.proto.sk#IstioInstall) | install istio |  |
-| `installedMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
+| `istioMesh` | [.supergloo.solo.io.IstioInstall](../install.proto.sk#istioinstall) | install istio |  |
+| `installedMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 
 
 ---
-### <a name="MeshIngressInstall">MeshIngressInstall</a>
+### MeshIngressInstall
 
  
 Generic container for ingress installs handled by supergloo
@@ -129,14 +129,14 @@ Holds all configuration shared between different ingress types
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `gloo` | [.supergloo.solo.io.GlooInstall](../install.proto.sk#GlooInstall) | gloo |  |
-| `installedIngress` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Ingress crd that was created from this install read-only, set by the server after successful installation. |  |
+| `gloo` | [.supergloo.solo.io.GlooInstall](../install.proto.sk#glooinstall) | gloo |  |
+| `installedIngress` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Ingress crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 
 
 ---
-### <a name="GlooInstall">GlooInstall</a>
+### GlooInstall
 
  
 Installation options for Gloo Ingress
@@ -150,7 +150,7 @@ Installation options for Gloo Ingress
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `glooVersion` | `string` | which version of the gloo helm chart to install ignored if using custom helm chart |  |
-| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | reference to the Mesh(s) that this ingress is acting upon |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Mesh(s) that this ingress is acting upon |  |
 
 
 

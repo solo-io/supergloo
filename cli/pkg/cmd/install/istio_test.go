@@ -28,7 +28,7 @@ var _ = Describe("Install", func() {
 		return in
 	}
 
-	Describe("non-interactive", func() {
+	Context("non-interactive", func() {
 		It("should create the expected install ", func() {
 			installAndVerifyIstio := func(
 				name,
