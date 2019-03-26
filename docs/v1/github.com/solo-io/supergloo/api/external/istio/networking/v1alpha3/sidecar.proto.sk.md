@@ -24,13 +24,13 @@ Copyright 2018 Istio Authors
 
 
  
-##### Types:
+#### Types:
 
 
-- [Sidecar](#Sidecar)
-- [IstioIngressListener](#IstioIngressListener)
-- [IstioEgressListener](#IstioEgressListener)
-- [WorkloadSelector](#WorkloadSelector)
+- [Sidecar](#sidecar)
+- [IstioIngressListener](#istioingresslistener)
+- [IstioEgressListener](#istioegresslistener)
+- [WorkloadSelector](#workloadselector)
   
 
  
@@ -38,8 +38,8 @@ Copyright 2018 Istio Authors
 ##### Enums:
 
 
-	- [ConfigScope](#ConfigScope)
-	- [CaptureMode](#CaptureMode)
+	- [ConfigScope](#configscope)
+	- [CaptureMode](#capturemode)
 
 
 
@@ -50,7 +50,7 @@ Copyright 2018 Istio Authors
 
 
 ---
-### <a name="Sidecar">Sidecar</a>
+### Sidecar
 
  
 `Sidecar` describes the configuration of the sidecar proxy that mediates
@@ -107,15 +107,15 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `workloadSelector` | [.istio.networking.v1alpha3.WorkloadSelector](../sidecar.proto.sk#WorkloadSelector) | $hide_from_docs Criteria used to select the specific set of pods/VMs on which this sidecar configuration should be applied. If omitted, the sidecar configuration will be applied to all workloads in the current config namespace. |  |
-| `ingress` | [[]istio.networking.v1alpha3.IstioIngressListener](../sidecar.proto.sk#IstioIngressListener) | $hide_from_docs Ingress specifies the configuration of the sidecar for processing inbound traffic to the attached workload. If omitted, Istio will autoconfigure the sidecar based on the information about the workload obtained from the orchestration platform (e.g., exposed ports, services, etc.). |  |
-| `egress` | [[]istio.networking.v1alpha3.IstioEgressListener](../sidecar.proto.sk#IstioEgressListener) | Egress specifies the configuration of the sidecar for processing outbound traffic from the attached workload to other services in the mesh. If omitted, Istio will autoconfigure the sidecar to be able to reach every service in the mesh that is visible to this namespace. |  |
+| `workloadSelector` | [.istio.networking.v1alpha3.WorkloadSelector](../sidecar.proto.sk#workloadselector) | $hide_from_docs Criteria used to select the specific set of pods/VMs on which this sidecar configuration should be applied. If omitted, the sidecar configuration will be applied to all workloads in the current config namespace. |  |
+| `ingress` | [[]istio.networking.v1alpha3.IstioIngressListener](../sidecar.proto.sk#istioingresslistener) | $hide_from_docs Ingress specifies the configuration of the sidecar for processing inbound traffic to the attached workload. If omitted, Istio will autoconfigure the sidecar based on the information about the workload obtained from the orchestration platform (e.g., exposed ports, services, etc.). |  |
+| `egress` | [[]istio.networking.v1alpha3.IstioEgressListener](../sidecar.proto.sk#istioegresslistener) | Egress specifies the configuration of the sidecar for processing outbound traffic from the attached workload to other services in the mesh. If omitted, Istio will autoconfigure the sidecar to be able to reach every service in the mesh that is visible to this namespace. |  |
 
 
 
 
 ---
-### <a name="IstioIngressListener">IstioIngressListener</a>
+### IstioIngressListener
 
  
 $hide_from_docs
@@ -132,16 +132,16 @@ traffic listener on the sidecar proxy attached to a workload.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#Port) | REQUIRED. The port associated with the listener. If using unix domain socket, use 0 as the port number, with a valid protocol. |  |
+| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#port) | REQUIRED. The port associated with the listener. If using unix domain socket, use 0 as the port number, with a valid protocol. |  |
 | `bind` | `string` | The ip or the unix domain socket to which the listener should be bound to. Format: x.x.x.x or unix:///path/to/uds or unix://@foobar (Linux abstract namespace). If omitted, Istio will autoconfigure the defaults based on imported services and the workload to which this configuration is applied to. |  |
-| `captureMode` | [.istio.networking.v1alpha3.CaptureMode](../sidecar.proto.sk#CaptureMode) | When the bind address is an IP, the captureMode option dictates how traffic to the listener is expected to be captured (or not). |  |
+| `captureMode` | [.istio.networking.v1alpha3.CaptureMode](../sidecar.proto.sk#capturemode) | When the bind address is an IP, the captureMode option dictates how traffic to the listener is expected to be captured (or not). |  |
 | `defaultEndpoint` | `string` | The loopback IP endpoint or unix domain socket to which traffic should be forwarded to by default. This configuration can be used to redirect traffic arriving at the bind point on the sidecar to a port or unix domain socket where the application workload is listening for connections. Format should be 127.0.0.1:PORT or unix:///path/to/socket |  |
 
 
 
 
 ---
-### <a name="IstioEgressListener">IstioEgressListener</a>
+### IstioEgressListener
 
  
 IstioEgressListener specifies the properties of an outbound traffic
@@ -157,16 +157,16 @@ listener on the sidecar proxy attached to a workload.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#Port) | $hide_from_docs The port associated with the listener. If using unix domain socket, use 0 as the port number, with a valid protocol. The port if specified, will be used as the default destination port associated with the imported hosts. If the port is omitted, Istio will infer the listener ports based on the imported hosts. Note that when multiple egress listeners are specified, where one or more listeners have specific ports while others have no port, the hosts exposed on a listener port will be based on the listener with the most specific port. |  |
+| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#port) | $hide_from_docs The port associated with the listener. If using unix domain socket, use 0 as the port number, with a valid protocol. The port if specified, will be used as the default destination port associated with the imported hosts. If the port is omitted, Istio will infer the listener ports based on the imported hosts. Note that when multiple egress listeners are specified, where one or more listeners have specific ports while others have no port, the hosts exposed on a listener port will be based on the listener with the most specific port. |  |
 | `bind` | `string` | $hide_from_docs The ip or the unix domain socket to which the listener should be bound to. Port MUST be specified if bind is not empty. Format: x.x.x.x or unix:///path/to/uds or unix://@foobar (Linux abstract namespace). If omitted, Istio will autoconfigure the defaults based on imported services and the workload to which this configuration is applied to. |  |
-| `captureMode` | [.istio.networking.v1alpha3.CaptureMode](../sidecar.proto.sk#CaptureMode) | When the bind address is an IP, the captureMode option dictates how traffic to the listener is expected to be captured (or not). |  |
+| `captureMode` | [.istio.networking.v1alpha3.CaptureMode](../sidecar.proto.sk#capturemode) | When the bind address is an IP, the captureMode option dictates how traffic to the listener is expected to be captured (or not). |  |
 | `hosts` | `[]string` | One or more services/virtualServices exposed by the listener in namespace/dnsName format. Publicly scoped services and VirtualServices from remote namespaces corresponding to the specified hosts will be imported. The service in a namespace can be a service in the service registry (e.g., a kubernetes or cloud foundry service) or a service specified via ServiceEntry configuration. In addition, any publicly scoped DestinationRule associated with the imported services will also be imported. Set the namespace to * to import a particular service from any available namespace (e.g., "*/foo.example.com"). Set the dnsName field to * to import all services from the specified namespace (e.g., "prod/*"). The services should be specified using FQDN format. NOTE: Only exported services and configuration artifacts from a namespace can be imported. Private services/configuration will not be imported. Refer to the scope setting associated with VirtualService, DestinationRule, ServiceEntry, etc. for details. |  |
 
 
 
 
 ---
-### <a name="WorkloadSelector">WorkloadSelector</a>
+### WorkloadSelector
 
  
 WorkloadSelector specifies the criteria used to determine if the Gateway
@@ -189,7 +189,7 @@ selected. Currently, only label based selection mechanism is supported.
 
 
   
-### <a name="ConfigScope">ConfigScope</a>
+### ConfigScope
 
 Description: ConfigScope defines the visibility of an Istio configuration artifact in
 a namespace when the namespace is imported.  By default all
@@ -202,7 +202,7 @@ imported in a Sidecar.
 | PUBLIC | Config with this scope are visible to all workloads in the mesh |
 | PRIVATE | Configs with this scope are visible to only workloads in the same namespace as the configuration resource. |
   
-### <a name="CaptureMode">CaptureMode</a>
+### CaptureMode
 
 Description: $hide_from_docs
 CaptureMode describes how traffic to a listener is expected to be

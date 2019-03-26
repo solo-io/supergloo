@@ -1,8 +1,10 @@
 package install
 
 import (
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+
 	"github.com/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -49,22 +51,13 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 	if err := validateGlooInstall(opts); err != nil {
 		return nil, err
 	}
-	istioMesh := []*core.ResourceRef{
-		{
-			Name:      "istio",
-			Namespace: "supergloo-system",
-		},
-	}
 	in := &v1.Install{
 		Metadata:              opts.Metadata,
 		InstallationNamespace: opts.Install.InstallationNamespace.Gloo,
 		InstallType: &v1.Install_Ingress{
 			Ingress: &v1.MeshIngressInstall{
 				IngressInstallType: &v1.MeshIngressInstall_Gloo{
-					Gloo: &v1.GlooInstall{
-						GlooVersion: opts.Install.GlooIngressInstall.GlooVersion,
-						Meshes:      istioMesh,
-					},
+					Gloo: &opts.Install.GlooIngressInstall,
 				},
 			},
 		},
@@ -89,6 +82,19 @@ func validateGlooInstall(opts *options.Options) error {
 			return errors.Wrapf(err, "%v is not a supported gloo version", opts.Install.GlooIngressInstall.GlooVersion)
 		} else {
 			opts.Install.GlooIngressInstall.GlooVersion = version
+		}
+	}
+
+	if len(opts.Install.MeshIngress.Meshes) > 0 && !opts.Interactive {
+		meshClient := clients.MustMeshClient()
+		meshes, err := meshClient.List("", skclients.ListOpts{})
+		if err != nil {
+			return err
+		}
+		for _, v := range opts.Install.MeshIngress.Meshes {
+			if _, err := meshes.Find(v.Namespace, v.Name); err != nil {
+				return errors.Wrapf(err, "mesh resource %s.%s is not a valid mesh", v.Namespace, v.Name)
+			}
 		}
 	}
 

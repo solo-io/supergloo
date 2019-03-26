@@ -40,6 +40,29 @@ type DeploymentVolumeInfo struct {
 	VolumeMount corev1.VolumeMount
 }
 
+func NewDeploymentVolumeInfo(resource *core.ResourceRef, tlsSecretName string) *DeploymentVolumeInfo {
+	certVolumeName := certVolumeName(resource)
+	volume := corev1.Volume{
+		Name: certVolumeName,
+		VolumeSource: corev1.VolumeSource{
+			Secret: &corev1.SecretVolumeSource{
+				Optional:    &optional,
+				DefaultMode: &defaultMode,
+				SecretName:  tlsSecretName,
+			},
+		},
+	}
+	volumeMount := corev1.VolumeMount{
+		Name:      certVolumeName,
+		ReadOnly:  true,
+		MountPath: certVolumePathName(resource),
+	}
+	return &DeploymentVolumeInfo{
+		VolumeMount: volumeMount,
+		Volume:      volume,
+	}
+}
+
 func (list DeploymentVolumeInfoList) containsVolume(volume corev1.Volume) bool {
 	for _, v := range list {
 		if v.Volume.Name == volume.Name {
@@ -100,42 +123,29 @@ func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshLis
 		if err != nil {
 			return nil, err
 		}
-		var tlsSecretName string
+		var deploymentVolumeInfo *DeploymentVolumeInfo
 		switch mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
-			tlsSecretName = "istio.defaut"
+			if mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled {
+				deploymentVolumeInfo = NewDeploymentVolumeInfo(resource, "istio.default")
+			}
 		default:
 			return nil, errors.Errorf("unsupported mesh type found for mesh ingress "+
 				"target mesh, %s.%s", resource.Namespace, resource.Name)
 		}
-		certVolumeName := certVolumeName(resource)
-		volume := corev1.Volume{
-			Name: certVolumeName,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					Optional:    &optional,
-					DefaultMode: &defaultMode,
-					SecretName:  tlsSecretName,
-				},
-			},
+
+		if deploymentVolumeInfo != nil {
+			result[i] = *deploymentVolumeInfo
 		}
-		volumeMount := corev1.VolumeMount{
-			Name:      certVolumeName,
-			ReadOnly:  true,
-			MountPath: certVolumePathName(resource),
-		}
-		result[i] = DeploymentVolumeInfo{
-			VolumeMount: volumeMount,
-			Volume:      volume,
-		}
+
 	}
 	return result, nil
 }
 
 func certVolumeName(mesh *core.ResourceRef) string {
-	return strings.Join([]string{mesh.Namespace, mesh.Name, certSuffix}, "_")
+	return strings.Join([]string{mesh.Name, certSuffix}, "-")
 }
 
 func certVolumePathName(mesh *core.ResourceRef) string {
-	return filepath.Join("/etc", "certs", "namespace", "name")
+	return filepath.Join("/etc", "certs", mesh.Namespace, mesh.Name)
 }

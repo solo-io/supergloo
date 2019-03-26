@@ -21,6 +21,7 @@ type Options struct {
 	CreateRoutingRule CreateRoutingRule
 	CreateTlsSecret   CreateTlsSecret
 	CreateAwsSecret   CreateAwsSecret
+	EditUpstream      EditUpstream
 	SetRootCert       SetRootCert
 	SetStats          SetStats
 }
@@ -43,6 +44,11 @@ type Install struct {
 	InstallationNamespace InstallationNamespace
 	IstioInstall          v1.IstioInstall
 	GlooIngressInstall    v1.GlooInstall
+	MeshIngress           MeshIngressInstall
+}
+
+type MeshIngressInstall struct {
+	Meshes ResourceRefsValue
 }
 
 type Uninstall struct {
@@ -93,6 +99,10 @@ type CreateAwsSecret struct {
 type SetRootCert struct {
 	TargetMesh ResourceRefValue
 	TlsSecret  ResourceRefValue
+}
+
+type EditUpstream struct {
+	MtlsMesh ResourceRefValue
 }
 
 type SetStats struct {

@@ -8,15 +8,14 @@ weight: 5
 
 
 ### Package: `supergloo.solo.io` 
-##### Types:
+#### Types:
 
 
-- [Mesh](#Mesh) **Top-Level Resource**
-- [IstioMesh](#IstioMesh)
-- [AwsAppMesh](#AwsAppMesh)
-- [MtlsConfig](#MtlsConfig)
-- [MonitoringConfig](#MonitoringConfig)
-- [MeshGroup](#MeshGroup) **Top-Level Resource**
+- [Mesh](#mesh) **Top-Level Resource**
+- [IstioMesh](#istiomesh)
+- [MtlsConfig](#mtlsconfig)
+- [MonitoringConfig](#monitoringconfig)
+- [MeshGroup](#meshgroup) **Top-Level Resource**
   
 
 
@@ -28,7 +27,7 @@ weight: 5
 
 
 ---
-### <a name="Mesh">Mesh</a>
+### Mesh
 
  
 Meshes represent a currently registered service mesh.
@@ -37,7 +36,6 @@ Meshes represent a currently registered service mesh.
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "istio": .supergloo.solo.io.IstioMesh
-"awsAppMesh": .supergloo.solo.io.AwsAppMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
 
@@ -45,18 +43,17 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#IstioMesh) |  |  |
-| `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#AwsAppMesh) |  |  |
-| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#MtlsConfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
-| `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#MonitoringConfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
+| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#istiomesh) |  |  |
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
+| `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
 
 
 
 
 ---
-### <a name="IstioMesh">IstioMesh</a>
+### IstioMesh
 
  
 Mesh object representing an installed Istio control plane
@@ -74,35 +71,7 @@ Mesh object representing an installed Istio control plane
 
 
 ---
-### <a name="AwsAppMesh">AwsAppMesh</a>
-
- 
-Mesh object representing AWS App Mesh
-
-```yaml
-"awsSecret": .core.solo.io.ResourceRef
-"region": string
-"enableAutoInject": bool
-"injectionSelector": .supergloo.solo.io.PodSelector
-"virtualNodeLabel": string
-"sidecarPatchConfigMap": .core.solo.io.ResourceRef
-
-```
-
-| Field | Type | Description | Default |
-| ----- | ---- | ----------- |----------- | 
-| `awsSecret` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service. |  |
-| `region` | `string` | The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in. |  |
-| `enableAutoInject` | `bool` | Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy. If set to true, supergloo will ensure that a MutatingAdmissionWebhook server with the injection logic is deployed to the cluster and that it has been registered with the Kubernetes API server via a MutatingWebhookConfiguration. This will cause the webhook to be invoked on each pod creation event. |  |
-| `injectionSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#PodSelector) | Pods matching this selector will be injected with the sidecar proxy at creation time. NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector |  |
-| `virtualNodeLabel` | `string` | If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container. |  |
-| `sidecarPatchConfigMap` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | Reference to the config map that contains the patch that will be applied to the spec of the pods matching the injection_selector. |  |
-
-
-
-
----
-### <a name="MtlsConfig">MtlsConfig</a>
+### MtlsConfig
 
  
 the encryption configuration that will be applied by the role
@@ -116,13 +85,13 @@ the encryption configuration that will be applied by the role
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `mtlsEnabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
-| `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
+| `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
 
 
 
 
 ---
-### <a name="MonitoringConfig">MonitoringConfig</a>
+### MonitoringConfig
 
  
 Contains configuration options for monitoring a mesh
@@ -136,13 +105,13 @@ an in-cluster Prometheus instance to scrape a mesh for metrics
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `prometheusConfigmaps` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | indicates to supergloo that metrics should be propagated to one or more instances of prometheus. add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each NAMESPACE.NAME of the configmap used to configure each prometheus instance. assumes that the configmap contains a key named `prometheus.yml` whose value is the prometheus yaml config as an inline string |  |
+| `prometheusConfigmaps` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | indicates to supergloo that metrics should be propagated to one or more instances of prometheus. add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each NAMESPACE.NAME of the configmap used to configure each prometheus instance. assumes that the configmap contains a key named `prometheus.yml` whose value is the prometheus yaml config as an inline string |  |
 
 
 
 
 ---
-### <a name="MeshGroup">MeshGroup</a>
+### MeshGroup
 
 
 
@@ -155,9 +124,9 @@ an in-cluster Prometheus instance to scrape a mesh for metrics
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#Status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
-| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
-| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | the meshes contained in this group |  |
+| `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | the meshes contained in this group |  |
 
 
 
