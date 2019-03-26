@@ -15,6 +15,9 @@ var _ = Describe("volume info", func() {
 			Namespace: "istio-system",
 		}
 		istioMesh = &v1.Mesh{
+			MtlsConfig: &v1.MtlsConfig{
+				MtlsEnabled: true,
+			},
 			MeshType: &v1.Mesh_Istio{
 				Istio: &v1.IstioMesh{
 					InstallationNamespace: "istio-system",

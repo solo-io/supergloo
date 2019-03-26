@@ -8,10 +8,10 @@ weight: 5
 
 
 ### Package: `core.kubernetes.io` 
-##### Types:
+#### Types:
 
 
-- [Pod](#Pod) **Top-Level Resource**
+- [Pod](#pod) **Top-Level Resource**
   
 
 
@@ -23,7 +23,7 @@ weight: 5
 
 
 ---
-### <a name="Pod">Pod</a>
+### Pod
 
  
 Intermediary proto representation of a kubernetes pod.
@@ -38,7 +38,7 @@ Used to integrate solo-kit with kubernetes API
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#Metadata) | Metadata contains the object metadata for this resource |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `spec` | `string` | the kubernetes pod spec as an inline json string |  |
 | `status` | `string` | the kubernetes pod status as an inline json string |  |
 

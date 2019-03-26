@@ -24,15 +24,15 @@ Copyright 2017 Istio Authors
 
 
  
-##### Types:
+#### Types:
 
 
-- [Gateway](#Gateway)
-- [Server](#Server)
-- [TLSOptions](#TLSOptions)
-- [TLSmode](#TLSmode)
-- [TLSProtocol](#TLSProtocol)
-- [Port](#Port)
+- [Gateway](#gateway)
+- [Server](#server)
+- [TLSOptions](#tlsoptions)
+- [TLSmode](#tlsmode)
+- [TLSProtocol](#tlsprotocol)
+- [Port](#port)
   
 
 
@@ -44,7 +44,7 @@ Copyright 2017 Istio Authors
 
 
 ---
-### <a name="Gateway">Gateway</a>
+### Gateway
 
  
 `Gateway` describes a load balancer operating at the edge of the mesh
@@ -191,14 +191,14 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `servers` | [[]istio.networking.v1alpha3.Server](../gateway.proto.sk#Server) | REQUIRED: A list of server specifications. |  |
+| `servers` | [[]istio.networking.v1alpha3.Server](../gateway.proto.sk#server) | REQUIRED: A list of server specifications. |  |
 | `selector` | `map<string, string>` | REQUIRED: One or more labels that indicate a specific set of pods/VMs on which this gateway configuration should be applied. The scope of label search is restricted to the configuration namespace in which the the resource is present. In other words, the Gateway resource must reside in the same namespace as the gateway workload. |  |
 
 
 
 
 ---
-### <a name="Server">Server</a>
+### Server
 
  
 `Server` describes the properties of the proxy on a given load balancer
@@ -274,17 +274,17 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#Port) | REQUIRED: The Port on which the proxy should listen for incoming connections. If using unix domain socket, use 0 as the port number, with a valid protocol and port name, along with the bind parameter. |  |
+| `port` | [.istio.networking.v1alpha3.Port](../gateway.proto.sk#port) | REQUIRED: The Port on which the proxy should listen for incoming connections. If using unix domain socket, use 0 as the port number, with a valid protocol and port name, along with the bind parameter. |  |
 | `bind` | `string` | $hide_from_docs The ip or the unix domain socket to which the listener should be bound to. Format: x.x.x.x or unix:///path/to/uds or unix://@foobar (Linux abstract namespace). |  |
 | `hosts` | `[]string` | REQUIRED. A list of hosts exposed by this gateway. At least one host is required. While typically applicable to HTTP services, it can also be used for TCP services using TLS with SNI. May contain a wildcard prefix for the bottom-level component of a domain name. For example `*.foo.com` matches `bar.foo.com` and `*.com` matches `bar.foo.com`, `example.com`, and so on. **Note**: A `VirtualService` that is bound to a gateway must have one or more hosts that match the hosts specified in a server. The match could be an exact match or a suffix match with the server's hosts. For example, if the server's hosts specifies "*.example.com", VirtualServices with hosts dev.example.com, prod.example.com will match. However, VirtualServices with hosts example.com or newexample.com will not match. |  |
-| `tls` | [.istio.networking.v1alpha3.Server.TLSOptions](../gateway.proto.sk#TLSOptions) | Set of TLS related options that govern the server's behavior. Use these options to control if all http requests should be redirected to https, and the TLS modes to use. |  |
+| `tls` | [.istio.networking.v1alpha3.Server.TLSOptions](../gateway.proto.sk#tlsoptions) | Set of TLS related options that govern the server's behavior. Use these options to control if all http requests should be redirected to https, and the TLS modes to use. |  |
 | `defaultEndpoint` | `string` | The loopback IP endpoint or unix domain socket to which traffic should be forwarded to by default. Format should be 127.0.0.1:PORT or unix:///path/to/socket or unix://@foobar (Linux abstract namespace). |  |
 
 
 
 
 ---
-### <a name="TLSOptions">TLSOptions</a>
+### TLSOptions
 
 
 
@@ -304,20 +304,20 @@ spec:
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `httpsRedirect` | `bool` | If set to true, the load balancer will send a 301 redirect for all http connections, asking the clients to use HTTPS. |  |
-| `mode` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSmode](../gateway.proto.sk#TLSmode) | Optional: Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |  |
+| `mode` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSmode](../gateway.proto.sk#tlsmode) | Optional: Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |  |
 | `serverCertificate` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server-side TLS certificate to use. |  |
 | `privateKey` | `string` | REQUIRED if mode is `SIMPLE` or `MUTUAL`. The path to the file holding the server's private key. |  |
 | `caCertificates` | `string` | REQUIRED if mode is `MUTUAL`. The path to a file containing certificate authority certificates to use in verifying a presented client side certificate. |  |
 | `subjectAltNames` | `[]string` | A list of alternate names to verify the subject identity in the certificate presented by the client. |  |
-| `minProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Minimum TLS protocol version. |  |
-| `maxProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#TLSProtocol) | Optional: Maximum TLS protocol version. |  |
+| `minProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#tlsprotocol) | Optional: Minimum TLS protocol version. |  |
+| `maxProtocolVersion` | [.istio.networking.v1alpha3.Server.TLSOptions.TLSProtocol](../gateway.proto.sk#tlsprotocol) | Optional: Maximum TLS protocol version. |  |
 | `cipherSuites` | `[]string` | Optional: If specified, only support the specified cipher list. Otherwise default to the default cipher list supported by Envoy. |  |
 
 
 
 
 ---
-### <a name="TLSmode">TLSmode</a>
+### TLSmode
 
  
 TLS modes enforced by the proxy
@@ -333,7 +333,7 @@ TLS modes enforced by the proxy
 
 
 ---
-### <a name="TLSProtocol">TLSProtocol</a>
+### TLSProtocol
 
  
 TLS protocol versions.
@@ -350,7 +350,7 @@ TLS protocol versions.
 
 
 ---
-### <a name="Port">Port</a>
+### Port
 
  
 Port describes the properties of a specific port of a service.

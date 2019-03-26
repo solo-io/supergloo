@@ -8,13 +8,13 @@ weight: 5
 
 
 ### Package: `supergloo.solo.io` 
-##### Types:
+#### Types:
 
 
-- [PodSelector](#PodSelector)
-- [LabelSelector](#LabelSelector)
-- [UpstreamSelector](#UpstreamSelector)
-- [NamespaceSelector](#NamespaceSelector)
+- [PodSelector](#podselector)
+- [LabelSelector](#labelselector)
+- [UpstreamSelector](#upstreamselector)
+- [NamespaceSelector](#namespaceselector)
   
 
 
@@ -26,7 +26,7 @@ weight: 5
 
 
 ---
-### <a name="PodSelector">PodSelector</a>
+### PodSelector
 
  
 specifies a method by which to select pods
@@ -41,15 +41,15 @@ with in a mesh for the application of rules and policies
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `labelSelector` | [.supergloo.solo.io.PodSelector.LabelSelector](../selector.proto.sk#LabelSelector) | select pods by their labels |  |
-| `upstreamSelector` | [.supergloo.solo.io.PodSelector.UpstreamSelector](../selector.proto.sk#UpstreamSelector) | select pods by their corresponding upstreams |  |
-| `namespaceSelector` | [.supergloo.solo.io.PodSelector.NamespaceSelector](../selector.proto.sk#NamespaceSelector) | select all pods within one or more namespaces |  |
+| `labelSelector` | [.supergloo.solo.io.PodSelector.LabelSelector](../selector.proto.sk#labelselector) | select pods by their labels |  |
+| `upstreamSelector` | [.supergloo.solo.io.PodSelector.UpstreamSelector](../selector.proto.sk#upstreamselector) | select pods by their corresponding upstreams |  |
+| `namespaceSelector` | [.supergloo.solo.io.PodSelector.NamespaceSelector](../selector.proto.sk#namespaceselector) | select all pods within one or more namespaces |  |
 
 
 
 
 ---
-### <a name="LabelSelector">LabelSelector</a>
+### LabelSelector
 
  
 select pods by their labels
@@ -67,7 +67,7 @@ select pods by their labels
 
 
 ---
-### <a name="UpstreamSelector">UpstreamSelector</a>
+### UpstreamSelector
 
  
 select pods based on their services or subsets of services.
@@ -81,13 +81,13 @@ kubernetes services and the available subsets of those services
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) | apply the selector to one or more of their upstreams by adding their refs here |  |
+| `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | apply the selector to one or more of their upstreams by adding their refs here |  |
 
 
 
 
 ---
-### <a name="NamespaceSelector">NamespaceSelector</a>
+### NamespaceSelector
 
  
 select all pods in these namespaces

@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Create CLI for connecting gloo with active meshes.
+    issueLink: https://github.com/solo-io/supergloo/issues/225
+
