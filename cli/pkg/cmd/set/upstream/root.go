@@ -16,6 +16,6 @@ func Cmd(opts *options.Options) *cobra.Command {
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
 	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 
-	cmd.AddCommand(editUpstreamTlsCmd(opts))
+	cmd.AddCommand(setUpstreamTlsCmd(opts))
 	return cmd
 }

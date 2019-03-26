@@ -20,10 +20,10 @@ const (
 	rootCa    = "root-cert.pem"
 )
 
-func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
+func setUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tls",
-		Short: "edit tls settings for a Gloo upstream",
+		Use:   "mtls",
+		Short: "edit mtls settings for a Gloo upstream",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
 				us, err := surveyutils.SurveyUpstream(opts.Ctx)
@@ -38,7 +38,7 @@ func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 				}
 				opts.EditUpstream.MtlsMeshMetadata = mesh
 			}
-			if err := validateEditUpstreamCmd(opts); err != nil {
+			if err := validateSetUpstreamCmd(opts); err != nil {
 				return err
 			}
 			return nil
@@ -86,7 +86,7 @@ func editUpstream(opts *options.Options) error {
 	return nil
 }
 
-func validateEditUpstreamCmd(opts *options.Options) error {
+func validateSetUpstreamCmd(opts *options.Options) error {
 	if opts.EditUpstream.MtlsMeshMetadata.Namespace == "" || opts.EditUpstream.MtlsMeshMetadata.Name == "" {
 		return fmt.Errorf("mesh resource name and namespace must be specified")
 	}
@@ -98,7 +98,7 @@ func validateEditUpstreamCmd(opts *options.Options) error {
 	if !opts.Interactive {
 		meshClient := clients.MustMeshClient()
 		meshRef := opts.EditUpstream.MtlsMeshMetadata
-		_, err := meshClient.Read(meshRef.Namespace, meshRef.Name, skclients.ReadOpts{})
+		_, err := meshClient.Read(meshRef.Namespace, meshRef.Name, skclients.ReadOpts{Ctx: opts.Ctx})
 		if err != nil {
 			return errors.Wrapf(err, "unable to find mesh %s.%s", meshRef.Namespace, meshRef.Name)
 		}
