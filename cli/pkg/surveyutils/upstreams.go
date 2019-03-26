@@ -30,3 +30,18 @@ func SurveyUpstreams(ctx context.Context) ([]core.ResourceRef, error) {
 		selected = append(selected, us)
 	}
 }
+
+func SurveyUpstream(ctx context.Context) (core.ResourceRef, error) {
+	// collect secrets list
+	usClient := clients.MustUpstreamClient()
+	upstreams, err := usClient.List("", skclients.ListOpts{Ctx: ctx})
+	if err != nil {
+		return core.ResourceRef{}, err
+	}
+
+	us, err := surveyResources("upstreams", "add an upstream (choose <done> to finish): ", "<done>", upstreams.AsResources())
+	if err != nil {
+		return core.ResourceRef{}, err
+	}
+	return us, nil
+}

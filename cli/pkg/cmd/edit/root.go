@@ -52,9 +52,12 @@ func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 		Short: "edit tls settings for a Gloo upstream",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
-				if err := surveyutils.SurveyMetadata("Upstream", &opts.Metadata); err != nil {
+				us, err := surveyutils.SurveyUpstream(opts.Ctx)
+				if err != nil {
 					return err
 				}
+				opts.Metadata.Namespace = us.Namespace
+				opts.Metadata.Name = us.Name
 				mesh, err := surveyutils.SurveyMesh("select the mesh which you would like to connect to", opts.Ctx)
 				if err != nil {
 					return err
@@ -70,6 +73,7 @@ func editUpstreamTlsCmd(opts *options.Options) *cobra.Command {
 			if err := editUpstream(opts); err != nil {
 				return err
 			}
+			fmt.Printf("successfully updated upstream %s.%s", opts.Metadata.Namespace, opts.Metadata.Name)
 			return nil
 		},
 	}
