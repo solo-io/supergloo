@@ -2,6 +2,8 @@ package utils
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -31,11 +33,22 @@ func KubectlDelete(namespace, yamlStr string) error {
 }
 
 func Kubectl(stdin io.Reader, args ...string) error {
+	return KubectlCtx(nil, stdin, args...)
+}
+
+func KubectlPortForward(ctx context.Context, namespace, deployment string, port int) error {
+	return KubectlCtx(ctx, nil, "port-forward", "-n", namespace, "deployment/"+deployment, fmt.Sprintf("%v", port))
+}
+
+func KubectlCtx(ctx context.Context, stdin io.Reader, args ...string) error {
 	kubectl := exec.Command("kubectl", args...)
+	if ctx != nil {
+		kubectl = exec.CommandContext(ctx, "kubectl", args...)
+	}
 	if stdin != nil {
 		kubectl.Stdin = stdin
 	}
 	kubectl.Stdout = os.Stdout
 	kubectl.Stderr = os.Stderr
-	return kubectl.Run()
+	return kubectl.Start()
 }

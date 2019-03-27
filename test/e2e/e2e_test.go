@@ -1,13 +1,19 @@
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/prometheus/client_golang/api"
+	promclient "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/common/model"
 
 	sgutils2 "github.com/solo-io/supergloo/test/testutils"
 
@@ -53,8 +59,6 @@ var _ = Describe("E2e", func() {
 
 		testConfigurePrometheus(meshName, promNamespace)
 
-		waitUntilOkFile()
-
 		testCertRotation(meshName)
 
 		testMtls()
@@ -65,6 +69,9 @@ var _ = Describe("E2e", func() {
 	})
 })
 
+/*
+tests
+*/
 func testInstallIstio(meshName string) {
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
 	Expect(err).NotTo(HaveOccurred())
@@ -214,12 +221,37 @@ func testConfigurePrometheus(meshName, promNamespace string) {
 	err := deployPrometheus(promNamespace)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = utils.Supergloo(fmt.Sprintf("set stats "+
+	err = utils.Supergloo(fmt.Sprintf("set mesh stats "+
 		"--target-mesh supergloo-system.%v "+
 		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
 	Expect(err).NotTo(HaveOccurred())
+
+	// port forward to prometheus
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	err = sgutils.KubectlPortForward(ctx, "prometheus-test", "prometheus-server", 9090)
+	Expect(err).NotTo(HaveOccurred())
+	time.Sleep(time.Second) // give port forward 1sec to start
+
+	// wait until config syncs and prometheus scrapes some stats
+	Eventually(queryIstioStats, time.Minute*2).Should(Not(BeEmpty()))
+
+	// assert the sample is valid
+	samples, err := queryIstioStats()
+	Expect(err).NotTo(HaveOccurred())
+	var foundIstioMetric bool
+	for _, sample := range samples {
+		if sample.Metric["destination_workload"] == "istio-telemetry" {
+			foundIstioMetric = true
+			break
+		}
+	}
+	Expect(foundIstioMetric).To(BeTrue())
 }
 
+/*
+util funcs
+*/
 // remove supergloo controller pod(s)
 func deleteSuperglooPods() {
 	// wait until pod is gone
@@ -272,7 +304,8 @@ func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 			for _, prefix := range podPrefixes {
 				stat, err := getPodStatus(prefix)
 				if err != nil {
-					return err
+					log.Printf("failed to get pod status: %v", err)
+					continue
 				}
 				if *stat != v1.PodRunning {
 					notYetRunning[prefix] = *stat
@@ -395,6 +428,30 @@ func teardownPrometheus(namespace string) error {
 	sgutils2.WaitForNamespaceTeardown(namespace)
 
 	return nil
+}
+
+func queryIstioStats() (model.Vector, error) {
+	// establish connection
+	c, err := api.NewClient(api.Config{
+		Address: "http://localhost:9090",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// query istio_requests_total
+	prometheusAPi := promclient.NewAPI(c)
+	resp, err := prometheusAPi.Query(context.TODO(), `istio_requests_total{}`, time.Time{})
+	if err != nil {
+		log.Printf("prom query err %v", err)
+		return nil, err
+	}
+
+	vec, ok := resp.(model.Vector)
+	if !ok {
+		return nil, errors.Errorf("resp was not type vector, %v", resp)
+	}
+	return vec, nil
 }
 
 func helmTemplate(args ...string) (string, error) {

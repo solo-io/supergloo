@@ -42,6 +42,9 @@ var _ = BeforeSuite(func() {
 	}))).NotTo(HaveOccurred())
 
 	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
+
+	teardown()
+
 	kube = clients.MustKubeClient()
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -78,10 +81,18 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	teardown()
+})
+
+func teardown() {
 	if cancel != nil {
 		defer cancel()
 	}
 	defer lock.ReleaseLock()
+	err := teardownPrometheus(promNamespace)
+	if err != nil {
+		log.Printf("failed to teardown prometheus: %v", err)
+	}
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
@@ -90,9 +101,6 @@ var _ = AfterSuite(func() {
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
-	err := teardownPrometheus(promNamespace)
-	if err != nil {
-		log.Printf("failed to teardown prometheus: %v", err)
-	}
 	log.Printf("done!")
-})
+
+}
