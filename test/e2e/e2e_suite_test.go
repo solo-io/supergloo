@@ -34,6 +34,7 @@ var (
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
+
 	lock, err = clusterlock.NewTestClusterLocker(kube, "default")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
