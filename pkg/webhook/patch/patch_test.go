@@ -1,6 +1,9 @@
-package webhook
+package patch
 
 import (
+	"encoding/json"
+
+	"github.com/solo-io/supergloo/pkg/webhook/clients"
 	"github.com/solo-io/supergloo/pkg/webhook/test"
 
 	corev1 "k8s.io/api/core/v1"
@@ -14,15 +17,17 @@ var _ = Describe("create pod sidecar patches", func() {
 	var testData *test.ResourcesForTest
 
 	BeforeEach(func() {
-		testData = test.GetTestResources(Codecs.UniversalDeserializer())
+		testData = test.GetTestResources(clients.Codecs.UniversalDeserializer())
 	})
 
 	It("correctly creates a patch adding one container and one initContainer", func() {
-
-		patchBytes, err := buildSidecarPatch(
+		patchOperations, err := BuildSidecarPatch(
 			testData.MatchingPod.AsStruct,
 			testData.OneContOneInitContPatch.AsStruct,
-			testData.AppMeshInjectEnabled)
+			testData.TemplateData)
+		Expect(err).NotTo(HaveOccurred())
+
+		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
 		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
@@ -55,7 +60,10 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("correctly creates a patch adding one initContainer", func() {
-		patchBytes, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoContainerPatch.AsStruct, testData.AppMeshInjectEnabled)
+		patchOperations, err := BuildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoContainerPatch.AsStruct, testData.TemplateData)
+		Expect(err).NotTo(HaveOccurred())
+
+		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
 		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
@@ -73,7 +81,10 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("correctly creates a patch adding one container", func() {
-		patchBytes, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoInitContainerPatch.AsStruct, testData.AppMeshInjectEnabled)
+		patchOperations, err := BuildSidecarPatch(testData.MatchingPod.AsStruct, testData.NoInitContainerPatch.AsStruct, testData.TemplateData)
+		Expect(err).NotTo(HaveOccurred())
+
+		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
 		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
@@ -89,13 +100,13 @@ var _ = Describe("create pod sidecar patches", func() {
 	})
 
 	It("fails if the config map does not contain any data", func() {
-		_, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.EmptyPatch.AsStruct, testData.AppMeshInjectEnabled)
+		_, err := BuildSidecarPatch(testData.MatchingPod.AsStruct, testData.EmptyPatch.AsStruct, testData.TemplateData)
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("expected exactly 1 entry in config map"))
 	})
 
 	It("fails if the config map contains more than one data entry", func() {
-		_, err := buildSidecarPatch(testData.MatchingPod.AsStruct, testData.TwoEntryPatch.AsStruct, testData.AppMeshInjectEnabled)
+		_, err := BuildSidecarPatch(testData.MatchingPod.AsStruct, testData.TwoEntryPatch.AsStruct, testData.TemplateData)
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("expected exactly 1 entry in config map"))
 	})

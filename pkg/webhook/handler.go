@@ -2,19 +2,74 @@ package webhook
 
 import (
 	"context"
-	"fmt"
 	"strings"
+
+	"github.com/solo-io/supergloo/pkg/webhook/clients"
 
 	"github.com/solo-io/go-utils/errors"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
+
+func handlePodCreation(w http.ResponseWriter, r *http.Request) {
+	logger := contextutils.LoggerFrom(r.Context())
+	logger.Infof("received pod creation request: %v", r)
+
+	// The AdmissionReview that was sent to the webhook
+	requestedAdmissionReview := v1beta1.AdmissionReview{}
+
+	// The AdmissionReview that will be returned
+	responseAdmissionReview := v1beta1.AdmissionReview{}
+
+	// Verify the content type is accurate
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		logger.Warnf("contentType=%s, expecting application/json", contentType)
+		return
+	}
+
+	var body []byte
+	if r.Body != nil {
+		if data, err := ioutil.ReadAll(r.Body); err != nil {
+			logger.Errorf("failed to read request body. Error: %s", err.Error())
+			return
+		} else {
+			body = data
+		}
+	}
+
+	deserializer := clients.Codecs.UniversalDeserializer()
+	if _, _, err := deserializer.Decode(body, nil, &requestedAdmissionReview); err != nil {
+		responseAdmissionReview.Response = toErrorResponse(r.Context(), fmt.Sprintf("failed to decode request body. Error: %s", err.Error()))
+	} else {
+		response, err := admit(r.Context(), requestedAdmissionReview)
+		if err != nil {
+			response = toErrorResponse(r.Context(), err.Error())
+		}
+		responseAdmissionReview.Response = response
+	}
+
+	// Return the same UID
+	responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
+
+	logger.Debugf("sending AdmissionReview response: %v", responseAdmissionReview.Response)
+	respBytes, err := json.Marshal(responseAdmissionReview)
+	if err != nil {
+		logger.Errorf("failed to marshal AdmissionReview response. Error: %s", err.Error())
+	}
+	if _, err := w.Write(respBytes); err != nil {
+		logger.Errorf("failed to write AdmissionReview response. Error: %s", err.Error())
+	}
+}
 
 func admit(ctx context.Context, ar v1beta1.AdmissionReview) (*v1beta1.AdmissionResponse, error) {
 	logger := contextutils.LoggerFrom(ctx)
@@ -25,122 +80,40 @@ func admit(ctx context.Context, ar v1beta1.AdmissionReview) (*v1beta1.AdmissionR
 	}
 
 	pod := corev1.Pod{}
-	if _, _, err := Codecs.UniversalDeserializer().Decode(ar.Request.Object.Raw, nil, &pod); err != nil {
+	if _, _, err := clients.Codecs.UniversalDeserializer().Decode(ar.Request.Object.Raw, nil, &pod); err != nil {
 		return nil, errors.Wrapf(err, "failed to deserialize raw pod resource")
 	}
 	logger.Infof("evaluating pod %s.%s for sidecar auto-injection", pod.Namespace, pod.Name)
 
-	// Retrieve all AWS App Mesh resources with EnableAutoInject == true
-	awsAppMeshes, err := getAppMeshesWithAutoInjection(ctx)
+	// Check if pod need to be injected with sidecar and, if so, generate the correspondent patch
+	patchRequired, patch, err := GetInjectionHandler().GetSidecarPatch(ctx, &pod)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to list meshes")
-	}
-
-	// Check whether the pod has to be injected with a sidecar
-	var matchingMeshes []*v1.Mesh
-	for _, mesh := range awsAppMeshes {
-		// this is safe, the mesh type has been validated in getAppMeshesWithAutoInjection
-		selector := mesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.InjectionSelector
-		if selector == nil {
-			return nil, errors.Errorf("auto-injection enabled but no selector for mesh %s.%s", mesh.Metadata.Namespace, mesh.Metadata.Name)
-		}
-		logger.Debugf("testing pod against pod selector %v in mesh %s.%s", selector, mesh.Metadata.Namespace, mesh.Metadata.Name)
-		podMatchesSelector, err := match(pod, selector)
-		if err != nil {
-			return nil, err
-		}
-
-		if podMatchesSelector {
-			logger.Infof("pod %s.%s matches selector %v in mesh %s.%s",
-				pod.Namespace, pod.Name, selector, mesh.Metadata.Namespace, mesh.Metadata.Name)
-			matchingMeshes = append(matchingMeshes, mesh)
-		}
+		return nil, errors.Wrapf(err, "failed to create sidecar patch")
 	}
 
 	reviewResponse := v1beta1.AdmissionResponse{}
 	reviewResponse.Allowed = true
 
-	switch len(matchingMeshes) {
-	case 0:
-		logger.Info("pod does not match any mesh auto-injection selector, admit it without patching")
-		break
-	case 1:
-		matchingMesh := matchingMeshes[0]
-
-		// Get the config map containing the sidecar patch to be applied to the pod
-		patchConfigMapRef := matchingMesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.SidecarPatchConfigMap
-		if patchConfigMapRef == nil {
-			return nil, errors.Errorf("auto-injection enabled SidecarPatchConfigMap is nil for mesh %s.%s",
-				matchingMesh.Metadata.Namespace, matchingMesh.Metadata.Name)
-		}
-		configMap, err := globalClientSet.GetConfigMap(patchConfigMapRef.Namespace, patchConfigMapRef.Name)
-		if err != nil {
-			return nil, errors.Errorf("failed to retrieve config map [%s]", patchConfigMapRef.String())
-		}
-		logger.Debugf("found config map [%s]", patchConfigMapRef.String())
-
-		logger.Infof("injecting AWS App Mesh Envoy sidecar")
-		podJSONPatch, err := buildSidecarPatch(&pod, configMap, matchingMesh)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to inject sidecar")
-		}
-
+	if patchRequired {
 		pt := v1beta1.PatchTypeJSONPatch
 		reviewResponse.PatchType = &pt
-		reviewResponse.Patch = podJSONPatch
+		reviewResponse.Patch = patch
 		reviewResponse.Result = &metav1.Status{
 			Status:  "Success",
 			Message: strings.TrimSpace("successfully injected pod with AWS App Mesh Envoy sidecar")}
-
-	default:
-		toErrorResponse(ctx, "pod matches selectors in multiple meshes. Multiple injection is currently not supported")
 	}
 
 	return &reviewResponse, nil
 }
 
-// Returns true if the given pod matches the given selector
-func match(pod corev1.Pod, selector *v1.PodSelector) (bool, error) {
-	switch s := selector.SelectorType.(type) {
-	case *v1.PodSelector_LabelSelector_:
-		podLabels := pod.Labels
-		labelsMatch := labels.SelectorFromSet(s.LabelSelector.LabelsToMatch).Matches(labels.Set(podLabels))
-		return labelsMatch, nil
-
-	case *v1.PodSelector_UpstreamSelector_:
-		return false, fmt.Errorf("upstream selectors are currently unsupported by pod auto-injection")
-
-	case *v1.PodSelector_NamespaceSelector_:
-		for _, ns := range s.NamespaceSelector.Namespaces {
-			if ns == pod.Namespace {
-				return true, nil
-			}
-		}
+func toErrorResponse(ctx context.Context, errMsg string) *v1beta1.AdmissionResponse {
+	contextutils.LoggerFrom(ctx).Error(errMsg)
+	return &v1beta1.AdmissionResponse{
+		Result: &metav1.Status{
+			// These error messages will be returned by the k8s api server, potentially on operations where the origin
+			// of the error might not be immediately evident. The prefix makes it clear that is was us.
+			Message: "supergloo: " + errMsg,
+			Status:  "Failure",
+		},
 	}
-	return false, nil
-}
-
-func getAppMeshesWithAutoInjection(ctx context.Context) ([]*v1.Mesh, error) {
-	var awsAppMeshes []*v1.Mesh
-	meshes, err := globalClientSet.ListMeshes(metav1.NamespaceAll, clients.ListOpts{Ctx: ctx})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, mesh := range meshes {
-		appMesh, isAppMesh := mesh.MeshType.(*v1.Mesh_AwsAppMesh)
-		if !isAppMesh {
-			continue
-		}
-		if appMesh.AwsAppMesh == nil {
-			contextutils.LoggerFrom(ctx).Warnf("unexpected nil value for AwsAppMesh in mesh %s.%s", mesh.Metadata.Namespace, mesh.Metadata.Name)
-			continue
-		}
-
-		if !appMesh.AwsAppMesh.EnableAutoInject {
-			continue
-		}
-		awsAppMeshes = append(awsAppMeshes, mesh)
-	}
-	return awsAppMeshes, nil
 }

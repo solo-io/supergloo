@@ -45,6 +45,7 @@ type ResourcesForTest struct {
 	AppMeshNoConfigMap      *v1.Mesh
 	AppMeshNoSelector       *v1.Mesh
 	IstioMesh               *v1.Mesh
+	TemplateData            interface{}
 }
 
 func newPatchConfigMap(decoder runtime.Decoder, configMap string) patchConfigMap {
@@ -81,6 +82,18 @@ func GetTestResources(decoder runtime.Decoder) *ResourcesForTest {
 		AppMeshNoConfigMap:      appMeshNoConfigMap,
 		AppMeshNoSelector:       appMeshNoSelector,
 		IstioMesh:               istioMesh,
+		TemplateData:            getTemplateData(),
+	}
+}
+
+func getTemplateData() interface{} {
+	return struct {
+		MeshName        string
+		VirtualNodeName string
+		AppPort         int32
+		AwsRegion       string
+	}{
+		"test-mesh", "testrunner-vn", 1234, "us-east-1",
 	}
 }
 

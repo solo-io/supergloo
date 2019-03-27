@@ -1,4 +1,4 @@
-package webhook
+package clients
 
 import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"

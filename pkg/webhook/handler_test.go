@@ -3,6 +3,8 @@ package webhook
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/webhook/clients"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,15 +22,16 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		mockClientMeshInjectDisabled,
 		mockClientIstio,
 		mockClientMeshNoConfigMap,
-		mockClientMeshNoSelector *MockwebhookResourceClient
+		mockClientMeshNoSelector *clients.MockWebhookResourceClient
 	)
 
 	BeforeEach(func() {
 		ctrl := gomock.NewController(T)
 		defer ctrl.Finish()
 
-		testData = test.GetTestResources(Codecs.UniversalDeserializer())
+		RegisterSidecarInjectionHandler()
 
+		testData = test.GetTestResources(clients.Codecs.UniversalDeserializer())
 		configMap := testData.OneContOneInitContPatch.AsStruct
 
 		mockClient = buildMock(ctrl, configMap, testData.AppMeshInjectEnabled)
@@ -39,7 +42,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("correctly patches pod that matches injection selector", func() {
-		setClientSet(mockClient)
+		clients.SetClientSet(mockClient)
 
 		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -79,7 +82,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("does not patch pod that does not match injection selector", func() {
-		setClientSet(mockClient)
+		clients.SetClientSet(mockClient)
 
 		response, err := admit(context.TODO(), testData.NonMatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -89,7 +92,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("does not patch pods when auto-injection is disabled for the mesh", func() {
-		setClientSet(mockClientMeshInjectDisabled)
+		clients.SetClientSet(mockClientMeshInjectDisabled)
 
 		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -99,7 +102,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("does not patch pods when mesh is not of type AWS App Mesh", func() {
-		setClientSet(mockClientIstio)
+		clients.SetClientSet(mockClientIstio)
 
 		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -109,7 +112,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("fails if auto-injection is enabled but the mesh is missing the SidecarPatchConfigMap field", func() {
-		setClientSet(mockClientMeshNoConfigMap)
+		clients.SetClientSet(mockClientMeshNoConfigMap)
 
 		_, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).To(HaveOccurred())
@@ -118,7 +121,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("fails if auto-injection is enabled but the mesh is missing the InjectionSelector field", func() {
-		setClientSet(mockClientMeshNoSelector)
+		clients.SetClientSet(mockClientMeshNoSelector)
 
 		_, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).To(HaveOccurred())
@@ -126,9 +129,9 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 })
 
-func buildMock(ctrl *gomock.Controller, configMapToReturn *corev1.ConfigMap, meshesToReturn ...*v1.Mesh) *MockwebhookResourceClient {
+func buildMock(ctrl *gomock.Controller, configMapToReturn *corev1.ConfigMap, meshesToReturn ...*v1.Mesh) *clients.MockWebhookResourceClient {
 	slice := []*v1.Mesh(meshesToReturn)
-	mockClient := NewMockwebhookResourceClient(ctrl)
+	mockClient := clients.NewMockWebhookResourceClient(ctrl)
 	mockClient.EXPECT().ListMeshes(gomock.Any(), gomock.Any()).Return(slice, nil).AnyTimes()
 	mockClient.EXPECT().GetConfigMap(gomock.Any(), gomock.Any()).Return(configMapToReturn, nil).AnyTimes()
 	return mockClient

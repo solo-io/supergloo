@@ -1,4 +1,4 @@
-package webhook
+package clients
 
 import (
 	"context"
@@ -15,10 +15,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-//go:generate mockgen -destination=./clientset_mock.go -source clientset.go -package webhook
+//go:generate mockgen -destination=./clientset_mock.go -source clientset.go -package clients
 
 // Exposes only the methods that are actually used. Used to generate mocks.
-type webhookResourceClient interface {
+type WebhookResourceClient interface {
 	ListMeshes(namespace string, opts clients.ListOpts) (v1.MeshList, error)
 	GetConfigMap(namespace, name string) (*corev1.ConfigMap, error)
 }
@@ -39,16 +39,22 @@ func (c *webhookClientSet) GetConfigMap(namespace, name string) (*corev1.ConfigM
 
 var (
 	mutex           sync.Mutex
-	globalClientSet webhookResourceClient
+	globalClientSet WebhookResourceClient
 )
 
-func setClientSet(clientSet webhookResourceClient) {
+func SetClientSet(clientSet WebhookResourceClient) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	globalClientSet = clientSet
 }
 
-func initClientSet(ctx context.Context) error {
+func GetClientSet() WebhookResourceClient {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return globalClientSet
+}
+
+func InitClientSet(ctx context.Context) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
