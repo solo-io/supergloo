@@ -21,6 +21,5 @@ discovery:
   deployment:
     image:
       repository: quay.io/solo-io/discovery
-      tag: 0.10.4
       pullPolicy: Always
     stats: true

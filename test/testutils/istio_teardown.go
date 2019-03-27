@@ -39,11 +39,11 @@ func WaitForIstioTeardown(ns string) {
 	}, time.Second*30).Should(BeEmpty())
 }
 
-func TeardownIstio(kube kubernetes.Interface) {
+func TeardownWithPrefix(kube kubernetes.Interface, prefix string) {
 	clusterroles, err := kube.RbacV1beta1().ClusterRoles().List(metav1.ListOptions{})
 	if err == nil {
 		for _, cr := range clusterroles.Items {
-			if strings.Contains(cr.Name, "istio") {
+			if strings.Contains(cr.Name, prefix) {
 				kube.RbacV1beta1().ClusterRoles().Delete(cr.Name, nil)
 			}
 		}
@@ -51,7 +51,7 @@ func TeardownIstio(kube kubernetes.Interface) {
 	clusterrolebindings, err := kube.RbacV1beta1().ClusterRoleBindings().List(metav1.ListOptions{})
 	if err == nil {
 		for _, cr := range clusterrolebindings.Items {
-			if strings.Contains(cr.Name, "istio") {
+			if strings.Contains(cr.Name, prefix) {
 				kube.RbacV1beta1().ClusterRoleBindings().Delete(cr.Name, nil)
 			}
 		}
@@ -59,7 +59,7 @@ func TeardownIstio(kube kubernetes.Interface) {
 	webhooks, err := kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(metav1.ListOptions{})
 	if err == nil {
 		for _, wh := range webhooks.Items {
-			if strings.Contains(wh.Name, "istio") {
+			if strings.Contains(wh.Name, prefix) {
 				kube.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(wh.Name, nil)
 			}
 		}
@@ -74,7 +74,7 @@ func TeardownIstio(kube kubernetes.Interface) {
 	crds, err := exts.ApiextensionsV1beta1().CustomResourceDefinitions().List(metav1.ListOptions{})
 	if err == nil {
 		for _, cr := range crds.Items {
-			if strings.Contains(cr.Name, "istio") {
+			if strings.Contains(cr.Name, prefix) {
 				exts.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(cr.Name, nil)
 			}
 		}

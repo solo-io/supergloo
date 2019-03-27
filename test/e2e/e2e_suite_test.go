@@ -32,6 +32,11 @@ var (
 	promNamespace                       = "prometheus-test"
 )
 
+const (
+	istioNamesapce = "istio-system"
+	glooNamespace  = "gloo-system"
+)
+
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
@@ -83,13 +88,17 @@ var _ = AfterSuite(func() {
 	}
 	defer lock.ReleaseLock()
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
-	kube.CoreV1().Namespaces().Delete("istio-system", nil)
+	kube.CoreV1().Namespaces().Delete(istioNamesapce, nil)
+	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
-	testutils.TeardownIstio(kube)
+	testutils.TeardownWithPrefix(kube, "istio")
+	testutils.TeardownWithPrefix(kube, "gloo")
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
+	testutils.WaitForNamespaceTeardown(istioNamesapce)
+	testutils.WaitForNamespaceTeardown(glooNamespace)
 	err := teardownPrometheus(promNamespace)
 	if err != nil {
 		log.Printf("failed to teardown prometheus: %v", err)
