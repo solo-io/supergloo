@@ -76,10 +76,10 @@ func (h injectionHandler) GetSidecarPatch(ctx context.Context, candidatePod *cor
 		return false, nil, nil
 	}
 
-	logger.Infof("the following patches will be applied to the pod: %v", jsonPatches)
 	patchesBytes, err := json.Marshal(jsonPatches)
 	if err != nil {
 		return false, nil, errors.Wrapf(err, "failed to marshal patches to JSON")
 	}
+	logger.Infof("the following patches will be applied to the pod: %s", patchesBytes)
 	return true, patchesBytes, nil
 }

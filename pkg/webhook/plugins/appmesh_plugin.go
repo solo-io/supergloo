@@ -41,16 +41,14 @@ func (AppMeshInjectionPlugin) GetAutoInjectMeshes(ctx context.Context) ([]*v1.Me
 	}
 
 	for _, mesh := range meshes {
-		appMesh, isAppMesh := mesh.MeshType.(*v1.Mesh_AwsAppMesh)
-		if !isAppMesh {
-			continue
-		}
-		if appMesh.AwsAppMesh == nil {
-			contextutils.LoggerFrom(ctx).Warnf("unexpected nil value for AwsAppMesh in mesh %s.%s", mesh.Metadata.Namespace, mesh.Metadata.Name)
+		appMesh := mesh.GetAwsAppMesh()
+
+		// Mesh is not app mesh
+		if appMesh == nil {
 			continue
 		}
 
-		if !appMesh.AwsAppMesh.EnableAutoInject {
+		if !appMesh.EnableAutoInject {
 			continue
 		}
 		awsAppMeshes = append(awsAppMeshes, mesh)
@@ -65,11 +63,13 @@ func (AppMeshInjectionPlugin) CheckMatch(ctx context.Context, candidatePod *v12.
 	var matchingMeshes []*v1.Mesh
 	for _, mesh := range meshes {
 
-		if !isAppMesh(mesh) {
+		appMesh := mesh.GetAwsAppMesh()
+
+		if appMesh == nil {
 			continue
 		}
 
-		selector := mesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.InjectionSelector
+		selector := appMesh.InjectionSelector
 		if selector == nil {
 			return nil, errors.Errorf("auto-injection enabled but no selector for mesh %s.%s", mesh.Metadata.Namespace, mesh.Metadata.Name)
 		}
@@ -101,13 +101,15 @@ func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *v12.Pod,
 		return nil, errors.Errorf("pod matches selectors in multiple meshes. Multiple injection is currently not supported")
 	}
 
+	appMesh := mesh.GetAwsAppMesh()
+
 	// Skip if not AWS App Mesh
-	if !isAppMesh(mesh) {
-		return []patch.JSONPatchOperation{}, nil
+	if appMesh == nil {
+		return nil, nil
 	}
 
 	// Get the config map containing the sidecar patch to be applied to the pod
-	patchConfigMapRef := mesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.SidecarPatchConfigMap
+	patchConfigMapRef := appMesh.SidecarPatchConfigMap
 	if patchConfigMapRef == nil {
 		return nil, errors.Errorf("auto-injection enabled SidecarPatchConfigMap is nil for mesh %s.%s",
 			mesh.Metadata.Namespace, mesh.Metadata.Name)
@@ -153,7 +155,7 @@ func match(pod *corev1.Pod, selector *v1.PodSelector) (bool, error) {
 
 func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 
-	awsRegion := mesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.Region
+	awsRegion := mesh.GetAwsAppMesh().Region
 	if awsRegion == "" {
 		return templateData{}, errors.Errorf("mesh resource is missing required Region field")
 	}
@@ -161,7 +163,7 @@ func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 		return templateData{}, errors.Errorf("AWS App Mesh is currently not available in [%s]. Supported regions are: %s", awsRegion, appMeshSupportedRegions)
 	}
 
-	vnLabel := mesh.MeshType.(*v1.Mesh_AwsAppMesh).AwsAppMesh.VirtualNodeLabel
+	vnLabel := mesh.GetAwsAppMesh().VirtualNodeLabel
 	if vnLabel == "" {
 		return templateData{}, errors.Errorf("mesh resource is missing required VirtualNodeLabel field")
 	}
@@ -176,9 +178,4 @@ func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 		VirtualNodeName: virtualNodeName,
 		AwsRegion:       awsRegion,
 	}, nil
-}
-
-func isAppMesh(mesh *v1.Mesh) bool {
-	_, isAppMesh := mesh.MeshType.(*v1.Mesh_AwsAppMesh)
-	return isAppMesh
 }
