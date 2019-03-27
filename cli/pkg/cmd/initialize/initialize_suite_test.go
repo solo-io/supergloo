@@ -1,6 +1,7 @@
 package initialize_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -23,7 +24,9 @@ var (
 
 var _ = BeforeSuite(func() {
 	kubeClient := clients.MustKubeClient()
-	lock, err = clusterlock.NewTestClusterLocker(kubeClient, "default")
+	lock, err = clusterlock.NewTestClusterLocker(kubeClient, clusterlock.Options{
+		IdPrefix: os.ExpandEnv("supergloo-init-{$BUILD_ID}-"),
+	})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 })

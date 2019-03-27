@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"context"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -35,7 +36,9 @@ var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
 
-	lock, err = clusterlock.NewTestClusterLocker(kube, "default")
+	lock, err = clusterlock.NewTestClusterLocker(kube, clusterlock.Options{
+		IdPrefix: os.ExpandEnv("superglooe2e-{$BUILD_ID}-"),
+	})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock(retry.OnRetry(func(n uint, err error) {
 		log.Printf("waiting to acquire lock with err: %v", err)
