@@ -1,10 +1,9 @@
 vendor
+_output/
+doc/site
 
 # IDEA files
 .idea
-_output/
-doc/site
-supergloo
 
 # Mac Files
 **/.DS_Store

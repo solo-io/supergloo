@@ -13,6 +13,7 @@ weight: 5
 
 - [Mesh](#mesh) **Top-Level Resource**
 - [IstioMesh](#istiomesh)
+- [AwsAppMesh](#awsappmesh)
 - [MtlsConfig](#mtlsconfig)
 - [MonitoringConfig](#monitoringconfig)
 - [MeshGroup](#meshgroup) **Top-Level Resource**
@@ -36,6 +37,7 @@ Meshes represent a currently registered service mesh.
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "istio": .supergloo.solo.io.IstioMesh
+"awsAppMesh": .supergloo.solo.io.AwsAppMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
 
@@ -46,6 +48,7 @@ Meshes represent a currently registered service mesh.
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#istiomesh) |  |  |
+| `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#awsappmesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 | `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
 
@@ -66,6 +69,34 @@ Mesh object representing an installed Istio control plane
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `installationNamespace` | `string` | where the istio control plane has been installed |  |
+
+
+
+
+---
+### AwsAppMesh
+
+ 
+Mesh object representing AWS App Mesh
+
+```yaml
+"awsSecret": .core.solo.io.ResourceRef
+"region": string
+"enableAutoInject": bool
+"injectionSelector": .supergloo.solo.io.PodSelector
+"virtualNodeLabel": string
+"sidecarPatchConfigMap": .core.solo.io.ResourceRef
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `awsSecret` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service. |  |
+| `region` | `string` | The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in. |  |
+| `enableAutoInject` | `bool` | Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy. If set to true, supergloo will ensure that a MutatingAdmissionWebhook server with the injection logic is deployed to the cluster and that it has been registered with the Kubernetes API server via a MutatingWebhookConfiguration. This will cause the webhook to be invoked on each pod creation event. |  |
+| `injectionSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | Pods matching this selector will be injected with the sidecar proxy at creation time. NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector |  |
+| `virtualNodeLabel` | `string` | If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container. |  |
+| `sidecarPatchConfigMap` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | Reference to the config map that contains the patch that will be applied to the spec of the pods matching the injection_selector. |  |
 
 
 
