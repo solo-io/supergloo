@@ -46,15 +46,15 @@
 
 [[constraint]]
   name = "github.com/solo-io/solo-kit"
-  version = "0.3.9"
+  version = "0.4.2"
 
 [[override]]
   name = "github.com/solo-io/go-utils"
-  version = "0.5.1"
+  version = "0.6.1"
 
 [[constraint]]
   name = "github.com/solo-io/gloo"
-  version = "0.13.0"
+  version = "0.13.5"
 
 [[constraint]]
   name = "github.com/prometheus/prometheus"
