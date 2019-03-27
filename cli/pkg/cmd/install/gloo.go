@@ -95,6 +95,7 @@ func validateGlooInstall(opts *options.Options) error {
 			if _, err := meshes.Find(v.Namespace, v.Name); err != nil {
 				return errors.Wrapf(err, "mesh resource %s.%s is not a valid mesh", v.Namespace, v.Name)
 			}
+			opts.Install.GlooIngressInstall.Meshes = append(opts.Install.GlooIngressInstall.Meshes, &v)
 		}
 	}
 

@@ -118,6 +118,11 @@ var _ = Describe("gloo install", func() {
 				fmt.Sprintf("--namespace=%v ", namespace) +
 				fmt.Sprintf("--target-meshes two.one"))
 			Expect(err).NotTo(HaveOccurred())
+			installClient := clients.MustInstallClient()
+			glooInstall, err := installClient.Read(namespace, name, skclients.ReadOpts{})
+			Expect(err).NotTo(HaveOccurred())
+			glooIngressInstall := MustGlooInstallType(glooInstall)
+			Expect(glooIngressInstall.Gloo.Meshes).To(HaveLen(1))
 		})
 	})
 })
