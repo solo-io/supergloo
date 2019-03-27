@@ -56,11 +56,11 @@ var _ = Describe("E2e", func() {
 
 		testGlooInstall(glooName, istioName)
 
-		testCertRotation(istioName)
-
 		testMtls()
 
 		testGlooMtls(istioName)
+
+		testCertRotation(istioName)
 
 		testTrafficShifting()
 
@@ -210,24 +210,24 @@ func testMtls() {
 }
 
 func testGlooMtls(istioName string) {
-	service := "productpage"
+	service := "details"
 	port := 9080
 	upstreamName := fmt.Sprintf("%s-%s-%d", namespaceWithInject, service, port)
 	err := utils.Supergloo(fmt.Sprintf("set upstream mtls --name %s --target-mesh %s.%s",
 		upstreamName, superglooNamespace, istioName))
 	Expect(err).NotTo(HaveOccurred())
 
-	err = glootestutils.Glooctl(fmt.Sprintf("add route --name prodpage"+
+	err = glootestutils.Glooctl(fmt.Sprintf("add route --name detailspage"+
 		" --namespace %s --path-prefix / --dest-name %s "+
 		"--dest-namespace %s", glooNamespace, upstreamName, superglooNamespace))
 	Expect(err).NotTo(HaveOccurred())
 
-	// with mtls in strict mode, curl will fail from non-injected testrunner
+	// with mtls in strict mode, curl will succeed routing through gloo
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
 		Service: "gateway-proxy." + glooNamespace + ".svc.cluster.local",
 		Port:    80,
-		Path:    "/productpage",
-	}, "Recv failure: Connection reset by peer", time.Minute*3)
+		Path:    "/details/1",
+	}, `"author":"William Shakespeare"`, time.Minute*3)
 }
 
 func testTrafficShifting() {
