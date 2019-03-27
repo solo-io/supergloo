@@ -19,6 +19,9 @@ import (
 )
 
 var _ = Describe("ConfigmapConverter", func() {
+	var (
+		emptyMap = make(map[string]string)
+	)
 	c := NewPrometheusConfigmapConverter()
 	fakeResourceClient, _ := configmap.NewResourceClient(nil, &v1.PrometheusConfig{}, nil, false)
 	It("converts a prometheus configmap to a v1.PrometheusConfig", func() {
@@ -26,7 +29,7 @@ var _ = Describe("ConfigmapConverter", func() {
 		promCfg, err := c.FromKubeConfigMap(context.TODO(), fakeResourceClient, configMap)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(promCfg).To(Equal(&v1.PrometheusConfig{
-			Metadata:   core.Metadata{Name: "myname", Namespace: "mynamespace"},
+			Metadata:   core.Metadata{Name: "myname", Namespace: "mynamespace", Annotations: emptyMap, Labels: emptyMap},
 			Prometheus: inputs.BasicPrometheusConfig,
 		}))
 	})
@@ -46,7 +49,7 @@ var _ = Describe("ConfigmapConverter", func() {
 		promConfigMap, err := c.ToKubeConfigMap(context.TODO(), fakeResourceClient, promCfg)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(promConfigMap).To(Equal(&kubev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar", Annotations: emptyMap, Labels: emptyMap},
 			Data:       map[string]string{"prometheus.yml": inputs.BasicPrometheusConfig},
 		}))
 	})
