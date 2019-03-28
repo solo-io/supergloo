@@ -9,16 +9,20 @@ Apply a security rule to one or more meshes.
 ### Synopsis
 
 
-Each Security Rule applies an HTTP security feature to a mesh.
+Each Security Rule applies an HTTP security policy to a mesh.
+
+When no security rules are present in the system, SuperGloo will allow 
+all traffic between services. As soon as a security rule is created, 
+traffic policy is enforced, and only explicitly allowed traffic will be 
+permitted.
 
 Security rules implement the following semantics:
 
 RULE:
-  FOR all HTTP Requests:
+  ALLOW HTTP Requests:
   - FROM these **source pods**
   - TO these **destination pods**
-  - MATCHING these **request matchers**
-  APPLY this rule
+  - MATCHING these **allowed paths and methods**
 
 
 ```
