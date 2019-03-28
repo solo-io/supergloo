@@ -124,6 +124,7 @@ proxying of requests. A fault rule MUST HAVE delay or abort.
 ```yaml
 "delay": .supergloo.solo.io.FaultInjection.Delay
 "abort": .supergloo.solo.io.FaultInjection.Abort
+"percentage": float
 
 ```
 
@@ -131,6 +132,7 @@ proxying of requests. A fault rule MUST HAVE delay or abort.
 | ----- | ---- | ----------- |----------- | 
 | `delay` | [.supergloo.solo.io.FaultInjection.Delay](../routing.proto.sk#delay) | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |  |
 | `abort` | [.supergloo.solo.io.FaultInjection.Abort](../routing.proto.sk#abort) | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |  |
+| `percentage` | `float` | Percentage of requests to be faulted with the error code provided. |  |
 
 
 
@@ -145,14 +147,12 @@ percentage of requests. If left unspecified, all request will be delayed.
 
 ```yaml
 "fixedDelay": .google.protobuf.Duration
-"percentage": float
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `fixedDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
-| `percentage` | `float` | Percentage of requests on which the delay will be injected. |  |
 
 
 
@@ -168,14 +168,12 @@ aborted.
 
 ```yaml
 "httpStatus": int
-"percentage": float
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `httpStatus` | `int` | REQUIRED. HTTP status code to use to abort the Http request. |  |
-| `percentage` | `float` | Percentage of requests to be aborted with the error code provided. |  |
 
 
 
