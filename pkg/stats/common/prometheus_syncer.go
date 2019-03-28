@@ -127,10 +127,15 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 		}
 
 		// remove all scrape configs and start fresh
-		promCfg.RemoveScrapeConfigs(superGlooScrapePrefix)
+		removed := promCfg.RemoveScrapeConfigs(superGlooScrapePrefix)
 
 		// add all scrape configs
 		added := promCfg.AddScrapeConfigs(scrapeConfigsToAdd)
+
+		// this is not a config we manage
+		if removed == 0 && added == 0 {
+			continue
+		}
 
 		// compare with duplicate of original config, only update if diff
 		// TODO (ilackarms): investigate a better way to duplicate promCfgs
@@ -140,7 +145,7 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 				cfgRef)
 		}
 		if hashutils.HashAll(promCfg) == hashutils.HashAll(originalPromCfg) {
-			return nil
+			continue
 		}
 
 		// create a configmap from the new prom cfg and save it to storage
@@ -152,6 +157,9 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 
 		// copy metadata for writing
 		promConfigMap.Metadata = originalCfg.Metadata
+		// copy alerts and rules configuration - we currently ignore
+		promConfigMap.Alerts = originalCfg.Alerts
+		promConfigMap.Rules = originalCfg.Rules
 
 		contextutils.LoggerFrom(ctx).Infof("prometheus %v syncing %v prometheus scrape configs", cfgRef.Key(), added)
 

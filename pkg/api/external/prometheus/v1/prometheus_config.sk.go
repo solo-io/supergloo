@@ -35,6 +35,8 @@ func (r *PrometheusConfig) Hash() uint64 {
 	return hashutils.HashAll(
 		metaCopy,
 		r.Prometheus,
+		r.Alerts,
+		r.Rules,
 	)
 }
 

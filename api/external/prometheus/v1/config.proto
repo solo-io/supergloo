@@ -26,4 +26,10 @@ message PrometheusConfig {
     // json_name must refer to the data key in the configmap we expect
     string prometheus = 1 [json_name="prometheus.yml"];
 
+    // inline string containing the alerts config. currently unused by supergloo
+    string alerts = 2;
+
+    // inline string containing the rules config. currently unused by supergloo
+    string rules = 3;
+
 }

@@ -34,6 +34,8 @@ to a typed Prometheus config.
 ```yaml
 "metadata": .core.solo.io.Metadata
 "prometheus": string
+"alerts": string
+"rules": string
 
 ```
 
@@ -41,6 +43,8 @@ to a typed Prometheus config.
 | ----- | ---- | ----------- |----------- | 
 | `metadata` | [.core.solo.io.Metadata](../../../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `prometheus` | `string` | inline string containing the prometheus config json_name must refer to the data key in the configmap we expect |  |
+| `alerts` | `string` | inline string containing the alerts config. currently unused by supergloo |  |
+| `rules` | `string` | inline string containing the rules config. currently unused by supergloo |  |
 
 
 
