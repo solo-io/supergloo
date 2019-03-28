@@ -6,7 +6,9 @@ import (
 	"os"
 	"testing"
 
+	gotestutils "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	"github.com/solo-io/supergloo/test/e2e/utils"
 
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
@@ -30,7 +32,7 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
-	promNamespace                       = "prometheus-test"
+	promNamespace                       = "prometheus-test" + gotestutils.RandString(4)
 )
 
 var _ = BeforeSuite(func() {
@@ -106,7 +108,29 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
-	testutils.WaitForNamespaceTeardown(promNamespace)
 	log.Printf("done!")
+}
 
+func teardownPrometheus(namespace string) error {
+	manifest, err := helmTemplate("--name=prometheus",
+		"--namespace="+namespace,
+		"--set", "rbac.create=true",
+		"--set", "server.persistentVolume.enabled=false",
+		"--set", "alertmanager.enabled=false",
+		"files/prometheus-8.9.0.tgz")
+	if err != nil {
+		return err
+	}
+
+	err = utils.KubectlDelete(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

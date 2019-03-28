@@ -387,28 +387,6 @@ func deployPrometheus(namespace string) error {
 	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
 }
 
-func teardownPrometheus(namespace string) error {
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"files/prometheus-8.9.0.tgz")
-	if err != nil {
-		return err
-	}
-
-	err = sgutils.KubectlDelete(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func queryIstioStats() {
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
 		Service: "prometheus-server.prometheus-test.svc.cluster.local",

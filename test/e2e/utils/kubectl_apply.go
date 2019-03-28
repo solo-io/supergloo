@@ -33,7 +33,7 @@ func KubectlApply(namespace, yamlStr string) error {
 }
 
 func KubectlDelete(namespace, yamlStr string) error {
-	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "delete", "-n", namespace, "-f", "-")
+	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "delete", "-n", namespace, "--ignore-not-found=true", "-f", "-")
 }
 
 func Kubectl(stdin io.Reader, args ...string) error {
