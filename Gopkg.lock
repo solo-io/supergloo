@@ -1048,11 +1048,9 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:4594833620d039a1c1e889d445988edfc2cdcc95b7e5f40fd63a9d17e2f2ed3f"
+  digest = "1:93a746f1060a8acbcf69344862b2ceced80f854170e1caae089b2834c5fbf7f4"
   name = "github.com/prometheus/client_golang"
   packages = [
-    "api",
-    "api/prometheus/v1",
     "prometheus",
     "prometheus/internal",
     "prometheus/promhttp",
@@ -1163,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:86ad053a8f7560e5f78c69806df8037c028e1dc3bcc103c320c8dc8aa40836de"
+  digest = "1:8df382417e03f3562b148c0680bcb7a1573c6a6f36d184b102ec7225fbbd0e34"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1214,8 +1212,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "44122811511c3d6bab63c4ca6886ffabb7aa602c"
-  version = "v0.13.5"
+  revision = "1b0cba42a74ce5576eaf64d082f8829f12a96913"
+  version = "v0.13.6"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1226,7 +1224,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:1de343b65e498803510c3de6081cd39e6b3228a4bf519af65751711272376e08"
+  digest = "1:c53fe0e12d3f7f1be8a2c0174c4a21da236feaf695552efa0c9846187ab7be0f"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1248,8 +1246,8 @@
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "345282db284ff4ad930528c4c6f9a7b253464a43"
-  version = "v0.6.1"
+  revision = "dbaa11f99e222a82c7f58e28a2ef7e64f43fff1c"
+  version = "v0.6.3"
 
 [[projects]]
   digest = "1:676e3c47dde9f4fcbb53e7513ff40454ece084b365018cca82beea55178c559d"
@@ -2205,9 +2203,6 @@
     "github.com/openshift/api/security/v1",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
-    "github.com/prometheus/client_golang/api",
-    "github.com/prometheus/client_golang/api/prometheus/v1",
-    "github.com/prometheus/common/model",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",

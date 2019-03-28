@@ -46,11 +46,6 @@ be load-balanced by weight across a variety of destinations`,
 			}, nil
 		},
 	},
-	{
-		use:   "faultinjection",
-		alias: "fi",
-		short: "apply a fault injection rule",
-	},
 }
 
 var (
