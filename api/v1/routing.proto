@@ -119,11 +119,8 @@ message FaultInjection {
         oneof http_delay_type {
             // REQUIRED. Add a fixed delay before forwarding the request. Format:
             // 1h/1m/1s/1ms. MUST be >=1ms.
-            google.protobuf.Duration fixed_delay = 2;
+            google.protobuf.Duration fixed_delay = 3;
         }
-
-        // Percentage of requests on which the delay will be injected.
-        double percentage = 5;
     }
 
     // The _httpStatus_ field is used to indicate the HTTP status code to
@@ -134,12 +131,12 @@ message FaultInjection {
 
         oneof error_type {
             // REQUIRED. HTTP status code to use to abort the Http request.
-            int32 http_status = 2;
+            int32 http_status = 4;
         }
-
-        // Percentage of requests to be aborted with the error code provided.
-        double percentage = 5;
     }
+
+    // Percentage of requests to be faulted with the error code provided.
+    double percentage = 5;
 }
 
 // manipulate request and response headers
