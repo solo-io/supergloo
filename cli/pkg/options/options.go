@@ -15,15 +15,16 @@ type Options struct {
 	Metadata      core.Metadata
 	PrintKubeYaml bool
 
-	Init              Init
-	Install           Install
-	Uninstall         Uninstall
-	CreateRoutingRule CreateRoutingRule
-	CreateTlsSecret   CreateTlsSecret
-	CreateAwsSecret   CreateAwsSecret
-	EditUpstream      EditUpstream
-	SetRootCert       SetRootCert
-	SetStats          SetStats
+	Init               Init
+	Install            Install
+	Uninstall          Uninstall
+	CreateRoutingRule  CreateRoutingRule
+	CreateSecurityRule CreateSecurityRule
+	CreateTlsSecret    CreateTlsSecret
+	CreateAwsSecret    CreateAwsSecret
+	EditUpstream       EditUpstream
+	SetRootCert        SetRootCert
+	SetStats           SetStats
 }
 
 type Init struct {
@@ -61,6 +62,14 @@ type CreateRoutingRule struct {
 	TargetMesh          ResourceRefValue
 	RequestMatchers     RequestMatchersValue
 	RoutingRuleSpec     RoutingRuleSpec
+}
+
+type CreateSecurityRule struct {
+	SourceSelector      Selector
+	DestinationSelector Selector
+	TargetMesh          ResourceRefValue
+	AllowedMethods      []string
+	AllowedPaths        []string
 }
 
 type RequestMatcher struct {

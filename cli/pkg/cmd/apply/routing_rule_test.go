@@ -232,7 +232,7 @@ var _ = Describe("RoutingRule", func() {
 			name := "ts-rr"
 
 			args := rrArgs(name, dests)
-			args += " --kubeyaml"
+			args += " --dryrun"
 
 			out, err := utils.SuperglooOut(args)
 			Expect(err).NotTo(HaveOccurred())

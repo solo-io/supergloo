@@ -29,8 +29,8 @@ supergloo apply routingrule trafficshifting [flags]
       --dest-labels MapStringStringValue       apply this rule to requests sent to pods with these labels. format must be KEY=VALUE (default [])
       --dest-namespaces strings                apply this rule to requests sent to pods in these namespaces
       --dest-upstreams ResourceRefsValue       apply this rule to requests sent to these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
+      --dryrun                                 if true, this command will print the yaml used to create a kubernetes resource rather than directly trying to create/apply the resource
   -i, --interactive                            run in interactive mode
-      --kubeyaml                               if true, this command will print the yaml used to create a kubernetes resource rather than directly trying to create/apply the resource
       --name string                            name for the resource
       --namespace string                       namespace for the resource (default "supergloo-system")
   -o, --output string                          output format: (yaml, json, table)

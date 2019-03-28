@@ -24,5 +24,6 @@ kubectl get routingrule [-n supergloo-system]
 	}
 
 	cmd.AddCommand(applyRoutingRuleCmd(opts))
+	cmd.AddCommand(applySecurityRuleCmd(opts))
 	return cmd
 }

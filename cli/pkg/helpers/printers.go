@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 
@@ -136,6 +137,31 @@ func tablePrintRoutingRules(list v1.RoutingRuleList, w io.Writer) {
 			}
 		}
 
+	}
+
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.Render()
+}
+
+func PrintSecurityRules(list v1.SecurityRuleList, outputType string) {
+	_ = cliutils.PrintList(outputType, "", list,
+		func(data interface{}, w io.Writer) error {
+			tablePrintSecurityRules(data.(v1.SecurityRuleList), w)
+			return nil
+		}, os.Stdout)
+}
+
+func tablePrintSecurityRules(list v1.SecurityRuleList, w io.Writer) {
+
+	table := tablewriter.NewWriter(w)
+	table.SetHeader([]string{"SecurityRule", "status", "paths", "methods", "sources", "destinations"})
+
+	for _, securityRule := range list {
+		name := securityRule.GetMetadata().Name
+		stat := securityRule.Status.State.String()
+		paths := strings.Join(securityRule.AllowedPaths, ",")
+		methods := strings.Join(securityRule.AllowedMethods, ",")
+		table.Append([]string{name, stat, paths, methods, selector(securityRule.SourceSelector), selector(securityRule.DestinationSelector)})
 	}
 
 	table.SetAlignment(tablewriter.ALIGN_LEFT)

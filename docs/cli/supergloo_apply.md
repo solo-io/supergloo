@@ -30,4 +30,5 @@ kubectl get routingrule [-n supergloo-system]
 
 * [supergloo](../supergloo)	 - CLI for Supergloo
 * [supergloo apply routingrule](../supergloo_apply_routingrule)	 - Apply a routing rule to one or more meshes.
+* [supergloo apply securityrule](../supergloo_apply_securityrule)	 - Apply a security rule to one or more meshes.
 
