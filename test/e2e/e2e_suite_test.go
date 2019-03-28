@@ -88,7 +88,7 @@ var _ = AfterSuite(func() {
 
 func teardown() {
 	if cancel != nil {
-		defer cancel()
+		cancel()
 	}
 	defer lock.ReleaseLock()
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())

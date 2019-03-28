@@ -388,11 +388,6 @@ func deployPrometheus(namespace string) error {
 }
 
 func teardownPrometheus(namespace string) error {
-	err := kube.CoreV1().Namespaces().Delete(namespace, nil)
-	if err != nil {
-		return err
-	}
-
 	manifest, err := helmTemplate("--name=prometheus",
 		"--namespace="+namespace,
 		"--set", "rbac.create=true",
@@ -402,6 +397,11 @@ func teardownPrometheus(namespace string) error {
 	}
 
 	err = sgutils.KubectlDelete(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
 	if err != nil {
 		return err
 	}
