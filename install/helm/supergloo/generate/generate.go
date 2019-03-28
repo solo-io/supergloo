@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
+	"github.com/pelletier/go-toml"
 	"github.com/solo-io/go-utils/versionutils"
 
 	"github.com/ghodss/yaml"
@@ -18,13 +20,18 @@ const (
 	ValuesOutput  = "install/helm/supergloo/values.yaml"
 	ChartTemplate = "install/helm/supergloo/Chart-template.yaml"
 	ChartOutput   = "install/helm/supergloo/Chart.yaml"
+
+	gopkgToml  = "Gopkg.toml"
+	constraint = "constraint"
 )
 
 var (
 	osGlooVersion string
+	rootPrefix    string
 )
 
-func Run(version, pullPolicy string) error {
+func Run(version, pullPolicy, prefix string) error {
+	rootPrefix = prefix
 	if glooVersion, err := getOsGlooVersion(); err != nil {
 		return err
 	} else {
@@ -41,7 +48,7 @@ func Run(version, pullPolicy string) error {
 }
 
 func getOsGlooVersion() (string, error) {
-	tomlTree, err := versionutils.ParseToml()
+	tomlTree, err := parseToml(rootPrefix)
 	if err != nil {
 		return "", err
 	}
@@ -51,6 +58,23 @@ func getOsGlooVersion() (string, error) {
 	}
 	log.Printf("Open source gloo version is: %v", version)
 	return version, nil
+}
+
+func parseToml(prefix string) ([]*toml.Tree, error) {
+	path := filepath.Join(prefix, gopkgToml)
+	config, err := toml.LoadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	tomlTree := config.Get(constraint)
+
+	switch typedTree := tomlTree.(type) {
+	case []*toml.Tree:
+		return typedTree, nil
+	default:
+		return nil, fmt.Errorf("unable to parse toml tree")
+	}
 }
 
 func readConfig(path string) (Config, error) {
@@ -88,7 +112,7 @@ func writeYaml(obj interface{}, path string) error {
 }
 
 func generateValuesYaml(version, pullPolicy string) error {
-	config, err := readConfig(DefaultValues)
+	config, err := readConfig(filepath.Join(rootPrefix, DefaultValues))
 	if err != nil {
 		return err
 	}
@@ -98,16 +122,16 @@ func generateValuesYaml(version, pullPolicy string) error {
 	config.Discovery.Deployment.Image.Tag = osGlooVersion
 	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
-	return writeYaml(&config, ValuesOutput)
+	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
 }
 
 func generateChartYaml(version string) error {
 	var chart glooGenerate.Chart
-	if err := readYaml(ChartTemplate, &chart); err != nil {
+	if err := readYaml(filepath.Join(rootPrefix, ChartTemplate), &chart); err != nil {
 		return err
 	}
 
 	chart.Version = version
 
-	return writeYaml(&chart, ChartOutput)
+	return writeYaml(&chart, filepath.Join(rootPrefix, ChartOutput))
 }

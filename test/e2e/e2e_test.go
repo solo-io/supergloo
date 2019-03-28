@@ -45,17 +45,15 @@ var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
-
+		var superglooErr error
 		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-		err := os.Chdir(projectRoot)
+		err := generate.Run("dev", "Always", projectRoot)
 		if err == nil {
-			err = generate.Run("dev", "Always")
-			Expect(err).NotTo(HaveOccurred())
-			err = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", generate.ValuesOutput))
+			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
 		} else {
-			err = utils.Supergloo("init --release latest")
+			superglooErr = utils.Supergloo("init --release latest")
 		}
-		Expect(err).NotTo(HaveOccurred())
+		Expect(superglooErr).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		deleteSuperglooPods()

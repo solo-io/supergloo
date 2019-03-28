@@ -25,7 +25,7 @@ func main() {
 	if version == "dev" {
 		pullPolicy = neverPull
 	}
-	if err := generate.Run(version, pullPolicy); err != nil {
+	if err := generate.Run(version, pullPolicy, ""); err != nil {
 		panic(err)
 	}
 }

@@ -1161,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:cb5b6eef68658fb80904d11cd2e58d84c96604f3e44bd4cf750f108d4b6a52ba"
+  digest = "1:86ad053a8f7560e5f78c69806df8037c028e1dc3bcc103c320c8dc8aa40836de"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1250,7 +1250,7 @@
   version = "v0.6.1"
 
 [[projects]]
-  digest = "1:f2cf8f2c5806fccdc98f20c0bcf488b4aac6fdea45dccf5272bb23fbb41a490b"
+  digest = "1:676e3c47dde9f4fcbb53e7513ff40454ece084b365018cca82beea55178c559d"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1285,6 +1285,7 @@
     "pkg/code-generator/model",
     "pkg/code-generator/parser",
     "pkg/errors",
+    "pkg/utils/cliutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
     "pkg/utils/hashutils",
@@ -2200,6 +2201,7 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/openshift/api/security/v1",
+    "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
