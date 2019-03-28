@@ -55,3 +55,11 @@ func TrafficShiftingRuleSpec(destinations ...core.ResourceRef) *v1.RoutingRuleSp
 		},
 	}
 }
+
+func FaultInjectionRuleSpec(fi *v1.FaultInjection) *v1.RoutingRuleSpec {
+	return &v1.RoutingRuleSpec{
+		RuleType: &v1.RoutingRuleSpec_FaultInjection{
+			FaultInjection: fi,
+		},
+	}
+}

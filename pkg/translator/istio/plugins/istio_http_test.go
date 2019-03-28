@@ -189,4 +189,41 @@ var _ = Describe("IstioHttp", func() {
 			})
 		})
 	})
+
+	Context("with RoutingRuleSpec_FaultInjection", func() {
+		Context("validation errors", func() {
+			It("errors with no rule present", func() {
+				in := inputs.FaultInjectionRuleSpec(&v1.FaultInjection{
+					Percentage: 50,
+				})
+				out := &v1alpha3.HTTPRoute{}
+				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
+				Expect(err).To(HaveOccurred())
+			})
+
+			It("errors with no delay type present present", func() {
+				in := inputs.FaultInjectionRuleSpec(&v1.FaultInjection{
+					Percentage: 50,
+					FaultInjectionType: &v1.FaultInjection_Abort_{
+						Abort: &v1.FaultInjection_Abort{},
+					},
+				})
+				out := &v1alpha3.HTTPRoute{}
+				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
+				Expect(err).To(HaveOccurred())
+			})
+
+			It("errors with no delay type present", func() {
+				in := inputs.FaultInjectionRuleSpec(&v1.FaultInjection{
+					Percentage: 50,
+					FaultInjectionType: &v1.FaultInjection_Delay_{
+						Delay: &v1.FaultInjection_Delay{},
+					},
+				})
+				out := &v1alpha3.HTTPRoute{}
+				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
 })
