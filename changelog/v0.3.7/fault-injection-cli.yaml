@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Create cli for fault-injection with supergloo.
+    issueLink: https://github.com/solo-io/supergloo/issues/228
+    resolvesIssue: false
