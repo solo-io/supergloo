@@ -39,6 +39,7 @@ API Version: `supergloo.solo.io.v1`
 - [ServiceRoleBinding](../github.com/solo-io/supergloo/api/external/istio/rbac/v1alpha1/rbac.proto.sk#servicerolebinding)
 - [Settings](../github.com/solo-io/gloo/projects/gloo/api/v1/settings.proto.sk#settings)
 - [Upstream](../github.com/solo-io/gloo/projects/gloo/api/v1/upstream.proto.sk#upstream)
+- [UpstreamGroup](../github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto.sk#upstreamgroup)
 - [VirtualService](../github.com/solo-io/gloo/projects/gateway/api/v1/virtual_service.proto.sk#virtualservice)
 - [VirtualService](../github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/virtual_service.proto.sk#virtualservice)
 
