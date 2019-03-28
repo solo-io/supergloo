@@ -10,10 +10,8 @@ import (
 	"time"
 
 	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
-	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
-	sgutils2 "github.com/solo-io/supergloo/test/testutils"
-
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apimachinery/pkg/labels"
@@ -288,16 +286,6 @@ func testUninstallGloo(meshIngressName string) {
 	}, time.Minute*2).Should(BeTrue())
 }
 
-func testConfigurePrometheus(meshName, promNamespace string) {
-	err := deployPrometheus(promNamespace)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = utils.Supergloo(fmt.Sprintf("set mesh stats "+
-		"--target-mesh supergloo-system.%v "+
-		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
-	Expect(err).NotTo(HaveOccurred())
-}
-
 // remove supergloo controller pod(s)
 func deleteSuperglooPods() {
 	// wait until pod is gone
@@ -425,54 +413,6 @@ func getCerts(appLabel, namespace string) (string, string, error) {
 		return "", "", err
 	}
 	return rootCert, certChain, nil
-}
-
-func deployPrometheus(namespace string) error {
-	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: namespace},
-	})
-	if err != nil {
-		return err
-	}
-
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"files/prometheus-8.9.0.tgz")
-	if err != nil {
-		return err
-	}
-
-	err = sgutils.KubectlApply(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
-}
-
-func teardownPrometheus(namespace string) error {
-	err := kube.CoreV1().Namespaces().Delete(namespace, nil)
-	if err != nil {
-		return err
-	}
-
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"files/prometheus-8.9.0.tgz")
-	if err != nil {
-		return err
-	}
-
-	err = sgutils.KubectlDelete(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	sgutils2.WaitForNamespaceTeardown(namespace)
-
-	return nil
 }
 
 func helmTemplate(args ...string) (string, error) {

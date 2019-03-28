@@ -32,11 +32,11 @@ var (
 
 func Run(version, pullPolicy, prefix string) error {
 	rootPrefix = prefix
-	if glooVersion, err := getOsGlooVersion(); err != nil {
+	glooVersion, err := getOsGlooVersion()
+	if err != nil {
 		return err
-	} else {
-		osGlooVersion = glooVersion
 	}
+	osGlooVersion = glooVersion
 
 	if err := generateValuesYaml(version, pullPolicy); err != nil {
 		return fmt.Errorf("generating values.yaml failed: %v", err)
