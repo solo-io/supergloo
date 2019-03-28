@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      Added a utility function to determine in which namespace supergloo is running.
+
+
