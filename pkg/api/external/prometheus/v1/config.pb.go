@@ -35,9 +35,9 @@ type PrometheusConfig struct {
 	// inline string containing the prometheus config
 	// json_name must refer to the data key in the configmap we expect
 	Prometheus string `protobuf:"bytes,1,opt,name=prometheus,json=prometheus.yml,proto3" json:"prometheus,omitempty"`
-	// inline string containing the alerts config
+	// inline string containing the alerts config. currently unused by supergloo
 	Alerts string `protobuf:"bytes,2,opt,name=alerts,proto3" json:"alerts,omitempty"`
-	// inline string containing the alerts config
+	// inline string containing the rules config. currently unused by supergloo
 	Rules                string   `protobuf:"bytes,3,opt,name=rules,proto3" json:"rules,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
