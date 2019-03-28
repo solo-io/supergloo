@@ -47,7 +47,7 @@ var _ = Describe("ConfigmapConverter", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(promConfigMap).To(Equal(&kubev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
-			Data:       map[string]string{"prometheus.yml": inputs.BasicPrometheusConfig},
+			Data:       map[string]string{"prometheus.yml": inputs.BasicPrometheusConfig, "alerts": "", "rules": ""},
 		}))
 	})
 })

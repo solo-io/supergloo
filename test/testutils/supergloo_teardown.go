@@ -26,7 +26,7 @@ func WaitForNamespaceTeardown(ns string) {
 			}
 		}
 		return true, nil
-	}, time.Second*120).Should(BeTrue())
+	}, time.Second*180).Should(BeTrue())
 }
 
 func TeardownSuperGloo(kube kubernetes.Interface) {
