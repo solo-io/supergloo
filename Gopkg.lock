@@ -291,6 +291,19 @@
   revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
+  digest = "1:3013dd98344c95f63f0cf3912b9f46a095b4cdddf95f338386206ba42ca41678"
+  name = "github.com/envoyproxy/go-control-plane"
+  packages = [
+    "envoy/api/v2/auth",
+    "envoy/api/v2/core",
+    "envoy/config/grpc_credential/v2alpha",
+    "envoy/type",
+  ]
+  pruneopts = "UT"
+  revision = "0ad6fa1cf0b9b6ca8f3617a7188a568e81f40b87"
+  version = "v0.6.9"
+
+[[projects]]
   digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
@@ -663,6 +676,14 @@
   version = "v0.10.4"
 
 [[projects]]
+  digest = "1:8f3e1c572760f95e2b36c360396a9d4f9df9f53026b426208ef618b5112fd1fe"
+  name = "github.com/helm/helm"
+  packages = ["pkg/hooks"]
+  pruneopts = "UT"
+  revision = "618447cbf203d147601b4b9bd7f8c37a5d39fbb4"
+  version = "v2.13.1"
+
+[[projects]]
   branch = "master"
   digest = "1:189c8f93f3242c4fc5902e9db5483e82f6d94ca4c35fad608f049cf5d9dada95"
   name = "github.com/hinshun/vt10x"
@@ -722,6 +743,18 @@
   pruneopts = "UT"
   revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
   version = "v0.3.5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:f3b0cfd42716269884bf06df5d5be9e54161d5af0a2f0ccca08717928dd45fc5"
+  name = "github.com/inconshreveable/go-update"
+  packages = [
+    ".",
+    "internal/binarydist",
+    "internal/osext",
+  ]
+  pruneopts = "UT"
+  revision = "8152e7eb6ccf8679a64582a66b78519688d156ad"
 
 [[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
@@ -1130,12 +1163,39 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:cb5b6eef68658fb80904d11cd2e58d84c96604f3e44bd4cf750f108d4b6a52ba"
+  digest = "1:86ad053a8f7560e5f78c69806df8037c028e1dc3bcc103c320c8dc8aa40836de"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
     "pkg/cliutil",
+    "pkg/cliutil/install",
     "pkg/cliutil/testutil",
+    "pkg/version",
+    "projects/gateway/pkg/api/v1",
+    "projects/gloo/cli/pkg/argsutils",
+    "projects/gloo/cli/pkg/cmd",
+    "projects/gloo/cli/pkg/cmd/add",
+    "projects/gloo/cli/pkg/cmd/create",
+    "projects/gloo/cli/pkg/cmd/create/secret",
+    "projects/gloo/cli/pkg/cmd/del",
+    "projects/gloo/cli/pkg/cmd/edit",
+    "projects/gloo/cli/pkg/cmd/edit/options",
+    "projects/gloo/cli/pkg/cmd/edit/upstream",
+    "projects/gloo/cli/pkg/cmd/edit/virtualservice",
+    "projects/gloo/cli/pkg/cmd/gateway",
+    "projects/gloo/cli/pkg/cmd/get",
+    "projects/gloo/cli/pkg/cmd/install",
+    "projects/gloo/cli/pkg/cmd/options",
+    "projects/gloo/cli/pkg/cmd/remove",
+    "projects/gloo/cli/pkg/cmd/route",
+    "projects/gloo/cli/pkg/cmd/upgrade",
+    "projects/gloo/cli/pkg/common",
+    "projects/gloo/cli/pkg/constants",
+    "projects/gloo/cli/pkg/flagutils",
+    "projects/gloo/cli/pkg/helpers",
+    "projects/gloo/cli/pkg/printers",
+    "projects/gloo/cli/pkg/surveyutils",
+    "projects/gloo/cli/pkg/testutils",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/plugins",
     "projects/gloo/pkg/api/v1/plugins/aws",
@@ -1150,6 +1210,8 @@
     "projects/gloo/pkg/api/v1/plugins/retries",
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
+    "projects/gloo/pkg/defaults",
+    "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
   revision = "44122811511c3d6bab63c4ca6886ffabb7aa602c"
@@ -1190,7 +1252,7 @@
   version = "v0.6.1"
 
 [[projects]]
-  digest = "1:f2cf8f2c5806fccdc98f20c0bcf488b4aac6fdea45dccf5272bb23fbb41a490b"
+  digest = "1:676e3c47dde9f4fcbb53e7513ff40454ece084b365018cca82beea55178c559d"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1225,6 +1287,7 @@
     "pkg/code-generator/model",
     "pkg/code-generator/parser",
     "pkg/errors",
+    "pkg/utils/cliutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
     "pkg/utils/hashutils",
@@ -1598,8 +1661,7 @@
   version = "v2.2.1"
 
 [[projects]]
-  branch = "release-1.13"
-  digest = "1:59f8bed7a7fbb14fb4d57cd578e2f65b1779b11573e7aa7fdba942198bbf8c07"
+  digest = "1:a218faabd81ea62d514604e97d040b9c6d17ea0bbd5cf9a4e542d2d02f79512f"
   name = "k8s.io/api"
   packages = [
     "admission/v1beta1",
@@ -1638,7 +1700,8 @@
     "storage/v1beta1",
   ]
   pruneopts = "UT"
-  revision = "5cb15d34447165a97c76ed5a60e4e99c8a01ecfe"
+  revision = "05914d821849570fba9eacfb29466f2d8d3cd229"
+  version = "kubernetes-1.13.1"
 
 [[projects]]
   digest = "1:ace21b4261a9bc8d06b188f03ce48d1bed92ccba4890fad616cf283939f723c6"
@@ -1742,7 +1805,7 @@
   revision = "79bf4e0b64544d8c490247abae089bea572ddae6"
 
 [[projects]]
-  digest = "1:0a917903272aaee508ec00e6a631ac8b0d1746472076d3c68c158031517c7fd5"
+  digest = "1:634a73c2987a7401673732fecd1b093c680a74b8ae7f04c315f992bca2762d69"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -1893,8 +1956,12 @@
     "pkg/apis/clientauthentication/v1alpha1",
     "pkg/apis/clientauthentication/v1beta1",
     "pkg/version",
+    "plugin/pkg/client/auth",
+    "plugin/pkg/client/auth/azure",
     "plugin/pkg/client/auth/exec",
     "plugin/pkg/client/auth/gcp",
+    "plugin/pkg/client/auth/oidc",
+    "plugin/pkg/client/auth/openstack",
     "rest",
     "rest/watch",
     "restmapper",
@@ -2136,6 +2203,7 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/openshift/api/security/v1",
+    "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/api",
     "github.com/prometheus/client_golang/api/prometheus/v1",
@@ -2144,6 +2212,7 @@
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
+    "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",

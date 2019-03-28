@@ -10,7 +10,9 @@ import (
 	"strings"
 	"time"
 
+	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apimachinery/pkg/labels"
@@ -36,34 +38,49 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const superglooNamespace = "supergloo-system"
+
 var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
-		err := utils.Supergloo("init --release latest")
-		Expect(err).NotTo(HaveOccurred())
+		var superglooErr error
+		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
+		err := generate.Run("dev", "Always", projectRoot)
+		if err == nil {
+			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
+		} else {
+			superglooErr = utils.Supergloo("init --release latest")
+		}
+		Expect(superglooErr).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		deleteSuperglooPods()
+		istioName := "my-istio"
+		glooName := "gloo"
 
-		meshName := "my-istio"
-
-		testInstallIstio(meshName)
+		testInstallIstio(istioName)
 
 		testConfigurePrometheus(meshName, promNamespace)
 
-		testCertRotation(meshName)
+		testGlooInstall(glooName, istioName)
 
 		testMtls()
 
+		testGlooMtls(istioName)
+
+		testCertRotation(istioName)
+
 		testTrafficShifting()
 
-		testUninstallIstio(meshName)
+		testUninstallIstio(istioName)
+
+		testUninstallGloo(glooName)
 	})
 })
 
 /*
-tests
+   tests
 */
 func testInstallIstio(meshName string) {
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
@@ -72,7 +89,7 @@ func testInstallIstio(meshName string) {
 	installClient := clients.MustInstallClient()
 
 	Eventually(func() (core.Status_State, error) {
-		i, err := installClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
+		i, err := installClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
 		if err != nil {
 			return 0, err
 		}
@@ -81,17 +98,17 @@ func testInstallIstio(meshName string) {
 	}, time.Minute*2).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
-		_, err := kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+		_, err := kube.CoreV1().Services(istioNamesapce).Get("istio-pilot", metav1.GetOptions{})
 		return err
 	}).ShouldNot(HaveOccurred())
 
 	meshClient := clients.MustMeshClient()
 	Eventually(func() error {
-		_, err := meshClient.Read("supergloo-system", meshName, skclients.ReadOpts{})
+		_, err := meshClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
 		return err
 	}).ShouldNot(HaveOccurred())
 
-	err = waitUntilPodsRunning(time.Minute*2, "istio-system",
+	err = waitUntilPodsRunning(time.Minute*2, istioNamesapce,
 		"grafana",
 		"istio-citadel",
 		"istio-galley",
@@ -127,7 +144,35 @@ func testInstallIstio(meshName string) {
 		"reviews-v3",
 	)
 	Expect(err).NotTo(HaveOccurred())
+}
 
+func testGlooInstall(glooName, istioName string) {
+	err := utils.Supergloo(fmt.Sprintf("install gloo --name=%s --target-meshes %s.%s ",
+		glooName, superglooNamespace, istioName))
+	Expect(err).NotTo(HaveOccurred())
+
+	installClient := clients.MustInstallClient()
+
+	Eventually(func() (core.Status_State, error) {
+		i, err := installClient.Read(superglooNamespace, glooName, skclients.ReadOpts{})
+		if err != nil {
+			return 0, err
+		}
+		Expect(i.Status.Reason).To(Equal(""))
+		return i.Status.State, nil
+	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+
+	meshIngressClient := clients.MustMeshIngressClient()
+	Eventually(func() error {
+		_, err := meshIngressClient.Read(superglooNamespace, glooName, skclients.ReadOpts{})
+		return err
+	}, time.Minute*2).ShouldNot(HaveOccurred())
+
+	err = waitUntilPodsRunning(time.Minute*2, glooNamespace,
+		"gloo",
+		"gateway",
+	)
+	Expect(err).NotTo(HaveOccurred())
 }
 
 func testCertRotation(meshName string) {
@@ -175,9 +220,31 @@ func testMtls() {
 	}, `"author":"William Shakespeare"`, time.Minute*3)
 }
 
+func testGlooMtls(istioName string) {
+	service := "details"
+	port := 9080
+	upstreamName := fmt.Sprintf("%s-%s-%d", namespaceWithInject, service, port)
+	err := utils.Supergloo(fmt.Sprintf("set upstream mtls --name %s --target-mesh %s.%s",
+		upstreamName, superglooNamespace, istioName))
+	Expect(err).NotTo(HaveOccurred())
+
+	err = glootestutils.Glooctl(fmt.Sprintf("add route --name detailspage"+
+		" --namespace %s --path-prefix / --dest-name %s "+
+		"--dest-namespace %s", glooNamespace, upstreamName, superglooNamespace))
+	Expect(err).NotTo(HaveOccurred())
+
+	// with mtls in strict mode, curl will succeed routing through gloo
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "gateway-proxy." + glooNamespace + ".svc.cluster.local",
+		Port:    80,
+		Path:    "/details/1",
+	}, `"author":"William Shakespeare"`, time.Minute*3)
+}
+
 func testTrafficShifting() {
-	//apply a traffic shifting rule, divert traffic to reviews
-	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", "supergloo-system", namespaceWithInject, 1))
+	// apply a traffic shifting rule, divert traffic to reviews
+	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.my-istio --name hi --destination %v.%v-reviews-9080:%v", superglooNamespace, superglooNamespace, namespaceWithInject, 1))
+
 	Expect(err).NotTo(HaveOccurred())
 
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
@@ -195,14 +262,14 @@ func testUninstallIstio(meshName string) {
 
 	err = nil
 	Eventually(func() error {
-		_, err = kube.CoreV1().Services("istio-system").Get("istio-pilot", metav1.GetOptions{})
+		_, err = kube.CoreV1().Services(istioNamesapce).Get("istio-pilot", metav1.GetOptions{})
 		return err
 	}, time.Minute*2).Should(HaveOccurred())
 	Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
 
 	err = nil
 	Eventually(func() bool {
-		_, err = clients.MustMeshClient().Read("supergloo-system", meshName, skclients.ReadOpts{})
+		_, err = clients.MustMeshClient().Read(superglooNamespace, meshName, skclients.ReadOpts{})
 		if err == nil {
 			return false
 		}
@@ -226,20 +293,35 @@ func testConfigurePrometheus(meshName, promNamespace string) {
 /*
 util funcs
 */
+func testUninstallGloo(meshIngressName string) {
+	// test uninstall works
+	err := utils.Supergloo("uninstall --name=" + meshIngressName)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = nil
+	Eventually(func() bool {
+		_, err = clients.MustMeshClient().Read(superglooNamespace, meshIngressName, skclients.ReadOpts{})
+		if err == nil {
+			return false
+		}
+		return skerrors.IsNotExist(err)
+	}, time.Minute*2).Should(BeTrue())
+}
+
 // remove supergloo controller pod(s)
 func deleteSuperglooPods() {
 	// wait until pod is gone
 	Eventually(func() error {
-		dep, err := kube.ExtensionsV1beta1().Deployments("supergloo-system").Get("supergloo", metav1.GetOptions{})
+		dep, err := kube.ExtensionsV1beta1().Deployments(superglooNamespace).Get("supergloo", metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 		dep.Spec.Replicas = proto.Int(0)
-		_, err = kube.ExtensionsV1beta1().Deployments("supergloo-system").Update(dep)
+		_, err = kube.ExtensionsV1beta1().Deployments(superglooNamespace).Update(dep)
 		if err != nil {
 			return err
 		}
-		pods, err := kube.CoreV1().Pods("supergloo-system").List(metav1.ListOptions{})
+		pods, err := kube.CoreV1().Pods(superglooNamespace).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}

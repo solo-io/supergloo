@@ -41,7 +41,7 @@ var _ = Describe("HelmChartInstaller", func() {
 	})
 	AfterEach(func() {
 		testutils.TeardownKube(ns)
-		superglootest.TeardownIstio(kubeClient)
+		superglootest.TeardownWithPrefix(kubeClient, "istio")
 		superglootest.WaitForIstioTeardown(ns)
 	})
 	Context("create manifest", func() {
