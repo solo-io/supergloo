@@ -35,7 +35,7 @@ be load-balanced by weight across a variety of destinations`,
 		addFlagsFunc:   flagutils.AddTrafficShiftingFlags,
 		convertSpecFunc: func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error) {
 			if in.TrafficShifting.Destinations == nil || len(in.TrafficShifting.Destinations.Destinations) == 0 {
-				return nil, noDestinationError
+				return nil, errors.Errorf("must provide at least 1 destination")
 			}
 			return &v1.RoutingRuleSpec{
 				RuleType: &v1.RoutingRuleSpec_TrafficShifting{
@@ -47,13 +47,6 @@ be load-balanced by weight across a variety of destinations`,
 		},
 	},
 }
-
-var (
-	noDestinationError   = errors.Errorf("must provide at least 1 destination")
-	IsNoDestinationError = func(err error) bool {
-		return err == noDestinationError
-	}
-)
 
 func applyRoutingRuleCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
