@@ -34,7 +34,15 @@ The sidecar injector webhook currently has the following limitations:
 * The container in the input pod must specify a `containerPort`
 * `InjectionSelector` must be of type `Label` or `Namespace` (`Upstreams` is currently not supported)
 * AWS App Mesh is currently available only in the following AWS regions:
+    * ap-south-1,
+    * ap-northeast-1
+    * ap-northeast-2
+    * ap-southeast-1 
+    * ap-southeast-2
+    * us-west-1
     * us-west-2
     * us-east-1
     * us-east-2
     * eu-west-1
+    * eu-central-1
+    * ca-central-1
