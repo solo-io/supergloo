@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,12 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/prometheus/client_golang/api"
-	promclient "github.com/prometheus/client_golang/api/prometheus/v1"
-	"github.com/prometheus/common/model"
-
-	sgutils2 "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
@@ -226,27 +219,8 @@ func testConfigurePrometheus(meshName, promNamespace string) {
 		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
 	Expect(err).NotTo(HaveOccurred())
 
-	// port forward to prometheus
-	ctx, cancel := context.WithCancel(context.TODO())
-	defer cancel()
-	err = sgutils.KubectlPortForward(ctx, "prometheus-test", "prometheus-server", 9090)
-	Expect(err).NotTo(HaveOccurred())
-	time.Sleep(time.Second) // give port forward 1sec to start
-
-	// wait until config syncs and prometheus scrapes some stats
-	Eventually(queryIstioStats, time.Minute*2).Should(Not(BeEmpty()))
-
 	// assert the sample is valid
-	samples, err := queryIstioStats()
-	Expect(err).NotTo(HaveOccurred())
-	var foundIstioMetric bool
-	for _, sample := range samples {
-		if sample.Metric["destination_workload"] == "istio-telemetry" {
-			foundIstioMetric = true
-			break
-		}
-	}
-	Expect(foundIstioMetric).To(BeTrue())
+	queryIstioStats()
 }
 
 /*
@@ -393,6 +367,8 @@ func deployPrometheus(namespace string) error {
 	manifest, err := helmTemplate("--name=prometheus",
 		"--namespace="+namespace,
 		"--set", "rbac.create=true",
+		"--set", "server.persistentVolume.enabled=false",
+		"--set", "alertmanager.enabled=false",
 		"files/prometheus-8.9.0.tgz")
 	if err != nil {
 		return err
@@ -402,6 +378,11 @@ func deployPrometheus(namespace string) error {
 	if err != nil {
 		return err
 	}
+
+	Eventually(func() error {
+		_, err := kube.ExtensionsV1beta1().Deployments(namespace).Get("prometheus-server", metav1.GetOptions{})
+		return err
+	}, time.Minute*2).ShouldNot(HaveOccurred())
 
 	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
 }
@@ -425,33 +406,15 @@ func teardownPrometheus(namespace string) error {
 		return err
 	}
 
-	sgutils2.WaitForNamespaceTeardown(namespace)
-
 	return nil
 }
 
-func queryIstioStats() (model.Vector, error) {
-	// establish connection
-	c, err := api.NewClient(api.Config{
-		Address: "http://localhost:9090",
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// query istio_requests_total
-	prometheusAPi := promclient.NewAPI(c)
-	resp, err := prometheusAPi.Query(context.TODO(), `istio_requests_total{}`, time.Time{})
-	if err != nil {
-		log.Printf("prom query err %v", err)
-		return nil, err
-	}
-
-	vec, ok := resp.(model.Vector)
-	if !ok {
-		return nil, errors.Errorf("resp was not type vector, %v", resp)
-	}
-	return vec, nil
+func queryIstioStats() {
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "prometheus-server.prometheus-test.svc.cluster.local",
+		Port:    80,
+		Path:    `/api/v1/query?query=istio_requests_total\{\}`,
+	}, `"istio_requests_total"`, time.Minute*5)
 }
 
 func helmTemplate(args ...string) (string, error) {

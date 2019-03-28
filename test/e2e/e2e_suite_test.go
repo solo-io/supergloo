@@ -75,6 +75,7 @@ var _ = BeforeSuite(func() {
 		err := setup.Main(rootCtx, func(e error) {
 			defer GinkgoRecover()
 			return
+			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -90,18 +91,19 @@ func teardown() {
 		defer cancel()
 	}
 	defer lock.ReleaseLock()
-	err := teardownPrometheus(promNamespace)
-	if err != nil {
-		log.Printf("failed to teardown prometheus: %v", err)
-	}
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete("istio-system", nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 	testutils.TeardownIstio(kube)
+	err := teardownPrometheus(promNamespace)
+	if err != nil {
+		log.Printf("failed to teardown prometheus: %v", err)
+	}
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
+	testutils.WaitForNamespaceTeardown(promNamespace)
 	log.Printf("done!")
 
 }

@@ -5,8 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
+
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/gomega"
 
 	"github.com/solo-io/go-utils/errors"
 )
@@ -37,18 +41,35 @@ func Kubectl(stdin io.Reader, args ...string) error {
 }
 
 func KubectlPortForward(ctx context.Context, namespace, deployment string, port int) error {
+	log.Printf("starting port forward on %v.%v:%v", namespace, deployment, port)
 	return KubectlCtx(ctx, nil, "port-forward", "-n", namespace, "deployment/"+deployment, fmt.Sprintf("%v", port))
 }
 
 func KubectlCtx(ctx context.Context, stdin io.Reader, args ...string) error {
 	kubectl := exec.Command("kubectl", args...)
-	if ctx != nil {
-		kubectl = exec.CommandContext(ctx, "kubectl", args...)
-	}
 	if stdin != nil {
 		kubectl.Stdin = stdin
 	}
 	kubectl.Stdout = os.Stdout
 	kubectl.Stderr = os.Stderr
-	return kubectl.Start()
+	if ctx != nil {
+		go func() {
+			defer ginkgo.GinkgoRecover()
+			err := kubectl.Run()
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			}
+		}()
+		go func() {
+			<-ctx.Done()
+			if kubectl.Process != nil {
+				kubectl.Process.Kill()
+			}
+		}()
+		return nil
+	}
+	return kubectl.Run()
 }
