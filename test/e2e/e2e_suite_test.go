@@ -93,6 +93,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	defer lock.ReleaseLock()
 	teardown()
 })
 
@@ -100,7 +101,6 @@ func teardown() {
 	if cancel != nil {
 		cancel()
 	}
-	defer lock.ReleaseLock()
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete(istioNamesapce, nil)
 	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
