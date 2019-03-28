@@ -1,5 +1,4 @@
 changelog:
   - type: NON_USER_FACING
-    description: Speed up builds by 
-    issueLink: https://github.com/solo-io/supergloo/issues/225
+    description: Speed up builds by caching the contents of /workspace/go/pkg
 
