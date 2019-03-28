@@ -243,10 +243,25 @@ metadata:
   name: ts-rr
   namespace: supergloo-system
 spec:
+  spec:
+    trafficShifting:
+      destinations:
+        destinations:
+        - destination:
+            upstream:
+              name: do
+              namespace: a
+          weight: 5
+        - destination:
+            upstream:
+              name: barrel
+              namespace: roll
+          weight: 55
   targetMesh:
     name: mesh
     namespace: my
-status: {}`))
+status: {}
+`))
 		})
 	})
 	Context("request matcher tests", func() {
