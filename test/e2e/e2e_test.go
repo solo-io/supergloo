@@ -61,7 +61,7 @@ var _ = Describe("E2e", func() {
 
 		testInstallIstio(istioName)
 
-		testConfigurePrometheus(meshName, promNamespace)
+		testConfigurePrometheus(istioName, promNamespace)
 
 		testGlooInstall(glooName, istioName)
 
