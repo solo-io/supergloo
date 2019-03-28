@@ -10,6 +10,7 @@ import (
 	"time"
 
 	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
+	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	sgutils2 "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -44,7 +45,16 @@ var _ = Describe("E2e", func() {
 	It("installs upgrades and uninstalls istio", func() {
 		// install discovery via cli
 		// start discovery
-		err := utils.Supergloo("init --release latest")
+
+		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
+		err := os.Chdir(projectRoot)
+		if err == nil {
+			err = generate.Run("dev", "Always")
+			Expect(err).NotTo(HaveOccurred())
+			err = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", generate.ValuesOutput))
+		} else {
+			err = utils.Supergloo("init --release latest")
+		}
 		Expect(err).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
