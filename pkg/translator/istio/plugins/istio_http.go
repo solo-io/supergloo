@@ -49,7 +49,7 @@ func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *
 
 func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) error {
 
-	var fault *v1alpha3.HTTPFaultInjection
+	fault := &v1alpha3.HTTPFaultInjection{}
 
 	switch faultType := rule.FaultInjectionType.(type) {
 	case *v1.FaultInjection_Abort_:
@@ -61,10 +61,8 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 		}
 		switch abortType := faultType.Abort.ErrorType.(type) {
 		case *v1.FaultInjection_Abort_HttpStatus:
-			abort = &v1alpha3.HTTPFaultInjection_Abort{
-				ErrorType: &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
-					HttpStatus: abortType.HttpStatus,
-				},
+			abort.ErrorType = &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
+				HttpStatus: abortType.HttpStatus,
 			}
 		default:
 			return errors.Errorf("unknown fault injection abort type %v", faultType.Abort.ErrorType)
@@ -80,10 +78,8 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 		}
 		switch delayType := faultType.Delay.HttpDelayType.(type) {
 		case *v1.FaultInjection_Delay_FixedDelay:
-			delay = &v1alpha3.HTTPFaultInjection_Delay{
-				HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
-					FixedDelay: delayType.FixedDelay,
-				},
+			delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
+				FixedDelay: delayType.FixedDelay,
 			}
 		default:
 			return errors.Errorf("unknown fault injection abort type %v", faultType.Delay.HttpDelayType)
