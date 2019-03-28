@@ -65,7 +65,7 @@ message RoutingRuleSpec {
         TrafficShifting traffic_shifting = 1;
 
         // enable fault injection on requests
-        istio.networking.v1alpha3.HTTPFaultInjection fault_injection = 2;
+        FaultInjection fault_injection = 2;
 
         // set a timeout on requests
         google.protobuf.Duration request_timeout = 7;
@@ -92,6 +92,51 @@ message TrafficShifting {
     // split traffic between these subsets based on their weights
     // weights are relative to the sum of the weights
     gloo.solo.io.MultiDestination destinations = 1;
+}
+
+// FaultInjection can be used to specify one or more faults to inject
+// while forwarding http requests to the destination specified in a route.
+// Faults include aborting the Http request from downstream service, and/or delaying
+// proxying of requests. A fault rule MUST HAVE delay or abort.
+message FaultInjection {
+
+    oneof fault_injection_type {
+        // Delay requests before forwarding, emulating various failures such as
+        // network issues, overloaded upstream service, etc.
+        Delay delay = 1;
+
+        // Abort Http request attempts and return error codes back to downstream
+        // service, giving the impression that the upstream service is faulty.
+        Abort abort = 2;
+    }
+
+    // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+    // The optional _percentage_ field can be used to only delay a certain
+    // percentage of requests. If left unspecified, all request will be delayed.
+    message Delay {
+
+
+        oneof http_delay_type {
+            // REQUIRED. Add a fixed delay before forwarding the request. Format:
+            // 1h/1m/1s/1ms. MUST be >=1ms.
+            google.protobuf.Duration fixed_delay = 3;
+        }
+    }
+
+    // The _httpStatus_ field is used to indicate the HTTP status code to
+    // return to the caller. The optional _percentage_ field can be used to only
+    // abort a certain percentage of requests. If not specified, all requests are
+    // aborted.
+    message Abort {
+
+        oneof error_type {
+            // REQUIRED. HTTP status code to use to abort the Http request.
+            int32 http_status = 4;
+        }
+    }
+
+    // Percentage of requests to be faulted with the error code provided.
+    double percentage = 5;
 }
 
 // manipulate request and response headers

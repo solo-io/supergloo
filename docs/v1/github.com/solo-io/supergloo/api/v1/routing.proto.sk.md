@@ -14,6 +14,9 @@ weight: 5
 - [RoutingRule](#routingrule) **Top-Level Resource**
 - [RoutingRuleSpec](#routingrulespec)
 - [TrafficShifting](#trafficshifting)
+- [FaultInjection](#faultinjection)
+- [Delay](#delay)
+- [Abort](#abort)
 - [HeaderManipulation](#headermanipulation)
   
 
@@ -69,7 +72,7 @@ the routing configuration that will be applied to the mesh(es)
 
 ```yaml
 "trafficShifting": .supergloo.solo.io.TrafficShifting
-"faultInjection": .istio.networking.v1alpha3.HTTPFaultInjection
+"faultInjection": .supergloo.solo.io.FaultInjection
 "requestTimeout": .google.protobuf.Duration
 "retries": .istio.networking.v1alpha3.HTTPRetry
 "corsPolicy": .istio.networking.v1alpha3.CorsPolicy
@@ -81,7 +84,7 @@ the routing configuration that will be applied to the mesh(es)
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `trafficShifting` | [.supergloo.solo.io.TrafficShifting](../routing.proto.sk#trafficshifting) | enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |  |
-| `faultInjection` | [.istio.networking.v1alpha3.HTTPFaultInjection](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpfaultinjection) | enable fault injection on requests |  |
+| `faultInjection` | [.supergloo.solo.io.FaultInjection](../routing.proto.sk#faultinjection) | enable fault injection on requests |  |
 | `requestTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | set a timeout on requests |  |
 | `retries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | set a retry policy on requests |  |
 | `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#corspolicy) | set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
@@ -105,6 +108,72 @@ requests for this rule will be routed to these destinations
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `destinations` | [.gloo.solo.io.MultiDestination](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#multidestination) | split traffic between these subsets based on their weights weights are relative to the sum of the weights |  |
+
+
+
+
+---
+### FaultInjection
+
+ 
+FaultInjection can be used to specify one or more faults to inject
+while forwarding http requests to the destination specified in a route.
+Faults include aborting the Http request from downstream service, and/or delaying
+proxying of requests. A fault rule MUST HAVE delay or abort.
+
+```yaml
+"delay": .supergloo.solo.io.FaultInjection.Delay
+"abort": .supergloo.solo.io.FaultInjection.Abort
+"percentage": float
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `delay` | [.supergloo.solo.io.FaultInjection.Delay](../routing.proto.sk#delay) | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |  |
+| `abort` | [.supergloo.solo.io.FaultInjection.Abort](../routing.proto.sk#abort) | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |  |
+| `percentage` | `float` | Percentage of requests to be faulted with the error code provided. |  |
+
+
+
+
+---
+### Delay
+
+ 
+The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+The optional _percentage_ field can be used to only delay a certain
+percentage of requests. If left unspecified, all request will be delayed.
+
+```yaml
+"fixedDelay": .google.protobuf.Duration
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `fixedDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
+
+
+
+
+---
+### Abort
+
+ 
+The _httpStatus_ field is used to indicate the HTTP status code to
+return to the caller. The optional _percentage_ field can be used to only
+abort a certain percentage of requests. If not specified, all requests are
+aborted.
+
+```yaml
+"httpStatus": int
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `httpStatus` | `int` | REQUIRED. HTTP status code to use to abort the Http request. |  |
 
 
 
