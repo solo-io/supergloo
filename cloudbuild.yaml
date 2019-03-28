@@ -156,4 +156,4 @@ secrets:
 timeout: 6600s
 tags: ['supergloo']
 options:
-  machineType: 'N1_HIGHCPU_8'
+  machineType: 'n1_standard_4'
