@@ -65,7 +65,7 @@ message RoutingRuleSpec {
         TrafficShifting traffic_shifting = 1;
 
         // enable fault injection on requests
-        istio.networking.v1alpha3.HTTPFaultInjection fault_injection = 2;
+        FaultInjection fault_injection = 2;
 
         // set a timeout on requests
         google.protobuf.Duration request_timeout = 7;

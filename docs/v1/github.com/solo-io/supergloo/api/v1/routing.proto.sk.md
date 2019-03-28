@@ -72,7 +72,7 @@ the routing configuration that will be applied to the mesh(es)
 
 ```yaml
 "trafficShifting": .supergloo.solo.io.TrafficShifting
-"faultInjection": .istio.networking.v1alpha3.HTTPFaultInjection
+"faultInjection": .supergloo.solo.io.FaultInjection
 "requestTimeout": .google.protobuf.Duration
 "retries": .istio.networking.v1alpha3.HTTPRetry
 "corsPolicy": .istio.networking.v1alpha3.CorsPolicy
@@ -84,7 +84,7 @@ the routing configuration that will be applied to the mesh(es)
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `trafficShifting` | [.supergloo.solo.io.TrafficShifting](../routing.proto.sk#trafficshifting) | enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |  |
-| `faultInjection` | [.istio.networking.v1alpha3.HTTPFaultInjection](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpfaultinjection) | enable fault injection on requests |  |
+| `faultInjection` | [.supergloo.solo.io.FaultInjection](../routing.proto.sk#faultinjection) | enable fault injection on requests |  |
 | `requestTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | set a timeout on requests |  |
 | `retries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | set a retry policy on requests |  |
 | `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#corspolicy) | set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
