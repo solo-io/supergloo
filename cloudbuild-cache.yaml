@@ -46,7 +46,7 @@ steps:
 
 - name: 'gcr.io/$PROJECT_ID/go-make'
   entrypoint: 'bash'
-  args: ['-c', 'tar -zvcf supergloo-gopkgcache.tar.gz /workspace/gopath/pkg/']
+  args: ['-c', 'tar -zvcf supergloo-gopkgcache.tar.gz ./gopath/pkg/linux_amd64/']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/supergloo'
   - 'GOPATH=/workspace/gopath'

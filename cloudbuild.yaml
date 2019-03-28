@@ -20,7 +20,7 @@ steps:
   # These two steps should populate the cache
   - name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
-    args: ['-c', 'gsutil cat gs://solo-public-cache/supergloo/supergloo-gopkgcache.tar.gz | tar -xzf -']
+    args: ['-c', 'mkdir -p ./gopath/pkg/linux_amd64 && gsutil cat gs://solo-public-cache/supergloo/supergloo-gopkgcache.tar.gz | tar -xzf -']
     id: 'download-untar-gopkg-cache'
     waitFor: ['-']
 
