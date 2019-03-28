@@ -1,8 +1,19 @@
 steps:
+
+# Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
+# These two steps should populate the cache
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: 'bash'
+  args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/supergloo/supergloo-dep.tar.gz | tar -xzf -']
+  id: 'download-untar-dep-cache'
+  waitFor: ['-']
+
+
 - name: 'gcr.io/$PROJECT_ID/dep'
   args: ['ensure']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+  waitFor: ['download-untar-dep-cache']
   id: 'dep'
 
 - name: 'gcr.io/$PROJECT_ID/go-make'
@@ -21,7 +32,7 @@ steps:
     - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
     - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
   dir: './gopath/src/github.com/solo-io/supergloo'
-  args: ['-r', '-dryRun', '-v', 'pkg', 'test/e2e']
+  args: ['build', '-r', '-gcflags=-v', 'pkg', 'test/e2e']
   waitFor: ['dep']
   id: 'test'
 
@@ -33,6 +44,14 @@ steps:
   - 'GOPATH=/workspace/gopath'
   id: 'create-go-cache'
 
+- name: 'gcr.io/$PROJECT_ID/go-make'
+  entrypoint: 'bash'
+  args: ['-c', 'tar -zvcf supergloo-gopkgcache.tar.gz /workspace/gopath/pkg/']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+  - 'GOPATH=/workspace/gopath'
+  id: 'create-go-pkg-cache'
+
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'supergloo-dep.tar.gz', 'gs://solo-public-cache/supergloo/supergloo-dep.tar.gz']
   waitFor: ['create-dep-cache']
@@ -40,5 +59,9 @@ steps:
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'supergloo-gocache.tar.gz', 'gs://solo-public-cache/supergloo/supergloo-gocache.tar.gz']
   waitFor: ['create-go-cache']
+
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'supergloo-gopkgcache.tar.gz', 'gs://solo-public-cache/supergloo/supergloo-gopkgcache.tar.gz']
+  waitFor: ['create-go-pkg-cache']
 
 timeout: 6600s
