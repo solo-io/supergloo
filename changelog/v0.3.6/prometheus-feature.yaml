@@ -1,0 +1,9 @@
+changelog:
+  - type: NEW_FEATURE
+    description: |
+      SuperGloo now propagates metrics from Istio Meshes to targeted Prometheus instances. Connecting
+      prometheus instances to the meshes they should scrape can be done with the `supergloo set mesh stats` command,
+      as well as by setting `spec.monitoringConfig.prometheusConfigmaps` in the `supergloo.solo.io/v1.Mesh` crd
+    issueLink: https://github.com/solo-io/supergloo/issues/210
+
+

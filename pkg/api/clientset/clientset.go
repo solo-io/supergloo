@@ -3,6 +3,9 @@ package clientset
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
+	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
@@ -32,6 +35,11 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	}
 	crdCache := kube.NewKubeCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
+	if err != nil {
+		return nil, err
+	}
+
+	promClient, err := promv1.NewPrometheusConfigClient(prometheus.ResourceClientFactory(kubeClient, kubeCoreCache))
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +123,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	return newClientset(
 		kubeClient,
+		promClient,
 		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret),
 		newDiscoveryClients(pods),
 	), nil
@@ -213,6 +222,8 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 type Clientset struct {
 	Kube kubernetes.Interface
 
+	Prometheus promv1.PrometheusConfigClient
+
 	// config for supergloo
 	Input *inputClients
 
@@ -220,8 +231,8 @@ type Clientset struct {
 	Discovery *discoveryClients
 }
 
-func newClientset(kube kubernetes.Interface, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{Kube: kube, Input: input, Discovery: discovery}
+func newClientset(kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *inputClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{Kube: kube, Prometheus: prometheus, Input: input, Discovery: discovery}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {

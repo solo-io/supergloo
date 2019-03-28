@@ -3,6 +3,7 @@ package e2e_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -60,6 +61,8 @@ var _ = Describe("E2e", func() {
 
 		testInstallIstio(istioName)
 
+		testConfigurePrometheus(istioName, promNamespace)
+
 		testGlooInstall(glooName, istioName)
 
 		testMtls()
@@ -76,6 +79,9 @@ var _ = Describe("E2e", func() {
 	})
 })
 
+/*
+   tests
+*/
 func testInstallIstio(meshName string) {
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
 	Expect(err).NotTo(HaveOccurred())
@@ -167,7 +173,6 @@ func testGlooInstall(glooName, istioName string) {
 		"gateway",
 	)
 	Expect(err).NotTo(HaveOccurred())
-
 }
 
 func testCertRotation(meshName string) {
@@ -238,7 +243,8 @@ func testGlooMtls(istioName string) {
 
 func testTrafficShifting() {
 	// apply a traffic shifting rule, divert traffic to reviews
-	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh supergloo-system.my-istio --name hi --destination %v.%v-reviews-9080:%v", superglooNamespace, namespaceWithInject, 1))
+	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.my-istio --name hi --destination %v.%v-reviews-9080:%v", superglooNamespace, superglooNamespace, namespaceWithInject, 1))
+
 	Expect(err).NotTo(HaveOccurred())
 
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
@@ -271,6 +277,22 @@ func testUninstallIstio(meshName string) {
 	}, time.Minute*2).Should(BeTrue())
 }
 
+func testConfigurePrometheus(meshName, promNamespace string) {
+	err := deployPrometheus(promNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = utils.Supergloo(fmt.Sprintf("set mesh stats "+
+		"--target-mesh supergloo-system.%v "+
+		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
+	Expect(err).NotTo(HaveOccurred())
+
+	// assert the sample is valid
+	queryIstioStats()
+}
+
+/*
+util funcs
+*/
 func testUninstallGloo(meshIngressName string) {
 	// test uninstall works
 	err := utils.Supergloo("uninstall --name=" + meshIngressName)
@@ -338,7 +360,8 @@ func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 			for _, prefix := range podPrefixes {
 				stat, err := getPodStatus(prefix)
 				if err != nil {
-					return err
+					log.Printf("failed to get pod status: %v", err)
+					continue
 				}
 				if *stat != v1.PodRunning {
 					notYetRunning[prefix] = *stat
@@ -413,6 +436,45 @@ func getCerts(appLabel, namespace string) (string, string, error) {
 		return "", "", err
 	}
 	return rootCert, certChain, nil
+}
+
+func deployPrometheus(namespace string) error {
+	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: namespace},
+	})
+	if err != nil {
+		return err
+	}
+
+	manifest, err := helmTemplate("--name=prometheus",
+		"--namespace="+namespace,
+		"--set", "rbac.create=true",
+		"--set", "server.persistentVolume.enabled=false",
+		"--set", "alertmanager.enabled=false",
+		"files/prometheus-8.9.0.tgz")
+	if err != nil {
+		return err
+	}
+
+	err = sgutils.KubectlApply(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	Eventually(func() error {
+		_, err := kube.ExtensionsV1beta1().Deployments(namespace).Get("prometheus-server", metav1.GetOptions{})
+		return err
+	}, time.Minute*2).ShouldNot(HaveOccurred())
+
+	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
+}
+
+func queryIstioStats() {
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "prometheus-server." + promNamespace + ".svc.cluster.local",
+		Port:    80,
+		Path:    `/api/v1/query?query=istio_requests_total\{\}`,
+	}, `"istio_requests_total"`, time.Minute*5)
 }
 
 func helmTemplate(args ...string) (string, error) {

@@ -6,11 +6,14 @@ import (
 	"os"
 	"testing"
 
+	gotestutils "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	"github.com/solo-io/supergloo/test/e2e/utils"
+
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
-	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
@@ -29,7 +32,7 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
-	promNamespace                       = "prometheus-test"
+	promNamespace                       = "prometheus-test" + gotestutils.RandString(4)
 )
 
 const (
@@ -82,6 +85,7 @@ var _ = BeforeSuite(func() {
 		err := setup.Main(rootCtx, func(e error) {
 			defer GinkgoRecover()
 			return
+			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -94,7 +98,7 @@ var _ = AfterSuite(func() {
 
 func teardown() {
 	if cancel != nil {
-		defer cancel()
+		cancel()
 	}
 	defer lock.ReleaseLock()
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
@@ -102,6 +106,10 @@ func teardown() {
 	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
+	err := teardownPrometheus(promNamespace)
+	if err != nil {
+		log.Printf("failed to teardown prometheus: %v", err)
+	}
 	testutils.TeardownWithPrefix(kube, "istio")
 	testutils.TeardownWithPrefix(kube, "gloo")
 	testutils.WaitForNamespaceTeardown("supergloo-system")
@@ -110,5 +118,28 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown(istioNamesapce)
 	testutils.WaitForNamespaceTeardown(glooNamespace)
 	log.Printf("done!")
+}
 
+func teardownPrometheus(namespace string) error {
+	manifest, err := helmTemplate("--name=prometheus",
+		"--namespace="+namespace,
+		"--set", "rbac.create=true",
+		"--set", "server.persistentVolume.enabled=false",
+		"--set", "alertmanager.enabled=false",
+		"files/prometheus-8.9.0.tgz")
+	if err != nil {
+		return err
+	}
+
+	err = utils.KubectlDelete(namespace, manifest)
+	if err != nil {
+		return err
+	}
+
+	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
