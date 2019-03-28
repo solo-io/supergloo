@@ -1,6 +1,7 @@
 package helm_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/solo-io/go-utils/testutils/clusterlock"
@@ -22,7 +23,9 @@ var (
 
 var _ = BeforeSuite(func() {
 	kubeClient = testutils.MustKubeClient()
-	lock, err = clusterlock.NewTestClusterLocker(kubeClient, "default")
+	lock, err = clusterlock.NewTestClusterLocker(kubeClient, clusterlock.Options{
+		IdPrefix: os.ExpandEnv("supergloo-helm-{$BUILD_ID}-"),
+	})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(lock.AcquireLock()).NotTo(HaveOccurred())
 })

@@ -27,16 +27,16 @@ steps:
     id: 'dep'
     waitFor: ['download-untar-dep-cache']
 
-# Run some basic checks on the repo
-# 1) check formatting of go files
-# 2) ensure that make generated-code produces a clean diff
+  # Run some basic checks on the repo
+  # 1) check formatting of go files
+  # 2) ensure that make generated-code produces a clean diff
 
-# e2e-ginkgo is produced from https://github.com/solo-io/cloud-builders/e2e-ginkgo
-# Must set the GOPATH to tell the container the workspace has already been set up (by the dep step above)
+  # e2e-ginkgo is produced from https://github.com/solo-io/cloud-builders/e2e-ginkgo
+  # Must set the GOPATH to tell the container the workspace has already been set up (by the dep step above)
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo'
     env:
-    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-    - 'GOPATH=/workspace/gopath'
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: make
     args: ['check-format']
@@ -46,9 +46,9 @@ steps:
     entrypoint: 'bash'
     args: ['ci/check-code-and-docs-gen.sh']
     env:
-    - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-    - 'GOPATH=/workspace/gopath'
-    - 'TAGGED_VERSION=$TAG_NAME'
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'TAGGED_VERSION=$TAG_NAME'
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['dep']
     id: 'check-code-and-docs-gen'
