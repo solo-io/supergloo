@@ -389,7 +389,7 @@ func deployPrometheus(namespace string) error {
 
 func queryIstioStats() {
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
-		Service: "prometheus-server.prometheus-test.svc.cluster.local",
+		Service: "prometheus-server." + promNamespace + ".svc.cluster.local",
 		Port:    80,
 		Path:    `/api/v1/query?query=istio_requests_total\{\}`,
 	}, `"istio_requests_total"`, time.Minute*5)
