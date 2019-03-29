@@ -2,6 +2,7 @@ package options
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -89,6 +90,19 @@ type Selector struct {
 // no implemented specs yet
 type RoutingRuleSpec struct {
 	TrafficShifting TrafficShiftingValue
+	FaultInjection  FaultInjection
+}
+
+type FaultInjection struct {
+	Percent float64
+	Abort   FaultInjectionAbort
+	Delay   FaultInjectionDelay
+}
+type FaultInjectionDelay struct {
+	Fixed time.Duration
+}
+type FaultInjectionAbort struct {
+	Http v1.FaultInjection_Abort_HttpStatus
 }
 
 type CreateTlsSecret struct {

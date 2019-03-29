@@ -65,6 +65,17 @@ RULE:
   - MATCHING these **request matchers**
   APPLY this rule
 `,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if opts.Interactive {
+				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
+					return err
+				}
+				if err := surveyutils.SurveyRoutingRule(opts.Ctx, &opts.CreateRoutingRule); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
 	}
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
@@ -97,12 +108,6 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 		Long:    subCmd.long,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
-				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
-					return err
-				}
-				if err := surveyutils.SurveyRoutingRule(opts.Ctx, &opts.CreateRoutingRule); err != nil {
-					return err
-				}
 				if err := subCmd.specSurveyFunc(opts.Ctx, &opts.CreateRoutingRule); err != nil {
 					return err
 				}
