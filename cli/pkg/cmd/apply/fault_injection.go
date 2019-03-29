@@ -51,6 +51,10 @@ func faultInjectionConvertSpecFunc(opts options.RoutingRuleSpec) (*v1.RoutingRul
 	return nil, errors.Errorf("no fault injection type specified")
 }
 
+var autoInteractive = func(opts *options.Options) {
+	opts.Interactive = true
+}
+
 var faultInjectionSpecCommand = routingRuleSpecCommand{
 	use:             "faultinjection",
 	alias:           "fi",
@@ -60,18 +64,18 @@ var faultInjectionSpecCommand = routingRuleSpecCommand{
 	convertSpecFunc: faultInjectionConvertSpecFunc,
 	addFlagsFunc:    flagutils.AddFaultInjectionFlags,
 	subCmds:         faultInjectionTypes,
-	mutateOpts: func(opts *options.Options) {
-		opts.Interactive = true
-	},
+	mutateOpts:      autoInteractive,
 }
 
 var faultInjectionTypes = []routingRuleSpecCommand{
 	{
-		use:            "delay",
-		alias:          "d",
-		short:          "apply a delay type fault injection rule",
-		addFlagsFunc:   flagutils.AddFaultInjectionDelayFlags,
-		specSurveyFunc: surveyutils.SurveyFaultInjectionPercent,
+		use:             "delay",
+		alias:           "d",
+		short:           "apply a delay type fault injection rule",
+		addFlagsFunc:    flagutils.AddFaultInjectionDelayFlags,
+		specSurveyFunc:  surveyutils.SurveyFaultInjectionPercent,
+		convertSpecFunc: faultInjectionConvertSpecFunc,
+		mutateOpts:      autoInteractive,
 		subCmds: []routingRuleSpecCommand{
 			{
 				use:             "fixed",
@@ -83,11 +87,13 @@ var faultInjectionTypes = []routingRuleSpecCommand{
 		},
 	},
 	{
-		use:            "abort",
-		alias:          "a",
-		short:          "apply an abort type fault injection rule",
-		addFlagsFunc:   flagutils.AddFaultInjectionAbortFlags,
-		specSurveyFunc: surveyutils.SurveyFaultInjectionPercent,
+		use:             "abort",
+		alias:           "a",
+		short:           "apply an abort type fault injection rule",
+		addFlagsFunc:    flagutils.AddFaultInjectionAbortFlags,
+		specSurveyFunc:  surveyutils.SurveyFaultInjectionPercent,
+		convertSpecFunc: faultInjectionConvertSpecFunc,
+		mutateOpts:      autoInteractive,
 		subCmds: []routingRuleSpecCommand{
 			{
 				use:             "http",

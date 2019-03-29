@@ -66,17 +66,6 @@ RULE:
   - MATCHING these **request matchers**
   APPLY this rule
 `,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if opts.Interactive {
-				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
-					return err
-				}
-				if err := surveyutils.SurveyRoutingRule(opts.Ctx, &opts.CreateRoutingRule); err != nil {
-					return err
-				}
-			}
-			return nil
-		},
 	}
 	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
 	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
@@ -88,7 +77,6 @@ RULE:
 		cmd.AddCommand(createRoutingRuleSubcmd(rrType, opts))
 	}
 
-	// cmd.AddCommand(faultInjectionCmd(opts))
 	return cmd
 }
 
@@ -110,10 +98,21 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 		Aliases: []string{subCmd.alias},
 		Short:   subCmd.alias,
 		Long:    subCmd.long,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if subCmd.mutateOpts != nil {
 				subCmd.mutateOpts(opts)
 			}
+			if opts.Interactive {
+				if err := surveyutils.SurveyMetadata("Routing Rule", &opts.Metadata); err != nil {
+					return err
+				}
+				if err := surveyutils.SurveyRoutingRule(opts.Ctx, &opts.CreateRoutingRule); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
 				if err := subCmd.specSurveyFunc(opts.Ctx, &opts.CreateRoutingRule); err != nil {
 					return err
