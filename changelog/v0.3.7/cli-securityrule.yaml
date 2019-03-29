@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Create CLI command for creating Security Rules
+    issueLink: https://github.com/solo-io/supergloo/issues/315
+
