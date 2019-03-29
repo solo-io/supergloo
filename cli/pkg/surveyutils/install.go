@@ -44,7 +44,7 @@ func SurveyIstioInstall(in *options.Install) error {
 	return nil
 }
 
-func SurveyGlooInstall(in *options.Install) error {
+func SurveyGlooInstall(ctx context.Context, in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Gloo, clients.MustGetNamespaces()); err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func SurveyGlooInstall(in *options.Install) error {
 		return err
 	}
 
-	refs, err := SurveyMeshes(context.Background())
+	refs, err := SurveyMeshes(ctx)
 	if err != nil {
 		return err
 	}
