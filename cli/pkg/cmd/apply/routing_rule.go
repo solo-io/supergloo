@@ -46,6 +46,7 @@ be load-balanced by weight across a variety of destinations`,
 			}, nil
 		},
 	},
+	faultInjectionSpecCommand,
 }
 
 func applyRoutingRuleCmd(opts *options.Options) *cobra.Command {
@@ -87,6 +88,7 @@ RULE:
 		cmd.AddCommand(createRoutingRuleSubcmd(rrType, opts))
 	}
 
+	// cmd.AddCommand(faultInjectionCmd(opts))
 	return cmd
 }
 
@@ -95,6 +97,8 @@ type routingRuleSpecCommand struct {
 	alias           string
 	short           string
 	long            string
+	subCmds         []routingRuleSpecCommand
+	mutateOpts      func(opts *options.Options)
 	specSurveyFunc  func(ctx context.Context, in *options.CreateRoutingRule) error
 	addFlagsFunc    func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
 	convertSpecFunc func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error)
@@ -107,6 +111,9 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 		Short:   subCmd.alias,
 		Long:    subCmd.long,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if subCmd.mutateOpts != nil {
+				subCmd.mutateOpts(opts)
+			}
 			if opts.Interactive {
 				if err := subCmd.specSurveyFunc(opts.Ctx, &opts.CreateRoutingRule); err != nil {
 					return err
@@ -114,15 +121,23 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 			}
 			return nil
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+	}
+	if subCmd.convertSpecFunc != nil {
+		cmd.RunE = func(cmd *cobra.Command, args []string) error {
 			spec, err := subCmd.convertSpecFunc(opts.CreateRoutingRule.RoutingRuleSpec)
 			if err != nil {
 				return err
 			}
 			return applyRoutingRule(opts, spec)
-		},
+		}
 	}
-	subCmd.addFlagsFunc(cmd.PersistentFlags(), &opts.CreateRoutingRule.RoutingRuleSpec)
+	if subCmd.addFlagsFunc != nil {
+		subCmd.addFlagsFunc(cmd.PersistentFlags(), &opts.CreateRoutingRule.RoutingRuleSpec)
+	}
+
+	for _, v := range subCmd.subCmds {
+		cmd.AddCommand(createRoutingRuleSubcmd(v, opts))
+	}
 	return cmd
 }
 
