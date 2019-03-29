@@ -22,7 +22,7 @@ func installGlooCmd(opts *options.Options) *cobra.Command {
 				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyGlooInstall(&opts.Install); err != nil {
+				if err := surveyutils.SurveyGlooInstall(opts.Ctx, &opts.Install); err != nil {
 					return err
 				}
 			}

@@ -20,6 +20,6 @@ func AddMetadataFlags(set *pflag.FlagSet, in *core.Metadata) {
 }
 
 func AddKubeYamlFlag(set *pflag.FlagSet, opts *options.Options) {
-	set.BoolVar(&opts.PrintKubeYaml, "kubeyaml", false, "if true, this command will print "+
+	set.BoolVar(&opts.PrintKubeYaml, "dryrun", false, "if true, this command will print "+
 		"the yaml used to create a kubernetes resource rather than directly trying to create/apply the resource")
 }

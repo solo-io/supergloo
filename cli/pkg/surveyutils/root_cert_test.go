@@ -27,6 +27,8 @@ var _ = Describe("RootCert", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString("select the mesh for which you wish to set the root cert")
 			c.PressDown()
+			c.PressDown()
+			c.PressDown()
 			c.SendLine("")
 			c.ExpectString("select the tls secret to use as the new root cert")
 			c.PressDown()

@@ -232,7 +232,7 @@ var _ = Describe("RoutingRule", func() {
 			name := "ts-rr"
 
 			args := rrArgs(name, dests)
-			args += " --kubeyaml"
+			args += " --dryrun"
 
 			out, err := utils.SuperglooOut(args)
 			Expect(err).NotTo(HaveOccurred())
@@ -243,10 +243,25 @@ metadata:
   name: ts-rr
   namespace: supergloo-system
 spec:
+  spec:
+    trafficShifting:
+      destinations:
+        destinations:
+        - destination:
+            upstream:
+              name: do
+              namespace: a
+          weight: 5
+        - destination:
+            upstream:
+              name: barrel
+              namespace: roll
+          weight: 55
   targetMesh:
     name: mesh
     namespace: my
-status: {}`))
+status: {}
+`))
 		})
 	})
 	Context("request matcher tests", func() {

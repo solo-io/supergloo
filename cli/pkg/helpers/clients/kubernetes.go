@@ -121,6 +121,38 @@ func RoutingRuleClient() (v1.RoutingRuleClient, error) {
 	return RoutingRuleClient, nil
 }
 
+func MustSecurityRuleClient() v1.SecurityRuleClient {
+	client, err := SecurityRuleClient()
+	if err != nil {
+		log.Fatalf("failed to create SecurityRule client: %v", err)
+	}
+	return client
+}
+
+func SecurityRuleClient() (v1.SecurityRuleClient, error) {
+	if memoryResourceClient != nil {
+		return v1.NewSecurityRuleClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	sharedCache := kube.NewKubeCache(context.TODO())
+	SecurityRuleClient, err := v1.NewSecurityRuleClient(&factory.KubeResourceClientFactory{
+		Crd:         v1.SecurityRuleCrd,
+		Cfg:         cfg,
+		SharedCache: sharedCache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating SecurityRule client")
+	}
+	if err := SecurityRuleClient.Register(); err != nil {
+		return nil, err
+	}
+	return SecurityRuleClient, nil
+}
+
 func MustMeshIngressClient() v1.MeshIngressClient {
 	client, err := MeshIngressClient()
 	if err != nil {
