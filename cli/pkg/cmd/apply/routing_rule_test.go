@@ -71,7 +71,7 @@ var _ = Describe("RoutingRule", func() {
 			Expect(err.Error()).To(ContainSubstring("notmy.mesh does not exist"))
 		})
 	})
-	FContext("fault injection", func() {
+	Context("fault injection", func() {
 		It("fails with an invalid percentage", func() {
 			name := "fi-rr"
 			args := faultInjectionArgs(name, "a", "http", "101", "--status", "404")
