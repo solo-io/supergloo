@@ -275,6 +275,8 @@ func routingRuleType(in *v1.RoutingRule) string {
 	switch in.Spec.RuleType.(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
 		return "TrafficShifting"
+	case *v1.RoutingRuleSpec_FaultInjection:
+		return "FaultInjection"
 	}
 	return "Unknown"
 }

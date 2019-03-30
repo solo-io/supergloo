@@ -10,7 +10,7 @@ func AddFaultInjectionFlags(set *pflag.FlagSet, opts *options.RoutingRuleSpec) {
 }
 
 func AddFaultInjectionDelayFlags(set *pflag.FlagSet, opts *options.RoutingRuleSpec) {
-	set.DurationVarP(&opts.FaultInjection.Delay.Fixed, "delay", "d", 0, "delay to inject into requests")
+	set.DurationVarP(&opts.FaultInjection.Delay.Fixed, "duration", "d", 0, "duration of the delay")
 }
 
 func AddFaultInjectionAbortFlags(set *pflag.FlagSet, opts *options.RoutingRuleSpec) {

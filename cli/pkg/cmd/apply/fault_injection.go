@@ -1,6 +1,8 @@
 package apply
 
 import (
+	"net/http"
+
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
@@ -10,18 +12,22 @@ import (
 )
 
 func faultInjectionConvertSpecFunc(opts options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error) {
-	if opts.FaultInjection.Percent == 0 {
-		return nil, errors.Errorf("invalid value %v: percentage cannot be zero", opts.FaultInjection.Percent)
+	if opts.FaultInjection.Percent == 0 || opts.FaultInjection.Percent > 100 {
+		return nil, errors.Errorf("invalid value %v: percentage must be (0-100)", opts.FaultInjection.Percent)
 	}
 	spec := &v1.RoutingRuleSpec{}
 	faultInjection := &v1.FaultInjection{
 		Percentage: opts.FaultInjection.Percent,
 	}
 	if opts.FaultInjection.Abort.Http.HttpStatus != 0 {
+		code := opts.FaultInjection.Abort.Http.HttpStatus
+		if http.StatusText(int(code)) == "" {
+			return nil, errors.Errorf("invalid value %v: must be valid http status code", code)
+		}
 		faultInjection.FaultInjectionType = &v1.FaultInjection_Abort_{
 			Abort: &v1.FaultInjection_Abort{
 				ErrorType: &v1.FaultInjection_Abort_HttpStatus{
-					HttpStatus: opts.FaultInjection.Abort.Http.HttpStatus,
+					HttpStatus: code,
 				},
 			},
 		}
