@@ -1161,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:8df382417e03f3562b148c0680bcb7a1573c6a6f36d184b102ec7225fbbd0e34"
+  digest = "1:81036222246e3765877138b19a263c95a8891b2b65bd97bad1eb038cce6363f5"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1212,8 +1212,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "1b0cba42a74ce5576eaf64d082f8829f12a96913"
-  version = "v0.13.6"
+  revision = "6f52c7c8afa0249c7887c0ed4376feb922db53aa"
+  version = "v0.13.7"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -2259,7 +2259,6 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
-    "gopkg.in/AlecAivazis/survey.v1",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
