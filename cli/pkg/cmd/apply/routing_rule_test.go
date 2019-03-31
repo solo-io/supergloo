@@ -3,7 +3,9 @@ package apply_test
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
 	. "github.com/onsi/ginkgo"
@@ -20,11 +22,16 @@ var _ = Describe("RoutingRule", func() {
 		core.ResourceRef
 		weight uint32
 	}
-	rrArgs := func(name string, dests []destination) string {
+	trafficShiftingArgs := func(name string, dests []destination) string {
 		args := fmt.Sprintf("apply routingrule trafficshifting --name=%v --target-mesh=my.mesh ", name)
 		for _, dest := range dests {
 			args += fmt.Sprintf("--destination=%v.%v:%v ", dest.Namespace, dest.Name, dest.weight)
 		}
+		return args
+	}
+	faultInjectionArgs := func(name, mainType, subType, percentage string, extraArgs ...string) string {
+		args := fmt.Sprintf("apply routingrule fi %v %v --name=%v"+
+			" --target-mesh=my.mesh -p %v %v", mainType, subType, name, percentage, strings.Join(extraArgs, " "))
 		return args
 	}
 
@@ -43,7 +50,7 @@ var _ = Describe("RoutingRule", func() {
 		It("errors", func() {
 			name := "ts-rr"
 
-			args := rrArgs(name, nil)
+			args := trafficShiftingArgs(name, nil)
 
 			err := utils.Supergloo(args)
 			Expect(err).To(HaveOccurred())
@@ -64,12 +71,72 @@ var _ = Describe("RoutingRule", func() {
 			Expect(err.Error()).To(ContainSubstring("notmy.mesh does not exist"))
 		})
 	})
+	Context("fault injection", func() {
+		It("fails with an invalid percentage", func() {
+			name := "fi-rr"
+			args := faultInjectionArgs(name, "a", "http", "101", "--status", "404")
+			err := utils.Supergloo(args)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("invalid value 101: percentage must be (0-100)"))
+		})
+		Context("abort", func() {
+			It("can create an http abort fault rule", func() {
+				name := "fi-rr"
+				args := faultInjectionArgs(name, "a", "http", "50", "--status", "404")
+				err := utils.Supergloo(args)
+				Expect(err).NotTo(HaveOccurred())
+				rr := getRoutingRule(name)
+				faultType, ok := rr.Spec.RuleType.(*v1.RoutingRuleSpec_FaultInjection)
+				Expect(ok).To(BeTrue())
+				Expect(faultType.FaultInjection.Percentage).To(Equal(float64(50)))
+				abortType, ok := faultType.FaultInjection.FaultInjectionType.(*v1.FaultInjection_Abort_)
+				Expect(ok).To(BeTrue())
+				abortHttpType, ok := abortType.Abort.ErrorType.(*v1.FaultInjection_Abort_HttpStatus)
+				Expect(ok).To(BeTrue())
+				Expect(abortHttpType.HttpStatus).To(Equal(int32(404)))
+			})
+			It("fails to create an abort rule with an invalid status code", func() {
+				name := "fi-rr"
+				args := faultInjectionArgs(name, "a", "http", "50", "--status", "600")
+				err := utils.Supergloo(args)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("invalid value 600: must be valid http status code"))
+			})
+		})
+		Context("delay", func() {
+			It("can create an fixed delay fault rule", func() {
+				name := "fi-rr"
+				args := faultInjectionArgs(name, "d", "fixed", "50", "-d", "100ns")
+				err := utils.Supergloo(args)
+				Expect(err).NotTo(HaveOccurred())
+				rr := getRoutingRule(name)
+				faultType, ok := rr.Spec.RuleType.(*v1.RoutingRuleSpec_FaultInjection)
+				Expect(ok).To(BeTrue())
+				Expect(faultType.FaultInjection.Percentage).To(Equal(float64(50)))
+				delayType, ok := faultType.FaultInjection.FaultInjectionType.(*v1.FaultInjection_Delay_)
+				Expect(ok).To(BeTrue())
+				delayFixedType, ok := delayType.Delay.HttpDelayType.(*v1.FaultInjection_Delay_FixedDelay)
+				Expect(ok).To(BeTrue())
+				Expect(delayFixedType.FixedDelay).To(Equal(&types.Duration{
+					Seconds: 0,
+					Nanos:   int32(time.Nanosecond * 100),
+				}))
+			})
+			It("fails to create an abort rule with an invalid status code", func() {
+				name := "fi-rr"
+				args := faultInjectionArgs(name, "d", "fixed", "50", "-d", "10xyz")
+				err := utils.Supergloo(args)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("unknown unit xyz in duration 10xyz"))
+			})
+		})
+	})
 	Context("selector tests", func() {
 		selectorTest := func(extraArgs ...string) (*v1.RoutingRule, error) {
 			dests := []destination{{core.ResourceRef{"a", "a"}, 5}}
 			name := "ts-rr"
 
-			args := rrArgs(name, dests) + strings.Join(extraArgs, " ")
+			args := trafficShiftingArgs(name, dests) + strings.Join(extraArgs, " ")
 
 			err := utils.Supergloo(args)
 			if err != nil {
@@ -171,7 +238,7 @@ var _ = Describe("RoutingRule", func() {
 			}
 			name := "ts-rr"
 
-			args := rrArgs(name, dests)
+			args := trafficShiftingArgs(name, dests)
 
 			err := utils.Supergloo(args)
 			Expect(err).NotTo(HaveOccurred())
@@ -196,7 +263,7 @@ var _ = Describe("RoutingRule", func() {
 			t := func(dests []destination) {
 				name := "ts-rr"
 
-				args := rrArgs(name, dests)
+				args := trafficShiftingArgs(name, dests)
 
 				err := utils.Supergloo(args)
 				Expect(err).NotTo(HaveOccurred())
@@ -231,7 +298,7 @@ var _ = Describe("RoutingRule", func() {
 			}
 			name := "ts-rr"
 
-			args := rrArgs(name, dests)
+			args := trafficShiftingArgs(name, dests)
 			args += " --dryrun"
 
 			out, err := utils.SuperglooOut(args)
@@ -269,7 +336,7 @@ status: {}
 			dests := []destination{{core.ResourceRef{"a", "a"}, 5}}
 			name := "ts-rr"
 
-			args := rrArgs(name, dests) + strings.Join(extraArgs, " ")
+			args := trafficShiftingArgs(name, dests) + strings.Join(extraArgs, " ")
 
 			err := utils.Supergloo(args)
 			if err != nil {

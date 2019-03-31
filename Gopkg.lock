@@ -2259,6 +2259,7 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
+    "gopkg.in/AlecAivazis/survey.v1",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",

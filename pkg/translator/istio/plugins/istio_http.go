@@ -27,7 +27,9 @@ func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *
 			return errors.Wrapf(err, "processing traffic shifting rule")
 		}
 	case *v1.RoutingRuleSpec_FaultInjection:
-		return notImplementedErr
+		if err := processFaultInjectRule(rule.FaultInjection, out); err != nil {
+			return errors.Wrapf(err, "processing fault injection rule")
+		}
 	case *v1.RoutingRuleSpec_RequestTimeout:
 		return notImplementedErr
 	case *v1.RoutingRuleSpec_Retries:
@@ -41,6 +43,54 @@ func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *
 	default:
 		return errors.Errorf("unknown rule type %v", in.RuleType)
 	}
+
+	return nil
+}
+
+func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) error {
+
+	fault := &v1alpha3.HTTPFaultInjection{}
+
+	switch faultType := rule.FaultInjectionType.(type) {
+	case *v1.FaultInjection_Abort_:
+
+		abort := &v1alpha3.HTTPFaultInjection_Abort{
+			Percentage: &v1alpha3.Percent{
+				Value: rule.Percentage,
+			},
+		}
+		switch abortType := faultType.Abort.ErrorType.(type) {
+		case *v1.FaultInjection_Abort_HttpStatus:
+			abort.ErrorType = &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
+				HttpStatus: abortType.HttpStatus,
+			}
+		default:
+			return errors.Errorf("unknown fault injection abort type %v", faultType.Abort.ErrorType)
+		}
+		fault.Abort = abort
+
+	case *v1.FaultInjection_Delay_:
+
+		delay := &v1alpha3.HTTPFaultInjection_Delay{
+			Percentage: &v1alpha3.Percent{
+				Value: rule.Percentage,
+			},
+		}
+		switch delayType := faultType.Delay.HttpDelayType.(type) {
+		case *v1.FaultInjection_Delay_FixedDelay:
+			delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
+				FixedDelay: delayType.FixedDelay,
+			}
+		default:
+			return errors.Errorf("unknown fault injection abort type %v", faultType.Delay.HttpDelayType)
+		}
+		fault.Delay = delay
+
+	default:
+		return errors.Errorf("unknown fault injection type %v", rule.FaultInjectionType)
+	}
+
+	out.Fault = fault
 
 	return nil
 }

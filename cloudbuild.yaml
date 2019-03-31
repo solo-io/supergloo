@@ -90,6 +90,7 @@ steps:
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
       - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
