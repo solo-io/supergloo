@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/gloo/pkg/cliutil"
 	"github.com/solo-io/go-utils/errors"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
@@ -53,6 +54,8 @@ func urlCmd(opts *options.Options) *cobra.Command {
 			return nil
 		},
 	}
+
+	flagutils.AddProxyFlags(cmd.PersistentFlags(), &opts.GetMeshIngress)
 
 	return cmd
 }
