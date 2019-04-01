@@ -66,7 +66,7 @@ func (r *autoInjectionReconciler) Reconcile(autoInjectionEnabled bool) error {
 			return errors.Wrapf(err, "failed reconcile auto-injection secret resources [%s]", secretRelatedManifests.Names())
 		}
 
-		// TODO(marco): this currently recreates all the given resources. Swap in the new installer here when it's ready.
+		// TODO(marco): this currently naively checks if the auto-injection resources all exist: if not, it recreates all of them. Swap in the new installer here when it's ready.
 		if err := r.ensureDeployment(namespace, otherManifests); err != nil {
 			return errors.Wrapf(err, "failed to reconcile auto-injection resources [%s]", otherManifests.Names())
 		}
