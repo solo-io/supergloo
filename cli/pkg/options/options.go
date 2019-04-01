@@ -136,5 +136,6 @@ type SetStats struct {
 }
 
 type GetMeshIngress struct {
-	Proxy glooOptions.Proxy
+	Proxy  glooOptions.Proxy
+	Target ResourceRefValue
 }

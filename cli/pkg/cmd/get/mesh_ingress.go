@@ -24,8 +24,7 @@ func getMeshIngressCmd(opts *options.Options) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				opts.Metadata.Namespace = meshIngress.Namespace
-				opts.Metadata.Name = meshIngress.Name
+				opts.GetMeshIngress.Target = options.ResourceRefValue(meshIngress)
 			}
 			return nil
 		},
@@ -42,15 +41,23 @@ func urlCmd(opts *options.Options) *cobra.Command {
 		Short:   "get proxy url for mesh ingress",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			miClient := clients.MustMeshIngressClient()
-			mi, err := miClient.Read(opts.Metadata.Namespace, opts.Metadata.Name, skclients.ReadOpts{})
+			target := opts.GetMeshIngress.Target
+			mi, err := miClient.Read(target.Namespace, target.Name, skclients.ReadOpts{})
 			if err != nil {
-				return errors.Errorf("could not retrieve mesh ingress %s", opts.Metadata.Ref().Key())
+				return errors.Errorf("could not retrieve mesh ingress %s.%s", target.Namespace, target.Name)
 			}
-			url, err := cliutil.GetIngressHost(&opts.GetMeshIngress.Proxy, mi.InstallationNamespace)
+			proxy := &opts.GetMeshIngress.Proxy
+			url, err := cliutil.GetIngressHost(proxy, mi.InstallationNamespace)
 			if err != nil {
 				return err
 			}
-			fmt.Println(url)
+
+			if proxy.Port == "http" || proxy.Port == "https" {
+				fmt.Printf("%v://%v\n", proxy.Port, url)
+			} else {
+				fmt.Printf("%v\n", url)
+			}
+
 			return nil
 		},
 	}
