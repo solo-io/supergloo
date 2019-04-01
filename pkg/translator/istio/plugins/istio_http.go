@@ -75,7 +75,7 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 			Percent: int32(rule.Percentage),
 		}
 		switch faultType.Delay.DelayType {
-		case v1.FaultInjection_Delay_fixed:
+		case v1.FaultInjection_Delay_FIXED:
 			delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
 				FixedDelay: utils.DurationProto(faultType.Delay.Duration),
 			}

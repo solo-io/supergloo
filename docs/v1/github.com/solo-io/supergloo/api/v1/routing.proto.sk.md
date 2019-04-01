@@ -154,8 +154,8 @@ percentage of requests. If left unspecified, all request will be delayed.
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `duration` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) |  |  |
-| `delayType` | [.supergloo.solo.io.FaultInjection.Delay.Type](../routing.proto.sk#type) |  |  |
+| `duration` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | duration of delay, matches golang duration spec |  |
+| `delayType` | [.supergloo.solo.io.FaultInjection.Delay.Type](../routing.proto.sk#type) | type of delay based on the enum below |  |
 
 
 
@@ -163,12 +163,12 @@ percentage of requests. If left unspecified, all request will be delayed.
 ---
 ### Type
 
-
+ 
+types of delays available, currently only fixed is supported
 
 | Name | Description |
 | ----- | ----------- | 
-| `fixed` |  |
-| `exponential` |  |
+| `FIXED` |  |
 
 
 

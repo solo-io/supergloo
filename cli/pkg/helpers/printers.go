@@ -304,7 +304,7 @@ func routingRuleDetails(in *v1.RoutingRule) []string {
 		switch faultType := t.FaultInjection.FaultInjectionType.(type) {
 		case *v1.FaultInjection_Delay_:
 			switch faultType.Delay.DelayType {
-			case v1.FaultInjection_Delay_fixed:
+			case v1.FaultInjection_Delay_FIXED:
 				add(
 					"- fixed delay",
 					fmt.Sprintf("%v", faultType.Delay.Duration),

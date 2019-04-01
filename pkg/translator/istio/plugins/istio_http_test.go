@@ -233,7 +233,7 @@ var _ = Describe("IstioHttp", func() {
 					FaultInjectionType: &v1.FaultInjection_Delay_{
 						Delay: &v1.FaultInjection_Delay{
 							Duration:  timeDuration,
-							DelayType: v1.FaultInjection_Delay_fixed,
+							DelayType: v1.FaultInjection_Delay_FIXED,
 						},
 					},
 				})

@@ -114,7 +114,7 @@ var _ = Describe("RoutingRule", func() {
 				Expect(faultType.FaultInjection.Percentage).To(Equal(float64(50)))
 				delayType, ok := faultType.FaultInjection.FaultInjectionType.(*v1.FaultInjection_Delay_)
 				Expect(ok).To(BeTrue())
-				Expect(delayType.Delay.DelayType).To(Equal(v1.FaultInjection_Delay_fixed))
+				Expect(delayType.Delay.DelayType).To(Equal(v1.FaultInjection_Delay_FIXED))
 
 				Expect(delayType.Delay.Duration).To(Equal(time.Nanosecond * 100))
 			})
