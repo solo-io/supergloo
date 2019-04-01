@@ -75,10 +75,9 @@ var _ = Describe("gloo registration syncers", func() {
 		}
 		glooIngress = func(meshes ...*core.ResourceRef) *v1.MeshIngress {
 			return &v1.MeshIngress{
+				InstallationNamespace: "gloo-system",
 				MeshIngressType: &v1.MeshIngress_Gloo{
-					Gloo: &v1.GlooMeshIngress{
-						InstallationNamespace: "gloo-system",
-					},
+					Gloo: &v1.GlooMeshIngress{},
 				},
 				Meshes: meshes,
 			}

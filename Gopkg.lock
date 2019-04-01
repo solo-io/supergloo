@@ -1161,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:57663f9af3e067e475042c66d68778ed52b2ac15e6cd1888662ff32c07bc148c"
+  digest = "1:3dd84c092329c4584ef89c1b60bca93151ac03eb34fa89957d046493eb5f8dcf"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1209,12 +1209,11 @@
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
     "projects/gloo/pkg/defaults",
-    "projects/gloo/pkg/mocks",
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "1b0cba42a74ce5576eaf64d082f8829f12a96913"
-  version = "v0.13.6"
+  revision = "e55ce6cf73e00838a09025fd72bdbc2c1628f1b4"
+  version = "v0.13.8"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -2054,13 +2053,12 @@
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
-  digest = "1:4abebaad3e2aaf40166495ae5c0230b772f3c0cae9e6caf4214653cee22de08c"
+  digest = "1:a533c51e1330839e7ee9e8d4e9d6c85fb40c9fd2ac7913c81d2e1518803308cc"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/api/legacyscheme",
     "pkg/api/service",
     "pkg/api/v1/pod",
-    "pkg/apis/admissionregistration",
     "pkg/apis/apps",
     "pkg/apis/apps/install",
     "pkg/apis/apps/v1",
@@ -2208,15 +2206,14 @@
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
-    "github.com/solo-io/gloo/pkg/cliutil/install",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
+    "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
-    "github.com/solo-io/gloo/projects/gloo/pkg/mocks",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/clidoc",
     "github.com/solo-io/go-utils/cliutils",
@@ -2267,7 +2264,6 @@
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
-    "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
@@ -2280,15 +2276,12 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
-    "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
-    "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/cli-runtime/pkg/genericclioptions/resource",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
-    "k8s.io/client-go/util/cert",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
@@ -2296,7 +2289,6 @@
     "k8s.io/helm/pkg/renderutil",
     "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
-    "k8s.io/kubernetes/pkg/apis/admissionregistration",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
