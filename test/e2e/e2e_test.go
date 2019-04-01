@@ -73,6 +73,8 @@ var _ = Describe("E2e", func() {
 
 		testTrafficShifting()
 
+		testFaultInjection()
+
 		testUninstallIstio(istioName)
 
 		testUninstallGloo(glooName)
@@ -243,7 +245,8 @@ func testGlooMtls(istioName string) {
 
 func testTrafficShifting() {
 	// apply a traffic shifting rule, divert traffic to reviews
-	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.my-istio --name hi --destination %v.%v-reviews-9080:%v", superglooNamespace, superglooNamespace, namespaceWithInject, 1))
+	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.my-istio --name hi "+
+		"--destination %v.%v-reviews-9080:%v", superglooNamespace, superglooNamespace, namespaceWithInject, 1))
 
 	Expect(err).NotTo(HaveOccurred())
 
@@ -252,6 +255,22 @@ func testTrafficShifting() {
 		Port:    9080,
 		Path:    "/reviews/1",
 	}, `"reviewer": "Reviewer1",`, time.Minute*5)
+}
+
+func testFaultInjection() {
+	httpError, percent := 404, 50
+
+	// apply a traffic shifting rule, divert traffic to reviews
+	err := utils.Supergloo(fmt.Sprintf("apply rr fi a http --name one --target-mesh %v.my-istio "+
+		"-p %d -s %d ", superglooNamespace, percent, httpError))
+
+	Expect(err).NotTo(HaveOccurred())
+
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/reviews/1",
+	}, "404", time.Minute*5)
 
 }
 
