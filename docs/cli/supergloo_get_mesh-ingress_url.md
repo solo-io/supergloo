@@ -17,7 +17,10 @@ supergloo get mesh-ingress url [flags]
 ### Options
 
 ```
-  -h, --help   help for url
+  -h, --help                           help for url
+  -l, --local-cluster                  use when the target kubernetes cluster is running locally, e.g. in minikube or minishift. this will default to true if LoadBalanced services are not assigned external IPs by your cluster
+      --port string                    the name of the service port to connect to (default "http")
+  -t, --target-mesh ResourceRefValue   target mesh (default { })
 ```
 
 ### Options inherited from parent commands
