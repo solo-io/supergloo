@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/webhook/clients"
 	"github.com/solo-io/supergloo/pkg/webhook/patch"
 	corev1 "k8s.io/api/core/v1"
-	v12 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -23,7 +22,7 @@ const appMeshSupportedRegions = "us-west-2, us-east-1, us-east-2, eu-west-1"
 type templateData struct {
 	MeshName        string
 	VirtualNodeName string
-	AppPort         int32
+	AppPort         string
 	AwsRegion       string
 }
 
@@ -56,7 +55,7 @@ func (AppMeshInjectionPlugin) GetAutoInjectMeshes(ctx context.Context) ([]*v1.Me
 	return awsAppMeshes, nil
 }
 
-func (AppMeshInjectionPlugin) CheckMatch(ctx context.Context, candidatePod *v12.Pod, meshes []*v1.Mesh) ([]*v1.Mesh, error) {
+func (AppMeshInjectionPlugin) CheckMatch(ctx context.Context, candidatePod *corev1.Pod, meshes []*v1.Mesh) ([]*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	// Check whether the pod has to be injected with a sidecar
@@ -87,7 +86,8 @@ func (AppMeshInjectionPlugin) CheckMatch(ctx context.Context, candidatePod *v12.
 	}
 	return matchingMeshes, nil
 }
-func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *v12.Pod, meshes []*v1.Mesh) ([]patch.JSONPatchOperation, error) {
+
+func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *corev1.Pod, meshes []*v1.Mesh) ([]patch.JSONPatchOperation, error) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	// We do not currently support multiple injection for AWS App Mesh
@@ -111,7 +111,7 @@ func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *v12.Pod,
 	// Get the config map containing the sidecar patch to be applied to the pod
 	patchConfigMapRef := appMesh.SidecarPatchConfigMap
 	if patchConfigMapRef == nil {
-		return nil, errors.Errorf("auto-injection enabled SidecarPatchConfigMap is nil for mesh %s.%s",
+		return nil, errors.Errorf("auto-injection enabled but SidecarPatchConfigMap is nil for mesh %s.%s",
 			mesh.Metadata.Namespace, mesh.Metadata.Name)
 	}
 	configMap, err := clients.GetClientSet().GetConfigMap(patchConfigMapRef.Namespace, patchConfigMapRef.Name)
@@ -172,9 +172,21 @@ func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 		return templateData{}, errors.Errorf("pod is missing required virtual node label %v", vnLabel)
 	}
 
+	if len(pod.Spec.Containers) != 1 {
+		return templateData{}, errors.Errorf("expected exactly 1 container in pod %s.%s but found %v", pod.Namespace, pod.Name, len(pod.Spec.Containers))
+	}
+	if len(pod.Spec.Containers[0].Ports) == 0 {
+		return templateData{}, errors.Errorf("no containerPorts for container %s. Must specify at least 1 port", pod.Spec.Containers[0].Name)
+	}
+
+	var ports []string
+	for _, port := range pod.Spec.Containers[0].Ports {
+		ports = append(ports, fmt.Sprintf("%v", port.ContainerPort))
+	}
+
 	return templateData{
 		MeshName:        mesh.Metadata.Name,
-		AppPort:         pod.Spec.Containers[0].Ports[0].ContainerPort,
+		AppPort:         strings.Join(ports, ","),
 		VirtualNodeName: virtualNodeName,
 		AwsRegion:       awsRegion,
 	}, nil
