@@ -38,6 +38,7 @@ data:
           labels:
             app: sidecar-injector
         spec:
+          serviceAccountName: supergloo
           containers:
             - name: sidecar-injector
               image: {{ .Image.Name }}:{{ .Image.Tag }}
