@@ -98,10 +98,9 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 
 	if meshIngress != nil {
 		meshIngress.Meshes = meshRefs
+		meshIngress.InstallationNamespace = install.InstallationNamespace
 		meshIngress.MeshIngressType = &v1.MeshIngress_Gloo{
-			Gloo: &v1.GlooMeshIngress{
-				InstallationNamespace: install.InstallationNamespace,
-			},
+			Gloo: &v1.GlooMeshIngress{},
 		}
 	} else {
 
@@ -110,10 +109,9 @@ func (installer *defaultInstaller) EnsureGlooInstall(ctx context.Context, instal
 				Namespace: install.Metadata.Namespace,
 				Name:      install.Metadata.Name,
 			},
+			InstallationNamespace: install.InstallationNamespace,
 			MeshIngressType: &v1.MeshIngress_Gloo{
-				Gloo: &v1.GlooMeshIngress{
-					InstallationNamespace: install.InstallationNamespace,
-				},
+				Gloo: &v1.GlooMeshIngress{},
 			},
 			Meshes: meshRefs,
 		}

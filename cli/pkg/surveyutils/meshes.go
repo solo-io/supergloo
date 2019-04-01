@@ -30,3 +30,11 @@ func SurveyMeshes(ctx context.Context) ([]*core.ResourceRef, error) {
 		selected = append(selected, &mesh)
 	}
 }
+
+func SurveyMesh(prompt string, ctx context.Context) (core.ResourceRef, error) {
+	meshes, err := clients.MustMeshClient().List("", skclients.ListOpts{Ctx: ctx})
+	if err != nil {
+		return core.ResourceRef{}, err
+	}
+	return surveyResources("meshes", prompt, "", meshes.AsResources())
+}

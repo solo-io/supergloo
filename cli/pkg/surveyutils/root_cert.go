@@ -24,14 +24,6 @@ func SurveySetRootCert(ctx context.Context, in *options.SetRootCert) error {
 	return nil
 }
 
-func SurveyMesh(prompt string, ctx context.Context) (core.ResourceRef, error) {
-	meshes, err := clients.MustMeshClient().List("", skclients.ListOpts{Ctx: ctx})
-	if err != nil {
-		return core.ResourceRef{}, err
-	}
-	return surveyResources("meshes", prompt, "", meshes.AsResources())
-}
-
 func SurveyTlsSecret(prompt string, ctx context.Context) (core.ResourceRef, error) {
 	tlsSecretes, err := clients.MustTlsSecretClient().List("", skclients.ListOpts{Ctx: ctx})
 	if err != nil {
