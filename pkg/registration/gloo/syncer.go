@@ -53,7 +53,7 @@ func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot
 func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingress *v1.MeshIngress, meshes v1.MeshList) error {
 	logger := contextutils.LoggerFrom(ctx)
 
-	glooMeshIngress, isGloo := ingress.MeshIngressType.(*v1.MeshIngress_Gloo)
+	_, isGloo := ingress.MeshIngressType.(*v1.MeshIngress_Gloo)
 	if !isGloo {
 		return errors.Errorf("only gloo mesh ingress currently supported")
 	}
