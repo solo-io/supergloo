@@ -2207,6 +2207,7 @@
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
+    "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
