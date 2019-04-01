@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/supergloo/cli/pkg/cmd/apply"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/create"
+	"github.com/solo-io/supergloo/cli/pkg/cmd/get"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/initialize"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/install"
 	"github.com/solo-io/supergloo/cli/pkg/cmd/set"
@@ -34,6 +35,7 @@ func SuperglooCli(version string) *cobra.Command {
 		apply.Cmd(opts),
 		create.Cmd(opts),
 		set.Cmd(opts),
+		get.Cmd(opts),
 	)
 
 	return app
