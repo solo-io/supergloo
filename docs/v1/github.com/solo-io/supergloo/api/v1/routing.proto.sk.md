@@ -16,6 +16,7 @@ weight: 5
 - [TrafficShifting](#trafficshifting)
 - [FaultInjection](#faultinjection)
 - [Delay](#delay)
+- [Type](#type)
 - [Abort](#abort)
 - [HeaderManipulation](#headermanipulation)
   
@@ -146,13 +147,28 @@ The optional _percentage_ field can be used to only delay a certain
 percentage of requests. If left unspecified, all request will be delayed.
 
 ```yaml
-"fixedDelay": .google.protobuf.Duration
+"duration": .google.protobuf.Duration
+"delayType": .supergloo.solo.io.FaultInjection.Delay.Type
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `fixedDelay` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | REQUIRED. Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |  |
+| `duration` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | duration of delay, matches golang duration spec |  |
+| `delayType` | [.supergloo.solo.io.FaultInjection.Delay.Type](../routing.proto.sk#type) | type of delay based on the enum below |  |
+
+
+
+
+---
+### Type
+
+ 
+types of delays available, currently only fixed is supported
+
+| Name | Description |
+| ----- | ----------- | 
+| `FIXED` |  |
 
 
 
