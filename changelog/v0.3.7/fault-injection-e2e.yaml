@@ -1,0 +1,8 @@
+changelog:
+  - type: FIX
+    description: Fix issue with istio networking fault injection percentage api.
+    issueLink: https://github.com/solo-io/supergloo/issues/228
+  - type: NEW_FEATURE
+    description: Write e2e test for fault injection.
+    issueLink: https://github.com/solo-io/supergloo/issues/228
+    resolvesIssue: false
