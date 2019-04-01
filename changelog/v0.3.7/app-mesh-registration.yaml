@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Added AWS App Mesh syncer to registration event loop.
+    issueLink: https://github.com/solo-io/supergloo/issues/214
+    resolvesIssue: false
+
+
