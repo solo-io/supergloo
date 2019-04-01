@@ -79,7 +79,7 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 		switch delayType := faultType.Delay.HttpDelayType.(type) {
 		case *v1.FaultInjection_Delay_FixedDelay:
 			delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
-				FixedDelay: delayType.FixedDelay,
+				FixedDelay: utils.DurationProto(*delayType.FixedDelay),
 			}
 		default:
 			return errors.Errorf("unknown fault injection abort type %v", faultType.Delay.HttpDelayType)

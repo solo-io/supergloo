@@ -3,7 +3,6 @@ package apply
 import (
 	"net/http"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/options"
@@ -41,10 +40,7 @@ func faultInjectionConvertSpecFunc(opts options.RoutingRuleSpec) (*v1.RoutingRul
 		faultInjection.FaultInjectionType = &v1.FaultInjection_Delay_{
 			Delay: &v1.FaultInjection_Delay{
 				HttpDelayType: &v1.FaultInjection_Delay_FixedDelay{
-					FixedDelay: &types.Duration{
-						Seconds: int64(opts.FaultInjection.Delay.Fixed.Seconds()),
-						Nanos:   int32(opts.FaultInjection.Delay.Fixed.Nanoseconds()),
-					},
+					FixedDelay: &opts.FaultInjection.Delay.Fixed,
 				},
 			},
 		}
@@ -79,7 +75,7 @@ var faultInjectionTypes = []routingRuleSpecCommand{
 		alias:           "d",
 		short:           "apply a delay type fault injection rule",
 		addFlagsFunc:    flagutils.AddFaultInjectionDelayFlags,
-		specSurveyFunc:  surveyutils.SurveyFaultInjectionPercent,
+		specSurveyFunc:  surveyutils.SurveyFaultInjectionDelay,
 		convertSpecFunc: faultInjectionConvertSpecFunc,
 		mutateOpts:      autoInteractive,
 		subCmds: []routingRuleSpecCommand{
@@ -97,7 +93,7 @@ var faultInjectionTypes = []routingRuleSpecCommand{
 		alias:           "a",
 		short:           "apply an abort type fault injection rule",
 		addFlagsFunc:    flagutils.AddFaultInjectionAbortFlags,
-		specSurveyFunc:  surveyutils.SurveyFaultInjectionPercent,
+		specSurveyFunc:  surveyutils.SurveyFaultInjectionAbort,
 		convertSpecFunc: faultInjectionConvertSpecFunc,
 		mutateOpts:      autoInteractive,
 		subCmds: []routingRuleSpecCommand{

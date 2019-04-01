@@ -119,7 +119,7 @@ message FaultInjection {
         oneof http_delay_type {
             // REQUIRED. Add a fixed delay before forwarding the request. Format:
             // 1h/1m/1s/1ms. MUST be >=1ms.
-            google.protobuf.Duration fixed_delay = 3;
+            google.protobuf.Duration fixed_delay = 3 [(gogoproto.stdduration) = true];
         }
     }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/translator/istio/plugins"
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -237,18 +238,20 @@ var _ = Describe("IstioHttp", func() {
 					Seconds: 1,
 					Nanos:   1,
 				}
+				timeDuration, err := utils.DurationFromProto(duration)
+				Expect(err).NotTo(HaveOccurred())
 				in := inputs.FaultInjectionRuleSpec(&v1.FaultInjection{
 					Percentage: percent,
 					FaultInjectionType: &v1.FaultInjection_Delay_{
 						Delay: &v1.FaultInjection_Delay{
 							HttpDelayType: &v1.FaultInjection_Delay_FixedDelay{
-								FixedDelay: duration,
+								FixedDelay: timeDuration,
 							},
 						},
 					},
 				})
 				out := &v1alpha3.HTTPRoute{}
-				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
+				err = NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(out.Fault).To(Equal(&v1alpha3.HTTPFaultInjection{
 					Delay: &v1alpha3.HTTPFaultInjection_Delay{

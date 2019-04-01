@@ -163,6 +163,8 @@ func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 		return nil
 	}
 
+	fmt.Printf("%v", in)
+
 	in, err = rr.Write(in, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err

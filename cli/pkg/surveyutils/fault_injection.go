@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/options"
 )
 
-func SurveyFaultInjectionPercent(ctx context.Context, in *options.CreateRoutingRule) error {
+func surveyFaultInjectionPercent(ctx context.Context, in *options.CreateRoutingRule) error {
 	var percent uint32
 	if err := cliutil.GetUint32Input("percentage of requests to inject (0-100)", &percent); err != nil {
 		return errors.Wrapf(err, "error getting percentage value")
@@ -38,7 +38,7 @@ var faultInjectionOptions = []string{delay, abort}
 var delayOptions = []string{fixed}
 var abortOptions = []string{http}
 
-func surveyFaultInjectionAbort(ctx context.Context, in *options.CreateRoutingRule) error {
+func SurveyFaultInjectionAbort(ctx context.Context, in *options.CreateRoutingRule) error {
 	var abortType string
 	if err := cliutil.ChooseFromList("select type of abort rule", &abortType, abortOptions); err != nil {
 		return errors.Wrapf(err, "error selecting abort type")
@@ -56,6 +56,10 @@ func surveyFaultInjectionAbort(ctx context.Context, in *options.CreateRoutingRul
 }
 
 func SurveyFaultInjectionAbortHttp(ctx context.Context, in *options.CreateRoutingRule) error {
+	if err := surveyFaultInjectionPercent(ctx, in); err != nil {
+		return err
+	}
+
 	var httpAbort string
 	if err := cliutil.GetStringInput("enter status code to abort request with (valid http status code)", &httpAbort); err != nil {
 		return errors.Wrapf(err, "unable to read abort value")
@@ -69,7 +73,7 @@ func SurveyFaultInjectionAbortHttp(ctx context.Context, in *options.CreateRoutin
 	return nil
 }
 
-func surveyFaultInjectionDelay(ctx context.Context, in *options.CreateRoutingRule) error {
+func SurveyFaultInjectionDelay(ctx context.Context, in *options.CreateRoutingRule) error {
 	var delayChoice string
 	if err := cliutil.ChooseFromList("select type of delay rule", &delayChoice, delayOptions); err != nil {
 		return errors.Wrapf(err, "error selecting delay type")
@@ -87,6 +91,10 @@ func surveyFaultInjectionDelay(ctx context.Context, in *options.CreateRoutingRul
 }
 
 func SurveyFaultInjectionDelayFixed(ctx context.Context, in *options.CreateRoutingRule) error {
+	if err := surveyFaultInjectionPercent(ctx, in); err != nil {
+		return err
+	}
+
 	var fixedDelay string
 	if err := cliutil.GetStringInput("enter fixed delay duration", &fixedDelay); err != nil {
 		return errors.Wrapf(err, "unable to read duration value")
@@ -107,18 +115,18 @@ func SurveyFaultInjectionSpec(ctx context.Context, in *options.CreateRoutingRule
 
 	switch choice {
 	case delay:
-		if err := surveyFaultInjectionDelay(ctx, in); err != nil {
+		if err := SurveyFaultInjectionDelay(ctx, in); err != nil {
 			return err
 		}
 	case abort:
-		if err := surveyFaultInjectionAbort(ctx, in); err != nil {
+		if err := SurveyFaultInjectionAbort(ctx, in); err != nil {
 			return err
 		}
 	default:
 		return errors.Errorf("could not determine type of fault injection rule %s", choice)
 	}
 
-	if err := SurveyFaultInjectionPercent(ctx, in); err != nil {
+	if err := surveyFaultInjectionPercent(ctx, in); err != nil {
 		return err
 	}
 
