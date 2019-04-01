@@ -47,7 +47,7 @@ var _ = Describe("SetStats", func() {
 
 			Expect(core.ResourceRef(input.TargetMesh)).To(Equal(
 				core.ResourceRef{Namespace: "your", Name: "mesh"}))
-			Expect([]core.ResourceRef(input.PrometheusConfigMaps)).To(Equal(
+			Expect([]core.ResourceRef(input.PrometheusConfigMaps)).To(BeEquivalentTo(
 				[]core.ResourceRef{{Namespace: "my", Name: "cfg"}, {Namespace: "your", Name: "cfg"}}))
 		})
 	})

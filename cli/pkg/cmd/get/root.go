@@ -23,5 +23,7 @@ func Cmd(opts *options.Options) *cobra.Command {
 		// `,
 	}
 
+	cmd.AddCommand(getMeshIngressCmd(opts))
+
 	return cmd
 }

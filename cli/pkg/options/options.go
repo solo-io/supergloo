@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	glooOptions "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
@@ -24,6 +25,7 @@ type Options struct {
 	CreateTlsSecret    CreateTlsSecret
 	CreateAwsSecret    CreateAwsSecret
 	EditUpstream       EditUpstream
+	GetMeshIngress     GetMeshIngress
 	SetRootCert        SetRootCert
 	SetStats           SetStats
 }
@@ -131,4 +133,8 @@ type EditUpstream struct {
 type SetStats struct {
 	TargetMesh           ResourceRefValue
 	PrometheusConfigMaps ResourceRefsValue
+}
+
+type GetMeshIngress struct {
+	Proxy glooOptions.Proxy
 }
