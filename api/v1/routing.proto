@@ -115,12 +115,18 @@ message FaultInjection {
     // percentage of requests. If left unspecified, all request will be delayed.
     message Delay {
 
+        // duration of delay, matches golang duration spec
+        google.protobuf.Duration duration = 3 [(gogoproto.stdduration) = true, (gogoproto.nullable) = false];
 
-        oneof http_delay_type {
-            // REQUIRED. Add a fixed delay before forwarding the request. Format:
-            // 1h/1m/1s/1ms. MUST be >=1ms.
-            google.protobuf.Duration fixed_delay = 3;
+        // type of delay based on the enum below
+        Type delay_type = 6;
+
+        // types of delays available, currently only fixed is supported
+        enum Type {
+            FIXED = 0;
+            // EXPONENTIAL = 1;
         }
+
     }
 
     // The _httpStatus_ field is used to indicate the HTTP status code to

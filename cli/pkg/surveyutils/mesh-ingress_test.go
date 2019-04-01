@@ -1,8 +1,9 @@
-package surveyutils
+package surveyutils_test
 
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -59,7 +60,7 @@ var _ = Describe("SelectMeshes", func() {
 			c.SendLine("")
 			c.ExpectEOF()
 		}, func() {
-			meshes, err := SurveyMeshIngress(context.TODO())
+			meshes, err := surveyutils.SurveyMeshIngress(context.TODO())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(meshes).To(BeEquivalentTo(core.ResourceRef{
 				Name:      "gloo",
@@ -77,7 +78,7 @@ var _ = Describe("SelectMeshes", func() {
 			c.SendLine("")
 			c.ExpectEOF()
 		}, func() {
-			meshes, err := SurveyMeshIngresses(context.TODO())
+			meshes, err := surveyutils.SurveyMeshIngresses(context.TODO())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(meshes).To(BeEquivalentTo([]*core.ResourceRef{
 				{

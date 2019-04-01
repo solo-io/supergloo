@@ -55,9 +55,9 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 	case *v1.FaultInjection_Abort_:
 
 		abort := &v1alpha3.HTTPFaultInjection_Abort{
-			Percentage: &v1alpha3.Percent{
-				Value: rule.Percentage,
-			},
+			// Percent is deprecated as of 1.1
+			// Percentage is not supported by 1.0
+			Percent: int32(rule.Percentage),
 		}
 		switch abortType := faultType.Abort.ErrorType.(type) {
 		case *v1.FaultInjection_Abort_HttpStatus:
@@ -72,17 +72,15 @@ func processFaultInjectRule(rule *v1.FaultInjection, out *v1alpha3.HTTPRoute) er
 	case *v1.FaultInjection_Delay_:
 
 		delay := &v1alpha3.HTTPFaultInjection_Delay{
-			Percentage: &v1alpha3.Percent{
-				Value: rule.Percentage,
-			},
+			Percent: int32(rule.Percentage),
 		}
-		switch delayType := faultType.Delay.HttpDelayType.(type) {
-		case *v1.FaultInjection_Delay_FixedDelay:
+		switch faultType.Delay.DelayType {
+		case v1.FaultInjection_Delay_FIXED:
 			delay.HttpDelayType = &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
-				FixedDelay: delayType.FixedDelay,
+				FixedDelay: utils.DurationProto(faultType.Delay.Duration),
 			}
 		default:
-			return errors.Errorf("unknown fault injection abort type %v", faultType.Delay.HttpDelayType)
+			return errors.Errorf("unknown fault injection abort type %v", faultType.Delay.DelayType)
 		}
 		fault.Delay = delay
 
