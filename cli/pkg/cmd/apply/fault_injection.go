@@ -39,9 +39,8 @@ func faultInjectionConvertSpecFunc(opts options.RoutingRuleSpec) (*v1.RoutingRul
 	if opts.FaultInjection.Delay.Fixed != 0 {
 		faultInjection.FaultInjectionType = &v1.FaultInjection_Delay_{
 			Delay: &v1.FaultInjection_Delay{
-				HttpDelayType: &v1.FaultInjection_Delay_FixedDelay{
-					FixedDelay: &opts.FaultInjection.Delay.Fixed,
-				},
+				Duration:  opts.FaultInjection.Delay.Fixed,
+				DelayType: v1.FaultInjection_Delay_fixed,
 			},
 		}
 		spec.RuleType = &v1.RoutingRuleSpec_FaultInjection{

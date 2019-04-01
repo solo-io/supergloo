@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
 	. "github.com/onsi/ginkgo"
@@ -115,12 +114,9 @@ var _ = Describe("RoutingRule", func() {
 				Expect(faultType.FaultInjection.Percentage).To(Equal(float64(50)))
 				delayType, ok := faultType.FaultInjection.FaultInjectionType.(*v1.FaultInjection_Delay_)
 				Expect(ok).To(BeTrue())
-				delayFixedType, ok := delayType.Delay.HttpDelayType.(*v1.FaultInjection_Delay_FixedDelay)
-				Expect(ok).To(BeTrue())
-				Expect(delayFixedType.FixedDelay).To(Equal(&types.Duration{
-					Seconds: 0,
-					Nanos:   int32(time.Nanosecond * 100),
-				}))
+				Expect(delayType.Delay.DelayType).To(Equal(v1.FaultInjection_Delay_fixed))
+
+				Expect(delayType.Delay.Duration).To(Equal(time.Nanosecond * 100))
 			})
 			It("fails to create an abort rule with an invalid status code", func() {
 				name := "fi-rr"

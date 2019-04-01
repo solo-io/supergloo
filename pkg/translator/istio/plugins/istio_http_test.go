@@ -214,18 +214,6 @@ var _ = Describe("IstioHttp", func() {
 				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
 				Expect(err).To(HaveOccurred())
 			})
-
-			It("errors with no delay type present", func() {
-				in := inputs.FaultInjectionRuleSpec(&v1.FaultInjection{
-					Percentage: 50,
-					FaultInjectionType: &v1.FaultInjection_Delay_{
-						Delay: &v1.FaultInjection_Delay{},
-					},
-				})
-				out := &v1alpha3.HTTPRoute{}
-				err := NewIstioHttpPlugin().ProcessRoute(Params{}, *in, out)
-				Expect(err).To(HaveOccurred())
-			})
 		})
 
 		Context("proper transformation", func() {
@@ -244,9 +232,8 @@ var _ = Describe("IstioHttp", func() {
 					Percentage: percent,
 					FaultInjectionType: &v1.FaultInjection_Delay_{
 						Delay: &v1.FaultInjection_Delay{
-							HttpDelayType: &v1.FaultInjection_Delay_FixedDelay{
-								FixedDelay: timeDuration,
-							},
+							Duration:  timeDuration,
+							DelayType: v1.FaultInjection_Delay_fixed,
 						},
 					},
 				})
@@ -255,9 +242,7 @@ var _ = Describe("IstioHttp", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(out.Fault).To(Equal(&v1alpha3.HTTPFaultInjection{
 					Delay: &v1alpha3.HTTPFaultInjection_Delay{
-						Percentage: &v1alpha3.Percent{
-							Value: percent,
-						},
+						Percent: int32(percent),
 						HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_FixedDelay{
 							FixedDelay: duration,
 						},
@@ -281,9 +266,7 @@ var _ = Describe("IstioHttp", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(out.Fault).To(Equal(&v1alpha3.HTTPFaultInjection{
 					Abort: &v1alpha3.HTTPFaultInjection_Abort{
-						Percentage: &v1alpha3.Percent{
-							Value: percent,
-						},
+						Percent: int32(percent),
 						ErrorType: &v1alpha3.HTTPFaultInjection_Abort_HttpStatus{
 							HttpStatus: status,
 						},

@@ -39,21 +39,21 @@ func validateDuration(d *types.Duration) error {
 // DurationFromProto converts a Duration to a time.Duration. DurationFromProto
 // returns an error if the Duration is invalid or is too large to be
 // represented in a time.Duration.
-func DurationFromProto(p *types.Duration) (*time.Duration, error) {
+func DurationFromProto(p *types.Duration) (time.Duration, error) {
 	if err := validateDuration(p); err != nil {
-		return nil, err
+		return 0, err
 	}
 	d := time.Duration(p.Seconds) * time.Second
 	if int64(d/time.Second) != p.Seconds {
-		return nil, fmt.Errorf("duration: %#v is out of range for time.Duration", p)
+		return 0, fmt.Errorf("duration: %#v is out of range for time.Duration", p)
 	}
 	if p.Nanos != 0 {
 		d += time.Duration(p.Nanos)
 		if (d < 0) != (p.Nanos < 0) {
-			return nil, fmt.Errorf("duration: %#v is out of range for time.Duration", p)
+			return 0, fmt.Errorf("duration: %#v is out of range for time.Duration", p)
 		}
 	}
-	return &d, nil
+	return d, nil
 }
 
 // DurationProto converts a time.Duration to a Duration.
