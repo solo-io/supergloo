@@ -31,13 +31,13 @@ message MeshIngress {
     oneof mesh_ingress_type {
         GlooMeshIngress gloo = 1;
     }
+    // where Gloo has been installed
+    string installation_namespace = 2;
     // reference to the Mesh(s) that this ingress is acting upon
     // enable the ingress to route to services within these mTLS-enabled meshes
-    repeated core.solo.io.ResourceRef meshes = 2;
+    repeated core.solo.io.ResourceRef meshes = 3;
 }
 
 // Mesh ingress object for gloo
 message GlooMeshIngress {
-    // where Gloo has been installed
-    string installation_namespace = 1;
 }

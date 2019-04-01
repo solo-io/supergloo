@@ -59,9 +59,9 @@ func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingres
 	}
 	targetMeshes := ingress.Meshes
 
-	deployment, err := s.cs.Kube.ExtensionsV1beta1().Deployments(glooMeshIngress.Gloo.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
+	deployment, err := s.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", glooMeshIngress.Gloo.InstallationNamespace)
+		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", ingress.InstallationNamespace)
 	}
 
 	update, err := shouldUpdateDeployment(deployment, targetMeshes, meshes)
@@ -74,7 +74,7 @@ func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingres
 	}
 
 	logger.Infof("about to modify deployment for %s.%s", deployment.Namespace, deployment.Name)
-	_, err = s.cs.Kube.ExtensionsV1beta1().Deployments(glooMeshIngress.Gloo.InstallationNamespace).Update(deployment)
+	_, err = s.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Update(deployment)
 	if err != nil {
 		return errors.Wrapf(err, "unable to rewrite deployment after update")
 	}

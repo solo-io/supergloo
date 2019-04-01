@@ -42,10 +42,9 @@ var _ = Describe("SelectMeshes", func() {
 				Name:      "gloo",
 				Namespace: "supergloo-system",
 			},
+			InstallationNamespace: "gloo-system",
 			MeshIngressType: &v1.MeshIngress_Gloo{
-				Gloo: &v1.GlooMeshIngress{
-					InstallationNamespace: "gloo-system",
-				},
+				Gloo: &v1.GlooMeshIngress{},
 			},
 		}
 		_, err := clients.MustMeshClient().Write(istioMesh, skclients.WriteOpts{})
