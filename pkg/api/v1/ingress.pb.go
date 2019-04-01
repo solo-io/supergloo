@@ -39,7 +39,7 @@ type MeshIngress struct {
 	// Types that are valid to be assigned to MeshIngressType:
 	//	*MeshIngress_Gloo
 	MeshIngressType isMeshIngress_MeshIngressType `protobuf_oneof:"mesh_ingress_type"`
-	// where Gloo has been installed
+	// where the ingress has been installed
 	InstallationNamespace string `protobuf:"bytes,2,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
 	// reference to the Mesh(s) that this ingress is acting upon
 	// enable the ingress to route to services within these mTLS-enabled meshes

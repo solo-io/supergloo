@@ -31,7 +31,7 @@ message MeshIngress {
     oneof mesh_ingress_type {
         GlooMeshIngress gloo = 1;
     }
-    // where Gloo has been installed
+    // where the ingress has been installed
     string installation_namespace = 2;
     // reference to the Mesh(s) that this ingress is acting upon
     // enable the ingress to route to services within these mTLS-enabled meshes
