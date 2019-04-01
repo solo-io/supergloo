@@ -126,9 +126,5 @@ func SurveyFaultInjectionSpec(ctx context.Context, in *options.CreateRoutingRule
 		return errors.Errorf("could not determine type of fault injection rule %s", choice)
 	}
 
-	if err := surveyFaultInjectionPercent(ctx, in); err != nil {
-		return err
-	}
-
 	return nil
 }
