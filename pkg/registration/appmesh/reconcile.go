@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"text/template"
 
+	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+
 	"github.com/ghodss/yaml"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
@@ -19,7 +21,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/cert"
 	"k8s.io/helm/pkg/manifest"
-	"k8s.io/kubernetes/pkg/apis/admissionregistration"
 )
 
 type AutoInjectionReconciler interface {
@@ -184,7 +185,7 @@ func (r *autoInjectionReconciler) ensureSecrets(namespace string, secretRelatedM
 		}
 		if m.Head.Kind == webhookConfigKind {
 
-			conf := &admissionregistration.MutatingWebhookConfiguration{}
+			conf := &admissionv1beta1.MutatingWebhookConfiguration{}
 			if err := yaml.Unmarshal([]byte(m.Content), conf); err != nil {
 				return errors.Wrapf(err, "unmarshalling content for manifest %s", m.Name)
 			}
