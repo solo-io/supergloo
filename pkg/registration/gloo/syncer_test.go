@@ -171,19 +171,18 @@ var _ = Describe("gloo registration syncers", func() {
 				cs.Input.Mesh.BaseClient(),
 				cs.Input.MeshIngress.BaseClient())
 			syncer = NewGlooRegistrationSyncer(newReporter, cs)
-
 		})
 
 		var checkDeployment = func(volumes VolumeList, mounts VolumeMountList) {
 			deployment, err := kubeClient.ExtensionsV1beta1().Deployments("gloo-system").Get("gateway-proxy", metav1.GetOptions{})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(deployment.Spec.Template.Spec.Containers)).To(BeNumerically(">", 0))
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+			ExpectWithOffset(1, len(deployment.Spec.Template.Spec.Containers)).To(BeNumerically(">", 0))
 			gatewayProxyContainer := deployment.Spec.Template.Spec.Containers[0]
 			for _, v := range mounts {
-				Expect(gatewayProxyContainer.VolumeMounts).To(ContainElement(v))
+				ExpectWithOffset(1, gatewayProxyContainer.VolumeMounts).To(ContainElement(v))
 			}
 			for _, v := range volumes {
-				Expect(deployment.Spec.Template.Spec.Volumes).To(ContainElement(v))
+				ExpectWithOffset(1, deployment.Spec.Template.Spec.Volumes).To(ContainElement(v))
 			}
 		}
 

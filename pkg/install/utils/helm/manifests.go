@@ -27,6 +27,14 @@ func (m Manifests) Find(name string) *manifest.Manifest {
 	return nil
 }
 
+func (m Manifests) Names() string {
+	var names []string
+	for _, man := range m {
+		names = append(names, man.Name)
+	}
+	return strings.Join(names, ", ")
+}
+
 func (m Manifests) CombinedString() string {
 	buf := &bytes.Buffer{}
 

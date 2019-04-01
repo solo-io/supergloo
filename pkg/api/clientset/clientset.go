@@ -116,6 +116,17 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	secret, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
+		Cache:     kubeCoreCache,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := secret.Register(); err != nil {
+		return nil, err
+	}
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	podBase := customkube.NewResourceClient(kubeClient, kubeCoreCache)
@@ -124,7 +135,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	return newClientset(
 		kubeClient,
 		promClient,
-		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret),
+		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -248,12 +259,14 @@ type inputClients struct {
 	RoutingRule  v1.RoutingRuleClient
 	SecurityRule v1.SecurityRuleClient
 	TlsSecret    v1.TlsSecretClient
+	Secret       gloov1.SecretClient
 }
 
 func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
-	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient,
+	secret gloov1.SecretClient) *inputClients {
 	return &inputClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
-		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret}
+		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret}
 }
 
 type discoveryClients struct {
