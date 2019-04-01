@@ -305,7 +305,7 @@ func testConfigurePrometheus(meshName, promNamespace string) {
 		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
 	Expect(err).NotTo(HaveOccurred())
 
-	// assert the sample is valid
+	// assert the s ample is valid
 	queryIstioStats()
 }
 
