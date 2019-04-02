@@ -130,7 +130,7 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'BUILD_ID=$BUILD_ID'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
-      - 'KUBE_CONFIG=/builder/home/.kube/aws-config'
+      - 'KUBECONFIG=/builder/home/.kube/aws-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', 'test/e2e/appmesh']
     waitFor: ['copy-aws-kubeconfig']

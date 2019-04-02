@@ -352,7 +352,7 @@ func MustKubeClient() kubernetes.Interface {
 }
 
 func KubeClient() (kubernetes.Interface, error) {
-	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBE_CONFIG"))
+	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}
