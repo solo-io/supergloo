@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -93,12 +95,16 @@ func (v *validator) validateAutoInjectionConfig(ctx context.Context, appMesh *v1
 		return errors.Errorf("upstream injection selectors are currently not supported")
 	}
 
-	// Validate config map that contains the patch for pods that match the selector
-	configMapRef := appMesh.SidecarPatchConfigMap
-	if configMapRef == nil {
-		return errors.Errorf("SidecarPatchConfigMap is required when EnableAutoInject==true")
+	// If the patch config map is not set, default it our own
+	if appMesh.SidecarPatchConfigMap == nil {
+		appMesh.SidecarPatchConfigMap = &core.ResourceRef{
+			Namespace: superglooNamespace,
+			Name:      webhookName,
+		}
 	}
+
 	// If its our standard map, then we don't care if it does not exists as we will create it; if not return an error
+	configMapRef := appMesh.SidecarPatchConfigMap
 	if configMapRef.Namespace != superglooNamespace || configMapRef.Name != webhookName {
 		_, err := v.kube.CoreV1().ConfigMaps(configMapRef.Namespace).Get(configMapRef.Name, metav1.GetOptions{})
 		if err != nil {

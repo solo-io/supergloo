@@ -49,26 +49,20 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 		istio.NewIstioSecretDeleter(clientset.Kube),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
-			reporter.NewReporter("gloo-registration =-reporter",
+			reporter.NewReporter("gloo-registration-reporter",
 				clientset.Input.Mesh.BaseClient(),
 				clientset.Input.MeshIngress.BaseClient(),
 			),
 			clientset,
 		),
 		appmesh.NewAppMeshRegistrationSyncer(
-			reporter.NewReporter("app-mesh-registration =-reporter",
+			reporter.NewReporter("app-mesh-registration-reporter",
 				clientset.Input.Mesh.BaseClient(),
 			),
 			clientset.Kube,
 			clientset.Input.Secret,
 			kube.New(nil),
 		),
-
-		// TODO(marco): check with Scott about this
-		// This syncer enables config loops features. Since syncers are executed synchronously in the order they are
-		// declared here, keep it as the last one. This way we reduce the potential for problems caused by enabling the
-		// config loop for a mesh before the other registration syncers (that might create resources for that mesh)
-		// have synced.
 		registration.NewRegistrationSyncer(clientset, errHandler),
 	}
 }
