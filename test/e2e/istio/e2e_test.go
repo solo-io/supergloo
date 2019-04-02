@@ -1,25 +1,22 @@
-package e2e_test
+package istio_test
 
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
+	sgtestutils "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/go-utils/testutils"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/solo-io/supergloo/test/inputs"
-
-	"github.com/gogo/protobuf/proto"
 
 	skerrors "github.com/solo-io/solo-kit/pkg/errors"
 
@@ -55,7 +52,7 @@ var _ = Describe("E2e", func() {
 		Expect(superglooErr).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
-		deleteSuperglooPods()
+		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
 		istioName := "my-istio"
 		glooName := "gloo"
 
@@ -110,7 +107,7 @@ func testInstallIstio(meshName string) {
 		return err
 	}).ShouldNot(HaveOccurred())
 
-	err = waitUntilPodsRunning(time.Minute*2, istioNamesapce,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, istioNamesapce,
 		"grafana",
 		"istio-citadel",
 		"istio-galley",
@@ -134,12 +131,12 @@ func testInstallIstio(meshName string) {
 	err = sgutils.DeployBookInfo(namespaceWithInject)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = waitUntilPodsRunning(time.Minute*4, basicNamespace,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, basicNamespace,
 		"testrunner",
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = waitUntilPodsRunning(time.Minute*2, namespaceWithInject,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, namespaceWithInject,
 		"testrunner",
 		"reviews-v1",
 		"reviews-v2",
@@ -170,7 +167,7 @@ func testGlooInstall(glooName, istioName string) {
 		return err
 	}, time.Minute*2).ShouldNot(HaveOccurred())
 
-	err = waitUntilPodsRunning(time.Minute*2, glooNamespace,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, glooNamespace,
 		"gloo",
 		"gateway",
 	)
@@ -327,73 +324,6 @@ func testUninstallGloo(meshIngressName string) {
 	}, time.Minute*2).Should(BeTrue())
 }
 
-// remove supergloo controller pod(s)
-func deleteSuperglooPods() {
-	// wait until pod is gone
-	Eventually(func() error {
-		dep, err := kube.ExtensionsV1beta1().Deployments(superglooNamespace).Get("supergloo", metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		dep.Spec.Replicas = proto.Int(0)
-		_, err = kube.ExtensionsV1beta1().Deployments(superglooNamespace).Update(dep)
-		if err != nil {
-			return err
-		}
-		pods, err := kube.CoreV1().Pods(superglooNamespace).List(metav1.ListOptions{})
-		if err != nil {
-			return err
-		}
-		for _, p := range pods.Items {
-			if strings.HasPrefix(p.Name, "supergloo") {
-				return errors.Errorf("supergloo pods still exist")
-			}
-		}
-		return nil
-	}, time.Second*60).ShouldNot(HaveOccurred())
-
-}
-
-func waitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes ...string) error {
-	pods := clients.MustKubeClient().CoreV1().Pods(namespace)
-	getPodStatus := func(prefix string) (*v1.PodPhase, error) {
-		list, err := pods.List(metav1.ListOptions{})
-		if err != nil {
-			return nil, err
-		}
-		for _, pod := range list.Items {
-			if strings.HasPrefix(pod.Name, prefix) {
-				return &pod.Status.Phase, nil
-			}
-		}
-		return nil, errors.Errorf("pod with prefix %v not found", prefix)
-	}
-	failed := time.After(timeout)
-	notYetRunning := make(map[string]v1.PodPhase)
-	for {
-		select {
-		case <-failed:
-			return errors.Errorf("timed out waiting for pods to come online: %v", notYetRunning)
-		case <-time.After(time.Second / 2):
-			notYetRunning = make(map[string]v1.PodPhase)
-			for _, prefix := range podPrefixes {
-				stat, err := getPodStatus(prefix)
-				if err != nil {
-					log.Printf("failed to get pod status: %v", err)
-					continue
-				}
-				if *stat != v1.PodRunning {
-					notYetRunning[prefix] = *stat
-				}
-			}
-			if len(notYetRunning) == 0 {
-				return nil
-			}
-		}
-
-	}
-}
-
 func writeCerts(dir string) error {
 	secretContent := inputs.InputTlsSecret("", "")
 	err := ioutil.WriteFile(filepath.Join(dir, "CaCert"), []byte(secretContent.CaCert), 0644)
@@ -485,7 +415,7 @@ func deployPrometheus(namespace string) error {
 		return err
 	}, time.Minute*2).ShouldNot(HaveOccurred())
 
-	return waitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
+	return sgtestutils.WaitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
 }
 
 func queryIstioStats() {
