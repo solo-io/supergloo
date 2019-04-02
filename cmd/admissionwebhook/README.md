@@ -21,7 +21,7 @@ The Virtual Node does not have to exist at this point. A missing `VirtualNodeLab
     * `MeshName`: `name` of the mesh CRD, used to build the `APPMESH_VIRTUAL_NODE_NAME` env that is set on the sidecar proxy container.
     * `VirtualNodeName`: value of the pod label with key equal to `VirtualNodeLabel`. Also used to build the `APPMESH_VIRTUAL_NODE_NAME` env.
     * `AwsRegion`: `Region` of the `Mesh` CRD; indicates the AWS region where the control plane for the mesh is located. 
-    * `AppPort`:  the `containerPort` of the container in the pod. Will be used as value for the `APPMESH_APP_PORTS` env that is set 
+    * `AppPort`:  the `containerPort`s of the containers in the pod. Will be used as value for the `APPMESH_APP_PORTS` env that is set 
     on the `InitContainer` that will be added to the pod specification.
 6. Convert the rendered patch to the [JSONPatch](https://tools.ietf.org/html/rfc6902) format expected by the Kubernetes API server.
 7. Set the resulting `JSONPatch` on the response and return. The Kubernetes API server will apply the patch to the original pod spec.
@@ -30,8 +30,7 @@ The Virtual Node does not have to exist at this point. A missing `VirtualNodeLab
 ## Limitations
 The sidecar injector webhook currently has the following limitations:
 * Pods must match at most one `Mesh`
-* Pods must have at most one container
-* The container in the input pod must specify a `containerPort`
+* Each container in the input pod must specify a `containerPort`
 * `InjectionSelector` must be of type `Label` or `Namespace` (`Upstreams` is currently not supported)
 * AWS App Mesh is currently available only in the following AWS regions:
     * ap-south-1,

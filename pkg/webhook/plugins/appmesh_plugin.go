@@ -172,16 +172,14 @@ func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 		return templateData{}, errors.Errorf("pod is missing required virtual node label %v", vnLabel)
 	}
 
-	if len(pod.Spec.Containers) != 1 {
-		return templateData{}, errors.Errorf("expected exactly 1 container in pod %s.%s but found %v", pod.Namespace, pod.Name, len(pod.Spec.Containers))
-	}
-	if len(pod.Spec.Containers[0].Ports) == 0 {
-		return templateData{}, errors.Errorf("no containerPorts for container %s. Must specify at least 1 port", pod.Spec.Containers[0].Name)
-	}
-
 	var ports []string
-	for _, port := range pod.Spec.Containers[0].Ports {
-		ports = append(ports, fmt.Sprintf("%v", port.ContainerPort))
+	for _, container := range pod.Spec.Containers {
+		if len(container.Ports) == 0 {
+			return templateData{}, errors.Errorf("no containerPorts for container %s. Must specify at least 1 port", container.Name)
+		}
+		for _, port := range container.Ports {
+			ports = append(ports, fmt.Sprintf("%v", port.ContainerPort))
+		}
 	}
 
 	return templateData{
