@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      Webhook now checks whether container ports have been defined on pod that need to be autoinjected and fails if not.
+
+

@@ -1161,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:3dd84c092329c4584ef89c1b60bca93151ac03eb34fa89957d046493eb5f8dcf"
+  digest = "1:c816b37988b2b02df3c2c01899c7d6579f985dda1b1e23697127b8721ba59891"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1209,6 +1209,7 @@
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
     "projects/gloo/pkg/defaults",
+    "projects/gloo/pkg/mocks",
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
@@ -2206,6 +2207,7 @@
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
+    "github.com/solo-io/gloo/pkg/cliutil/install",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
@@ -2214,6 +2216,7 @@
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
+    "github.com/solo-io/gloo/projects/gloo/pkg/mocks",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/clidoc",
     "github.com/solo-io/go-utils/cliutils",
@@ -2264,6 +2267,7 @@
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
+    "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
@@ -2276,12 +2280,15 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/cli-runtime/pkg/genericclioptions/resource",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/util/cert",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
