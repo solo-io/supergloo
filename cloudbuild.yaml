@@ -85,6 +85,21 @@ steps:
     waitFor: ['dep']
     id: 'setup-aws-creds'
 
+  # Run unit
+  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
+      - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
+      # we DISABLE interactive tests as they appear to fail our current ci environment
+      # tracking with https://github.com/solo-io/supergloo/issues/243
+      - 'SKIP_INTERACTIVE_TESTS=1'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    args: ['-r', '-failFast', 'cli/pkg', 'pkg']
+    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
+    id: 'test'
+
   # setup kubectl
   - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
     args:
@@ -93,6 +108,7 @@ steps:
       - update-kubeconfig
       - --name=supergloo-appmesh
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+    waitFor: ['test']
     id: 'aws-kubeconfig-setup'
 
   # copy config
@@ -101,13 +117,9 @@ steps:
     args:
       - /builder/home/.kube/config
       - /builder/home/.kube/aws-config
+    waitFor: ['aws-kubeconfig-setup']
     id: 'copy-aws-kubeconfig'
 
-  - name: 'gcr.io/$PROJECT_ID/aws-kubectl:0.1.6'
-    args:
-      - get
-      - pods
-      - --all-namespaces
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
   # Run all of the tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
@@ -119,16 +131,19 @@ steps:
       - 'KUBE_CONFIG=/builder/home/.kube/aws-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['-r', '-failFast', 'test/e2e/appmesh']
+    waitFor: ['copy-aws-kubeconfig']
     id: 'appmesh-test'
 
   - name: gcr.io/cloud-builders/gcloud
     args: ['config', 'set', 'compute/zone', 'us-central1-b']
+    id: 'gcloud-compute-zone'
     waitFor: ['copy-aws-kubeconfig']
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
     id: 'gcloud-kube-config'
+    waitFor: ['gcloud-compute-zone']
 
-  # Run all of the tests
+  # Run e2e istio tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -139,9 +154,9 @@ steps:
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', 'cli/pkg', 'pkg', 'test/e2e/istio']
-    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen', 'gcloud-kube-config']
-    id: 'test'
+    args: ['-r', '-failFast', 'test/e2e/istio']
+    waitFor: ['gcloud-kube-config']
+    id: 'istio-test'
 
   # Build everything
   # 1) Compile all docker images
