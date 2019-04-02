@@ -24,6 +24,7 @@ supergloo configures resources watched by the Supergloo Controller.
 * [supergloo get](../supergloo_get)	 - get information about supergloo objects
 * [supergloo init](../supergloo_init)	 - install SuperGloo to a Kubernetes cluster
 * [supergloo install](../supergloo_install)	 - install a service mesh using Supergloo
+* [supergloo register](../supergloo_register)	 - commands for registering meshes with SuperGloo
 * [supergloo set](../supergloo_set)	 - update an existing resource with one or more config options
 * [supergloo uninstall](../supergloo_uninstall)	 - uninstall a service mesh using Supergloo
 
