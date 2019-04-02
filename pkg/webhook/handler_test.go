@@ -128,14 +128,6 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		Expect(err.Error()).To(ContainSubstring("auto-injection enabled but no selector for mesh"))
 	})
 
-	It("fails if auto-injection is enabled but the mesh is missing the InjectionSelector field", func() {
-		clients.SetClientSet(mockClientMeshNoSelector)
-
-		_, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("auto-injection enabled but no selector for mesh"))
-	})
-
 	It("fails if the container in the candidate pod does not specify any containerPorts", func() {
 		clients.SetClientSet(mockClient)
 
