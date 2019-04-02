@@ -421,14 +421,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1ba1d79f2810270045c328ae5d674321db34e3aae468eb4233883b473c5c0467"
-  name = "github.com/golang/glog"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
-
-[[projects]]
-  branch = "master"
   digest = "1:3fb07f8e222402962fa190eb060608b34eddfb64562a18e2167df2de0ece85d8"
   name = "github.com/golang/groupcache"
   packages = ["lru"]
@@ -519,6 +511,14 @@
   pruneopts = "UT"
   revision = "7c663266750e7d82587642f65e60bc4083f1f84e"
   version = "v0.2.0"
+
+[[projects]]
+  digest = "1:205c73bd5808318c9804e1dae07508064fab82c11fb4b2833f0358338b7b4fab"
+  name = "github.com/goph/emperror"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4cdd86c173cfed1f47be88bd88327140f81bcede"
+  version = "v0.16.0"
 
 [[projects]]
   branch = "master"
@@ -1717,7 +1717,7 @@
   version = "kubernetes-1.13.0"
 
 [[projects]]
-  digest = "1:7e0da6a6b629ccfdc34c62b00db9b632a8d1bdfdc67fe57ff1a81acec6c18a01"
+  digest = "1:6489d76eab90e477f61eb30186098b5d2e45acd08cefdfdc4988e30c3752ff30"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -1774,8 +1774,8 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "eddba98df674a16931d2d4ba75edc3a389bf633a"
-  version = "kubernetes-1.12.3"
+  revision = "2b1284ed4c93a43499e781493253e2ac5959c4fd"
+  version = "kubernetes-1.13.1"
 
 [[projects]]
   digest = "1:138928c37ee6ec1be14aec46c97dab5f110ffa7e81828b9d27919df371fd8f62"
@@ -2172,6 +2172,25 @@
   revision = "66066c83e385e385ccc3c964b44fd7dcd413d0ed"
 
 [[projects]]
+  digest = "1:744e92fc72882b22ae2add854ee1841f95fc5148baaeda2a244e621ad0995d97"
+  name = "sigs.k8s.io/controller-runtime"
+  packages = [
+    "pkg/client",
+    "pkg/client/apiutil",
+  ]
+  pruneopts = "UT"
+  revision = "12d98582e72927b6cd0123e2b4e819f9341ce62c"
+  version = "v0.1.10"
+
+[[projects]]
+  digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
+  name = "sigs.k8s.io/yaml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fd68e9863619f6ec2fdd8625fe1f02e7c877e480"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   digest = "1:9132eacc44d9bd1e03145ea2e9d4888800da7773d6edebb401f8cd34c9fb8380"
   name = "vbom.ml/util"
@@ -2195,6 +2214,7 @@
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
     "github.com/google/go-github/github",
+    "github.com/goph/emperror",
     "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/go-homedir",
     "github.com/olekukonko/tablewriter",
@@ -2260,24 +2280,34 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
+    "golang.org/x/sync/errgroup",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
+    "k8s.io/api/apps/v1",
+    "k8s.io/api/apps/v1beta2",
+    "k8s.io/api/autoscaling/v1",
+    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
+    "k8s.io/api/rbac/v1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/cli-runtime/pkg/genericclioptions/resource",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
@@ -2289,6 +2319,7 @@
     "k8s.io/helm/pkg/renderutil",
     "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
+    "sigs.k8s.io/controller-runtime/pkg/client",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
