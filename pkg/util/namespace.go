@@ -18,11 +18,16 @@ func GetSuperglooNamespace(client kubernetes.Interface) (string, error) {
 
 	// Try to retrieve the supergloo deployment
 	if client != nil {
-		supergloo, err := client.AppsV1().Deployments(metav1.NamespaceAll).Get("supergloo", metav1.GetOptions{})
+		deployments, err := client.AppsV1().Deployments(metav1.NamespaceAll).List(metav1.ListOptions{})
 		if err != nil {
-			return "", errors.Wrapf(err, "could not get supergloo deployment")
+			return "", errors.Wrapf(err, "could not list deployments")
 		}
-		return supergloo.Namespace, nil
+		for _, deployment := range deployments.Items {
+			if deployment.Name == "supergloo" {
+				return deployment.Namespace, nil
+			}
+		}
+
 	}
 
 	return "", errors.Errorf("could not determine supergloo namespace")

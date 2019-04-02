@@ -19,8 +19,9 @@ import (
 )
 
 type EnabledConfigLoops struct {
-	Istio bool
-	Gloo  bool
+	Istio   bool
+	Gloo    bool
+	AppMesh bool
 }
 
 func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enabled EnabledConfigLoops) error {

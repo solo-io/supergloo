@@ -1,0 +1,146 @@
+{{ $backtick := "`" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-injection-resources
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: supergloo
+    supergloo: sidecar-injection
+data:
+  secret.tpl: |-
+    {{`
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        app: sidecar-injector
+    type: Opaque
+    data:
+      cert.pem: {{ .ServerCert }}
+      key.pem: {{ .ServerCertKey }}
+    `}}
+  deployment.tpl: |-
+    {{`
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        app: sidecar-injector
+    spec:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: sidecar-injector
+        spec:
+          serviceAccountName: supergloo
+          containers:
+            - name: sidecar-injector
+              image: {{ .Image.Name }}:{{ .Image.Tag }}
+              imagePullPolicy: {{ .Image.PullPolicy }}
+              env:
+                - name: TLS_CERT_PATH
+                  value: "/etc/webhook/cert.pem"
+                - name: TLS_KEY_PATH
+                  value: "/etc/webhook/key.pem"
+              volumeMounts:
+                - name: webhook-certs
+                  mountPath: /etc/webhook/
+                  readOnly: true
+          volumes:
+            - name: webhook-certs
+              secret:
+                secretName: {{ .Name }}
+    `}}
+  service.tpl: |-
+    {{`
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        app: sidecar-injector
+    spec:
+      ports:
+        - port: 443
+          targetPort: 443
+      selector:
+        app: sidecar-injector
+    `}}
+  config-map.tpl: |-
+    {{`
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        app: sidecar-injector
+    data:
+      aws-app-mesh-patch.yaml: |
+        `}}{{ "{{" }}{{ $backtick }}{{`
+
+        containers:
+          - name: envoy
+            image: 111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.8.0.2-beta
+            securityContext:
+              runAsUser: 1337
+            env:
+              - name: "APPMESH_VIRTUAL_NODE_NAME"
+                value: "mesh/{{- .MeshName -}}/virtualNode/{{- .VirtualNodeName -}}"
+              - name: "ENVOY_LOG_LEVEL"
+                value: "debug"
+              - name: "AWS_REGION"
+                value: "{{- .AwsRegion -}}"
+        initContainers:
+          - name: proxyinit
+            image: 111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:latest
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+            env:
+              - name: "APPMESH_START_ENABLED"
+                value: "1"
+              - name: "APPMESH_IGNORE_UID"
+                value: "1337"
+              - name: "APPMESH_ENVOY_INGRESS_PORT"
+                value: "15000"
+              - name: "APPMESH_ENVOY_EGRESS_PORT"
+                value: "15001"
+              - name: "APPMESH_APP_PORTS"
+                value: "{{- .AppPort -}}"
+              - name: "APPMESH_EGRESS_IGNORED_IP"
+                value: "169.254.169.254"
+
+        `}}{{ $backtick }}{{ "}}" }}{{`
+    `}}
+  mutating-webhook-configuration.tpl: |-
+    {{`
+    apiVersion: admissionregistration.k8s.io/v1beta1
+    kind: MutatingWebhookConfiguration
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        app: sidecar-injector
+    webhooks:
+      - name: {{ .Name }}.{{ .Namespace }}.svc  # must be a domain with at least three segments separated by dots
+        clientConfig:
+          service:
+            name: {{ .Name }}
+            namespace: {{ .Namespace }}
+            path: "/pods/inject-sidecar"
+          caBundle: {{ .CaBundle }}
+        rules:
+          - operations: [ "CREATE" ]
+            apiGroups: [""]
+            apiVersions: ["v1"]
+            resources: ["pods"]
+    `}}

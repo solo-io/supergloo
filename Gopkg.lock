@@ -513,12 +513,12 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:205c73bd5808318c9804e1dae07508064fab82c11fb4b2833f0358338b7b4fab"
+  digest = "1:f91df401afec7f89e6b8932337a63fc4807e61bdfee71b924acffe1d4b1bce97"
   name = "github.com/goph/emperror"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4cdd86c173cfed1f47be88bd88327140f81bcede"
-  version = "v0.16.0"
+  revision = "ae59d9fdc3f0c4814bc5fac2d4a68441dcff5a17"
+  version = "v0.17.1"
 
 [[projects]]
   branch = "master"
@@ -1161,7 +1161,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:3dd84c092329c4584ef89c1b60bca93151ac03eb34fa89957d046493eb5f8dcf"
+  digest = "1:c816b37988b2b02df3c2c01899c7d6579f985dda1b1e23697127b8721ba59891"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1209,6 +1209,7 @@
     "projects/gloo/pkg/api/v1/plugins/static",
     "projects/gloo/pkg/api/v1/plugins/transformation",
     "projects/gloo/pkg/defaults",
+    "projects/gloo/pkg/mocks",
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
@@ -2226,6 +2227,7 @@
     "github.com/prometheus/prometheus/config",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
+    "github.com/solo-io/gloo/pkg/cliutil/install",
     "github.com/solo-io/gloo/pkg/cliutil/testutil",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
@@ -2234,6 +2236,7 @@
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
+    "github.com/solo-io/gloo/projects/gloo/pkg/mocks",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/clidoc",
     "github.com/solo-io/go-utils/cliutils",
@@ -2303,7 +2306,9 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/cli-runtime/pkg/genericclioptions/resource",
     "k8s.io/client-go/discovery",
@@ -2312,6 +2317,7 @@
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/util/cert",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
