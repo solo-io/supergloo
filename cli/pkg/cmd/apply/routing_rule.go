@@ -179,12 +179,12 @@ func routingRuleFromOpts(opts *options.Options) (*v1.RoutingRule, error) {
 		return nil, err
 	}
 
-	ss, err := convertSelector(opts.CreateRoutingRule.SourceSelector)
+	ss, err := ConvertSelector(opts.CreateRoutingRule.SourceSelector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid source selector")
 	}
 
-	ds, err := convertSelector(opts.CreateRoutingRule.DestinationSelector)
+	ds, err := ConvertSelector(opts.CreateRoutingRule.DestinationSelector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid destination selector")
 	}

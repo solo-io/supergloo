@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const appMeshAvailableRegions = "ap-south-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,ap-northeast-1," +
+const AppMeshAvailableRegions = "ap-south-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,ap-northeast-1," +
 	"us-east-2,us-east-1,us-west-1,us-west-2,eu-west-1,eu-central-1,ca-central-1"
 
 type Validator interface {
@@ -36,8 +36,8 @@ func (v *validator) Validate(ctx context.Context, appMesh *v1.AwsAppMesh) error 
 	// Region must be valid
 	if appMesh.Region == "" {
 		return errors.Errorf("region is required for AWS App Mesh")
-	} else if !strings.Contains(appMeshAvailableRegions, appMesh.Region) {
-		return errors.Errorf("invalid AWS region [%s]. AWS App Mesh is currently available in: %s", appMesh.Region, appMeshAvailableRegions)
+	} else if !strings.Contains(AppMeshAvailableRegions, appMesh.Region) {
+		return errors.Errorf("invalid AWS region [%s]. AWS App Mesh is currently available in: %s", appMesh.Region, AppMeshAvailableRegions)
 	}
 
 	// Check whether secret exists and can be used to access App Mesh

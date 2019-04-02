@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/registration/appmesh"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -16,8 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
-
-const appMeshSupportedRegions = "us-west-2, us-east-1, us-east-2, eu-west-1"
 
 // This struct represents the data required for rendering the App Mesh patch template
 type templateData struct {
@@ -159,8 +159,8 @@ func getTemplateData(pod *corev1.Pod, mesh *v1.Mesh) (templateData, error) {
 	if awsRegion == "" {
 		return templateData{}, errors.Errorf("mesh resource is missing required Region field")
 	}
-	if !strings.Contains(appMeshSupportedRegions, awsRegion) {
-		return templateData{}, errors.Errorf("AWS App Mesh is currently not available in [%s]. Supported regions are: %s", awsRegion, appMeshSupportedRegions)
+	if !strings.Contains(appmesh.AppMeshAvailableRegions, awsRegion) {
+		return templateData{}, errors.Errorf("AWS App Mesh is currently not available in [%s]. Supported regions are: %s", awsRegion, appmesh.AppMeshAvailableRegions)
 	}
 
 	vnLabel := mesh.GetAwsAppMesh().VirtualNodeLabel
