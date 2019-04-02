@@ -64,6 +64,7 @@ func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingres
 		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", ingress.InstallationNamespace)
 	}
 
+	// This mutates the deployment
 	update, err := shouldUpdateDeployment(deployment, targetMeshes, meshes)
 	if err != nil {
 		return err
