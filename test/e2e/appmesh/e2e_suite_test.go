@@ -66,7 +66,7 @@ var _ = BeforeSuite(func() {
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	// create sg ns
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "supergloo-system"},
+		ObjectMeta: metav1.ObjectMeta{Name: superglooNamespace},
 	})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -93,10 +93,11 @@ func teardown() {
 		cancel()
 	}
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
+	kube.CoreV1().Namespaces().Delete(superglooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
 
-	testutils.WaitForNamespaceTeardown("supergloo-system")
+	testutils.WaitForNamespaceTeardown(superglooNamespace)
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	log.Printf("done!")
