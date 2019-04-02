@@ -39,6 +39,7 @@ type ResourcesForTest struct {
 	EmptyPatch              patchConfigMap
 	TwoEntryPatch           patchConfigMap
 	MatchingPod             pod
+	MatchingPodWithoutPorts pod
 	NonMatchingPod          pod
 	AppMeshInjectEnabled    *v1.Mesh
 	AppMeshInjectDisabled   *v1.Mesh
@@ -76,6 +77,7 @@ func GetTestResources(decoder runtime.Decoder) *ResourcesForTest {
 		EmptyPatch:              newPatchConfigMap(decoder, emptyPatch),
 		TwoEntryPatch:           newPatchConfigMap(decoder, twoEntryPatch),
 		MatchingPod:             newPod(decoder, matchingPod),
+		MatchingPodWithoutPorts: newPod(decoder, matchingPodWithoutPorts),
 		NonMatchingPod:          newPod(decoder, nonMatchingPod),
 		AppMeshInjectEnabled:    appMeshInjectEnabled,
 		AppMeshInjectDisabled:   appMeshInjectDisabled,
@@ -192,6 +194,20 @@ spec:
       name: testrunner
       ports:
         - containerPort: 1234
+`
+var matchingPodWithoutPorts = `
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: testrunner
+    version: "1"
+    virtual-node: testrunner-vn
+spec:
+  containers:
+    - image: soloio/testrunner:latest
+      imagePullPolicy: IfNotPresent
+      name: testrunner
 `
 
 var nonMatchingPod = `
