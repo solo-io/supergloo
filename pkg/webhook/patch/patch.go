@@ -27,12 +27,6 @@ func BuildSidecarPatch(pod *corev1.Pod, configMap *corev1.ConfigMap, templateDat
 	if len(configMap.Data) != 1 {
 		return nil, errors.Errorf("expected exactly 1 entry in config map %s.%s but found %v", configMap.Namespace, configMap.Name, len(configMap.Data))
 	}
-	if len(pod.Spec.Containers) != 1 {
-		return nil, errors.Errorf("expected exactly 1 container in pod %s.%s but found %v", pod.Namespace, pod.Name, len(pod.Spec.Containers))
-	}
-	if len(pod.Spec.Containers[0].Ports) != 1 {
-		return nil, errors.Errorf("expected exactly 1 port in container %s but found %v", pod.Spec.Containers[0].Name, len(pod.Spec.Containers[0].Ports))
-	}
 
 	// Get the patch in the form of a pod spec
 	var patch *corev1.PodSpec

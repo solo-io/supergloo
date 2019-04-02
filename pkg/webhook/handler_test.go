@@ -127,6 +127,14 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("auto-injection enabled but no selector for mesh"))
 	})
+
+	It("fails if the container in the candidate pod has containers that do not specify any containerPorts", func() {
+		clients.SetClientSet(mockClient)
+
+		_, err := admit(context.TODO(), testData.MatchingPodWithoutPorts.ToRequest())
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("no containerPorts for container"))
+	})
 })
 
 func buildMock(ctrl *gomock.Controller, configMapToReturn *corev1.ConfigMap, meshesToReturn ...*v1.Mesh) *clients.MockWebhookResourceClient {
