@@ -58,7 +58,7 @@ var _ = BeforeSuite(func() {
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   namespaceWithInject,
-			Labels: map[string]string{"istio-injection": "enabled"},
+			Labels: map[string]string{"app-mesh-injection": "enabled"},
 		},
 	})
 	Expect(err).NotTo(HaveOccurred())
