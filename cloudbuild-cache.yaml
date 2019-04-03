@@ -21,7 +21,7 @@ steps:
     - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
     - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
   dir: './gopath/src/github.com/solo-io/supergloo'
-  args: ['-r', '-dryRun', '-v', 'pkg', 'test/e2e']
+  args: ['build', '-r', 'cli/pkg', 'pkg', 'test/e2e']
   waitFor: ['dep']
   id: 'test'
 
