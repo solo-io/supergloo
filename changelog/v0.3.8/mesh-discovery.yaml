@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Mesh discovery.
+    issueLink: https://github.com/solo-io/supergloo/issues/213
+    resolvesIssue: false
+
