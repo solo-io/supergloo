@@ -7,3 +7,6 @@ doc/site
 
 # Mac Files
 **/.DS_Store
+
+// for local testing
+cloudbuild-test.yaml

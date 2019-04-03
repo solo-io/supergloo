@@ -25,7 +25,7 @@ var (
 	kubeClient kubernetes.Interface
 )
 
-var _ = Describe("HelmChartInstaller", func() {
+var _ = XDescribe("HelmChartInstaller", func() {
 	var (
 		ns   string
 		inst = NewHelmInstaller()
