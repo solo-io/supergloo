@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 )
 
-var _ = Describe("gloo helm installer", func() {
+var _ = XDescribe("gloo helm installer", func() {
 	installer := gloo.NewDefaultInstaller(helm.NewHelmInstaller())
 	ns := "gloo-system"
 	It("installs, upgrades, and uninstalls from an install object", func() {

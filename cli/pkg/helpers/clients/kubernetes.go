@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"os"
 
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
@@ -351,7 +352,7 @@ func MustKubeClient() kubernetes.Interface {
 }
 
 func KubeClient() (kubernetes.Interface, error) {
-	cfg, err := kubeutils.GetConfig("", "")
+	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")
 	}

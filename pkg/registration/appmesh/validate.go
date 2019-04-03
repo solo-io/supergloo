@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -15,7 +17,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const AppMeshAvailableRegions = "ap-south-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,ap-northeast-1," +
+const appMeshAvailableRegions = "ap-south-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,ap-northeast-1," +
 	"us-east-2,us-east-1,us-west-1,us-west-2,eu-west-1,eu-central-1,ca-central-1"
 
 type Validator interface {
@@ -36,8 +38,8 @@ func (v *validator) Validate(ctx context.Context, appMesh *v1.AwsAppMesh) error 
 	// Region must be valid
 	if appMesh.Region == "" {
 		return errors.Errorf("region is required for AWS App Mesh")
-	} else if !strings.Contains(AppMeshAvailableRegions, appMesh.Region) {
-		return errors.Errorf("invalid AWS region [%s]. AWS App Mesh is currently available in: %s", appMesh.Region, AppMeshAvailableRegions)
+	} else if !strings.Contains(appMeshAvailableRegions, appMesh.Region) {
+		return errors.Errorf("invalid AWS region [%s]. AWS App Mesh is currently available in: %s", appMesh.Region, appMeshAvailableRegions)
 	}
 
 	// Check whether secret exists and can be used to access App Mesh
@@ -93,12 +95,16 @@ func (v *validator) validateAutoInjectionConfig(ctx context.Context, appMesh *v1
 		return errors.Errorf("upstream injection selectors are currently not supported")
 	}
 
-	// Validate config map that contains the patch for pods that match the selector
-	configMapRef := appMesh.SidecarPatchConfigMap
-	if configMapRef == nil {
-		return errors.Errorf("SidecarPatchConfigMap is required when EnableAutoInject==true")
+	// If the patch config map is not set, default it our own
+	if appMesh.SidecarPatchConfigMap == nil {
+		appMesh.SidecarPatchConfigMap = &core.ResourceRef{
+			Namespace: superglooNamespace,
+			Name:      webhookName,
+		}
 	}
+
 	// If its our standard map, then we don't care if it does not exists as we will create it; if not return an error
+	configMapRef := appMesh.SidecarPatchConfigMap
 	if configMapRef.Namespace != superglooNamespace || configMapRef.Name != webhookName {
 		_, err := v.kube.CoreV1().ConfigMaps(configMapRef.Namespace).Get(configMapRef.Name, metav1.GetOptions{})
 		if err != nil {

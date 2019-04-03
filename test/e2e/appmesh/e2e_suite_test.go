@@ -1,4 +1,4 @@
-package e2e_test
+package appmesh_test
 
 import (
 	"context"
@@ -6,14 +6,11 @@ import (
 	"os"
 	"testing"
 
-	gotestutils "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	"github.com/solo-io/supergloo/test/e2e/utils"
-
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
@@ -32,12 +29,6 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
-	promNamespace                       = "prometheus-test" + gotestutils.RandString(4)
-)
-
-const (
-	istioNamesapce = "istio-system"
-	glooNamespace  = "gloo-system"
 )
 
 var _ = BeforeSuite(func() {
@@ -67,7 +58,7 @@ var _ = BeforeSuite(func() {
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   namespaceWithInject,
-			Labels: map[string]string{"istio-injection": "enabled"},
+			Labels: map[string]string{"app-mesh-injection": "enabled"},
 		},
 	})
 	Expect(err).NotTo(HaveOccurred())
@@ -75,7 +66,7 @@ var _ = BeforeSuite(func() {
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	// create sg ns
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "supergloo-system"},
+		ObjectMeta: metav1.ObjectMeta{Name: superglooNamespace},
 	})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -102,44 +93,12 @@ func teardown() {
 		cancel()
 	}
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
-	kube.CoreV1().Namespaces().Delete(istioNamesapce, nil)
-	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
+	kube.CoreV1().Namespaces().Delete(superglooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
-	err := teardownPrometheus(promNamespace)
-	if err != nil {
-		log.Printf("failed to teardown prometheus: %v", err)
-	}
-	testutils.TeardownWithPrefix(kube, "istio")
-	testutils.TeardownWithPrefix(kube, "gloo")
-	testutils.WaitForNamespaceTeardown("supergloo-system")
+
+	testutils.WaitForNamespaceTeardown(superglooNamespace)
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
-	testutils.WaitForNamespaceTeardown(istioNamesapce)
-	testutils.WaitForNamespaceTeardown(glooNamespace)
 	log.Printf("done!")
-}
-
-func teardownPrometheus(namespace string) error {
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"--set", "server.persistentVolume.enabled=false",
-		"--set", "alertmanager.enabled=false",
-		"files/prometheus-8.9.0.tgz")
-	if err != nil {
-		return err
-	}
-
-	err = utils.KubectlDelete(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -93,12 +93,6 @@ var _ = Describe("Validate App Mesh meshes", func() {
 			Expect(err.Error()).To(ContainSubstring("upstream injection selectors are currently not supported"))
 		})
 
-		It("fails if mesh does not specify a SidecarPatchConfigMap", func() {
-			err := validator.Validate(context.TODO(), &autoInjectionMeshNoConfigMap)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("SidecarPatchConfigMap is required when EnableAutoInject==true"))
-		})
-
 		It("fails if the mesh specifies a custom SidecarPatchConfigMap that does not exist", func() {
 			err := validator.Validate(context.TODO(), &autoInjectionMeshCustomConfigMap)
 			Expect(err).To(HaveOccurred())
@@ -216,25 +210,6 @@ var autoInjectionMeshUnsupportedSelector = v1.AwsAppMesh{
 		Namespace: testNamespace,
 		Name:      webhookName,
 	},
-}
-
-var autoInjectionMeshNoConfigMap = v1.AwsAppMesh{
-	AwsSecret: &core.ResourceRef{
-		Namespace: testNamespace,
-		Name:      "aws-secret",
-	},
-	Region:           "us-east-1",
-	EnableAutoInject: true,
-	InjectionSelector: &v1.PodSelector{
-		SelectorType: &v1.PodSelector_LabelSelector_{
-			LabelSelector: &v1.PodSelector_LabelSelector{
-				LabelsToMatch: map[string]string{
-					"inject": "true",
-				},
-			},
-		},
-	},
-	VirtualNodeLabel: "vn",
 }
 
 var autoInjectionMeshCustomConfigMap = v1.AwsAppMesh{
