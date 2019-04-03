@@ -72,19 +72,6 @@ steps:
     waitFor: ['make-helm-dir']
     id: 'setup-helm'
 
-  # Decrypt AWS access credentials
-  - name: gcr.io/cloud-builders/gcloud
-    args:
-      - kms
-      - decrypt
-      - --ciphertext-file=./gopath/src/github.com/solo-io/supergloo/ci/aws_credentials.enc
-      - --plaintext-file=/workspace/aws_credentials
-      - --location=global
-      - --keyring=build
-      - --key=build-key
-    waitFor: ['dep']
-    id: 'setup-aws-creds'
-
   # Compile all tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
@@ -99,7 +86,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['build', '-r', 'cli/pkg', 'pkg', 'test/e2e']
-    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
+    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
     id: 'compile-tests'
 
   # Run unit tests
@@ -116,7 +103,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
-    args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i)) ; done']
+    args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast) ; done']
     waitFor: ['compile-tests']
     id: 'test'
 
@@ -151,7 +138,8 @@ steps:
       - 'KUBECONFIG=/builder/home/.kube/aws-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/appmesh | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i)); done']
+    args: ['-c', 'for i in $(find test/e2e/appmesh | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['copy-aws-kubeconfig']
     id: 'appmesh-test'
 
@@ -176,7 +164,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i)); done']
+    args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
     waitFor: ['gcloud-kube-config']
     id: 'istio-test'
 
