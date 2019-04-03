@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Added command to register AWS App Mesh to supergloo CLI.
+    issueLink: https://github.com/solo-io/supergloo/issues/214
+
+

@@ -96,12 +96,12 @@ func applySecurityRule(opts *options.Options) error {
 }
 
 func securityRuleFromOpts(opts *options.Options) (*v1.SecurityRule, error) {
-	ss, err := convertSelector(opts.CreateSecurityRule.SourceSelector)
+	ss, err := ConvertSelector(opts.CreateSecurityRule.SourceSelector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid source selector")
 	}
 
-	ds, err := convertSelector(opts.CreateSecurityRule.DestinationSelector)
+	ds, err := ConvertSelector(opts.CreateSecurityRule.DestinationSelector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid destination selector")
 	}
