@@ -39,6 +39,7 @@ func SuperglooCli(version string) *cobra.Command {
 		set.Cmd(opts),
 		get.Cmd(opts),
 		register.Cmd(opts),
+		completionCmd(),
 	)
 
 	return app
