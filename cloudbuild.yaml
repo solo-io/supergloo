@@ -42,7 +42,7 @@ steps:
     args: ['check-format']
     waitFor: ['dep']
     id: 'check-format'
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.6'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     entrypoint: 'bash'
     args: ['ci/check-code-and-docs-gen.sh']
     env:
@@ -171,7 +171,7 @@ steps:
     id: 'docker-login'
     waitFor: ['istio-test', 'appmesh-test']
 
-  - name: 'gcr.io/$PROJECT_ID/go-make'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     args: ['docker', 'build-cli']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -181,7 +181,7 @@ steps:
     waitFor: ['docker-login']
     id: 'compile'
 
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.6'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     args: ['docker-push', 'manifest', 'upload-github-release-assets', 'push-docs']
     env:
       - 'TAGGED_VERSION=$TAG_NAME'
