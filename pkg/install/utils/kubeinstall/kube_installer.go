@@ -179,6 +179,15 @@ func (r *KubeInstaller) ReconcilleResources(ctx context.Context, installNamespac
 func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace string, desiredResources kuberesource.UnstructuredResourcesByKey, ownerLabels map[string]string) error {
 	cachedResources := r.cache.List().WithLabels(ownerLabels).ByKey()
 
+	logger := contextutils.LoggerFrom(ctx)
+
+	logger.Infow("reconciling desired resources against cached resources",
+		"desired", len(desiredResources),
+		"cached_with_label", len(cachedResources),
+		"labels", ownerLabels,
+		"cache_total", len(r.cache.resources),
+	)
+
 	// set labels for writing
 	for _, res := range desiredResources {
 		labels := res.GetLabels()
@@ -208,6 +217,8 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 		}
 	}
 
+	logger.Infof("preparing to create %v, update %v, and delete %v resources", len(resourcesToCreate), len(resourcesToUpdate), len(resourcesToDelete))
+
 	// delete in reverse order of install
 	groupedResourcesToDelete := resourcesToDelete.GroupedByGVK()
 	for i := len(groupedResourcesToDelete); i > 0; i-- {
@@ -220,7 +231,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 					return err
 				}
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
-				contextutils.LoggerFrom(ctx).Infof("deleting resource %v", resKey)
+				logger.Infof("deleting resource %v", resKey)
 
 				if err := retry.Do(func() error { return r.client.Delete(ctx, res) }); err != nil && !kubeerrs.IsNotFound(err) {
 					return errors.Wrapf(err, "deleting  %v", resKey)
@@ -248,7 +259,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 					return err
 				}
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
-				contextutils.LoggerFrom(ctx).Infof("creating resource %v", resKey)
+				logger.Infof("creating resource %v", resKey)
 
 				if err := retry.Do(func() error { return r.client.Create(ctx, res) }); err != nil {
 					return errors.Wrapf(err, "creating %v", resKey)
@@ -287,7 +298,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 					return err
 				}
 				resKey := fmt.Sprintf("%v %v.%v", desired.GroupVersionKind().Kind, desired.GetNamespace(), desired.GetName())
-				contextutils.LoggerFrom(ctx).Infof("updating resource %v", resKey)
+				logger.Infof("updating resource %v", resKey)
 
 				if err := retry.Do(func() error { return r.client.Update(ctx, desired) }); err != nil {
 					return errors.Wrapf(err, "updating %v", resKey)
@@ -303,6 +314,8 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 			return err
 		}
 	}
+
+	logger.Infof("created %v, updated %v, and deleted %v resources", len(resourcesToCreate), len(resourcesToUpdate), len(resourcesToDelete))
 
 	return nil
 }
