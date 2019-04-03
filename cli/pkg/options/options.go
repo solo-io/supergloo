@@ -28,6 +28,7 @@ type Options struct {
 	GetMeshIngress     GetMeshIngress
 	SetRootCert        SetRootCert
 	SetStats           SetStats
+	RegisterAppMesh    RegisterAppMesh
 }
 
 type Init struct {
@@ -138,4 +139,13 @@ type SetStats struct {
 type GetMeshIngress struct {
 	Proxy  glooOptions.Proxy
 	Target ResourceRefValue
+}
+
+type RegisterAppMesh struct {
+	Region              string
+	Secret              ResourceRefValue
+	EnableAutoInjection string
+	ConfigMap           ResourceRefValue
+	PodSelector         Selector
+	VirtualNodeLabel    string
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"k8s.io/client-go/kubernetes/fake"
+
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 
@@ -51,11 +53,13 @@ func GetNamespaces() ([]string, error) {
 }
 
 var memoryResourceClient *factory.MemoryResourceClientFactory
+var fakeKubeClientset *fake.Clientset
 
 func UseMemoryClients() {
 	memoryResourceClient = &factory.MemoryResourceClientFactory{
 		Cache: memory.NewInMemoryResourceCache(),
 	}
+	fakeKubeClientset = fake.NewSimpleClientset()
 }
 
 func MustInstallClient() v1.InstallClient {
@@ -352,6 +356,9 @@ func MustKubeClient() kubernetes.Interface {
 }
 
 func KubeClient() (kubernetes.Interface, error) {
+	if fakeKubeClientset != nil {
+		return fakeKubeClientset, nil
+	}
 	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
 	if err != nil {
 		return nil, errors.Wrapf(err, "getting kube config")

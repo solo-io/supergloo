@@ -29,7 +29,7 @@ func (v *ResourceRefsValue) String() string {
 
 func (v *ResourceRefsValue) Set(s string) error {
 	split := strings.SplitN(s, ".", 2)
-	if len(split) != 2 {
+	if len(split) != 2 || strings.Trim(split[0], " ") == "" || strings.Trim(split[1], " ") == "" {
 		return errors.Errorf("%s invalid: refs must be specified in the format <NAMESPACE>.<NAME>", s)
 	}
 	*v = append(*v, core.ResourceRef{Namespace: split[0], Name: split[1]})
@@ -156,7 +156,7 @@ func (v *ResourceRefValue) String() string {
 
 func (v *ResourceRefValue) Set(s string) error {
 	split := strings.SplitN(s, ".", 2)
-	if len(split) != 2 {
+	if len(split) != 2 || strings.Trim(split[0], " ") == "" || strings.Trim(split[1], " ") == "" {
 		return errors.Errorf("%s invalid: refs must be specified in the format <NAMESPACE>.<NAME>", s)
 	}
 	*v = ResourceRefValue(core.ResourceRef{Namespace: split[0], Name: split[1]})
