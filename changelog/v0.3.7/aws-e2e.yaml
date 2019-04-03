@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Create e2e test for appmesh, as well as method of using different clusters in CI
+    issueLink: https://github.com/solo-io/supergloo/issues/327
