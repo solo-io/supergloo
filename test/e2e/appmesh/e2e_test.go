@@ -33,10 +33,11 @@ var _ = Describe("E2e", func() {
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
 		appmeshName := "appmesh"
+		secretName := "my-secret"
 
-		testRegisterAppmesh(appmeshName)
+		createAWSSecret(secretName)
 
-		createAWSSecret()
+		testRegisterAppmesh(appmeshName, secretName)
 
 		testUnregisterAppmesh(appmeshName)
 	})
@@ -45,17 +46,20 @@ var _ = Describe("E2e", func() {
 /*
    tests
 */
-func testRegisterAppmesh(meshName string) {
+func testRegisterAppmesh(meshName, secretName string) {
+	region, vnLabel := "us-east-1", "vn"
+	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
+		"--secret %s --select-namespaces %s --virtual-node-label %s", meshName, region, secretName, namespaceWithInject, vnLabel))
 
+	Expect(err).NotTo(HaveOccurred())
 }
 
 func testUnregisterAppmesh(meshName string) {
 
 }
 
-func createAWSSecret() {
+func createAWSSecret(secretName string) {
 	accessKeyId, secretAccessKey := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY")
-	secretName := "my-secret"
 	Expect(accessKeyId).NotTo(Equal(""))
 	Expect(secretAccessKey).NotTo(Equal(""))
 	err := utils.Supergloo(fmt.Sprintf(
