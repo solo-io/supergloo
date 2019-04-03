@@ -3,8 +3,6 @@ package kuberesource
 import (
 	"sort"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/helm/pkg/tiller"
 )
@@ -79,35 +77,4 @@ func installOrderLess(kind1, kind2 string) bool {
 	}
 
 	return order1 < order2
-}
-
-// based on Helm
-var InstallOrder = []schema.GroupVersionKind{
-	{Group: "", Version: "v1", Kind: "Namespace"},
-	{Group: "", Version: "v1", Kind: "ResourceQuota"},
-	{Group: "", Version: "v1", Kind: "LimitRange"},
-	{Group: "policy", Version: "v1beta1", Kind: "PodSecurityPolicy"},
-	{Group: "policy", Version: "v1beta1", Kind: "PodDisruptionBudget"},
-	{Group: "", Version: "v1", Kind: "Secret"},
-	{Group: "", Version: "v1", Kind: "ConfigMap"},
-	{Group: "storage.k8s.io", Version: "v1", Kind: "StorageClass"},
-	{Group: "", Version: "v1", Kind: "PersistentVolume"},
-	{Group: "", Version: "v1", Kind: "PersistentVolumeClaim"},
-	{Group: "", Version: "v1", Kind: "ServiceAccount"},
-	{Group: "apiextensions.k8s.io", Version: "v1beta1", Kind: "CustomResourceDefinition"},
-	{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRole"},
-	{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRoleBinding"},
-	{Group: "rbac.authorization.k8s.io", Version: "v1beta1", Kind: "Role"},
-	{Group: "rbac.authorization.k8s.io", Version: "v1beta1", Kind: "RoleBinding"},
-	{Group: "", Version: "v1", Kind: "Service"},
-	{Group: "apps", Version: "v1", Kind: "DaemonSet"},
-	{Group: "", Version: "v1", Kind: "Pod"},
-	{Group: "", Version: "v1", Kind: "ReplicationController"},
-	{Group: "apps", Version: "v1", Kind: "ReplicaSet"},
-	{Group: "apps", Version: "v1", Kind: "Deployment"},
-	{Group: "apps", Version: "v1", Kind: "StatefulSet"},
-	{Group: "batch", Version: "v1", Kind: "Job"},
-	{Group: "batch", Version: "v1beta1", Kind: "CronJob"},
-	{Group: "networking.k8s.io", Version: "v1beta1", Kind: "Ingress"},
-	{Group: "apiregistration.k8s.io	", Version: "v1", Kind: "APIService"},
 }
