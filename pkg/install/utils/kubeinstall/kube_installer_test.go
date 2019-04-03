@@ -3,6 +3,12 @@ package kubeinstall_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/utils/kuberesource"
+	appsv1 "k8s.io/api/apps/v1"
+	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	. "github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
 
 	"github.com/solo-io/go-utils/kubeutils"
@@ -81,7 +87,27 @@ mixer:
 			err = inst.ReconcilleResources(context.TODO(), ns, resources, uniqueLabels)
 			Expect(err).NotTo(HaveOccurred())
 
-			// yes mixer
+			genericClient, err := client.New(restCfg, client.Options{})
+			Expect(err).NotTo(HaveOccurred())
+			// expect each resource to exist
+			for _, resource := range resources {
+				err := genericClient.Get(context.TODO(), client.ObjectKey{resource.GetNamespace(), resource.GetName()}, resource)
+				Expect(err).NotTo(HaveOccurred())
+				if resource.Object["kind"] == "Deployment" {
+					// ensure all deployments have at least one ready replica
+					deployment, err := kuberesource.ConvertUnstructured(resource)
+					Expect(err).NotTo(HaveOccurred())
+					switch dep := deployment.(type) {
+					case *appsv1.Deployment:
+						Expect(dep.Status.ReadyReplicas).To(BeNumerically(">=", 1))
+					case *extensionsv1beta1.Deployment:
+						Expect(dep.Status.ReadyReplicas).To(BeNumerically(">=", 1))
+					case *appsv1beta2.Deployment:
+						Expect(dep.Status.ReadyReplicas).To(BeNumerically(">=", 1))
+					}
+				}
+			}
+			// expect the mixer deployments to be created
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-policy", v1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			_, err = kubeClient.AppsV1().Deployments(ns).Get("istio-telemetry", v1.GetOptions{})
