@@ -17,8 +17,10 @@ import (
 )
 
 const (
-	namespaceSelector = "Select all pods in a namespace"
-	labelSelector     = "Select pods matching a set of labels"
+	namespaceSelector   = "Select all pods in a namespace"
+	labelSelector       = "Select pods matching a set of labels"
+	useDefaultConfigMap = "Use default"
+	useCustomConfigMap  = "Provide my own"
 )
 
 // Survey to get AWS access credentials either from stdin or from a credential file.
@@ -139,17 +141,17 @@ func surveyPodSelector(in *options.Selector) error {
 }
 
 func surveyConfigMap(opts *options.Options) error {
-	var useCustomConfigMap string
+	var choice string
 	if err := cliutil.ChooseFromList(
 		"SuperGloo looks for the patch that will be applied to the pods matching the selection criteria in a config map. "+
 			"Do you want to use the default one provided by supergloo or provide your own?",
-		&useCustomConfigMap,
-		[]string{"Use default", "Provide my own"},
+		&choice,
+		[]string{useDefaultConfigMap, useCustomConfigMap},
 	); err != nil {
 		return err
 	}
 
-	if useCustomConfigMap == "Use default" {
+	if choice == useDefaultConfigMap {
 		// No need to set anything here, the registration event loop will generate the default map
 		return nil
 	}
@@ -174,14 +176,14 @@ func surveyConfigMap(opts *options.Options) error {
 		resRefsKeys = append(resRefsKeys, rr.Key())
 	}
 
-	var choice string
-	if err := cliutil.ChooseFromList("Select the config map that you would like to use", &choice, resRefsKeys); err != nil {
+	var configMap string
+	if err := cliutil.ChooseFromList("Select the config map that you would like to use", &configMap, resRefsKeys); err != nil {
 		return err
 	}
 
 	var configMapToUse core.ResourceRef
 	for _, ref := range resRefs {
-		if ref.Key() == choice {
+		if ref.Key() == configMap {
 			configMapToUse = ref
 		}
 	}

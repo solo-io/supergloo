@@ -3,6 +3,8 @@ package register
 import (
 	"strings"
 
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
+
 	"github.com/pkg/errors"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -82,6 +84,9 @@ connect to the App Mesh control plane in AWS and, optionally, to automatically i
 			if err != nil {
 				return errors.Wrapf(err, "failed to create mesh %v", mesh.Metadata.String())
 			}
+
+			helpers.PrintMeshes(v1.MeshList{mesh}, opts.OutputType)
+
 			return nil
 		},
 	}
