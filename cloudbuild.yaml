@@ -169,7 +169,7 @@ steps:
     args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
     secretEnv: ['QUAY_IO_PASSWORD']
     id: 'docker-login'
-    waitFor: ['test', 'appmesh-test']
+    waitFor: ['istio-test', 'appmesh-test']
 
   - name: 'gcr.io/$PROJECT_ID/go-make'
     args: ['docker', 'build-cli']
