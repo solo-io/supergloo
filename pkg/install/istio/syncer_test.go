@@ -1,4 +1,4 @@
-package istio_test
+package istio
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	. "github.com/solo-io/supergloo/pkg/install/istio"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
@@ -100,7 +99,7 @@ var _ = Describe("Syncer", func() {
 					inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
 				}
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installeSyncer := NewInstallSyncer(installer, meshClient, report)
+				installeSyncer := newTestInstallSyncer(installer, meshClient, report)
 				err := installeSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -133,7 +132,7 @@ var _ = Describe("Syncer", func() {
 				mesh := install.InstallType.(*v1.Install_Mesh)
 				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installSyncer := NewInstallSyncer(installer, meshClient, report)
+				installSyncer := newTestInstallSyncer(installer, meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -173,7 +172,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := NewInstallSyncer(installer, meshClient, report)
+			installeSyncer := newTestInstallSyncer(installer, meshClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -203,7 +202,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := NewInstallSyncer(installer, meshClient, report)
+			installeSyncer := newTestInstallSyncer(installer, meshClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -218,3 +217,11 @@ var _ = Describe("Syncer", func() {
 		})
 	})
 })
+
+func newTestInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
+	return &installSyncer{
+		istioInstaller: istioInstaller,
+		meshClient:     meshClient,
+		reporter:       reporter,
+	}
+}

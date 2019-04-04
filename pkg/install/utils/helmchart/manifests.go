@@ -92,7 +92,7 @@ func IsEmptyManifest(manifest string) bool {
 
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
-func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) (Manifests, error) {
+func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string) (Manifests, error) {
 	var file io.Reader
 	if strings.HasPrefix(chartUri, "http://") || strings.HasPrefix(chartUri, "https://") {
 		resp, err := http.Get(chartUri)
@@ -125,8 +125,7 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	renderOpts := renderutil.Options{
 		ReleaseOptions: chartutil.ReleaseOptions{
 			Name:      releaseName,
-			IsInstall: releaseIsInstall,
-			IsUpgrade: !releaseIsInstall,
+			IsInstall: true,
 			Time:      timeconv.Now(),
 			Namespace: namespace,
 		},

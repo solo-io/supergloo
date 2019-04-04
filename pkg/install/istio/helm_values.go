@@ -1,8 +1,71 @@
 package istio
 
+import (
+	"bytes"
+	"text/template"
+)
+
+var supportedIstioVersions = map[string]versionedInstall{
+	IstioVersion103: {
+		chartPath:      IstioVersion103Chart,
+		valuesTemplate: helmValuesTemplate,
+	},
+	IstioVersion105: {
+		chartPath:      IstioVersion105Chart,
+		valuesTemplate: helmValuesTemplate,
+	},
+	IstioVersion106: {
+		chartPath:      IstioVersion106Chart,
+		valuesTemplate: helmValuesTemplate,
+	},
+}
+
+type versionedInstall struct {
+	chartPath      string
+	valuesTemplate *template.Template
+}
+
+type helmChartParams struct {
+	valuesTemplate *template.Template
+	// these fields are used to render the values template
+	AutoInject    autoInjectInstallOptions
+	Mtls          mtlsInstallOptions
+	Observability observabilityInstallOptions
+	Gateway       gatewayInstallOptions
+}
+
+func (p helmChartParams) helmValues() (string, error) {
+	buf := &bytes.Buffer{}
+	if err := p.valuesTemplate.Execute(buf, p); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+type autoInjectInstallOptions struct {
+	Enabled bool
+}
+
+type mtlsInstallOptions struct {
+	Enabled        bool
+	SelfSignedCert bool
+}
+
+type observabilityInstallOptions struct {
+	EnableGrafana      bool
+	EnablePrometheus   bool
+	EnableJaeger       bool
+	EnableServiceGraph bool
+}
+
+type gatewayInstallOptions struct {
+	EnableIngress bool
+	EnableEgress  bool
+}
+
 // Tested working for istio 1.0.3, 1.0.5 and 1.0.6
 // be sure to test if adding new versions of istio!
-const helmValues = `
+var helmValuesTemplate = template.Must(template.New("istio-1.0.x-helmvalues").Parse(`
 global:
   proxy:
     {{- if .AutoInject.Enabled }}
@@ -77,4 +140,4 @@ servicegraph:
 
 tracing:
   enabled: {{ .Observability.EnableJaeger }}
-`
+`))

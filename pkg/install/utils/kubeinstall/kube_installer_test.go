@@ -68,7 +68,6 @@ mixer:
 				"aaa",
 				ns,
 				"",
-				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
 

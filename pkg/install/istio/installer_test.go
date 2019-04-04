@@ -1,187 +1,157 @@
-package istio_test
+package istio
 
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/istio"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/pkg/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/utils/helm"
+	"github.com/solo-io/supergloo/pkg/install/utils/kuberesource"
+	"github.com/solo-io/supergloo/test/inputs"
 )
 
-var _ = Describe("Installer", func() {
-	var createdManifests, deletedManifests, updatedManifests helm.Manifests
-	BeforeEach(func() {
-		createdManifests, deletedManifests, updatedManifests = nil, nil, nil
-	})
-	installer := istio.NewDefaultIstioInstaller(helm.NewMockHelm(
-		func(ctx context.Context, namespace string, manifests helm.Manifests) error {
-			createdManifests = manifests
-			return nil
-		}, func(ctx context.Context, namespace string, manifests helm.Manifests) error {
-			deletedManifests = manifests
-			return nil
-		}, func(ctx context.Context, namespace string, original, updated helm.Manifests, recreatePods bool) error {
-			updatedManifests = updated
-			return nil
-		}))
-	ns := "ns"
-	It("installs, upgrades, and uninstalls from an install object", func() {
+type mockKubeInstaller struct {
+	reconcileCalledWith reconcileParams
+	purgeCalledWith     purgeParams
+	returnErr           error
+}
 
-		istioConfig := &v1.MeshInstall_IstioMesh{
-			IstioMesh: &v1.IstioInstall{
-				IstioVersion: istio.IstioVersion106,
-			},
+type reconcileParams struct {
+	installNamespace string
+	resources        kuberesource.UnstructuredResources
+	installLabels    map[string]string
+}
+
+type purgeParams struct {
+	installLabels map[string]string
+}
+
+func (i *mockKubeInstaller) ReconcilleResources(ctx context.Context, installNamespace string, resources kuberesource.UnstructuredResources, installLabels map[string]string) error {
+	i.reconcileCalledWith = reconcileParams{installNamespace, resources, installLabels}
+	return i.returnErr
+}
+
+func (i *mockKubeInstaller) PurgeResources(ctx context.Context, withLabels map[string]string) error {
+	i.purgeCalledWith = purgeParams{withLabels}
+	return i.returnErr
+}
+
+var _ = Describe("makeManifestsForInstall", func() {
+	type testCase struct {
+		installNs       string
+		version         string
+		disabled        bool
+		existingInstall *v1.Mesh
+		istioPrefs      *v1.IstioInstall
+	}
+	testInputs := func(c testCase) (*v1.Install, *v1.Mesh, *v1.IstioInstall) {
+		install := inputs.IstioInstall("test", "mesh", c.installNs, c.version, c.disabled)
+		if c.istioPrefs != nil {
+			c.istioPrefs.IstioVersion = c.version
+			install.GetMesh().MeshInstallType = &v1.MeshInstall_IstioMesh{IstioMesh: c.istioPrefs}
 		}
-		installConfig := &v1.Install_Mesh{
-			Mesh: &v1.MeshInstall{
-				MeshInstallType: istioConfig,
-			},
+		if c.existingInstall != nil {
+			ref := c.existingInstall.Metadata.Ref()
+			install.GetMesh().InstalledMesh = &ref
 		}
-
-		install := &v1.Install{
-			Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
-			Disabled:              false,
-			InstallationNamespace: ns,
-			InstallType:           installConfig,
-		}
-
-		installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, nil)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
-
-		// installed manifest should be set
-		Expect(install.InstalledManifest).NotTo(HaveLen(0))
-		installedManifests, err := helm.NewManifestsFromGzippedString(install.InstalledManifest)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(installedManifests).To(Equal(createdManifests))
-
-		Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-		mesh := install.InstallType.(*v1.Install_Mesh)
-		// should be set by install
-		Expect(mesh.Mesh.InstalledMesh).NotTo(BeNil())
-		Expect(*mesh.Mesh.InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
-
-		Expect(installedMesh.Metadata.Name).To(Equal(install.Metadata.Name))
-
-		// expect an error if installed mesh is not present in the mesh list
-		_, err = installer.EnsureIstioInstall(context.TODO(), install, nil)
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("installed mesh not found"))
-
-		// enable prometheus
-		istioConfig.IstioMesh.InstallPrometheus = true
-		installConfig.Mesh.MeshInstallType = istioConfig
-		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{installedMesh})
-		Expect(err).NotTo(HaveOccurred())
-
-		// update should propogate thru
-		Expect(install.InstalledManifest).NotTo(HaveLen(0))
-		installedManifests, err = helm.NewManifestsFromGzippedString(install.InstalledManifest)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(installedManifests).To(Equal(updatedManifests))
-
-		// uninstall should work
-		install.Disabled = true
-		installedMesh, err = installer.EnsureIstioInstall(context.TODO(), install, nil)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(installedMesh).To(BeNil())
-		Expect(install.InstalledManifest).To(HaveLen(0))
-
-		Expect(deletedManifests).To(Equal(updatedManifests))
-	})
-
-	Context("self signed cert option", func() {
-		It("sets self-signed cert to be false when the input install has a custom root cert defined", func() {
-
-			istioConfig := &v1.MeshInstall_IstioMesh{
-				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   istio.IstioVersion106,
-					CustomRootCert: &core.ResourceRef{"foo", "bar"},
-				},
-			}
-			installConfig := &v1.Install_Mesh{
-				Mesh: &v1.MeshInstall{
-					MeshInstallType: istioConfig,
-				},
-			}
-
-			install := &v1.Install{
-				Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
-				Disabled:              false,
-				InstallationNamespace: ns,
-				InstallType:           installConfig,
-			}
-
+		return install, c.existingInstall, install.GetMesh().GetIstioMesh()
+	}
+	Context("invalid opts", func() {
+		It("errors on missing mesh", func() {
+			install, _, _ := testInputs(testCase{
+				installNs:       "ok",
+				version:         IstioVersion106,
+				existingInstall: inputs.IstioMesh("ok", &core.ResourceRef{"some", "secret"}),
+			})
+			kubeInstaller := &mockKubeInstaller{}
+			installer := newIstioInstaller(kubeInstaller)
 			_, err := installer.EnsureIstioInstall(context.TODO(), install, nil)
-			Expect(err).NotTo(HaveOccurred())
-
-			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
-			Expect(man).NotTo(BeNil())
-			Expect(man.Content).To(ContainSubstring("--self-signed-ca=false"))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("installed mesh not found"))
 		})
-		It("sets self-signed cert to be true when the input install has no custom root cert defined", func() {
-
-			istioConfig := &v1.MeshInstall_IstioMesh{
-				IstioMesh: &v1.IstioInstall{
-					IstioVersion: istio.IstioVersion106,
-				},
-			}
-			installConfig := &v1.Install_Mesh{
-				Mesh: &v1.MeshInstall{
-					MeshInstallType: istioConfig,
-				},
-			}
-
-			install := &v1.Install{
-				Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
-				Disabled:              false,
-				InstallationNamespace: ns,
-				InstallType:           installConfig,
-			}
-
-			_, err := installer.EnsureIstioInstall(context.TODO(), install, nil)
+	})
+	Context("install disabled", func() {
+		It("calls purge with the expected labels, sets installed mesh to nil", func() {
+			install, mesh, _ := testInputs(testCase{
+				installNs:       "ok",
+				version:         IstioVersion106,
+				disabled:        true,
+				existingInstall: inputs.IstioMesh("ok", &core.ResourceRef{"some", "secret"}),
+			})
+			kubeInstaller := &mockKubeInstaller{}
+			installer := newIstioInstaller(kubeInstaller)
+			mesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
-
-			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
-			Expect(man).NotTo(BeNil())
-			Expect(man.Content).To(ContainSubstring("--self-signed-ca=true"))
+			Expect(mesh).To(BeNil())
+			Expect(install.GetMesh().InstalledMesh).To(BeNil())
+			Expect(kubeInstaller.purgeCalledWith).To(Equal(purgeParams{
+				installLabels: util.LabelsForResource(install),
+			}))
 		})
-		It("sets self-signed cert to be false when the input mesh has a custom root cert defined", func() {
+	})
+	Context("install enabled, no preexisting install", func() {
+		It("calls reconcile resources with the expected resources and labels, sets installed mesh", func() {
+			install, mesh, istio := testInputs(testCase{
+				installNs: "ok",
+				version:   IstioVersion106,
+			})
+			kubeInstaller := &mockKubeInstaller{}
+			installer := newIstioInstaller(kubeInstaller)
+			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(*installedMesh).To(Equal(v1.Mesh{
+				Metadata:   install.Metadata,
+				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok"}},
+				MtlsConfig: &v1.MtlsConfig{},
+			}))
+			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
 
-			istioConfig := &v1.MeshInstall_IstioMesh{
-				IstioMesh: &v1.IstioInstall{
-					IstioVersion:   istio.IstioVersion106,
-					CustomRootCert: &core.ResourceRef{"foo", "bar"},
-				},
-			}
-			mesh := &v1.Mesh{
-				Metadata:   core.Metadata{Name: "mymesh", Namespace: "myns"},
-				MtlsConfig: &v1.MtlsConfig{MtlsEnabled: true, RootCertificate: &core.ResourceRef{"root", "cert"}},
-			}
-			ref := mesh.Metadata.Ref()
-			installConfig := &v1.Install_Mesh{
-				Mesh: &v1.MeshInstall{
-					MeshInstallType: istioConfig,
-					InstalledMesh:   &ref,
-				},
-			}
-
-			install := &v1.Install{
-				Metadata:              core.Metadata{Name: "myinstall", Namespace: "myns"},
-				Disabled:              false,
-				InstallationNamespace: ns,
-				InstallType:           installConfig,
-			}
-			_, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
+			manifests, err := makeManifestsForInstall(context.TODO(), install, mesh, istio)
 			Expect(err).NotTo(HaveOccurred())
 
-			man := createdManifests.Find("istio/charts/security/templates/deployment.yaml")
-			Expect(man).NotTo(BeNil())
-			Expect(man.Content).To(ContainSubstring("--self-signed-ca=false"))
+			resources, err := manifests.ResourceList()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(kubeInstaller.reconcileCalledWith).To(Equal(reconcileParams{
+				installNamespace: "ok",
+				resources:        resources,
+				installLabels:    util.LabelsForResource(install),
+			}))
+		})
+	})
+	Context("install enabled with preexisting install", func() {
+		It("calls reconcile resources with the expected resources and labels, updates installed mesh", func() {
+			originalMesh := inputs.IstioMesh("ok", &core.ResourceRef{"some", "seret"})
+			install, mesh, istio := testInputs(testCase{
+				installNs:       "ok",
+				version:         IstioVersion106,
+				existingInstall: originalMesh,
+			})
+			kubeInstaller := &mockKubeInstaller{}
+			installer := newIstioInstaller(kubeInstaller)
+			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(*installedMesh).To(Equal(v1.Mesh{
+				Metadata:   originalMesh.Metadata,
+				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok"}},
+				MtlsConfig: mesh.GetMtlsConfig(),
+			}))
+			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
+
+			manifests, err := makeManifestsForInstall(context.TODO(), install, mesh, istio)
+			Expect(err).NotTo(HaveOccurred())
+
+			resources, err := manifests.ResourceList()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(kubeInstaller.reconcileCalledWith).To(Equal(reconcileParams{
+				installNamespace: "ok",
+				resources:        resources,
+				installLabels:    util.LabelsForResource(install),
+			}))
 		})
 	})
 })
