@@ -28,6 +28,7 @@ func newIstioInstaller(kubeInstaller kubeinstall.Installer) *defaultIstioInstall
 func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
 	ctx = contextutils.WithLogger(ctx, "istio-installer")
 	logger := contextutils.LoggerFrom(ctx)
+
 	installMesh := install.GetMesh()
 	if installMesh == nil {
 		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
@@ -75,35 +76,39 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 
-	if mesh != nil {
-		mesh.MeshType = &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
-				InstallationNamespace: installNamespace,
-			},
-		}
-	} else {
-		mesh = &v1.Mesh{
-			Metadata: core.Metadata{
-				Namespace: install.Metadata.Namespace,
-				Name:      install.Metadata.Name,
-			},
-			MeshType: &v1.Mesh_Istio{
-				Istio: &v1.IstioMesh{
-					InstallationNamespace: installNamespace,
-				},
-			},
-			MtlsConfig: &v1.MtlsConfig{
-				MtlsEnabled:     istio.EnableMtls,
-				RootCertificate: istio.CustomRootCert,
-			},
-		}
-	}
+	mesh = createOrUpdateMesh(mesh, installNamespace, install, istio)
 
 	// caller should expect the install to have been modified
 	ref := mesh.Metadata.Ref()
 	installMesh.InstalledMesh = &ref
 
 	return mesh, nil
+}
+
+func createOrUpdateMesh(mesh *v1.Mesh, installNamespace string, install *v1.Install, istio *v1.IstioInstall) *v1.Mesh {
+	if mesh != nil {
+		mesh.MeshType = &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
+				InstallationNamespace: installNamespace,
+			},
+		}
+		return mesh
+	}
+	return &v1.Mesh{
+		Metadata: core.Metadata{
+			Namespace: install.Metadata.Namespace,
+			Name:      install.Metadata.Name,
+		},
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
+				InstallationNamespace: installNamespace,
+			},
+		},
+		MtlsConfig: &v1.MtlsConfig{
+			MtlsEnabled:     istio.EnableMtls,
+			RootCertificate: istio.CustomRootCert,
+		},
+	}
 }
 
 func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.Mesh, istio *v1.IstioInstall) (helmchart.Manifests, error) {

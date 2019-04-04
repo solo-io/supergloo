@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall/mocks"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/util"
@@ -9,37 +10,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/utils/kuberesource"
 	"github.com/solo-io/supergloo/test/inputs"
 )
 
-type mockKubeInstaller struct {
-	reconcileCalledWith reconcileParams
-	purgeCalledWith     purgeParams
-	returnErr           error
-}
-
-type reconcileParams struct {
-	installNamespace string
-	resources        kuberesource.UnstructuredResources
-	installLabels    map[string]string
-}
-
-type purgeParams struct {
-	installLabels map[string]string
-}
-
-func (i *mockKubeInstaller) ReconcilleResources(ctx context.Context, installNamespace string, resources kuberesource.UnstructuredResources, installLabels map[string]string) error {
-	i.reconcileCalledWith = reconcileParams{installNamespace, resources, installLabels}
-	return i.returnErr
-}
-
-func (i *mockKubeInstaller) PurgeResources(ctx context.Context, withLabels map[string]string) error {
-	i.purgeCalledWith = purgeParams{withLabels}
-	return i.returnErr
-}
-
-var _ = Describe("makeManifestsForInstall", func() {
+var _ = Describe("istio installer", func() {
 	type testCase struct {
 		installNs       string
 		version         string
@@ -66,7 +40,7 @@ var _ = Describe("makeManifestsForInstall", func() {
 				version:         IstioVersion106,
 				existingInstall: inputs.IstioMesh("ok", &core.ResourceRef{"some", "secret"}),
 			})
-			kubeInstaller := &mockKubeInstaller{}
+			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
 			_, err := installer.EnsureIstioInstall(context.TODO(), install, nil)
 			Expect(err).To(HaveOccurred())
@@ -81,14 +55,14 @@ var _ = Describe("makeManifestsForInstall", func() {
 				disabled:        true,
 				existingInstall: inputs.IstioMesh("ok", &core.ResourceRef{"some", "secret"}),
 			})
-			kubeInstaller := &mockKubeInstaller{}
+			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
 			mesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mesh).To(BeNil())
 			Expect(install.GetMesh().InstalledMesh).To(BeNil())
-			Expect(kubeInstaller.purgeCalledWith).To(Equal(purgeParams{
-				installLabels: util.LabelsForResource(install),
+			Expect(kubeInstaller.PurgeCalledWith).To(Equal(mocks.PurgeParams{
+				InstallLabels: util.LabelsForResource(install),
 			}))
 		})
 	})
@@ -98,7 +72,7 @@ var _ = Describe("makeManifestsForInstall", func() {
 				installNs: "ok",
 				version:   IstioVersion106,
 			})
-			kubeInstaller := &mockKubeInstaller{}
+			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
 			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
@@ -115,10 +89,10 @@ var _ = Describe("makeManifestsForInstall", func() {
 			resources, err := manifests.ResourceList()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(kubeInstaller.reconcileCalledWith).To(Equal(reconcileParams{
-				installNamespace: "ok",
-				resources:        resources,
-				installLabels:    util.LabelsForResource(install),
+			Expect(kubeInstaller.ReconcileCalledWith).To(Equal(mocks.ReconcileParams{
+				InstallNamespace: "ok",
+				Resources:        resources,
+				InstallLabels:    util.LabelsForResource(install),
 			}))
 		})
 	})
@@ -130,7 +104,7 @@ var _ = Describe("makeManifestsForInstall", func() {
 				version:         IstioVersion106,
 				existingInstall: originalMesh,
 			})
-			kubeInstaller := &mockKubeInstaller{}
+			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
 			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
@@ -147,10 +121,10 @@ var _ = Describe("makeManifestsForInstall", func() {
 			resources, err := manifests.ResourceList()
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(kubeInstaller.reconcileCalledWith).To(Equal(reconcileParams{
-				installNamespace: "ok",
-				resources:        resources,
-				installLabels:    util.LabelsForResource(install),
+			Expect(kubeInstaller.ReconcileCalledWith).To(Equal(mocks.ReconcileParams{
+				InstallNamespace: "ok",
+				Resources:        resources,
+				InstallLabels:    util.LabelsForResource(install),
 			}))
 		})
 	})
