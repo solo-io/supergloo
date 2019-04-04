@@ -27,7 +27,6 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		contextutils.LoggerFrom(opts.Ctx).Infof("upgrading install from %s to %s",
 			helpers.MustMarshalProto(existing), helpers.MustMarshalProto(install))
 		install.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
-		install.InstalledManifest = existing.InstalledManifest
 		install.InstallationNamespace = existing.InstallationNamespace
 
 		installMesh, installIsMesh := install.InstallType.(*v1.Install_Mesh)

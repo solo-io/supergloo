@@ -133,6 +133,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	pods := skkube.NewPodClientWithBase(podBase)
 
 	return newClientset(
+		restConfig,
 		kubeClient,
 		promClient,
 		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
@@ -231,6 +232,8 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 }
 
 type Clientset struct {
+	RestConfig *rest.Config
+
 	Kube kubernetes.Interface
 
 	Prometheus promv1.PrometheusConfigClient
@@ -242,8 +245,8 @@ type Clientset struct {
 	Discovery *discoveryClients
 }
 
-func newClientset(kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{Kube: kube, Prometheus: prometheus, Input: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *inputClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Input: input, Discovery: discovery}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {

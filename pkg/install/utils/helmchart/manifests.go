@@ -39,6 +39,14 @@ func (m Manifests) Find(name string) *manifest.Manifest {
 	return nil
 }
 
+func (m Manifests) Names() []string {
+	var names []string
+	for _, m := range tiller.SortByKind(m) {
+		names = append(names, m.Name)
+	}
+	return names
+}
+
 func (m Manifests) CombinedString() string {
 	buf := &bytes.Buffer{}
 
@@ -73,6 +81,12 @@ func (m Manifests) ResourceList() (kuberesource.UnstructuredResources, error) {
 		uncastObj, err := runtime.Decode(unstructured.UnstructuredJSONScheme, jsn)
 		if err != nil {
 			return nil, err
+		}
+		if resourceList, ok := uncastObj.(*unstructured.UnstructuredList); ok {
+			for _, item := range resourceList.Items {
+				resources = append(resources, &item)
+			}
+			continue
 		}
 		resources = append(resources, uncastObj.(*unstructured.Unstructured))
 	}
