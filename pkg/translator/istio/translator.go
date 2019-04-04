@@ -9,7 +9,6 @@ import (
 
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -53,7 +52,7 @@ func (c *MeshConfig) Sort() {
 	})
 }
 
-// first create all desintation rules for all subsets of each upstream
+// first create all destination rules for all subsets of each upstream
 // then we need to apply the ISTIO_MUTUAL policy depending on
 // whether mtls is enabled
 
@@ -82,9 +81,9 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	resourceErrs.Accept(meshGroups.AsInputResources()...)
 	resourceErrs.Accept(routingRules.AsInputResources()...)
 
-	validateMeshGroups(meshes, meshGroups, resourceErrs)
+	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
-	routingRulesByMesh := splitRulesByMesh(ctx, routingRules, securityRules, meshes, meshGroups, resourceErrs)
+	routingRulesByMesh := utils.GroupRulesByMesh(routingRules, securityRules, meshes, meshGroups, resourceErrs)
 
 	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
@@ -131,100 +130,7 @@ type inputMeshConfig struct {
 	// the mesh we're configuring
 	mesh *v1.Mesh
 	// list of rules which apply to this mesh
-	rules ruleSet
-}
-
-type meshRule interface {
-	resources.InputResource
-	GetTargetMesh() *core.ResourceRef
-}
-
-type rulesByMesh map[*v1.Mesh]ruleSet
-
-func (rbm rulesByMesh) addRule(ctx context.Context, rule meshRule, meshes v1.MeshList, meshGroups v1.MeshGroupList) error {
-	var appendRule func(*v1.Mesh)
-
-	switch r := rule.(type) {
-	case *v1.RoutingRule:
-		appendRule = func(mesh *v1.Mesh) {
-			rule := rbm[mesh]
-			rule.routing = append(rule.routing, r)
-			rbm[mesh] = rule
-		}
-	case *v1.SecurityRule:
-		appendRule = func(mesh *v1.Mesh) {
-			rule := rbm[mesh]
-			rule.security = append(rule.security, r)
-			rbm[mesh] = rule
-		}
-	default:
-		return errors.Errorf("internal error: cannot append rule type %v", rule)
-	}
-
-	targetMesh := rule.GetTargetMesh()
-	if targetMesh == nil {
-		return errors.Errorf("target mesh cannot be nil")
-	}
-	mesh, err := meshes.Find(targetMesh.Strings())
-	if err == nil {
-		appendRule(mesh)
-		return nil
-	}
-	meshGroup, err := meshGroups.Find(targetMesh.Strings())
-	if err != nil {
-		return errors.Errorf("no target mesh or mesh group found for %v", targetMesh)
-	}
-	for _, ref := range meshGroup.Meshes {
-		if ref == nil {
-			return errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref())
-		}
-		mesh, err := meshes.Find(ref.Strings())
-		if err != nil {
-			return errors.Errorf("referenced invalid MeshGroup %v", meshGroup.Metadata.Ref())
-		}
-		appendRule(mesh)
-	}
-
-	return nil
-}
-
-type ruleSet struct {
-	routing  v1.RoutingRuleList
-	security v1.SecurityRuleList
-}
-
-func splitRulesByMesh(ctx context.Context, routingRules v1.RoutingRuleList, securityRules v1.SecurityRuleList, meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) rulesByMesh {
-	rulesByMesh := make(rulesByMesh)
-
-	for _, rule := range routingRules {
-		if err := rulesByMesh.addRule(ctx, rule, meshes, meshGroups); err != nil {
-			resourceErrs.AddError(rule, err)
-			continue
-		}
-	}
-	for _, rule := range securityRules {
-		if err := rulesByMesh.addRule(ctx, rule, meshes, meshGroups); err != nil {
-			resourceErrs.AddError(rule, err)
-			continue
-		}
-	}
-	return rulesByMesh
-}
-
-// TODO (ilackarms) move to the top-level translator
-func validateMeshGroups(meshes v1.MeshList, meshGroups v1.MeshGroupList, resourceErrs reporter.ResourceErrors) {
-	for _, mg := range meshGroups {
-		for _, ref := range mg.Meshes {
-			if ref == nil {
-				resourceErrs.AddError(mg, errors.Errorf("ref cannot be nil"))
-				continue
-			}
-			if _, err := meshes.Find(ref.Strings()); err != nil {
-				resourceErrs.AddError(mg, err)
-				continue
-			}
-		}
-	}
+	rules utils.RuleSet
 }
 
 // produces a complete istio config
@@ -271,7 +177,7 @@ func (t *translator) translateMesh(
 			input.writeNamespace,
 			destinationHost,
 			destinationPortAndLabelSets,
-			rules.routing,
+			rules.Routing,
 			upstreams,
 			resourceErrs,
 		)
@@ -317,7 +223,7 @@ func (t *translator) translateMesh(
 
 	securityConfig := createSecurityConfig(
 		input.writeNamespace,
-		input.rules.security,
+		input.rules.Security,
 		upstreams,
 		pods,
 		resourceErrs,

@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/config/appmesh"
+	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -60,6 +63,14 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled E
 			return nil, err
 		}
 		syncers = append(syncers, istioSyncer)
+	}
+
+	if enabled.AppMesh {
+		appMeshSyncer, err := appmesh.NewAppMeshConfigSyncer(appmeshtranslator.NewAppMeshTranslator())
+		if err != nil {
+			return nil, err
+		}
+		syncers = append(syncers, appMeshSyncer)
 	}
 
 	return syncers, nil
