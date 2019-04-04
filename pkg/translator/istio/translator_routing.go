@@ -71,17 +71,39 @@ func (t *translator) makeVirtualServiceForHost(
 
 	vs := initVirtualService(writeNamespace, host)
 
-	// add a rule for each dest port
+	var destPorts []uint32
+addUniquePorts:
 	for _, set := range destinationPortAndLabelSets {
+		for _, port := range destPorts {
+			if set.port == port {
+				continue addUniquePorts
+			}
+		}
+		destPorts = append(destPorts, set.port)
+	}
+
+	// add a rule for each dest port
+	for _, port := range destPorts {
 		t.applyRouteRules(
 			params,
 			host,
-			set.port,
+			port,
 			rulesPerMatcher,
 			upstreams,
 			resourceErrs,
 			vs,
 		)
+	}
+
+	sortByMatcherSpecificity(vs.Http)
+
+	if len(vs.Http) == 0 {
+		// create a default route that sends all traffic to the destination host
+		vs.Http = []*v1alpha3.HTTPRoute{{
+			Route: []*v1alpha3.HTTPRouteDestination{{
+				Destination: &v1alpha3.Destination{Host: host}},
+			}},
+		}
 	}
 
 	return vs
@@ -134,18 +156,7 @@ func (t *translator) applyRouteRules(
 		istioRoutes = append(istioRoutes, route)
 	}
 
-	sortByMatcherSpecificity(istioRoutes)
-
-	if len(istioRoutes) == 0 {
-		// create a default route that sends all traffic to the destination host
-		istioRoutes = []*v1alpha3.HTTPRoute{{
-			Route: []*v1alpha3.HTTPRouteDestination{{
-				Destination: &v1alpha3.Destination{Host: destinationHost}},
-			}},
-		}
-	}
-
-	out.Http = istioRoutes
+	out.Http = append(out.Http, istioRoutes...)
 }
 
 func initVirtualService(writeNamespace, host string) *v1alpha3.VirtualService {
