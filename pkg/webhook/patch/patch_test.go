@@ -30,7 +30,7 @@ var _ = Describe("create pod sidecar patches", func() {
 		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsJsonString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(2))
@@ -66,7 +66,7 @@ var _ = Describe("create pod sidecar patches", func() {
 		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsJsonString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(1))
@@ -87,7 +87,7 @@ var _ = Describe("create pod sidecar patches", func() {
 		patchBytes, err := json.Marshal(patchOperations)
 		Expect(err).NotTo(HaveOccurred())
 
-		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, patchBytes)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsJsonString, patchBytes)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(2))

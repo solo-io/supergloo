@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/ghodss/yaml"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -12,13 +13,13 @@ import (
 )
 
 type patchConfigMap struct {
-	AsStruct *corev1.ConfigMap
-	AsString string
+	AsStruct     *corev1.ConfigMap
+	AsJsonString string
 }
 
 type pod struct {
-	AsStruct *corev1.Pod
-	AsString string
+	AsStruct     *corev1.Pod
+	AsJsonString string
 }
 
 func (p *pod) ToRequest() admissionv1beta1.AdmissionReview {
@@ -26,65 +27,81 @@ func (p *pod) ToRequest() admissionv1beta1.AdmissionReview {
 		Request: &admissionv1beta1.AdmissionRequest{
 			Resource: metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"},
 			Object: runtime.RawExtension{
-				Raw: []byte(p.AsString),
+				Raw: []byte(p.AsJsonString),
 			},
 		},
 	}
 }
 
 type ResourcesForTest struct {
-	OneContOneInitContPatch patchConfigMap
-	NoContainerPatch        patchConfigMap
-	NoInitContainerPatch    patchConfigMap
-	EmptyPatch              patchConfigMap
-	TwoEntryPatch           patchConfigMap
-	MatchingPod             pod
-	MatchingPodWithoutPorts pod
-	NonMatchingPod          pod
-	AppMeshInjectEnabled    *v1.Mesh
-	AppMeshInjectDisabled   *v1.Mesh
-	AppMeshNoConfigMap      *v1.Mesh
-	AppMeshNoSelector       *v1.Mesh
-	IstioMesh               *v1.Mesh
-	TemplateData            interface{}
+	OneContOneInitContPatch               patchConfigMap
+	NoContainerPatch                      patchConfigMap
+	NoInitContainerPatch                  patchConfigMap
+	EmptyPatch                            patchConfigMap
+	TwoEntryPatch                         patchConfigMap
+	MatchingPod                           pod
+	MatchingPodWithoutPorts               pod
+	NonMatchingPod                        pod
+	AppMeshInjectEnabledLabelSelector     *v1.Mesh
+	AppMeshInjectEnabledNamespaceSelector *v1.Mesh
+	AppMeshInjectDisabled                 *v1.Mesh
+	AppMeshNoConfigMap                    *v1.Mesh
+	AppMeshNoSelector                     *v1.Mesh
+	IstioMesh                             *v1.Mesh
+	TemplateData                          interface{}
 }
 
-func newPatchConfigMap(decoder runtime.Decoder, configMap string) patchConfigMap {
+func newPatchConfigMap(decoder runtime.Decoder, configMapYamlString string) patchConfigMap {
 	configMapStruct := &corev1.ConfigMap{}
-	_, _, err := decoder.Decode([]byte(configMap), nil, configMapStruct)
+
+	jsonBytes, err := yaml.YAMLToJSON([]byte(configMapYamlString))
+	if err != nil {
+		panic("failed to convert configMap YAML to JSON")
+	}
+
+	_, _, err = decoder.Decode([]byte(configMapYamlString), nil, configMapStruct)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
 	return patchConfigMap{
-		AsString: configMap,
-		AsStruct: configMapStruct,
+		AsJsonString: string(jsonBytes),
+		AsStruct:     configMapStruct,
 	}
 }
 
-func newPod(decoder runtime.Decoder, podString string) pod {
+func newPod(decoder runtime.Decoder, podYamlString string) pod {
 	podStruct := &corev1.Pod{}
-	_, _, err := decoder.Decode([]byte(podString), nil, podStruct)
+
+	jsonBytes, err := yaml.YAMLToJSON([]byte(podYamlString))
+	if err != nil {
+		panic("failed to convert pod YAML to JSON")
+	}
+
+	_, _, err = decoder.Decode([]byte(podYamlString), nil, podStruct)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
 	return pod{
-		AsString: podString,
-		AsStruct: podStruct,
+		AsJsonString: string(jsonBytes),
+		AsStruct:     podStruct,
 	}
 }
 
 func GetTestResources(decoder runtime.Decoder) *ResourcesForTest {
 	return &ResourcesForTest{
-		OneContOneInitContPatch: newPatchConfigMap(decoder, oneContainerOneInitContainerPatch),
-		NoContainerPatch:        newPatchConfigMap(decoder, noContainerPatch),
-		NoInitContainerPatch:    newPatchConfigMap(decoder, noInitContainerPatch),
-		EmptyPatch:              newPatchConfigMap(decoder, emptyPatch),
-		TwoEntryPatch:           newPatchConfigMap(decoder, twoEntryPatch),
-		MatchingPod:             newPod(decoder, matchingPod),
-		MatchingPodWithoutPorts: newPod(decoder, matchingPodWithoutPorts),
-		NonMatchingPod:          newPod(decoder, nonMatchingPod),
-		AppMeshInjectEnabled:    appMeshInjectEnabled,
-		AppMeshInjectDisabled:   appMeshInjectDisabled,
-		AppMeshNoConfigMap:      appMeshNoConfigMap,
-		AppMeshNoSelector:       appMeshNoSelector,
-		IstioMesh:               istioMesh,
-		TemplateData:            getTemplateData(),
+		OneContOneInitContPatch:               newPatchConfigMap(decoder, oneContainerOneInitContainerPatch),
+		NoContainerPatch:                      newPatchConfigMap(decoder, noContainerPatch),
+		NoInitContainerPatch:                  newPatchConfigMap(decoder, noInitContainerPatch),
+		EmptyPatch:                            newPatchConfigMap(decoder, emptyPatch),
+		TwoEntryPatch:                         newPatchConfigMap(decoder, twoEntryPatch),
+		MatchingPod:                           newPod(decoder, matchingPod),
+		MatchingPodWithoutPorts:               newPod(decoder, matchingPodWithoutPorts),
+		NonMatchingPod:                        newPod(decoder, nonMatchingPod),
+		AppMeshInjectEnabledLabelSelector:     appMeshInjectEnabledLabelSelector,
+		AppMeshInjectEnabledNamespaceSelector: appMeshInjectEnabledNamespaceSelector,
+		AppMeshInjectDisabled:                 appMeshInjectDisabled,
+		AppMeshNoConfigMap:                    appMeshNoConfigMap,
+		AppMeshNoSelector:                     appMeshNoSelector,
+		IstioMesh:                             istioMesh,
+		TemplateData:                          getTemplateData(),
 	}
 }
 
@@ -99,7 +116,7 @@ func getTemplateData() interface{} {
 	}
 }
 
-var appMeshInjectEnabled = &v1.Mesh{
+var appMeshInjectEnabledLabelSelector = &v1.Mesh{
 	Metadata: core.Metadata{
 		Name:      "test-mesh",
 		Namespace: "supergloo-system",
@@ -118,6 +135,25 @@ var appMeshInjectEnabled = &v1.Mesh{
 					LabelSelector: &v1.PodSelector_LabelSelector{
 						LabelsToMatch: map[string]string{
 							"app": "testrunner"}}}}}}}
+
+var appMeshInjectEnabledNamespaceSelector = &v1.Mesh{
+	Metadata: core.Metadata{
+		Name:      "test-mesh",
+		Namespace: "supergloo-system",
+	},
+	MeshType: &v1.Mesh_AwsAppMesh{
+		AwsAppMesh: &v1.AwsAppMesh{
+			Region:           "us-east-1",
+			VirtualNodeLabel: "virtual-node",
+			EnableAutoInject: true,
+			SidecarPatchConfigMap: &core.ResourceRef{
+				Name:      "sidecar-injector-webhook-configmap",
+				Namespace: "supergloo-system",
+			},
+			InjectionSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_NamespaceSelector_{
+					NamespaceSelector: &v1.PodSelector_NamespaceSelector{
+						Namespaces: []string{"my-ns"}}}}}}}
 
 var appMeshInjectDisabled = &v1.Mesh{
 	Metadata: core.Metadata{
@@ -183,6 +219,8 @@ var matchingPod = `
 apiVersion: v1
 kind: Pod
 metadata:
+  name: my-pod
+  namespace: my-ns
   labels:
     app: testrunner
     version: "1"
