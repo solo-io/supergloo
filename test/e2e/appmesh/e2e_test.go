@@ -51,7 +51,7 @@ var _ = Describe("E2e", func() {
    tests
 */
 func testRegisterAppmesh(meshName, secretName string) {
-	region, vnLabel := "us-east-1", "vn"
+	region, vnLabel := "us-east-1", "app"
 	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
 		"--secret %s.%s --select-namespaces %s --virtual-node-label %s", meshName, region, superglooNamespace,
 		secretName, namespaceWithInject, vnLabel))
@@ -63,13 +63,13 @@ func testRegisterAppmesh(meshName, secretName string) {
 		return err
 	}).ShouldNot(HaveOccurred())
 
-	err = sgutils.DeployTestRunner(basicNamespace)
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, superglooNamespace,
+		"sidecar-injector",
+	)
 	Expect(err).NotTo(HaveOccurred())
 
-	// the sidecar injector might take some time to become available
-	Eventually(func() error {
-		return sgutils.DeployTestRunner(namespaceWithInject)
-	}, time.Minute*1).ShouldNot(HaveOccurred())
+	err = sgutils.DeployTestRunner(basicNamespace)
+	Expect(err).NotTo(HaveOccurred())
 
 	err = sgutils.DeployBookInfo(namespaceWithInject)
 	Expect(err).NotTo(HaveOccurred())
@@ -80,7 +80,6 @@ func testRegisterAppmesh(meshName, secretName string) {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, namespaceWithInject,
-		"testrunner",
 		"reviews-v1",
 		"reviews-v2",
 		"reviews-v3",
