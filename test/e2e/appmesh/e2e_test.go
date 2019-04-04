@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -86,6 +86,17 @@ func testRegisterAppmesh(meshName, secretName string) {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
+	checkSidecarInjection()
+
+}
+
+func checkSidecarInjection() {
+	pods, err := kube.CoreV1().Pods(namespaceWithInject).List(metav1.ListOptions{})
+	Expect(err).NotTo(HaveOccurred())
+
+	for _, pod := range pods.Items {
+		Expect(len(pod.Spec.Containers)).To(BeNumerically(">=", 2))
+	}
 }
 
 func testUnregisterAppmesh(meshName string) {
@@ -102,7 +113,7 @@ func createAWSSecret(secretName string) {
 	))
 	Expect(err).NotTo(HaveOccurred())
 
-	secret, err := kube.CoreV1().Secrets(superglooNamespace).Get(secretName, v1.GetOptions{})
+	secret, err := kube.CoreV1().Secrets(superglooNamespace).Get(secretName, metav1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(secret).NotTo(BeNil())
 }
