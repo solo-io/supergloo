@@ -257,7 +257,7 @@ func Patch(obj *unstructured.Unstructured, patchJson []byte) error {
 	}
 	res, ok := uncastObj.(*unstructured.Unstructured)
 	if !ok {
-		return errors.Errorf("%T expected to be type *unstructured.Unstructured")
+		return errors.Errorf("%T expected to be type *unstructured.Unstructured", uncastObj)
 	}
 
 	*obj = *res
