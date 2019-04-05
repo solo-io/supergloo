@@ -2,9 +2,14 @@ package istio_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
+
+	sgutils "github.com/solo-io/supergloo/cli/test/utils"
+	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 
 	gotestutils "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -90,6 +95,21 @@ var _ = BeforeSuite(func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 	}()
+
+	// install discovery via cli
+	// start discovery
+	var superglooErr error
+	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
+	err = generate.Run("dev", "Always", projectRoot)
+	if err == nil {
+		superglooErr = sgutils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
+	} else {
+		superglooErr = sgutils.Supergloo("init --release latest")
+	}
+	Expect(superglooErr).NotTo(HaveOccurred())
+
+	// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
+	testutils.DeleteSuperglooPods(kube, superglooNamespace)
 })
 
 var _ = AfterSuite(func() {

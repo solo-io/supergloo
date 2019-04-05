@@ -9,7 +9,6 @@ import (
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/solo-io/go-utils/contextutils"
 
-	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -103,20 +102,20 @@ func (urs UnstructuredResourcesByKey) List() UnstructuredResources {
 }
 
 type ResourceKey struct {
-	gvk             schema.GroupVersionKind
-	namespace, name string
+	Gvk             schema.GroupVersionKind
+	Namespace, Name string
 }
 
 func Key(obj *unstructured.Unstructured) ResourceKey {
 	return ResourceKey{
-		gvk:       obj.GroupVersionKind(),
-		namespace: obj.GetNamespace(),
-		name:      obj.GetName(),
+		Gvk:       obj.GroupVersionKind(),
+		Namespace: obj.GetNamespace(),
+		Name:      obj.GetName(),
 	}
 }
 
 func (k ResourceKey) String() string {
-	return fmt.Sprintf("%v.%v.%v", k.gvk.String(), k.namespace, k.name)
+	return fmt.Sprintf("%v.%v.%v", k.Gvk.String(), k.Namespace, k.Name)
 }
 
 func ConvertToUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
@@ -198,7 +197,7 @@ func ConvertUnstructured(res *unstructured.Unstructured) (runtime.Object, error)
 	default:
 		return nil, errors.Errorf("cannot convert kind %v", kind)
 	}
-	if err := yaml.Unmarshal(rawJson, obj); err != nil {
+	if err := json.Unmarshal(rawJson, obj); err != nil {
 		return nil, errors.Wrapf(err, "parsing raw yaml as %+v", obj)
 	}
 	return obj, nil
@@ -208,18 +207,7 @@ func ConvertUnstructured(res *unstructured.Unstructured) (runtime.Object, error)
 // note that this function updates the object for writing, which is fine as it
 // zeroes out statuses and generated fields
 func Match(ctx context.Context, obj1, obj2 *unstructured.Unstructured) bool {
-	zeroGeneratedValues(obj1)
-	zeroGeneratedValues(obj2)
-	jsn1, err := json.Marshal(obj1)
-	if err != nil {
-		return false
-	}
-	jsn2, err := json.Marshal(obj2)
-	if err != nil {
-		return false
-	}
-
-	patch, err := jsonpatch.CreateMergePatch(jsn1, jsn2)
+	patch, err := GetPatch(obj1, obj2)
 	if err != nil {
 		return false
 	}
@@ -228,9 +216,53 @@ func Match(ctx context.Context, obj1, obj2 *unstructured.Unstructured) bool {
 		return true
 	}
 
-	contextutils.LoggerFrom(ctx).Debugw("objects differ", "diff", string(patch), "original", string(jsn1), "desired", string(jsn2))
+	contextutils.LoggerFrom(ctx).Infow("objects differ", "diff", string(patch), "original", Key(obj1), "desired", Key(obj2))
 
 	return false
+}
+
+func GetPatch(obj1, obj2 *unstructured.Unstructured) ([]byte, error) {
+	zeroGeneratedValues(obj1)
+	zeroGeneratedValues(obj2)
+	jsn1, err := json.Marshal(obj1)
+	if err != nil {
+		return nil, err
+	}
+	jsn2, err := json.Marshal(obj2)
+	if err != nil {
+		return nil, err
+	}
+
+	patch, err := jsonpatch.CreateMergePatch(jsn1, jsn2)
+	if err != nil {
+		return nil, err
+	}
+
+	return patch, nil
+}
+
+func Patch(obj *unstructured.Unstructured, patchJson []byte) error {
+	doc, err := json.Marshal(obj.Object)
+	if err != nil {
+		return err
+	}
+	out, err := jsonpatch.MergePatch(doc, patchJson)
+	if err != nil {
+		return err
+	}
+
+	uncastObj, err := runtime.Decode(unstructured.UnstructuredJSONScheme, out)
+	if err != nil {
+		return err
+	}
+	res, ok := uncastObj.(*unstructured.Unstructured)
+	if !ok {
+		return errors.Errorf("%T expected to be type *unstructured.Unstructured")
+	}
+
+	*obj = *res
+
+	return nil
 }
 
 func zeroGeneratedValues(obj *unstructured.Unstructured) {
