@@ -1,9 +1,11 @@
 package appmesh
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/appmesh"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
@@ -40,10 +42,10 @@ type awsAppMeshConfiguration struct {
 
 	// These are the actual results of the translations
 	MeshName        string
-	VirtualNodes    []VirtualNode
-	VirtualServices []VirtualService
-	VirtualRouters  []VirtualRouter
-	Routes          []Route
+	VirtualNodes    []*appmesh.VirtualNodeData
+	VirtualServices []*appmesh.VirtualServiceData
+	VirtualRouters  []*appmesh.VirtualRouterData
+	Routes          []*appmesh.RouteData
 }
 
 // TODO(marco): to Eitan: I have not tested the util methods used in here, sorry in advance if they do not work as expected
@@ -78,6 +80,72 @@ func (c *awsAppMeshConfiguration) AllowAll() error {
 	//  to get the serviceDiscovery.dns.hostname and ports (need to validate these against the pod ports). Then create a VS for
 	//  the Virtual node.
 	//  Lastly, iterate over all vn/vs and add all VSs as back ends for all the VNs (excepts for the VS that maps to the VN)
+
+	for _, pod := range c.podList {
+		info, ok := c.podInfo[pod]
+		if !ok {
+			continue
+		}
+
+		var serviceDnsHostName string
+		for _, us := range info.upstreams {
+			usType := us.GetUpstreamSpec().GetUpstreamType()
+			switch usSpec := usType.(type) {
+			case *gloov1.UpstreamSpec_Kube:
+				kubeSpec := usSpec.Kube
+				serviceDnsHostName = fmt.Sprintf("%s.%s.svc.cluster.local", kubeSpec.ServiceNamespace, kubeSpec.ServiceName)
+			default:
+				continue
+			}
+		}
+
+		if serviceDnsHostName == "" {
+			return fmt.Errorf("unable to find dns hostname for pod %s.%s", pod.Metadata.Namespace, pod.Metadata.Name)
+		}
+
+		vn := &appmesh.VirtualNodeData{
+			MeshName:        &c.MeshName,
+			VirtualNodeName: &info.virtualNodeName,
+			Spec: &appmesh.VirtualNodeSpec{
+				Backends:  []*appmesh.Backend{},
+				Listeners: []*appmesh.Listener{},
+				ServiceDiscovery: &appmesh.ServiceDiscovery{
+					Dns: &appmesh.DnsServiceDiscovery{
+						Hostname: &serviceDnsHostName,
+					},
+				},
+			},
+		}
+		c.VirtualNodes = append(c.VirtualNodes, vn)
+
+		vs := &appmesh.VirtualServiceData{
+			MeshName:           &c.MeshName,
+			VirtualServiceName: &serviceDnsHostName,
+			Spec: &appmesh.VirtualServiceSpec{
+				Provider: &appmesh.VirtualServiceProvider{
+					VirtualNode: &appmesh.VirtualNodeServiceProvider{
+						VirtualNodeName: &info.virtualNodeName,
+					},
+				},
+			},
+		}
+		c.VirtualServices = append(c.VirtualServices, vs)
+	}
+
+	for _, vn := range c.VirtualNodes {
+		for _, vs := range c.VirtualServices {
+			if vs.Spec.Provider.VirtualNode.VirtualNodeName == vn.VirtualNodeName {
+				continue
+			}
+			backend := &appmesh.Backend{
+				VirtualService: &appmesh.VirtualServiceBackend{
+					VirtualServiceName: vs.VirtualServiceName,
+				},
+			}
+			vn.Spec.Backends = append(vn.Spec.Backends, backend)
+		}
+	}
+
 	return nil
 }
 
@@ -172,7 +240,7 @@ type VirtualNode struct {
 	// Name of the VirtualNode
 	Name string
 	// Name of the Mesh this VirtualNode belongs to
-	//MeshName string TODO: come back and see whether these references are useful
+	// MeshName string TODO: come back and see whether these references are useful
 	// DNS name used to discover the task group for the VirtualNode
 	HostName string
 	// List of protocol/ports the VirtualNode expects to receive inbound traffic on
