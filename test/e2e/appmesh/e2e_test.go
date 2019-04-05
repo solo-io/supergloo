@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
+	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,10 +37,11 @@ var _ = Describe("E2e", func() {
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
 		appmeshName := "appmesh"
+		secretName := "my-secret"
 
-		testRegisterAppmesh(appmeshName)
+		createAWSSecret(secretName)
 
-		createAWSSecret()
+		testRegisterAppmesh(appmeshName, secretName)
 
 		testUnregisterAppmesh(appmeshName)
 	})
@@ -45,17 +50,62 @@ var _ = Describe("E2e", func() {
 /*
    tests
 */
-func testRegisterAppmesh(meshName string) {
+func testRegisterAppmesh(meshName, secretName string) {
+	region, vnLabel := "us-east-1", "app"
+	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
+		"--secret %s.%s --select-namespaces %s --virtual-node-label %s --configmap %s.%s",
+		meshName, region, superglooNamespace, secretName, namespaceWithInject, vnLabel,
+		superglooNamespace, "sidecar-injector"))
+	Expect(err).NotTo(HaveOccurred())
 
+	meshClient := clients.MustMeshClient()
+	Eventually(func() error {
+		_, err := meshClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
+		return err
+	}).ShouldNot(HaveOccurred())
+
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, superglooNamespace,
+		"sidecar-injector",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = sgutils.DeployTestRunner(basicNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = sgutils.DeployBookInfo(namespaceWithInject)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, basicNamespace,
+		"testrunner",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, namespaceWithInject,
+		"reviews-v1",
+		"reviews-v2",
+		"reviews-v3",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	checkSidecarInjection()
+
+}
+
+func checkSidecarInjection() {
+	pods, err := kube.CoreV1().Pods(namespaceWithInject).List(metav1.ListOptions{})
+	Expect(err).NotTo(HaveOccurred())
+
+	for _, pod := range pods.Items {
+		Expect(len(pod.Spec.Containers)).To(BeNumerically(">=", 2))
+	}
 }
 
 func testUnregisterAppmesh(meshName string) {
 
 }
 
-func createAWSSecret() {
+func createAWSSecret(secretName string) {
 	accessKeyId, secretAccessKey := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY")
-	secretName := "my-secret"
 	Expect(accessKeyId).NotTo(Equal(""))
 	Expect(secretAccessKey).NotTo(Equal(""))
 	err := utils.Supergloo(fmt.Sprintf(
@@ -64,7 +114,7 @@ func createAWSSecret() {
 	))
 	Expect(err).NotTo(HaveOccurred())
 
-	secret, err := kube.CoreV1().Secrets(superglooNamespace).Get(secretName, v1.GetOptions{})
+	secret, err := kube.CoreV1().Secrets(superglooNamespace).Get(secretName, metav1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(secret).NotTo(BeNil())
 }
