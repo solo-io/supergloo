@@ -64,7 +64,7 @@ func createInstallSyncers(clientset *clientset.Clientset, installer kubeinstall.
 			reporter.NewReporter("istio-install-reporter", clientset.Input.Install.BaseClient()),
 		),
 		gloo.NewInstallSyncer(
-			nil,
+			installer,
 			clientset.Input.MeshIngress,
 			reporter.NewReporter("gloo-install-reporter", clientset.Input.Install.BaseClient()),
 		),

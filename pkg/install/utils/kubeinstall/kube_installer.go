@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	kubev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -249,6 +250,14 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 	}
 
 	// create
+	// ensure ns exists before performing a create
+	if len(resourcesToCreate) > 0 {
+		if _, err := r.core.CoreV1().Namespaces().Create(&kubev1.Namespace{
+			ObjectMeta: v1.ObjectMeta{Name: installNamespace},
+		}); err != nil && !kubeerrs.IsAlreadyExists(err) {
+			return errors.Wrapf(err, "creating installation namespace")
+		}
+	}
 	for _, group := range resourcesToCreate.GroupedByGVK() {
 		// batch create for each resource group
 		g := errgroup.Group{}

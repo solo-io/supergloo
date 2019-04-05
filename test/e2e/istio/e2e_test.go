@@ -56,25 +56,45 @@ var _ = Describe("E2e", func() {
 		istioName := "my-istio"
 		glooName := "gloo"
 
-		testInstallIstio(istioName)
+		By("it installs istio", func() {
+			testInstallIstio(istioName)
+		})
 
-		testConfigurePrometheus(istioName, promNamespace)
+		By("it configures prometheus", func() {
+			testConfigurePrometheus(istioName, promNamespace)
+		})
 
-		testGlooInstall(glooName, istioName)
+		By("it installs gloo", func() {
+			testGlooInstall(glooName, istioName)
+		})
 
-		testMtls()
+		By("it enables mtls", func() {
+			testMtls()
+		})
 
-		testGlooMtls(istioName)
+		By("it enables mtls ingress with gloo", func() {
+			testGlooMtls(istioName)
+		})
 
-		testCertRotation(istioName)
+		By("it sets custom root ca", func() {
+			testCertRotation(istioName)
+		})
 
-		testTrafficShifting()
+		By("it shifts traffic with routing rules", func() {
+			testTrafficShifting()
+		})
 
-		testFaultInjection()
+		By("it injects faults with routing rules", func() {
+			testFaultInjection()
+		})
 
-		testUninstallIstio(istioName)
+		By("it uninstalls istio", func() {
+			testUninstallIstio(istioName)
+		})
 
-		testUninstallGloo(glooName)
+		By("it uninstalls gloo", func() {
+			testUninstallGloo(glooName)
+		})
 	})
 })
 

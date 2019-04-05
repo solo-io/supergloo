@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
 	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
 	"github.com/solo-io/supergloo/pkg/util"
@@ -13,6 +15,12 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+)
+
+const (
+	customResourceDefinition = "CustomResourceDefinition"
+	upstreamCrdName          = "upstreams.gloo.solo.io"
+	settingsCrdName          = "settings.gloo.solo.io"
 )
 
 type Installer interface {
@@ -61,6 +69,14 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 	if err != nil {
 		return nil, err
 	}
+
+	// filter out upstreams, supergloo installs them
+	rawResources = rawResources.Filter(func(resource *unstructured.Unstructured) bool {
+		if resource.GroupVersionKind().Kind == customResourceDefinition {
+			return resource.GetName() == upstreamCrdName || resource.GetName() == settingsCrdName
+		}
+		return false
+	})
 
 	installNamespace := install.InstallationNamespace
 
