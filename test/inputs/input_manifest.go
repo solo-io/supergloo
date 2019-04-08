@@ -16,7 +16,6 @@ func InputIstioManifests(ns string) helmchart.Manifests {
 		"yella",
 		ns,
 		"",
-		true,
 	)
 	gomega.ExpectWithOffset(1, err).NotTo(gomega.HaveOccurred())
 	return manifests

@@ -38,3 +38,21 @@ func GlooIstall(name, namespace, installNs, version string, disabled bool) *v1.I
 		},
 	}
 }
+
+func GlooIstallWithMeshes(name, namespace, installNs, version string, disabled bool, targetMeshes []*core.ResourceRef) *v1.Install {
+	return &v1.Install{
+		Metadata:              core.Metadata{Name: name, Namespace: namespace},
+		Disabled:              disabled,
+		InstallationNamespace: installNs,
+		InstallType: &v1.Install_Ingress{
+			Ingress: &v1.MeshIngressInstall{
+				IngressInstallType: &v1.MeshIngressInstall_Gloo{
+					Gloo: &v1.GlooInstall{
+						GlooVersion: version,
+						Meshes:      targetMeshes,
+					},
+				},
+			},
+		},
+	}
+}

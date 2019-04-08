@@ -49,11 +49,6 @@ message Install {
 
     // which namespace to install to
     string installation_namespace = 4;
-
-    // gzipped inline string containing the applied manifest
-    // read-only, set by the server after successful installation.
-    // TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb)
-    string installed_manifest = 5;
 }
 
 // Installation options for Istio

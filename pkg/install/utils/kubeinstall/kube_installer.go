@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+
 	"github.com/avast/retry-go"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
@@ -12,6 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	kubev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -149,23 +153,12 @@ func (r *KubeInstaller) postDelete(res *unstructured.Unstructured) error {
 	return nil
 }
 
-type CallbackOptions interface {
-	PreInstall() error
-	PostInstall() error
-	PreCreate(res *unstructured.Unstructured) error
-	PostCreate(res *unstructured.Unstructured) error
-	PreUpdate(res *unstructured.Unstructured) error
-	PostUpdate(res *unstructured.Unstructured) error
-	PreDelete(res *unstructured.Unstructured) error
-	PostDelete(res *unstructured.Unstructured) error
-}
-
 func (r *KubeInstaller) ReconcilleResources(ctx context.Context, installNamespace string, resources kuberesource.UnstructuredResources, ownerLabels map[string]string) error {
 	if err := r.preInstall(); err != nil {
 		return errors.Wrapf(err, "error in pre-install hook")
 	}
 
-	if err := r.reconcileResources(ctx, installNamespace, resources.ByKey(), ownerLabels); err != nil {
+	if err := r.reconcileResources(ctx, installNamespace, resources, ownerLabels); err != nil {
 		return err
 	}
 
@@ -176,7 +169,7 @@ func (r *KubeInstaller) ReconcilleResources(ctx context.Context, installNamespac
 	return nil
 }
 
-func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace string, desiredResources kuberesource.UnstructuredResourcesByKey, ownerLabels map[string]string) error {
+func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace string, desiredResources kuberesource.UnstructuredResources, ownerLabels map[string]string) error {
 	cachedResources := r.cache.List().WithLabels(ownerLabels).ByKey()
 
 	logger := contextutils.LoggerFrom(ctx)
@@ -188,6 +181,11 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 		"cache_total", len(r.cache.resources),
 	)
 
+	restMapper, err := apiutil.NewDiscoveryRESTMapper(r.cfg)
+	if err != nil {
+		return errors.Wrapf(err, "creating discovery rest mapper")
+	}
+
 	// set labels for writing
 	for _, res := range desiredResources {
 		labels := res.GetLabels()
@@ -198,12 +196,23 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 			labels[k] = v
 		}
 		res.SetLabels(labels)
-		res.SetNamespace(installNamespace)
+
+		isNamespaced, err := r.isNamespaced(restMapper, desiredResources, kuberesource.Key(res))
+		if err != nil {
+			return err
+		}
+		if isNamespaced {
+			res.SetNamespace(installNamespace)
+		} else {
+			res.SetNamespace("")
+		}
 	}
+
+	desiredResourcesByKey := desiredResources.ByKey()
 
 	// determine what must be created, deleted, updated
 	var resourcesToDelete, resourcesToCreate, resourcesToUpdate kuberesource.UnstructuredResources
-	for key, res := range desiredResources {
+	for key, res := range desiredResourcesByKey {
 		if _, exists := cachedResources[key]; exists {
 			resourcesToUpdate = append(resourcesToUpdate, res)
 		} else {
@@ -212,7 +221,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 	}
 	// undesired resources with labels get deleted
 	for key, res := range cachedResources {
-		if _, desired := desiredResources[key]; !desired {
+		if _, desired := desiredResourcesByKey[key]; !desired {
 			resourcesToDelete = append(resourcesToDelete, res)
 		}
 	}
@@ -233,7 +242,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
 				logger.Infof("deleting resource %v", resKey)
 
-				if err := retry.Do(func() error { return r.client.Delete(ctx, res) }); err != nil && !kubeerrs.IsNotFound(err) {
+				if err := retry.Do(func() error { return r.client.Delete(ctx, res.DeepCopyObject()) }); err != nil && !kubeerrs.IsNotFound(err) {
 					return errors.Wrapf(err, "deleting  %v", resKey)
 				}
 				if err := r.postDelete(res); err != nil {
@@ -249,6 +258,14 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 	}
 
 	// create
+	// ensure ns exists before performing a create
+	if len(resourcesToCreate) > 0 {
+		if _, err := r.core.CoreV1().Namespaces().Create(&kubev1.Namespace{
+			ObjectMeta: v1.ObjectMeta{Name: installNamespace},
+		}); err != nil && !kubeerrs.IsAlreadyExists(err) {
+			return errors.Wrapf(err, "creating installation namespace")
+		}
+	}
 	for _, group := range resourcesToCreate.GroupedByGVK() {
 		// batch create for each resource group
 		g := errgroup.Group{}
@@ -261,7 +278,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
 				logger.Infof("creating resource %v", resKey)
 
-				if err := retry.Do(func() error { return r.client.Create(ctx, res) }); err != nil {
+				if err := retry.Do(func() error { return r.client.Create(ctx, res.DeepCopyObject()) }); err != nil {
 					return errors.Wrapf(err, "creating %v", resKey)
 				}
 				if err := r.postCreate(res); err != nil {
@@ -294,13 +311,14 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 				if kuberesource.Match(ctx, original, desired) {
 					return nil
 				}
-				if err := r.updateResourceVersion(ctx, desired); err != nil {
+				patchedServerResource, err := r.patchServerResource(ctx, original, desired)
+				if err != nil {
 					return err
 				}
 				resKey := fmt.Sprintf("%v %v.%v", desired.GroupVersionKind().Kind, desired.GetNamespace(), desired.GetName())
 				logger.Infof("updating resource %v", resKey)
 
-				if err := retry.Do(func() error { return r.client.Update(ctx, desired) }); err != nil {
+				if err := retry.Do(func() error { return r.client.Update(ctx, patchedServerResource) }); err != nil {
 					return errors.Wrapf(err, "updating %v", resKey)
 				}
 				if err := r.waitForResourceReady(ctx, desired); err != nil {
@@ -318,6 +336,62 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 	logger.Infof("created %v, updated %v, and deleted %v resources", len(resourcesToCreate), len(resourcesToUpdate), len(resourcesToDelete))
 
 	return nil
+}
+
+func (r *KubeInstaller) isNamespaced(restMapper meta.RESTMapper, desiredResources kuberesource.UnstructuredResources, key kuberesource.ResourceKey) (bool, error) {
+	mapping, err := restMapper.RESTMapping(key.Gvk.GroupKind(), key.Gvk.Version)
+	if err != nil {
+		if !meta.IsNoMatchError(err) {
+			return false, err
+		}
+
+		// resource might be an unregistered Custom Resource
+		// try to determine whether the desired object should be namespaced based on the CRD spec with a lookup
+		var isNamespaced bool
+		crdResource := desiredResources.Filter(func(resource *unstructured.Unstructured) bool {
+			runtimeObj, err := kuberesource.ConvertUnstructured(resource)
+			if err != nil {
+				return true
+			}
+			crd, ok := runtimeObj.(*apiextensions.CustomResourceDefinition)
+			if !ok {
+				return true
+			}
+			if crd.Spec.Group == key.Gvk.Group && key.Gvk.Version == crd.Spec.Version && key.Gvk.Kind == crd.Spec.Names.Kind {
+				isNamespaced = crd.Spec.Scope == apiextensions.NamespaceScoped
+				return false // filter all except this crd
+			}
+			return true
+		})
+
+		if len(crdResource) != 1 {
+			return false, errors.Wrapf(err, "could not get rest mapping and could not find crd for %v", key)
+		}
+
+		return isNamespaced, nil
+
+	}
+	return mapping.Scope.Name() != meta.RESTScopeNameRoot, nil
+}
+
+// create a patch from the diff between our cached object and the desired resource
+// then apply that patch to the server's current version fo the resource
+func (r *KubeInstaller) patchServerResource(ctx context.Context, original, desired *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	currentFromServer := original.DeepCopyObject().(*unstructured.Unstructured)
+	objectKey := client.ObjectKey{Namespace: original.GetNamespace(), Name: original.GetName()}
+	if err := r.client.Get(ctx, objectKey, currentFromServer); err != nil {
+		return nil, err
+	}
+
+	patch, err := kuberesource.GetPatch(original, desired)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := kuberesource.Patch(currentFromServer, patch); err != nil {
+		return nil, err
+	}
+	return currentFromServer, nil
 }
 
 // do an HTTP GET to update the resource version of the desired object

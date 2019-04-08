@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"text/template"
 
+	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
+
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 
 	"github.com/ghodss/yaml"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 	"github.com/solo-io/supergloo/pkg/util"
 	"github.com/solo-io/supergloo/pkg/version"
 	appsv1 "k8s.io/api/apps/v1"
@@ -76,7 +77,7 @@ func (r *autoInjectionReconciler) Reconcile(autoInjectionEnabled bool) error {
 	return nil
 }
 
-func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string) (helm.Manifests, error) {
+func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string) (helmchart.Manifests, error) {
 
 	type Image struct {
 		Name, Tag, PullPolicy string
@@ -150,7 +151,7 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string)
 	return autoInjectionManifests, nil
 }
 
-func separateSecretManifests(manifests helm.Manifests) (secretRelated, regular helm.Manifests) {
+func separateSecretManifests(manifests helmchart.Manifests) (secretRelated, regular helmchart.Manifests) {
 	for _, m := range manifests {
 		if m.Head.Kind == secretKind || m.Head.Kind == webhookConfigKind {
 			secretRelated = append(secretRelated, m)
@@ -168,7 +169,7 @@ func separateSecretManifests(manifests helm.Manifests) (secretRelated, regular h
 //
 // If both exist, do nothing; if none exists, create both; if any of them does not exist, this means the cluster
 // might be in an inconsistent state and we need to clean up and recreate both.
-func (r *autoInjectionReconciler) ensureSecrets(namespace string, secretRelatedManifests helm.Manifests) error {
+func (r *autoInjectionReconciler) ensureSecrets(namespace string, secretRelatedManifests helmchart.Manifests) error {
 	var secretMissing, whConfigMissing bool
 	for _, m := range secretRelatedManifests {
 		if m.Head.Kind == secretKind {
@@ -219,7 +220,7 @@ func (r *autoInjectionReconciler) ensureSecrets(namespace string, secretRelatedM
 }
 
 // TODO: replace with new stateless installer library when ready.
-func (r *autoInjectionReconciler) ensureDeployment(namespace string, manifests helm.Manifests) error {
+func (r *autoInjectionReconciler) ensureDeployment(namespace string, manifests helmchart.Manifests) error {
 	var deploymentMissing, serviceMissing, configMapMissing bool
 
 	for _, m := range manifests {

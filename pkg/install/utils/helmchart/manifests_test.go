@@ -32,7 +32,6 @@ mixer:
 			"yella",
 			ns,
 			"",
-			true,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -67,7 +66,6 @@ mixer:
 				"yella",
 				ns,
 				"",
-				true,
 			)
 			Expect(err).NotTo(HaveOccurred())
 

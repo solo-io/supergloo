@@ -39,6 +39,14 @@ func (m Manifests) Find(name string) *manifest.Manifest {
 	return nil
 }
 
+func (m Manifests) Names() []string {
+	var names []string
+	for _, m := range tiller.SortByKind(m) {
+		names = append(names, m.Name)
+	}
+	return names
+}
+
 func (m Manifests) CombinedString() string {
 	buf := &bytes.Buffer{}
 
@@ -58,8 +66,10 @@ func (m Manifests) CombinedString() string {
 	return buf.String()
 }
 
+var yamlSeparator = regexp.MustCompile("\n---")
+
 func (m Manifests) ResourceList() (kuberesource.UnstructuredResources, error) {
-	snippets := strings.Split(m.CombinedString(), "---")
+	snippets := yamlSeparator.Split(m.CombinedString(), -1)
 
 	var resources kuberesource.UnstructuredResources
 	for _, objectYaml := range snippets {
@@ -73,6 +83,12 @@ func (m Manifests) ResourceList() (kuberesource.UnstructuredResources, error) {
 		uncastObj, err := runtime.Decode(unstructured.UnstructuredJSONScheme, jsn)
 		if err != nil {
 			return nil, err
+		}
+		if resourceList, ok := uncastObj.(*unstructured.UnstructuredList); ok {
+			for _, item := range resourceList.Items {
+				resources = append(resources, &item)
+			}
+			continue
 		}
 		resources = append(resources, uncastObj.(*unstructured.Unstructured))
 	}
@@ -92,7 +108,7 @@ func IsEmptyManifest(manifest string) bool {
 
 var defaultKubeVersion = fmt.Sprintf("%s.%s", chartutil.DefaultKubeVersion.Major, chartutil.DefaultKubeVersion.Minor)
 
-func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string, releaseIsInstall bool) (Manifests, error) {
+func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespace, kubeVersion string) (Manifests, error) {
 	var file io.Reader
 	if strings.HasPrefix(chartUri, "http://") || strings.HasPrefix(chartUri, "https://") {
 		resp, err := http.Get(chartUri)
@@ -125,8 +141,7 @@ func RenderManifests(ctx context.Context, chartUri, values, releaseName, namespa
 	renderOpts := renderutil.Options{
 		ReleaseOptions: chartutil.ReleaseOptions{
 			Name:      releaseName,
-			IsInstall: releaseIsInstall,
-			IsUpgrade: !releaseIsInstall,
+			IsInstall: true,
 			Time:      timeconv.Now(),
 			Namespace: namespace,
 		},

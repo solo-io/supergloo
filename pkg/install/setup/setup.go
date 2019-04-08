@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
+
 	"github.com/solo-io/supergloo/pkg/install/gloo"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
@@ -29,7 +31,22 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 		}
 	}
 
-	installSyncers := createInstallSyncers(cs, errHandler)
+	installCache := kubeinstall.NewCache()
+	go func() {
+		logger.Infof("beginning install cache sync, this may take a while...")
+		started := time.Now()
+		if err := installCache.Init(ctx, cs.RestConfig); err != nil {
+			logger.Fatalf("failed to initialize installation cache!")
+		}
+		logger.Infof("finished install cache sync. took %v", time.Now().Sub(started))
+	}()
+
+	kubeInstaller, err := kubeinstall.NewKubeInstaller(cs.RestConfig, installCache)
+	if err != nil {
+		return err
+	}
+
+	installSyncers := createInstallSyncers(cs, kubeInstaller)
 
 	if err := startEventLoop(ctx, errHandler, cs, installSyncers); err != nil {
 		return err
@@ -39,16 +56,15 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 }
 
 // Add install syncers here
-func createInstallSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.InstallSyncers {
+func createInstallSyncers(clientset *clientset.Clientset, installer kubeinstall.Installer) v1.InstallSyncers {
 	return v1.InstallSyncers{
 		istio.NewInstallSyncer(
-			nil,
+			installer,
 			clientset.Input.Mesh,
 			reporter.NewReporter("istio-install-reporter", clientset.Input.Install.BaseClient()),
 		),
 		gloo.NewInstallSyncer(
-			nil,
-			clientset.Input.Mesh,
+			installer,
 			clientset.Input.MeshIngress,
 			reporter.NewReporter("gloo-install-reporter", clientset.Input.Install.BaseClient()),
 		),

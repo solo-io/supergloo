@@ -44,7 +44,6 @@ modify the corresponding mesh.
 "mesh": .supergloo.solo.io.MeshInstall
 "ingress": .supergloo.solo.io.MeshIngressInstall
 "installationNamespace": string
-"installedManifest": string
 
 ```
 
@@ -56,7 +55,6 @@ modify the corresponding mesh.
 | `mesh` | [.supergloo.solo.io.MeshInstall](../install.proto.sk#meshinstall) | service mesh |  |
 | `ingress` | [.supergloo.solo.io.MeshIngressInstall](../install.proto.sk#meshingressinstall) | ingress |  |
 | `installationNamespace` | `string` | which namespace to install to |  |
-| `installedManifest` | `string` | gzipped inline string containing the applied manifest read-only, set by the server after successful installation. TODO (ilackarms): make sure this is not too large for etcd (value size limit 1.5mb) |  |
 
 
 
