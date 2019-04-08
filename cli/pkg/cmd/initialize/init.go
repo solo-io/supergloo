@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
+
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
@@ -18,7 +20,6 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
 	"github.com/solo-io/supergloo/cli/pkg/options"
-	"github.com/solo-io/supergloo/pkg/install/utils/helm"
 	"github.com/solo-io/supergloo/pkg/version"
 	"github.com/spf13/cobra"
 )
@@ -70,13 +71,12 @@ func installSuperGloo(opts *options.Options) error {
 		return errors.Wrapf(err, "creating namespace")
 	}
 
-	manifests, err := helm.RenderManifests(opts.Ctx,
+	manifests, err := helmchart.RenderManifests(opts.Ctx,
 		chartUri,
 		values,
 		"supergloo",
 		opts.Init.InstallNamespace,
 		"",
-		true,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "rendering manifests")

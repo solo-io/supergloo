@@ -27,13 +27,14 @@ func NewCache() *Cache {
 Initialize the cache with the snapshot of the current cluster
 */
 func (c *Cache) Init(ctx context.Context, cfg *rest.Config, filterFuncs ...kuberesource.FilterResource) error {
+	// lock the cache at the start of the sync, block all access until sync is complete
+	c.access.Lock()
+	defer c.access.Unlock()
 	currentResources, err := kuberesource.GetClusterResources(ctx, cfg, filterFuncs...)
 	if err != nil {
 		return err
 	}
-	c.access.Lock()
 	c.resources = currentResources.ByKey()
-	c.access.Unlock()
 	return nil
 }
 

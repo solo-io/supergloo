@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/helm"
+	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 
@@ -16,19 +16,14 @@ import (
 
 type installSyncer struct {
 	glooInstaller Installer
-	meshClient    v1.MeshClient
 	ingressClient v1.MeshIngressClient
 	reporter      reporter.Reporter
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewInstallSyncer(gloonstaller Installer, meshClient v1.MeshClient, ingressClient v1.MeshIngressClient, reporter reporter.Reporter) v1.InstallSyncer {
-	if gloonstaller == nil {
-		gloonstaller = NewDefaultInstaller(helm.NewHelmInstaller())
-	}
+func NewInstallSyncer(kubeInstaller kubeinstall.Installer, ingressClient v1.MeshIngressClient, reporter reporter.Reporter) v1.InstallSyncer {
 	return &installSyncer{
-		glooInstaller: gloonstaller,
-		meshClient:    meshClient,
+		glooInstaller: newGlooInstaller(kubeInstaller),
 		ingressClient: ingressClient,
 		reporter:      reporter,
 	}

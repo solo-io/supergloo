@@ -75,7 +75,6 @@ func InstallClientTest(namespace string, client InstallClient, name1, name2, nam
 	Expect(r1.Status).To(Equal(input.Status))
 	Expect(r1.Disabled).To(Equal(input.Disabled))
 	Expect(r1.InstallationNamespace).To(Equal(input.InstallationNamespace))
-	Expect(r1.InstalledManifest).To(Equal(input.InstalledManifest))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

@@ -1251,7 +1251,7 @@
   version = "v0.6.3"
 
 [[projects]]
-  digest = "1:676e3c47dde9f4fcbb53e7513ff40454ece084b365018cca82beea55178c559d"
+  digest = "1:166702c3098963898e1e8e71517c046ac6fa1551e1eae1ff403cf53db72253f7"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1290,7 +1290,6 @@
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
     "pkg/utils/hashutils",
-    "pkg/utils/kubeinstallutils",
     "pkg/utils/kubeutils",
     "pkg/utils/log",
     "pkg/utils/protoutils",
@@ -2269,7 +2268,6 @@
     "github.com/solo-io/solo-kit/pkg/errors",
     "github.com/solo-io/solo-kit/pkg/utils/errutils",
     "github.com/solo-io/solo-kit/pkg/utils/hashutils",
-    "github.com/solo-io/solo-kit/pkg/utils/kubeinstallutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
     "github.com/solo-io/solo-kit/test/helpers",
@@ -2310,7 +2308,6 @@
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/apimachinery/pkg/util/yaml",
-    "k8s.io/cli-runtime/pkg/genericclioptions/resource",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
@@ -2326,6 +2323,7 @@
     "k8s.io/helm/pkg/tiller",
     "k8s.io/helm/pkg/timeconv",
     "sigs.k8s.io/controller-runtime/pkg/client",
+    "sigs.k8s.io/controller-runtime/pkg/client/apiutil",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
