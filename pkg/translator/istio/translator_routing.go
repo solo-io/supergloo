@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -20,45 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// we create a routing rule for each unique matcher
-type rulesByMatcher struct {
-	rules map[uint64]v1.RoutingRuleList
-}
-
-func newRulesByMatcher(rules v1.RoutingRuleList) rulesByMatcher {
-	rbm := make(map[uint64]v1.RoutingRuleList)
-	for _, rule := range rules {
-		hash := hashutils.HashAll(
-			rule.SourceSelector,
-			rule.RequestMatchers,
-		)
-		rbm[hash] = append(rbm[hash], rule)
-	}
-
-	return rulesByMatcher{rules: rbm}
-}
-
-func (rbm rulesByMatcher) sort() []v1.RoutingRuleList {
-	var (
-		hashes       []uint64
-		rulesForHash []v1.RoutingRuleList
-	)
-	for hash, rules := range rbm.rules {
-		hashes = append(hashes, hash)
-		rulesForHash = append(rulesForHash, rules)
-	}
-	sort.SliceStable(rulesForHash, func(i, j int) bool {
-		return hashes[i] < hashes[j]
-	})
-	return rulesForHash
-}
-
 func (t *translator) makeVirtualServiceForHost(
 	ctx context.Context,
 	params plugins.Params,
 	writeNamespace string,
 	host string,
-	destinationPortAndLabelSets []labelsPortTuple,
+	destinationPortAndLabelSets []utils.LabelsPortTuple,
 	routingRules v1.RoutingRuleList,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
@@ -67,7 +32,7 @@ func (t *translator) makeVirtualServiceForHost(
 	// group rules by their matcher
 	// we will then create a corresponding http rule
 	// on the virtual service that contains all the relevant rules
-	rulesPerMatcher := newRulesByMatcher(routingRules)
+	rulesPerMatcher := utils.NewRulesByMatcher(routingRules)
 
 	vs := initVirtualService(writeNamespace, host)
 
@@ -75,11 +40,11 @@ func (t *translator) makeVirtualServiceForHost(
 addUniquePorts:
 	for _, set := range destinationPortAndLabelSets {
 		for _, port := range destPorts {
-			if set.port == port {
+			if set.Port == port {
 				continue addUniquePorts
 			}
 		}
-		destPorts = append(destPorts, set.port)
+		destPorts = append(destPorts, set.Port)
 	}
 
 	// add a rule for each dest port
@@ -113,7 +78,7 @@ func (t *translator) applyRouteRules(
 	params plugins.Params,
 	destinationHost string,
 	destinationPort uint32,
-	rulesPerMatcher rulesByMatcher,
+	rulesPerMatcher utils.RulesByMatcher,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
 	out *v1alpha3.VirtualService) {
@@ -123,7 +88,7 @@ func (t *translator) applyRouteRules(
 	// find rules for this host and apply them
 	// each unique matcher becomes an http rule in the virtual
 	// service for this host
-	for _, rules := range rulesPerMatcher.sort() {
+	for _, rules := range rulesPerMatcher.Sort() {
 		// initialize report func
 		report := func(err error, format string, args ...interface{}) {
 			for _, rr := range rules {

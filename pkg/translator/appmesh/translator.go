@@ -77,6 +77,10 @@ func (t *appMeshTranslator) translateMesh(
 		return nil, err
 	}
 
+	if err := config.ProcessRoutingRules(routingRules); err != nil {
+		return nil, err
+	}
+
 	if err := config.AllowAll(); err != nil {
 		return nil, err
 	}

@@ -119,11 +119,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	return perMeshConfig, resourceErrs, nil
 }
 
-type labelsPortTuple struct {
-	labels map[string]string
-	port   uint32
-}
-
 type inputMeshConfig struct {
 	// where crds should be written. this is normally the mesh installation namespace
 	writeNamespace string
@@ -145,7 +140,7 @@ func (t *translator) translateMesh(
 	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
 	rules := input.rules
 
-	destinationHostsPortsAndLabels, err := labelsAndPortsByHost(upstreams)
+	destinationHostsPortsAndLabels, err := utils.LabelsAndPortsByHost(upstreams)
 	if err != nil {
 		return nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
 	}
@@ -157,11 +152,11 @@ func (t *translator) translateMesh(
 	findUniqueSets:
 		for _, set := range destinationPortAndLabelSets {
 			for _, existing := range labelSets {
-				if reflect.DeepEqual(set.labels, existing) {
+				if reflect.DeepEqual(set.Labels, existing) {
 					continue findUniqueSets
 				}
 			}
-			labelSets = append(labelSets, set.labels)
+			labelSets = append(labelSets, set.Labels)
 		}
 
 		dr := makeDestinationRule(ctx,
@@ -239,21 +234,4 @@ func (t *translator) translateMesh(
 	meshConfig.Sort()
 
 	return meshConfig, nil
-}
-
-func labelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]labelsPortTuple, error) {
-	labelsByHost := make(map[string][]labelsPortTuple)
-	for _, us := range upstreams {
-		labels := utils.GetLabelsForUpstream(us)
-		host, err := utils.GetHostForUpstream(us)
-		if err != nil {
-			return nil, errors.Wrapf(err, "getting host for upstream")
-		}
-		port, err := utils.GetPortForUpstream(us)
-		if err != nil {
-			return nil, errors.Wrapf(err, "getting port for upstream")
-		}
-		labelsByHost[host] = append(labelsByHost[host], labelsPortTuple{labels: labels, port: port})
-	}
-	return labelsByHost, nil
 }

@@ -2,13 +2,9 @@ package appmesh
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
@@ -29,6 +25,8 @@ type AwsAppMeshUpstreamInfo map[*gloov1.Upstream][]*customkube.Pod
 type AwsAppMeshConfiguration interface {
 	// Configure resources to allow traffic from/to all services in the mesh
 	AllowAll() error
+	// Handle appmesh routing rule
+	ProcessRoutingRules(rule v1.RoutingRuleList) error
 }
 
 // Represents the output of the App Mesh translator
@@ -74,18 +72,59 @@ func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstream
 	}, nil
 }
 
+func (c *awsAppMeshConfiguration) ProcessRoutingRules(rule v1.RoutingRuleList) error {
+	for _, us := range c.upstreamList {
+		if err := c.createVirtualServiceForHost(us); err != nil {
+			return err
+		}
+	}
+
+	// matcher, err := createAppmeshMatcher(rule)
+	// if err != nil {
+	// 	return err
+	// }
+	// route := &appmesh.HttpRoute{
+	// 	Match: matcher,
+	// }
+	//
+	// switch typedRule := rule.GetSpec().GetRuleType().(type) {
+	// case *v1.RoutingRuleSpec_TrafficShifting:
+	// 	if err := processTrafficShiftingRule(c.upstreamList, c.VirtualNodes, typedRule.TrafficShifting, route); err != nil {
+	// 		return err
+	// 	}
+	// default:
+	// 	return fmt.Errorf("currently only traffic shifting rules are supported by appmesh, found %t", typedRule)
+	// }
+	//
+	// virtualRouter := &appmesh.VirtualRouterData{
+	// 	MeshName: &c.MeshName,
+	// 	VirtualRouterName: appmeshVirtualRouterName(rule),
+	// 	Spec:
+	// }
+	//
+	// routeData := &appmesh.RouteData{
+	// 	VirtualRouterName: virtualRouter.VirtualRouterName,
+	// }
+
+	return nil
+}
+
+func appmeshRouteName(rule *v1.RoutingRule) *string {
+	name := fmt.Sprintf("%s.%s-route", rule.Metadata.Namespace, rule.Metadata.Name)
+	return &name
+}
+
+func appmeshVirtualRouterName(rule *v1.RoutingRule) *string {
+	name := fmt.Sprintf("%s.%s-vr", rule.Metadata.Namespace, rule.Metadata.Name)
+	return &name
+}
+
 func (c *awsAppMeshConfiguration) AllowAll() error {
 
 	// TODO: loop over podInfo, create a VirtualNode for every unique virtualNodeName, lookup (and validate) the upstreams for the pod
 	//  to get the serviceDiscovery.dns.hostname and ports (need to validate these against the pod ports). Then create a VS for
 	//  the Virtual node.
 	//  Lastly, iterate over all vn/vs and add all VSs as back ends for all the VNs (excepts for the VS that maps to the VN)
-
-	for _, pod := range c.podList {
-		if err := c.registerPod(pod); err != nil {
-			return err
-		}
-	}
 
 	if err := c.connectAllVirtualNodes(); err != nil {
 		return err
@@ -113,43 +152,52 @@ func (c *awsAppMeshConfiguration) connectAllVirtualNodes() error {
 	return nil
 }
 
-func (c *awsAppMeshConfiguration) registerPod(pod *customkube.Pod) error {
-	info, ok := c.podInfo[pod]
+func (c *awsAppMeshConfiguration) createVirtualServiceForHost(upstream *gloov1.Upstream) error {
+	host, err := utils.GetHostForUpstream(upstream)
+	if err != nil {
+		return err
+	}
+
+	pods, ok := c.upstreamInfo[upstream]
 	if !ok {
 		return nil
 	}
 
-	var serviceDnsHostName string
-	for _, us := range info.upstreams {
-		var err error
-		serviceDnsHostName, err = utils.GetHostForUpstream(us)
-		if err != nil {
-			return err
+	for _, pod := range pods {
+		info, ok := c.podInfo[pod]
+		if !ok {
+			continue
 		}
+
+		vn, vs := podAppmeshConfig(info, c.MeshName, host)
+		c.VirtualNodes = append(c.VirtualNodes, vn)
+
+		c.VirtualServices = append(c.VirtualServices, vs)
 	}
 
-	if serviceDnsHostName == "" {
-		return fmt.Errorf("unable to find dns hostname for pod %s.%s", pod.Metadata.Namespace, pod.Metadata.Name)
-	}
+	return nil
+}
 
-	vn := &appmesh.VirtualNodeData{
-		MeshName:        &c.MeshName,
+func podAppmeshConfig(info *podInfo, meshName, hostName string) (*appmesh.VirtualNodeData, *appmesh.VirtualServiceData) {
+	var vn *appmesh.VirtualNodeData
+	var vs *appmesh.VirtualServiceData
+	vn = &appmesh.VirtualNodeData{
+		MeshName:        &meshName,
 		VirtualNodeName: &info.virtualNodeName,
 		Spec: &appmesh.VirtualNodeSpec{
 			Backends:  []*appmesh.Backend{},
 			Listeners: []*appmesh.Listener{},
 			ServiceDiscovery: &appmesh.ServiceDiscovery{
 				Dns: &appmesh.DnsServiceDiscovery{
-					Hostname: &serviceDnsHostName,
+					Hostname: &hostName,
 				},
 			},
 		},
 	}
-	c.VirtualNodes = append(c.VirtualNodes, vn)
 
-	vs := &appmesh.VirtualServiceData{
-		MeshName:           &c.MeshName,
-		VirtualServiceName: &serviceDnsHostName,
+	vs = &appmesh.VirtualServiceData{
+		MeshName:           &meshName,
+		VirtualServiceName: &hostName,
 		Spec: &appmesh.VirtualServiceSpec{
 			Provider: &appmesh.VirtualServiceProvider{
 				VirtualNode: &appmesh.VirtualNodeServiceProvider{
@@ -158,90 +206,5 @@ func (c *awsAppMeshConfiguration) registerPod(pod *customkube.Pod) error {
 			},
 		},
 	}
-	c.VirtualServices = append(c.VirtualServices, vs)
-
-	return nil
-}
-
-func getPodsForMesh(mesh *v1.Mesh, pods customkube.PodList) (AwsAppMeshPodInfo, customkube.PodList, error) {
-	var appMeshPodList customkube.PodList
-	appMeshPods := make(AwsAppMeshPodInfo, 0)
-	for _, pod := range pods {
-		kubePod, err := kubernetes.ToKube(pod)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		var info *podInfo
-		for _, container := range kubePod.Spec.Containers {
-			for _, env := range container.Env {
-				if env.Name == PodVirtualNodeEnvName {
-
-					// Env value is expected to have the following format
-					// - name: "APPMESH_VIRTUAL_NODE_NAME"
-					//   value: "mesh/meshName/virtualNode/virtualNodeName"
-					vnNameParts := strings.Split(env.Value, "/")
-					if len(vnNameParts) != 4 {
-						return nil, nil, errors.Errorf("unexpected format for %s env for pod %s.%s. Expected format is [%s] but found [%s]",
-							PodVirtualNodeEnvName, kubePod.Namespace, kubePod.Name, "mesh/meshName/virtualNode/virtualNodeName", env.Value)
-					}
-
-					if meshName := vnNameParts[1]; meshName == mesh.Metadata.Name {
-						info = &podInfo{
-							virtualNodeName: vnNameParts[3],
-						}
-					}
-				}
-			}
-		}
-
-		if info != nil {
-			for _, initContainer := range kubePod.Spec.InitContainers {
-				for _, env := range initContainer.Env {
-					if env.Name == PodPortsEnvName {
-						for _, portStr := range strings.Split(env.Value, ",") {
-							ui64, err := strconv.ParseUint(strings.Trim(portStr, " "), 10, 32)
-							if err != nil {
-								return nil, nil, errors.Wrapf(err, "failed to parse [%s] (value of %s env) to int array",
-									env.Value, PodPortsEnvName)
-							}
-							info.ports = append(info.ports, uint32(ui64))
-						}
-					}
-				}
-			}
-
-			appMeshPodList = append(appMeshPodList, pod)
-			appMeshPods[pod] = info
-		}
-	}
-	return appMeshPods, appMeshPodList, nil
-}
-
-func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInfo, appMeshPodList customkube.PodList) (AwsAppMeshUpstreamInfo, gloov1.UpstreamList, error) {
-	appMeshUpstreamInfo := make(AwsAppMeshUpstreamInfo, 0)
-	for _, us := range upstreams {
-
-		// Get all the appMesh pods for this upstream
-		pods, err := utils.PodsForUpstreams(gloov1.UpstreamList{us}, appMeshPodList)
-		if err != nil {
-			return nil, nil, err
-		}
-		if len(pods) > 0 {
-			appMeshUpstreamInfo[us] = pods
-		}
-
-		// Add this upstream to the info the pod it belongs to
-		for _, pod := range pods {
-			podInfo[pod].upstreams = append(podInfo[pod].upstreams, us)
-		}
-	}
-
-	var appMeshUpstreamList gloov1.UpstreamList
-	for us := range appMeshUpstreamInfo {
-		appMeshUpstreamList = append(appMeshUpstreamList, us)
-	}
-
-	return appMeshUpstreamInfo, appMeshUpstreamList, nil
-
+	return vn, vs
 }
