@@ -82,55 +82,19 @@ func (c *awsAppMeshConfiguration) AllowAll() error {
 	//  Lastly, iterate over all vn/vs and add all VSs as back ends for all the VNs (excepts for the VS that maps to the VN)
 
 	for _, pod := range c.podList {
-		info, ok := c.podInfo[pod]
-		if !ok {
-			continue
+		if err := c.registerPod(pod); err != nil {
+			return err
 		}
-
-		var serviceDnsHostName string
-		for _, us := range info.upstreams {
-			usType := us.GetUpstreamSpec().GetUpstreamType()
-			switch usSpec := usType.(type) {
-			case *gloov1.UpstreamSpec_Kube:
-				kubeSpec := usSpec.Kube
-				serviceDnsHostName = fmt.Sprintf("%s.%s.svc.cluster.local", kubeSpec.ServiceNamespace, kubeSpec.ServiceName)
-			default:
-				continue
-			}
-		}
-
-		if serviceDnsHostName == "" {
-			return fmt.Errorf("unable to find dns hostname for pod %s.%s", pod.Metadata.Namespace, pod.Metadata.Name)
-		}
-
-		vn := &appmesh.VirtualNodeData{
-			MeshName:        &c.MeshName,
-			VirtualNodeName: &info.virtualNodeName,
-			Spec: &appmesh.VirtualNodeSpec{
-				Backends:  []*appmesh.Backend{},
-				Listeners: []*appmesh.Listener{},
-				ServiceDiscovery: &appmesh.ServiceDiscovery{
-					Dns: &appmesh.DnsServiceDiscovery{
-						Hostname: &serviceDnsHostName,
-					},
-				},
-			},
-		}
-		c.VirtualNodes = append(c.VirtualNodes, vn)
-
-		vs := &appmesh.VirtualServiceData{
-			MeshName:           &c.MeshName,
-			VirtualServiceName: &serviceDnsHostName,
-			Spec: &appmesh.VirtualServiceSpec{
-				Provider: &appmesh.VirtualServiceProvider{
-					VirtualNode: &appmesh.VirtualNodeServiceProvider{
-						VirtualNodeName: &info.virtualNodeName,
-					},
-				},
-			},
-		}
-		c.VirtualServices = append(c.VirtualServices, vs)
 	}
+
+	if err := c.connectAllVirtualNodes(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *awsAppMeshConfiguration) connectAllVirtualNodes() error {
 
 	for _, vn := range c.VirtualNodes {
 		for _, vs := range c.VirtualServices {
@@ -145,6 +109,56 @@ func (c *awsAppMeshConfiguration) AllowAll() error {
 			vn.Spec.Backends = append(vn.Spec.Backends, backend)
 		}
 	}
+
+	return nil
+}
+
+func (c *awsAppMeshConfiguration) registerPod(pod *customkube.Pod) error {
+	info, ok := c.podInfo[pod]
+	if !ok {
+		return nil
+	}
+
+	var serviceDnsHostName string
+	for _, us := range info.upstreams {
+		var err error
+		serviceDnsHostName, err = utils.GetHostForUpstream(us)
+		if err != nil {
+			return err
+		}
+	}
+
+	if serviceDnsHostName == "" {
+		return fmt.Errorf("unable to find dns hostname for pod %s.%s", pod.Metadata.Namespace, pod.Metadata.Name)
+	}
+
+	vn := &appmesh.VirtualNodeData{
+		MeshName:        &c.MeshName,
+		VirtualNodeName: &info.virtualNodeName,
+		Spec: &appmesh.VirtualNodeSpec{
+			Backends:  []*appmesh.Backend{},
+			Listeners: []*appmesh.Listener{},
+			ServiceDiscovery: &appmesh.ServiceDiscovery{
+				Dns: &appmesh.DnsServiceDiscovery{
+					Hostname: &serviceDnsHostName,
+				},
+			},
+		},
+	}
+	c.VirtualNodes = append(c.VirtualNodes, vn)
+
+	vs := &appmesh.VirtualServiceData{
+		MeshName:           &c.MeshName,
+		VirtualServiceName: &serviceDnsHostName,
+		Spec: &appmesh.VirtualServiceSpec{
+			Provider: &appmesh.VirtualServiceProvider{
+				VirtualNode: &appmesh.VirtualNodeServiceProvider{
+					VirtualNodeName: &info.virtualNodeName,
+				},
+			},
+		},
+	}
+	c.VirtualServices = append(c.VirtualServices, vs)
 
 	return nil
 }

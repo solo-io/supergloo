@@ -66,7 +66,7 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled E
 	}
 
 	if enabled.AppMesh {
-		appMeshSyncer, err := appmesh.NewAppMeshConfigSyncer(appmeshtranslator.NewAppMeshTranslator())
+		appMeshSyncer, err := createAppmeshConfigSyncer(ctx, cs)
 		if err != nil {
 			return nil, err
 		}
@@ -74,6 +74,18 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled E
 	}
 
 	return syncers, nil
+}
+
+func createAppmeshConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+	translator := appmeshtranslator.NewAppMeshTranslator()
+
+	newReporter := reporter.NewReporter("appmesh-config-reporter",
+		cs.Input.Mesh.BaseClient(),
+		cs.Input.Upstream.BaseClient(),
+		cs.Input.RoutingRule.BaseClient(),
+		cs.Input.SecurityRule.BaseClient())
+
+	return appmesh.NewAppMeshConfigSyncer(translator, newReporter)
 }
 
 func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
