@@ -68,7 +68,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
-			Selector: s.ownerLabels,
+			Selector: nil, // allows overwriting a user-created mesh policy
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling default mesh policy")
@@ -87,7 +87,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
-			Selector: s.ownerLabels,
+			Selector: nil, // allows overwriting a user-created rbac config
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling default rbac config")
@@ -106,7 +106,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
-			Selector: s.ownerLabels,
+			Selector: nil, // allows overwriting a user-created root cert
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling cacerts root cert")

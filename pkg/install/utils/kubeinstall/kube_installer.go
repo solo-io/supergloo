@@ -2,6 +2,7 @@ package kubeinstall
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -100,6 +101,9 @@ func (r *KubeInstaller) postInstall() error {
 }
 
 func (r *KubeInstaller) preCreate(res *unstructured.Unstructured) error {
+	if err := setInstallationAnnotation(res); err != nil {
+		return err
+	}
 	for _, cb := range r.callbacks {
 		if err := cb.PreCreate(res); err != nil {
 			return errors.Wrapf(err, "error in pre-create hook")
@@ -118,6 +122,9 @@ func (r *KubeInstaller) postCreate(res *unstructured.Unstructured) error {
 }
 
 func (r *KubeInstaller) preUpdate(res *unstructured.Unstructured) error {
+	if err := setInstallationAnnotation(res); err != nil {
+		return err
+	}
 	for _, cb := range r.callbacks {
 		if err := cb.PreUpdate(res); err != nil {
 			return errors.Wrapf(err, "error in pre-update hook")
@@ -169,8 +176,65 @@ func (r *KubeInstaller) ReconcilleResources(ctx context.Context, installNamespac
 	return nil
 }
 
+const installerAnnotationKey = "installer.solo.io/last-applied-configuration"
+
+// sets the installation annotaiton so we can do proper comparison on our objects
+func setInstallationAnnotation(res *unstructured.Unstructured) error {
+	jsn, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+
+	annotations := res.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[installerAnnotationKey] = string(jsn)
+	res.SetAnnotations(annotations)
+	return nil
+}
+
+// attempts to get the installed version of the resource from the cache annotation key
+// if it's not present, return the original object
+func getInstalledResources(resources kuberesource.UnstructuredResources) (kuberesource.UnstructuredResources, error) {
+	var installed kuberesource.UnstructuredResources
+	for _, res := range resources {
+		res, err := getInstalledResource(res)
+		if err != nil {
+			return nil, err
+		}
+		installed = append(installed, res)
+	}
+	return installed, nil
+}
+
+func getInstalledResource(res *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	installedConfiguration, ok := res.GetAnnotations()[installerAnnotationKey]
+	if !ok {
+		return nil, errors.Errorf("resource %v missing installer annotation %v", kuberesource.Key(res), installerAnnotationKey)
+	}
+	var installedObject map[string]interface{}
+	if err := json.Unmarshal([]byte(installedConfiguration), &installedObject); err != nil {
+		return nil, err
+	}
+	res.Object = installedObject
+	annotations := res.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[installerAnnotationKey] = installedConfiguration
+	res.SetAnnotations(annotations)
+	return res, nil
+}
+
 func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace string, desiredResources kuberesource.UnstructuredResources, ownerLabels map[string]string) error {
-	cachedResources := r.cache.List().WithLabels(ownerLabels).ByKey()
+	cachedResourceList, err := getInstalledResources(r.cache.List().WithLabels(ownerLabels))
+	if err != nil {
+		return err
+	}
+	cachedResources := cachedResourceList.ByKey()
 
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -219,7 +283,6 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 			resourcesToCreate = append(resourcesToCreate, res)
 		}
 	}
-	// undesired resources with labels get deleted
 	for key, res := range cachedResources {
 		if _, desired := desiredResourcesByKey[key]; !desired {
 			resourcesToDelete = append(resourcesToDelete, res)
@@ -242,7 +305,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
 				logger.Infof("deleting resource %v", resKey)
 
-				if err := retry.Do(func() error { return r.client.Delete(ctx, res.DeepCopyObject()) }); err != nil && !kubeerrs.IsNotFound(err) {
+				if err := retry.Do(func() error { return r.client.Delete(ctx, res.DeepCopy()) }); err != nil && !kubeerrs.IsNotFound(err) {
 					return errors.Wrapf(err, "deleting  %v", resKey)
 				}
 				if err := r.postDelete(res); err != nil {
@@ -278,7 +341,7 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 				resKey := fmt.Sprintf("%v %v.%v", res.GroupVersionKind().Kind, res.GetNamespace(), res.GetName())
 				logger.Infof("creating resource %v", resKey)
 
-				if err := retry.Do(func() error { return r.client.Create(ctx, res.DeepCopyObject()) }); err != nil {
+				if err := retry.Do(func() error { return r.client.Create(ctx, res.DeepCopy()) }); err != nil {
 					return errors.Wrapf(err, "creating %v", resKey)
 				}
 				if err := r.postCreate(res); err != nil {
@@ -302,6 +365,9 @@ func (r *KubeInstaller) reconcileResources(ctx context.Context, installNamespace
 		for _, res := range group.Resources {
 			desired := res
 			g.Go(func() error {
+				if err := r.preUpdate(desired); err != nil {
+					return err
+				}
 				key := kuberesource.Key(desired)
 				original, ok := cachedResources[key]
 				if !ok {
