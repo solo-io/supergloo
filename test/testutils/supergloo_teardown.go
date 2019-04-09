@@ -130,6 +130,7 @@ func WaitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 				stat, err := getPodStatus(prefix)
 				if err != nil {
 					log.Printf("failed to get pod status: %v", err)
+					notYetRunning[prefix] = kubev1.PodUnknown
 					continue
 				}
 				if *stat != kubev1.PodRunning {

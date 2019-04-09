@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Fix a bug in the webhook that causes the causes the pod autoinjection selector on the meshes to never to match if it is of kind NamespaceSelector.
+    issueLink: https://github.com/solo-io/supergloo/issues/336
+

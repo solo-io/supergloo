@@ -6,7 +6,7 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-func convertSelector(in options.Selector) (*v1.PodSelector, error) {
+func ConvertSelector(in options.Selector) (*v1.PodSelector, error) {
 	useLabels := len(in.SelectedLabels) > 0
 	useUpstreams := len(in.SelectedUpstreams) > 0
 	useNamespaces := len(in.SelectedNamespaces) > 0

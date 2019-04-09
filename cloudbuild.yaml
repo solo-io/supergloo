@@ -42,7 +42,7 @@ steps:
     args: ['check-format']
     waitFor: ['dep']
     id: 'check-format'
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.6'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     entrypoint: 'bash'
     args: ['ci/check-code-and-docs-gen.sh']
     env:
@@ -72,20 +72,7 @@ steps:
     waitFor: ['make-helm-dir']
     id: 'setup-helm'
 
-  # Decrypt AWS access credentials
-  - name: gcr.io/cloud-builders/gcloud
-    args:
-      - kms
-      - decrypt
-      - --ciphertext-file=./gopath/src/github.com/solo-io/supergloo/ci/aws_credentials.enc
-      - --plaintext-file=/workspace/aws_credentials
-      - --location=global
-      - --keyring=build
-      - --key=build-key
-    waitFor: ['dep']
-    id: 'setup-aws-creds'
-
-  # Run unit
+  # Compile all tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -98,8 +85,26 @@ steps:
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', 'cli/pkg', 'pkg']
-    waitFor: ['setup-aws-creds', 'setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
+    args: ['build', '-r', 'cli/pkg', 'pkg', 'test/e2e']
+    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
+    id: 'compile-tests'
+
+  # Run unit tests
+  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
+      - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=supergloo-test'
+      # we DISABLE interactive tests as they appear to fail our current ci environment
+      # tracking with https://github.com/solo-io/supergloo/issues/243
+      - 'SKIP_INTERACTIVE_TESTS=1'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    entrypoint: sh
+    args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast) ; done']
+    waitFor: ['compile-tests']
     id: 'test'
 
   # setup kubectl
@@ -108,7 +113,7 @@ steps:
       - eks
       - --region=us-east-1
       - update-kubeconfig
-      - --name=supergloo-appmesh
+      - --name=supergloo-test
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['test']
     id: 'aws-kubeconfig-setup'
@@ -132,7 +137,9 @@ steps:
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
       - 'KUBECONFIG=/builder/home/.kube/aws-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', 'test/e2e/appmesh']
+    entrypoint: sh
+    args: ['-c', 'for i in $(find test/e2e/appmesh | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['copy-aws-kubeconfig']
     id: 'appmesh-test'
 
@@ -156,7 +163,8 @@ steps:
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    args: ['-r', '-failFast', 'test/e2e/istio']
+    entrypoint: sh
+    args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
     waitFor: ['gcloud-kube-config']
     id: 'istio-test'
 
@@ -171,7 +179,7 @@ steps:
     id: 'docker-login'
     waitFor: ['istio-test', 'appmesh-test']
 
-  - name: 'gcr.io/$PROJECT_ID/go-make'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     args: ['docker', 'build-cli']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -181,7 +189,7 @@ steps:
     waitFor: ['docker-login']
     id: 'compile'
 
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.6'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     args: ['docker-push', 'manifest', 'upload-github-release-assets', 'push-docs']
     env:
       - 'TAGGED_VERSION=$TAG_NAME'

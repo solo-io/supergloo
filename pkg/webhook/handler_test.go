@@ -18,7 +18,8 @@ var _ = Describe("handle AdmissionReview requests", func() {
 
 	var (
 		testData *test.ResourcesForTest
-		mockClient,
+		mockClientLabelSelector,
+		mockClientNamespaceSelector,
 		mockClientMeshInjectDisabled,
 		mockClientIstio,
 		mockClientMeshNoConfigMap,
@@ -34,15 +35,16 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		testData = test.GetTestResources(clients.Codecs.UniversalDeserializer())
 		configMap := testData.OneContOneInitContPatch.AsStruct
 
-		mockClient = buildMock(ctrl, configMap, testData.AppMeshInjectEnabled)
+		mockClientLabelSelector = buildMock(ctrl, configMap, testData.AppMeshInjectEnabledLabelSelector)
+		mockClientNamespaceSelector = buildMock(ctrl, configMap, testData.AppMeshInjectEnabledNamespaceSelector)
 		mockClientMeshInjectDisabled = buildMock(ctrl, configMap, testData.AppMeshInjectDisabled)
 		mockClientMeshNoConfigMap = buildMock(ctrl, configMap, testData.AppMeshNoConfigMap)
 		mockClientMeshNoSelector = buildMock(ctrl, configMap, testData.AppMeshNoSelector)
 		mockClientIstio = buildMock(ctrl, configMap, testData.IstioMesh)
 	})
 
-	It("correctly patches pod that matches injection selector", func() {
-		clients.SetClientSet(mockClient)
+	It("correctly patches pod that matches injection label selector", func() {
+		clients.SetClientSet(mockClientLabelSelector)
 
 		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -52,7 +54,47 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		Expect(response.PatchType).To(BeEquivalentTo(&pt))
 		Expect(len(response.Patch)).NotTo(BeZero())
 
-		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsString, response.Patch)
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsJsonString, response.Patch)
+
+		// Check containers
+		Expect(patchedPod.Spec.Containers).To(HaveLen(2))
+		envoyContainer := patchedPod.Spec.Containers[1]
+		Expect(envoyContainer.Name).To(BeEquivalentTo("envoy"))
+		Expect(envoyContainer.Image).To(BeEquivalentTo("111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.8.0.2-beta"))
+		Expect(*envoyContainer.SecurityContext.RunAsUser).To(BeEquivalentTo(int64(1337)))
+		Expect(envoyContainer.Env[0]).To(BeEquivalentTo(corev1.EnvVar{
+			Name:  "APPMESH_VIRTUAL_NODE_NAME",
+			Value: "mesh/test-mesh/virtualNode/testrunner-vn",
+		}))
+		Expect(envoyContainer.Env[2]).To(BeEquivalentTo(corev1.EnvVar{
+			Name:  "AWS_REGION",
+			Value: "us-east-1",
+		}))
+
+		// Check initContainers
+		Expect(patchedPod.Spec.InitContainers).To(HaveLen(1))
+		initContainer := patchedPod.Spec.InitContainers[0]
+		Expect(initContainer.Name).To(BeEquivalentTo("proxyinit"))
+		Expect(initContainer.Image).To(BeEquivalentTo("111345817488.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:latest"))
+		Expect((*initContainer.SecurityContext.Capabilities).Add[0]).To(BeEquivalentTo("NET_ADMIN"))
+		Expect(initContainer.Env[4]).To(BeEquivalentTo(corev1.EnvVar{
+			Name:  "APPMESH_APP_PORTS",
+			Value: "1234",
+		}))
+	})
+
+	It("correctly patches pod that matches injection namespace selector", func() {
+		clients.SetClientSet(mockClientNamespaceSelector)
+
+		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(response.Allowed).To(BeTrue())
+		pt := admissionv1beta1.PatchTypeJSONPatch
+		Expect(response.PatchType).To(BeEquivalentTo(&pt))
+		Expect(len(response.Patch)).NotTo(BeZero())
+
+		patchedPod := test.GetPatchedPod(testData.MatchingPod.AsJsonString, response.Patch)
 
 		// Check containers
 		Expect(patchedPod.Spec.Containers).To(HaveLen(2))
@@ -82,7 +124,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("does not patch pod that does not match injection selector", func() {
-		clients.SetClientSet(mockClient)
+		clients.SetClientSet(mockClientLabelSelector)
 
 		response, err := admit(context.TODO(), testData.NonMatchingPod.ToRequest())
 		Expect(err).NotTo(HaveOccurred())
@@ -129,7 +171,7 @@ var _ = Describe("handle AdmissionReview requests", func() {
 	})
 
 	It("fails if the container in the candidate pod has containers that do not specify any containerPorts", func() {
-		clients.SetClientSet(mockClient)
+		clients.SetClientSet(mockClientLabelSelector)
 
 		_, err := admit(context.TODO(), testData.MatchingPodWithoutPorts.ToRequest())
 		Expect(err).To(HaveOccurred())

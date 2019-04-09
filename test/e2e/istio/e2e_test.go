@@ -10,7 +10,6 @@ import (
 
 	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/go-utils/testutils"
@@ -37,43 +36,47 @@ import (
 
 const superglooNamespace = "supergloo-system"
 
-var _ = Describe("E2e", func() {
-	It("installs upgrades and uninstalls istio", func() {
-		// install discovery via cli
-		// start discovery
-		var superglooErr error
-		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-		err := generate.Run("dev", "Always", projectRoot)
-		if err == nil {
-			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
-		} else {
-			superglooErr = utils.Supergloo("init --release latest")
-		}
-		Expect(superglooErr).NotTo(HaveOccurred())
+var _ = Describe("istio e2e", func() {
+	istioName := "my-istio"
+	glooName := "gloo"
 
-		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
-		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
-		istioName := "my-istio"
-		glooName := "gloo"
-
+	It("it installs istio", func() {
 		testInstallIstio(istioName)
+	})
 
+	It("it configures prometheus", func() {
 		testConfigurePrometheus(istioName, promNamespace)
+	})
 
+	It("it installs gloo", func() {
 		testGlooInstall(glooName, istioName)
+	})
 
+	It("it enables mtls", func() {
 		testMtls()
+	})
 
+	It("it enables mtls ingress with gloo", func() {
 		testGlooMtls(istioName)
+	})
 
+	It("it sets custom root ca", func() {
 		testCertRotation(istioName)
+	})
 
+	It("it shifts traffic with routing rules", func() {
 		testTrafficShifting()
+	})
 
+	It("it injects faults with routing rules", func() {
 		testFaultInjection()
+	})
 
+	It("it uninstalls istio", func() {
 		testUninstallIstio(istioName)
+	})
 
+	It("it uninstalls gloo", func() {
 		testUninstallGloo(glooName)
 	})
 })
@@ -197,7 +200,7 @@ func testCertRotation(meshName string) {
 		}
 		certChain = cc
 		return rootCa, nil
-	}, time.Minute*3).Should(Equal(inputs.RootCert))
+	}, time.Minute*4).Should(Equal(inputs.RootCert))
 
 	Expect(certChain).To(HaveSuffix(inputs.CertChain))
 
@@ -302,8 +305,12 @@ func testConfigurePrometheus(meshName, promNamespace string) {
 		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
 	Expect(err).NotTo(HaveOccurred())
 
-	// assert the s ample is valid
-	queryIstioStats()
+	// assert the sample is valid
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "prometheus-server." + promNamespace + ".svc.cluster.local",
+		Port:    80,
+		Path:    `/api/v1/query?query=istio_requests_total\{\}`,
+	}, `"istio_requests_total"`, time.Minute*5)
 }
 
 /*
@@ -416,14 +423,6 @@ func deployPrometheus(namespace string) error {
 	}, time.Minute*2).ShouldNot(HaveOccurred())
 
 	return sgtestutils.WaitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
-}
-
-func queryIstioStats() {
-	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
-		Service: "prometheus-server." + promNamespace + ".svc.cluster.local",
-		Port:    80,
-		Path:    `/api/v1/query?query=istio_requests_total\{\}`,
-	}, `"istio_requests_total"`, time.Minute*5)
 }
 
 func helmTemplate(args ...string) (string, error) {

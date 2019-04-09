@@ -1,19 +1,18 @@
-package helm_test
+package kubeinstall_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/solo-io/go-utils/testutils/clusterlock"
-	"github.com/solo-io/supergloo/test/testutils"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/testutils/clusterlock"
+	"github.com/solo-io/supergloo/test/testutils"
 )
 
-func TestHelm(t *testing.T) {
+func TestKubeinstall(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Helm Suite")
+	RunSpecs(t, "Kubeinstall Suite")
 }
 
 var (
@@ -22,8 +21,7 @@ var (
 )
 
 var _ = BeforeSuite(func() {
-	kubeClient = testutils.MustKubeClient()
-	lock, err = clusterlock.NewTestClusterLocker(kubeClient, clusterlock.Options{
+	lock, err = clusterlock.NewTestClusterLocker(testutils.MustKubeClient(), clusterlock.Options{
 		IdPrefix: os.ExpandEnv("supergloo-helm-{$BUILD_ID}-"),
 	})
 	Expect(err).NotTo(HaveOccurred())

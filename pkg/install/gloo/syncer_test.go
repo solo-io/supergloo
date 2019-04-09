@@ -1,9 +1,7 @@
-package gloo_test
+package gloo
 
 import (
 	"context"
-
-	"github.com/solo-io/supergloo/pkg/install/gloo"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -105,7 +103,7 @@ var _ = Describe("Syncer", func() {
 					inputs.GlooIstall("b", "b", "c", "versiondoesntmatter", false),
 				}
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installeSyncer := gloo.NewInstallSyncer(installer, meshClient, ingressClient, report)
+				installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 				err := installeSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -138,7 +136,7 @@ var _ = Describe("Syncer", func() {
 				mesh := install.InstallType.(*v1.Install_Ingress)
 				mesh.Ingress.InstalledIngress = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installSyncer := gloo.NewInstallSyncer(installer, meshClient, ingressClient, report)
+				installSyncer := newTestInstallSyncer(installer, ingressClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -178,7 +176,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := gloo.NewInstallSyncer(installer, meshClient, ingressClient, report)
+			installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -211,7 +209,7 @@ var _ = Describe("Syncer", func() {
 			}
 
 			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := gloo.NewInstallSyncer(installer, meshClient, ingressClient, report)
+			installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -226,3 +224,11 @@ var _ = Describe("Syncer", func() {
 		})
 	})
 })
+
+func newTestInstallSyncer(installer Installer, ingressClient v1.MeshIngressClient, reporter reporter.Reporter) v1.InstallSyncer {
+	return &installSyncer{
+		glooInstaller: installer,
+		ingressClient: ingressClient,
+		reporter:      reporter,
+	}
+}

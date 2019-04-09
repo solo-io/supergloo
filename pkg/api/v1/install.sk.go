@@ -40,7 +40,6 @@ func (r *Install) Hash() uint64 {
 		metaCopy,
 		r.Disabled,
 		r.InstallationNamespace,
-		r.InstalledManifest,
 		r.InstallType,
 	)
 }

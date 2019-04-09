@@ -80,9 +80,22 @@ func admit(ctx context.Context, ar v1beta1.AdmissionReview) (*v1beta1.AdmissionR
 	}
 
 	pod := corev1.Pod{}
-	if _, _, err := clients.Codecs.UniversalDeserializer().Decode(ar.Request.Object.Raw, nil, &pod); err != nil {
+	if err := json.Unmarshal(ar.Request.Object.Raw, &pod); err != nil {
 		return nil, errors.Wrapf(err, "failed to deserialize raw pod resource")
 	}
+
+	// If the pod is created by a deployment/replica set, it will not have a name; use the generatedName instead
+	// (this will not propagate to the patch, it is just for matching and/or logging)
+	if pod.Name == "" {
+		pod.Name = pod.GenerateName
+	}
+
+	// If the pod is created by a deployment/replica set, it will not have a namespace; use the namespace of the
+	// AdmissionRequest instead (this will not propagate to the patch, it is just for matching and/or logging)
+	if pod.Namespace == "" {
+		pod.Namespace = ar.Request.Namespace
+	}
+
 	logger.Infof("evaluating pod %s.%s for sidecar auto-injection", pod.Namespace, pod.Name)
 
 	// Check if pod need to be injected with sidecar and, if so, generate the correspondent patch
