@@ -1,15 +1,17 @@
-package kubeinstall_test
+package kubeinstall
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/solo-io/supergloo/pkg/install/utils/kuberesource"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
 
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
@@ -53,6 +55,61 @@ var _ = Describe("KubeInstaller", func() {
 		superglootest.TeardownWithPrefix(kubeClient, "istio")
 		superglootest.TeardownWithPrefix(kubeClient, "prometheus")
 		superglootest.WaitForIstioTeardown(ns)
+	})
+	Context("updating resource from cache", func() {
+		It("does nothing if the resource hasnt changed", func() {
+
+			// cache a resource
+			cache := NewCache()
+			cache.access.Unlock()
+			resource := func() *unstructured.Unstructured {
+				grafanaCfg := &unstructured.Unstructured{}
+				err := json.Unmarshal([]byte(fmt.Sprintf(`{"apiVersion":"v1","data":{"dashboardproviders.yaml":"apiVersion:1\nproviders:\n- disableDeletion: false\n  folder: istio\n  name: istio\n  options:\n    path:/var/lib/grafana/dashboards/istio\n  orgId: 1\n  type: file\n","datasources.yaml":"apiVersion:1\ndatasources:\n- access: proxy\n  editable: true\n  isDefault: true\n  jsonData:\n    timeInterval:5s\n  name: Prometheus\n  orgId: 1\n  type: prometheus\n  url: http://prometheus:9090\n"},"kind":"ConfigMap","metadata":{"labels":{"app":"istio-grafana","chart":"grafana-1.0.6","heritage":"Tiller","istio":"grafana","release":"istio","v1-install":"supergloo-system.istio"},"name":"istio-grafana","namespace":"%v"}}`, ns)), &grafanaCfg.Object)
+				Expect(err).NotTo(HaveOccurred())
+				err = setInstallationAnnotation(grafanaCfg)
+				Expect(err).NotTo(HaveOccurred())
+				return grafanaCfg
+			}()
+			cache.resources = make(kuberesource.UnstructuredResourcesByKey)
+			cache.Set(resource.DeepCopy())
+
+			resource.SetAnnotations(nil)
+
+			restCfg, err := kubeutils.GetConfig("", "")
+			Expect(err).NotTo(HaveOccurred())
+
+			dynamicClient, err := client.New(restCfg, client.Options{})
+			Expect(err).NotTo(HaveOccurred())
+
+			written := resource.DeepCopy()
+			err = dynamicClient.Create(context.TODO(), written)
+			Expect(err).NotTo(HaveOccurred())
+
+			inst, err := NewKubeInstaller(restCfg, cache)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = inst.ReconcilleResources(context.TODO(), ns, kuberesource.UnstructuredResources{resource}, nil)
+			Expect(err).NotTo(HaveOccurred())
+
+			afterReconcile := resource.DeepCopy()
+			err = dynamicClient.Get(context.TODO(), client.ObjectKey{Name: afterReconcile.GetName(), Namespace: afterReconcile.GetNamespace()}, afterReconcile)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(afterReconcile.GetResourceVersion()).To(Equal(written.GetResourceVersion()))
+
+			// update so it gets written
+			an := resource.GetAnnotations()
+			an["hi"] = "bye"
+			resource.SetAnnotations(an)
+
+			err = inst.ReconcilleResources(context.TODO(), ns, kuberesource.UnstructuredResources{resource}, nil)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = dynamicClient.Get(context.TODO(), client.ObjectKey{Name: afterReconcile.GetName(), Namespace: afterReconcile.GetNamespace()}, afterReconcile)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(afterReconcile.GetResourceVersion()).NotTo(Equal(written.GetResourceVersion()))
+
+		})
 	})
 	Context("create manifest", func() {
 		It("creates resources from a helm chart", func() {
