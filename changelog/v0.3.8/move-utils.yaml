@@ -1,3 +1,8 @@
 changelog:
   - type: NON_USER_FACING
-    description: Moved install utilities to go-utils. 
+    description: Moved install utilities to go-utils.
+  - type: DEPENDENCY_BUMP
+    description: Bump go-utils.
+    dependencyOwner: solo-io
+    dependencyRepo: supergloo
+    dependencyTag: v0.7.2
