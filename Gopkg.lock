@@ -1225,7 +1225,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:c53fe0e12d3f7f1be8a2c0174c4a21da236feaf695552efa0c9846187ab7be0f"
+  digest = "1:8c769459893c0402b595d2889c49a45368088acf58fbf43a0c86ccf14665ac42"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1236,6 +1236,10 @@
     "errors",
     "githubutils",
     "hashutils",
+    "installutils/helmchart",
+    "installutils/kubeinstall",
+    "installutils/kubeinstall/mocks",
+    "installutils/kuberesource",
     "kubeinstallutils",
     "kubeutils",
     "logger",
@@ -1247,8 +1251,8 @@
     "versionutils",
   ]
   pruneopts = "UT"
-  revision = "dbaa11f99e222a82c7f58e28a2ef7e64f43fff1c"
-  version = "v0.6.3"
+  revision = "2499c403a5f9cd2c5facb7df8d69118f675f2a21"
+  version = "v0.7.2"
 
 [[projects]]
   digest = "1:166702c3098963898e1e8e71517c046ac6fa1551e1eae1ff403cf53db72253f7"
@@ -2214,7 +2218,6 @@
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
     "github.com/google/go-github/github",
-    "github.com/goph/emperror",
     "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/go-homedir",
     "github.com/olekukonko/tablewriter",
@@ -2244,6 +2247,9 @@
     "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/hashutils",
+    "github.com/solo-io/go-utils/installutils/helmchart",
+    "github.com/solo-io/go-utils/installutils/kubeinstall",
+    "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",
@@ -2281,23 +2287,16 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
-    "golang.org/x/sync/errgroup",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
-    "k8s.io/api/apps/v1beta2",
-    "k8s.io/api/autoscaling/v1",
-    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
-    "k8s.io/api/rbac/v1",
-    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
-    "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/labels",
@@ -2307,23 +2306,13 @@
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
-    "k8s.io/apimachinery/pkg/util/yaml",
-    "k8s.io/client-go/discovery",
-    "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/util/cert",
-    "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
-    "k8s.io/helm/pkg/proto/hapi/chart",
-    "k8s.io/helm/pkg/renderutil",
-    "k8s.io/helm/pkg/tiller",
-    "k8s.io/helm/pkg/timeconv",
-    "sigs.k8s.io/controller-runtime/pkg/client",
-    "sigs.k8s.io/controller-runtime/pkg/client/apiutil",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

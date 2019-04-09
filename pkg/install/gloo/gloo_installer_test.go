@@ -3,7 +3,7 @@ package gloo
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall/mocks"
+	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
 	"github.com/solo-io/supergloo/pkg/util"
 
 	. "github.com/onsi/ginkgo"
