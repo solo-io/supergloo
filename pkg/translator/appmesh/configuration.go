@@ -30,7 +30,7 @@ type AwsAppMeshConfiguration interface {
 	// Configure resources to allow traffic from/to all services in the mesh
 	AllowAll() error
 	// Handle appmesh routing rule
-	ProcessRoutingRules(rule v1.RoutingRuleList) error
+	ProcessRoutingRules(rules v1.RoutingRuleList) error
 }
 
 // Represents the output of the App Mesh translator
@@ -238,58 +238,4 @@ func (c *awsAppMeshConfiguration) createVirtualServiceAndNodeForPod(pod *customk
 	c.VirtualServices[pod] = vs
 
 	return nil
-}
-
-func upstreamForVNLabel(upstreams gloov1.UpstreamList, vnLabel, vnName string) (*gloov1.Upstream, error) {
-	for _, us := range upstreams {
-		labels := utils.GetLabelsForUpstream(us)
-		for key, value := range labels {
-			if key == vnLabel && value == vnName {
-				return us, nil
-			}
-		}
-	}
-	return nil, errors.Errorf("unable to find upstream with selector %s", vnLabel)
-}
-
-func podAppmeshConfig(info *podInfo, meshName, hostName string) (*appmesh.VirtualNodeData, *appmesh.VirtualServiceData) {
-	var vn *appmesh.VirtualNodeData
-	var vs *appmesh.VirtualServiceData
-	listeners := make([]*appmesh.Listener, len(info.ports))
-	for i, v := range info.ports {
-		port := int64(v)
-		protocol := "http"
-		listeners[i] = &appmesh.Listener{
-			PortMapping: &appmesh.PortMapping{
-				Protocol: &protocol,
-				Port:     &port,
-			},
-		}
-	}
-	vn = &appmesh.VirtualNodeData{
-		MeshName:        &meshName,
-		VirtualNodeName: &info.virtualNodeName,
-		Spec: &appmesh.VirtualNodeSpec{
-			Backends:  []*appmesh.Backend{},
-			Listeners: listeners,
-			ServiceDiscovery: &appmesh.ServiceDiscovery{
-				Dns: &appmesh.DnsServiceDiscovery{
-					Hostname: &hostName,
-				},
-			},
-		},
-	}
-
-	vs = &appmesh.VirtualServiceData{
-		MeshName:           &meshName,
-		VirtualServiceName: &hostName,
-		Spec: &appmesh.VirtualServiceSpec{
-			Provider: &appmesh.VirtualServiceProvider{
-				VirtualNode: &appmesh.VirtualNodeServiceProvider{
-					VirtualNodeName: &info.virtualNodeName,
-				},
-			},
-		},
-	}
-	return vn, vs
 }

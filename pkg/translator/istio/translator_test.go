@@ -27,7 +27,7 @@ import (
 var _ = Describe("appliesToDestination", func() {
 	Context("upstream selector match", func() {
 		It("returns true", func() {
-			applies, err := appliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
+			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
 				SelectorType: &v1.PodSelector_UpstreamSelector_{
 					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
 						Upstreams: []core.ResourceRef{
@@ -42,7 +42,7 @@ var _ = Describe("appliesToDestination", func() {
 	})
 	Context("namespace selector match", func() {
 		It("returns true", func() {
-			applies, err := appliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
+			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
 				SelectorType: &v1.PodSelector_NamespaceSelector_{
 					NamespaceSelector: &v1.PodSelector_NamespaceSelector{
 						Namespaces: []string{"default"},
@@ -55,7 +55,7 @@ var _ = Describe("appliesToDestination", func() {
 	})
 	Context("label selector match", func() {
 		It("returns true", func() {
-			applies, err := appliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
+			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
 				SelectorType: &v1.PodSelector_LabelSelector_{
 					LabelSelector: &v1.PodSelector_LabelSelector{
 						LabelsToMatch: map[string]string{"version": "v1", "app": "details"},
