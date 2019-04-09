@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Enable HTTP Authorization features in Istio via SecurityRules
+    issueLink: https://github.com/solo-io/supergloo/issues/224
+
+
