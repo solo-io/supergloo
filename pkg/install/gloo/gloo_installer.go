@@ -6,8 +6,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
+	"github.com/solo-io/go-utils/installutils/helmchart"
+	"github.com/solo-io/go-utils/installutils/kubeinstall"
 	"github.com/solo-io/supergloo/pkg/util"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -100,7 +100,7 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 	}
 
 	logger.Infof("installing gloo with options: %#v", glooInstall)
-	if err := i.kubeInstaller.ReconcilleResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
+	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 

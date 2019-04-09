@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
+	"github.com/solo-io/go-utils/installutils/kubeinstall"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 

@@ -3,7 +3,7 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall/mocks"
+	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/util"
