@@ -3,7 +3,7 @@ package inputs
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
+	"github.com/solo-io/go-utils/installutils/helmchart"
 
 	"github.com/onsi/gomega"
 )

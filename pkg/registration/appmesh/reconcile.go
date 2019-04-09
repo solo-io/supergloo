@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
+	"github.com/solo-io/go-utils/installutils/helmchart"
 
 	admissionv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 
