@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
+	"github.com/solo-io/go-utils/installutils/helmchart"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 

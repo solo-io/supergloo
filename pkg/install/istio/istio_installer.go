@@ -6,10 +6,10 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/go-utils/installutils/helmchart"
+	"github.com/solo-io/go-utils/installutils/kubeinstall"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/install/utils/helmchart"
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
 	"github.com/solo-io/supergloo/pkg/util"
 )
 
@@ -72,7 +72,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	installNamespace := install.InstallationNamespace
 
 	logger.Infof("installing istio with options: %#v", istio)
-	if err := i.kubeInstaller.ReconcilleResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
+	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 
