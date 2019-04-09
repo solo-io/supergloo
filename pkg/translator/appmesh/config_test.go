@@ -1,6 +1,7 @@
 package appmesh
 
 import (
+	"github.com/aws/aws-sdk-go/service/appmesh"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -50,7 +51,45 @@ var _ = Describe("config translator", func() {
 		Expect(err).NotTo(HaveOccurred())
 		typedConfig, ok := config.(*awsAppMeshConfiguration)
 		Expect(ok).To(BeTrue())
+		err = typedConfig.initialize()
+		Expect(err).NotTo(HaveOccurred())
 		return typedConfig
+	}
+
+	var defaultRoutingRule = func(destinations *gloov1.MultiDestination) *v1.RoutingRule {
+		routingRule := &v1.RoutingRule{
+			Metadata: core.Metadata{
+				Name:      "one",
+				Namespace: "supergloo-system",
+			},
+			Spec: &v1.RoutingRuleSpec{
+				RuleType: &v1.RoutingRuleSpec_TrafficShifting{
+					TrafficShifting: &v1.TrafficShifting{
+						Destinations: destinations,
+					},
+				},
+			},
+			RequestMatchers: []*gloov1.Matcher{
+				{
+					PathSpecifier: &gloov1.Matcher_Prefix{
+						Prefix: "/",
+					},
+				},
+			},
+			DestinationSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_UpstreamSelector_{
+					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
+						Upstreams: []core.ResourceRef{
+							{
+								Namespace: "supergloo-system",
+								Name:      "namespace-with-inject-reviews-9080",
+							},
+						},
+					},
+				},
+			},
+		}
+		return routingRule
 	}
 	BeforeEach(func() {
 		clients.UseMemoryClients()
@@ -91,15 +130,52 @@ var _ = Describe("config translator", func() {
 			Expect(err).NotTo(HaveOccurred())
 			_, usList, err := getUpstreamsForMesh(upstreamList, info, podList)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(usList).To(HaveLen(10))
+			Expect(usList).To(HaveLen(9))
 		})
 	})
 	Context("allow all", func() {
-		It("can create the proper config for allow all", func() {
+		It("can create the proper config for allow all (no routing rules)", func() {
 			mesh := appMesh("")
 			config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 			Expect(err).NotTo(HaveOccurred())
 			err = config.ProcessRoutingRules(nil)
+			Expect(err).NotTo(HaveOccurred())
+			err = config.AllowAll()
+			Expect(err).NotTo(HaveOccurred())
+			typedConfig, ok := config.(*awsAppMeshConfiguration)
+			Expect(ok).To(BeTrue())
+			Expect(typedConfig.MeshName).To(Equal(mesh.Metadata.Name))
+		})
+		It("can create the proper config for allow all (with routing rules)", func() {
+			destinations := &gloov1.MultiDestination{
+				Destinations: []*gloov1.WeightedDestination{
+					{
+						Weight: 50,
+						Destination: &gloov1.Destination{
+							Upstream: core.ResourceRef{
+								Namespace: "supergloo-system",
+								Name:      "namespace-with-inject-reviews-v3-9080",
+							},
+						},
+					},
+					{
+						Weight: 50,
+						Destination: &gloov1.Destination{
+							Upstream: core.ResourceRef{
+								Namespace: "supergloo-system",
+								Name:      "namespace-with-inject-reviews-v2-9080",
+							},
+						},
+					},
+				},
+			}
+			rules := v1.RoutingRuleList{defaultRoutingRule(destinations)}
+			mesh := appMesh("")
+			config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
+			Expect(err).NotTo(HaveOccurred())
+			err = config.ProcessRoutingRules(rules)
+			Expect(err).NotTo(HaveOccurred())
+			err = config.AllowAll()
 			Expect(err).NotTo(HaveOccurred())
 			typedConfig, ok := config.(*awsAppMeshConfiguration)
 			Expect(ok).To(BeTrue())
@@ -159,41 +235,123 @@ var _ = Describe("config translator", func() {
 			})
 		})
 
-		It("can only handle traffic shifting", func() {
-			routingRules := v1.RoutingRuleList{{
-				Spec: &v1.RoutingRuleSpec{
-					RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-				},
-				RequestMatchers: []*gloov1.Matcher{
-					{
-						PathSpecifier: &gloov1.Matcher_Prefix{
-							Prefix: "/",
+		Context("traffic shifting", func() {
+			// This test actually checks the hostname, so 2 different upstreams with the same host will also fail
+			It("Every upstream must have a unique host", func() {
+				route := &appmesh.HttpRoute{}
+				destinations := &gloov1.MultiDestination{
+					Destinations: []*gloov1.WeightedDestination{
+						{
+							Weight: 50,
+							Destination: &gloov1.Destination{
+								Upstream: core.ResourceRef{
+									Namespace: "supergloo-system",
+									Name:      "namespace-with-inject-reviews-v3-9080",
+								},
+							},
+						},
+						{
+							Weight: 50,
+							Destination: &gloov1.Destination{
+								Upstream: core.ResourceRef{
+									Namespace: "supergloo-system",
+									Name:      "namespace-with-inject-reviews-v3-9080",
+								},
+							},
 						},
 					},
-				},
-			}}
-			typedConfig := defaultConfig()
-			err := typedConfig.ProcessRoutingRules(routingRules)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("currently only traffic shifting rules are supported by appmesh"))
+				}
+				routingRule := defaultRoutingRule(destinations)
+				typedConfig := defaultConfig()
+				err := processTrafficShiftingRule(typedConfig.upstreamList, typedConfig.VirtualNodes,
+					routingRule.GetSpec().GetTrafficShifting(), route)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("all appmesh destinations must be unique services"))
+			})
+			It("only works with valid destinations", func() {
+				route := &appmesh.HttpRoute{}
+				destinations := &gloov1.MultiDestination{
+					Destinations: []*gloov1.WeightedDestination{
+						{
+							Weight: 100,
+							Destination: &gloov1.Destination{
+								Upstream: core.ResourceRef{
+									Namespace: "supergloo-system-1",
+									Name:      "namespace-with-inject-reviews-v3-9080",
+								},
+							},
+						},
+					},
+				}
+				routingRule := defaultRoutingRule(destinations)
+				typedConfig := defaultConfig()
+				err := processTrafficShiftingRule(typedConfig.upstreamList, typedConfig.VirtualNodes,
+					routingRule.GetSpec().GetTrafficShifting(), route)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("could not find upstream for destination:"))
+			})
+			It("can do the happy path", func() {
+
+				route := &appmesh.HttpRoute{}
+				destinations := &gloov1.MultiDestination{
+					Destinations: []*gloov1.WeightedDestination{
+						{
+							Weight: 50,
+							Destination: &gloov1.Destination{
+								Upstream: core.ResourceRef{
+									Namespace: "supergloo-system",
+									Name:      "namespace-with-inject-reviews-v3-9080",
+								},
+							},
+						},
+						{
+							Weight: 50,
+							Destination: &gloov1.Destination{
+								Upstream: core.ResourceRef{
+									Namespace: "supergloo-system",
+									Name:      "namespace-with-inject-reviews-v2-9080",
+								},
+							},
+						},
+					},
+				}
+				routingRule := defaultRoutingRule(destinations)
+				typedConfig := defaultConfig()
+				err := processTrafficShiftingRule(typedConfig.upstreamList, typedConfig.VirtualNodes,
+					routingRule.GetSpec().GetTrafficShifting(), route)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
 		})
-		It("fails when no destinations are provided", func() {
-			routingRules := v1.RoutingRuleList{{
-				Spec: &v1.RoutingRuleSpec{
-					RuleType: &v1.RoutingRuleSpec_TrafficShifting{},
-				},
-				RequestMatchers: []*gloov1.Matcher{
-					{
-						PathSpecifier: &gloov1.Matcher_Prefix{
-							Prefix: "/",
+
+		Context("General errors", func() {
+			It("can only handle traffic shifting", func() {
+				routingRules := v1.RoutingRuleList{{
+					Spec: &v1.RoutingRuleSpec{
+						RuleType: &v1.RoutingRuleSpec_FaultInjection{},
+					},
+					RequestMatchers: []*gloov1.Matcher{
+						{
+							PathSpecifier: &gloov1.Matcher_Prefix{
+								Prefix: "/",
+							},
 						},
 					},
-				},
-			}}
-			typedConfig := defaultConfig()
-			err := typedConfig.ProcessRoutingRules(routingRules)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("traffic shifting destinations cannot be missing or empty"))
+				}}
+				typedConfig := defaultConfig()
+				err := typedConfig.ProcessRoutingRules(routingRules)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("currently only traffic shifting rules are supported by appmesh"))
+			})
+			It("fails when no destinations are provided", func() {
+				routingRules := v1.RoutingRuleList{
+					defaultRoutingRule(nil),
+				}
+				typedConfig := defaultConfig()
+				err := typedConfig.ProcessRoutingRules(routingRules)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("traffic shifting destinations cannot be missing or empty"))
+			})
 		})
 
 	})

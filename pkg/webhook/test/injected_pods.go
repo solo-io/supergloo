@@ -1040,7 +1040,6 @@ status:
 `
 
 const upstreams = `
-
 discoveryMetadata: {}
 metadata:
   annotations:
@@ -1051,7 +1050,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-details-9080
   namespace: supergloo-system
-  resourceVersion: "5515375"
+  resourceVersion: "5713091"
 status: {}
 upstreamSpec:
   kube:
@@ -1072,7 +1071,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-details-v1-details-v1-9080
   namespace: supergloo-system
-  resourceVersion: "5515386"
+  resourceVersion: "5713113"
 status: {}
 upstreamSpec:
   kube:
@@ -1095,7 +1094,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-productpage-9080
   namespace: supergloo-system
-  resourceVersion: "5515484"
+  resourceVersion: "5713217"
 status: {}
 upstreamSpec:
   kube:
@@ -1116,7 +1115,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-productpage-v1-productpage-v1-9080
   namespace: supergloo-system
-  resourceVersion: "5515500"
+  resourceVersion: "5713244"
 status: {}
 upstreamSpec:
   kube:
@@ -1139,7 +1138,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-ratings-9080
   namespace: supergloo-system
-  resourceVersion: "5515394"
+  resourceVersion: "5713124"
 status: {}
 upstreamSpec:
   kube:
@@ -1160,7 +1159,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-ratings-v1-ratings-v1-9080
   namespace: supergloo-system
-  resourceVersion: "5515406"
+  resourceVersion: "5713151"
 status: {}
 upstreamSpec:
   kube:
@@ -1177,34 +1176,13 @@ discoveryMetadata: {}
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews"}}}
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews","version":"v1","vn":"reviews-v1"}}}
   labels:
     app: reviews
     discovered_by: kubernetesplugin
   name: namespace-with-inject-reviews-9080
   namespace: supergloo-system
-  resourceVersion: "5515464"
-status: {}
-upstreamSpec:
-  kube:
-    selector:
-      app: reviews
-    serviceName: reviews
-    serviceNamespace: namespace-with-inject
-    servicePort: 9080
-
----
-discoveryMetadata: {}
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews"}}}
-  labels:
-    app: reviews
-    discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v1-reviews-v1-9080
-  namespace: supergloo-system
-  resourceVersion: "5515535"
+  resourceVersion: "5713253"
 status: {}
 upstreamSpec:
   kube:
@@ -1221,13 +1199,13 @@ discoveryMetadata: {}
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews"}}}
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews-v2","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews","version":"v2","vn":"reviews-v2"}}}
   labels:
     app: reviews
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v2-reviews-v2-9080
+  name: namespace-with-inject-reviews-v2-9080
   namespace: supergloo-system
-  resourceVersion: "5515553"
+  resourceVersion: "5713282"
 status: {}
 upstreamSpec:
   kube:
@@ -1235,7 +1213,7 @@ upstreamSpec:
       app: reviews
       version: v2
       vn: reviews-v2
-    serviceName: reviews
+    serviceName: reviews-v2
     serviceNamespace: namespace-with-inject
     servicePort: 9080
 
@@ -1244,13 +1222,13 @@ discoveryMetadata: {}
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews"}}}
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"reviews"},"name":"reviews-v3","namespace":"namespace-with-inject"},"spec":{"ports":[{"name":"http","port":9080}],"selector":{"app":"reviews","version":"v3","vn":"reviews-v3"}}}
   labels:
     app: reviews
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v3-reviews-v3-9080
+  name: namespace-with-inject-reviews-v3-9080
   namespace: supergloo-system
-  resourceVersion: "5515510"
+  resourceVersion: "5713309"
 status: {}
 upstreamSpec:
   kube:
@@ -1258,7 +1236,7 @@ upstreamSpec:
       app: reviews
       version: v3
       vn: reviews-v3
-    serviceName: reviews
+    serviceName: reviews-v3
     serviceNamespace: namespace-with-inject
     servicePort: 9080
 
@@ -1271,7 +1249,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: supergloo-system-sidecar-injector-443
   namespace: supergloo-system
-  resourceVersion: "5515299"
+  resourceVersion: "5712958"
 status: {}
 upstreamSpec:
   kube:
@@ -1280,5 +1258,4 @@ upstreamSpec:
     serviceName: sidecar-injector
     serviceNamespace: supergloo-system
     servicePort: 443
-
 `

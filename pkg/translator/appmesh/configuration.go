@@ -84,11 +84,19 @@ func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstream
 	}, nil
 }
 
-func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) error {
+func (c *awsAppMeshConfiguration) initialize() error {
 	for _, pod := range c.podList {
 		if err := c.createVirtualServiceAndNodeForPod(pod); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) error {
+	if err := c.initialize(); err != nil {
+		return err
 	}
 
 	for _, rule := range rules {
@@ -109,6 +117,7 @@ func (c *awsAppMeshConfiguration) processRoutingRule(rule *v1.RoutingRule) error
 		Match: matcher,
 	}
 
+	// create appmesh routes based on v1 rule
 	switch typedRule := rule.GetSpec().GetRuleType().(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
 		if err := processTrafficShiftingRule(c.upstreamList, c.VirtualNodes, typedRule.TrafficShifting, route); err != nil {
@@ -118,8 +127,10 @@ func (c *awsAppMeshConfiguration) processRoutingRule(rule *v1.RoutingRule) error
 		return fmt.Errorf("currently only traffic shifting rules are supported by appmesh, found %t", typedRule)
 	}
 
+	// apply the appmesh routes to the relevant pods
 	for _, pod := range c.podList {
-		matches, err := podMatchesRule(c.podInfo[pod], c.VirtualNodes[pod], rule.DestinationSelector)
+		vn := c.VirtualNodes[pod]
+		matches, err := podMatchesRule(vn, rule.DestinationSelector, c.upstreamList)
 		if err != nil {
 			return err
 		}
@@ -129,22 +140,31 @@ func (c *awsAppMeshConfiguration) processRoutingRule(rule *v1.RoutingRule) error
 
 		virtualRouter := &appmesh.VirtualRouterData{
 			MeshName:          &c.MeshName,
-			VirtualRouterName: appmeshVirtualRouterName(rule, pod),
+			VirtualRouterName: appmeshVirtualRouterName(rule, c.podInfo[pod]),
 			Spec: &appmesh.VirtualRouterSpec{
-				Listeners: listenerToRouterListener(c.VirtualNodes[pod].Spec.Listeners),
+				Listeners: listenerToRouterListener(vn.Spec.Listeners),
 			},
 		}
 
 		routeData := &appmesh.RouteData{
 			VirtualRouterName: virtualRouter.VirtualRouterName,
 			MeshName:          &c.MeshName,
-			RouteName:         appmeshRouteName(rule, pod),
+			RouteName:         appmeshRouteName(rule, c.podInfo[pod]),
 			Spec: &appmesh.RouteSpec{
 				HttpRoute: route,
 			},
 		}
 		c.VirtualRouters = append(c.VirtualRouters, virtualRouter)
 		c.Routes = append(c.Routes, routeData)
+
+		vs := c.VirtualServices[pod]
+		vs.Spec = &appmesh.VirtualServiceSpec{
+			Provider: &appmesh.VirtualServiceProvider{
+				VirtualRouter: &appmesh.VirtualRouterServiceProvider{
+					VirtualRouterName: appmeshVirtualRouterName(rule, c.podInfo[pod]),
+				},
+			},
+		}
 	}
 
 	return nil
@@ -160,25 +180,25 @@ func listenerToRouterListener(listeners []*appmesh.Listener) []*appmesh.VirtualR
 	return vrListeners
 }
 
-func podMatchesRule(info *podInfo, vnode *appmesh.VirtualNodeData, selector *v1.PodSelector) (bool, error) {
+func podMatchesRule(vnode *appmesh.VirtualNodeData, selector *v1.PodSelector, upstreams gloov1.UpstreamList) (bool, error) {
 	selectorType := selector.GetSelectorType()
 	if selectorType == nil {
 		return false, errors.Errorf("pod selector type cannot be nil")
 	}
 
 	destinationHost := *vnode.Spec.ServiceDiscovery.Dns.Hostname
-	return utils.RuleAppliesToDestination(destinationHost, selector, info.upstreams)
+	return utils.RuleAppliesToDestination(destinationHost, selector, upstreams)
 }
 
-func appmeshRouteName(rule *v1.RoutingRule, pod *customkube.Pod) *string {
-	name := fmt.Sprintf("%s.%s-%s.%s-route", rule.Metadata.Namespace, rule.Metadata.Name,
-		pod.Metadata.Namespace, pod.Metadata.Namespace)
+func appmeshRouteName(rule *v1.RoutingRule, pod *podInfo) *string {
+	name := fmt.Sprintf("%s.%s.%s-route", rule.Metadata.Namespace, rule.Metadata.Name,
+		pod.virtualNodeName)
 	return &name
 }
 
-func appmeshVirtualRouterName(rule *v1.RoutingRule, pod *customkube.Pod) *string {
-	name := fmt.Sprintf("%s.%s-%s.%s-vr", rule.Metadata.Namespace, rule.Metadata.Name,
-		pod.Metadata.Namespace, pod.Metadata.Namespace)
+func appmeshVirtualRouterName(rule *v1.RoutingRule, pod *podInfo) *string {
+	name := fmt.Sprintf("%s.%s.%s-vr", rule.Metadata.Namespace, rule.Metadata.Name,
+		pod.virtualNodeName)
 	return &name
 }
 
@@ -200,7 +220,8 @@ func (c *awsAppMeshConfiguration) connectAllVirtualNodes() error {
 
 	for _, vn := range c.VirtualNodes {
 		for _, vs := range c.VirtualServices {
-			if vs.Spec.Provider.VirtualNode.VirtualNodeName == vn.VirtualNodeName {
+			// check if Virtual node is nil, which means virtual router is set and that name is set
+			if vs.Spec.Provider.VirtualNode != nil && vs.Spec.Provider.VirtualNode.VirtualNodeName == vn.VirtualNodeName {
 				continue
 			}
 			backend := &appmesh.Backend{

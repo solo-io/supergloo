@@ -72,7 +72,7 @@ func testRegisterAppmesh(meshName, secretName string) {
 	err = sgutils.DeployTestRunner(basicNamespace)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = sgutils.DeployBookInfo(namespaceWithInject)
+	err = sgutils.DeployBookInfoAppmesh(namespaceWithInject)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, basicNamespace,

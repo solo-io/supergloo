@@ -1,11 +1,15 @@
 package utils
 
-func DeployBookInfo(namespace string) error {
-	return KubectlApply(namespace, IstioBookinfoYaml)
+func DeployBookInfoIstio(namespace string) error {
+	return KubectlApply(namespace, IstioBookInfoYaml)
+}
+
+func DeployBookInfoAppmesh(namespace string) error {
+	return KubectlApply(namespace, AppmeshBookInfoYaml)
 }
 
 func DeployBookInfoWithInject(namespace, istioNamespace string) error {
-	injected, err := IstioInject(istioNamespace, IstioBookinfoYaml)
+	injected, err := IstioInject(istioNamespace, IstioBookInfoYaml)
 	if err != nil {
 		return err
 	}
@@ -13,7 +17,12 @@ func DeployBookInfoWithInject(namespace, istioNamespace string) error {
 	return KubectlApply(namespace, injected)
 }
 
-const IstioBookinfoYaml = `# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml
+const (
+	IstioBookInfoYaml   = BookinfoYaml + istioServices
+	AppmeshBookInfoYaml = BookinfoYaml + appmeshServices
+)
+
+const BookinfoYaml = `# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml
 # Copyright 2017 Istio Authors
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,22 +109,7 @@ spec:
         ports:
         - containerPort: 9080
 ---
-##################################################################################################
-# Reviews service
-##################################################################################################
-apiVersion: v1
-kind: Service
-metadata:
-  name: reviews
-  labels:
-    app: reviews
-spec:
-  ports:
-  - port: 9080
-    name: http
-  selector:
-    app: reviews
----
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -212,4 +206,66 @@ spec:
         ports:
         - containerPort: 9080
 ---
+`
+
+const istioServices = `
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews
+  labels:
+    app: reviews
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: reviews
+`
+
+const appmeshServices = `
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews
+  labels:
+    app: reviews
+spec:
+  ports:
+    - port: 9080
+      name: http
+  selector:
+    app: reviews
+    version: v1
+    vn: reviews-v1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews-v2
+  labels:
+    app: reviews
+spec:
+  ports:
+    - port: 9080
+      name: http
+  selector:
+    app: reviews
+    version: v2
+    vn: reviews-v2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews-v3
+  labels:
+    app: reviews
+spec:
+  ports:
+    - port: 9080
+      name: http
+  selector:
+    app: reviews
+    version: v3
+    vn: reviews-v3
 `
