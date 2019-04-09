@@ -465,19 +465,21 @@ var _ = Describe("hostsForSelector", func() {
 					Upstreams: []core.ResourceRef{
 						{Name: "default-details-v1-9080", Namespace: "default"},
 						{Name: "default-reviews-v3-9080", Namespace: "default"},
+						{Name: "default-details-v1-9080", Namespace: "other"},
+						{Name: "default-reviews-v3-9080", Namespace: "other"},
 					},
 				},
 			},
-		}, inputs.BookInfoUpstreams("default"))
+		}, append(inputs.BookInfoUpstreams("default"), inputs.BookInfoUpstreams("other")...))
 		Expect(err).NotTo(HaveOccurred())
-		Expect(hosts).To(Equal([]string{
-			"details.default.svc.cluster.local",
-			"reviews.default.svc.cluster.local",
+		Expect(hosts).To(Equal([]*hostnamesByNamespace{
+			{namespace: "default", hostnames: []string{"details.default.svc.cluster.local", "reviews.default.svc.cluster.local"}},
+			{namespace: "other", hostnames: []string{"details.other.svc.cluster.local", "reviews.other.svc.cluster.local"}},
 		}))
 	})
 })
 
-var _ = Describe("createServiceRoleFromRule", func() {
+var _ = Describe("createServiceRolesFromRule", func() {
 	It("creates a service role allowing access to the destinations on the specified paths and methods", func() {
 		rule := &v1.SecurityRule{
 			Metadata: core.Metadata{
@@ -507,12 +509,16 @@ var _ = Describe("createServiceRoleFromRule", func() {
 			AllowedMethods: []string{"GET", "POST"},
 			AllowedPaths:   []string{"/a", "/b"},
 		}
-		serviceRole, err := createServiceRoleFromRule(
-			"somenamespace",
+		serviceRoles, serviceRoleBindings, err := createServiceRolesFromRule(
 			rule,
-			inputs.BookInfoUpstreams("default"))
+			inputs.BookInfoUpstreams("default"),
+			inputs.BookInfoPods("default"))
 		Expect(err).NotTo(HaveOccurred())
+		Expect(serviceRoles).To(HaveLen(1))
+		Expect(serviceRoleBindings).To(HaveLen(1))
+		serviceRole := serviceRoles[0]
 		Expect(serviceRole.Metadata.Name).To(Equal(rule.Metadata.Namespace + "-" + rule.Metadata.Name))
+		Expect(serviceRole.Metadata.Namespace).To(Equal("default"))
 		Expect(serviceRole.Rules).To(HaveLen(1))
 		Expect(serviceRole.Rules[0].Paths).To(Equal(rule.AllowedPaths))
 		Expect(serviceRole.Rules[0].Methods).To(Equal(rule.AllowedMethods))
@@ -522,6 +528,7 @@ var _ = Describe("createServiceRoleFromRule", func() {
 		}))
 	})
 })
+
 var _ = Describe("getSubjectsForSelector", func() {
 	It("extracts the service account name from each pod which is selected", func() {
 		subjects, err := getSubjectsForSelector(

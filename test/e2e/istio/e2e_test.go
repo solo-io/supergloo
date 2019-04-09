@@ -40,11 +40,11 @@ var _ = Describe("istio e2e", func() {
 	istioName := "my-istio"
 	glooName := "gloo"
 
-	FIt("it installs istio", func() {
+	It("it installs istio", func() {
 		testInstallIstio(istioName)
 	})
 
-	FIt("it enforces policy", func() {
+	It("it enforces policy", func() {
 		testPolicy(istioName)
 	})
 
@@ -257,21 +257,33 @@ func testPolicy(meshName string) {
 
 	Expect(err).NotTo(HaveOccurred())
 
+	defer func() {
+		// delete security rule
+		// TODO (ilackarms): replace this with cli command when we have one for deleting routing rules
+		err = clients.MustSecurityRuleClient().Delete(superglooNamespace, "enable-rbac", skclients.DeleteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+	}()
+
 	// test that communication is forbidden
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
-		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Service: "reviews." + namespaceWithInject + ".svc.cluster.local",
 		Port:    9080,
 	}, `RBAC: access denied`, time.Minute*5)
 
-	// apply an 'identiy' security rule, disabling communication between all injected services
+	// update security rule to enable traffic from testrunner to reviews
 	err = utils.Supergloo(
 		fmt.Sprintf("apply securityrule --target-mesh %v.%v --name enable-rbac ", superglooNamespace, meshName) +
 			fmt.Sprintf("--source-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject) +
-			fmt.Sprintf("--dest-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject),
+			fmt.Sprintf("--dest-upstreams %v.%v-reviews-9080 ", superglooNamespace, namespaceWithInject),
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	waitUntilOkFile()
+	// test that communication is enabled
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "reviews." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/reviews/1",
+	}, `"reviewer": "Reviewer1",`, time.Minute*5)
 }
 
 func testTrafficShifting() {
@@ -286,6 +298,18 @@ func testTrafficShifting() {
 		Port:    9080,
 		Path:    "/reviews/1",
 	}, `"reviewer": "Reviewer1",`, time.Minute*5)
+
+	// delete traffic shifting rule
+	// TODO (ilackarms): replace this with cli command when we have one for deleting routing rules
+	err = clients.MustRoutingRuleClient().Delete(superglooNamespace, "hi", skclients.DeleteOpts{})
+	Expect(err).NotTo(HaveOccurred())
+
+	// ensure normal behavior restored
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/details/1",
+	}, `{"id":1,"author":"William Shakespeare","year":1595,"type":"paperback","pages":200,"publisher":"PublisherA","language":"English","ISBN-10":"1234567890","ISBN-13":"123-1234567890"}`, time.Minute*5)
 }
 
 func testFaultInjection() {
@@ -298,10 +322,15 @@ func testFaultInjection() {
 	Expect(err).NotTo(HaveOccurred())
 
 	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
-		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Service: "reviews." + namespaceWithInject + ".svc.cluster.local",
 		Port:    9080,
 		Path:    "/reviews/1",
 	}, "404", time.Minute*5)
+
+	// delete routing rule
+	// TODO (ilackarms): replace this with cli command when we have one for deleting routing rules
+	err = clients.MustRoutingRuleClient().Delete(superglooNamespace, "one", skclients.DeleteOpts{})
+	Expect(err).NotTo(HaveOccurred())
 
 }
 

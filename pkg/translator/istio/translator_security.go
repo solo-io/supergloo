@@ -2,8 +2,7 @@ package istio
 
 import (
 	"fmt"
-
-	"github.com/solo-io/go-utils/stringutils"
+	"sort"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
@@ -54,26 +53,13 @@ func createSecurityConfig(writeNamespace string,
 	// for each rule:
 	for _, r := range rules {
 		// create a servicerole for that rule
-		sr, err := createServiceRoleFromRule(writeNamespace, r, upstreams)
+		srs, srbs, err := createServiceRolesFromRule(r, upstreams, pods)
 		if err != nil {
 			resourceErrs.AddError(r, err)
 			continue
 		}
-		serviceRoles = append(serviceRoles, sr)
-
-		// create the binding for that role:
-		bindingForRole, err := createServiceRoleBinding(
-			sr.Metadata.Name,
-			sr.Metadata.Namespace,
-			r.SourceSelector,
-			upstreams,
-			pods,
-		)
-		if err != nil {
-			resourceErrs.AddError(r, err)
-			continue
-		}
-		serviceRoleBindings = append(serviceRoleBindings, bindingForRole)
+		serviceRoles = append(serviceRoles, srs...)
+		serviceRoleBindings = append(serviceRoleBindings, srbs...)
 	}
 
 	return SecurityConfig{
@@ -83,29 +69,57 @@ func createSecurityConfig(writeNamespace string,
 	}
 }
 
-func hostsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]string, error) {
+type hostnamesByNamespace struct {
+	namespace string
+	hostnames []string
+}
+
+func hostsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]*hostnamesByNamespace, error) {
 	selectedUpstreams, err := utils.UpstreamsForSelector(selector, upstreams)
 	if err != nil {
 		return nil, errors.Wrapf(err, "selecting upstreams")
 	}
 
-	var hostNames []string
+	var groupedHostnames []*hostnamesByNamespace
+	appendHost := func(nsForUpstream, hostForUpstream string) {
+		for _, group := range groupedHostnames {
+			if group.namespace == nsForUpstream {
+				for _, host := range group.hostnames {
+					if hostForUpstream == host {
+						return
+					}
+				}
+				group.hostnames = append(group.hostnames, hostForUpstream)
+				return
+			}
+		}
+		groupedHostnames = append(groupedHostnames, &hostnamesByNamespace{namespace: nsForUpstream, hostnames: []string{hostForUpstream}})
+	}
 	for _, us := range selectedUpstreams {
+		ns := utils.GetNamespaceForUpstream(us)
 		hostForUpstream, err := utils.GetHostForUpstream(us)
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting host for upstream")
 		}
 
-		hostNames = append(hostNames, hostForUpstream)
+		appendHost(ns, hostForUpstream)
 	}
 
-	return stringutils.Unique(hostNames), nil
+	for _, group := range groupedHostnames {
+		sort.Strings(group.hostnames)
+	}
+
+	sort.SliceStable(groupedHostnames, func(i, j int) bool {
+		return groupedHostnames[i].namespace < groupedHostnames[j].namespace
+	})
+
+	return groupedHostnames, nil
 }
 
-func createServiceRoleFromRule(writeNamespace string, rule *v1.SecurityRule, upstreams gloov1.UpstreamList) (*v1alpha1.ServiceRole, error) {
-	serviceNames, err := hostsForSelector(rule.DestinationSelector, upstreams)
+func createServiceRolesFromRule(rule *v1.SecurityRule, upstreams gloov1.UpstreamList, pods customkube.PodList) (v1alpha1.ServiceRoleList, v1alpha1.ServiceRoleBindingList, error) {
+	hostsWithNamespaces, err := hostsForSelector(rule.DestinationSelector, upstreams)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	allowedPaths := rule.AllowedPaths
@@ -114,17 +128,32 @@ func createServiceRoleFromRule(writeNamespace string, rule *v1.SecurityRule, ups
 		allowedMethods = []string{"*"}
 	}
 
-	return &v1alpha1.ServiceRole{
-		Metadata: core.Metadata{
-			Namespace: writeNamespace,
-			Name:      rule.Metadata.Namespace + "-" + rule.Metadata.Name,
-		},
-		Rules: []*v1alpha1.AccessRule{{
-			Services: serviceNames,
-			Paths:    allowedPaths,
-			Methods:  allowedMethods,
-		}},
-	}, nil
+	var serviceRoles v1alpha1.ServiceRoleList
+	var serviceRoleBindings v1alpha1.ServiceRoleBindingList
+	for _, hostsForNamespace := range hostsWithNamespaces {
+		sr := &v1alpha1.ServiceRole{
+			Metadata: core.Metadata{
+				Namespace: hostsForNamespace.namespace,
+				Name:      rule.Metadata.Namespace + "-" + rule.Metadata.Name,
+			},
+			Rules: []*v1alpha1.AccessRule{{
+				Services: hostsForNamespace.hostnames,
+				Paths:    allowedPaths,
+				Methods:  allowedMethods,
+			}},
+		}
+
+		serviceRoles = append(serviceRoles, sr)
+
+		srb, err := createServiceRoleBinding(sr.Metadata.Name, sr.Metadata.Namespace, rule.SourceSelector, upstreams, pods)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		serviceRoleBindings = append(serviceRoleBindings, srb)
+	}
+
+	return serviceRoles, serviceRoleBindings, nil
 }
 
 func principalName(s core.ResourceRef) string {
