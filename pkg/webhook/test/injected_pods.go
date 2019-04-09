@@ -68,6 +68,7 @@ metadata:
     app: reviews
     pod-template-hash: 748456d47b
     version: v3
+    vn: reviews-v3
   name: reviews-v3-748456d47b-swxdd
   namespace: namespace-with-inject
   ownerReferences:
@@ -97,7 +98,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/reviews
+          value: mesh/appmesh/virtualNode/reviews-v3
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -231,6 +232,7 @@ metadata:
     app: reviews
     pod-template-hash: cbd94c99b
     version: v2
+    vn: reviews-v2
   name: reviews-v2-cbd94c99b-xcbgv
   namespace: namespace-with-inject
   ownerReferences:
@@ -260,7 +262,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/reviews
+          value: mesh/appmesh/virtualNode/reviews-v2
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -394,6 +396,7 @@ metadata:
     app: reviews
     pod-template-hash: 85b7d84c56
     version: v1
+    vn: reviews-v1
   name: reviews-v1-85b7d84c56-86jdf
   namespace: namespace-with-inject
   ownerReferences:
@@ -423,7 +426,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/reviews
+          value: mesh/appmesh/virtualNode/reviews-v1
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -556,6 +559,7 @@ metadata:
     app: ratings
     pod-template-hash: 7c9949d479
     version: v1
+    vn: ratings-v1
   name: ratings-v1-7c9949d479-85tgt
   namespace: namespace-with-inject
   ownerReferences:
@@ -585,7 +589,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/ratings
+          value: mesh/appmesh/virtualNode/ratings-v1
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -719,6 +723,7 @@ metadata:
     app: productpage
     pod-template-hash: 8d69b45c
     version: v1
+    vn: productpage-v1
   name: productpage-v1-8d69b45c-kxmzk
   namespace: namespace-with-inject
   ownerReferences:
@@ -748,7 +753,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/productpage
+          value: mesh/appmesh/virtualNode/productpage-v1
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -881,6 +886,7 @@ metadata:
     app: details
     pod-template-hash: 876bf485f
     version: v1
+    vn: details-v1
   name: details-v1-876bf485f-c4ptc
   namespace: namespace-with-inject
   ownerReferences:
@@ -910,7 +916,7 @@ spec:
           readOnly: true
     - env:
         - name: APPMESH_VIRTUAL_NODE_NAME
-          value: mesh/appmesh/virtualNode/details
+          value: mesh/appmesh/virtualNode/details-v1
         - name: ENVOY_LOG_LEVEL
           value: debug
         - name: AWS_REGION
@@ -1045,7 +1051,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-details-9080
   namespace: supergloo-system
-  resourceVersion: "4544113"
+  resourceVersion: "5515375"
 status: {}
 upstreamSpec:
   kube:
@@ -1064,15 +1070,16 @@ metadata:
   labels:
     app: details
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-details-v1-9080
+  name: namespace-with-inject-details-v1-details-v1-9080
   namespace: supergloo-system
-  resourceVersion: "4544129"
+  resourceVersion: "5515386"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: details
       version: v1
+      vn: details-v1
     serviceName: details
     serviceNamespace: namespace-with-inject
     servicePort: 9080
@@ -1088,7 +1095,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-productpage-9080
   namespace: supergloo-system
-  resourceVersion: "4544279"
+  resourceVersion: "5515484"
 status: {}
 upstreamSpec:
   kube:
@@ -1107,15 +1114,16 @@ metadata:
   labels:
     app: productpage
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-productpage-v1-9080
+  name: namespace-with-inject-productpage-v1-productpage-v1-9080
   namespace: supergloo-system
-  resourceVersion: "4544295"
+  resourceVersion: "5515500"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: productpage
       version: v1
+      vn: productpage-v1
     serviceName: productpage
     serviceNamespace: namespace-with-inject
     servicePort: 9080
@@ -1131,7 +1139,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-ratings-9080
   namespace: supergloo-system
-  resourceVersion: "4544134"
+  resourceVersion: "5515394"
 status: {}
 upstreamSpec:
   kube:
@@ -1150,15 +1158,16 @@ metadata:
   labels:
     app: ratings
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-ratings-v1-9080
+  name: namespace-with-inject-ratings-v1-ratings-v1-9080
   namespace: supergloo-system
-  resourceVersion: "4544150"
+  resourceVersion: "5515406"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: ratings
       version: v1
+      vn: ratings-v1
     serviceName: ratings
     serviceNamespace: namespace-with-inject
     servicePort: 9080
@@ -1174,7 +1183,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: namespace-with-inject-reviews-9080
   namespace: supergloo-system
-  resourceVersion: "4544187"
+  resourceVersion: "5515464"
 status: {}
 upstreamSpec:
   kube:
@@ -1193,15 +1202,16 @@ metadata:
   labels:
     app: reviews
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v1-9080
+  name: namespace-with-inject-reviews-v1-reviews-v1-9080
   namespace: supergloo-system
-  resourceVersion: "4544234"
+  resourceVersion: "5515535"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: reviews
       version: v1
+      vn: reviews-v1
     serviceName: reviews
     serviceNamespace: namespace-with-inject
     servicePort: 9080
@@ -1215,15 +1225,16 @@ metadata:
   labels:
     app: reviews
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v2-9080
+  name: namespace-with-inject-reviews-v2-reviews-v2-9080
   namespace: supergloo-system
-  resourceVersion: "4544229"
+  resourceVersion: "5515553"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: reviews
       version: v2
+      vn: reviews-v2
     serviceName: reviews
     serviceNamespace: namespace-with-inject
     servicePort: 9080
@@ -1237,18 +1248,20 @@ metadata:
   labels:
     app: reviews
     discovered_by: kubernetesplugin
-  name: namespace-with-inject-reviews-v3-9080
+  name: namespace-with-inject-reviews-v3-reviews-v3-9080
   namespace: supergloo-system
-  resourceVersion: "4544253"
+  resourceVersion: "5515510"
 status: {}
 upstreamSpec:
   kube:
     selector:
       app: reviews
       version: v3
+      vn: reviews-v3
     serviceName: reviews
     serviceNamespace: namespace-with-inject
     servicePort: 9080
+
 ---
 discoveryMetadata: {}
 metadata:
@@ -1258,7 +1271,7 @@ metadata:
     discovered_by: kubernetesplugin
   name: supergloo-system-sidecar-injector-443
   namespace: supergloo-system
-  resourceVersion: "4544043"
+  resourceVersion: "5515299"
 status: {}
 upstreamSpec:
   kube:
@@ -1267,6 +1280,5 @@ upstreamSpec:
     serviceName: sidecar-injector
     serviceNamespace: supergloo-system
     servicePort: 443
-
 
 `

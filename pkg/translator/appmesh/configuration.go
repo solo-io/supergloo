@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -22,6 +23,9 @@ type podInfo struct {
 type AwsAppMeshPodInfo map[*customkube.Pod]*podInfo
 type AwsAppMeshUpstreamInfo map[*gloov1.Upstream][]*customkube.Pod
 
+type PodVirtualNode map[*customkube.Pod]*appmesh.VirtualNodeData
+type PodVirtualService map[*customkube.Pod]*appmesh.VirtualServiceData
+
 type AwsAppMeshConfiguration interface {
 	// Configure resources to allow traffic from/to all services in the mesh
 	AllowAll() error
@@ -39,11 +43,12 @@ type awsAppMeshConfiguration struct {
 	upstreamList gloov1.UpstreamList
 
 	// These are the actual results of the translations
-	MeshName        string
-	VirtualNodes    []*appmesh.VirtualNodeData
-	VirtualServices []*appmesh.VirtualServiceData
-	VirtualRouters  []*appmesh.VirtualRouterData
-	Routes          []*appmesh.RouteData
+	MeshName         string
+	VirtualNodeLabel string
+	VirtualNodes     PodVirtualNode
+	VirtualServices  PodVirtualService
+	VirtualRouters   []*appmesh.VirtualRouterData
+	Routes           []*appmesh.RouteData
 }
 
 // TODO(marco): to Eitan: I have not tested the util methods used in here, sorry in advance if they do not work as expected
@@ -62,60 +67,118 @@ func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstream
 		return nil, err
 	}
 
-	return &awsAppMeshConfiguration{
-		podInfo:      appMeshPodInfo,
-		podList:      appMeshPodList,
-		upstreamInfo: appMeshUpstreamInfo,
-		upstreamList: appMeshUpstreamList,
+	awsMesh := mesh.GetAwsAppMesh()
+	if awsMesh == nil {
+		return nil, errors.Errorf("mesh %s.%s is not of type appmesh", mesh.Metadata.Namespace, mesh.Metadata.Name)
+	}
 
-		MeshName: mesh.Metadata.Name,
+	return &awsAppMeshConfiguration{
+		podInfo:          appMeshPodInfo,
+		podList:          appMeshPodList,
+		upstreamInfo:     appMeshUpstreamInfo,
+		upstreamList:     appMeshUpstreamList,
+		VirtualNodeLabel: awsMesh.VirtualNodeLabel,
+		MeshName:         mesh.Metadata.Name,
+		VirtualServices:  make(PodVirtualService),
+		VirtualNodes:     make(PodVirtualNode),
 	}, nil
 }
 
-func (c *awsAppMeshConfiguration) ProcessRoutingRules(rule v1.RoutingRuleList) error {
-	for _, us := range c.upstreamList {
-		if err := c.createVirtualServiceForHost(us); err != nil {
+func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) error {
+	for _, pod := range c.podList {
+		if err := c.createVirtualServiceAndNodeForPod(pod); err != nil {
 			return err
 		}
 	}
 
-	// matcher, err := createAppmeshMatcher(rule)
-	// if err != nil {
-	// 	return err
-	// }
-	// route := &appmesh.HttpRoute{
-	// 	Match: matcher,
-	// }
-	//
-	// switch typedRule := rule.GetSpec().GetRuleType().(type) {
-	// case *v1.RoutingRuleSpec_TrafficShifting:
-	// 	if err := processTrafficShiftingRule(c.upstreamList, c.VirtualNodes, typedRule.TrafficShifting, route); err != nil {
-	// 		return err
-	// 	}
-	// default:
-	// 	return fmt.Errorf("currently only traffic shifting rules are supported by appmesh, found %t", typedRule)
-	// }
-	//
-	// virtualRouter := &appmesh.VirtualRouterData{
-	// 	MeshName: &c.MeshName,
-	// 	VirtualRouterName: appmeshVirtualRouterName(rule),
-	// 	Spec:
-	// }
-	//
-	// routeData := &appmesh.RouteData{
-	// 	VirtualRouterName: virtualRouter.VirtualRouterName,
-	// }
+	for _, rule := range rules {
+		if err := c.processRoutingRule(rule); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *awsAppMeshConfiguration) processRoutingRule(rule *v1.RoutingRule) error {
+
+	matcher, err := createAppmeshMatcher(rule)
+	if err != nil {
+		return err
+	}
+	route := &appmesh.HttpRoute{
+		Match: matcher,
+	}
+
+	switch typedRule := rule.GetSpec().GetRuleType().(type) {
+	case *v1.RoutingRuleSpec_TrafficShifting:
+		if err := processTrafficShiftingRule(c.upstreamList, c.VirtualNodes, typedRule.TrafficShifting, route); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("currently only traffic shifting rules are supported by appmesh, found %t", typedRule)
+	}
+
+	for _, pod := range c.podList {
+		matches, err := podMatchesRule(c.podInfo[pod], c.VirtualNodes[pod], rule.DestinationSelector)
+		if err != nil {
+			return err
+		}
+		if !matches {
+			continue
+		}
+
+		virtualRouter := &appmesh.VirtualRouterData{
+			MeshName:          &c.MeshName,
+			VirtualRouterName: appmeshVirtualRouterName(rule, pod),
+			Spec: &appmesh.VirtualRouterSpec{
+				Listeners: listenerToRouterListener(c.VirtualNodes[pod].Spec.Listeners),
+			},
+		}
+
+		routeData := &appmesh.RouteData{
+			VirtualRouterName: virtualRouter.VirtualRouterName,
+			MeshName:          &c.MeshName,
+			RouteName:         appmeshRouteName(rule, pod),
+			Spec: &appmesh.RouteSpec{
+				HttpRoute: route,
+			},
+		}
+		c.VirtualRouters = append(c.VirtualRouters, virtualRouter)
+		c.Routes = append(c.Routes, routeData)
+	}
 
 	return nil
 }
 
-func appmeshRouteName(rule *v1.RoutingRule) *string {
-	name := fmt.Sprintf("%s.%s-route", rule.Metadata.Namespace, rule.Metadata.Name)
+func listenerToRouterListener(listeners []*appmesh.Listener) []*appmesh.VirtualRouterListener {
+	vrListeners := make([]*appmesh.VirtualRouterListener, len(listeners))
+	for i, listener := range listeners {
+		vrListeners[i] = &appmesh.VirtualRouterListener{
+			PortMapping: listener.PortMapping,
+		}
+	}
+	return vrListeners
+}
+
+func podMatchesRule(info *podInfo, vnode *appmesh.VirtualNodeData, selector *v1.PodSelector) (bool, error) {
+	selectorType := selector.GetSelectorType()
+	if selectorType == nil {
+		return false, errors.Errorf("pod selector type cannot be nil")
+	}
+
+	destinationHost := *vnode.Spec.ServiceDiscovery.Dns.Hostname
+	return utils.RuleAppliesToDestination(destinationHost, selector, info.upstreams)
+}
+
+func appmeshRouteName(rule *v1.RoutingRule, pod *customkube.Pod) *string {
+	name := fmt.Sprintf("%s.%s-%s.%s-route", rule.Metadata.Namespace, rule.Metadata.Name,
+		pod.Metadata.Namespace, pod.Metadata.Namespace)
 	return &name
 }
 
-func appmeshVirtualRouterName(rule *v1.RoutingRule) *string {
-	name := fmt.Sprintf("%s.%s-vr", rule.Metadata.Namespace, rule.Metadata.Name)
+func appmeshVirtualRouterName(rule *v1.RoutingRule, pod *customkube.Pod) *string {
+	name := fmt.Sprintf("%s.%s-%s.%s-vr", rule.Metadata.Namespace, rule.Metadata.Name,
+		pod.Metadata.Namespace, pod.Metadata.Namespace)
 	return &name
 }
 
@@ -152,41 +215,63 @@ func (c *awsAppMeshConfiguration) connectAllVirtualNodes() error {
 	return nil
 }
 
-func (c *awsAppMeshConfiguration) createVirtualServiceForHost(upstream *gloov1.Upstream) error {
+func (c *awsAppMeshConfiguration) createVirtualServiceAndNodeForPod(pod *customkube.Pod) error {
+
+	info, ok := c.podInfo[pod]
+	if !ok {
+		return nil
+	}
+
+	upstream, err := upstreamForVNLabel(info.upstreams, c.VirtualNodeLabel, info.virtualNodeName)
+	if err != nil {
+		return err
+	}
+
 	host, err := utils.GetHostForUpstream(upstream)
 	if err != nil {
 		return err
 	}
 
-	pods, ok := c.upstreamInfo[upstream]
-	if !ok {
-		return nil
-	}
+	vn, vs := podAppmeshConfig(info, c.MeshName, host)
+	c.VirtualNodes[pod] = vn
 
-	for _, pod := range pods {
-		info, ok := c.podInfo[pod]
-		if !ok {
-			continue
-		}
-
-		vn, vs := podAppmeshConfig(info, c.MeshName, host)
-		c.VirtualNodes = append(c.VirtualNodes, vn)
-
-		c.VirtualServices = append(c.VirtualServices, vs)
-	}
+	c.VirtualServices[pod] = vs
 
 	return nil
+}
+
+func upstreamForVNLabel(upstreams gloov1.UpstreamList, vnLabel, vnName string) (*gloov1.Upstream, error) {
+	for _, us := range upstreams {
+		labels := utils.GetLabelsForUpstream(us)
+		for key, value := range labels {
+			if key == vnLabel && value == vnName {
+				return us, nil
+			}
+		}
+	}
+	return nil, errors.Errorf("unable to find upstream with selector %s", vnLabel)
 }
 
 func podAppmeshConfig(info *podInfo, meshName, hostName string) (*appmesh.VirtualNodeData, *appmesh.VirtualServiceData) {
 	var vn *appmesh.VirtualNodeData
 	var vs *appmesh.VirtualServiceData
+	listeners := make([]*appmesh.Listener, len(info.ports))
+	for i, v := range info.ports {
+		port := int64(v)
+		protocol := "http"
+		listeners[i] = &appmesh.Listener{
+			PortMapping: &appmesh.PortMapping{
+				Protocol: &protocol,
+				Port:     &port,
+			},
+		}
+	}
 	vn = &appmesh.VirtualNodeData{
 		MeshName:        &meshName,
 		VirtualNodeName: &info.virtualNodeName,
 		Spec: &appmesh.VirtualNodeSpec{
 			Backends:  []*appmesh.Backend{},
-			Listeners: []*appmesh.Listener{},
+			Listeners: listeners,
 			ServiceDiscovery: &appmesh.ServiceDiscovery{
 				Dns: &appmesh.DnsServiceDiscovery{
 					Hostname: &hostName,

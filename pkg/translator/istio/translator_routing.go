@@ -15,7 +15,6 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (t *translator) makeVirtualServiceForHost(
@@ -217,7 +216,7 @@ func (t *translator) createRoute(
 	}
 	for _, rr := range rules {
 		// if rr does not apply to this host (destination), skip
-		useRule, err := appliesToDestination(destinationHost, rr.DestinationSelector, upstreams)
+		useRule, err := utils.RuleAppliesToDestination(destinationHost, rr.DestinationSelector, upstreams)
 		if err != nil {
 			resourceErrs.AddError(rr, errors.Wrapf(err, "invalid destination selector"))
 			continue
@@ -331,76 +330,4 @@ func convertMatcher(sourceSelector map[string]string, destPort uint32, match *gl
 		SourceLabels: sourceSelector,
 		Port:         destPort,
 	}
-}
-
-func appliesToDestination(destinationHost string, destinationSelector *v1.PodSelector, upstreams gloov1.UpstreamList) (bool, error) {
-	if destinationSelector == nil {
-		return true, nil
-	}
-	switch selector := destinationSelector.SelectorType.(type) {
-	case *v1.PodSelector_LabelSelector_:
-		// true if an upstream exists whose selector falls within the rr's selector
-		// and the host in question is that upstream's host
-		for _, us := range upstreams {
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			// we only care about the host in question
-			if destinationHost != hostForUpstream {
-				continue
-			}
-
-			upstreamLabels := utils.GetLabelsForUpstream(us)
-			labelsMatch := labels.SelectorFromSet(selector.LabelSelector.LabelsToMatch).Matches(labels.Set(upstreamLabels))
-			if !labelsMatch {
-				continue
-			}
-
-			// we found an upstream with the correct host and labels
-			return true, nil
-		}
-	case *v1.PodSelector_UpstreamSelector_:
-		for _, ref := range selector.UpstreamSelector.Upstreams {
-			us, err := upstreams.Find(ref.Strings())
-			if err != nil {
-				return false, err
-			}
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			if hostForUpstream == destinationHost {
-				return true, nil
-			}
-		}
-	case *v1.PodSelector_NamespaceSelector_:
-		for _, us := range upstreams {
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			// we only care about the host in question
-			if destinationHost != hostForUpstream {
-				continue
-			}
-
-			var usInSelectedNamespace bool
-			for _, ns := range selector.NamespaceSelector.Namespaces {
-				namespaceForUpstream := utils.GetNamespaceForUpstream(us)
-				if ns == namespaceForUpstream {
-					usInSelectedNamespace = true
-					break
-				}
-			}
-			if !usInSelectedNamespace {
-				continue
-			}
-
-			// we found an upstream with the correct host and namespace
-			return true, nil
-
-		}
-	}
-	return false, nil
 }

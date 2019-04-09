@@ -55,6 +55,7 @@ spec:
       labels:
         app: details
         version: v1
+        vn: details-v1
     spec:
       containers:
       - name: details
@@ -90,6 +91,7 @@ spec:
       labels:
         app: ratings
         version: v1
+        vn: ratings-v1
     spec:
       containers:
       - name: ratings
@@ -125,6 +127,7 @@ spec:
       labels:
         app: reviews
         version: v1
+        vn: reviews-v1
     spec:
       containers:
       - name: reviews
@@ -144,6 +147,7 @@ spec:
       labels:
         app: reviews
         version: v2
+        vn: reviews-v2
     spec:
       containers:
       - name: reviews
@@ -163,6 +167,7 @@ spec:
       labels:
         app: reviews
         version: v3
+        vn: reviews-v3
     spec:
       containers:
       - name: reviews
@@ -198,6 +203,7 @@ spec:
       labels:
         app: productpage
         version: v1
+        vn: productpage-v1
     spec:
       containers:
       - name: productpage

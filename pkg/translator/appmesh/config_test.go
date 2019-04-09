@@ -24,7 +24,7 @@ var appMesh = func(name string) *v1.Mesh {
 		MeshType: &v1.Mesh_AwsAppMesh{
 			AwsAppMesh: &v1.AwsAppMesh{
 				Region:           "us-east-1",
-				VirtualNodeLabel: "app",
+				VirtualNodeLabel: "vn",
 				EnableAutoInject: true,
 				SidecarPatchConfigMap: &core.ResourceRef{
 					Name:      "sidecar-injector-webhook-configmap",
@@ -41,17 +41,17 @@ var _ = Describe("config translator", func() {
 		injectedPodList kubecustom.PodList
 		upstreamList    gloov1.UpstreamList
 	)
-	//
-	// var defaultConfig = func() *awsAppMeshConfiguration {
-	// 	mesh := appMesh("")
-	// 	config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
-	// 	Expect(err).NotTo(HaveOccurred())
-	// 	err = config.AllowAll()
-	// 	Expect(err).NotTo(HaveOccurred())
-	// 	typedConfig, ok := config.(*awsAppMeshConfiguration)
-	// 	Expect(ok).To(BeTrue())
-	// 	return typedConfig
-	// }
+
+	var defaultConfig = func() *awsAppMeshConfiguration {
+		mesh := appMesh("")
+		config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
+		Expect(err).NotTo(HaveOccurred())
+		err = config.AllowAll()
+		Expect(err).NotTo(HaveOccurred())
+		typedConfig, ok := config.(*awsAppMeshConfiguration)
+		Expect(ok).To(BeTrue())
+		return typedConfig
+	}
 	BeforeEach(func() {
 		clients.UseMemoryClients()
 		injectedPodList = test.MustGetInjectedPodList()
@@ -65,7 +65,7 @@ var _ = Describe("config translator", func() {
 			Expect(err).NotTo(HaveOccurred())
 			info, err := getPodInfo(appMesh(""), pod)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(info.virtualNodeName).To(Equal("productpage"))
+			Expect(info.virtualNodeName).To(Equal("productpage-v1"))
 			Expect(info.ports).To(Equal([]uint32{9080}))
 		})
 		It("will return nil, if meshname doesn't match virtual node path", func() {
@@ -99,7 +99,7 @@ var _ = Describe("config translator", func() {
 			mesh := appMesh("")
 			config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 			Expect(err).NotTo(HaveOccurred())
-			err = config.AllowAll()
+			err = config.ProcessRoutingRules(nil)
 			Expect(err).NotTo(HaveOccurred())
 			typedConfig, ok := config.(*awsAppMeshConfiguration)
 			Expect(ok).To(BeTrue())
@@ -108,86 +108,93 @@ var _ = Describe("config translator", func() {
 	})
 
 	Context("Routing Rules", func() {
-		// Context("matchers", func() {
-		// 	It("cannot have 0 matchers", func() {
-		// 		routingRule := &v1.RoutingRule{
-		// 			Spec: &v1.RoutingRuleSpec{
-		// 				RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-		// 			},
-		// 		}
-		// 		typedConfig := defaultConfig()
-		// 		err := typedConfig.HandleRoutingRule(routingRule)
-		// 		Expect(err).To(HaveOccurred())
-		// 		Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 0 found"))
-		// 	})
-		//
-		// 	It("Cannot have > 2 matchers", func() {
-		// 		routingRule := &v1.RoutingRule{
-		// 			Spec: &v1.RoutingRuleSpec{
-		// 				RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-		// 			},
-		// 			RequestMatchers: []*gloov1.Matcher{
-		// 				{}, {},
-		// 			},
-		// 		}
-		// 		typedConfig := defaultConfig()
-		// 		err := typedConfig.HandleRoutingRule(routingRule)
-		// 		Expect(err).To(HaveOccurred())
-		// 		Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 2 found"))
-		// 	})
-		// 	It("must be a prefix matcher", func() {
-		// 		routingRule := &v1.RoutingRule{
-		// 			Spec: &v1.RoutingRuleSpec{
-		// 				RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-		// 			},
-		// 			RequestMatchers: []*gloov1.Matcher{
-		// 				{
-		// 					PathSpecifier: &gloov1.Matcher_Exact{},
-		// 				},
-		// 			},
-		// 		}
-		// 		typedConfig := defaultConfig()
-		// 		err := typedConfig.HandleRoutingRule(routingRule)
-		// 		Expect(err).To(HaveOccurred())
-		// 		Expect(err.Error()).To(ContainSubstring("unsupported matcher type found"))
-		// 	})
-		// })
-		//
-		// It("can only handle traffic shifting", func() {
-		// 	routingRule := &v1.RoutingRule{
-		// 		Spec: &v1.RoutingRuleSpec{
-		// 			RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-		// 		},
-		// 		RequestMatchers: []*gloov1.Matcher{
-		// 			{
-		// 				PathSpecifier: &gloov1.Matcher_Prefix{
-		// 					Prefix: "/",
-		// 				},
-		// 			},
-		// 		},
-		// 	}
-		// 	typedConfig := defaultConfig()
-		// 	err := typedConfig.HandleRoutingRule(routingRule)
-		// 	Expect(err).To(HaveOccurred())
-		// 	Expect(err.Error()).To(ContainSubstring("currently only traffic shifting rules are supported by appmesh"))
-		// })
-		// It("can handle traffic shifting", func() {
-		// 	routingRule := &v1.RoutingRule{
-		// 		Spec: &v1.RoutingRuleSpec{
-		// 			RuleType: &v1.RoutingRuleSpec_TrafficShifting{},
-		// 		},
-		// 		RequestMatchers: []*gloov1.Matcher{
-		// 			{
-		// 				PathSpecifier: &gloov1.Matcher_Prefix{
-		// 					Prefix: "/",
-		// 				},
-		// 			},
-		// 		},
-		// 	}
-		// 	typedConfig := defaultConfig()
-		// 	err := typedConfig.HandleRoutingRule(routingRule)
-		// 	Expect(err).NotTo(HaveOccurred())
-		// })
+		Context("matchers", func() {
+			It("cannot have 0 matchers", func() {
+				routingRules := v1.RoutingRuleList{
+					{
+						Spec: &v1.RoutingRuleSpec{
+							RuleType: &v1.RoutingRuleSpec_FaultInjection{},
+						},
+					},
+				}
+				typedConfig := defaultConfig()
+				err := typedConfig.ProcessRoutingRules(routingRules)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 0 found"))
+			})
+
+			It("Cannot have > 2 matchers", func() {
+				routingRules := v1.RoutingRuleList{
+					{
+						Spec: &v1.RoutingRuleSpec{
+							RuleType: &v1.RoutingRuleSpec_FaultInjection{},
+						},
+						RequestMatchers: []*gloov1.Matcher{
+							{}, {},
+						},
+					},
+				}
+				typedConfig := defaultConfig()
+				err := typedConfig.ProcessRoutingRules(routingRules)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 2 found"))
+			})
+			It("must be a prefix matcher", func() {
+				routingRules := v1.RoutingRuleList{
+					{
+						Spec: &v1.RoutingRuleSpec{
+							RuleType: &v1.RoutingRuleSpec_FaultInjection{},
+						},
+						RequestMatchers: []*gloov1.Matcher{
+							{
+								PathSpecifier: &gloov1.Matcher_Exact{},
+							},
+						},
+					},
+				}
+				typedConfig := defaultConfig()
+				err := typedConfig.ProcessRoutingRules(routingRules)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("unsupported matcher type found"))
+			})
+		})
+
+		It("can only handle traffic shifting", func() {
+			routingRules := v1.RoutingRuleList{{
+				Spec: &v1.RoutingRuleSpec{
+					RuleType: &v1.RoutingRuleSpec_FaultInjection{},
+				},
+				RequestMatchers: []*gloov1.Matcher{
+					{
+						PathSpecifier: &gloov1.Matcher_Prefix{
+							Prefix: "/",
+						},
+					},
+				},
+			}}
+			typedConfig := defaultConfig()
+			err := typedConfig.ProcessRoutingRules(routingRules)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("currently only traffic shifting rules are supported by appmesh"))
+		})
+		It("fails when no destinations are provided", func() {
+			routingRules := v1.RoutingRuleList{{
+				Spec: &v1.RoutingRuleSpec{
+					RuleType: &v1.RoutingRuleSpec_TrafficShifting{},
+				},
+				RequestMatchers: []*gloov1.Matcher{
+					{
+						PathSpecifier: &gloov1.Matcher_Prefix{
+							Prefix: "/",
+						},
+					},
+				},
+			}}
+			typedConfig := defaultConfig()
+			err := typedConfig.ProcessRoutingRules(routingRules)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("traffic shifting destinations cannot be missing or empty"))
+		})
 
 	})
 })

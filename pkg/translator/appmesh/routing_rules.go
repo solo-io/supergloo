@@ -10,9 +10,9 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
-func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes []*appmesh.VirtualNodeData,
+func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes PodVirtualNode,
 	rule *v1.TrafficShifting, out *appmesh.HttpRoute) error {
-	if rule.Destinations == nil || len(rule.Destinations.Destinations) == 0 {
+	if rule == nil || rule.Destinations == nil || len(rule.Destinations.Destinations) == 0 {
 		return errors.Errorf("traffic shifting destinations cannot be missing or empty")
 	}
 	var weightedTargets []*appmesh.WeightedTarget
@@ -57,7 +57,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes []*appmesh
 	return nil
 }
 
-func virtualNodeForUpsteam(upstream *gloov1.Upstream, vnodes []*appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
+func virtualNodeForUpsteam(upstream *gloov1.Upstream, vnodes PodVirtualNode) (*appmesh.VirtualNodeData, error) {
 	host, err := utils.GetHostForUpstream(upstream)
 	if err != nil {
 		return nil, err
