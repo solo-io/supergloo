@@ -22,118 +22,6 @@ type SecurityConfig struct {
 	ServiceRoleBindings v1alpha1.ServiceRoleBindingList
 }
 
-func hostsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]string, error) {
-	selectedUpstreams, err := utils.UpstreamsForSelector(selector, upstreams)
-	if err != nil {
-		return nil, errors.Wrapf(err, "selecting upstreams")
-	}
-
-	var hostNames []string
-	for _, us := range selectedUpstreams {
-		hostForUpstream, err := utils.GetHostForUpstream(us)
-		if err != nil {
-			return nil, errors.Wrapf(err, "getting host for upstream")
-		}
-
-		hostNames = append(hostNames, hostForUpstream)
-	}
-
-	return stringutils.Unique(hostNames), nil
-}
-
-func createServiceRoleFromRule(writeNamespace string, rule *v1.SecurityRule, upstreams gloov1.UpstreamList) (*v1alpha1.ServiceRole, error) {
-	serviceNames, err := hostsForSelector(rule.DestinationSelector, upstreams)
-	if err != nil {
-		return nil, err
-	}
-
-	return &v1alpha1.ServiceRole{
-		Metadata: core.Metadata{
-			Namespace: writeNamespace,
-			Name:      rule.Metadata.Namespace + "-" + rule.Metadata.Name,
-		},
-		Rules: []*v1alpha1.AccessRule{{
-			Services: serviceNames,
-			Paths:    rule.AllowedPaths,
-			Methods:  rule.AllowedMethods,
-		}},
-	}, nil
-}
-
-func principalName(s core.ResourceRef) string {
-	return fmt.Sprintf("cluster.local/ns/%s/sa/%s", s.Namespace, s.Name)
-}
-
-func getSubjectsForSelector(selector *v1.PodSelector,
-	upstreams gloov1.UpstreamList,
-	pods customkube.PodList) ([]*v1alpha1.Subject, error) {
-	selectedPods, err := utils.PodsForSelector(selector, upstreams, pods)
-	if err != nil {
-		return nil, errors.Wrapf(err, "selecting pods")
-	}
-	var serviceAccounts []core.ResourceRef
-
-	// create a subject for each unique service account
-	addSvcAcct := func(newSa core.ResourceRef) {
-		for _, sa := range serviceAccounts {
-			if sa.Equal(newSa) {
-				return
-			}
-		}
-		serviceAccounts = append(serviceAccounts, newSa)
-	}
-	for _, p := range selectedPods {
-		kubePod, err := kubernetes.ToKube(p)
-		if err != nil {
-			return nil, errors.Wrapf(err, "internal error: converting custom pod object")
-		}
-
-		addSvcAcct(core.ResourceRef{
-			Name:      kubePod.Spec.ServiceAccountName,
-			Namespace: kubePod.Namespace,
-		})
-
-	}
-	// create a subject for every unique service account
-	var subjects []*v1alpha1.Subject
-	for _, sa := range serviceAccounts {
-		subjects = append(subjects, &v1alpha1.Subject{
-			// see example
-			// https://istio.io/docs/tasks/security/role-based-access-control/#step-3-allowing-access-to-the-ratings-service
-			Properties: map[string]string{
-				"source.principal": principalName(sa),
-			},
-		})
-	}
-
-	return subjects, nil
-}
-
-func createServiceRoleBinding(
-	serviceRoleName string,
-	serviceRoleNamespace string,
-	sourceSelector *v1.PodSelector,
-	upstreams gloov1.UpstreamList,
-	pods customkube.PodList) (*v1alpha1.ServiceRoleBinding, error) {
-
-	subjects, err := getSubjectsForSelector(sourceSelector, upstreams, pods)
-	if err != nil {
-		return nil, errors.Wrapf(err, "finding subjects (service accounts) for source selector")
-	}
-
-	return &v1alpha1.ServiceRoleBinding{
-		Metadata: core.Metadata{
-			Name:      serviceRoleName,
-			Namespace: serviceRoleNamespace,
-		},
-		Subjects: subjects,
-		RoleRef: &v1alpha1.RoleRef{
-			Kind: "ServiceRole",
-			Name: serviceRoleName,
-		},
-	}, nil
-}
-
 func createSecurityConfig(writeNamespace string,
 	rules v1.SecurityRuleList,
 	upstreams gloov1.UpstreamList,
@@ -193,4 +81,121 @@ func createSecurityConfig(writeNamespace string,
 		ServiceRoles:        serviceRoles,
 		ServiceRoleBindings: serviceRoleBindings,
 	}
+}
+
+func hostsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]string, error) {
+	selectedUpstreams, err := utils.UpstreamsForSelector(selector, upstreams)
+	if err != nil {
+		return nil, errors.Wrapf(err, "selecting upstreams")
+	}
+
+	var hostNames []string
+	for _, us := range selectedUpstreams {
+		hostForUpstream, err := utils.GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+
+		hostNames = append(hostNames, hostForUpstream)
+	}
+
+	return stringutils.Unique(hostNames), nil
+}
+
+func createServiceRoleFromRule(writeNamespace string, rule *v1.SecurityRule, upstreams gloov1.UpstreamList) (*v1alpha1.ServiceRole, error) {
+	serviceNames, err := hostsForSelector(rule.DestinationSelector, upstreams)
+	if err != nil {
+		return nil, err
+	}
+
+	allowedPaths := rule.AllowedPaths
+	allowedMethods := rule.AllowedMethods
+	if len(allowedMethods) == 0 {
+		allowedMethods = []string{"*"}
+	}
+
+	return &v1alpha1.ServiceRole{
+		Metadata: core.Metadata{
+			Namespace: writeNamespace,
+			Name:      rule.Metadata.Namespace + "-" + rule.Metadata.Name,
+		},
+		Rules: []*v1alpha1.AccessRule{{
+			Services: serviceNames,
+			Paths:    allowedPaths,
+			Methods:  allowedMethods,
+		}},
+	}, nil
+}
+
+func principalName(s core.ResourceRef) string {
+	return fmt.Sprintf("cluster.local/ns/%s/sa/%s", s.Namespace, s.Name)
+}
+
+func getSubjectsForSelector(selector *v1.PodSelector,
+	upstreams gloov1.UpstreamList,
+	pods customkube.PodList) ([]*v1alpha1.Subject, error) {
+	selectedPods, err := utils.PodsForSelector(selector, upstreams, pods)
+	if err != nil {
+		return nil, errors.Wrapf(err, "selecting pods")
+	}
+	var serviceAccounts []core.ResourceRef
+
+	// create a subject for each unique service account
+	addSvcAcct := func(newSa core.ResourceRef) {
+		for _, sa := range serviceAccounts {
+			if sa.Equal(newSa) {
+				return
+			}
+		}
+		serviceAccounts = append(serviceAccounts, newSa)
+	}
+	for _, p := range selectedPods {
+		kubePod, err := kubernetes.ToKube(p)
+		if err != nil {
+			return nil, errors.Wrapf(err, "internal error: converting custom pod object")
+		}
+
+		addSvcAcct(core.ResourceRef{
+			Name:      kubePod.Spec.ServiceAccountName,
+			Namespace: kubePod.Namespace,
+		})
+	}
+	// create a subject for every unique service account
+	var subjects []*v1alpha1.Subject
+	for _, sa := range serviceAccounts {
+		subjects = append(subjects, &v1alpha1.Subject{
+			// see example
+			// https://istio.io/docs/tasks/security/role-based-access-control/#step-3-allowing-access-to-the-ratings-service
+			Properties: map[string]string{
+				"source.principal": principalName(sa),
+			},
+		})
+	}
+
+	return subjects, nil
+}
+
+func createServiceRoleBinding(
+	serviceRoleName string,
+	serviceRoleNamespace string,
+	sourceSelector *v1.PodSelector,
+	upstreams gloov1.UpstreamList,
+	pods customkube.PodList) (*v1alpha1.ServiceRoleBinding, error) {
+
+	subjects, err := getSubjectsForSelector(sourceSelector, upstreams, pods)
+	if err != nil {
+		return nil, errors.Wrapf(err, "finding subjects (service accounts) for source selector")
+	}
+
+	return &v1alpha1.ServiceRoleBinding{
+		Metadata: core.Metadata{
+			Name:      serviceRoleName,
+			Namespace: serviceRoleNamespace,
+		},
+		Subjects: subjects,
+		RoleRef: &v1alpha1.RoleRef{
+			Kind: "ServiceRole",
+			Name: serviceRoleName,
+		},
+	}, nil
 }

@@ -104,20 +104,28 @@ func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, al
 	return selectedPods, nil
 }
 
+type namespacedSelector struct {
+	namespace string
+	selector  map[string]string
+}
+
 func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods customkube.PodList) (customkube.PodList, error) {
 	var selectedPods customkube.PodList
-	var selectors []map[string]string
+	var selectors []namespacedSelector
 	for _, us := range upstreams {
 		kubeUs, ok := us.UpstreamSpec.UpstreamType.(*gloov1.UpstreamSpec_Kube)
 		if !ok {
 			continue
 		}
-		selectors = append(selectors, kubeUs.Kube.Selector)
+		selectors = append(selectors, namespacedSelector{namespace: kubeUs.Kube.ServiceNamespace, selector: kubeUs.Kube.Selector})
 	}
 	for _, pod := range allPods {
 		var includedInSelector bool
 		for _, selector := range selectors {
-			if labels.SelectorFromSet(selector).Matches(labels.Set(pod.Metadata.Labels)) {
+			if pod.Metadata.Namespace != selector.namespace {
+				continue
+			}
+			if labels.SelectorFromSet(selector.selector).Matches(labels.Set(pod.Metadata.Labels)) {
 				includedInSelector = true
 				break
 			}

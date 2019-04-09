@@ -40,8 +40,12 @@ var _ = Describe("istio e2e", func() {
 	istioName := "my-istio"
 	glooName := "gloo"
 
-	It("it installs istio", func() {
+	FIt("it installs istio", func() {
 		testInstallIstio(istioName)
+	})
+
+	FIt("it enforces policy", func() {
+		testPolicy(istioName)
 	})
 
 	It("it configures prometheus", func() {
@@ -241,6 +245,33 @@ func testGlooMtls(istioName string) {
 		Port:    80,
 		Path:    "/details/1",
 	}, `"author":"William Shakespeare"`, time.Minute*3)
+}
+
+func testPolicy(meshName string) {
+	// apply an 'identiy' security rule, disabling communication between all injected services
+	err := utils.Supergloo(
+		fmt.Sprintf("apply securityrule --target-mesh %v.%v --name enable-rbac ", superglooNamespace, meshName) +
+			fmt.Sprintf("--source-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject) +
+			fmt.Sprintf("--dest-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject),
+	)
+
+	Expect(err).NotTo(HaveOccurred())
+
+	// test that communication is forbidden
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+	}, `RBAC: access denied`, time.Minute*5)
+
+	// apply an 'identiy' security rule, disabling communication between all injected services
+	err = utils.Supergloo(
+		fmt.Sprintf("apply securityrule --target-mesh %v.%v --name enable-rbac ", superglooNamespace, meshName) +
+			fmt.Sprintf("--source-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject) +
+			fmt.Sprintf("--dest-upstreams %v.%v-testrunner-8080 ", superglooNamespace, namespaceWithInject),
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	waitUntilOkFile()
 }
 
 func testTrafficShifting() {
