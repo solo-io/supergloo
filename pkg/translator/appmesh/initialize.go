@@ -1,12 +1,15 @@
 package appmesh
 
 import (
+	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -43,7 +46,7 @@ func getPodInfo(mesh *v1.Mesh, kubePod *kubev1.Pod) (*podInfo, error) {
 			for _, env := range initContainer.Env {
 				if env.Name == PodPortsEnvName {
 					for _, portStr := range strings.Split(env.Value, ",") {
-						ui64, err := strconv.ParseUint(strings.Trim(portStr, " "), 10, 32)
+						ui64, err := strconv.ParseUint(strings.TrimSpace(portStr), 10, 32)
 						if err != nil {
 							return nil, errors.Wrapf(err, "failed to parse [%s] (value of %s env) to int array",
 								env.Value, PodPortsEnvName)
@@ -56,6 +59,10 @@ func getPodInfo(mesh *v1.Mesh, kubePod *kubev1.Pod) (*podInfo, error) {
 	}
 
 	return info, nil
+}
+
+func namespaceId(meta core.Metadata) string {
+	return fmt.Sprintf("%s.%s", meta.Namespace, meta.Name)
 }
 
 func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInfo, appMeshPodList customkube.PodList) (AwsAppMeshUpstreamInfo, gloov1.UpstreamList, error) {
@@ -82,6 +89,10 @@ func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInf
 		appMeshUpstreamList = append(appMeshUpstreamList, us)
 	}
 
+	sort.SliceStable(appMeshUpstreamList, func(i, j int) bool {
+		return namespaceId(appMeshUpstreamList[i].Metadata) < namespaceId(appMeshUpstreamList[j].Metadata)
+	})
+
 	return appMeshUpstreamInfo, appMeshUpstreamList, nil
 
 }
@@ -105,6 +116,11 @@ func getPodsForMesh(mesh *v1.Mesh, pods customkube.PodList) (AwsAppMeshPodInfo, 
 			appMeshPods[pod] = info
 		}
 	}
+
+	sort.SliceStable(appMeshPodList, func(i, j int) bool {
+		return namespaceId(appMeshPodList[i].Metadata) < namespaceId(appMeshPodList[j].Metadata)
+	})
+
 	return appMeshPods, appMeshPodList, nil
 }
 
@@ -138,6 +154,8 @@ func podAppmeshConfig(info *podInfo, meshName, hostName string) (*appmesh.Virtua
 		MeshName:        &meshName,
 		VirtualNodeName: &info.virtualNodeName,
 		Spec: &appmesh.VirtualNodeSpec{
+			// Backends get added back in later
+			// congiguration.go:222
 			Backends:  []*appmesh.Backend{},
 			Listeners: listeners,
 			ServiceDiscovery: &appmesh.ServiceDiscovery{

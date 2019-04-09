@@ -11,31 +11,8 @@ import (
 	kubecustom "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/webhook/test"
+	"github.com/solo-io/supergloo/test/inputs"
 )
-
-var appMesh = func(name string) *v1.Mesh {
-	if name == "" {
-		name = "appmesh"
-	}
-	return &v1.Mesh{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: "supergloo-system",
-		},
-		MeshType: &v1.Mesh_AwsAppMesh{
-			AwsAppMesh: &v1.AwsAppMesh{
-				Region:           "us-east-1",
-				VirtualNodeLabel: "vn",
-				EnableAutoInject: true,
-				SidecarPatchConfigMap: &core.ResourceRef{
-					Name:      "sidecar-injector-webhook-configmap",
-					Namespace: "supergloo-system",
-				},
-				InjectionSelector: &v1.PodSelector{
-					SelectorType: &v1.PodSelector_NamespaceSelector_{
-						NamespaceSelector: &v1.PodSelector_NamespaceSelector{
-							Namespaces: []string{"namespace-with-inject"}}}}}}}
-}
 
 var _ = Describe("config translator", func() {
 	var (
@@ -44,7 +21,7 @@ var _ = Describe("config translator", func() {
 	)
 
 	var defaultConfig = func() *awsAppMeshConfiguration {
-		mesh := appMesh("")
+		mesh := inputs.AppmeshMesh("")
 		config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 		Expect(err).NotTo(HaveOccurred())
 		err = config.AllowAll()
@@ -102,7 +79,7 @@ var _ = Describe("config translator", func() {
 			kubePod := injectedPodList[0]
 			pod, err := kubernetes.ToKube(kubePod)
 			Expect(err).NotTo(HaveOccurred())
-			info, err := getPodInfo(appMesh(""), pod)
+			info, err := getPodInfo(inputs.AppmeshMesh(""), pod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(info.virtualNodeName).To(Equal("productpage-v1"))
 			Expect(info.ports).To(Equal([]uint32{9080}))
@@ -111,14 +88,14 @@ var _ = Describe("config translator", func() {
 			kubePod := injectedPodList[0]
 			pod, err := kubernetes.ToKube(kubePod)
 			Expect(err).NotTo(HaveOccurred())
-			info, err := getPodInfo(appMesh("123"), pod)
+			info, err := getPodInfo(inputs.AppmeshMesh("123"), pod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(info).To(BeNil())
 		})
 	})
 	Context("get pods for mesh", func() {
 		It("can filter valid mesh pods", func() {
-			_, podList, err := getPodsForMesh(appMesh(""), injectedPodList)
+			_, podList, err := getPodsForMesh(inputs.AppmeshMesh(""), injectedPodList)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(podList).To(HaveLen(6))
 		})
@@ -126,7 +103,7 @@ var _ = Describe("config translator", func() {
 
 	Context("get upstreams for mesh", func() {
 		It("can get valid upstreams for the mesh", func() {
-			info, podList, err := getPodsForMesh(appMesh(""), injectedPodList)
+			info, podList, err := getPodsForMesh(inputs.AppmeshMesh(""), injectedPodList)
 			Expect(err).NotTo(HaveOccurred())
 			_, usList, err := getUpstreamsForMesh(upstreamList, info, podList)
 			Expect(err).NotTo(HaveOccurred())
@@ -135,7 +112,7 @@ var _ = Describe("config translator", func() {
 	})
 	Context("allow all", func() {
 		It("can create the proper config for allow all (no routing rules)", func() {
-			mesh := appMesh("")
+			mesh := inputs.AppmeshMesh("")
 			config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 			Expect(err).NotTo(HaveOccurred())
 			err = config.ProcessRoutingRules(nil)
@@ -170,7 +147,7 @@ var _ = Describe("config translator", func() {
 				},
 			}
 			rules := v1.RoutingRuleList{defaultRoutingRule(destinations)}
-			mesh := appMesh("")
+			mesh := inputs.AppmeshMesh("")
 			config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 			Expect(err).NotTo(HaveOccurred())
 			err = config.ProcessRoutingRules(rules)

@@ -54,6 +54,11 @@ type awsAppMeshConfiguration struct {
 // TODO(marco): to Eitan: I have not tested the util methods used in here, sorry in advance if they do not work as expected
 func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstreams gloov1.UpstreamList) (AwsAppMeshConfiguration, error) {
 
+	awsMesh := mesh.GetAwsAppMesh()
+	if awsMesh == nil {
+		return nil, errors.Errorf("mesh %s.%s is not of type appmesh", mesh.Metadata.Namespace, mesh.Metadata.Name)
+	}
+
 	// Get all pods that point to this mesh via the APPMESH_VIRTUAL_NODE_NAME env set on their AWS App Mesh sidecar.
 	appMeshPodInfo, appMeshPodList, err := getPodsForMesh(mesh, pods)
 	if err != nil {
@@ -67,12 +72,7 @@ func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstream
 		return nil, err
 	}
 
-	awsMesh := mesh.GetAwsAppMesh()
-	if awsMesh == nil {
-		return nil, errors.Errorf("mesh %s.%s is not of type appmesh", mesh.Metadata.Namespace, mesh.Metadata.Name)
-	}
-
-	return &awsAppMeshConfiguration{
+	config := &awsAppMeshConfiguration{
 		podInfo:          appMeshPodInfo,
 		podList:          appMeshPodList,
 		upstreamInfo:     appMeshUpstreamInfo,
@@ -81,7 +81,13 @@ func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstream
 		MeshName:         mesh.Metadata.Name,
 		VirtualServices:  make(PodVirtualService),
 		VirtualNodes:     make(PodVirtualNode),
-	}, nil
+	}
+
+	if err := config.initialize(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 func (c *awsAppMeshConfiguration) initialize() error {
@@ -95,9 +101,6 @@ func (c *awsAppMeshConfiguration) initialize() error {
 }
 
 func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) error {
-	if err := c.initialize(); err != nil {
-		return err
-	}
 
 	for _, rule := range rules {
 		if err := c.processRoutingRule(rule); err != nil {
