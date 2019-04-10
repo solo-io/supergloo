@@ -6,7 +6,6 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"
@@ -118,7 +117,7 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 	meta := resource.GetMetadata()
 
 	// mutate and return clone
-	clone := proto.Clone(resource).(resources.Resource)
+	clone := resources.Clone(resource)
 	clone.SetMetadata(meta)
 	podObj, err := ToKube(resource)
 	if err != nil {

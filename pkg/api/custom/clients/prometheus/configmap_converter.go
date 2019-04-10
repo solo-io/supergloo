@@ -36,7 +36,11 @@ func (c *prometheusConfigmapConverter) FromKubeConfigMap(ctx context.Context, rc
 		resourceMap[k] = v
 	}
 
-	if err := protoutils.UnmarshalMap(resourceMap, resource); err != nil {
+	protoResource, err := resources.ProtoCast(resource)
+	if err != nil {
+		return nil, errors.Wrapf(err, "converting resource to proto")
+	}
+	if err := protoutils.UnmarshalMap(resourceMap, protoResource); err != nil {
 		return nil, errors.Wrapf(err, "reading configmap data into %v", rc.Kind())
 	}
 	resource.SetMetadata(kubeutils.FromKubeMeta(configMap.ObjectMeta))
@@ -48,7 +52,11 @@ func (c *prometheusConfigmapConverter) ToKubeConfigMap(ctx context.Context, rc *
 	if _, isPrometheusConfig := resource.(*v1.PrometheusConfig); !isPrometheusConfig {
 		return nil, errors.Errorf("cannot convert %v to configmap", resources.Kind(resource))
 	}
-	resourceMap, err := protoutils.MarshalMapEmitZeroValues(resource)
+	protoResource, err := resources.ProtoCast(resource)
+	if err != nil {
+		return nil, errors.Wrapf(err, "converting resource to proto")
+	}
+	resourceMap, err := protoutils.MarshalMapEmitZeroValues(protoResource)
 	if err != nil {
 		return nil, errors.Wrapf(err, "marshalling resource as map")
 	}
