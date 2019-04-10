@@ -106,7 +106,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
-			Selector: nil, // allows overwriting a user-created root cert
+			Selector: s.ownerLabels,
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling cacerts root cert")

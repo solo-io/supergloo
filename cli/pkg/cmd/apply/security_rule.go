@@ -116,7 +116,7 @@ func securityRuleFromOpts(opts *options.Options) (*v1.SecurityRule, error) {
 	ref := core.ResourceRef(opts.CreateSecurityRule.TargetMesh)
 
 	_, meshNotFoundErr := clients.MustMeshClient().Read(ref.Namespace, ref.Name, skclients.ReadOpts{Ctx: opts.Ctx})
-	if meshNotFoundErr != nil {
+	if meshNotFoundErr != nil && !opts.PrintKubeYaml {
 		return nil, meshNotFoundErr
 	}
 
