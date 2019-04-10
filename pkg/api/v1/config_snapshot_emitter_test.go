@@ -10,7 +10,6 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -49,7 +48,7 @@ var _ = Describe("V1Emitter", func() {
 		securityRuleClient SecurityRuleClient
 		tlsSecretClient    TlsSecretClient
 		upstreamClient     gloo_solo_io.UpstreamClient
-		podClient          core_kubernetes_io.PodClient
+		podClient          PodClient
 	)
 
 	BeforeEach(func() {
@@ -128,7 +127,7 @@ var _ = Describe("V1Emitter", func() {
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 
-		podClient, err = core_kubernetes_io.NewPodClient(podClientFactory)
+		podClient, err = NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
 	})
@@ -573,7 +572,7 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotPods := func(expectPods core_kubernetes_io.PodList, unexpectPods core_kubernetes_io.PodList) {
+		assertSnapshotPods := func(expectPods PodList, unexpectPods PodList) {
 		drain:
 			for {
 				select {
@@ -594,7 +593,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := core_kubernetes_io.PodsByNamespace{
+					combined := PodsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -602,32 +601,32 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		pod1a, err := podClient.Write(core_kubernetes_io.NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		pod1b, err := podClient.Write(core_kubernetes_io.NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b}, nil)
-		pod2a, err := podClient.Write(core_kubernetes_io.NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		pod2b, err := podClient.Write(core_kubernetes_io.NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotPods(PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotPods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b}, core_kubernetes_io.PodList{pod2a, pod2b})
+		assertSnapshotPods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(nil, core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotPods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -1066,7 +1065,7 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotPods := func(expectPods core_kubernetes_io.PodList, unexpectPods core_kubernetes_io.PodList) {
+		assertSnapshotPods := func(expectPods PodList, unexpectPods PodList) {
 		drain:
 			for {
 				select {
@@ -1087,7 +1086,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := core_kubernetes_io.PodsByNamespace{
+					combined := PodsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -1095,31 +1094,31 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		pod1a, err := podClient.Write(core_kubernetes_io.NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		pod1b, err := podClient.Write(core_kubernetes_io.NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b}, nil)
-		pod2a, err := podClient.Write(core_kubernetes_io.NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		pod2b, err := podClient.Write(core_kubernetes_io.NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotPods(PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotPods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(core_kubernetes_io.PodList{pod1a, pod1b}, core_kubernetes_io.PodList{pod2a, pod2b})
+		assertSnapshotPods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(nil, core_kubernetes_io.PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotPods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 })
