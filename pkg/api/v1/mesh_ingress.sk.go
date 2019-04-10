@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewMeshIngress(namespace, name string) *MeshIngress {
-	return &MeshIngress{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *MeshIngress) SetStatus(status core.Status) {
-	r.Status = status
+	meshingress := &MeshIngress{}
+	meshingress.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return meshingress
 }
 
 func (r *MeshIngress) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *MeshIngress) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *MeshIngress) Hash() uint64 {
@@ -50,8 +48,8 @@ type MeshingressesByNamespace map[string]MeshIngressList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshIngressList) Find(namespace, name string) (*MeshIngress, error) {
 	for _, meshIngress := range list {
-		if meshIngress.Metadata.Name == name {
-			if namespace == "" || meshIngress.Metadata.Namespace == namespace {
+		if meshIngress.GetMetadata().Name == name {
+			if namespace == "" || meshIngress.GetMetadata().Namespace == namespace {
 				return meshIngress, nil
 			}
 		}
@@ -78,7 +76,7 @@ func (list MeshIngressList) AsInputResources() resources.InputResourceList {
 func (list MeshIngressList) Names() []string {
 	var names []string
 	for _, meshIngress := range list {
-		names = append(names, meshIngress.Metadata.Name)
+		names = append(names, meshIngress.GetMetadata().Name)
 	}
 	return names
 }
@@ -86,14 +84,14 @@ func (list MeshIngressList) Names() []string {
 func (list MeshIngressList) NamespacesDotNames() []string {
 	var names []string
 	for _, meshIngress := range list {
-		names = append(names, meshIngress.Metadata.Namespace+"."+meshIngress.Metadata.Name)
+		names = append(names, meshIngress.GetMetadata().Namespace+"."+meshIngress.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list MeshIngressList) Sort() MeshIngressList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -101,7 +99,7 @@ func (list MeshIngressList) Sort() MeshIngressList {
 func (list MeshIngressList) Clone() MeshIngressList {
 	var meshIngressList MeshIngressList
 	for _, meshIngress := range list {
-		meshIngressList = append(meshIngressList, proto.Clone(meshIngress).(*MeshIngress))
+		meshIngressList = append(meshIngressList, resources.Clone(meshIngress).(*MeshIngress))
 	}
 	return meshIngressList
 }
@@ -122,7 +120,7 @@ func (list MeshIngressList) AsInterfaces() []interface{} {
 
 func (byNamespace MeshingressesByNamespace) Add(meshIngress ...*MeshIngress) {
 	for _, item := range meshIngress {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

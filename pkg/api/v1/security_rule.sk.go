@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewSecurityRule(namespace, name string) *SecurityRule {
-	return &SecurityRule{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *SecurityRule) SetStatus(status core.Status) {
-	r.Status = status
+	securityrule := &SecurityRule{}
+	securityrule.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return securityrule
 }
 
 func (r *SecurityRule) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *SecurityRule) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *SecurityRule) Hash() uint64 {
@@ -52,8 +50,8 @@ type SecurityrulesByNamespace map[string]SecurityRuleList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list SecurityRuleList) Find(namespace, name string) (*SecurityRule, error) {
 	for _, securityRule := range list {
-		if securityRule.Metadata.Name == name {
-			if namespace == "" || securityRule.Metadata.Namespace == namespace {
+		if securityRule.GetMetadata().Name == name {
+			if namespace == "" || securityRule.GetMetadata().Namespace == namespace {
 				return securityRule, nil
 			}
 		}
@@ -80,7 +78,7 @@ func (list SecurityRuleList) AsInputResources() resources.InputResourceList {
 func (list SecurityRuleList) Names() []string {
 	var names []string
 	for _, securityRule := range list {
-		names = append(names, securityRule.Metadata.Name)
+		names = append(names, securityRule.GetMetadata().Name)
 	}
 	return names
 }
@@ -88,14 +86,14 @@ func (list SecurityRuleList) Names() []string {
 func (list SecurityRuleList) NamespacesDotNames() []string {
 	var names []string
 	for _, securityRule := range list {
-		names = append(names, securityRule.Metadata.Namespace+"."+securityRule.Metadata.Name)
+		names = append(names, securityRule.GetMetadata().Namespace+"."+securityRule.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list SecurityRuleList) Sort() SecurityRuleList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -103,7 +101,7 @@ func (list SecurityRuleList) Sort() SecurityRuleList {
 func (list SecurityRuleList) Clone() SecurityRuleList {
 	var securityRuleList SecurityRuleList
 	for _, securityRule := range list {
-		securityRuleList = append(securityRuleList, proto.Clone(securityRule).(*SecurityRule))
+		securityRuleList = append(securityRuleList, resources.Clone(securityRule).(*SecurityRule))
 	}
 	return securityRuleList
 }
@@ -124,7 +122,7 @@ func (list SecurityRuleList) AsInterfaces() []interface{} {
 
 func (byNamespace SecurityrulesByNamespace) Add(securityRule ...*SecurityRule) {
 	for _, item := range securityRule {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,14 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewTlsSecret(namespace, name string) *TlsSecret {
-	return &TlsSecret{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
+	tlssecret := &TlsSecret{}
+	tlssecret.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return tlssecret
 }
 
 func (r *TlsSecret) SetMetadata(meta core.Metadata) {
@@ -47,8 +45,8 @@ type TlssecretsByNamespace map[string]TlsSecretList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list TlsSecretList) Find(namespace, name string) (*TlsSecret, error) {
 	for _, tlsSecret := range list {
-		if tlsSecret.Metadata.Name == name {
-			if namespace == "" || tlsSecret.Metadata.Namespace == namespace {
+		if tlsSecret.GetMetadata().Name == name {
+			if namespace == "" || tlsSecret.GetMetadata().Namespace == namespace {
 				return tlsSecret, nil
 			}
 		}
@@ -67,7 +65,7 @@ func (list TlsSecretList) AsResources() resources.ResourceList {
 func (list TlsSecretList) Names() []string {
 	var names []string
 	for _, tlsSecret := range list {
-		names = append(names, tlsSecret.Metadata.Name)
+		names = append(names, tlsSecret.GetMetadata().Name)
 	}
 	return names
 }
@@ -75,14 +73,14 @@ func (list TlsSecretList) Names() []string {
 func (list TlsSecretList) NamespacesDotNames() []string {
 	var names []string
 	for _, tlsSecret := range list {
-		names = append(names, tlsSecret.Metadata.Namespace+"."+tlsSecret.Metadata.Name)
+		names = append(names, tlsSecret.GetMetadata().Namespace+"."+tlsSecret.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list TlsSecretList) Sort() TlsSecretList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -90,7 +88,7 @@ func (list TlsSecretList) Sort() TlsSecretList {
 func (list TlsSecretList) Clone() TlsSecretList {
 	var tlsSecretList TlsSecretList
 	for _, tlsSecret := range list {
-		tlsSecretList = append(tlsSecretList, proto.Clone(tlsSecret).(*TlsSecret))
+		tlsSecretList = append(tlsSecretList, resources.Clone(tlsSecret).(*TlsSecret))
 	}
 	return tlsSecretList
 }
@@ -111,7 +109,7 @@ func (list TlsSecretList) AsInterfaces() []interface{} {
 
 func (byNamespace TlssecretsByNamespace) Add(tlsSecret ...*TlsSecret) {
 	for _, item := range tlsSecret {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

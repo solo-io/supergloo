@@ -5,7 +5,6 @@ package v1alpha1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewPolicy(namespace, name string) *Policy {
-	return &Policy{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *Policy) SetStatus(status core.Status) {
-	r.Status = status
+	policy := &Policy{}
+	policy.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return policy
 }
 
 func (r *Policy) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *Policy) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *Policy) Hash() uint64 {
@@ -53,8 +51,8 @@ type PoliciesByNamespace map[string]PolicyList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PolicyList) Find(namespace, name string) (*Policy, error) {
 	for _, policy := range list {
-		if policy.Metadata.Name == name {
-			if namespace == "" || policy.Metadata.Namespace == namespace {
+		if policy.GetMetadata().Name == name {
+			if namespace == "" || policy.GetMetadata().Namespace == namespace {
 				return policy, nil
 			}
 		}
@@ -81,7 +79,7 @@ func (list PolicyList) AsInputResources() resources.InputResourceList {
 func (list PolicyList) Names() []string {
 	var names []string
 	for _, policy := range list {
-		names = append(names, policy.Metadata.Name)
+		names = append(names, policy.GetMetadata().Name)
 	}
 	return names
 }
@@ -89,14 +87,14 @@ func (list PolicyList) Names() []string {
 func (list PolicyList) NamespacesDotNames() []string {
 	var names []string
 	for _, policy := range list {
-		names = append(names, policy.Metadata.Namespace+"."+policy.Metadata.Name)
+		names = append(names, policy.GetMetadata().Namespace+"."+policy.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list PolicyList) Sort() PolicyList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -104,7 +102,7 @@ func (list PolicyList) Sort() PolicyList {
 func (list PolicyList) Clone() PolicyList {
 	var policyList PolicyList
 	for _, policy := range list {
-		policyList = append(policyList, proto.Clone(policy).(*Policy))
+		policyList = append(policyList, resources.Clone(policy).(*Policy))
 	}
 	return policyList
 }
@@ -125,7 +123,7 @@ func (list PolicyList) AsInterfaces() []interface{} {
 
 func (byNamespace PoliciesByNamespace) Add(policy ...*Policy) {
 	for _, item := range policy {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

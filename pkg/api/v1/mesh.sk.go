@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewMesh(namespace, name string) *Mesh {
-	return &Mesh{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *Mesh) SetStatus(status core.Status) {
-	r.Status = status
+	mesh := &Mesh{}
+	mesh.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return mesh
 }
 
 func (r *Mesh) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *Mesh) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *Mesh) Hash() uint64 {
@@ -50,8 +48,8 @@ type MeshesByNamespace map[string]MeshList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshList) Find(namespace, name string) (*Mesh, error) {
 	for _, mesh := range list {
-		if mesh.Metadata.Name == name {
-			if namespace == "" || mesh.Metadata.Namespace == namespace {
+		if mesh.GetMetadata().Name == name {
+			if namespace == "" || mesh.GetMetadata().Namespace == namespace {
 				return mesh, nil
 			}
 		}
@@ -78,7 +76,7 @@ func (list MeshList) AsInputResources() resources.InputResourceList {
 func (list MeshList) Names() []string {
 	var names []string
 	for _, mesh := range list {
-		names = append(names, mesh.Metadata.Name)
+		names = append(names, mesh.GetMetadata().Name)
 	}
 	return names
 }
@@ -86,14 +84,14 @@ func (list MeshList) Names() []string {
 func (list MeshList) NamespacesDotNames() []string {
 	var names []string
 	for _, mesh := range list {
-		names = append(names, mesh.Metadata.Namespace+"."+mesh.Metadata.Name)
+		names = append(names, mesh.GetMetadata().Namespace+"."+mesh.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list MeshList) Sort() MeshList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -101,7 +99,7 @@ func (list MeshList) Sort() MeshList {
 func (list MeshList) Clone() MeshList {
 	var meshList MeshList
 	for _, mesh := range list {
-		meshList = append(meshList, proto.Clone(mesh).(*Mesh))
+		meshList = append(meshList, resources.Clone(mesh).(*Mesh))
 	}
 	return meshList
 }
@@ -122,7 +120,7 @@ func (list MeshList) AsInterfaces() []interface{} {
 
 func (byNamespace MeshesByNamespace) Add(mesh ...*Mesh) {
 	for _, item := range mesh {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

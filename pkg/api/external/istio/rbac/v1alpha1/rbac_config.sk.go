@@ -5,7 +5,6 @@ package v1alpha1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewRbacConfig(namespace, name string) *RbacConfig {
-	return &RbacConfig{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *RbacConfig) SetStatus(status core.Status) {
-	r.Status = status
+	rbacconfig := &RbacConfig{}
+	rbacconfig.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return rbacconfig
 }
 
 func (r *RbacConfig) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *RbacConfig) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *RbacConfig) Hash() uint64 {
@@ -51,8 +49,8 @@ type RbacconfigsByNamespace map[string]RbacConfigList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list RbacConfigList) Find(namespace, name string) (*RbacConfig, error) {
 	for _, rbacConfig := range list {
-		if rbacConfig.Metadata.Name == name {
-			if namespace == "" || rbacConfig.Metadata.Namespace == namespace {
+		if rbacConfig.GetMetadata().Name == name {
+			if namespace == "" || rbacConfig.GetMetadata().Namespace == namespace {
 				return rbacConfig, nil
 			}
 		}
@@ -79,7 +77,7 @@ func (list RbacConfigList) AsInputResources() resources.InputResourceList {
 func (list RbacConfigList) Names() []string {
 	var names []string
 	for _, rbacConfig := range list {
-		names = append(names, rbacConfig.Metadata.Name)
+		names = append(names, rbacConfig.GetMetadata().Name)
 	}
 	return names
 }
@@ -87,14 +85,14 @@ func (list RbacConfigList) Names() []string {
 func (list RbacConfigList) NamespacesDotNames() []string {
 	var names []string
 	for _, rbacConfig := range list {
-		names = append(names, rbacConfig.Metadata.Namespace+"."+rbacConfig.Metadata.Name)
+		names = append(names, rbacConfig.GetMetadata().Namespace+"."+rbacConfig.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list RbacConfigList) Sort() RbacConfigList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -102,7 +100,7 @@ func (list RbacConfigList) Sort() RbacConfigList {
 func (list RbacConfigList) Clone() RbacConfigList {
 	var rbacConfigList RbacConfigList
 	for _, rbacConfig := range list {
-		rbacConfigList = append(rbacConfigList, proto.Clone(rbacConfig).(*RbacConfig))
+		rbacConfigList = append(rbacConfigList, resources.Clone(rbacConfig).(*RbacConfig))
 	}
 	return rbacConfigList
 }
@@ -123,7 +121,7 @@ func (list RbacConfigList) AsInterfaces() []interface{} {
 
 func (byNamespace RbacconfigsByNamespace) Add(rbacConfig ...*RbacConfig) {
 	for _, item := range rbacConfig {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

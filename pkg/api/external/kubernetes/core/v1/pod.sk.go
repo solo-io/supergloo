@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,14 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewPod(namespace, name string) *Pod {
-	return &Pod{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
+	pod := &Pod{}
+	pod.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return pod
 }
 
 func (r *Pod) SetMetadata(meta core.Metadata) {
@@ -44,8 +42,8 @@ type PodsByNamespace map[string]PodList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PodList) Find(namespace, name string) (*Pod, error) {
 	for _, pod := range list {
-		if pod.Metadata.Name == name {
-			if namespace == "" || pod.Metadata.Namespace == namespace {
+		if pod.GetMetadata().Name == name {
+			if namespace == "" || pod.GetMetadata().Namespace == namespace {
 				return pod, nil
 			}
 		}
@@ -64,7 +62,7 @@ func (list PodList) AsResources() resources.ResourceList {
 func (list PodList) Names() []string {
 	var names []string
 	for _, pod := range list {
-		names = append(names, pod.Metadata.Name)
+		names = append(names, pod.GetMetadata().Name)
 	}
 	return names
 }
@@ -72,14 +70,14 @@ func (list PodList) Names() []string {
 func (list PodList) NamespacesDotNames() []string {
 	var names []string
 	for _, pod := range list {
-		names = append(names, pod.Metadata.Namespace+"."+pod.Metadata.Name)
+		names = append(names, pod.GetMetadata().Namespace+"."+pod.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list PodList) Sort() PodList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -87,7 +85,7 @@ func (list PodList) Sort() PodList {
 func (list PodList) Clone() PodList {
 	var podList PodList
 	for _, pod := range list {
-		podList = append(podList, proto.Clone(pod).(*Pod))
+		podList = append(podList, resources.Clone(pod).(*Pod))
 	}
 	return podList
 }
@@ -108,7 +106,7 @@ func (list PodList) AsInterfaces() []interface{} {
 
 func (byNamespace PodsByNamespace) Add(pod ...*Pod) {
 	for _, item := range pod {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 
