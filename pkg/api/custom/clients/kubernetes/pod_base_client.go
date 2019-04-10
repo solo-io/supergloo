@@ -1,17 +1,15 @@
 package kubernetes
 
 import (
-	"encoding/json"
 	"sort"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+	"github.com/solo-io/supergloo/api/custom/kubepod"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
-	kubev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,48 +26,6 @@ func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *Re
 		kube:  kube,
 		cache: cache,
 	}
-}
-
-func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
-	rawSpec, err := json.Marshal(pod.Spec)
-	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling kube pod object")
-	}
-	spec := string(rawSpec)
-	rawStatus, err := json.Marshal(pod.Status)
-	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling kube pod object")
-	}
-	status := string(rawStatus)
-	resource := &v1.Pod{
-		Spec:   spec,
-		Status: status,
-	}
-
-	resource.SetMetadata(kubeutils.FromKubeMeta(pod.ObjectMeta))
-
-	return resource, nil
-}
-
-func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
-	podResource, ok := resource.(*v1.Pod)
-	if !ok {
-		return nil, errors.Errorf("internal error: invalid resource %v passed to pod-only client", resources.Kind(resource))
-	}
-	var pod kubev1.Pod
-	if err := json.Unmarshal([]byte(podResource.Spec), &pod.Spec); err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling kube pod spec data")
-	}
-	if err := json.Unmarshal([]byte(podResource.Status), &pod.Status); err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling kube pod status data")
-	}
-
-	meta := kubeutils.ToKubeMeta(resource.GetMetadata())
-	if meta.Annotations == nil {
-		meta.Annotations = make(map[string]string)
-	}
-	pod.ObjectMeta = meta
-	return &pod, nil
 }
 
 var _ clients.ResourceClient = &ResourceClient{}
@@ -99,7 +55,7 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 		}
 		return nil, errors.Wrapf(err, "reading podObj from kubernetes")
 	}
-	resource, err := FromKube(podObj)
+	resource, err := kubepod.FromKube(podObj)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +75,7 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 	// mutate and return clone
 	clone := resources.Clone(resource)
 	clone.SetMetadata(meta)
-	podObj, err := ToKube(resource)
+	podObj, err := kubepod.ToKube(resource)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +127,7 @@ func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resourc
 	}
 	var resourceList resources.ResourceList
 	for _, podObj := range podObjList {
-		resource, err := FromKube(podObj)
+		resource, err := kubepod.FromKube(podObj)
 		if err != nil {
 			return nil, err
 		}
