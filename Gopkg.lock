@@ -291,7 +291,7 @@
   revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
-  digest = "1:3013dd98344c95f63f0cf3912b9f46a095b4cdddf95f338386206ba42ca41678"
+  digest = "1:653fbbd8dacb870f864f0d593c24b6537d13c0ebb45f97d713371d7c8f2fb4e1"
   name = "github.com/envoyproxy/go-control-plane"
   packages = [
     "envoy/api/v2/auth",
@@ -300,8 +300,9 @@
     "envoy/type",
   ]
   pruneopts = "UT"
-  revision = "0ad6fa1cf0b9b6ca8f3617a7188a568e81f40b87"
-  version = "v0.6.9"
+  revision = "5ac1f5e0a972ec8168f315554c53a054a5286b23"
+  source = "github.com/yuval-k/go-control-plane"
+  version = "v0.6.11"
 
 [[projects]]
   digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
@@ -1161,7 +1162,7 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:c816b37988b2b02df3c2c01899c7d6579f985dda1b1e23697127b8721ba59891"
+  digest = "1:3688ef2739ac57f17f9244706d0492085006686ccc1fdb112592e759c623b2fd"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1213,8 +1214,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "e55ce6cf73e00838a09025fd72bdbc2c1628f1b4"
-  version = "v0.13.8"
+  revision = "e96ddb29dcc61b164f7f982df4fbf5849e111ca5"
+  version = "v0.13.13"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1255,7 +1256,7 @@
   version = "v0.7.2"
 
 [[projects]]
-  digest = "1:166702c3098963898e1e8e71517c046ac6fa1551e1eae1ff403cf53db72253f7"
+  digest = "1:b5f35ac8c7eefe59dd69ebb267495c36dd9dd15b59e59c3a618c0c7b03006eda"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1290,7 +1291,6 @@
     "pkg/code-generator/model",
     "pkg/code-generator/parser",
     "pkg/errors",
-    "pkg/utils/cliutils",
     "pkg/utils/errutils",
     "pkg/utils/fileutils",
     "pkg/utils/hashutils",
@@ -1303,8 +1303,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "9962953f8c39321f10c3265cc6045eb1386b5e4a"
-  version = "v0.4.2"
+  revision = "f97984e35525891fe25ddb5a328177325230bc02"
+  version = "v0.5.1"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
