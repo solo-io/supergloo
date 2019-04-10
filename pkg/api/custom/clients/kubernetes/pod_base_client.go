@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/supergloo/api/custom/kubepod"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	kubev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
@@ -26,6 +27,28 @@ func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *Re
 		kube:  kube,
 		cache: cache,
 	}
+}
+
+func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
+
+	podCopy := pod.DeepCopy()
+	kubePod := kubepod.Pod(*podCopy)
+	resource := &v1.Pod{
+		Pod: kubePod,
+	}
+
+	return resource, nil
+}
+
+func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
+	podResource, ok := resource.(*v1.Pod)
+	if !ok {
+		return nil, errors.Errorf("internal error: invalid resource %v passed to pod-only client", resources.Kind(resource))
+	}
+
+	pod := kubev1.Pod(podResource.Pod)
+
+	return &pod, nil
 }
 
 var _ clients.ResourceClient = &ResourceClient{}
@@ -55,7 +78,7 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 		}
 		return nil, errors.Wrapf(err, "reading podObj from kubernetes")
 	}
-	resource, err := kubepod.FromKube(podObj)
+	resource, err := FromKube(podObj)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +98,7 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 	// mutate and return clone
 	clone := resources.Clone(resource)
 	clone.SetMetadata(meta)
-	podObj, err := kubepod.ToKube(resource)
+	podObj, err := ToKube(resource)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +150,7 @@ func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resourc
 	}
 	var resourceList resources.ResourceList
 	for _, podObj := range podObjList {
-		resource, err := kubepod.FromKube(podObj)
+		resource, err := FromKube(podObj)
 		if err != nil {
 			return nil, err
 		}
