@@ -6,6 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/solo-io/go-utils/kubeutils"
+
+	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -127,7 +130,7 @@ func initVirtualService(writeNamespace, host string) *v1alpha3.VirtualService {
 	return &v1alpha3.VirtualService{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      utils.SanitizeName(host),
+			Name:      kubeutils.SanitizeName(host),
 		},
 		Hosts:    []string{host},
 		Gateways: []string{"mesh"},

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/install/utils/kubeinstall"
+	"github.com/solo-io/go-utils/installutils/kubeinstall"
 
 	"github.com/solo-io/supergloo/pkg/install/gloo"
 	"github.com/solo-io/supergloo/pkg/install/istio"

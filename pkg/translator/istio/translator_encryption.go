@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/go-utils/kubeutils"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
@@ -48,7 +50,7 @@ func makeDestinationRule(ctx context.Context, writeNamespace, host string, label
 	return &v1alpha3.DestinationRule{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      utils.SanitizeName(host),
+			Name:      kubeutils.SanitizeName(host),
 		},
 		Host:          host,
 		Subsets:       subsets,

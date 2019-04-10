@@ -3,7 +3,7 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"github.com/solo-io/go-utils/kubeutils"
 
 	istiorbac "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 
@@ -375,7 +375,7 @@ var _ = Describe("Translator", func() {
 						map[string]string{"app": "reviews"}, 9080,
 					}}}}},
 			} {
-				Expect(meshConfig.VirtualServices[i].Metadata.Name).To(Equal(utils.SanitizeName(expected.host)))
+				Expect(meshConfig.VirtualServices[i].Metadata.Name).To(Equal(kubeutils.SanitizeName(expected.host)))
 				Expect(meshConfig.VirtualServices[i].Hosts).To(Equal([]string{expected.host}))
 				Expect(meshConfig.VirtualServices[i].Gateways).To(Equal([]string{"mesh"}))
 				Expect(meshConfig.VirtualServices[i].Http).To(HaveLen(len(inputRoutingRules)))
