@@ -11,6 +11,7 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 
