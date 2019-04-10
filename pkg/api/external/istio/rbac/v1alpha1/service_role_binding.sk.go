@@ -5,7 +5,6 @@ package v1alpha1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewServiceRoleBinding(namespace, name string) *ServiceRoleBinding {
-	return &ServiceRoleBinding{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *ServiceRoleBinding) SetStatus(status core.Status) {
-	r.Status = status
+	servicerolebinding := &ServiceRoleBinding{}
+	servicerolebinding.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return servicerolebinding
 }
 
 func (r *ServiceRoleBinding) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *ServiceRoleBinding) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *ServiceRoleBinding) Hash() uint64 {
@@ -50,8 +48,8 @@ type ServicerolebindingsByNamespace map[string]ServiceRoleBindingList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list ServiceRoleBindingList) Find(namespace, name string) (*ServiceRoleBinding, error) {
 	for _, serviceRoleBinding := range list {
-		if serviceRoleBinding.Metadata.Name == name {
-			if namespace == "" || serviceRoleBinding.Metadata.Namespace == namespace {
+		if serviceRoleBinding.GetMetadata().Name == name {
+			if namespace == "" || serviceRoleBinding.GetMetadata().Namespace == namespace {
 				return serviceRoleBinding, nil
 			}
 		}
@@ -78,7 +76,7 @@ func (list ServiceRoleBindingList) AsInputResources() resources.InputResourceLis
 func (list ServiceRoleBindingList) Names() []string {
 	var names []string
 	for _, serviceRoleBinding := range list {
-		names = append(names, serviceRoleBinding.Metadata.Name)
+		names = append(names, serviceRoleBinding.GetMetadata().Name)
 	}
 	return names
 }
@@ -86,14 +84,14 @@ func (list ServiceRoleBindingList) Names() []string {
 func (list ServiceRoleBindingList) NamespacesDotNames() []string {
 	var names []string
 	for _, serviceRoleBinding := range list {
-		names = append(names, serviceRoleBinding.Metadata.Namespace+"."+serviceRoleBinding.Metadata.Name)
+		names = append(names, serviceRoleBinding.GetMetadata().Namespace+"."+serviceRoleBinding.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list ServiceRoleBindingList) Sort() ServiceRoleBindingList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -101,7 +99,7 @@ func (list ServiceRoleBindingList) Sort() ServiceRoleBindingList {
 func (list ServiceRoleBindingList) Clone() ServiceRoleBindingList {
 	var serviceRoleBindingList ServiceRoleBindingList
 	for _, serviceRoleBinding := range list {
-		serviceRoleBindingList = append(serviceRoleBindingList, proto.Clone(serviceRoleBinding).(*ServiceRoleBinding))
+		serviceRoleBindingList = append(serviceRoleBindingList, resources.Clone(serviceRoleBinding).(*ServiceRoleBinding))
 	}
 	return serviceRoleBindingList
 }
@@ -122,7 +120,7 @@ func (list ServiceRoleBindingList) AsInterfaces() []interface{} {
 
 func (byNamespace ServicerolebindingsByNamespace) Add(serviceRoleBinding ...*ServiceRoleBinding) {
 	for _, item := range serviceRoleBinding {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

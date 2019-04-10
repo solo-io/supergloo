@@ -51,6 +51,7 @@ func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 
 	name := name1
 	input := NewMeshPolicy("", name)
+
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -60,8 +61,8 @@ func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 
 	Expect(r1).To(BeAssignableToTypeOf(&MeshPolicy{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
-	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
-	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
+	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
+	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
 	Expect(r1.Targets).To(Equal(input.Targets))
 	Expect(r1.Peers).To(Equal(input.Peers))
@@ -75,7 +76,9 @@ func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 	})
 	Expect(err).To(HaveOccurred())
 
-	input.Metadata.ResourceVersion = r1.GetMetadata().ResourceVersion
+	resources.UpdateMetadata(input, func(meta *core.Metadata) {
+		meta.ResourceVersion = r1.GetMetadata().ResourceVersion
+	})
 	r1, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
 	})
@@ -87,9 +90,9 @@ func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 	name = name2
 	input = &MeshPolicy{}
 
-	input.Metadata = core.Metadata{
+	input.SetMetadata(core.Metadata{
 		Name: name,
-	}
+	})
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -137,9 +140,9 @@ func MeshPolicyClientTest(client MeshPolicyClient, name1, name2, name3 string) {
 		name = name3
 		input = &MeshPolicy{}
 		Expect(err).NotTo(HaveOccurred())
-		input.Metadata = core.Metadata{
+		input.SetMetadata(core.Metadata{
 			Name: name,
-		}
+		})
 
 		r3, err = client.Write(input, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

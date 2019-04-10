@@ -5,7 +5,6 @@ package v1alpha3
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewVirtualService(namespace, name string) *VirtualService {
-	return &VirtualService{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *VirtualService) SetStatus(status core.Status) {
-	r.Status = status
+	virtualservice := &VirtualService{}
+	virtualservice.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return virtualservice
 }
 
 func (r *VirtualService) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *VirtualService) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *VirtualService) Hash() uint64 {
@@ -53,8 +51,8 @@ type VirtualservicesByNamespace map[string]VirtualServiceList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list VirtualServiceList) Find(namespace, name string) (*VirtualService, error) {
 	for _, virtualService := range list {
-		if virtualService.Metadata.Name == name {
-			if namespace == "" || virtualService.Metadata.Namespace == namespace {
+		if virtualService.GetMetadata().Name == name {
+			if namespace == "" || virtualService.GetMetadata().Namespace == namespace {
 				return virtualService, nil
 			}
 		}
@@ -81,7 +79,7 @@ func (list VirtualServiceList) AsInputResources() resources.InputResourceList {
 func (list VirtualServiceList) Names() []string {
 	var names []string
 	for _, virtualService := range list {
-		names = append(names, virtualService.Metadata.Name)
+		names = append(names, virtualService.GetMetadata().Name)
 	}
 	return names
 }
@@ -89,14 +87,14 @@ func (list VirtualServiceList) Names() []string {
 func (list VirtualServiceList) NamespacesDotNames() []string {
 	var names []string
 	for _, virtualService := range list {
-		names = append(names, virtualService.Metadata.Namespace+"."+virtualService.Metadata.Name)
+		names = append(names, virtualService.GetMetadata().Namespace+"."+virtualService.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list VirtualServiceList) Sort() VirtualServiceList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -104,7 +102,7 @@ func (list VirtualServiceList) Sort() VirtualServiceList {
 func (list VirtualServiceList) Clone() VirtualServiceList {
 	var virtualServiceList VirtualServiceList
 	for _, virtualService := range list {
-		virtualServiceList = append(virtualServiceList, proto.Clone(virtualService).(*VirtualService))
+		virtualServiceList = append(virtualServiceList, resources.Clone(virtualService).(*VirtualService))
 	}
 	return virtualServiceList
 }
@@ -125,7 +123,7 @@ func (list VirtualServiceList) AsInterfaces() []interface{} {
 
 func (byNamespace VirtualservicesByNamespace) Add(virtualService ...*VirtualService) {
 	for _, item := range virtualService {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

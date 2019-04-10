@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,14 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewPrometheusConfig(namespace, name string) *PrometheusConfig {
-	return &PrometheusConfig{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
+	prometheusconfig := &PrometheusConfig{}
+	prometheusconfig.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return prometheusconfig
 }
 
 func (r *PrometheusConfig) SetMetadata(meta core.Metadata) {
@@ -46,8 +44,8 @@ type PrometheusconfigsByNamespace map[string]PrometheusConfigList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PrometheusConfigList) Find(namespace, name string) (*PrometheusConfig, error) {
 	for _, prometheusConfig := range list {
-		if prometheusConfig.Metadata.Name == name {
-			if namespace == "" || prometheusConfig.Metadata.Namespace == namespace {
+		if prometheusConfig.GetMetadata().Name == name {
+			if namespace == "" || prometheusConfig.GetMetadata().Namespace == namespace {
 				return prometheusConfig, nil
 			}
 		}
@@ -66,7 +64,7 @@ func (list PrometheusConfigList) AsResources() resources.ResourceList {
 func (list PrometheusConfigList) Names() []string {
 	var names []string
 	for _, prometheusConfig := range list {
-		names = append(names, prometheusConfig.Metadata.Name)
+		names = append(names, prometheusConfig.GetMetadata().Name)
 	}
 	return names
 }
@@ -74,14 +72,14 @@ func (list PrometheusConfigList) Names() []string {
 func (list PrometheusConfigList) NamespacesDotNames() []string {
 	var names []string
 	for _, prometheusConfig := range list {
-		names = append(names, prometheusConfig.Metadata.Namespace+"."+prometheusConfig.Metadata.Name)
+		names = append(names, prometheusConfig.GetMetadata().Namespace+"."+prometheusConfig.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list PrometheusConfigList) Sort() PrometheusConfigList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -89,7 +87,7 @@ func (list PrometheusConfigList) Sort() PrometheusConfigList {
 func (list PrometheusConfigList) Clone() PrometheusConfigList {
 	var prometheusConfigList PrometheusConfigList
 	for _, prometheusConfig := range list {
-		prometheusConfigList = append(prometheusConfigList, proto.Clone(prometheusConfig).(*PrometheusConfig))
+		prometheusConfigList = append(prometheusConfigList, resources.Clone(prometheusConfig).(*PrometheusConfig))
 	}
 	return prometheusConfigList
 }
@@ -110,7 +108,7 @@ func (list PrometheusConfigList) AsInterfaces() []interface{} {
 
 func (byNamespace PrometheusconfigsByNamespace) Add(prometheusConfig ...*PrometheusConfig) {
 	for _, item := range prometheusConfig {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

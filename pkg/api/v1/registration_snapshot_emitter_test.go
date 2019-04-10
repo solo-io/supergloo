@@ -58,6 +58,7 @@ var _ = Describe("V1Emitter", func() {
 			Cfg:         cfg,
 			SharedCache: kuberc.NewKubeCache(context.TODO()),
 		}
+
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 		// MeshIngress Constructor
@@ -66,6 +67,7 @@ var _ = Describe("V1Emitter", func() {
 			Cfg:         cfg,
 			SharedCache: kuberc.NewKubeCache(context.TODO()),
 		}
+
 		meshIngressClient, err = NewMeshIngressClient(meshIngressClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 		emitter = NewRegistrationEmitter(meshClient, meshIngressClient)
@@ -97,12 +99,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -133,16 +135,16 @@ var _ = Describe("V1Emitter", func() {
 
 		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
 
-		err = meshClient.Delete(mesh2a.Metadata.Namespace, mesh2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh2a.GetMetadata().Namespace, mesh2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh2b.Metadata.Namespace, mesh2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh2b.GetMetadata().Namespace, mesh2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
 
-		err = meshClient.Delete(mesh1a.Metadata.Namespace, mesh1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh1a.GetMetadata().Namespace, mesh1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh1b.Metadata.Namespace, mesh1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh1b.GetMetadata().Namespace, mesh1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
@@ -157,12 +159,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+						if _, err := snap.Meshingresses.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+						if _, err := snap.Meshingresses.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -193,16 +195,16 @@ var _ = Describe("V1Emitter", func() {
 
 		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b}, nil)
 
-		err = meshIngressClient.Delete(meshIngress2a.Metadata.Namespace, meshIngress2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress2a.GetMetadata().Namespace, meshIngress2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshIngressClient.Delete(meshIngress2b.Metadata.Namespace, meshIngress2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress2b.GetMetadata().Namespace, meshIngress2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, MeshIngressList{meshIngress2a, meshIngress2b})
 
-		err = meshIngressClient.Delete(meshIngress1a.Metadata.Namespace, meshIngress1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress1a.GetMetadata().Namespace, meshIngress1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshIngressClient.Delete(meshIngress1b.Metadata.Namespace, meshIngress1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress1b.GetMetadata().Namespace, meshIngress1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshingresses(nil, MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b})
@@ -230,12 +232,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -266,16 +268,16 @@ var _ = Describe("V1Emitter", func() {
 
 		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
 
-		err = meshClient.Delete(mesh2a.Metadata.Namespace, mesh2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh2a.GetMetadata().Namespace, mesh2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh2b.Metadata.Namespace, mesh2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh2b.GetMetadata().Namespace, mesh2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
 
-		err = meshClient.Delete(mesh1a.Metadata.Namespace, mesh1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh1a.GetMetadata().Namespace, mesh1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh1b.Metadata.Namespace, mesh1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshClient.Delete(mesh1b.GetMetadata().Namespace, mesh1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
@@ -290,12 +292,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(expected.Metadata.Ref().Strings()); err != nil {
+						if _, err := snap.Meshingresses.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(unexpected.Metadata.Ref().Strings()); err == nil {
+						if _, err := snap.Meshingresses.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -326,16 +328,16 @@ var _ = Describe("V1Emitter", func() {
 
 		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b}, nil)
 
-		err = meshIngressClient.Delete(meshIngress2a.Metadata.Namespace, meshIngress2a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress2a.GetMetadata().Namespace, meshIngress2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshIngressClient.Delete(meshIngress2b.Metadata.Namespace, meshIngress2b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress2b.GetMetadata().Namespace, meshIngress2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshingresses(MeshIngressList{meshIngress1a, meshIngress1b}, MeshIngressList{meshIngress2a, meshIngress2b})
 
-		err = meshIngressClient.Delete(meshIngress1a.Metadata.Namespace, meshIngress1a.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress1a.GetMetadata().Namespace, meshIngress1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		err = meshIngressClient.Delete(meshIngress1b.Metadata.Namespace, meshIngress1b.Metadata.Name, clients.DeleteOpts{Ctx: ctx})
+		err = meshIngressClient.Delete(meshIngress1b.GetMetadata().Namespace, meshIngress1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshingresses(nil, MeshIngressList{meshIngress1a, meshIngress1b, meshIngress2a, meshIngress2b})

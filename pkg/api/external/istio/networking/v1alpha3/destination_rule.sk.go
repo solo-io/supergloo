@@ -5,7 +5,6 @@ package v1alpha3
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewDestinationRule(namespace, name string) *DestinationRule {
-	return &DestinationRule{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *DestinationRule) SetStatus(status core.Status) {
-	r.Status = status
+	destinationrule := &DestinationRule{}
+	destinationrule.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return destinationrule
 }
 
 func (r *DestinationRule) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *DestinationRule) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *DestinationRule) Hash() uint64 {
@@ -51,8 +49,8 @@ type DestinationrulesByNamespace map[string]DestinationRuleList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list DestinationRuleList) Find(namespace, name string) (*DestinationRule, error) {
 	for _, destinationRule := range list {
-		if destinationRule.Metadata.Name == name {
-			if namespace == "" || destinationRule.Metadata.Namespace == namespace {
+		if destinationRule.GetMetadata().Name == name {
+			if namespace == "" || destinationRule.GetMetadata().Namespace == namespace {
 				return destinationRule, nil
 			}
 		}
@@ -79,7 +77,7 @@ func (list DestinationRuleList) AsInputResources() resources.InputResourceList {
 func (list DestinationRuleList) Names() []string {
 	var names []string
 	for _, destinationRule := range list {
-		names = append(names, destinationRule.Metadata.Name)
+		names = append(names, destinationRule.GetMetadata().Name)
 	}
 	return names
 }
@@ -87,14 +85,14 @@ func (list DestinationRuleList) Names() []string {
 func (list DestinationRuleList) NamespacesDotNames() []string {
 	var names []string
 	for _, destinationRule := range list {
-		names = append(names, destinationRule.Metadata.Namespace+"."+destinationRule.Metadata.Name)
+		names = append(names, destinationRule.GetMetadata().Namespace+"."+destinationRule.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list DestinationRuleList) Sort() DestinationRuleList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -102,7 +100,7 @@ func (list DestinationRuleList) Sort() DestinationRuleList {
 func (list DestinationRuleList) Clone() DestinationRuleList {
 	var destinationRuleList DestinationRuleList
 	for _, destinationRule := range list {
-		destinationRuleList = append(destinationRuleList, proto.Clone(destinationRule).(*DestinationRule))
+		destinationRuleList = append(destinationRuleList, resources.Clone(destinationRule).(*DestinationRule))
 	}
 	return destinationRuleList
 }
@@ -123,7 +121,7 @@ func (list DestinationRuleList) AsInterfaces() []interface{} {
 
 func (byNamespace DestinationrulesByNamespace) Add(destinationRule ...*DestinationRule) {
 	for _, item := range destinationRule {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

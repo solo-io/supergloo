@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewRoutingRule(namespace, name string) *RoutingRule {
-	return &RoutingRule{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *RoutingRule) SetStatus(status core.Status) {
-	r.Status = status
+	routingrule := &RoutingRule{}
+	routingrule.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return routingrule
 }
 
 func (r *RoutingRule) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *RoutingRule) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *RoutingRule) Hash() uint64 {
@@ -52,8 +50,8 @@ type RoutingrulesByNamespace map[string]RoutingRuleList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list RoutingRuleList) Find(namespace, name string) (*RoutingRule, error) {
 	for _, routingRule := range list {
-		if routingRule.Metadata.Name == name {
-			if namespace == "" || routingRule.Metadata.Namespace == namespace {
+		if routingRule.GetMetadata().Name == name {
+			if namespace == "" || routingRule.GetMetadata().Namespace == namespace {
 				return routingRule, nil
 			}
 		}
@@ -80,7 +78,7 @@ func (list RoutingRuleList) AsInputResources() resources.InputResourceList {
 func (list RoutingRuleList) Names() []string {
 	var names []string
 	for _, routingRule := range list {
-		names = append(names, routingRule.Metadata.Name)
+		names = append(names, routingRule.GetMetadata().Name)
 	}
 	return names
 }
@@ -88,14 +86,14 @@ func (list RoutingRuleList) Names() []string {
 func (list RoutingRuleList) NamespacesDotNames() []string {
 	var names []string
 	for _, routingRule := range list {
-		names = append(names, routingRule.Metadata.Namespace+"."+routingRule.Metadata.Name)
+		names = append(names, routingRule.GetMetadata().Namespace+"."+routingRule.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list RoutingRuleList) Sort() RoutingRuleList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -103,7 +101,7 @@ func (list RoutingRuleList) Sort() RoutingRuleList {
 func (list RoutingRuleList) Clone() RoutingRuleList {
 	var routingRuleList RoutingRuleList
 	for _, routingRule := range list {
-		routingRuleList = append(routingRuleList, proto.Clone(routingRule).(*RoutingRule))
+		routingRuleList = append(routingRuleList, resources.Clone(routingRule).(*RoutingRule))
 	}
 	return routingRuleList
 }
@@ -124,7 +122,7 @@ func (list RoutingRuleList) AsInterfaces() []interface{} {
 
 func (byNamespace RoutingrulesByNamespace) Add(routingRule ...*RoutingRule) {
 	for _, item := range routingRule {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

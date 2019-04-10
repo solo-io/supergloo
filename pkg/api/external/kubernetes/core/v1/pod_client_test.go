@@ -59,7 +59,7 @@ func PodClientTest(namespace string, client PodClient, name1, name2, name3 strin
 
 	name := name1
 	input := NewPod(namespace, name)
-	input.Metadata.Namespace = namespace
+
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -70,8 +70,8 @@ func PodClientTest(namespace string, client PodClient, name1, name2, name3 strin
 	Expect(r1).To(BeAssignableToTypeOf(&Pod{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
-	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
-	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
+	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
+	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.Spec).To(Equal(input.Spec))
 	Expect(r1.Status).To(Equal(input.Status))
 
@@ -80,7 +80,9 @@ func PodClientTest(namespace string, client PodClient, name1, name2, name3 strin
 	})
 	Expect(err).To(HaveOccurred())
 
-	input.Metadata.ResourceVersion = r1.GetMetadata().ResourceVersion
+	resources.UpdateMetadata(input, func(meta *core.Metadata) {
+		meta.ResourceVersion = r1.GetMetadata().ResourceVersion
+	})
 	r1, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
 	})
@@ -95,10 +97,10 @@ func PodClientTest(namespace string, client PodClient, name1, name2, name3 strin
 	name = name2
 	input = &Pod{}
 
-	input.Metadata = core.Metadata{
+	input.SetMetadata(core.Metadata{
 		Name:      name,
 		Namespace: namespace,
-	}
+	})
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -146,10 +148,10 @@ func PodClientTest(namespace string, client PodClient, name1, name2, name3 strin
 		name = name3
 		input = &Pod{}
 		Expect(err).NotTo(HaveOccurred())
-		input.Metadata = core.Metadata{
+		input.SetMetadata(core.Metadata{
 			Name:      name,
 			Namespace: namespace,
-		}
+		})
 
 		r3, err = client.Write(input, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

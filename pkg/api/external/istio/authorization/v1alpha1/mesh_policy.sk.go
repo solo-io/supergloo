@@ -5,7 +5,6 @@ package v1alpha1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewMeshPolicy(namespace, name string) *MeshPolicy {
-	return &MeshPolicy{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *MeshPolicy) SetStatus(status core.Status) {
-	r.Status = status
+	meshpolicy := &MeshPolicy{}
+	meshpolicy.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return meshpolicy
 }
 
 func (r *MeshPolicy) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *MeshPolicy) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *MeshPolicy) Hash() uint64 {
@@ -53,8 +51,8 @@ type MeshpoliciesByNamespace map[string]MeshPolicyList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshPolicyList) Find(namespace, name string) (*MeshPolicy, error) {
 	for _, meshPolicy := range list {
-		if meshPolicy.Metadata.Name == name {
-			if namespace == "" || meshPolicy.Metadata.Namespace == namespace {
+		if meshPolicy.GetMetadata().Name == name {
+			if namespace == "" || meshPolicy.GetMetadata().Namespace == namespace {
 				return meshPolicy, nil
 			}
 		}
@@ -81,7 +79,7 @@ func (list MeshPolicyList) AsInputResources() resources.InputResourceList {
 func (list MeshPolicyList) Names() []string {
 	var names []string
 	for _, meshPolicy := range list {
-		names = append(names, meshPolicy.Metadata.Name)
+		names = append(names, meshPolicy.GetMetadata().Name)
 	}
 	return names
 }
@@ -89,14 +87,14 @@ func (list MeshPolicyList) Names() []string {
 func (list MeshPolicyList) NamespacesDotNames() []string {
 	var names []string
 	for _, meshPolicy := range list {
-		names = append(names, meshPolicy.Metadata.Namespace+"."+meshPolicy.Metadata.Name)
+		names = append(names, meshPolicy.GetMetadata().Namespace+"."+meshPolicy.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list MeshPolicyList) Sort() MeshPolicyList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -104,7 +102,7 @@ func (list MeshPolicyList) Sort() MeshPolicyList {
 func (list MeshPolicyList) Clone() MeshPolicyList {
 	var meshPolicyList MeshPolicyList
 	for _, meshPolicy := range list {
-		meshPolicyList = append(meshPolicyList, proto.Clone(meshPolicy).(*MeshPolicy))
+		meshPolicyList = append(meshPolicyList, resources.Clone(meshPolicy).(*MeshPolicy))
 	}
 	return meshPolicyList
 }
@@ -125,7 +123,7 @@ func (list MeshPolicyList) AsInterfaces() []interface{} {
 
 func (byNamespace MeshpoliciesByNamespace) Add(meshPolicy ...*MeshPolicy) {
 	for _, item := range meshPolicy {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 

@@ -59,7 +59,7 @@ func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3
 
 	name := name1
 	input := NewPolicy(namespace, name)
-	input.Metadata.Namespace = namespace
+
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -70,8 +70,8 @@ func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3
 	Expect(r1).To(BeAssignableToTypeOf(&Policy{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
-	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
-	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
+	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
+	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
 	Expect(r1.Targets).To(Equal(input.Targets))
 	Expect(r1.Peers).To(Equal(input.Peers))
@@ -85,7 +85,9 @@ func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3
 	})
 	Expect(err).To(HaveOccurred())
 
-	input.Metadata.ResourceVersion = r1.GetMetadata().ResourceVersion
+	resources.UpdateMetadata(input, func(meta *core.Metadata) {
+		meta.ResourceVersion = r1.GetMetadata().ResourceVersion
+	})
 	r1, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
 	})
@@ -100,10 +102,10 @@ func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3
 	name = name2
 	input = &Policy{}
 
-	input.Metadata = core.Metadata{
+	input.SetMetadata(core.Metadata{
 		Name:      name,
 		Namespace: namespace,
-	}
+	})
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -151,10 +153,10 @@ func PolicyClientTest(namespace string, client PolicyClient, name1, name2, name3
 		name = name3
 		input = &Policy{}
 		Expect(err).NotTo(HaveOccurred())
-		input.Metadata = core.Metadata{
+		input.SetMetadata(core.Metadata{
 			Name:      name,
 			Namespace: namespace,
-		}
+		})
 
 		r3, err = client.Write(input, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

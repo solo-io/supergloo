@@ -59,7 +59,7 @@ func TlsSecretClientTest(namespace string, client TlsSecretClient, name1, name2,
 
 	name := name1
 	input := NewTlsSecret(namespace, name)
-	input.Metadata.Namespace = namespace
+
 	r1, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
 
@@ -70,8 +70,8 @@ func TlsSecretClientTest(namespace string, client TlsSecretClient, name1, name2,
 	Expect(r1).To(BeAssignableToTypeOf(&TlsSecret{}))
 	Expect(r1.GetMetadata().Name).To(Equal(name))
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
-	Expect(r1.Metadata.ResourceVersion).NotTo(Equal(input.Metadata.ResourceVersion))
-	Expect(r1.Metadata.Ref()).To(Equal(input.Metadata.Ref()))
+	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
+	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.RootCert).To(Equal(input.RootCert))
 	Expect(r1.CertChain).To(Equal(input.CertChain))
 	Expect(r1.CaCert).To(Equal(input.CaCert))
@@ -82,7 +82,9 @@ func TlsSecretClientTest(namespace string, client TlsSecretClient, name1, name2,
 	})
 	Expect(err).To(HaveOccurred())
 
-	input.Metadata.ResourceVersion = r1.GetMetadata().ResourceVersion
+	resources.UpdateMetadata(input, func(meta *core.Metadata) {
+		meta.ResourceVersion = r1.GetMetadata().ResourceVersion
+	})
 	r1, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,
 	})
@@ -97,10 +99,10 @@ func TlsSecretClientTest(namespace string, client TlsSecretClient, name1, name2,
 	name = name2
 	input = &TlsSecret{}
 
-	input.Metadata = core.Metadata{
+	input.SetMetadata(core.Metadata{
 		Name:      name,
 		Namespace: namespace,
-	}
+	})
 
 	r2, err := client.Write(input, clients.WriteOpts{})
 	Expect(err).NotTo(HaveOccurred())
@@ -148,10 +150,10 @@ func TlsSecretClientTest(namespace string, client TlsSecretClient, name1, name2,
 		name = name3
 		input = &TlsSecret{}
 		Expect(err).NotTo(HaveOccurred())
-		input.Metadata = core.Metadata{
+		input.SetMetadata(core.Metadata{
 			Name:      name,
 			Namespace: namespace,
-		}
+		})
 
 		r3, err = client.Write(input, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

@@ -5,7 +5,6 @@ package v1
 import (
 	"sort"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -15,22 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// TODO: modify as needed to populate additional fields
 func NewInstall(namespace, name string) *Install {
-	return &Install{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-func (r *Install) SetStatus(status core.Status) {
-	r.Status = status
+	install := &Install{}
+	install.SetMetadata(core.Metadata{
+		Name:      name,
+		Namespace: namespace,
+	})
+	return install
 }
 
 func (r *Install) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
+}
+
+func (r *Install) SetStatus(status core.Status) {
+	r.Status = status
 }
 
 func (r *Install) Hash() uint64 {
@@ -50,8 +48,8 @@ type InstallsByNamespace map[string]InstallList
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list InstallList) Find(namespace, name string) (*Install, error) {
 	for _, install := range list {
-		if install.Metadata.Name == name {
-			if namespace == "" || install.Metadata.Namespace == namespace {
+		if install.GetMetadata().Name == name {
+			if namespace == "" || install.GetMetadata().Namespace == namespace {
 				return install, nil
 			}
 		}
@@ -78,7 +76,7 @@ func (list InstallList) AsInputResources() resources.InputResourceList {
 func (list InstallList) Names() []string {
 	var names []string
 	for _, install := range list {
-		names = append(names, install.Metadata.Name)
+		names = append(names, install.GetMetadata().Name)
 	}
 	return names
 }
@@ -86,14 +84,14 @@ func (list InstallList) Names() []string {
 func (list InstallList) NamespacesDotNames() []string {
 	var names []string
 	for _, install := range list {
-		names = append(names, install.Metadata.Namespace+"."+install.Metadata.Name)
+		names = append(names, install.GetMetadata().Namespace+"."+install.GetMetadata().Name)
 	}
 	return names
 }
 
 func (list InstallList) Sort() InstallList {
 	sort.SliceStable(list, func(i, j int) bool {
-		return list[i].Metadata.Less(list[j].Metadata)
+		return list[i].GetMetadata().Less(list[j].GetMetadata())
 	})
 	return list
 }
@@ -101,7 +99,7 @@ func (list InstallList) Sort() InstallList {
 func (list InstallList) Clone() InstallList {
 	var installList InstallList
 	for _, install := range list {
-		installList = append(installList, proto.Clone(install).(*Install))
+		installList = append(installList, resources.Clone(install).(*Install))
 	}
 	return installList
 }
@@ -122,7 +120,7 @@ func (list InstallList) AsInterfaces() []interface{} {
 
 func (byNamespace InstallsByNamespace) Add(install ...*Install) {
 	for _, item := range install {
-		byNamespace[item.Metadata.Namespace] = append(byNamespace[item.Metadata.Namespace], item)
+		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
 	}
 }
 
