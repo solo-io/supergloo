@@ -92,7 +92,7 @@ var _ = Describe("SyncerReconcilers", func() {
 			RootCert: &v1.TlsSecret{Metadata: tlsMeta},
 		}
 
-		err := rec.ReconcileAll(context.TODO(), writeNs, config)
+		err := rec.ReconcileAll(context.TODO(), config)
 		Expect(err).NotTo(HaveOccurred())
 
 		// reconciler should have created each type of resource

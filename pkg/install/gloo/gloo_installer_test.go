@@ -3,6 +3,8 @@ package gloo
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
 	"github.com/solo-io/supergloo/pkg/util"
 
@@ -111,6 +113,14 @@ var _ = Describe("gloo installer", func() {
 			resources, err := manifests.ResourceList()
 			Expect(err).NotTo(HaveOccurred())
 
+			// expect upstreams and settings to be filtered out
+			resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
+				if resource.GroupVersionKind().Kind == customResourceDefinition {
+					return resource.GetName() == upstreamCrdName || resource.GetName() == settingsCrdName
+				}
+				return false
+			})
+
 			Expect(kubeInstaller.ReconcileCalledWith).To(Equal(mocks.ReconcileParams{
 				InstallNamespace: "ok",
 				Resources:        resources,
@@ -147,6 +157,14 @@ var _ = Describe("gloo installer", func() {
 
 			resources, err := manifests.ResourceList()
 			Expect(err).NotTo(HaveOccurred())
+
+			// expect upstreams and settings to be filtered out
+			resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
+				if resource.GroupVersionKind().Kind == customResourceDefinition {
+					return resource.GetName() == upstreamCrdName || resource.GetName() == settingsCrdName
+				}
+				return false
+			})
 
 			Expect(kubeInstaller.ReconcileCalledWith).To(Equal(mocks.ReconcileParams{
 				InstallNamespace: "ok",
