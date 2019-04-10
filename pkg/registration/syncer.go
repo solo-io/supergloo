@@ -41,5 +41,13 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		}
 	}
 
+	for _, mesh := range snap.Meshes.List() {
+		if mesh.GetAwsAppMesh() != nil {
+			enabledFeatures.AppMesh = true
+			contextutils.LoggerFrom(ctx).Infof("detected Aws App Mesh, enabling appmesh config syncer")
+			break
+		}
+	}
+
 	return setup.RunConfigEventLoop(ctx, s.Clientset, s.ErrHandler, enabledFeatures)
 }

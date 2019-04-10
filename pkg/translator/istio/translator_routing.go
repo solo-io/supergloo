@@ -8,8 +8,6 @@ import (
 
 	"github.com/solo-io/go-utils/kubeutils"
 
-	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -19,48 +17,14 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
-	"k8s.io/apimachinery/pkg/labels"
 )
-
-// we create a routing rule for each unique matcher
-type rulesByMatcher struct {
-	rules map[uint64]v1.RoutingRuleList
-}
-
-func newRulesByMatcher(rules v1.RoutingRuleList) rulesByMatcher {
-	rbm := make(map[uint64]v1.RoutingRuleList)
-	for _, rule := range rules {
-		hash := hashutils.HashAll(
-			rule.SourceSelector,
-			rule.RequestMatchers,
-		)
-		rbm[hash] = append(rbm[hash], rule)
-	}
-
-	return rulesByMatcher{rules: rbm}
-}
-
-func (rbm rulesByMatcher) sort() []v1.RoutingRuleList {
-	var (
-		hashes       []uint64
-		rulesForHash []v1.RoutingRuleList
-	)
-	for hash, rules := range rbm.rules {
-		hashes = append(hashes, hash)
-		rulesForHash = append(rulesForHash, rules)
-	}
-	sort.SliceStable(rulesForHash, func(i, j int) bool {
-		return hashes[i] < hashes[j]
-	})
-	return rulesForHash
-}
 
 func (t *translator) makeVirtualServiceForHost(
 	ctx context.Context,
 	params plugins.Params,
 	writeNamespace string,
 	host string,
-	destinationPortAndLabelSets []labelsPortTuple,
+	destinationPortAndLabelSets []utils.LabelsPortTuple,
 	routingRules v1.RoutingRuleList,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
@@ -69,7 +33,7 @@ func (t *translator) makeVirtualServiceForHost(
 	// group rules by their matcher
 	// we will then create a corresponding http rule
 	// on the virtual service that contains all the relevant rules
-	rulesPerMatcher := newRulesByMatcher(routingRules)
+	rulesPerMatcher := utils.NewRulesByMatcher(routingRules)
 
 	vs := initVirtualService(writeNamespace, host)
 
@@ -77,11 +41,11 @@ func (t *translator) makeVirtualServiceForHost(
 addUniquePorts:
 	for _, set := range destinationPortAndLabelSets {
 		for _, port := range destPorts {
-			if set.port == port {
+			if set.Port == port {
 				continue addUniquePorts
 			}
 		}
-		destPorts = append(destPorts, set.port)
+		destPorts = append(destPorts, set.Port)
 	}
 
 	// add a rule for each dest port
@@ -115,7 +79,7 @@ func (t *translator) applyRouteRules(
 	params plugins.Params,
 	destinationHost string,
 	destinationPort uint32,
-	rulesPerMatcher rulesByMatcher,
+	rulesPerMatcher utils.RulesByMatcher,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
 	out *v1alpha3.VirtualService) {
@@ -125,7 +89,7 @@ func (t *translator) applyRouteRules(
 	// find rules for this host and apply them
 	// each unique matcher becomes an http rule in the virtual
 	// service for this host
-	for _, rules := range rulesPerMatcher.sort() {
+	for _, rules := range rulesPerMatcher.Sort() {
 		// initialize report func
 		report := func(err error, format string, args ...interface{}) {
 			for _, rr := range rules {
@@ -254,7 +218,7 @@ func (t *translator) createRoute(
 	}
 	for _, rr := range rules {
 		// if rr does not apply to this host (destination), skip
-		useRule, err := appliesToDestination(destinationHost, rr.DestinationSelector, upstreams)
+		useRule, err := utils.RuleAppliesToDestination(destinationHost, rr.DestinationSelector, upstreams)
 		if err != nil {
 			resourceErrs.AddError(rr, errors.Wrapf(err, "invalid destination selector"))
 			continue
@@ -368,76 +332,4 @@ func convertMatcher(sourceSelector map[string]string, destPort uint32, match *gl
 		SourceLabels: sourceSelector,
 		Port:         destPort,
 	}
-}
-
-func appliesToDestination(destinationHost string, destinationSelector *v1.PodSelector, upstreams gloov1.UpstreamList) (bool, error) {
-	if destinationSelector == nil {
-		return true, nil
-	}
-	switch selector := destinationSelector.SelectorType.(type) {
-	case *v1.PodSelector_LabelSelector_:
-		// true if an upstream exists whose selector falls within the rr's selector
-		// and the host in question is that upstream's host
-		for _, us := range upstreams {
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			// we only care about the host in question
-			if destinationHost != hostForUpstream {
-				continue
-			}
-
-			upstreamLabels := utils.GetLabelsForUpstream(us)
-			labelsMatch := labels.SelectorFromSet(selector.LabelSelector.LabelsToMatch).Matches(labels.Set(upstreamLabels))
-			if !labelsMatch {
-				continue
-			}
-
-			// we found an upstream with the correct host and labels
-			return true, nil
-		}
-	case *v1.PodSelector_UpstreamSelector_:
-		for _, ref := range selector.UpstreamSelector.Upstreams {
-			us, err := upstreams.Find(ref.Strings())
-			if err != nil {
-				return false, err
-			}
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			if hostForUpstream == destinationHost {
-				return true, nil
-			}
-		}
-	case *v1.PodSelector_NamespaceSelector_:
-		for _, us := range upstreams {
-			hostForUpstream, err := utils.GetHostForUpstream(us)
-			if err != nil {
-				return false, errors.Wrapf(err, "getting host for upstream")
-			}
-			// we only care about the host in question
-			if destinationHost != hostForUpstream {
-				continue
-			}
-
-			var usInSelectedNamespace bool
-			for _, ns := range selector.NamespaceSelector.Namespaces {
-				namespaceForUpstream := utils.GetNamespaceForUpstream(us)
-				if ns == namespaceForUpstream {
-					usInSelectedNamespace = true
-					break
-				}
-			}
-			if !usInSelectedNamespace {
-				continue
-			}
-
-			// we found an upstream with the correct host and namespace
-			return true, nil
-
-		}
-	}
-	return false, nil
 }
