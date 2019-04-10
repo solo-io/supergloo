@@ -15,6 +15,11 @@ func DeployTestRunnerWithInject(namespace, istioNamespace string) error {
 
 const TestRunnerYaml = `
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: testrunner
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: testrunner
@@ -34,6 +39,7 @@ metadata:
     supergloo: testrunner
   name: testrunner
 spec:
+  serviceAccountName: testrunner
   containers:
   - image: soloio/testrunner:testing-8671e8b9
     imagePullPolicy: IfNotPresent
