@@ -131,7 +131,7 @@ func testInstallIstio(meshName string) {
 		return sgutils.DeployTestRunner(namespaceWithInject)
 	}, time.Minute*1).ShouldNot(HaveOccurred())
 
-	err = sgutils.DeployBookInfo(namespaceWithInject)
+	err = sgutils.DeployBookInfoIstio(namespaceWithInject)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, basicNamespace,

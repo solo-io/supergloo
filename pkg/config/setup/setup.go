@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/config/appmesh"
+	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -62,7 +65,27 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled E
 		syncers = append(syncers, istioSyncer)
 	}
 
+	if enabled.AppMesh {
+		appMeshSyncer, err := createAppmeshConfigSyncer(ctx, cs)
+		if err != nil {
+			return nil, err
+		}
+		syncers = append(syncers, appMeshSyncer)
+	}
+
 	return syncers, nil
+}
+
+func createAppmeshConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+	translator := appmeshtranslator.NewAppMeshTranslator()
+
+	newReporter := reporter.NewReporter("appmesh-config-reporter",
+		cs.Input.Mesh.BaseClient(),
+		cs.Input.Upstream.BaseClient(),
+		cs.Input.RoutingRule.BaseClient(),
+		cs.Input.SecurityRule.BaseClient())
+
+	return appmesh.NewAppMeshConfigSyncer(translator, newReporter)
 }
 
 func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {

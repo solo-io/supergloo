@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add routing rule translation for appmesh.
+    issueLink: https://github.com/solo-io/supergloo/issues/231
