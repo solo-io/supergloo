@@ -17,7 +17,7 @@ import (
 )
 
 type Reconcilers interface {
-	ReconcileAll(ctx context.Context, writeNamespace string, config *istio.MeshConfig) error
+	ReconcileAll(ctx context.Context, config *istio.MeshConfig) error
 }
 
 type istioReconcilers struct {
@@ -52,7 +52,7 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 	}
 }
 
-func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace string, config *istio.MeshConfig) error {
+func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshConfig) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	// this list should always either be empty or contain the global mesh policy
@@ -82,7 +82,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		rbacConfigsToReconcile = append(rbacConfigsToReconcile, config.RbacConfig)
 	}
 	if err := s.rbacConfigReconciler.Reconcile(
-		writeNamespace,
+		"",
 		rbacConfigsToReconcile, // rbac config is a singleton
 		nil,
 		clients.ListOpts{
@@ -101,12 +101,12 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 		tlsSecretsToReconcile = append(tlsSecretsToReconcile, config.RootCert)
 	}
 	if err := s.tlsSecretReconciler.Reconcile(
-		writeNamespace,
+		"",
 		tlsSecretsToReconcile, // root cert is a singleton
 		nil,
 		clients.ListOpts{
 			Ctx:      ctx,
-			Selector: nil, // allows overwriting a user-created root cert
+			Selector: s.ownerLabels,
 		},
 	); err != nil {
 		return errors.Wrapf(err, "reconciling cacerts root cert")
@@ -115,7 +115,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 	logger.Infof("DestinationRules: %v", config.DestinationRules.Names())
 	s.setLabels(config.DestinationRules.AsResources()...)
 	if err := s.destinationRuleReconciler.Reconcile(
-		writeNamespace,
+		"",
 		config.DestinationRules,
 		nil,
 		clients.ListOpts{
@@ -129,7 +129,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 	logger.Infof("VirtualServices: %v", config.VirtualServices.Names())
 	s.setLabels(config.VirtualServices.AsResources()...)
 	if err := s.virtualServiceReconciler.Reconcile(
-		writeNamespace,
+		"",
 		config.VirtualServices,
 		nil,
 		clients.ListOpts{
@@ -143,7 +143,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 	logger.Infof("ServiceRoles: %v", config.ServiceRoles.Names())
 	s.setLabels(config.ServiceRoles.AsResources()...)
 	if err := s.serviceRoleReconciler.Reconcile(
-		writeNamespace,
+		"",
 		config.ServiceRoles,
 		nil,
 		clients.ListOpts{
@@ -157,7 +157,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, writeNamespace stri
 	logger.Infof("ServiceRoleBindings: %v", config.ServiceRoleBindings.Names())
 	s.setLabels(config.ServiceRoleBindings.AsResources()...)
 	if err := s.serviceRoleBindingReconciler.Reconcile(
-		writeNamespace,
+		"",
 		config.ServiceRoleBindings,
 		nil,
 		clients.ListOpts{

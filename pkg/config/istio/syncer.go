@@ -42,16 +42,13 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) e
 	// added to the meshConfigs. all meshConfigs are considered to be valid
 
 	for mesh, config := range meshConfigs {
-		istioMesh, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			return errors.Errorf("internal error: a non istio-mesh appeared in the mesh config snapshot")
 		}
 
-		// NOTE (ilackarms): eventually we want a way to correlate the mesh with the cluster it's installed to
-		writeNamespace := istioMesh.Istio.InstallationNamespace
-
 		logger.Infof("reconciling config for mesh %v: ", mesh.Metadata.Ref())
-		if err := s.reconcilers.ReconcileAll(ctx, writeNamespace, config); err != nil {
+		if err := s.reconcilers.ReconcileAll(ctx, config); err != nil {
 			return errors.Wrapf(err, "reconciling config for %v", mesh.Metadata.Ref())
 		}
 	}
