@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 	kubev1 "k8s.io/api/core/v1"
@@ -65,7 +64,7 @@ func namespaceId(meta core.Metadata) string {
 	return fmt.Sprintf("%s.%s", meta.Namespace, meta.Name)
 }
 
-func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInfo, appMeshPodList customkube.PodList) (AwsAppMeshUpstreamInfo, gloov1.UpstreamList, error) {
+func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInfo, appMeshPodList v1.PodList) (AwsAppMeshUpstreamInfo, gloov1.UpstreamList, error) {
 	appMeshUpstreamInfo := make(AwsAppMeshUpstreamInfo, 0)
 	for _, us := range upstreams {
 
@@ -97,8 +96,8 @@ func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInf
 
 }
 
-func getPodsForMesh(mesh *v1.Mesh, pods customkube.PodList) (AwsAppMeshPodInfo, customkube.PodList, error) {
-	var appMeshPodList customkube.PodList
+func getPodsForMesh(mesh *v1.Mesh, pods v1.PodList) (AwsAppMeshPodInfo, v1.PodList, error) {
+	var appMeshPodList v1.PodList
 	appMeshPods := make(AwsAppMeshPodInfo, 0)
 	for _, pod := range pods {
 		kubePod, err := kubernetes.ToKube(pod)
@@ -118,7 +117,9 @@ func getPodsForMesh(mesh *v1.Mesh, pods customkube.PodList) (AwsAppMeshPodInfo, 
 	}
 
 	sort.SliceStable(appMeshPodList, func(i, j int) bool {
-		return namespaceId(appMeshPodList[i].Metadata) < namespaceId(appMeshPodList[j].Metadata)
+		iPod := appMeshPodList[i]
+		jPod := appMeshPodList[j]
+		return fmt.Sprintf("%s.%s", iPod.Namespace, iPod.Name) < fmt.Sprintf("%s.%s", jPod.Namespace, jPod.Name)
 	})
 
 	return appMeshPods, appMeshPodList, nil

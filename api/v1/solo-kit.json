@@ -3,6 +3,14 @@
   "name": "supergloo.solo.io",
   "version": "v1",
   "docs_dir": "docs/v1",
+  "custom_resources": [
+    {
+      "package": "github.com/solo-io/supergloo/api/custom/kubepod",
+      "type": "Pod",
+      "plural_name": "Pods",
+      "short_name": "p"
+    }
+  ],
   "resource_groups": {
     "config.supergloo.solo.io": [
       {
@@ -35,7 +43,7 @@
       },
       {
         "name": "Pod",
-        "package": "core.kubernetes.io"
+        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
       }
     ],
     "install.supergloo.solo.io": [

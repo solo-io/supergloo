@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	customkube "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	skkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -130,7 +129,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	podBase := customkube.NewResourceClient(kubeClient, kubeCoreCache)
-	pods := skkube.NewPodClientWithBase(podBase)
+	pods := v1.NewPodClientWithBase(podBase)
 
 	return newClientset(
 		restConfig,
@@ -273,10 +272,10 @@ func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v
 }
 
 type discoveryClients struct {
-	Pod skkube.PodClient
+	Pod v1.PodClient
 }
 
-func newDiscoveryClients(pod skkube.PodClient) *discoveryClients {
+func newDiscoveryClients(pod v1.PodClient) *discoveryClients {
 	return &discoveryClients{Pod: pod}
 }
 

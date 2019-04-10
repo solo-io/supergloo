@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
@@ -20,11 +19,11 @@ type podInfo struct {
 	upstreams gloov1.UpstreamList
 }
 
-type AwsAppMeshPodInfo map[*customkube.Pod]*podInfo
-type AwsAppMeshUpstreamInfo map[*gloov1.Upstream][]*customkube.Pod
+type AwsAppMeshPodInfo map[*v1.Pod]*podInfo
+type AwsAppMeshUpstreamInfo map[*gloov1.Upstream][]*v1.Pod
 
-type PodVirtualNode map[*customkube.Pod]*appmesh.VirtualNodeData
-type PodVirtualService map[*customkube.Pod]*appmesh.VirtualServiceData
+type PodVirtualNode map[*v1.Pod]*appmesh.VirtualNodeData
+type PodVirtualService map[*v1.Pod]*appmesh.VirtualServiceData
 
 type AwsAppMeshConfiguration interface {
 	// Configure resources to allow traffic from/to all services in the mesh
@@ -38,7 +37,7 @@ type awsAppMeshConfiguration struct {
 	// We build these objects once in the constructor. They are meant to help in all the translation operations where we
 	// probably will need to look up pods by upstreams and vice-versa multiple times.
 	podInfo      AwsAppMeshPodInfo
-	podList      customkube.PodList
+	podList      v1.PodList
 	upstreamInfo AwsAppMeshUpstreamInfo
 	upstreamList gloov1.UpstreamList
 
@@ -52,7 +51,7 @@ type awsAppMeshConfiguration struct {
 }
 
 // TODO(marco): to Eitan: I have not tested the util methods used in here, sorry in advance if they do not work as expected
-func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods customkube.PodList, upstreams gloov1.UpstreamList) (AwsAppMeshConfiguration, error) {
+func NewAwsAppMeshConfiguration(mesh *v1.Mesh, pods v1.PodList, upstreams gloov1.UpstreamList) (AwsAppMeshConfiguration, error) {
 
 	awsMesh := mesh.GetAwsAppMesh()
 	if awsMesh == nil {
@@ -239,7 +238,7 @@ func (c *awsAppMeshConfiguration) connectAllVirtualNodes() error {
 	return nil
 }
 
-func (c *awsAppMeshConfiguration) createVirtualServiceAndNodeForPod(pod *customkube.Pod) error {
+func (c *awsAppMeshConfiguration) createVirtualServiceAndNodeForPod(pod *v1.Pod) error {
 
 	info, ok := c.podInfo[pod]
 	if !ok {

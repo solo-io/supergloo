@@ -7,8 +7,6 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 
-	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -134,7 +132,7 @@ func (t *translator) translateMesh(
 	input inputMeshConfig,
 	upstreams gloov1.UpstreamList,
 	tlsSecrets v1.TlsSecretList,
-	pods customkube.PodList,
+	pods v1.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
 	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
