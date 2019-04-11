@@ -9,6 +9,5 @@ import (
 //go:generate mockgen -destination mocks_test.go  -source interface.go -package discovery
 
 type MeshDiscovery interface {
-	DiscoverMeshes() (v1.MeshList, error)
-	Init(ctx context.Context, snapshot *v1.DiscoverySnapshot)
+	DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error)
 }

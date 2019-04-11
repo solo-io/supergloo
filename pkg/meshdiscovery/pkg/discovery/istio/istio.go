@@ -23,12 +23,6 @@ func NewIstioMeshDiscovery() *istioMeshDiscovery {
 	return &istioMeshDiscovery{}
 }
 
-func (imd *istioMeshDiscovery) Init(ctx context.Context, snapshot *v1.DiscoverySnapshot) {
-	imd.pods = snapshot.Pods.List()
-	imd.ctx = ctx
-	imd.existingMeshes = filterIstioMeshes(snapshot.Meshes.List())
-}
-
 func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
 	var result v1.MeshList
 	for _, mesh := range meshes {
@@ -39,7 +33,11 @@ func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
 	return result
 }
 
-func (imd *istioMeshDiscovery) DiscoverMeshes() (v1.MeshList, error) {
+func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
+	imd.pods = snapshot.Pods.List()
+	imd.ctx = ctx
+	imd.existingMeshes = filterIstioMeshes(snapshot.Meshes.List())
+
 	logger := contextutils.LoggerFrom(imd.ctx)
 	possibleIstioPods := filterIstioPods(imd.pods)
 	if len(possibleIstioPods) == 0 {

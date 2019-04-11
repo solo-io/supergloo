@@ -9,12 +9,10 @@ import (
 type mockIstioMeshDiscovery struct {
 }
 
-func (imd *mockIstioMeshDiscovery) Init(ctx context.Context, snapshot *v1.DiscoverySnapshot) {}
-
 func NewMockIstioMeshDiscovery() *mockIstioMeshDiscovery {
 	return &mockIstioMeshDiscovery{}
 }
 
-func (imd *mockIstioMeshDiscovery) DiscoverMeshes() (v1.MeshList, error) {
+func (imd *mockIstioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	return nil, nil
 }

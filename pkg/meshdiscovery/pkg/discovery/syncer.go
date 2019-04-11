@@ -33,11 +33,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	var discoveredMeshes v1.MeshList
 
 	for _, meshDiscoveryPlugin := range s.plugins {
-		meshDiscoveryPlugin.Init(ctx, snap)
-	}
-
-	for _, meshDiscoveryPlugin := range s.plugins {
-		meshes, err := meshDiscoveryPlugin.DiscoverMeshes()
+		meshes, err := meshDiscoveryPlugin.DiscoverMeshes(ctx, snap)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			logger.Errorf(err.Error())
