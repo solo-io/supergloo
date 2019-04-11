@@ -20,10 +20,6 @@ const (
 
 type istioMeshDiscovery struct {
 }
-type IstioMeshDiscoveryContext struct {
-	pods           v1.PodList
-	existingMeshes v1.MeshList
-}
 
 func NewIstioMeshDiscovery() *istioMeshDiscovery {
 	return &istioMeshDiscovery{}
@@ -40,41 +36,66 @@ func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
 }
 
 func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
-
-	discoveryCtx := IstioMeshDiscoveryContext{
-		pods:           snapshot.Pods.List(),
-		existingMeshes: filterIstioMeshes(snapshot.Meshes.List()),
-	}
+	pods := snapshot.Pods.List()
+	existingMeshes := filterIstioMeshes(snapshot.Meshes.List())
 	logger := contextutils.LoggerFrom(ctx)
 
-	pilotPods := findIstioPods(discoveryCtx.pods)
+	pilotPods := findIstioPods(pods)
 	if len(pilotPods) == 0 {
 		logger.Debugf("no pilot pods found in istio pod list")
 		return nil, nil
 	}
 
-	var meshes v1.MeshList
+	var discoveredMeshes v1.MeshList
 	for _, pilotPod := range pilotPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
 			mesh, err := constructDiscoveryData(pilotPod)
 			if err != nil {
 				return nil, err
 			}
-			meshes = append(meshes, mesh)
+			discoveredMeshes = append(discoveredMeshes, mesh)
 		}
 	}
 
-	return meshes, nil
+	mergedMeshes, err := mergeMeshes(discoveredMeshes, existingMeshes)
+	if err != nil {
+		return nil, err
+	}
+
+	return mergedMeshes, nil
 }
 
-func findIstioPods(pods v1.PodList) v1.PodList {
-	var result v1.PodList
-	for _, pod := range pods {
-		if strings.Contains(pod.Name, istio) {
-			result = append(result, pod)
+func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, error) {
+	var mergedMeshes v1.MeshList
+	for _, discoveredMesh := range discoveredMeshes {
+		meshExists := false
+		for _, existingMesh := range existingMeshes {
+			istioMesh := existingMesh.GetIstio()
+			if istioMesh == nil {
+				continue
+			}
+
+			// This discovered mesh already exists, update the discovery data
+			if istioMesh.InstallationNamespace == discoveredMesh.DiscoveryMetadata.InstallationNamespace {
+				existingMesh.DiscoveryMetadata = discoveredMesh.DiscoveryMetadata
+				mergedMeshes = append(mergedMeshes, existingMesh)
+				meshExists = true
+				break
+			}
 		}
+		if meshExists {
+			continue
+		}
+
+		discoveredMesh.MeshType = &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
+				InstallationNamespace: discoveredMesh.DiscoveryMetadata.InstallationNamespace,
+				IstioVersion:          discoveredMesh.DiscoveryMetadata.MeshVersion,
+			},
+		}
+		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
 	}
-	return result
+	return mergedMeshes, nil
 }
 
 func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
@@ -91,6 +112,16 @@ func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 	}
 	mesh.DiscoveryMetadata = discoveryData
 	return mesh, nil
+}
+
+func findIstioPods(pods v1.PodList) v1.PodList {
+	var result v1.PodList
+	for _, pod := range pods {
+		if strings.Contains(pod.Name, istio) {
+			result = append(result, pod)
+		}
+	}
+	return result
 }
 
 func imageVersion(image string) (string, error) {
