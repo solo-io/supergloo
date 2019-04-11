@@ -16,10 +16,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 )
 
-var _ = Describe("MeshdiscoveryEventLoop", func() {
+var _ = Describe("DiscoveryEventLoop", func() {
 	var (
 		namespace string
-		emitter   MeshdiscoveryEmitter
+		emitter   DiscoveryEmitter
 		err       error
 	)
 
@@ -37,33 +37,33 @@ var _ = Describe("MeshdiscoveryEventLoop", func() {
 		meshClient, err := NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewMeshdiscoveryEmitter(podClient, meshClient)
+		emitter = NewDiscoveryEmitter(podClient, meshClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		sync := &mockMeshdiscoverySyncer{}
-		el := NewMeshdiscoveryEventLoop(emitter, sync)
+		sync := &mockDiscoverySyncer{}
+		el := NewDiscoveryEventLoop(emitter, sync)
 		_, err := el.Run([]string{namespace}, clients.WatchOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(sync.Synced, 5*time.Second).Should(BeTrue())
 	})
 })
 
-type mockMeshdiscoverySyncer struct {
+type mockDiscoverySyncer struct {
 	synced bool
 	mutex  sync.Mutex
 }
 
-func (s *mockMeshdiscoverySyncer) Synced() bool {
+func (s *mockDiscoverySyncer) Synced() bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.synced
 }
 
-func (s *mockMeshdiscoverySyncer) Sync(ctx context.Context, snap *MeshdiscoverySnapshot) error {
+func (s *mockDiscoverySyncer) Sync(ctx context.Context, snap *DiscoverySnapshot) error {
 	s.mutex.Lock()
 	s.synced = true
 	s.mutex.Unlock()

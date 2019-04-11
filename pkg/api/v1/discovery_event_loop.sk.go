@@ -15,13 +15,13 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 )
 
-type MeshdiscoverySyncer interface {
-	Sync(context.Context, *MeshdiscoverySnapshot) error
+type DiscoverySyncer interface {
+	Sync(context.Context, *DiscoverySnapshot) error
 }
 
-type MeshdiscoverySyncers []MeshdiscoverySyncer
+type DiscoverySyncers []DiscoverySyncer
 
-func (s MeshdiscoverySyncers) Sync(ctx context.Context, snapshot *MeshdiscoverySnapshot) error {
+func (s DiscoverySyncers) Sync(ctx context.Context, snapshot *DiscoverySnapshot) error {
 	var multiErr *multierror.Error
 	for _, syncer := range s {
 		if err := syncer.Sync(ctx, snapshot); err != nil {
@@ -31,23 +31,23 @@ func (s MeshdiscoverySyncers) Sync(ctx context.Context, snapshot *MeshdiscoveryS
 	return multiErr.ErrorOrNil()
 }
 
-type MeshdiscoveryEventLoop interface {
+type DiscoveryEventLoop interface {
 	Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error)
 }
 
-type meshdiscoveryEventLoop struct {
-	emitter MeshdiscoveryEmitter
-	syncer  MeshdiscoverySyncer
+type discoveryEventLoop struct {
+	emitter DiscoveryEmitter
+	syncer  DiscoverySyncer
 }
 
-func NewMeshdiscoveryEventLoop(emitter MeshdiscoveryEmitter, syncer MeshdiscoverySyncer) MeshdiscoveryEventLoop {
-	return &meshdiscoveryEventLoop{
+func NewDiscoveryEventLoop(emitter DiscoveryEmitter, syncer DiscoverySyncer) DiscoveryEventLoop {
+	return &discoveryEventLoop{
 		emitter: emitter,
 		syncer:  syncer,
 	}
 }
 
-func (el *meshdiscoveryEventLoop) Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error) {
+func (el *discoveryEventLoop) Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error) {
 	opts = opts.WithDefaults()
 	opts.Ctx = contextutils.WithLogger(opts.Ctx, "v1.event_loop")
 	logger := contextutils.LoggerFrom(opts.Ctx)
@@ -74,7 +74,7 @@ func (el *meshdiscoveryEventLoop) Run(namespaces []string, opts clients.WatchOpt
 				// cancel any open watches from previous loop
 				cancel()
 
-				ctx, span := trace.StartSpan(opts.Ctx, "meshdiscovery.supergloo.solo.io.EventLoopSync")
+				ctx, span := trace.StartSpan(opts.Ctx, "discovery.supergloo.solo.io.EventLoopSync")
 				ctx, canc := context.WithCancel(ctx)
 				cancel = canc
 				err := el.syncer.Sync(ctx, snapshot)

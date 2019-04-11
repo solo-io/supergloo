@@ -16,19 +16,19 @@ import (
 )
 
 var (
-	mMeshdiscoverySnapshotIn  = stats.Int64("meshdiscovery.supergloo.solo.io/snap_emitter/snap_in", "The number of snapshots in", "1")
-	mMeshdiscoverySnapshotOut = stats.Int64("meshdiscovery.supergloo.solo.io/snap_emitter/snap_out", "The number of snapshots out", "1")
+	mDiscoverySnapshotIn  = stats.Int64("discovery.supergloo.solo.io/snap_emitter/snap_in", "The number of snapshots in", "1")
+	mDiscoverySnapshotOut = stats.Int64("discovery.supergloo.solo.io/snap_emitter/snap_out", "The number of snapshots out", "1")
 
-	meshdiscoverysnapshotInView = &view.View{
-		Name:        "meshdiscovery.supergloo.solo.io_snap_emitter/snap_in",
-		Measure:     mMeshdiscoverySnapshotIn,
+	discoverysnapshotInView = &view.View{
+		Name:        "discovery.supergloo.solo.io_snap_emitter/snap_in",
+		Measure:     mDiscoverySnapshotIn,
 		Description: "The number of snapshots updates coming in",
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{},
 	}
-	meshdiscoverysnapshotOutView = &view.View{
-		Name:        "meshdiscovery.supergloo.solo.io/snap_emitter/snap_out",
-		Measure:     mMeshdiscoverySnapshotOut,
+	discoverysnapshotOutView = &view.View{
+		Name:        "discovery.supergloo.solo.io/snap_emitter/snap_out",
+		Measure:     mDiscoverySnapshotOut,
 		Description: "The number of snapshots updates going out",
 		Aggregation: view.Count(),
 		TagKeys:     []tag.Key{},
@@ -36,35 +36,35 @@ var (
 )
 
 func init() {
-	view.Register(meshdiscoverysnapshotInView, meshdiscoverysnapshotOutView)
+	view.Register(discoverysnapshotInView, discoverysnapshotOutView)
 }
 
-type MeshdiscoveryEmitter interface {
+type DiscoveryEmitter interface {
 	Register() error
 	Pod() PodClient
 	Mesh() MeshClient
-	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *MeshdiscoverySnapshot, <-chan error, error)
+	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewMeshdiscoveryEmitter(podClient PodClient, meshClient MeshClient) MeshdiscoveryEmitter {
-	return NewMeshdiscoveryEmitterWithEmit(podClient, meshClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient PodClient, meshClient MeshClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, meshClient, make(chan struct{}))
 }
 
-func NewMeshdiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, emit <-chan struct{}) MeshdiscoveryEmitter {
-	return &meshdiscoveryEmitter{
+func NewDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, emit <-chan struct{}) DiscoveryEmitter {
+	return &discoveryEmitter{
 		pod:       podClient,
 		mesh:      meshClient,
 		forceEmit: emit,
 	}
 }
 
-type meshdiscoveryEmitter struct {
+type discoveryEmitter struct {
 	forceEmit <-chan struct{}
 	pod       PodClient
 	mesh      MeshClient
 }
 
-func (c *meshdiscoveryEmitter) Register() error {
+func (c *discoveryEmitter) Register() error {
 	if err := c.pod.Register(); err != nil {
 		return err
 	}
@@ -74,15 +74,15 @@ func (c *meshdiscoveryEmitter) Register() error {
 	return nil
 }
 
-func (c *meshdiscoveryEmitter) Pod() PodClient {
+func (c *discoveryEmitter) Pod() PodClient {
 	return c.pod
 }
 
-func (c *meshdiscoveryEmitter) Mesh() MeshClient {
+func (c *discoveryEmitter) Mesh() MeshClient {
 	return c.mesh
 }
 
-func (c *meshdiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *MeshdiscoverySnapshot, <-chan error, error) {
+func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
 
 	if len(watchNamespaces) == 0 {
 		watchNamespaces = []string{""}
@@ -158,9 +158,9 @@ func (c *meshdiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.
 		}(namespace)
 	}
 
-	snapshots := make(chan *MeshdiscoverySnapshot)
+	snapshots := make(chan *DiscoverySnapshot)
 	go func() {
-		originalSnapshot := MeshdiscoverySnapshot{}
+		originalSnapshot := DiscoverySnapshot{}
 		currentSnapshot := originalSnapshot.Clone()
 		timer := time.NewTicker(time.Second * 1)
 		sync := func() {
@@ -168,14 +168,14 @@ func (c *meshdiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.
 				return
 			}
 
-			stats.Record(ctx, mMeshdiscoverySnapshotOut.M(1))
+			stats.Record(ctx, mDiscoverySnapshotOut.M(1))
 			originalSnapshot = currentSnapshot.Clone()
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
 
 		for {
-			record := func() { stats.Record(ctx, mMeshdiscoverySnapshotIn.M(1)) }
+			record := func() { stats.Record(ctx, mDiscoverySnapshotIn.M(1)) }
 
 			select {
 			case <-timer.C:

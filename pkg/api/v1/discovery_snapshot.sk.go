@@ -9,34 +9,34 @@ import (
 	"go.uber.org/zap"
 )
 
-type MeshdiscoverySnapshot struct {
+type DiscoverySnapshot struct {
 	Pods   PodsByNamespace
 	Meshes MeshesByNamespace
 }
 
-func (s MeshdiscoverySnapshot) Clone() MeshdiscoverySnapshot {
-	return MeshdiscoverySnapshot{
+func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
+	return DiscoverySnapshot{
 		Pods:   s.Pods.Clone(),
 		Meshes: s.Meshes.Clone(),
 	}
 }
 
-func (s MeshdiscoverySnapshot) Hash() uint64 {
+func (s DiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashPods(),
 		s.hashMeshes(),
 	)
 }
 
-func (s MeshdiscoverySnapshot) hashPods() uint64 {
+func (s DiscoverySnapshot) hashPods() uint64 {
 	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
 }
 
-func (s MeshdiscoverySnapshot) hashMeshes() uint64 {
+func (s DiscoverySnapshot) hashMeshes() uint64 {
 	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
 }
 
-func (s MeshdiscoverySnapshot) HashFields() []zap.Field {
+func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
@@ -44,14 +44,14 @@ func (s MeshdiscoverySnapshot) HashFields() []zap.Field {
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
-type MeshdiscoverySnapshotStringer struct {
+type DiscoverySnapshotStringer struct {
 	Version uint64
 	Pods    []string
 	Meshes  []string
 }
 
-func (ss MeshdiscoverySnapshotStringer) String() string {
-	s := fmt.Sprintf("MeshdiscoverySnapshot %v\n", ss.Version)
+func (ss DiscoverySnapshotStringer) String() string {
+	s := fmt.Sprintf("DiscoverySnapshot %v\n", ss.Version)
 
 	s += fmt.Sprintf("  Pods %v\n", len(ss.Pods))
 	for _, name := range ss.Pods {
@@ -66,8 +66,8 @@ func (ss MeshdiscoverySnapshotStringer) String() string {
 	return s
 }
 
-func (s MeshdiscoverySnapshot) Stringer() MeshdiscoverySnapshotStringer {
-	return MeshdiscoverySnapshotStringer{
+func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
+	return DiscoverySnapshotStringer{
 		Version: s.Hash(),
 		Pods:    s.Pods.List().NamespacesDotNames(),
 		Meshes:  s.Meshes.List().NamespacesDotNames(),

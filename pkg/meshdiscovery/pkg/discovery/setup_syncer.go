@@ -49,9 +49,9 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 }
 
 // start the install event loop
-func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.MeshdiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewMeshdiscoveryEmitter(c.Discovery.Pod, c.Input.Mesh)
-	meshDiscoveryEventLoop := v1.NewMeshdiscoveryEventLoop(meshDiscoveryEmitter, syncers)
+func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
+	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Discovery.Pod, c.Input.Mesh)
+	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{
 		Ctx:         ctx,

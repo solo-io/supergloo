@@ -38,7 +38,7 @@ var _ = Describe("V1Emitter", func() {
 		namespace2   string
 		name1, name2 = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
 		cfg          *rest.Config
-		emitter      MeshdiscoveryEmitter
+		emitter      DiscoveryEmitter
 		podClient    PodClient
 		meshClient   MeshClient
 	)
@@ -69,7 +69,7 @@ var _ = Describe("V1Emitter", func() {
 
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewMeshdiscoveryEmitter(podClient, meshClient)
+		emitter = NewDiscoveryEmitter(podClient, meshClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -86,7 +86,7 @@ var _ = Describe("V1Emitter", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		var snap *MeshdiscoverySnapshot
+		var snap *DiscoverySnapshot
 
 		/*
 			Pod
@@ -219,7 +219,7 @@ var _ = Describe("V1Emitter", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		var snap *MeshdiscoverySnapshot
+		var snap *DiscoverySnapshot
 
 		/*
 			Pod

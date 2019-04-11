@@ -70,7 +70,7 @@
         "package": "supergloo.solo.io"
       }
     ],
-    "meshdiscovery.supergloo.solo.io": [
+    "discovery.supergloo.solo.io": [
       {
         "name": "Pod",
         "package": "github.com/solo-io/supergloo/api/custom/kubepod"

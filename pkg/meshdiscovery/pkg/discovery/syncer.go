@@ -15,14 +15,14 @@ type meshDiscoverySyncer struct {
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewMeshDiscoverySyncer(meshClient v1.MeshClient, reporter reporter.Reporter) v1.MeshdiscoverySyncer {
+func NewMeshDiscoverySyncer(meshClient v1.MeshClient, reporter reporter.Reporter) v1.DiscoverySyncer {
 	return &meshDiscoverySyncer{
 		meshClient: meshClient,
 		reporter:   reporter,
 	}
 }
 
-func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.MeshdiscoverySnapshot) error {
+func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-install-syncer-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
