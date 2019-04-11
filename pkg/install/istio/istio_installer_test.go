@@ -79,7 +79,7 @@ var _ = Describe("istio installer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*installedMesh).To(Equal(v1.Mesh{
 				Metadata:   install.Metadata,
-				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok"}},
+				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok", IstioVersion: IstioVersion106}},
 				MtlsConfig: &v1.MtlsConfig{},
 			}))
 			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
@@ -111,7 +111,7 @@ var _ = Describe("istio installer", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*installedMesh).To(Equal(v1.Mesh{
 				Metadata:   originalMesh.Metadata,
-				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok"}},
+				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok", IstioVersion: IstioVersion106}},
 				MtlsConfig: mesh.GetMtlsConfig(),
 			}))
 			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
