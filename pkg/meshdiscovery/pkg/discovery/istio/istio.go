@@ -56,7 +56,7 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	var meshes v1.MeshList
 	for _, pilotPod := range pilotPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
-			mesh, err := constructIstioMesh(pilotPod)
+			mesh, err := constructDiscoveryData(pilotPod)
 			if err != nil {
 				return nil, err
 			}
@@ -77,7 +77,7 @@ func findIstioPods(pods v1.PodList) v1.PodList {
 	return result
 }
 
-func constructIstioMesh(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
+func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 	mesh := &v1.Mesh{}
 
 	istioVersion, err := getVersionFromPod(istioPilotPod)
@@ -85,14 +85,11 @@ func constructIstioMesh(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 		return nil, err
 	}
 
-	istioMesh := &v1.IstioMesh{
+	discoveryData := &v1.DiscoveryMetadata{
 		InstallationNamespace: istioPilotPod.Namespace,
-		IstioVersion:          istioVersion,
+		MeshVersion:           istioVersion,
 	}
-
-	mesh.MeshType = &v1.Mesh_Istio{
-		Istio: istioMesh,
-	}
+	mesh.DiscoveryMetadata = discoveryData
 	return mesh, nil
 }
 

@@ -66,12 +66,18 @@ Generic discovery data shared between different meshes
 
 ```yaml
 "injectedNamespaces": []string
+"meshVersion": string
+"installationNamespace": string
+"mtlsConfig": .supergloo.solo.io.MtlsConfig
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `injectedNamespaces` | `[]string` | list of namespaces which we know are being injected by a given mesh |  |
+| `meshVersion` | `string` | version of the mesh which is installed |  |
+| `installationNamespace` | `string` | namespace which the mesh is installed into |  |
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
 
 
 
@@ -91,7 +97,7 @@ Mesh object representing an installed Istio control plane
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `installationNamespace` | `string` | where the istio control plane has been installed |  |
-| `istioVersion` | `string` |  |  |
+| `istioVersion` | `string` | version of istio which has been installed |  |
 
 
 

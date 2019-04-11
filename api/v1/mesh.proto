@@ -51,6 +51,15 @@ message DiscoveryMetadata {
 
     // list of namespaces which we know are being injected by a given mesh
     repeated string injected_namespaces = 1;
+
+    // version of the mesh which is installed
+    string mesh_version = 2;
+
+    // namespace which the mesh is installed into
+    string installation_namespace = 3;
+
+    // discovered mtls config of the given mesh
+    MtlsConfig mtls_config = 4;
 }
 
 // Mesh object representing an installed Istio control plane
@@ -58,6 +67,7 @@ message IstioMesh {
     // where the istio control plane has been installed
     string installation_namespace = 1;
 
+    // version of istio which has been installed
     string istio_version = 2;
 }
 
