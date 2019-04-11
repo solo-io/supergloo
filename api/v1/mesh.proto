@@ -41,6 +41,16 @@ message Mesh {
     // mesh controllers and sidecars to a centralized datastore
     // such as prometheus
     MonitoringConfig monitoring_config = 3;
+
+    DiscoveryMetadata discovery_metadata = 5;
+}
+
+
+// Generic discovery data shared between different meshes
+message DiscoveryMetadata {
+
+    // list of namespaces which we know are being injected by a given mesh
+    repeated string injected_namespaces = 1;
 }
 
 // Mesh object representing an installed Istio control plane
@@ -87,6 +97,11 @@ message MtlsConfig {
     // whether or not mutual TLS should be enabled between pods in this mesh
     bool mtls_enabled = 1;
 
+    //
+    // if mtlsEnabled is false, this field is ignored
+    // indicated whether or not self-signed certs are enabled for a given mesh
+    bool self_signed_cert = 2;
+
     // if set, rootCertificate will override the root certificate used by the mesh
     // to encrypt mtls connections.
     //
@@ -95,7 +110,7 @@ message MtlsConfig {
     //
     // if mtlsEnabled is false, this field is ignored
     // If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
-    core.solo.io.ResourceRef root_certificate = 2;
+    core.solo.io.ResourceRef root_certificate = 3;
 }
 
 // Contains configuration options for monitoring a mesh

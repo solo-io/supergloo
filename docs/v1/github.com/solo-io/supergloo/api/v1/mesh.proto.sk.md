@@ -12,6 +12,7 @@ weight: 5
 
 
 - [Mesh](#mesh) **Top-Level Resource**
+- [DiscoveryMetadata](#discoverymetadata)
 - [IstioMesh](#istiomesh)
 - [AwsAppMesh](#awsappmesh)
 - [MtlsConfig](#mtlsconfig)
@@ -40,6 +41,7 @@ Meshes represent a currently registered service mesh.
 "awsAppMesh": .supergloo.solo.io.AwsAppMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
+"discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
 
 ```
 
@@ -51,6 +53,25 @@ Meshes represent a currently registered service mesh.
 | `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#awsappmesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 | `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
+| `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) |  |  |
+
+
+
+
+---
+### DiscoveryMetadata
+
+ 
+Generic discovery data shared between different meshes
+
+```yaml
+"injectedNamespaces": []string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `injectedNamespaces` | `[]string` | list of namespaces which we know are being injected by a given mesh |  |
 
 
 
@@ -111,6 +132,7 @@ the encryption configuration that will be applied by the role
 
 ```yaml
 "mtlsEnabled": bool
+"selfSignedCert": bool
 "rootCertificate": .core.solo.io.ResourceRef
 
 ```
@@ -118,6 +140,7 @@ the encryption configuration that will be applied by the role
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `mtlsEnabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
+| `selfSignedCert` | `bool` | if mtlsEnabled is false, this field is ignored indicated whether or not self-signed certs are enabled for a given mesh |  |
 | `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
 
 

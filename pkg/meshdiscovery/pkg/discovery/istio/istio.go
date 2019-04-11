@@ -14,6 +14,8 @@ const (
 	istio      = "istio"
 	pilot      = "pilot"
 	istioPilot = istio + "-" + pilot
+
+	injectionConst = "injection-enabled"
 )
 
 type istioMeshDiscovery struct {
@@ -45,26 +47,30 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	}
 	logger := contextutils.LoggerFrom(ctx)
 
-	pilotPods := findIstioPilots(discoveryCtx.pods)
+	pilotPods := findIstioPods(discoveryCtx.pods)
 	if len(pilotPods) == 0 {
 		logger.Debugf("no pilot pods found in istio pod list")
 		return nil, nil
 	}
 
+	var meshes v1.MeshList
 	for _, pilotPod := range pilotPods {
-		_, err := constructIstioMesh(pilotPod)
-		if err != nil {
-			return nil, err
+		if strings.Contains(pilotPod.Name, istioPilot) {
+			mesh, err := constructIstioMesh(pilotPod)
+			if err != nil {
+				return nil, err
+			}
+			meshes = append(meshes, mesh)
 		}
 	}
 
-	return v1.MeshList{}, nil
+	return meshes, nil
 }
 
-func findIstioPilots(pods v1.PodList) v1.PodList {
+func findIstioPods(pods v1.PodList) v1.PodList {
 	var result v1.PodList
 	for _, pod := range pods {
-		if strings.Contains(pod.Name, istioPilot) {
+		if strings.Contains(pod.Name, istio) {
 			result = append(result, pod)
 		}
 	}
