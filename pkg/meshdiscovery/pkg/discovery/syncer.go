@@ -6,21 +6,19 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 )
 
 type meshDiscoverySyncer struct {
 	meshClient v1.MeshClient
-	reporter   reporter.Reporter
+	plugins    []MeshDiscovery
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewMeshDiscoverySyncer(meshClient v1.MeshClient, reporter reporter.Reporter) v1.DiscoverySyncer {
+func NewMeshDiscoverySyncer(meshClient v1.MeshClient, plugins ...MeshDiscovery) v1.DiscoverySyncer {
 	return &meshDiscoverySyncer{
 		meshClient: meshClient,
-		reporter:   reporter,
+		plugins:    plugins,
 	}
 }
 
@@ -32,15 +30,13 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())
 
-	var meshDiscoveryPlugins []MeshDiscovery
 	var discoveredMeshes v1.MeshList
 
-	pods := snap.Pods.List()
-	meshes := snap.Meshes.List()
+	for _, meshDiscoveryPlugin := range s.plugins {
+		meshDiscoveryPlugin.Init(ctx, snap)
+	}
 
-	meshDiscoveryPlugins = append(meshDiscoveryPlugins, istio.NewIstioMeshDiscovery(ctx, pods, meshes))
-
-	for _, meshDiscoveryPlugin := range meshDiscoveryPlugins {
+	for _, meshDiscoveryPlugin := range s.plugins {
 		meshes, err := meshDiscoveryPlugin.DiscoverMeshes()
 		if err != nil {
 			multierr = multierror.Append(multierr, err)

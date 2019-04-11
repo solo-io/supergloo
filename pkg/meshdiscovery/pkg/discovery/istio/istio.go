@@ -19,9 +19,14 @@ type istioMeshDiscovery struct {
 	existingMeshes v1.MeshList
 }
 
-func NewIstioMeshDiscovery(ctx context.Context, pods v1.PodList, meshes v1.MeshList) *istioMeshDiscovery {
-	existingMeshes := filterIstioMeshes(meshes)
-	return &istioMeshDiscovery{ctx: ctx, pods: pods, existingMeshes: existingMeshes}
+func NewIstioMeshDiscovery() *istioMeshDiscovery {
+	return &istioMeshDiscovery{}
+}
+
+func (imd *istioMeshDiscovery) Init(ctx context.Context, snapshot *v1.DiscoverySnapshot) {
+	imd.pods = snapshot.Pods.List()
+	imd.ctx = ctx
+	imd.existingMeshes = filterIstioMeshes(snapshot.Meshes.List())
 }
 
 func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {

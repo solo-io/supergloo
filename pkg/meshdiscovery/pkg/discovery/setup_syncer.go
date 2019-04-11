@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -26,14 +26,21 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 		}
 	}
 
-	meshDiscoveryReporter := reporter.NewReporter("istio-install-reporter", cs.Input.Mesh.BaseClient())
-	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Input.Mesh, meshDiscoveryReporter)
+	plugins := configurePlugins()
+	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Input.Mesh, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func configurePlugins() []MeshDiscovery {
+	plugins := []MeshDiscovery{
+		istio.NewIstioMeshDiscovery(),
+	}
+	return plugins
 }
 
 // start the install event loop
