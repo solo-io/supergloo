@@ -47,6 +47,8 @@ message Mesh {
 message IstioMesh {
     // where the istio control plane has been installed
     string installation_namespace = 1;
+
+    string istio_version = 2;
 }
 
 // Mesh object representing AWS App Mesh

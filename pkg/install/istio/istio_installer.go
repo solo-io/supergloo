@@ -90,6 +90,7 @@ func createOrUpdateMesh(mesh *v1.Mesh, installNamespace string, install *v1.Inst
 		mesh.MeshType = &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNamespace,
+				IstioVersion:          istio.IstioVersion,
 			},
 		}
 		return mesh
@@ -102,6 +103,7 @@ func createOrUpdateMesh(mesh *v1.Mesh, installNamespace string, install *v1.Inst
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNamespace,
+				IstioVersion:          istio.IstioVersion,
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

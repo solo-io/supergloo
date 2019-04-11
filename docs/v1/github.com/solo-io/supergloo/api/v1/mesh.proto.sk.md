@@ -63,12 +63,14 @@ Mesh object representing an installed Istio control plane
 
 ```yaml
 "installationNamespace": string
+"istioVersion": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `installationNamespace` | `string` | where the istio control plane has been installed |  |
+| `istioVersion` | `string` |  |  |
 
 
 
