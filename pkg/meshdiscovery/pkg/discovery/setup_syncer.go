@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/go-utils/installutils/kubeinstall"
-
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -27,16 +25,6 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 			customErrHandler(err)
 		}
 	}
-
-	meshDiscoveryCache := kubeinstall.NewCache()
-	go func() {
-		logger.Infof("beginning install cache sync, this may take a while...")
-		started := time.Now()
-		if err := meshDiscoveryCache.Init(ctx, cs.RestConfig, kubeinstall.DefaultFilters...); err != nil {
-			logger.Fatalf("failed to initialize meshdiscovery cache!")
-		}
-		logger.Infof("finished meshdiscovery cache sync. took %v", time.Now().Sub(started))
-	}()
 
 	meshDiscoveryReporter := reporter.NewReporter("istio-install-reporter", cs.Input.Mesh.BaseClient())
 	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Input.Mesh, meshDiscoveryReporter)

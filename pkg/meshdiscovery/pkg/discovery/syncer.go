@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 )
 
 type meshDiscoverySyncer struct {
@@ -23,13 +25,32 @@ func NewMeshDiscoverySyncer(meshClient v1.MeshClient, reporter reporter.Reporter
 }
 
 func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-install-syncer-%v", snap.Hash()))
+	multierr := &multierror.Error{}
+
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("mesh-discovery-syncer-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())
-	resourceErrs := make(reporter.ResourceErrors)
 
-	// reporter should handle updates to the installs that happened during ensure
-	return s.reporter.WriteReports(ctx, resourceErrs, nil)
+	var meshDiscoveryPlugins []MeshDiscovery
+	var discoveredMeshes v1.MeshList
+
+	pods := snap.Pods.List()
+	meshes := snap.Meshes.List()
+
+	meshDiscoveryPlugins = append(meshDiscoveryPlugins, istio.NewIstioMeshDiscovery(ctx, pods, meshes))
+
+	for _, meshDiscoveryPlugin := range meshDiscoveryPlugins {
+		meshes, err := meshDiscoveryPlugin.DiscoverMeshes()
+		if err != nil {
+			multierr = multierror.Append(multierr, err)
+			logger.Errorf(err.Error())
+		}
+		discoveredMeshes = append(discoveredMeshes, meshes...)
+	}
+
+	// reconcile all discovered meshes
+
+	return multierr.ErrorOrNil()
 
 }

@@ -126,19 +126,19 @@ $(OUTPUT_DIR)/.webhook-docker: $(OUTPUT_DIR)/sidecar-injector-linux-amd64 $(OUTP
 
 ### mesh discovery container
 
-$(OUTPUT_DIR)/meshdiscovery-linux-amd64: $(SOURCES)
+$(OUTPUT_DIR)/mesh-discovery-linux-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/meshdiscovery/main.go
 	shasum -a 256 $@ > $@.sha256
 
-$(OUTPUT_DIR)/meshdiscovery-darwin-amd64: $(SOURCES)
+$(OUTPUT_DIR)/mesh-discovery-darwin-amd64: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cmd/meshdiscovery/main.go
 	shasum -a 256 $@ > $@.sha256
 
-$(OUTPUT_DIR)/Dockerfile.meshdiscovery: cmd/meshdiscovery/Dockerfile
+$(OUTPUT_DIR)/Dockerfile.mesh-discovery: cmd/meshdiscovery/Dockerfile
 	cp $< $@
 
-$(OUTPUT_DIR)/.meshdiscovery-docker: $(OUTPUT_DIR)/meshdiscovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.meshdiscovery
-	docker build -t quay.io/solo-io/meshdiscovery:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.meshdiscovery
+$(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-discovery
+	docker build -t quay.io/solo-io/mesh-discovery:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
 
 #----------------------------------------------------------------------------------
 # SuperGloo CLI
