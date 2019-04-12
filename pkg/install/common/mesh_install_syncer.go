@@ -26,8 +26,8 @@ func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter report
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v", snap.Stringer())
-	defer logger.Infof("end sync %v", snap.Stringer())
+	logger.Infow("begin sync %v", snap.HashFields())
+	defer logger.Infow("end sync %v", snap.HashFields())
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
