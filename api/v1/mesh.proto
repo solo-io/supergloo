@@ -50,7 +50,7 @@ message Mesh {
 message DiscoveryMetadata {
 
     // list of namespaces which we know are being injected by a given mesh
-    repeated string injected_namespaces = 1;
+    string injected_namespace_label = 1;
 
     // version of the mesh which is installed
     string mesh_version = 2;

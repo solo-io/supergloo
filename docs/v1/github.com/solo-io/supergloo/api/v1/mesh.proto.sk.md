@@ -65,7 +65,7 @@ Meshes represent a currently registered service mesh.
 Generic discovery data shared between different meshes
 
 ```yaml
-"injectedNamespaces": []string
+"injectedNamespaceLabel": string
 "meshVersion": string
 "installationNamespace": string
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
@@ -74,7 +74,7 @@ Generic discovery data shared between different meshes
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `injectedNamespaces` | `[]string` | list of namespaces which we know are being injected by a given mesh |  |
+| `injectedNamespaceLabel` | `string` | list of namespaces which we know are being injected by a given mesh |  |
 | `meshVersion` | `string` | version of the mesh which is installed |  |
 | `installationNamespace` | `string` | namespace which the mesh is installed into |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
