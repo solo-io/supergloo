@@ -29,7 +29,7 @@ func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *Re
 	}
 }
 
-func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
+func FromKube(pod *kubev1.Pod) *v1.Pod {
 
 	podCopy := pod.DeepCopy()
 	kubePod := kubepod.Pod(*podCopy)
@@ -37,7 +37,7 @@ func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
 		Pod: kubePod,
 	}
 
-	return resource, nil
+	return resource
 }
 
 func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
@@ -78,10 +78,8 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 		}
 		return nil, errors.Wrapf(err, "reading podObj from kubernetes")
 	}
-	resource, err := FromKube(podObj)
-	if err != nil {
-		return nil, err
-	}
+	resource := FromKube(podObj)
+
 	if resource == nil {
 		return nil, errors.Errorf("podObj %v is not kind %v", name, rc.Kind())
 	}
@@ -150,10 +148,8 @@ func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resourc
 	}
 	var resourceList resources.ResourceList
 	for _, podObj := range podObjList {
-		resource, err := FromKube(podObj)
-		if err != nil {
-			return nil, err
-		}
+		resource := FromKube(podObj)
+
 		if resource == nil {
 			continue
 		}

@@ -122,6 +122,9 @@ func generateValuesYaml(version, pullPolicy string) error {
 	config.Discovery.Deployment.Image.Tag = osGlooVersion
 	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
+	config.MeshDiscovery.Deployment.Image.Tag = version
+	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
+
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
 }
 

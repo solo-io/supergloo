@@ -79,28 +79,35 @@ func TeardownSuperGloo(kube kubernetes.Interface) {
 
 // remove supergloo controller pod(s)
 func DeleteSuperglooPods(kube kubernetes.Interface, superglooNamespace string) {
-	// wait until pod is gone
-	Eventually(func() error {
-		dep, err := kube.ExtensionsV1beta1().Deployments(superglooNamespace).Get("supergloo", metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		dep.Spec.Replicas = proto.Int(0)
-		_, err = kube.ExtensionsV1beta1().Deployments(superglooNamespace).Update(dep)
-		if err != nil {
-			return err
-		}
-		pods, err := kube.CoreV1().Pods(superglooNamespace).List(metav1.ListOptions{})
-		if err != nil {
-			return err
-		}
-		for _, p := range pods.Items {
-			if strings.HasPrefix(p.Name, "supergloo") {
-				return errors.Errorf("supergloo pods still exist")
+	podsToDelete := []string{
+		"supergloo",
+		// TODO(EItanya): add this back in once it's part of the helm chart
+		// "mesh-discovery",
+	}
+	for _, pod := range podsToDelete {
+		// wait until pod is gone
+		Eventually(func() error {
+			dep, err := kube.ExtensionsV1beta1().Deployments(superglooNamespace).Get(pod, metav1.GetOptions{})
+			if err != nil {
+				return err
 			}
-		}
-		return nil
-	}, time.Second*60).ShouldNot(HaveOccurred())
+			dep.Spec.Replicas = proto.Int(0)
+			_, err = kube.ExtensionsV1beta1().Deployments(superglooNamespace).Update(dep)
+			if err != nil {
+				return err
+			}
+			pods, err := kube.CoreV1().Pods(superglooNamespace).List(metav1.ListOptions{})
+			if err != nil {
+				return err
+			}
+			for _, p := range pods.Items {
+				if strings.HasPrefix(p.Name, pod) {
+					return errors.Errorf("%s pods still exist", pod)
+				}
+			}
+			return nil
+		}, time.Second*60).ShouldNot(HaveOccurred())
+	}
 
 }
 

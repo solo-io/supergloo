@@ -42,12 +42,34 @@ message Mesh {
     // mesh controllers and sidecars to a centralized datastore
     // such as prometheus
     MonitoringConfig monitoring_config = 3;
+
+    DiscoveryMetadata discovery_metadata = 6;
+}
+
+
+// Generic discovery data shared between different meshes
+message DiscoveryMetadata {
+
+    // list of namespaces which we know are being injected by a given mesh
+    string injected_namespace_label = 1;
+
+    // version of the mesh which is installed
+    string mesh_version = 2;
+
+    // namespace which the mesh is installed into
+    string installation_namespace = 3;
+
+    // discovered mtls config of the given mesh
+    MtlsConfig mtls_config = 4;
 }
 
 // Mesh object representing an installed Istio control plane
 message IstioMesh {
     // where the istio control plane has been installed
     string installation_namespace = 1;
+
+    // version of istio which has been installed
+    string istio_version = 2;
 }
 
 // Mesh object representing AWS App Mesh
@@ -100,7 +122,7 @@ message MtlsConfig {
     //
     // if mtlsEnabled is false, this field is ignored
     // If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
-    core.solo.io.ResourceRef root_certificate = 2;
+    core.solo.io.ResourceRef root_certificate = 3;
 }
 
 // Contains configuration options for monitoring a mesh

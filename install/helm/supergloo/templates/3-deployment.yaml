@@ -70,3 +70,36 @@ spec:
             value: "true"
           {{- end}}
 
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mesh-discovery
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      supergloo: supergloo
+  template:
+    metadata:
+      labels:
+        supergloo: supergloo
+        app: supergloo
+    spec:
+      serviceAccountName: mesh-discovery
+      containers:
+        - image: "{{ .Values.meshDiscovery.deployment.image.repository }}:{{ .Values.meshDiscovery.deployment.image.tag }}"
+          imagePullPolicy:  {{ .Values.meshDiscovery.deployment.image.pullPolicy }}
+          name: mesh-discovery
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.meshDiscovery.deployment.stats }}
+            - name: START_STATS_SERVER
+              value: "true"
+            {{- end}}
+
+---
