@@ -1,17 +1,16 @@
 package kubernetes
 
 import (
-	"encoding/json"
 	"sort"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+	"github.com/solo-io/supergloo/api/custom/kubepod"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	kubev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
-	kubev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -31,22 +30,12 @@ func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *Re
 }
 
 func FromKube(pod *kubev1.Pod) (*v1.Pod, error) {
-	rawSpec, err := json.Marshal(pod.Spec)
-	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling kube pod object")
-	}
-	spec := string(rawSpec)
-	rawStatus, err := json.Marshal(pod.Status)
-	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling kube pod object")
-	}
-	status := string(rawStatus)
-	resource := &v1.Pod{
-		Spec:   spec,
-		Status: status,
-	}
 
-	resource.SetMetadata(kubeutils.FromKubeMeta(pod.ObjectMeta))
+	podCopy := pod.DeepCopy()
+	kubePod := kubepod.Pod(*podCopy)
+	resource := &v1.Pod{
+		Pod: kubePod,
+	}
 
 	return resource, nil
 }
@@ -56,19 +45,9 @@ func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
 	if !ok {
 		return nil, errors.Errorf("internal error: invalid resource %v passed to pod-only client", resources.Kind(resource))
 	}
-	var pod kubev1.Pod
-	if err := json.Unmarshal([]byte(podResource.Spec), &pod.Spec); err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling kube pod spec data")
-	}
-	if err := json.Unmarshal([]byte(podResource.Status), &pod.Status); err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling kube pod status data")
-	}
 
-	meta := kubeutils.ToKubeMeta(resource.GetMetadata())
-	if meta.Annotations == nil {
-		meta.Annotations = make(map[string]string)
-	}
-	pod.ObjectMeta = meta
+	pod := kubev1.Pod(podResource.Pod)
+
 	return &pod, nil
 }
 

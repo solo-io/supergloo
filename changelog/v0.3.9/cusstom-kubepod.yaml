@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Use new solo-kit features which allows use of go structs as resources.

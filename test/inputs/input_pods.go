@@ -3,12 +3,12 @@ package inputs
 import (
 	"github.com/gogo/protobuf/proto"
 	kubernetes2 "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func BookInfoPods(svcNamespace string) customkube.PodList {
+func BookInfoPods(svcNamespace string) v1.PodList {
 	pods := []kubev1.Pod{
 		kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -1634,7 +1634,7 @@ func BookInfoPods(svcNamespace string) customkube.PodList {
 			},
 		},
 	}
-	var customPods customkube.PodList
+	var customPods v1.PodList
 	for _, p := range pods {
 		// set service account
 		p.Spec.ServiceAccountName = p.Name

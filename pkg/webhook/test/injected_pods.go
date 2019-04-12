@@ -8,7 +8,7 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/protoutils"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	kubev1 "k8s.io/api/core/v1"
 )
 

@@ -3,7 +3,6 @@ package utils
 import (
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	customkube "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -57,11 +56,11 @@ func UpstreamsForSelector(selector *v1.PodSelector, allUpstreams gloov1.Upstream
 	return selectedUpstreams, nil
 }
 
-func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allPods customkube.PodList) (customkube.PodList, error) {
+func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allPods v1.PodList) (v1.PodList, error) {
 	if selector == nil {
 		return allPods, nil
 	}
-	var selectedPods customkube.PodList
+	var selectedPods v1.PodList
 
 	switch selectorType := selector.SelectorType.(type) {
 	case *v1.PodSelector_LabelSelector_:
@@ -69,7 +68,7 @@ func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, al
 		// and the host in question is that upstream's host
 		for _, pod := range allPods {
 
-			upstreamLabels := pod.Metadata.Labels
+			upstreamLabels := pod.Labels
 			labelsMatch := labels.SelectorFromSet(selectorType.LabelSelector.LabelsToMatch).Matches(labels.Set(upstreamLabels))
 			if !labelsMatch {
 				continue
@@ -88,7 +87,7 @@ func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, al
 		for _, pod := range allPods {
 			var podInSelectedNamespace bool
 			for _, ns := range selectorType.NamespaceSelector.Namespaces {
-				namespaceForUpstream := pod.Metadata.Namespace
+				namespaceForUpstream := pod.Namespace
 				if ns == namespaceForUpstream {
 					podInSelectedNamespace = true
 					break
@@ -109,8 +108,8 @@ type namespacedSelector struct {
 	selector  map[string]string
 }
 
-func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods customkube.PodList) (customkube.PodList, error) {
-	var selectedPods customkube.PodList
+func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods v1.PodList) (v1.PodList, error) {
+	var selectedPods v1.PodList
 	var selectors []namespacedSelector
 	for _, us := range upstreams {
 		kubeUs, ok := us.UpstreamSpec.UpstreamType.(*gloov1.UpstreamSpec_Kube)
@@ -122,10 +121,10 @@ func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods customkube.PodList)
 	for _, pod := range allPods {
 		var includedInSelector bool
 		for _, selector := range selectors {
-			if pod.Metadata.Namespace != selector.namespace {
+			if pod.Namespace != selector.namespace {
 				continue
 			}
-			if labels.SelectorFromSet(selector.selector).Matches(labels.Set(pod.Metadata.Labels)) {
+			if labels.SelectorFromSet(selector.selector).Matches(labels.Set(pod.Labels)) {
 				includedInSelector = true
 				break
 			}

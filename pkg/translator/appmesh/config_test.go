@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	kubecustom "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/webhook/test"
 	"github.com/solo-io/supergloo/test/inputs"
@@ -16,7 +15,7 @@ import (
 
 var _ = Describe("config translator", func() {
 	var (
-		injectedPodList kubecustom.PodList
+		injectedPodList v1.PodList
 		upstreamList    gloov1.UpstreamList
 	)
 

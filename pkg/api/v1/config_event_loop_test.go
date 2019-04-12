@@ -10,7 +10,6 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	core_kubernetes_io "github.com/solo-io/supergloo/pkg/api/external/kubernetes/core/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -73,7 +72,7 @@ var _ = Describe("ConfigEventLoop", func() {
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		podClient, err := core_kubernetes_io.NewPodClient(podClientFactory)
+		podClient, err := NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
@@ -93,7 +92,7 @@ var _ = Describe("ConfigEventLoop", func() {
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Pod().Write(core_kubernetes_io.NewPod(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockConfigSyncer{}
 		el := NewConfigEventLoop(emitter, sync)
