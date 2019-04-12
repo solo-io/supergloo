@@ -29,9 +29,6 @@ func installLinkerdCmd(opts *options.Options) *cobra.Command {
 			return createLinkerdInstall(opts)
 		},
 	}
-	flagutils.AddMetadataFlags(cmd.PersistentFlags(), &opts.Metadata)
-	flagutils.AddOutputFlag(cmd.PersistentFlags(), &opts.OutputType)
-	flagutils.AddInteractiveFlag(cmd.PersistentFlags(), &opts.Interactive)
 	flagutils.AddLinkerdInstallFlags(cmd.PersistentFlags(), &opts.Install)
 	return cmd
 }
