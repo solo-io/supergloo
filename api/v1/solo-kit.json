@@ -78,6 +78,10 @@
       {
         "name": "Mesh",
         "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
       }
     ]
   }

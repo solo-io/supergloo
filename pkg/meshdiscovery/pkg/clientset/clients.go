@@ -37,11 +37,12 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 }
 
 type inputClients struct {
-	Pod v1.PodClient
+	Pod     v1.PodClient
+	Install v1.InstallClient
 }
 
-func newInputClients(pod v1.PodClient) *inputClients {
-	return &inputClients{Pod: pod}
+func newInputClients(pod v1.PodClient, install v1.InstallClient) *inputClients {
+	return &inputClients{Pod: pod, Install: install}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -75,6 +76,14 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := install.Register(); err != nil {
+		return nil, err
+	}
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	podBase := customkube.NewResourceClient(kubeClient, kubeCoreCache)
@@ -83,7 +92,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods),
+		newInputClients(pods, install),
 		newDiscoveryClients(mesh),
 	), nil
 }
