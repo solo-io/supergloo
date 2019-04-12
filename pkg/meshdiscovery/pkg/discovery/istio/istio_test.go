@@ -19,11 +19,11 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 		superglooNamespace = "supergloo-system"
 	)
 
-	var constructPod = func(container kubev1.Container) *v1.Pod {
+	var constructPod = func(container kubev1.Container, namespace string) *v1.Pod {
 
 		pod := &kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: istioNamespace,
+				Namespace: namespace,
 			},
 			Spec: kubev1.PodSpec{
 				Containers: []kubev1.Container{
@@ -65,7 +65,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			container := kubev1.Container{
 				Image: "istio-",
 			}
-			pod := constructPod(container)
+			pod := constructPod(container, istioNamespace)
 			_, err := getVersionFromPod(pod)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unable to find pilot container from pod"))
@@ -74,7 +74,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			container := kubev1.Container{
 				Image: "istio-pilot",
 			}
-			pod := constructPod(container)
+			pod := constructPod(container, istioNamespace)
 			_, err := getVersionFromPod(pod)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unable to find image version for image"))
@@ -83,7 +83,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			container := kubev1.Container{
 				Image: "istio-pilot:10.6",
 			}
-			pod := constructPod(container)
+			pod := constructPod(container, istioNamespace)
 			_, err := getVersionFromPod(pod)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unable to find image version for image"))
@@ -92,7 +92,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			container := kubev1.Container{
 				Image: "istio-pilot:1.0.6",
 			}
-			pod := constructPod(container)
+			pod := constructPod(container, istioNamespace)
 			version, err := getVersionFromPod(pod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(version).To(Equal("1.0.6"))
@@ -103,7 +103,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			container := kubev1.Container{
 				Image: "istio-pilot:1.0.6",
 			}
-			pod := constructPod(container)
+			pod := constructPod(container, istioNamespace)
 			mesh, err := constructDiscoveryData(pod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
@@ -111,5 +111,44 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				MeshVersion:           "1.0.6",
 			}))
 		})
+	})
+	Context("merge meshes", func() {
+		var getDiscoveredMeshes = func(namespace string) *v1.Mesh {
+			container := kubev1.Container{
+				Image: "istio-pilot:1.0.6",
+			}
+			pod := constructPod(container, namespace)
+			mesh, err := constructDiscoveryData(pod)
+			Expect(err).NotTo(HaveOccurred())
+			mesh.MeshType = &v1.Mesh_Istio{Istio: &v1.IstioMesh{
+				InstallationNamespace: namespace,
+				IstioVersion:          "1.0.6",
+			}}
+			return mesh
+		}
+		It("can merge into an empty existing list", func() {
+			discoveredMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
+			meshList, err := mergeMeshes(discoveredMeshes, nil)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(meshList).To(HaveLen(1))
+		})
+		It("can merge into a non empty list, with a mesh in a different Namespace", func() {
+			discoveredMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
+			existingMeshes := v1.MeshList{getDiscoveredMeshes("one")}
+			meshList, err := mergeMeshes(discoveredMeshes, existingMeshes)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(meshList).To(HaveLen(2))
+		})
+		It("can merge into a non empty list with an existing mesh", func() {
+			discoverdMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
+			existingMesh := getDiscoveredMeshes(istioNamespace)
+			existingMesh.DiscoveryMetadata = nil
+			existingMeshes := v1.MeshList{existingMesh}
+			meshList, err := mergeMeshes(discoverdMeshes, existingMeshes)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(meshList).To(HaveLen(1))
+			Expect(&meshList[0]).To(Equal(&existingMeshes[0]))
+		})
+
 	})
 })

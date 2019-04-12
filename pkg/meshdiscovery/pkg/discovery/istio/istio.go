@@ -2,11 +2,14 @@ package istio
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -65,6 +68,26 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	return mergedMeshes, nil
 }
 
+func addUnique(meshList v1.MeshList, newMesh *v1.Mesh) v1.MeshList {
+	exists := false
+	for _, mesh := range meshList {
+		if mesh.Metadata.Ref().Key() == newMesh.Metadata.Ref().Key() {
+			exists = true
+		}
+	}
+	if !exists {
+		meshList = append(meshList, newMesh)
+	}
+	return meshList
+}
+
+func getWriteNamespace() string {
+	if writeNamespace := os.Getenv("POD_NAMESPACE"); writeNamespace != "" {
+		return writeNamespace
+	}
+	return "supergloo-system"
+}
+
 func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, error) {
 	var mergedMeshes v1.MeshList
 	for _, discoveredMesh := range discoveredMeshes {
@@ -78,7 +101,6 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			// This discovered mesh already exists, update the discovery data
 			if istioMesh.InstallationNamespace == discoveredMesh.DiscoveryMetadata.InstallationNamespace {
 				existingMesh.DiscoveryMetadata = discoveredMesh.DiscoveryMetadata
-				mergedMeshes = append(mergedMeshes, existingMesh)
 				meshExists = true
 				break
 			}
@@ -94,12 +116,20 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			},
 		}
 		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
+
+		mergedMeshes = append(mergedMeshes, discoveredMesh)
 	}
+	mergedMeshes = append(mergedMeshes, existingMeshes...)
 	return mergedMeshes, nil
 }
 
 func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
-	mesh := &v1.Mesh{}
+	mesh := &v1.Mesh{
+		Metadata: core.Metadata{
+			Namespace: getWriteNamespace(),
+			Name:      fmt.Sprintf("istio-%s", istioPilotPod.Namespace),
+		},
+	}
 
 	istioVersion, err := getVersionFromPod(istioPilotPod)
 	if err != nil {
