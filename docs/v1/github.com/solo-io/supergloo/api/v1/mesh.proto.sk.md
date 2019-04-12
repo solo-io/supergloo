@@ -15,6 +15,7 @@ weight: 5
 - [DiscoveryMetadata](#discoverymetadata)
 - [IstioMesh](#istiomesh)
 - [AwsAppMesh](#awsappmesh)
+- [LinkerdMesh](#linkerdmesh)
 - [MtlsConfig](#mtlsconfig)
 - [MonitoringConfig](#monitoringconfig)
 - [MeshGroup](#meshgroup) **Top-Level Resource**
@@ -39,6 +40,7 @@ Meshes represent a currently registered service mesh.
 "metadata": .core.solo.io.Metadata
 "istio": .supergloo.solo.io.IstioMesh
 "awsAppMesh": .supergloo.solo.io.AwsAppMesh
+"linkerdMesh": .supergloo.solo.io.LinkerdMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
 "discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
@@ -51,6 +53,7 @@ Meshes represent a currently registered service mesh.
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#istiomesh) |  |  |
 | `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#awsappmesh) |  |  |
+| `linkerdMesh` | [.supergloo.solo.io.LinkerdMesh](../mesh.proto.sk#linkerdmesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 | `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
 | `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) |  |  |
@@ -126,6 +129,24 @@ Mesh object representing AWS App Mesh
 | `injectionSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | Pods matching this selector will be injected with the sidecar proxy at creation time. NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector |  |
 | `virtualNodeLabel` | `string` | If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container. |  |
 | `sidecarPatchConfigMap` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | Reference to the config map that contains the patch that will be applied to the spec of the pods matching the injection_selector. |  |
+
+
+
+
+---
+### LinkerdMesh
+
+ 
+Mesh object representing an installed Linkerd control plane
+
+```yaml
+"installationNamespace": string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `installationNamespace` | `string` | where the Linkerd control plane has been installed |  |
 
 
 

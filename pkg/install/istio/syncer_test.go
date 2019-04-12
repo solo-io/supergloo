@@ -3,6 +3,8 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/common"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -146,6 +148,7 @@ var _ = Describe("Syncer", func() {
 				i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(i2.Status.State).To(Equal(core.Status_Accepted))
+				Expect(*i2.GetMesh().InstalledMesh).To(Equal(i2.GetMetadata().Ref()))
 
 				// installed mesh should have been removed
 				_, err = meshClient.Read(installedMesh.Metadata.Namespace, installedMesh.Metadata.Name, clients.ReadOpts{})
@@ -219,9 +222,5 @@ var _ = Describe("Syncer", func() {
 })
 
 func newTestInstallSyncer(istioInstaller Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
-	return &installSyncer{
-		istioInstaller: istioInstaller,
-		meshClient:     meshClient,
-		reporter:       reporter,
-	}
+	return common.NewMeshInstallSyncer("istio", meshClient, reporter, isIstioInstall, istioInstaller.EnsureIstioInstall)
 }

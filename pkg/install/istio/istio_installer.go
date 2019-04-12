@@ -78,10 +78,6 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 
 	mesh = createOrUpdateMesh(mesh, installNamespace, install, istio)
 
-	// caller should expect the install to have been modified
-	ref := mesh.Metadata.Ref()
-	installMesh.InstalledMesh = &ref
-
 	return mesh, nil
 }
 
