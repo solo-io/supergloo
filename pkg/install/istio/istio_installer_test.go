@@ -82,7 +82,6 @@ var _ = Describe("istio installer", func() {
 				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok"}},
 				MtlsConfig: &v1.MtlsConfig{},
 			}))
-			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
 
 			manifests, err := makeManifestsForInstall(context.TODO(), install, mesh, istio)
 			Expect(err).NotTo(HaveOccurred())
