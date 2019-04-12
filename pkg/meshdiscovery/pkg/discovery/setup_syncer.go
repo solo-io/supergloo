@@ -43,7 +43,7 @@ func configurePlugins() MeshDiscoveryPlugins {
 	return plugins
 }
 
-// start the install event loop
+// start the mesh discovery event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
 	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Discovery.Mesh)
 	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)

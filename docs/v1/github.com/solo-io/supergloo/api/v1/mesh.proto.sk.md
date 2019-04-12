@@ -138,7 +138,6 @@ the encryption configuration that will be applied by the role
 
 ```yaml
 "mtlsEnabled": bool
-"selfSignedCert": bool
 "rootCertificate": .core.solo.io.ResourceRef
 
 ```
@@ -146,7 +145,6 @@ the encryption configuration that will be applied by the role
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `mtlsEnabled` | `bool` | whether or not mutual TLS should be enabled between pods in this mesh |  |
-| `selfSignedCert` | `bool` | if mtlsEnabled is false, this field is ignored indicated whether or not self-signed certs are enabled for a given mesh |  |
 | `rootCertificate` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | if set, rootCertificate will override the root certificate used by the mesh to encrypt mtls connections. The structure of the secret must be a standard kubernetes TLS secret such as can be created via `kubectl create secret tls` if mtlsEnabled is false, this field is ignored If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa. |  |
 
 

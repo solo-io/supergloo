@@ -107,11 +107,6 @@ message MtlsConfig {
     // whether or not mutual TLS should be enabled between pods in this mesh
     bool mtls_enabled = 1;
 
-    //
-    // if mtlsEnabled is false, this field is ignored
-    // indicated whether or not self-signed certs are enabled for a given mesh
-    bool self_signed_cert = 2;
-
     // if set, rootCertificate will override the root certificate used by the mesh
     // to encrypt mtls connections.
     //
