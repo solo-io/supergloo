@@ -7,6 +7,9 @@ subjects:
 - kind: ServiceAccount
   name: supergloo
   namespace: {{ .Release.Namespace }}
+- kind: ServiceAccount
+  name: mesh-discovery
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: cluster-admin
@@ -25,4 +28,3 @@ roleRef:
   kind: ClusterRole
   name: discovery
   apiGroup: rbac.authorization.k8s.io
-

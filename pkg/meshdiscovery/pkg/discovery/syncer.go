@@ -31,8 +31,8 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("mesh-discovery-syncer-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v", snap.Stringer())
-	defer logger.Infof("end sync %v", snap.Stringer())
+	logger.Infow("begin sync", snap.HashFields())
+	defer logger.Infof("end sync %v", snap.HashFields())
 
 	var discoveredMeshes v1.MeshList
 

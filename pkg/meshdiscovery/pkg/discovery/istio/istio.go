@@ -18,7 +18,7 @@ const (
 	pilot      = "pilot"
 	istioPilot = istio + "-" + pilot
 
-	injectionConst = "injection-enabled"
+	injectionLabel = "istio-injection"
 )
 
 type istioMeshDiscovery struct {
@@ -52,10 +52,11 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	var discoveredMeshes v1.MeshList
 	for _, pilotPod := range pilotPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
-			mesh, err := constructDiscoveryData(pilotPod)
+			mesh, err := constructDiscoveryData(ctx, pilotPod)
 			if err != nil {
 				return nil, err
 			}
+			logger.Debugf("successfully discovered mesh data for %v", mesh)
 			discoveredMeshes = append(discoveredMeshes, mesh)
 		}
 	}
@@ -110,7 +111,8 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 	return mergedMeshes, nil
 }
 
-func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
+func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod) (*v1.Mesh, error) {
+	logger := contextutils.LoggerFrom(ctx)
 	mesh := &v1.Mesh{
 		Metadata: core.Metadata{
 			Namespace: getWriteNamespace(),
@@ -120,13 +122,14 @@ func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 
 	istioVersion, err := getVersionFromPod(istioPilotPod)
 	if err != nil {
+		logger.Debugf("unable to find version from pod %v", istioPilotPod)
 		return nil, err
 	}
 
 	discoveryData := &v1.DiscoveryMetadata{
 		InstallationNamespace:  istioPilotPod.Namespace,
 		MeshVersion:            istioVersion,
-		InjectedNamespaceLabel: injectionConst,
+		InjectedNamespaceLabel: injectionLabel,
 	}
 	mesh.DiscoveryMetadata = discoveryData
 	return mesh, nil

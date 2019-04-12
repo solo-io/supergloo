@@ -220,7 +220,7 @@ ifeq ($(RELEASE),"true")
 endif
 
 .PHONY: docker docker-push
-docker: $(OUTPUT_DIR)/.supergloo-docker $(OUTPUT_DIR)/.webhook-docker
+docker: $(OUTPUT_DIR)/.supergloo-docker $(OUTPUT_DIR)/.webhook-docker $(OUTPUT_DIR)/.mesh-discovery-docker
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`
@@ -230,6 +230,7 @@ docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
 	docker push quay.io/solo-io/supergloo:$(VERSION)
 	docker push quay.io/solo-io/sidecar-injector:$(VERSION)
+	docker push quay.io/solo-io/mesh-discovery:$(VERSION)
 endif
 
 
