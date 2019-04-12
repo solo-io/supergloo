@@ -42,3 +42,6 @@ steps:
   waitFor: ['create-go-cache']
 
 timeout: 6600s
+tags: ['supergloo-cache']
+options:
+  machineType: 'N1_HIGHCPU_32'

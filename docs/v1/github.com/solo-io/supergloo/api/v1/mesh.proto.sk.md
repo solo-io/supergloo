@@ -12,6 +12,7 @@ weight: 5
 
 
 - [Mesh](#mesh) **Top-Level Resource**
+- [DiscoveryMetadata](#discoverymetadata)
 - [IstioMesh](#istiomesh)
 - [AwsAppMesh](#awsappmesh)
 - [LinkerdMesh](#linkerdmesh)
@@ -42,6 +43,7 @@ Meshes represent a currently registered service mesh.
 "linkerdMesh": .supergloo.solo.io.LinkerdMesh
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
+"discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
 
 ```
 
@@ -54,6 +56,31 @@ Meshes represent a currently registered service mesh.
 | `linkerdMesh` | [.supergloo.solo.io.LinkerdMesh](../mesh.proto.sk#linkerdmesh) |  |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 | `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
+| `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) |  |  |
+
+
+
+
+---
+### DiscoveryMetadata
+
+ 
+Generic discovery data shared between different meshes
+
+```yaml
+"injectedNamespaceLabel": string
+"meshVersion": string
+"installationNamespace": string
+"mtlsConfig": .supergloo.solo.io.MtlsConfig
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `injectedNamespaceLabel` | `string` | list of namespaces which we know are being injected by a given mesh |  |
+| `meshVersion` | `string` | version of the mesh which is installed |  |
+| `installationNamespace` | `string` | namespace which the mesh is installed into |  |
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
 
 
 
@@ -66,12 +93,14 @@ Mesh object representing an installed Istio control plane
 
 ```yaml
 "installationNamespace": string
+"istioVersion": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `installationNamespace` | `string` | where the istio control plane has been installed |  |
+| `istioVersion` | `string` | version of istio which has been installed |  |
 
 
 

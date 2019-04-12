@@ -23,3 +23,10 @@ discovery:
       repository: quay.io/solo-io/discovery
       pullPolicy: Always
     stats: true
+
+meshDiscovery:
+  deployment:
+    image:
+      repository: quay.io/solo-io/mesh-discovery
+      pullPolicy: Always
+    stats: true

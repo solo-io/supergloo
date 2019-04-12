@@ -69,6 +69,16 @@
         "name": "MeshIngress",
         "package": "supergloo.solo.io"
       }
+    ],
+    "discovery.supergloo.solo.io": [
+      {
+        "name": "Pod",
+        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+      },
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      }
     ]
   }
 }

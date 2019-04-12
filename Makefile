@@ -103,6 +103,9 @@ $(OUTPUT_DIR)/Dockerfile.supergloo: cmd/supergloo/Dockerfile
 $(OUTPUT_DIR)/.supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DIR)/Dockerfile.supergloo
 	docker build -t quay.io/solo-io/supergloo:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
 
+#----------------------------------------------------------------------------------
+# Admission Webhook
+#----------------------------------------------------------------------------------
 
 ### Admission webhook for AWS App Mesh sidecar injection
 
@@ -116,6 +119,26 @@ $(OUTPUT_DIR)/Dockerfile.webhook: cmd/admissionwebhook/Dockerfile
 $(OUTPUT_DIR)/.webhook-docker: $(OUTPUT_DIR)/sidecar-injector-linux-amd64 $(OUTPUT_DIR)/Dockerfile.webhook
 	docker build -t quay.io/solo-io/sidecar-injector:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.webhook
 	touch $@
+
+#----------------------------------------------------------------------------------
+# Mesh Discovery
+#----------------------------------------------------------------------------------
+
+### mesh discovery container
+
+$(OUTPUT_DIR)/mesh-discovery-linux-amd64: $(SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/meshdiscovery/main.go
+	shasum -a 256 $@ > $@.sha256
+
+$(OUTPUT_DIR)/mesh-discovery-darwin-amd64: $(SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cmd/meshdiscovery/main.go
+	shasum -a 256 $@ > $@.sha256
+
+$(OUTPUT_DIR)/Dockerfile.mesh-discovery: cmd/meshdiscovery/Dockerfile
+	cp $< $@
+
+$(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-discovery
+	docker build -t quay.io/solo-io/mesh-discovery:$(VERSION) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
 
 #----------------------------------------------------------------------------------
 # SuperGloo CLI
@@ -163,11 +186,9 @@ helm-template:
 	go run install/helm/supergloo/generate-values.go $(VERSION)
 
 update-helm-chart: helm-template
-ifeq ($(RELEASE),"true")
 	mkdir -p $(HELM_SYNC_DIR)/charts
 	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_DIR)/supergloo
 	helm repo index $(HELM_SYNC_DIR)
-endif
 
 install/manifest/supergloo.yaml: helm-template
 	helm template install/helm/supergloo --namespace supergloo-system --name=supergloo > $@
@@ -197,7 +218,7 @@ ifeq ($(RELEASE),"true")
 endif
 
 .PHONY: docker docker-push
-docker: $(OUTPUT_DIR)/.supergloo-docker $(OUTPUT_DIR)/.webhook-docker
+docker: $(OUTPUT_DIR)/.supergloo-docker $(OUTPUT_DIR)/.webhook-docker $(OUTPUT_DIR)/.mesh-discovery-docker
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`
@@ -207,6 +228,7 @@ docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
 	docker push quay.io/solo-io/supergloo:$(VERSION)
 	docker push quay.io/solo-io/sidecar-injector:$(VERSION)
+	docker push quay.io/solo-io/mesh-discovery:$(VERSION)
 endif
 
 

@@ -10,6 +10,7 @@ import (
 
 	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	"github.com/solo-io/supergloo/pkg/install/istio"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
 
 	"github.com/solo-io/go-utils/testutils"
@@ -89,7 +90,8 @@ var _ = Describe("istio e2e", func() {
    tests
 */
 func testInstallIstio(meshName string) {
-	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --mtls=true --auto-inject=true", meshName))
+	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --version=%v --mtls=true --auto-inject=true",
+		meshName, istio.IstioVersion106))
 	Expect(err).NotTo(HaveOccurred())
 
 	installClient := clients.MustInstallClient()
