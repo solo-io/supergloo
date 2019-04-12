@@ -22,6 +22,25 @@ func IstioInstall(name, namespace, installNs, version string, disabled bool) *v1
 	}
 }
 
+func LinkerdInstall(name, namespace, installNs, version string, disabled bool) *v1.Install {
+	return &v1.Install{
+		Metadata:              core.Metadata{Name: name, Namespace: namespace},
+		Disabled:              disabled,
+		InstallationNamespace: installNs,
+		InstallType: &v1.Install_Mesh{
+			Mesh: &v1.MeshInstall{
+				MeshInstallType: &v1.MeshInstall_LinkerdMesh{
+					LinkerdMesh: &v1.LinkerdInstall{
+						EnableAutoInject: true,
+						EnableMtls:       true,
+						LinkerdVersion:   version,
+					},
+				},
+			},
+		},
+	}
+}
+
 func GlooIstall(name, namespace, installNs, version string, disabled bool) *v1.Install {
 	return &v1.Install{
 		Metadata:              core.Metadata{Name: name, Namespace: namespace},

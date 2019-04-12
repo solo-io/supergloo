@@ -31,6 +31,7 @@ message Mesh {
     oneof mesh_type {
         IstioMesh istio = 1;
         AwsAppMesh aws_app_mesh = 4;
+        LinkerdMesh linkerd_mesh = 5;
     }
 
     // mtls config specifies configuration options for enabling mutual
@@ -77,6 +78,12 @@ message AwsAppMesh {
     // Reference to the config map that contains the patch that will be applied to the spec of the pods matching the
     // injection_selector.
     core.solo.io.ResourceRef sidecar_patch_config_map = 6;
+}
+
+// Mesh object representing an installed Linkerd control plane
+message LinkerdMesh {
+    // where the Linkerd control plane has been installed
+    string installation_namespace = 1;
 }
 
 // the encryption configuration that will be applied by the role
