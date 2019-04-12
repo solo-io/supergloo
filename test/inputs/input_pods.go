@@ -1639,10 +1639,8 @@ func BookInfoPods(svcNamespace string) v1.PodList {
 		// set service account
 		p.Spec.ServiceAccountName = p.Name
 
-		convertedPod, err := kubernetes2.FromKube(&p)
-		if err != nil {
-			panic(err)
-		}
+		convertedPod := kubernetes2.FromKube(&p)
+
 		customPods = append(customPods, convertedPod)
 	}
 	return customPods

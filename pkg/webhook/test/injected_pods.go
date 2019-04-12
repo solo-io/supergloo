@@ -28,10 +28,7 @@ func getInjectedPodList() (v1.PodList, error) {
 		if err != nil {
 			return nil, err
 		}
-		customPod, err := kubernetes.FromKube(&podObj)
-		if err != nil {
-			return nil, err
-		}
+		customPod := kubernetes.FromKube(&podObj)
 		podList = append(podList, customPod)
 	}
 	return podList, nil
