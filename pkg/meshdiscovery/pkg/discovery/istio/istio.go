@@ -68,19 +68,6 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	return mergedMeshes, nil
 }
 
-func addUnique(meshList v1.MeshList, newMesh *v1.Mesh) v1.MeshList {
-	exists := false
-	for _, mesh := range meshList {
-		if mesh.Metadata.Ref().Key() == newMesh.Metadata.Ref().Key() {
-			exists = true
-		}
-	}
-	if !exists {
-		meshList = append(meshList, newMesh)
-	}
-	return meshList
-}
-
 func getWriteNamespace() string {
 	if writeNamespace := os.Getenv("POD_NAMESPACE"); writeNamespace != "" {
 		return writeNamespace
@@ -137,8 +124,9 @@ func constructDiscoveryData(istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 	}
 
 	discoveryData := &v1.DiscoveryMetadata{
-		InstallationNamespace: istioPilotPod.Namespace,
-		MeshVersion:           istioVersion,
+		InstallationNamespace:  istioPilotPod.Namespace,
+		MeshVersion:            istioVersion,
+		InjectedNamespaceLabel: injectionConst,
 	}
 	mesh.DiscoveryMetadata = discoveryData
 	return mesh, nil
