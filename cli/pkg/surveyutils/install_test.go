@@ -3,6 +3,8 @@ package surveyutils_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/install/linkerd"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo/pkg/cliutil/testutil"
@@ -50,6 +52,37 @@ var _ = Describe("SurveyIstioInstall", func() {
 			Expect(in.IstioInstall.InstallGrafana).To(Equal(true))
 			Expect(in.IstioInstall.InstallPrometheus).To(Equal(true))
 			Expect(in.IstioInstall.InstallJaeger).To(Equal(true))
+			Expect(in.Update).To(Equal(true))
+		})
+	})
+})
+
+var _ = Describe("SurveyLinkerdInstall", func() {
+	It("should create the expected linkerd install ", func() {
+		namespace := clients.MustGetNamespaces()[1]
+
+		testutil.ExpectInteractive(func(c *testutil.Console) {
+			c.ExpectString("which namespace to install to? ")
+			c.PressDown()
+			c.SendLine("")
+			c.ExpectString("which version of Linkerd to install? ")
+			c.PressDown()
+			c.SendLine("")
+			c.ExpectString("enable mtls? ")
+			c.SendLine("y")
+			c.ExpectString("enable auto-injection? ")
+			c.SendLine("y")
+			c.ExpectString("update an existing install? ")
+			c.SendLine("y")
+			c.ExpectEOF()
+		}, func() {
+			var in options.Install
+			err := SurveyLinkerdInstall(&in)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(in.InstallationNamespace.Linkerd).To(Equal(namespace))
+			Expect(in.LinkerdInstall.LinkerdVersion).To(Equal(linkerd.Version_stable221))
+			Expect(in.LinkerdInstall.EnableMtls).To(Equal(true))
+			Expect(in.LinkerdInstall.EnableAutoInject).To(Equal(true))
 			Expect(in.Update).To(Equal(true))
 		})
 	})

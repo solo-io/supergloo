@@ -44,6 +44,29 @@ func SurveyIstioInstall(in *options.Install) error {
 	return nil
 }
 
+func SurveyLinkerdInstall(in *options.Install) error {
+	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Linkerd, clients.MustGetNamespaces()); err != nil {
+		return err
+	}
+	if err := cliutil.ChooseFromList("which version of Linkerd to install? ", &in.LinkerdInstall.LinkerdVersion, constants.SupportedLinkerdVersions); err != nil {
+		return err
+	}
+
+	if err := cliutil.GetBoolInput("enable mtls? ", &in.LinkerdInstall.EnableMtls); err != nil {
+		return err
+	}
+
+	if err := cliutil.GetBoolInput("enable auto-injection? ", &in.LinkerdInstall.EnableAutoInject); err != nil {
+		return err
+	}
+
+	if err := cliutil.GetBoolInput("update an existing install? ", &in.Update); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func SurveyGlooInstall(ctx context.Context, in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Gloo, clients.MustGetNamespaces()); err != nil {
 		return err

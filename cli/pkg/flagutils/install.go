@@ -3,6 +3,8 @@ package flagutils
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/install/linkerd"
+
 	"github.com/solo-io/supergloo/pkg/install/istio"
 
 	"github.com/solo-io/supergloo/cli/pkg/constants"
@@ -56,6 +58,28 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		true,
 		"add jaeger to the install?")
 
+}
+
+func AddLinkerdInstallFlags(set *pflag.FlagSet, in *options.Install) {
+	set.StringVar(&in.InstallationNamespace.Linkerd,
+		"installation-namespace",
+		"linkerd-system",
+		"which namespace to install Linkerd into?")
+
+	set.StringVar(&in.LinkerdInstall.LinkerdVersion,
+		"version",
+		linkerd.Version_stable221,
+		fmt.Sprintf("version of linkerd to install? available: %v", constants.SupportedLinkerdVersions))
+
+	set.BoolVar(&in.LinkerdInstall.EnableMtls,
+		"mtls",
+		true,
+		"enable mtls?")
+
+	set.BoolVar(&in.LinkerdInstall.EnableAutoInject,
+		"auto-inject",
+		true,
+		"enable auto-injection?")
 }
 
 func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
