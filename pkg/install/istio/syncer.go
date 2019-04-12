@@ -91,6 +91,8 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 
 			logger.Infof("overwriting previous mesh %v", existingMesh.Metadata.Ref())
 			createdMesh.Metadata.ResourceVersion = existingMesh.Metadata.ResourceVersion
+			// Grab the discovery metadata so it's not overwritten
+			createdMesh.DiscoveryMetadata = existingMesh.DiscoveryMetadata
 		}
 
 		logger.Infof("writing installed mesh %v", createdMesh.Metadata.Ref())

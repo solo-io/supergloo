@@ -6,7 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
-	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery"
 )
 

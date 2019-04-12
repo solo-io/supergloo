@@ -1,6 +1,8 @@
 package istio
 
 import (
+	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -104,7 +106,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Image: "istio-pilot:1.0.6",
 			}
 			pod := constructPod(container, istioNamespace)
-			mesh, err := constructDiscoveryData(pod)
+			mesh, err := constructDiscoveryData(context.TODO(), pod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
 				InstallationNamespace: istioNamespace,
@@ -118,7 +120,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Image: "istio-pilot:1.0.6",
 			}
 			pod := constructPod(container, namespace)
-			mesh, err := constructDiscoveryData(pod)
+			mesh, err := constructDiscoveryData(context.TODO(), pod)
 			Expect(err).NotTo(HaveOccurred())
 			mesh.MeshType = &v1.Mesh_Istio{Istio: &v1.IstioMesh{
 				InstallationNamespace: namespace,

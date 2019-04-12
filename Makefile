@@ -186,11 +186,9 @@ helm-template:
 	go run install/helm/supergloo/generate-values.go $(VERSION)
 
 update-helm-chart: helm-template
-ifeq ($(RELEASE),"true")
 	mkdir -p $(HELM_SYNC_DIR)/charts
 	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_DIR)/supergloo
 	helm repo index $(HELM_SYNC_DIR)
-endif
 
 install/manifest/supergloo.yaml: helm-template
 	helm template install/helm/supergloo --namespace supergloo-system --name=supergloo > $@

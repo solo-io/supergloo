@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -27,7 +27,7 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	}
 
 	plugins := configurePlugins()
-	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Input.Mesh, plugins...)
+	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Discovery.Mesh, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
 		return err
@@ -36,8 +36,8 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	return nil
 }
 
-func configurePlugins() []MeshDiscovery {
-	plugins := []MeshDiscovery{
+func configurePlugins() MeshDiscoveryPlugins {
+	plugins := MeshDiscoveryPlugins{
 		istio.NewIstioMeshDiscovery(),
 	}
 	return plugins
@@ -45,7 +45,7 @@ func configurePlugins() []MeshDiscovery {
 
 // start the install event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Discovery.Pod, c.Input.Mesh)
+	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Discovery.Mesh)
 	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

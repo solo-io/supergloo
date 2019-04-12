@@ -104,6 +104,10 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			},
 		}
 		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
+		discoveredMesh.Metadata = core.Metadata{
+			Namespace: getWriteNamespace(),
+			Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
+		}
 
 		mergedMeshes = append(mergedMeshes, discoveredMesh)
 	}
@@ -113,12 +117,7 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 
 func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
-	mesh := &v1.Mesh{
-		Metadata: core.Metadata{
-			Namespace: getWriteNamespace(),
-			Name:      fmt.Sprintf("istio-%s", istioPilotPod.Namespace),
-		},
-	}
+	mesh := &v1.Mesh{}
 
 	istioVersion, err := getVersionFromPod(istioPilotPod)
 	if err != nil {

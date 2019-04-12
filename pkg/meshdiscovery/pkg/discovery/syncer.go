@@ -12,7 +12,7 @@ import (
 
 type meshDiscoverySyncer struct {
 	meshClient     v1.MeshClient
-	plugins        []MeshDiscovery
+	plugins        MeshDiscoveryPlugins
 	meshReconciler v1.MeshReconciler
 }
 
@@ -45,13 +45,11 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 		discoveredMeshes = append(discoveredMeshes, meshes...)
 	}
 
+	// reconcile all discovered meshes
 	err := s.meshReconciler.Reconcile("", discoveredMeshes, nil, clients.ListOpts{})
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
 
-	// reconcile all discovered meshes
-
 	return multierr.ErrorOrNil()
-
 }

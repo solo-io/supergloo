@@ -11,7 +11,8 @@ import (
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 
-	gotestutils "github.com/solo-io/go-utils/testutils"
+	// mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
+
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/test/e2e/utils"
 
@@ -37,7 +38,7 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
-	promNamespace                       = "prometheus-test" + gotestutils.RandString(4)
+	promNamespace                       = "prometheus-test"
 )
 
 const (
@@ -95,6 +96,18 @@ var _ = BeforeSuite(func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 	}()
+
+	// start mesh discovery
+	// go func() {
+	// 	defer GinkgoRecover()
+	// 	err := mdsetup.Main(rootCtx, func(e error) {
+	// 		defer GinkgoRecover()
+	// 		return
+	// 		// TODO: assert errors here
+	// 		Expect(e).NotTo(HaveOccurred())
+	// 	})
+	// 	Expect(err).NotTo(HaveOccurred())
+	// }()
 
 	// install discovery via cli
 	// start discovery
