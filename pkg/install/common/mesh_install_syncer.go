@@ -15,11 +15,14 @@ type MeshInstallSyncer struct {
 	name              string
 	meshClient        v1.MeshClient
 	reporter          reporter.Reporter
-	isOurInstallType  func(install *v1.Install) bool
-	ensureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+	isOurInstallType  IsInstallType
+	ensureMeshInstall EnsureMeshInstall
 }
 
-func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter reporter.Reporter, isOurInstallType func(install *v1.Install) bool, ensureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)) *MeshInstallSyncer {
+type IsInstallType func(install *v1.Install) bool
+type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+
+func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter reporter.Reporter, isOurInstallType IsInstallType, ensureMeshInstall EnsureMeshInstall) *MeshInstallSyncer {
 	return &MeshInstallSyncer{name: name, meshClient: meshClient, reporter: reporter, isOurInstallType: isOurInstallType, ensureMeshInstall: ensureMeshInstall}
 }
 
