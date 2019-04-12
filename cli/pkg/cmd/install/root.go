@@ -32,6 +32,7 @@ modify the corresponding mesh.
 
 	cmd.AddCommand(
 		installIstioCmd(opts),
+		installLinkerdCmd(opts),
 		installGlooCmd(opts),
 	)
 

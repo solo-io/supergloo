@@ -54,7 +54,7 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 	if install.Disabled {
 		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
 		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(install)); err != nil {
-			return nil, errors.Wrapf(err, "uninstalling istio")
+			return nil, errors.Wrapf(err, "uninstalling gloo")
 		}
 		installIngress.InstalledIngress = nil
 		return nil, nil

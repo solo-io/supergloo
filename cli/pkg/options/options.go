@@ -40,14 +40,16 @@ type Init struct {
 }
 
 type InstallationNamespace struct {
-	Istio string
-	Gloo  string
+	Istio   string
+	Linkerd string
+	Gloo    string
 }
 
 type Install struct {
 	Update                bool // if install exists and is enabled, update with new opts
 	InstallationNamespace InstallationNamespace
 	IstioInstall          v1.IstioInstall
+	LinkerdInstall        v1.LinkerdInstall
 	GlooIngressInstall    v1.GlooInstall
 	MeshIngress           MeshIngressInstall
 }

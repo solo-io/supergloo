@@ -10,48 +10,48 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func installIstioCmd(opts *options.Options) *cobra.Command {
+func installLinkerdCmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "istio",
-		Short: "install the Istio control plane",
+		Use:   "linkerd",
+		Short: "install the Linkerd control plane",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Interactive {
 				if err := surveyutils.SurveyMetadata("installation", &opts.Metadata); err != nil {
 					return err
 				}
-				if err := surveyutils.SurveyIstioInstall(&opts.Install); err != nil {
+				if err := surveyutils.SurveyLinkerdInstall(&opts.Install); err != nil {
 					return err
 				}
 			}
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return createIstioInstall(opts)
+			return createLinkerdInstall(opts)
 		},
 	}
-	flagutils.AddIstioInstallFlags(cmd.PersistentFlags(), &opts.Install)
+	flagutils.AddLinkerdInstallFlags(cmd.PersistentFlags(), &opts.Install)
 	return cmd
 }
 
-func createIstioInstall(opts *options.Options) error {
-	install, err := installIstioFromOpts(opts)
+func createLinkerdInstall(opts *options.Options) error {
+	install, err := installLinkerdFromOpts(opts)
 	if err != nil {
 		return err
 	}
 	return createInstall(opts, install)
 }
 
-func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
-	if err := validateIstioInstall(opts.Install); err != nil {
+func installLinkerdFromOpts(opts *options.Options) (*v1.Install, error) {
+	if err := validateLinkerdInstall(opts.Install); err != nil {
 		return nil, err
 	}
 	in := &v1.Install{
 		Metadata:              opts.Metadata,
-		InstallationNamespace: opts.Install.InstallationNamespace.Istio,
+		InstallationNamespace: opts.Install.InstallationNamespace.Linkerd,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				MeshInstallType: &v1.MeshInstall_IstioMesh{
-					IstioMesh: &opts.Install.IstioInstall,
+				MeshInstallType: &v1.MeshInstall_LinkerdMesh{
+					LinkerdMesh: &opts.Install.LinkerdInstall,
 				},
 			},
 		},
@@ -60,17 +60,17 @@ func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
 	return in, nil
 }
 
-func validateIstioInstall(in options.Install) error {
+func validateLinkerdInstall(in options.Install) error {
 	var validVersion bool
-	for _, ver := range constants.SupportedIstioVersions {
-		if in.IstioInstall.IstioVersion == ver {
+	for _, ver := range constants.SupportedLinkerdVersions {
+		if in.LinkerdInstall.LinkerdVersion == ver {
 			validVersion = true
 			break
 		}
 	}
 	if !validVersion {
 		return errors.Errorf("%v is not a supported "+
-			"istio version", in.IstioInstall.IstioVersion)
+			"linkerd version", in.LinkerdInstall.LinkerdVersion)
 	}
 
 	return nil

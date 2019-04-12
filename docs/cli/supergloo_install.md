@@ -37,4 +37,5 @@ modify the corresponding mesh.
 * [supergloo](../supergloo)	 - CLI for Supergloo
 * [supergloo install gloo](../supergloo_install_gloo)	 - gloo installation
 * [supergloo install istio](../supergloo_install_istio)	 - install the Istio control plane
+* [supergloo install linkerd](../supergloo_install_linkerd)	 - install the Linkerd control plane
 
