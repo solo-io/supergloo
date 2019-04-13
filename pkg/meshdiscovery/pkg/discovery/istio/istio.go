@@ -38,9 +38,24 @@ func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
 	return result
 }
 
+func filterIstioInstalls(installs v1.InstallList) v1.InstallList {
+	var result v1.InstallList
+	for _, install := range installs {
+		meshInstall := install.GetMesh()
+		if meshInstall == nil {
+			continue
+		}
+		if istioMeshInstall := meshInstall.GetIstioMesh(); istioMeshInstall != nil {
+			result = append(result, install)
+		}
+	}
+	return result
+}
+
 func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	pods := snapshot.Pods.List()
 	existingMeshes := filterIstioMeshes(snapshot.Meshes.List())
+	// existingInstalls := filterIstioInstalls(snapshot.Installs.List())
 	logger := contextutils.LoggerFrom(ctx)
 
 	pilotPods := findIstioPods(pods)
