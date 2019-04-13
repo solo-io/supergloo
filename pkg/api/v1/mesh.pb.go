@@ -44,7 +44,8 @@ type Mesh struct {
 	// configuration for propagating stats and metrics from
 	// mesh controllers and sidecars to a centralized datastore
 	// such as prometheus
-	MonitoringConfig     *MonitoringConfig  `protobuf:"bytes,3,opt,name=monitoring_config,json=monitoringConfig,proto3" json:"monitoring_config,omitempty"`
+	MonitoringConfig *MonitoringConfig `protobuf:"bytes,3,opt,name=monitoring_config,json=monitoringConfig,proto3" json:"monitoring_config,omitempty"`
+	// object which represents the data mesh discovery finds about a given mesh
 	DiscoveryMetadata    *DiscoveryMetadata `protobuf:"bytes,6,opt,name=discovery_metadata,json=discoveryMetadata,proto3" json:"discovery_metadata,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`

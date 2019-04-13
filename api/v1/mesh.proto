@@ -43,7 +43,12 @@ message Mesh {
     // such as prometheus
     MonitoringConfig monitoring_config = 3;
 
+    // object which represents the data mesh discovery finds about a given mesh
     DiscoveryMetadata discovery_metadata = 6;
+
+    // reference to the install crd that created this mesh
+    // will be nil if not supergloo managed install
+//    core.solo.io.ResourceRef install = 7;
 }
 
 

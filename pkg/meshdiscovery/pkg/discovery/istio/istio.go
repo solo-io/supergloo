@@ -119,7 +119,7 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			},
 		}
 		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
-		if discoveredMesh.Metadata.Name == "" || discoveredMesh.Metadata.Name == "" {
+		if discoveredMesh.Metadata.Name == "" || discoveredMesh.Metadata.Namespace == "" {
 			discoveredMesh.Metadata = core.Metadata{
 				Namespace: getWriteNamespace(),
 				Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
