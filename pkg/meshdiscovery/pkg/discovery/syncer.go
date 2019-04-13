@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"go.uber.org/zap"
 )
 
 type meshDiscoverySyncer struct {
@@ -28,11 +29,15 @@ func NewMeshDiscoverySyncer(meshClient v1.MeshClient, plugins ...MeshDiscovery) 
 
 func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
 	multierr := &multierror.Error{}
-
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("mesh-discovery-syncer-%v", snap.Hash()))
+	fields := []interface{}{
+		zap.Int("meshes", len(snap.Meshes.List())),
+		zap.Int("installs", len(snap.Installs.List())),
+		zap.Int("pods", len(snap.Pods.List())),
+	}
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infow("begin sync", snap.HashFields())
-	defer logger.Infof("end sync %v", snap.HashFields())
+	logger.Infow("begin sync", fields...)
+	defer logger.Infof("end sync %v", fields...)
 
 	var discoveredMeshes v1.MeshList
 
