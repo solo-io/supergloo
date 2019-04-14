@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	customkube "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -95,4 +96,38 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		newInputClients(pods, install),
 		newDiscoveryClients(mesh),
 	), nil
+}
+
+type IstioClientset struct {
+	MeshPolicies v1alpha1.MeshPolicyClient
+}
+
+func newIstioClientset(meshpolicies v1alpha1.MeshPolicyClient) *IstioClientset {
+	return &IstioClientset{MeshPolicies: meshpolicies}
+}
+
+func IstioFromContext(ctx context.Context) (*IstioClientset, error) {
+	restConfig, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, err
+	}
+	crdCache := kube.NewKubeCache(ctx)
+	/*
+		istio clients
+	*/
+
+	meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
+		Crd:             v1alpha1.MeshPolicyCrd,
+		Cfg:             restConfig,
+		SharedCache:     crdCache,
+		SkipCrdCreation: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := meshPolicyConfig.Register(); err != nil {
+		return nil, err
+	}
+	return newIstioClientset(meshPolicyConfig), nil
+
 }
