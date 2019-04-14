@@ -6,8 +6,8 @@ type EnabledConfigLoops struct {
 	Linkerd bool
 }
 
+type AdvancedDiscoverySycnerList []AdvancedDiscoverySyncer
 type AdvancedDiscoverySyncer interface {
 	Run() (<-chan error, error)
 	HandleError(err error)
-	Enabled(enabled EnabledConfigLoops) bool
 }

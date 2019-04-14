@@ -14,13 +14,13 @@ import (
 
 type IstioAdvancedDiscoveryPlugin struct {
 	ctx context.Context
-	cs  clientset.Clientset
+	cs  *clientset.Clientset
 
-	istioCs clientset.IstioClientset
+	istioCs *clientset.IstioClientset
 	el      v1.IstioDiscoveryEventLoop
 }
 
-func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs clientset.Clientset, istioCs clientset.IstioClientset) (*IstioAdvancedDiscoveryPlugin, error) {
+func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientset) (*IstioAdvancedDiscoveryPlugin, error) {
 	ctx = contextutils.WithLogger(ctx, "istio-advanced-discovery-config-event-loop")
 
 	istioClients, err := clientset.IstioFromContext(ctx)
@@ -39,7 +39,7 @@ func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs clientset.Clientset
 
 	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
 
-	return &IstioAdvancedDiscoveryPlugin{ctx: ctx, cs: cs, istioCs: istioCs, el: el}, nil
+	return &IstioAdvancedDiscoveryPlugin{ctx: ctx, cs: cs, istioCs: istioClients, el: el}, nil
 }
 
 func (iasd *IstioAdvancedDiscoveryPlugin) Run() (<-chan error, error) {
