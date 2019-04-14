@@ -50,6 +50,8 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		if install.GetMesh() == nil {
 			continue
 		}
+		// TODO(EItanya): fix how this works, currently it doesn't reconcile the resources properly
+		// Therefore this link isn't maintained across syncs
 		addMeshToInstall(install, meshes)
 		if s.isOurInstallType(install) {
 			if install.Disabled {
