@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"go.uber.org/zap"
 )
 
 type MeshInstallSyncer struct {
@@ -30,8 +31,13 @@ type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infow("begin sync %v", snap.HashFields())
-	defer logger.Infow("end sync %v", snap.HashFields())
+	fields := []interface{}{
+		zap.Int("meshes", len(snap.Meshes.List())),
+		zap.Int("ingresses", len(snap.Meshingresses.List())),
+		zap.Int("installs", len(snap.Installs.List())),
+	}
+	logger.Infow("begin sync", fields...)
+	defer logger.Infow("end sync", fields...)
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
@@ -44,6 +50,7 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		if install.GetMesh() == nil {
 			continue
 		}
+		addMeshToInstall(install, meshes)
 		if s.isOurInstallType(install) {
 			if install.Disabled {
 				disabledInstalls = append(disabledInstalls, install)
@@ -122,7 +129,6 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 	switch {
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
-		addMeshToInstall(in, meshes)
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
 		mesh, err := s.ensureMeshInstall(ctx, in, meshes)
 		if err != nil {
