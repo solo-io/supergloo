@@ -122,30 +122,7 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 	switch {
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
-		if meshInstall := in.GetMesh(); meshInstall != nil {
-			if meshInstall.InstalledMesh == nil {
-				for _, mesh := range meshes {
-					switch meshType := mesh.MeshType.(type) {
-					case *v1.Mesh_Istio:
-						if meshType.Istio.InstallationNamespace == in.InstallationNamespace &&
-							mesh.Metadata.Name == in.Metadata.Name {
-							meshInstall.InstalledMesh = &core.ResourceRef{
-								Name:      mesh.Metadata.Name,
-								Namespace: mesh.Metadata.Namespace,
-							}
-						}
-					case *v1.Mesh_LinkerdMesh:
-						if meshType.LinkerdMesh.InstallationNamespace == in.InstallationNamespace &&
-							mesh.Metadata.Name == in.Metadata.Name {
-							meshInstall.InstalledMesh = &core.ResourceRef{
-								Name:      mesh.Metadata.Name,
-								Namespace: mesh.Metadata.Namespace,
-							}
-						}
-					}
-				}
-			}
-		}
+		addMeshToInstall(in, meshes)
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
 		mesh, err := s.ensureMeshInstall(ctx, in, meshes)
 		if err != nil {
@@ -162,4 +139,31 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 		}
 	}
 	return nil, nil
+}
+
+func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
+	if meshInstall := in.GetMesh(); meshInstall != nil {
+		if meshInstall.InstalledMesh == nil {
+			for _, mesh := range meshes {
+				switch meshType := mesh.MeshType.(type) {
+				case *v1.Mesh_Istio:
+					if meshType.Istio.InstallationNamespace == in.InstallationNamespace &&
+						mesh.Metadata.Name == in.Metadata.Name {
+						meshInstall.InstalledMesh = &core.ResourceRef{
+							Name:      mesh.Metadata.Name,
+							Namespace: mesh.Metadata.Namespace,
+						}
+					}
+				case *v1.Mesh_LinkerdMesh:
+					if meshType.LinkerdMesh.InstallationNamespace == in.InstallationNamespace &&
+						mesh.Metadata.Name == in.Metadata.Name {
+						meshInstall.InstalledMesh = &core.ResourceRef{
+							Name:      mesh.Metadata.Name,
+							Namespace: mesh.Metadata.Namespace,
+						}
+					}
+				}
+			}
+		}
+	}
 }
