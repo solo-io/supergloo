@@ -79,8 +79,8 @@ func createOrUpdateMesh(install *v1.Install, installMesh *v1.MeshInstall, linker
 	}
 
 	if mesh != nil {
-		mesh.MeshType = &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
+		mesh.MeshType = &v1.Mesh_LinkerdMesh{
+			LinkerdMesh: &v1.LinkerdMesh{
 				InstallationNamespace: install.InstallationNamespace,
 			},
 		}

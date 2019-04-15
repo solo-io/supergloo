@@ -46,7 +46,7 @@ var _ = Describe("install", func() {
 		Expect(err).NotTo(HaveOccurred())
 		calledWith := kubeInstaller.ReconcileCalledWith
 		Expect(calledWith.InstallNamespace).To(Equal("ns"))
-		Expect(calledWith.Resources).To(HaveLen(31))
+		Expect(calledWith.Resources).To(HaveLen(30))
 
 	})
 })

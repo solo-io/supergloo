@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/install/linkerd"
+
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
 
 	"github.com/solo-io/supergloo/pkg/install/gloo"
@@ -62,6 +64,11 @@ func createInstallSyncers(clientset *clientset.Clientset, installer kubeinstall.
 			installer,
 			clientset.Input.Mesh,
 			reporter.NewReporter("istio-install-reporter", clientset.Input.Install.BaseClient()),
+		),
+		linkerd.NewInstallSyncer(
+			installer,
+			clientset.Input.Mesh,
+			reporter.NewReporter("linkerd-install-reporter", clientset.Input.Install.BaseClient()),
 		),
 		gloo.NewInstallSyncer(
 			installer,

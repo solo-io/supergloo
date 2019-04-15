@@ -2,42 +2,13 @@ package testutils
 
 import (
 	"strings"
-	"time"
 
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/kubeutils"
-	kubev1 "k8s.io/api/core/v1"
 	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-var istioInstalledCrds = []string{
-	"meshpolicies.authentication.istio.io",
-	"policies.authentication.istio.io",
-}
-
-func installedByIstio(crdName string) bool {
-	for _, n := range istioInstalledCrds {
-		if crdName == n {
-			return true
-		}
-	}
-	return false
-}
-
-func WaitForIstioTeardown(ns string) {
-	EventuallyWithOffset(1, func() []kubev1.Service {
-		svcs, err := MustKubeClient().CoreV1().Services(ns).List(v1.ListOptions{})
-		if err != nil {
-			// namespace is gone
-			return []kubev1.Service{}
-		}
-		return svcs.Items
-	}, time.Second*30).Should(BeEmpty())
-}
 
 func TeardownWithPrefix(kube kubernetes.Interface, prefix string) {
 	clusterroles, err := kube.RbacV1beta1().ClusterRoles().List(metav1.ListOptions{})

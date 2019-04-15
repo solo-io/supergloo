@@ -3,6 +3,8 @@ package linkerd
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
@@ -49,6 +51,11 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 	if err != nil {
 		return err
 	}
+
+	// filter out the install namespace, it's created by the custom installer
+	resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
+		return resource.GroupVersionKind().Kind == "Namespace"
+	})
 
 	contextutils.LoggerFrom(ctx).Infof("installing linkerd with options: %#v", o)
 
