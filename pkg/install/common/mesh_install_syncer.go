@@ -153,9 +153,9 @@ func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
 	if meshInstall := in.GetMesh(); meshInstall != nil {
 		if meshInstall.InstalledMesh == nil {
 			for _, mesh := range meshes {
-				switch meshType := mesh.MeshType.(type) {
+				switch meshType := mesh.GetMeshType().(type) {
 				case *v1.Mesh_Istio:
-					if meshType.Istio.InstallationNamespace == in.InstallationNamespace &&
+					if meshType.Istio.GetInstallationNamespace() == in.GetInstallationNamespace() &&
 						mesh.Metadata.Name == in.Metadata.Name {
 						meshInstall.InstalledMesh = &core.ResourceRef{
 							Name:      mesh.Metadata.Name,
@@ -163,7 +163,7 @@ func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
 						}
 					}
 				case *v1.Mesh_LinkerdMesh:
-					if meshType.LinkerdMesh.InstallationNamespace == in.InstallationNamespace &&
+					if meshType.LinkerdMesh.GetInstallationNamespace() == in.GetInstallationNamespace() &&
 						mesh.Metadata.Name == in.Metadata.Name {
 						meshInstall.InstalledMesh = &core.ResourceRef{
 							Name:      mesh.Metadata.Name,
