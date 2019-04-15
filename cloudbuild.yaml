@@ -171,6 +171,19 @@ steps:
     waitFor: ['copy-aws-kubeconfig']
     id: 'appmesh-test'
 
+  # Run e2e linkerd tests
+  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
+      - 'KUBECONFIG=/builder/home/.kube/linkerd-config'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    entrypoint: sh
+    args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    waitFor: ['copy-linkerd-kubeconfig']
+    id: 'linkerd-test'
+
   # Run e2e istio tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
@@ -186,18 +199,6 @@ steps:
     args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'istio-test'
-
-  # Run e2e linkerd tests
-  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
-    env:
-      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-      - 'GOPATH=/workspace/gopath'
-      - 'BUILD_ID=$BUILD_ID'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
-    waitFor: ['copy-linkerd-kubeconfig']
-    id: 'linkerd-test'
 
   # Build everything
   # 1) Compile all docker images
