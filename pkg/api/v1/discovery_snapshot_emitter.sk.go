@@ -43,17 +43,19 @@ type DiscoveryEmitter interface {
 	Register() error
 	Pod() PodClient
 	Mesh() MeshClient
+	Install() InstallClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient PodClient, meshClient MeshClient) DiscoveryEmitter {
-	return NewDiscoveryEmitterWithEmit(podClient, meshClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient PodClient, meshClient MeshClient, installClient InstallClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, meshClient, installClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:       podClient,
 		mesh:      meshClient,
+		install:   installClient,
 		forceEmit: emit,
 	}
 }
@@ -62,6 +64,7 @@ type discoveryEmitter struct {
 	forceEmit <-chan struct{}
 	pod       PodClient
 	mesh      MeshClient
+	install   InstallClient
 }
 
 func (c *discoveryEmitter) Register() error {
@@ -69,6 +72,9 @@ func (c *discoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.install.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -80,6 +86,10 @@ func (c *discoveryEmitter) Pod() PodClient {
 
 func (c *discoveryEmitter) Mesh() MeshClient {
 	return c.mesh
+}
+
+func (c *discoveryEmitter) Install() InstallClient {
+	return c.install
 }
 
 func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
@@ -110,6 +120,12 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
+	/* Create channel for Install */
+	type installListWithNamespace struct {
+		list      InstallList
+		namespace string
+	}
+	installChan := make(chan installListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Pod */
@@ -134,6 +150,17 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
 		}(namespace)
+		/* Setup namespaced watch for Install */
+		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Install watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -152,6 +179,12 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 					case <-ctx.Done():
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					}
+				case installList := <-installNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
 					}
 				}
 			}
@@ -202,6 +235,13 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 				meshList := meshNamespacedList.list
 
 				currentSnapshot.Meshes[namespace] = meshList
+			case installNamespacedList := <-installChan:
+				record()
+
+				namespace := installNamespacedList.namespace
+				installList := installNamespacedList.list
+
+				currentSnapshot.Installs[namespace] = installList
 			}
 		}
 	}()

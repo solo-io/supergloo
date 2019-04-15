@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/util"
 )
@@ -76,37 +75,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 
-	mesh = createOrUpdateMesh(mesh, installNamespace, install, istio)
-
-	return mesh, nil
-}
-
-func createOrUpdateMesh(mesh *v1.Mesh, installNamespace string, install *v1.Install, istio *v1.IstioInstall) *v1.Mesh {
-	if mesh != nil {
-		mesh.MeshType = &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
-				InstallationNamespace: installNamespace,
-				IstioVersion:          istio.IstioVersion,
-			},
-		}
-		return mesh
-	}
-	return &v1.Mesh{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshType: &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
-				InstallationNamespace: installNamespace,
-				IstioVersion:          istio.IstioVersion,
-			},
-		},
-		MtlsConfig: &v1.MtlsConfig{
-			MtlsEnabled:     istio.EnableMtls,
-			RootCertificate: istio.CustomRootCert,
-		},
-	}
+	return nil, nil
 }
 
 func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.Mesh, istio *v1.IstioInstall) (helmchart.Manifests, error) {

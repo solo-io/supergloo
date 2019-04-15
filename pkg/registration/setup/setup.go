@@ -47,6 +47,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
+		// istio.NewIstioDiscoveryReconciler(clientset.Kube, clientset.Input.Mesh),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
 			reporter.NewReporter("gloo-registration-reporter",

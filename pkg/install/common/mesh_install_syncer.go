@@ -8,26 +8,36 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"go.uber.org/zap"
 )
 
 type MeshInstallSyncer struct {
 	name              string
 	meshClient        v1.MeshClient
 	reporter          reporter.Reporter
-	isOurInstallType  func(install *v1.Install) bool
-	ensureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+	isOurInstallType  IsInstallType
+	ensureMeshInstall EnsureMeshInstall
 }
 
-func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter reporter.Reporter, isOurInstallType func(install *v1.Install) bool, ensureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)) *MeshInstallSyncer {
+func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter reporter.Reporter, isOurInstallType IsInstallType, ensureMeshInstall EnsureMeshInstall) *MeshInstallSyncer {
 	return &MeshInstallSyncer{name: name, meshClient: meshClient, reporter: reporter, isOurInstallType: isOurInstallType, ensureMeshInstall: ensureMeshInstall}
 }
+
+type IsInstallType func(install *v1.Install) bool
+type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
 
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infow("begin sync %v", snap.HashFields())
-	defer logger.Infow("end sync %v", snap.HashFields())
+	fields := []interface{}{
+		zap.Int("meshes", len(snap.Meshes.List())),
+		zap.Int("ingresses", len(snap.Meshingresses.List())),
+		zap.Int("installs", len(snap.Installs.List())),
+	}
+	logger.Infow("begin sync", fields...)
+	defer logger.Infow("end sync", fields...)
 	resourceErrs := make(reporter.ResourceErrors)
 
 	installs := snap.Installs.List()
@@ -40,6 +50,9 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		if install.GetMesh() == nil {
 			continue
 		}
+		// TODO(EItanya): fix how this works, currently it doesn't reconcile the resources properly
+		// Therefore this link isn't maintained across syncs
+		addMeshToInstall(install, meshes)
 		if s.isOurInstallType(install) {
 			if install.Disabled {
 				disabledInstalls = append(disabledInstalls, install)
@@ -96,6 +109,8 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		activeInstall.GetMesh().InstalledMesh = &ref
 	}
 
+	// reconcile install resources
+
 	logger.Infof("writing reports")
 	if err := resourceErrs.Validate(); err != nil {
 		logger.Warnf("install sync failed with validation errors: %v", err)
@@ -132,4 +147,31 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 		}
 	}
 	return nil, nil
+}
+
+func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
+	if meshInstall := in.GetMesh(); meshInstall != nil {
+		if meshInstall.InstalledMesh == nil {
+			for _, mesh := range meshes {
+				switch meshType := mesh.MeshType.(type) {
+				case *v1.Mesh_Istio:
+					if meshType.Istio.InstallationNamespace == in.InstallationNamespace &&
+						mesh.Metadata.Name == in.Metadata.Name {
+						meshInstall.InstalledMesh = &core.ResourceRef{
+							Name:      mesh.Metadata.Name,
+							Namespace: mesh.Metadata.Namespace,
+						}
+					}
+				case *v1.Mesh_LinkerdMesh:
+					if meshType.LinkerdMesh.InstallationNamespace == in.InstallationNamespace &&
+						mesh.Metadata.Name == in.Metadata.Name {
+						meshInstall.InstalledMesh = &core.ResourceRef{
+							Name:      mesh.Metadata.Name,
+							Namespace: mesh.Metadata.Namespace,
+						}
+					}
+				}
+			}
+		}
+	}
 }

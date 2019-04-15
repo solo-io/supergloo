@@ -34,13 +34,14 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1   string
-		namespace2   string
-		name1, name2 = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg          *rest.Config
-		emitter      DiscoveryEmitter
-		podClient    PodClient
-		meshClient   MeshClient
+		namespace1    string
+		namespace2    string
+		name1, name2  = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg           *rest.Config
+		emitter       DiscoveryEmitter
+		podClient     PodClient
+		meshClient    MeshClient
+		installClient InstallClient
 	)
 
 	BeforeEach(func() {
@@ -69,7 +70,16 @@ var _ = Describe("V1Emitter", func() {
 
 		meshClient, err = NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewDiscoveryEmitter(podClient, meshClient)
+		// Install Constructor
+		installClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         InstallCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(context.TODO()),
+		}
+
+		installClient, err = NewInstallClient(installClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewDiscoveryEmitter(podClient, meshClient, installClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -207,6 +217,66 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
+
+		/*
+			Install
+		*/
+
+		assertSnapshotInstalls := func(expectInstalls InstallList, unexpectInstalls InstallList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectInstalls {
+						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectInstalls {
+						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
+					combined := InstallsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		install1a, err := installClient.Write(NewInstall(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		install1b, err := installClient.Write(NewInstall(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b}, nil)
+		install2a, err := installClient.Write(NewInstall(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		install2b, err := installClient.Write(NewInstall(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b, install2a, install2b}, nil)
+
+		err = installClient.Delete(install2a.GetMetadata().Namespace, install2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = installClient.Delete(install2b.GetMetadata().Namespace, install2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b}, InstallList{install2a, install2b})
+
+		err = installClient.Delete(install1a.GetMetadata().Namespace, install1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = installClient.Delete(install1b.GetMetadata().Namespace, install1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -340,5 +410,65 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
+
+		/*
+			Install
+		*/
+
+		assertSnapshotInstalls := func(expectInstalls InstallList, unexpectInstalls InstallList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectInstalls {
+						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectInstalls {
+						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
+					combined := InstallsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		install1a, err := installClient.Write(NewInstall(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		install1b, err := installClient.Write(NewInstall(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b}, nil)
+		install2a, err := installClient.Write(NewInstall(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		install2b, err := installClient.Write(NewInstall(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b, install2a, install2b}, nil)
+
+		err = installClient.Delete(install2a.GetMetadata().Namespace, install2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = installClient.Delete(install2b.GetMetadata().Namespace, install2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(InstallList{install1a, install1b}, InstallList{install2a, install2b})
+
+		err = installClient.Delete(install1a.GetMetadata().Namespace, install1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = installClient.Delete(install1b.GetMetadata().Namespace, install1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
 	})
 })

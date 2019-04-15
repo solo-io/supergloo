@@ -10,14 +10,16 @@ import (
 )
 
 type DiscoverySnapshot struct {
-	Pods   PodsByNamespace
-	Meshes MeshesByNamespace
+	Pods     PodsByNamespace
+	Meshes   MeshesByNamespace
+	Installs InstallsByNamespace
 }
 
 func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 	return DiscoverySnapshot{
-		Pods:   s.Pods.Clone(),
-		Meshes: s.Meshes.Clone(),
+		Pods:     s.Pods.Clone(),
+		Meshes:   s.Meshes.Clone(),
+		Installs: s.Installs.Clone(),
 	}
 }
 
@@ -25,6 +27,7 @@ func (s DiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashPods(),
 		s.hashMeshes(),
+		s.hashInstalls(),
 	)
 }
 
@@ -36,18 +39,24 @@ func (s DiscoverySnapshot) hashMeshes() uint64 {
 	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
 }
 
+func (s DiscoverySnapshot) hashInstalls() uint64 {
+	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
+}
+
 func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
+	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type DiscoverySnapshotStringer struct {
-	Version uint64
-	Pods    []string
-	Meshes  []string
+	Version  uint64
+	Pods     []string
+	Meshes   []string
+	Installs []string
 }
 
 func (ss DiscoverySnapshotStringer) String() string {
@@ -63,13 +72,19 @@ func (ss DiscoverySnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Installs %v\n", len(ss.Installs))
+	for _, name := range ss.Installs {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
 func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
 	return DiscoverySnapshotStringer{
-		Version: s.Hash(),
-		Pods:    s.Pods.List().NamespacesDotNames(),
-		Meshes:  s.Meshes.List().NamespacesDotNames(),
+		Version:  s.Hash(),
+		Pods:     s.Pods.List().NamespacesDotNames(),
+		Meshes:   s.Meshes.List().NamespacesDotNames(),
+		Installs: s.Installs.List().NamespacesDotNames(),
 	}
 }

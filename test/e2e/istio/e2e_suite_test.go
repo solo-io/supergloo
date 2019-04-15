@@ -10,8 +10,7 @@ import (
 
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
-
-	// mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
+	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/test/e2e/utils"
@@ -98,16 +97,16 @@ var _ = BeforeSuite(func() {
 	}()
 
 	// start mesh discovery
-	// go func() {
-	// 	defer GinkgoRecover()
-	// 	err := mdsetup.Main(rootCtx, func(e error) {
-	// 		defer GinkgoRecover()
-	// 		return
-	// 		// TODO: assert errors here
-	// 		Expect(e).NotTo(HaveOccurred())
-	// 	})
-	// 	Expect(err).NotTo(HaveOccurred())
-	// }()
+	go func() {
+		defer GinkgoRecover()
+		err := mdsetup.Main(rootCtx, func(e error) {
+			defer GinkgoRecover()
+			return
+			// TODO: assert errors here
+			Expect(e).NotTo(HaveOccurred())
+		})
+		Expect(err).NotTo(HaveOccurred())
+	}()
 
 	// install discovery via cli
 	// start discovery
