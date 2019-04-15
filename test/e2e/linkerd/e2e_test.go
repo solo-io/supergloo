@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	skerrors "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
+	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,6 +25,9 @@ var _ = Describe("linkerd e2e", func() {
 
 	It("it installs linkerd", func() {
 		testInstallLinkerd(meshName)
+	})
+	It("it uninstalls linkerd", func() {
+		testUninstallLinkerd(meshName)
 	})
 })
 
@@ -88,4 +93,26 @@ func testInstallLinkerd(meshName string) {
 		"reviews-v3",
 	)
 	Expect(err).NotTo(HaveOccurred())
+}
+
+func testUninstallLinkerd(meshName string) {
+	// test uninstall works
+	err := utils.Supergloo("uninstall --name=" + meshName)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = nil
+	Eventually(func() error {
+		_, err = kube.CoreV1().Services(linkerdNamesapce).Get("linkerd-controller-api", metav1.GetOptions{})
+		return err
+	}, time.Minute*2).Should(HaveOccurred())
+	Expect(kubeerrs.IsNotFound(err)).To(BeTrue())
+
+	err = nil
+	Eventually(func() bool {
+		_, err = clients.MustMeshClient().Read(superglooNamespace, meshName, skclients.ReadOpts{})
+		if err == nil {
+			return false
+		}
+		return skerrors.IsNotExist(err)
+	}, time.Minute*2).Should(BeTrue())
 }

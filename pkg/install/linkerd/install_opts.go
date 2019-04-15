@@ -65,15 +65,3 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 
 	return nil
 }
-
-func linkerdInstallerCallbacks() kubeinstall.CallbackOptions {
-	return &kubeinstall.CallbackOption{
-		OnPostCreate: func(res *unstructured.Unstructured) error {
-			// need to add some additional wait for linkerd-prometheus deployment
-			if res.GetName() == "linkerd-prometheus" && res.GetKind() == "Deployment" {
-
-			}
-			return nil
-		},
-	}
-}
