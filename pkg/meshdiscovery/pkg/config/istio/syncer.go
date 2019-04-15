@@ -34,16 +34,15 @@ var (
 )
 
 type istioConfigSyncer struct {
-	ctx     context.Context
-	cs      *clientset.Clientset
-	istioCs *clientset.IstioClientset
+	ctx context.Context
+	cs  *clientset.Clientset
 
 	reconciler v1.MeshReconciler
 }
 
-func newIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset, istioCs *clientset.IstioClientset) *istioConfigSyncer {
+func newIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) *istioConfigSyncer {
 	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
-	return &istioConfigSyncer{ctx: ctx, cs: cs, istioCs: istioCs, reconciler: meshReconciler}
+	return &istioConfigSyncer{ctx: ctx, cs: cs, reconciler: meshReconciler}
 }
 
 func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySnapshot) error {
@@ -58,7 +57,7 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySna
 		zap.Int("pods", len(pods)),
 		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
-		zap.Int("meshpolicies", len(snap.Meshpolicies)),
+		// zap.Int("meshpolicies", len(snap.Meshpolicies)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)

@@ -96,10 +96,6 @@
       {
         "name": "Install",
         "package": "supergloo.solo.io"
-      },
-      {
-        "name": "MeshPolicy",
-        "package": "istio.authentication.v1alpha1"
       }
     ]
   }

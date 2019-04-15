@@ -57,5 +57,5 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 		return multierr.ErrorOrNil()
 	}
 
-	return config.RunAdvancedDiscoverySyncers(s.rootCtx, s.cs, enabled)
+	return config.RunAdvancedDiscoverySyncers(ctx, s.cs, enabled)
 }

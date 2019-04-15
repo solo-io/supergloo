@@ -11,12 +11,6 @@ import (
 
 func RunAdvancedDiscoverySyncers(ctx context.Context, cs *clientset.Clientset, enabled *common.EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-discovery-config-event-loop")
-	// logger := contextutils.LoggerFrom(ctx)
-
-	// cs, err  := clientset.ClientsetFromContext(ctx)
-	// if err != nil {
-	// 	return err
-	// }
 
 	configSyncers, err := seutpAdvancedDiscoveryPlugins(ctx, cs, enabled)
 	if err != nil {
@@ -50,6 +44,7 @@ func runConfigEventLoop(ctx context.Context, pluginList common.AdvancedDiscovery
 		if err != nil {
 			return err
 		}
+		plugin := plugin
 		go func() {
 			for {
 				select {

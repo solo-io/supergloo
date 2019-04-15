@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
@@ -22,19 +21,24 @@ type IstioAdvancedDiscoveryPlugin struct {
 func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientset) (*IstioAdvancedDiscoveryPlugin, error) {
 	ctx = contextutils.WithLogger(ctx, "istio-advanced-discovery-config-event-loop")
 
-	istioClients, err := clientset.IstioFromContext(ctx)
+	// istioClients, err := clientset.IstioFromContext(ctx)
+	// if err != nil {
+	// 	return nil, errors.Wrapf(err, "initializing istio clients")
+	// }
+
+	var err error
+	cs, err = clientset.ClientsetFromContext(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "initializing istio clients")
+		return nil, err
 	}
 
 	emitter := v1.NewIstioDiscoveryEmitter(
 		cs.Input.Pod,
 		cs.Discovery.Mesh,
 		cs.Input.Install,
-		istioClients.MeshPolicies,
 	)
 
-	syncer := newIstioConfigSyncer(ctx, cs, istioClients)
+	syncer := newIstioConfigSyncer(ctx, cs)
 
 	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
 
