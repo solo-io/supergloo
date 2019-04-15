@@ -59,6 +59,8 @@ func installType(in *v1.Install) string {
 		switch installType.Mesh.MeshInstallType.(type) {
 		case *v1.MeshInstall_IstioMesh:
 			return "Istio Mesh"
+		case *v1.MeshInstall_LinkerdMesh:
+			return "Linkerd Mesh"
 		}
 	case *v1.Install_Ingress:
 		switch installType.Ingress.IngressInstallType.(type) {
@@ -97,6 +99,13 @@ func installDetails(in *v1.Install) []string {
 				fmt.Sprintf("grafana enabled: %v", meshType.IstioMesh.InstallGrafana),
 				fmt.Sprintf("prometheus enabled: %v", meshType.IstioMesh.InstallPrometheus),
 				fmt.Sprintf("jaeger enabled: %v", meshType.IstioMesh.InstallJaeger),
+			)
+		case *v1.MeshInstall_LinkerdMesh:
+			add(
+				fmt.Sprintf("version: %v", meshType.LinkerdMesh.LinkerdVersion),
+				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
+				fmt.Sprintf("mtls enabled: %v", meshType.LinkerdMesh.EnableMtls),
+				fmt.Sprintf("auto inject enabled: %v", meshType.LinkerdMesh.EnableAutoInject),
 			)
 		}
 	case *v1.Install_Ingress:
