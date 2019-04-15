@@ -154,7 +154,7 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
     id: 'gcloud-istio-kubeconfig'
-    waitFor: ['gcloud-linkerd-kubeconfig']
+    waitFor: ['copy-linkerd-kubeconfig']
 
   # Run e2e appmesh tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
