@@ -63,7 +63,7 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 func AddLinkerdInstallFlags(set *pflag.FlagSet, in *options.Install) {
 	set.StringVar(&in.InstallationNamespace.Linkerd,
 		"installation-namespace",
-		"linkerd-system",
+		"linkerd",
 		"which namespace to install Linkerd into?")
 
 	set.StringVar(&in.LinkerdInstall.LinkerdVersion,

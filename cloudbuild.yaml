@@ -107,7 +107,7 @@ steps:
     waitFor: ['compile-tests']
     id: 'test'
 
-  # setup kubectl
+  # setup aws kubeconfig
   - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
     args:
       - eks
@@ -118,7 +118,7 @@ steps:
     waitFor: ['test']
     id: 'aws-kubeconfig-setup'
 
-  # copy config
+  # copy aws config
   - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
     entrypoint: cp
     args:
@@ -128,7 +128,35 @@ steps:
     id: 'copy-aws-kubeconfig'
 
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
-  # Run all of the tests
+
+    # start setting up other kubeconfigs
+  - name: gcr.io/cloud-builders/gcloud
+    args: ['config', 'set', 'compute/zone', 'us-central1-b']
+    id: 'gcloud-compute-zone'
+    waitFor: ['copy-aws-kubeconfig']
+
+  - name: gcr.io/cloud-builders/gcloud
+    args: ['container', 'clusters', 'get-credentials', 'supergloo-e2e']
+    id: 'gcloud-linkerd-kubeconfig'
+    waitFor: ['gcloud-compute-zone']
+
+  # copy linkerd kube config
+  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
+    entrypoint: cp
+    args:
+      - /builder/home/.kube/config
+      - /builder/home/.kube/linkerd-config
+    waitFor: ['gcloud-linkerd-kubeconfig']
+    id: 'copy-linkerd-kubeconfig'
+
+  # setup istio kubeconfig
+  # no copy necessary
+  - name: gcr.io/cloud-builders/gcloud
+    args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
+    id: 'gcloud-istio-kubeconfig'
+    waitFor: ['gcloud-linkerd-kubeconfig']
+
+  # Run e2e appmesh tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -143,15 +171,6 @@ steps:
     waitFor: ['copy-aws-kubeconfig']
     id: 'appmesh-test'
 
-  - name: gcr.io/cloud-builders/gcloud
-    args: ['config', 'set', 'compute/zone', 'us-central1-b']
-    id: 'gcloud-compute-zone'
-    waitFor: ['copy-aws-kubeconfig']
-  - name: gcr.io/cloud-builders/gcloud
-    args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
-    id: 'gcloud-kube-config'
-    waitFor: ['gcloud-compute-zone']
-
   # Run e2e istio tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
@@ -165,8 +184,20 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
-    waitFor: ['gcloud-kube-config']
+    waitFor: ['gcloud-istio-kubeconfig']
     id: 'istio-test'
+
+  # Run e2e linkerd tests
+  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    entrypoint: sh
+    args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    waitFor: ['copy-linkerd-kubeconfig']
+    id: 'linkerd-test'
 
   # Build everything
   # 1) Compile all docker images
@@ -177,7 +208,7 @@ steps:
     args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
     secretEnv: ['QUAY_IO_PASSWORD']
     id: 'docker-login'
-    waitFor: ['istio-test', 'appmesh-test']
+    waitFor: ['istio-test', 'linkerd-test', 'appmesh-test']
 
   - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     args: ['docker', 'build-cli']
