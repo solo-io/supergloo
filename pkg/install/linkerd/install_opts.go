@@ -3,6 +3,8 @@ package linkerd
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
@@ -50,6 +52,11 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 		return err
 	}
 
+	// filter out the install namespace, it's created by the custom installer
+	resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
+		return resource.GroupVersionKind().Kind == "Namespace"
+	})
+
 	contextutils.LoggerFrom(ctx).Infof("installing linkerd with options: %#v", o)
 
 	if err := installer.ReconcileResources(ctx, o.installNamespace, resources, withLabels); err != nil {
@@ -57,4 +64,16 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 	}
 
 	return nil
+}
+
+func linkerdInstallerCallbacks() kubeinstall.CallbackOptions {
+	return &kubeinstall.CallbackOption{
+		OnPostCreate: func(res *unstructured.Unstructured) error {
+			// need to add some additional wait for linkerd-prometheus deployment
+			if res.GetName() == "linkerd-prometheus" && res.GetKind() == "Deployment" {
+
+			}
+			return nil
+		},
+	}
 }
