@@ -16,8 +16,7 @@ type IstioAdvancedDiscoveryPlugin struct {
 	ctx context.Context
 	cs  *clientset.Clientset
 
-	istioCs *clientset.IstioClientset
-	el      v1.IstioDiscoveryEventLoop
+	el v1.IstioDiscoveryEventLoop
 }
 
 func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientset) (*IstioAdvancedDiscoveryPlugin, error) {
@@ -35,17 +34,18 @@ func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientse
 		istioClients.MeshPolicies,
 	)
 
-	syncer := newIstioConfigSyncer()
+	syncer := newIstioConfigSyncer(ctx, cs, istioClients)
 
 	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
 
-	return &IstioAdvancedDiscoveryPlugin{ctx: ctx, cs: cs, istioCs: istioClients, el: el}, nil
+	return &IstioAdvancedDiscoveryPlugin{ctx: ctx, cs: cs, el: el}, nil
 }
 
 func (iasd *IstioAdvancedDiscoveryPlugin) Run() (<-chan error, error) {
 	watchOpts := clients.WatchOpts{
 		Ctx:         iasd.ctx,
 		RefreshRate: time.Second * 1,
+		Selector:    DiscoverySelector,
 	}
 	return iasd.el.Run(nil, watchOpts)
 }
@@ -56,6 +56,10 @@ func (iasd *IstioAdvancedDiscoveryPlugin) HandleError(err error) {
 	}
 }
 
-func (iasd *IstioAdvancedDiscoveryPlugin) Enabled(enabled common.EnabledConfigLoops) bool {
-	return enabled.Istio
+func (iasd *IstioAdvancedDiscoveryPlugin) Enabled(enabled *common.EnabledConfigLoops) bool {
+	return enabled.Istio()
+}
+
+func (iasd *IstioAdvancedDiscoveryPlugin) Selector() string {
+	return istioSelector
 }

@@ -1,4 +1,4 @@
-package discoveryutils
+package utils
 
 import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -26,7 +26,7 @@ var IstioMeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
 	return false
 }
 
-func FilterInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.InstallList {
+func GetInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.InstallList {
 	var result v1.InstallList
 	for _, install := range installs {
 		if filterFunc(install) {
@@ -36,7 +36,7 @@ func FilterInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.In
 	return result
 }
 
-func FilterMeshes(meshes v1.MeshList, filterFunc MeshFilterFunc) v1.MeshList {
+func GetMeshes(meshes v1.MeshList, filterFunc MeshFilterFunc) v1.MeshList {
 	var result v1.MeshList
 	for _, mesh := range meshes {
 		if filterFunc(mesh) {

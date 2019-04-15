@@ -27,7 +27,7 @@ func RunAdvancedDiscoverySyncers(ctx context.Context, cs *clientset.Clientset, e
 
 func seutpAdvancedDiscoveryPlugins(ctx context.Context, cs *clientset.Clientset, enabled common.EnabledConfigLoops) (common.AdvancedDiscoverySycnerList, error) {
 	plugins := common.AdvancedDiscoverySycnerList{}
-	if enabled.Istio {
+	if enabled.Istio() {
 		istioPlugin, err := istio.NewIstioAdvancedDiscoveryPlugin(ctx, cs)
 		if err != nil {
 			return nil, err
