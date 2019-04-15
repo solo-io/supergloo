@@ -8,6 +8,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
@@ -33,14 +34,16 @@ var (
 )
 
 type istioConfigSyncer struct {
-	ctx context.Context
-	cs  *clientset.Clientset
-
+	ctx     context.Context
+	cs      *clientset.Clientset
 	istioCs *clientset.IstioClientset
+
+	reconciler v1.MeshReconciler
 }
 
 func newIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset, istioCs *clientset.IstioClientset) *istioConfigSyncer {
-	return &istioConfigSyncer{ctx: ctx, cs: cs, istioCs: istioCs}
+	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
+	return &istioConfigSyncer{ctx: ctx, cs: cs, istioCs: istioCs, reconciler: meshReconciler}
 }
 
 func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySnapshot) error {
@@ -87,8 +90,11 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySna
 		return err
 	}
 
-	logger.Infof("sync completed successfully!")
-	return nil
+	reconcileOpts := clients.ListOpts{
+		Ctx:      s.ctx,
+		Selector: DiscoverySelector,
+	}
+	return s.reconciler.Reconcile("", mergedMeshes, nil, reconcileOpts)
 }
 
 func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, error) {
@@ -123,6 +129,8 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			discoveredMesh.Metadata = core.Metadata{
 				Namespace: getWriteNamespace(),
 				Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
+				// Very important to add this selector or the reconcile will not pick it up later
+				Labels: DiscoverySelector,
 			}
 		}
 
