@@ -232,7 +232,9 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		}
 
 		for {
-			record := func() { stats.Record(ctx, mIstioDiscoverySnapshotIn.M(1)) }
+			record := func() {
+				stats.Record(ctx, mIstioDiscoverySnapshotIn.M(1))
+			}
 
 			select {
 			case <-timer.C:

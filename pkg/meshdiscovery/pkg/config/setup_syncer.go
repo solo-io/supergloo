@@ -9,9 +9,14 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/istio"
 )
 
-func RunAdvancedDiscoverySyncers(ctx context.Context, cs *clientset.Clientset, enabled common.EnabledConfigLoops) error {
+func RunAdvancedDiscoverySyncers(ctx context.Context, cs *clientset.Clientset, enabled *common.EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-discovery-config-event-loop")
 	// logger := contextutils.LoggerFrom(ctx)
+
+	// cs, err  := clientset.ClientsetFromContext(ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
 	configSyncers, err := seutpAdvancedDiscoveryPlugins(ctx, cs, enabled)
 	if err != nil {
@@ -25,7 +30,7 @@ func RunAdvancedDiscoverySyncers(ctx context.Context, cs *clientset.Clientset, e
 	return nil
 }
 
-func seutpAdvancedDiscoveryPlugins(ctx context.Context, cs *clientset.Clientset, enabled common.EnabledConfigLoops) (common.AdvancedDiscoverySycnerList, error) {
+func seutpAdvancedDiscoveryPlugins(ctx context.Context, cs *clientset.Clientset, enabled *common.EnabledConfigLoops) (common.AdvancedDiscoverySycnerList, error) {
 	plugins := common.AdvancedDiscoverySycnerList{}
 	if enabled.Istio() {
 		istioPlugin, err := istio.NewIstioAdvancedDiscoveryPlugin(ctx, cs)

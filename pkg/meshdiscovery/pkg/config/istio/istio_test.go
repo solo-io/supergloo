@@ -15,10 +15,7 @@ import (
 
 var _ = Describe("istio mesh discovery unit tests", func() {
 	var (
-		snap *v1.DiscoverySnapshot
-
-		istioNamespace     = "istio-system"
-		superglooNamespace = "supergloo-system"
+		istioNamespace = "istio-system"
 	)
 
 	var constructPod = func(container kubev1.Container, namespace string) *v1.Pod {
@@ -37,24 +34,6 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 	}
 
 	BeforeEach(func() {
-		snap = &v1.DiscoverySnapshot{
-			Meshes: v1.MeshesByNamespace{
-				superglooNamespace: v1.MeshList{
-					{
-						Metadata: core.Metadata{Name: "one"},
-						MeshType: &v1.Mesh_Istio{
-							Istio: &v1.IstioMesh{},
-						},
-					},
-					{
-						MeshType: &v1.Mesh_AwsAppMesh{
-							AwsAppMesh: &v1.AwsAppMesh{},
-						},
-					},
-				},
-			},
-		}
-
 		clients.UseMemoryClients()
 	})
 	Context("get version from pod", func() {

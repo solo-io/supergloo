@@ -45,7 +45,6 @@ func (iasd *IstioAdvancedDiscoveryPlugin) Run() (<-chan error, error) {
 	watchOpts := clients.WatchOpts{
 		Ctx:         iasd.ctx,
 		RefreshRate: time.Second * 1,
-		Selector:    DiscoverySelector,
 	}
 	return iasd.el.Run(nil, watchOpts)
 }
@@ -58,8 +57,4 @@ func (iasd *IstioAdvancedDiscoveryPlugin) HandleError(err error) {
 
 func (iasd *IstioAdvancedDiscoveryPlugin) Enabled(enabled *common.EnabledConfigLoops) bool {
 	return enabled.Istio()
-}
-
-func (iasd *IstioAdvancedDiscoveryPlugin) Selector() string {
-	return istioSelector
 }

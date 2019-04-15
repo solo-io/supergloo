@@ -54,5 +54,4 @@ type AdvancedDiscoverySycnerList []AdvancedDiscoverySyncer
 type AdvancedDiscoverySyncer interface {
 	Run() (<-chan error, error)
 	HandleError(err error)
-	Selector() string
 }

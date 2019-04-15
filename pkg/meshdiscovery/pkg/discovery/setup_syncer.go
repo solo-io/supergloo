@@ -27,7 +27,7 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	}
 
 	plugins := configurePlugins()
-	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Discovery.Mesh, plugins...)
+	meshDicoverySyncer := NewMeshDiscoverySyncer(ctx, cs, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
 		return err
