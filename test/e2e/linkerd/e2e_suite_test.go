@@ -69,8 +69,8 @@ var _ = BeforeSuite(func() {
 
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   namespaceWithInject,
-			Labels: map[string]string{"linkerd.io/inject": "enabled"},
+			Name:        namespaceWithInject,
+			Annotations: map[string]string{"linkerd.io/inject": "enabled"},
 		},
 	})
 	Expect(err).NotTo(HaveOccurred())
