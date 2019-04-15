@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discoveryutils"
 )
 
 const (
@@ -28,37 +28,13 @@ func NewIstioMeshDiscovery() *istioMeshDiscovery {
 	return &istioMeshDiscovery{}
 }
 
-func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
-	var result v1.MeshList
-	for _, mesh := range meshes {
-		if istioMesh := mesh.GetIstio(); istioMesh != nil {
-			result = append(result, mesh)
-		}
-	}
-	return result
-}
-
-func filterIstioInstalls(installs v1.InstallList) v1.InstallList {
-	var result v1.InstallList
-	for _, install := range installs {
-		meshInstall := install.GetMesh()
-		if meshInstall == nil {
-			continue
-		}
-		if istioMeshInstall := meshInstall.GetIstioMesh(); istioMeshInstall != nil {
-			result = append(result, install)
-		}
-	}
-	return result
-}
-
 func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	pods := snapshot.Pods.List()
-	existingMeshes := filterIstioMeshes(snapshot.Meshes.List())
-	existingInstalls := filterIstioInstalls(snapshot.Installs.List())
+	existingMeshes := discoveryutils.FilterMeshes(snapshot.Meshes.List(), discoveryutils.IstioMeshFilterFunc)
+	existingInstalls := discoveryutils.FilterInstalls(snapshot.Installs.List(), discoveryutils.IstioInstallFilterFunc)
 	logger := contextutils.LoggerFrom(ctx)
 
-	pilotPods := findIstioPods(pods)
+	pilotPods := discoveryutils.FilerPodsByNamePrefix(pods, istio)
 	if len(pilotPods) == 0 {
 		logger.Debugf("no pilot pods found in istio pod list")
 		return nil, nil
@@ -176,30 +152,11 @@ func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod, existing
 	return mesh, nil
 }
 
-func findIstioPods(pods v1.PodList) v1.PodList {
-	var result v1.PodList
-	for _, pod := range pods {
-		if strings.Contains(pod.Name, istio) {
-			result = append(result, pod)
-		}
-	}
-	return result
-}
-
-func imageVersion(image string) (string, error) {
-	regex := regexp.MustCompile("([0-9]+[.][0-9]+[.][0-9]+$)")
-	imageTag := regex.FindString(image)
-	if imageTag == "" {
-		return "", errors.Errorf("unable to find image version for image: %s", image)
-	}
-	return imageTag, nil
-}
-
 func getVersionFromPod(pod *v1.Pod) (string, error) {
 	containers := pod.Spec.Containers
 	for _, container := range containers {
 		if strings.Contains(container.Image, istio) && strings.Contains(container.Image, pilot) {
-			return imageVersion(container.Image)
+			return discoveryutils.ImageVersion(container.Image)
 		}
 	}
 	return "", errors.Errorf("unable to find pilot container from pod")
