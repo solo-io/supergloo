@@ -37,12 +37,20 @@ var _ = Describe("DiscoveryEventLoop", func() {
 		meshClient, err := NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewDiscoveryEmitter(podClient, meshClient)
+		installClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		installClient, err := NewInstallClient(installClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewDiscoveryEmitter(podClient, meshClient, installClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockDiscoverySyncer{}
 		el := NewDiscoveryEventLoop(emitter, sync)

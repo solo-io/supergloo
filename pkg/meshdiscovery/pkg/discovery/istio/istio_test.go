@@ -106,11 +106,48 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Image: "istio-pilot:1.0.6",
 			}
 			pod := constructPod(container, istioNamespace)
-			mesh, err := constructDiscoveryData(context.TODO(), pod)
+			mesh, err := constructDiscoveryData(context.TODO(), pod, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
-				InstallationNamespace: istioNamespace,
-				MeshVersion:           "1.0.6",
+				InstallationNamespace:  istioNamespace,
+				MeshVersion:            "1.0.6",
+				InjectedNamespaceLabel: "istio-injection",
+			}))
+		})
+		It("overwrites discovery data with install info", func() {
+			container := kubev1.Container{
+				Image: "istio-pilot:1.0.6",
+			}
+			pod := constructPod(container, istioNamespace)
+			helloWorldCert := &core.ResourceRef{
+				Namespace: "hello",
+				Name:      "world",
+			}
+			installs := v1.InstallList{
+				{
+					InstallationNamespace: istioNamespace,
+					InstallType: &v1.Install_Mesh{
+						Mesh: &v1.MeshInstall{
+							MeshInstallType: &v1.MeshInstall_IstioMesh{
+								IstioMesh: &v1.IstioInstall{
+									CustomRootCert: helloWorldCert,
+									EnableMtls:     true,
+								},
+							},
+						},
+					},
+				},
+			}
+			mesh, err := constructDiscoveryData(context.TODO(), pod, installs)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
+				InstallationNamespace:  istioNamespace,
+				MeshVersion:            "1.0.6",
+				InjectedNamespaceLabel: "istio-injection",
+				MtlsConfig: &v1.MtlsConfig{
+					RootCertificate: helloWorldCert,
+					MtlsEnabled:     true,
+				},
 			}))
 		})
 	})
@@ -120,7 +157,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Image: "istio-pilot:1.0.6",
 			}
 			pod := constructPod(container, namespace)
-			mesh, err := constructDiscoveryData(context.TODO(), pod)
+			mesh, err := constructDiscoveryData(context.TODO(), pod, nil)
 			Expect(err).NotTo(HaveOccurred())
 			mesh.MeshType = &v1.Mesh_Istio{Istio: &v1.IstioMesh{
 				InstallationNamespace: namespace,

@@ -75,13 +75,8 @@ var _ = Describe("istio installer", func() {
 			})
 			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
-			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
+			_, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*installedMesh).To(Equal(v1.Mesh{
-				Metadata:   install.Metadata,
-				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok", IstioVersion: IstioVersion106}},
-				MtlsConfig: &v1.MtlsConfig{},
-			}))
 
 			manifests, err := makeManifestsForInstall(context.TODO(), install, mesh, istio)
 			Expect(err).NotTo(HaveOccurred())
@@ -106,14 +101,8 @@ var _ = Describe("istio installer", func() {
 			})
 			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)
-			installedMesh, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
+			_, err := installer.EnsureIstioInstall(context.TODO(), install, v1.MeshList{mesh})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*installedMesh).To(Equal(v1.Mesh{
-				Metadata:   originalMesh.Metadata,
-				MeshType:   &v1.Mesh_Istio{Istio: &v1.IstioMesh{InstallationNamespace: "ok", IstioVersion: IstioVersion106}},
-				MtlsConfig: mesh.GetMtlsConfig(),
-			}))
-			Expect(*install.GetMesh().InstalledMesh).To(Equal(installedMesh.Metadata.Ref()))
 
 			manifests, err := makeManifestsForInstall(context.TODO(), install, mesh, istio)
 			Expect(err).NotTo(HaveOccurred())

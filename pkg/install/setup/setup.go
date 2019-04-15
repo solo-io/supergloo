@@ -41,7 +41,7 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 		logger.Infof("finished install cache sync. took %v", time.Now().Sub(started))
 	}()
 
-	kubeInstaller, err := kubeinstall.NewKubeInstaller(cs.RestConfig, installCache)
+	kubeInstaller, err := kubeinstall.NewKubeInstaller(cs.RestConfig, installCache, nil)
 	if err != nil {
 		return err
 	}

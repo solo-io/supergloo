@@ -28,7 +28,7 @@ rules:
     resources: ["customresourcedefinitions"]
     verbs: ["get", "create"]
   - apiGroups: ["supergloo.solo.io"]
-    resources: ["meshes"]
+    resources: ["meshes", "installs"]
     verbs: ["*"]
 
 {{- end }}

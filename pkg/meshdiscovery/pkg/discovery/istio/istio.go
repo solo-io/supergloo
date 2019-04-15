@@ -38,9 +38,24 @@ func filterIstioMeshes(meshes v1.MeshList) v1.MeshList {
 	return result
 }
 
+func filterIstioInstalls(installs v1.InstallList) v1.InstallList {
+	var result v1.InstallList
+	for _, install := range installs {
+		meshInstall := install.GetMesh()
+		if meshInstall == nil {
+			continue
+		}
+		if istioMeshInstall := meshInstall.GetIstioMesh(); istioMeshInstall != nil {
+			result = append(result, install)
+		}
+	}
+	return result
+}
+
 func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	pods := snapshot.Pods.List()
 	existingMeshes := filterIstioMeshes(snapshot.Meshes.List())
+	existingInstalls := filterIstioInstalls(snapshot.Installs.List())
 	logger := contextutils.LoggerFrom(ctx)
 
 	pilotPods := findIstioPods(pods)
@@ -52,7 +67,7 @@ func (imd *istioMeshDiscovery) DiscoverMeshes(ctx context.Context, snapshot *v1.
 	var discoveredMeshes v1.MeshList
 	for _, pilotPod := range pilotPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
-			mesh, err := constructDiscoveryData(ctx, pilotPod)
+			mesh, err := constructDiscoveryData(ctx, pilotPod, existingInstalls)
 			if err != nil {
 				return nil, err
 			}
@@ -104,9 +119,11 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 			},
 		}
 		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
-		discoveredMesh.Metadata = core.Metadata{
-			Namespace: getWriteNamespace(),
-			Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
+		if discoveredMesh.Metadata.Name == "" || discoveredMesh.Metadata.Namespace == "" {
+			discoveredMesh.Metadata = core.Metadata{
+				Namespace: getWriteNamespace(),
+				Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
+			}
 		}
 
 		mergedMeshes = append(mergedMeshes, discoveredMesh)
@@ -115,7 +132,7 @@ func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, err
 	return mergedMeshes, nil
 }
 
-func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod) (*v1.Mesh, error) {
+func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 	mesh := &v1.Mesh{}
 
@@ -131,6 +148,31 @@ func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod) (*v1.Mes
 		InjectedNamespaceLabel: injectionLabel,
 	}
 	mesh.DiscoveryMetadata = discoveryData
+
+	// If install crd exists, overwrite discovery data
+	for _, install := range existingInstalls {
+		meshInstall := install.GetMesh()
+		if meshInstall == nil {
+			continue
+		}
+		istioMeshInstall := meshInstall.GetIstioMesh()
+		if istioMeshInstall == nil {
+			continue
+		}
+		// This install refers to the current mesh
+		if install.InstallationNamespace == istioPilotPod.Namespace {
+			if istioMeshInstall.EnableMtls {
+				mesh.DiscoveryMetadata.MtlsConfig = &v1.MtlsConfig{
+					MtlsEnabled:     true,
+					RootCertificate: istioMeshInstall.CustomRootCert,
+				}
+			}
+			mesh.Metadata = install.Metadata
+			// Need to explicitly set this to "" so it doesn't attempt to overwrite it.
+			mesh.Metadata.ResourceVersion = ""
+		}
+	}
+
 	return mesh, nil
 }
 
