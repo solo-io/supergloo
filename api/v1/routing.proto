@@ -103,8 +103,12 @@ message RetryPolicy {
     // this retry policy will be applied to any targeted Istio Mesh Instances
     istio.networking.v1alpha3.HTTPRetry max_retries = 1;
 
-    //
-    // this retry policy will be applied to any targeted Istio Mesh Insatnces
+    // allocate a 'retry budget' for each mesh sidecar
+    // once the proxy reaches its retry budget limit, it will
+    // stop retrying all requests for the given retry window.
+    // this can be used to prevent cascading failures when
+    // outages cause bursts of retries.
+    // this retry policy will be applied to any targeted Linkerd Mesh Instances
     RetryBudget retry_budget = 2;
 }
 

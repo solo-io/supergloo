@@ -487,8 +487,12 @@ type RetryPolicy struct {
 	// retry each failed request until success or max number of retries met
 	// this retry policy will be applied to any targeted Istio Mesh Instances
 	MaxRetries *v1alpha3.HTTPRetry `protobuf:"bytes,1,opt,name=max_retries,json=maxRetries,proto3" json:"max_retries,omitempty"`
-	//
-	// this retry policy will be applied to any targeted Istio Mesh Insatnces
+	// allocate a 'retry budget' for each mesh sidecar
+	// once the proxy reaches its retry budget limit, it will
+	// stop retrying all requests for the given retry window.
+	// this can be used to prevent cascading failures when
+	// outages cause bursts of retries.
+	// this retry policy will be applied to any targeted Linkerd Mesh Instances
 	RetryBudget          *RetryBudget `protobuf:"bytes,2,opt,name=retry_budget,json=retryBudget,proto3" json:"retry_budget,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
 	XXX_unrecognized     []byte       `json:"-"`

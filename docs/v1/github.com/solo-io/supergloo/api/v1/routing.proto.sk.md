@@ -117,7 +117,7 @@ config for each type, while other config types will be ignored
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `maxRetries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | retry each failed request until success or max number of retries met this retry policy will be applied to any targeted Istio Mesh Instances |  |
-| `retryBudget` | [.supergloo.solo.io.RetryBudget](../routing.proto.sk#retrybudget) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
+| `retryBudget` | [.supergloo.solo.io.RetryBudget](../routing.proto.sk#retrybudget) | allocate a 'retry budget' for each mesh sidecar once the proxy reaches its retry budget limit, it will stop retrying all requests for the given retry window. this can be used to prevent cascading failures when outages cause bursts of retries. this retry policy will be applied to any targeted Linkerd Mesh Instances |  |
 
 
 
