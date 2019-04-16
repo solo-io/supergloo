@@ -6,26 +6,22 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/common"
 	"go.uber.org/zap"
 )
 
 type meshDiscoverySyncer struct {
-	rootCtx        context.Context
-	cs             *clientset.Clientset
+	meshClient     v1.MeshClient
 	plugins        MeshDiscoveryPlugins
 	meshReconciler v1.MeshReconciler
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewMeshDiscoverySyncer(ctx context.Context, cs *clientset.Clientset, plugins ...MeshDiscovery) v1.DiscoverySyncer {
-	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
+func NewMeshDiscoverySyncer(meshClient v1.MeshClient, plugins ...MeshDiscovery) v1.DiscoverySyncer {
+	meshReconciler := v1.NewMeshReconciler(meshClient)
 	return &meshDiscoverySyncer{
-		rootCtx:        ctx,
-		cs:             cs,
+		meshClient:     meshClient,
 		plugins:        plugins,
 		meshReconciler: meshReconciler,
 	}
@@ -43,19 +39,22 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 
-	enabled := &common.EnabledConfigLoops{}
+	var discoveredMeshes v1.MeshList
 
 	for _, meshDiscoveryPlugin := range s.plugins {
-		err := meshDiscoveryPlugin.DiscoverMeshes(ctx, snap, enabled)
+		meshes, err := meshDiscoveryPlugin.DiscoverMeshes(ctx, snap)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			logger.Errorf(err.Error())
 		}
+		discoveredMeshes = append(discoveredMeshes, meshes...)
 	}
 
-	if multierr.ErrorOrNil() != nil {
-		return multierr.ErrorOrNil()
+	// reconcile all discovered meshes
+	err := s.meshReconciler.Reconcile("", discoveredMeshes, nil, clients.ListOpts{})
+	if err != nil {
+		multierr = multierror.Append(multierr, err)
 	}
 
-	return config.RunAdvancedDiscoverySyncers(ctx, s.cs, enabled)
+	return multierr.ErrorOrNil()
 }
