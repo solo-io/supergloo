@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/supergloo/pkg/config/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/istio"
 	"github.com/solo-io/supergloo/pkg/registration"
 )
 
@@ -40,23 +39,14 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled r
 	var syncers []config.AdvancedMeshDiscovery
 
 	if enabled.Istio {
-		istioSyncer, err := createIstioConfigSyncer(ctx, cs)
+		istioPlugin, err := istio.NewIstioAdvancedDiscovery(ctx, cs)
 		if err != nil {
 			return nil, err
 		}
-		syncers = append(syncers, istioSyncer)
+		syncers = append(syncers, istioPlugin)
 	}
 
 	return syncers, nil
-}
-
-func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (config.AdvancedMeshDiscovery, error) {
-	istioClients, err := clientset.IstioFromContext(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "initializing istio clients")
-	}
-
-	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
 }
 
 // start the istio config event loop
@@ -64,7 +54,7 @@ func runConfigEventLoop(ctx context.Context, plugins []config.AdvancedMeshDiscov
 
 	for _, plugin := range plugins {
 		plugin := plugin
-		combinedErrs, err := plugin.Run()
+		combinedErrs, err := plugin.Run(ctx)s
 		if err != nil {
 			return err
 		}

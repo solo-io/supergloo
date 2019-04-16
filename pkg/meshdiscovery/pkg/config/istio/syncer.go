@@ -3,60 +3,70 @@ package istio
 import (
 	"context"
 	"fmt"
-
-	"github.com/solo-io/supergloo/pkg/translator/istio"
+	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
+	"go.uber.org/zap"
 )
 
-type istioConfigSyncer struct {
-	translator  istio.Translator
-	reconcilers Reconcilers
-	reporter    reporter.Reporter
+type advancedIstioDiscovery struct {
+	el v1.IstioDiscoveryEventLoop
 }
 
-func NewIstioConfigSyncer(translator istio.Translator, reconcilers Reconcilers, reporter reporter.Reporter) v1.ConfigSyncer {
-	return &istioConfigSyncer{translator: translator, reconcilers: reconcilers, reporter: reporter}
+func NewIstioAdvancedDiscovery(ctx context.Context, cs *clientset.Clientset) (*advancedIstioDiscovery, error) {
+	istioClient, err := clientset.IstioFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	emitter := v1.NewIstioDiscoveryEmitter(
+		cs.Discovery.Mesh,
+		cs.Input.Install,
+		istioClient.MeshPolicies,
+	)
+
+	el := v1.NewIstioDiscoveryEventLoop(emitter, newAdvancedIstioDiscoverSyncer())
+
+	return &advancedIstioDiscovery{el: el}, nil
 }
 
-func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
+func (s *advancedIstioDiscovery) Run(ctx context.Context) (<-chan error, error) {
+	watchOpts := clients.WatchOpts{
+		Ctx:         ctx,
+		Selector:    istio.DiscoverySelector,
+		RefreshRate: time.Minute * 1,
+	}
+	return s.el.Run(nil, watchOpts)
+}
+
+func (s *advancedIstioDiscovery) HandleError(ctx context.Context, err error) {
+	if err != nil {
+		contextutils.LoggerFrom(ctx).With(zap.Error(err)).Info("advanced istio discovery failure")
+	}
+}
+
+type advancedIstioDiscoverSyncer struct {
+}
+
+func newAdvancedIstioDiscoverSyncer() *advancedIstioDiscoverSyncer {
+	return &advancedIstioDiscoverSyncer{}
+}
+
+func (s *advancedIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v", snap.Hash())
-	defer logger.Infof("end sync %v", snap.Hash())
+	fields := []interface{}{
+		zap.Int("meshes", len(snap.Meshes.List())),
+		zap.Int("installs", len(snap.Installs.List())),
+		zap.Int("mesh-policies", len(snap.Meshpolicies)),
+	}
+	logger.Infow("begin sync", fields...)
+	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
-
-	meshConfigs, resourceErrs, err := s.translator.Translate(ctx, snap)
-	if err != nil {
-		return errors.Wrapf(err, "translation failed")
-	}
-
-	if err := resourceErrs.Validate(); err != nil {
-		logger.Errorf("invalid user config or internal error: %v", err)
-	}
-
-	// we don't need to return here; if the error was related to the mesh, it shouldn't have been
-	// added to the meshConfigs. all meshConfigs are considered to be valid
-
-	for mesh, config := range meshConfigs {
-		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
-		if !ok {
-			return errors.Errorf("internal error: a non istio-mesh appeared in the mesh config snapshot")
-		}
-
-		logger.Infof("reconciling config for mesh %v: ", mesh.Metadata.Ref())
-		if err := s.reconcilers.ReconcileAll(ctx, config); err != nil {
-			return errors.Wrapf(err, "reconciling config for %v", mesh.Metadata.Ref())
-		}
-	}
-
-	// finally, write reports
-	if err := s.reporter.WriteReports(ctx, resourceErrs, nil); err != nil {
-		return errors.Wrapf(err, "writing reports")
-	}
 
 	logger.Infof("sync completed successfully!")
 	return nil
