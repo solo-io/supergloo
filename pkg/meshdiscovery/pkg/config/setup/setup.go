@@ -54,7 +54,7 @@ func runConfigEventLoop(ctx context.Context, plugins []config.AdvancedMeshDiscov
 
 	for _, plugin := range plugins {
 		plugin := plugin
-		combinedErrs, err := plugin.Run(ctx)s
+		combinedErrs, err := plugin.Run(ctx)
 		if err != nil {
 			return err
 		}
