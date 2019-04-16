@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+
 	glooOptions "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -96,6 +98,17 @@ type Selector struct {
 type RoutingRuleSpec struct {
 	TrafficShifting TrafficShiftingValue
 	FaultInjection  FaultInjection
+	Retries         Retries
+}
+
+type Retries struct {
+	MaxRetries  v1alpha3.HTTPRetry
+	RetryBudget v1.RetryBudget
+}
+type MaxRetries struct {
+	Attempts      uint32
+	PerTryTimeout time.Duration
+	RetryOn       string
 }
 
 type FaultInjection struct {
