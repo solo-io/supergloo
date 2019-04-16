@@ -6,6 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/linkerd/linkerd2/pkg/profiles"
+	"sigs.k8s.io/yaml"
+
 	linkerdv1alpha1 "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -19,11 +22,11 @@ import (
 )
 
 type Translator interface {
-	// translates a snapshot into a set of istio configs for each mesh
+	// translates a snapshot into a set of linkerd configs for each mesh
 	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error)
 }
 
-// A container for the entire set of config for a single istio mesh
+// A container for the entire set of config for a single linkerd mesh
 type MeshConfig struct {
 	ServiceProfiles v1.ServiceProfileList
 }
@@ -44,7 +47,7 @@ func NewTranslator(plugins []plugins.Plugin) Translator {
 
 /*
 Translate a snapshot into a set of MeshConfigs for each mesh
-Currently only active istio mesh is expected.
+Currently only active linkerd mesh is expected.
 */
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
 
@@ -61,9 +64,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
-	pods := snapshot.Pods.List()
 	routingRules := snapshot.Routingrules.List()
-	securityRules := snapshot.Securityrules.List()
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)
@@ -72,7 +73,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
-	routingRulesByMesh := utils.GroupRulesByMesh(routingRules, securityRules, meshes, meshGroups, resourceErrs)
+	routingRulesByMesh := utils.GroupRulesByMesh(routingRules, nil, meshes, meshGroups, resourceErrs)
 
 	perMeshConfig := make(map[*v1.Mesh]*MeshConfig)
 
@@ -81,22 +82,20 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		Upstreams: upstreams,
 	}
 
-	tlsSecrets := snapshot.Tlssecrets.List()
-
 	for _, mesh := range meshes {
-		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		linkerd, ok := mesh.MeshType.(*v1.Mesh_LinkerdMesh)
 		if !ok {
-			// we only want istio meshes
+			// we only want linkerd meshes
 			continue
 		}
-		writeNamespace := istio.Istio.InstallationNamespace
+		writeNamespace := linkerd.LinkerdMesh.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
 			writeNamespace: writeNamespace,
 			mesh:           mesh,
 			rules:          rules,
 		}
-		meshConfig, err := t.translateMesh(params, in, upstreams, tlsSecrets, pods, resourceErrs)
+		meshConfig, err := t.translateMesh(params, in, upstreams, resourceErrs)
 		if err != nil {
 			resourceErrs.AddError(mesh, errors.Wrapf(err, "translating mesh config"))
 			contextutils.LoggerFrom(ctx).Errorf("translating for mesh %v failed: %v", mesh.Metadata.Ref(), err)
@@ -117,40 +116,68 @@ type inputMeshConfig struct {
 	rules utils.RuleSet
 }
 
-// produces a complete istio config
+type hostWithRules struct {
+	host      string
+	namespace string
+	rules     v1.RoutingRuleList
+}
+
+type hostsWithRules []*hostWithRules
+
+func (hosts *hostsWithRules) addRule(rr *v1.RoutingRule, dest *gloov1.Upstream) error {
+	host, err := utils.GetHostForUpstream(dest)
+	if err != nil {
+		return err
+	}
+	for _, existingHost := range *hosts {
+		if existingHost.host == host {
+			for _, existingRule := range existingHost.rules {
+				if existingRule == rr {
+					return nil
+				}
+			}
+			existingHost.rules = append(existingHost.rules, rr)
+			return nil
+		}
+	}
+	*hosts = append(*hosts, &hostWithRules{
+		host:      host,
+		namespace: utils.GetNamespaceForUpstream(dest),
+		rules:     v1.RoutingRuleList{rr},
+	})
+	return nil
+}
+
+// produces a complete linkerd config
 func (t *translator) translateMesh(
 	params plugins.Params,
 	input inputMeshConfig,
 	upstreams gloov1.UpstreamList,
-	tlsSecrets v1.TlsSecretList,
-	pods v1.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 
 	rules := input.rules
 
 	// get all destinations that have routing rules
-	destinationsWithRoutingRules := make(map[*gloov1.Upstream]v1.RoutingRuleList)
+	hosts := &hostsWithRules{}
 	for _, rr := range rules.Routing {
 		dests, err := utils.UpstreamsForSelector(rr.DestinationSelector, upstreams)
 		if err != nil {
 			return nil, err
 		}
 		for _, dest := range dests {
-			destinationsWithRoutingRules[dest] = append(destinationsWithRoutingRules[dest], rr)
+			if err := hosts.addRule(rr, dest); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	// create a service profile for each upstream with routing rules
 	var serviceProfiles v1.ServiceProfileList
-	for dest, rules := range destinationsWithRoutingRules {
-		sp := initServiceProfile(dest.GetMetadata().Ref())
-		sp.SetMetadata(core.Metadata{
-			Namespace: dest.GetMetadata().Namespace,
-			Name:      dest.GetMetadata().Name,
-		})
+	for _, hostRules := range *hosts {
+		sp := initServiceProfile(hostRules.host, hostRules.namespace)
 
 		// process plugins for each rule
-		for _, rr := range rules {
+		for _, rr := range hostRules.rules {
 			if rr.Spec == nil {
 				resourceErrs.AddError(rr, errors.Errorf("spec cannot be empty"))
 				continue
@@ -160,20 +187,27 @@ func (t *translator) translateMesh(
 			sp.Spec.Routes = append(sp.Spec.Routes, routes...)
 
 			for _, plug := range t.plugins {
-				switch plug := plug.(type) {
-				case plugins.ServiceProfilePlugin:
+				if plug, ok := plug.(plugins.ServiceProfilePlugin); ok {
 					if err := plug.ProcessServiceProfile(params, *rr.Spec, &sp.Spec); err != nil {
 						resourceErrs.AddError(rr, errors.Wrapf(err, "processing routes"))
-						continue
 					}
-				case plugins.RoutingPlugin:
+				}
+				if plug, ok := plug.(plugins.RoutingPlugin); ok {
 					if err := plug.ProcessRoutes(params, *rr.Spec, routes); err != nil {
 						resourceErrs.AddError(rr, errors.Wrapf(err, "processing routes"))
-						continue
 					}
 				}
 			}
+		}
 
+		// only create service profiles with some kind of config
+		if sp.Spec.RetryBudget == nil && len(sp.Spec.Routes) == 0 {
+			continue
+		}
+
+		if err := validateServiceProfile(sp); err != nil {
+			resourceErrs.AddError(input.mesh, errors.Wrapf(err, "internal error: produced invalid service profile"))
+			continue
 		}
 
 		serviceProfiles = append(serviceProfiles, sp)
@@ -187,11 +221,11 @@ func (t *translator) translateMesh(
 	return meshConfig, nil
 }
 
-func initServiceProfile(forUpstream core.ResourceRef) *v1.ServiceProfile {
+func initServiceProfile(hostname, namespace string) *v1.ServiceProfile {
 	sp := &v1.ServiceProfile{}
 	sp.SetMetadata(core.Metadata{
-		Namespace: forUpstream.Namespace,
-		Name:      forUpstream.Name,
+		Name:      hostname,
+		Namespace: namespace,
 	})
 	return sp
 }
@@ -245,4 +279,12 @@ func convertMatcher(match *gloov1.Matcher) *linkerdv1alpha1.RouteSpec {
 			Method:    method,
 		},
 	}
+}
+
+func validateServiceProfile(sp *v1.ServiceProfile) error {
+	raw, err := yaml.Marshal(sp)
+	if err != nil {
+		return err
+	}
+	return profiles.Validate(raw)
 }

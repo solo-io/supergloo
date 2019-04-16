@@ -14,7 +14,6 @@ weight: 5
 - [RoutingRule](#routingrule) **Top-Level Resource**
 - [RoutingRuleSpec](#routingrulespec)
 - [RetryPolicy](#retrypolicy)
-- [LinkerdRetryPolicy](#linkerdretrypolicy)
 - [RetryBudget](#retrybudget)
 - [TrafficShifting](#trafficshifting)
 - [FaultInjection](#faultinjection)
@@ -62,7 +61,7 @@ apply the specified RoutingRuleSpec
 | `targetMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
 | `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules > Note: Source Selectors are ignored when RoutingRules are applied to pods in a Linkerd mesh. RoutingRules will apply to all selected destinations in Linkerd, regardless of the source. |  |
 | `destinationSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
-| `requestMatchers` | [[]gloo.solo.io.Matcher](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#matcher) | if specified, this rule will only apply to http requests in the mesh matching these parameters |  |
+| `requestMatchers` | [[]gloo.solo.io.Matcher](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#matcher) | if specified, this rule will only apply to http requests in the mesh matching these parameters note that Linkerd only supports matching on Request Path and Method |  |
 | `spec` | [.supergloo.solo.io.RoutingRuleSpec](../routing.proto.sk#routingrulespec) | contains the configuration that will be applied to selected pods within the target mesh(es) |  |
 
 
@@ -110,34 +109,15 @@ The configuration applied to the target mesh will use the corresponding
 config for each type, while other config types will be ignored
 
 ```yaml
-"istioRetries": .istio.networking.v1alpha3.HTTPRetry
-"linkerdRetries": .supergloo.solo.io.LinkerdRetryPolicy
+"maxRetries": .istio.networking.v1alpha3.HTTPRetry
+"retryBudget": .supergloo.solo.io.RetryBudget
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `istioRetries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
-| `linkerdRetries` | [.supergloo.solo.io.LinkerdRetryPolicy](../routing.proto.sk#linkerdretrypolicy) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
-
-
-
-
----
-### LinkerdRetryPolicy
-
- 
-LinkerdRetryPolicy describes the maximum number of retries that should be issued to
-the destination services. Only works for Linkerd meshes.
-
-```yaml
-"retryBudget": .supergloo.solo.io.LinkerdRetryPolicy.RetryBudget
-
-```
-
-| Field | Type | Description | Default |
-| ----- | ---- | ----------- |----------- | 
-| `retryBudget` | [.supergloo.solo.io.LinkerdRetryPolicy.RetryBudget](../routing.proto.sk#retrybudget) | RetryBudget allows fine-grained management of Linkerd retry configuration. If it is not specifed, SuperGloo will use a default retry budget for the target routes & destinations |  |
+| `maxRetries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | retry each failed request until success or max number of retries met this retry policy will be applied to any targeted Istio Mesh Instances |  |
+| `retryBudget` | [.supergloo.solo.io.RetryBudget](../routing.proto.sk#retrybudget) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
 
 
 
@@ -147,20 +127,20 @@ the destination services. Only works for Linkerd meshes.
 
  
 RetryBudget describes the maximum number of retries that should be issued to
-the destination services.
+the destination services. Can only be applied to Linkerd meshes
 
 ```yaml
 "retryRatio": float
 "minRetriesPerSecond": int
-"ttl": string
+"ttl": .google.protobuf.Duration
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `retryRatio` | `float` | The retryRatio is the maximum ratio of retries requests to original requests. A retryRatio of 0.2 means that retries may add at most an additional 20% to the request load. |  |
-| `minRetriesPerSecond` | `int` | This is an allowance of retries per second in addition to those allowed by the retryRatio. This allows retries to be performed, when the request rate is very low. |  |
-| `ttl` | `string` | This duration indicates for how long requests should be considered for the purposes of calculating the retryRatio. A higher value considers a larger window and therefore allows burstier retries. |  |
+| `retryRatio` | `float` | The ratio of additional traffic that may be added by retries. A retry_ratio of 0.1 means that 1 retry may be attempted for every 10 regular requests. A retry_ratio of 1.0 means that 1 retry may be attempted for every 1 regular request (in other words, total request load may be doubled as a result of retries). |  |
+| `minRetriesPerSecond` | `int` | The proxy may always attempt this number of retries per second, even if it would violate the retryRatio. This is to allow retries to happen even when the request rate is very low. |  |
+| `ttl` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | This duration indicates for how long requests should be considered for the purposes of enforcing the retryRatio. A higher value considers a larger window and therefore allows burstier retries. |  |
 
 
 
@@ -203,7 +183,7 @@ proxying of requests. A fault rule MUST HAVE delay or abort.
 | ----- | ---- | ----------- |----------- | 
 | `delay` | [.supergloo.solo.io.FaultInjection.Delay](../routing.proto.sk#delay) | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |  |
 | `abort` | [.supergloo.solo.io.FaultInjection.Abort](../routing.proto.sk#abort) | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |  |
-| `percentage` | `float` | Percentage of requests to be faulted with the error code provided. |  |
+| `percentage` | `float` | Percentage of requests to be faulted with the error code provided. Values range between 0 and 100 |  |
 
 
 
