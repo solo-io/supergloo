@@ -2308,6 +2308,7 @@
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
     "go.opencensus.io/trace",
+    "go.uber.org/atomic",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
     "gopkg.in/ini.v1",
