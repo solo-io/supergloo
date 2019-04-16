@@ -9,56 +9,99 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/common"
+	"go.uber.org/zap"
 )
 
 type IstioAdvancedDiscoveryPlugin struct {
-	ctx context.Context
-	cs  *clientset.Clientset
-
-	el v1.IstioDiscoveryEventLoop
+	rootCtx context.Context
+	cs      *clientset.Clientset
 }
 
-func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientset) (*IstioAdvancedDiscoveryPlugin, error) {
+func NewIstioAdvancedDiscoveryPlugin(ctx context.Context, cs *clientset.Clientset) *IstioAdvancedDiscoveryPlugin {
 	ctx = contextutils.WithLogger(ctx, "istio-advanced-discovery-config-event-loop")
+	return &IstioAdvancedDiscoveryPlugin{rootCtx: ctx, cs: cs}
+}
 
-	// istioClients, err := clientset.IstioFromContext(ctx)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "initializing istio clients")
-	// }
+func (iasd *IstioAdvancedDiscoveryPlugin) Run(ctx context.Context) chan<- *common.EnabledConfigLoops {
+	diffChan := make(chan *common.EnabledConfigLoops)
+	logger := contextutils.LoggerFrom(ctx)
+	go func() {
+		go func() {
+			// create a new context for each loop, cancel it before each loop
+			var cancel context.CancelFunc = func() {}
+			previousDiff := &common.EnabledConfigLoops{}
+			// use closure to allow cancel function to be updated as context changes
+			defer func() { cancel() }()
+			for {
+				select {
+				case diff, ok := <-diffChan:
+					if !ok {
+						return
+					}
+					subLogger := logger.With(zap.Any("previous", previousDiff), zap.Any("current", diff))
+					subLogger.Infof("checking if diff has changed")
+					if diff.Istio() == previousDiff.Istio() {
+						subLogger.Infof("states are consistent")
+						continue
+					}
+					// cancel any open watches from previous diff
+					cancel()
 
-	var err error
-	cs, err = clientset.ClientsetFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
+					ctx, canc := context.WithCancel(ctx)
+					cancel = canc
+
+					if diff.Istio() {
+						subLogger.Infof("istio state has changed to true")
+						if err := iasd.startEventLoop(ctx); err != nil {
+							iasd.handleError(ctx, err)
+							return
+						}
+					}
+
+					// set previous diff to current
+					previousDiff = diff
+				case <-ctx.Done():
+					return
+				}
+			}
+		}()
+	}()
+
+	return diffChan
+}
+
+func (iasd *IstioAdvancedDiscoveryPlugin) startEventLoop(ctx context.Context) error {
 
 	emitter := v1.NewIstioDiscoveryEmitter(
-		cs.Input.Pod,
-		cs.Discovery.Mesh,
-		cs.Input.Install,
+		iasd.cs.Input.Pod,
+		iasd.cs.Discovery.Mesh,
+		iasd.cs.Input.Install,
 	)
 
-	syncer := newIstioConfigSyncer(ctx, cs)
-
-	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
-
-	return &IstioAdvancedDiscoveryPlugin{ctx: ctx, cs: cs, el: el}, nil
-}
-
-func (iasd *IstioAdvancedDiscoveryPlugin) Run() (<-chan error, error) {
+	syncer := newIstioConfigSyncer(ctx, iasd.cs)
 	watchOpts := clients.WatchOpts{
-		Ctx:         iasd.ctx,
-		RefreshRate: time.Second * 1,
+		Ctx:         ctx,
+		RefreshRate: time.Minute * 1,
 	}
-	return iasd.el.Run(nil, watchOpts)
-}
-
-func (iasd *IstioAdvancedDiscoveryPlugin) HandleError(err error) {
+	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
+	eventLoopErrs, err := el.Run(nil, watchOpts)
 	if err != nil {
-		contextutils.LoggerFrom(iasd.ctx).Errorf("config error: %v", err)
+		return err
 	}
+	go func() {
+		for {
+			select {
+			case err := <-eventLoopErrs:
+				iasd.handleError(ctx, err)
+			case <-ctx.Done():
+			}
+		}
+	}()
+	return nil
 }
 
-func (iasd *IstioAdvancedDiscoveryPlugin) Enabled(enabled *common.EnabledConfigLoops) bool {
-	return enabled.Istio()
+func (iasd *IstioAdvancedDiscoveryPlugin) handleError(ctx context.Context, err error) {
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Errorf("config error: %v", err)
+	}
 }

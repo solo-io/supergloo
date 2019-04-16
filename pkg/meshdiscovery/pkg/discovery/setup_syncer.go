@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -27,7 +28,8 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	}
 
 	plugins := configurePlugins()
-	meshDicoverySyncer := NewMeshDiscoverySyncer(ctx, cs, plugins...)
+	diffChan := config.NewAdvancedDiscoverySyncers(ctx, cs)
+	meshDicoverySyncer := NewMeshDiscoverySyncer(ctx, cs, diffChan, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
 		return err

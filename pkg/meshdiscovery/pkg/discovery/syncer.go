@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/common"
 	"go.uber.org/zap"
 )
@@ -17,16 +16,19 @@ type meshDiscoverySyncer struct {
 	rootCtx        context.Context
 	cs             *clientset.Clientset
 	plugins        MeshDiscoveryPlugins
+	diffChan       chan<- *common.EnabledConfigLoops
 	meshReconciler v1.MeshReconciler
 }
 
 // calling this function with nil is valid and expected outside of tests
-func NewMeshDiscoverySyncer(ctx context.Context, cs *clientset.Clientset, plugins ...MeshDiscovery) v1.DiscoverySyncer {
+func NewMeshDiscoverySyncer(ctx context.Context, cs *clientset.Clientset,
+	diffChan chan<- *common.EnabledConfigLoops, plugins ...MeshDiscovery) v1.DiscoverySyncer {
 	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
 	return &meshDiscoverySyncer{
 		rootCtx:        ctx,
 		cs:             cs,
 		plugins:        plugins,
+		diffChan:       diffChan,
 		meshReconciler: meshReconciler,
 	}
 }
@@ -56,6 +58,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	if multierr.ErrorOrNil() != nil {
 		return multierr.ErrorOrNil()
 	}
-
-	return config.RunAdvancedDiscoverySyncers(ctx, s.cs, enabled)
+	// send enabled to diff handler
+	s.diffChan <- enabled
+	return multierr.ErrorOrNil()
 }

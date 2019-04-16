@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"sync"
 )
 
@@ -12,6 +13,10 @@ type EnabledConfigLoops struct {
 	linkerd bool
 
 	lock sync.RWMutex
+}
+
+func Diff(old, new *EnabledConfigLoops) bool {
+	return old.Linkerd() != new.Linkerd() || old.Istio() != new.Istio() || old.Appmesh() != new.Appmesh()
 }
 
 func (e *EnabledConfigLoops) SetIstio(state bool) {
@@ -52,6 +57,5 @@ func (e *EnabledConfigLoops) Linkerd() bool {
 
 type AdvancedDiscoverySycnerList []AdvancedDiscoverySyncer
 type AdvancedDiscoverySyncer interface {
-	Run() (<-chan error, error)
-	HandleError(err error)
+	Run(ctx context.Context) chan<- *EnabledConfigLoops
 }
