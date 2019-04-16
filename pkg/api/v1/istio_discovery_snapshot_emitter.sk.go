@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -41,47 +43,43 @@ func init() {
 
 type IstioDiscoveryEmitter interface {
 	Register() error
-	Pod() PodClient
 	Mesh() MeshClient
 	Install() InstallClient
+	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error)
 }
 
-func NewIstioDiscoveryEmitter(podClient PodClient, meshClient MeshClient, installClient InstallClient) IstioDiscoveryEmitter {
-	return NewIstioDiscoveryEmitterWithEmit(podClient, meshClient, installClient, make(chan struct{}))
+func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
+	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewIstioDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, installClient InstallClient, emit <-chan struct{}) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
 	return &istioDiscoveryEmitter{
-		pod:       podClient,
-		mesh:      meshClient,
-		install:   installClient,
-		forceEmit: emit,
+		mesh:       meshClient,
+		install:    installClient,
+		meshPolicy: meshPolicyClient,
+		forceEmit:  emit,
 	}
 }
 
 type istioDiscoveryEmitter struct {
-	forceEmit <-chan struct{}
-	pod       PodClient
-	mesh      MeshClient
-	install   InstallClient
+	forceEmit  <-chan struct{}
+	mesh       MeshClient
+	install    InstallClient
+	meshPolicy istio_authentication_v1alpha1.MeshPolicyClient
 }
 
 func (c *istioDiscoveryEmitter) Register() error {
-	if err := c.pod.Register(); err != nil {
-		return err
-	}
 	if err := c.mesh.Register(); err != nil {
 		return err
 	}
 	if err := c.install.Register(); err != nil {
 		return err
 	}
+	if err := c.meshPolicy.Register(); err != nil {
+		return err
+	}
 	return nil
-}
-
-func (c *istioDiscoveryEmitter) Pod() PodClient {
-	return c.pod
 }
 
 func (c *istioDiscoveryEmitter) Mesh() MeshClient {
@@ -90,6 +88,10 @@ func (c *istioDiscoveryEmitter) Mesh() MeshClient {
 
 func (c *istioDiscoveryEmitter) Install() InstallClient {
 	return c.install
+}
+
+func (c *istioDiscoveryEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient {
+	return c.meshPolicy
 }
 
 func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error) {
@@ -108,12 +110,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for Pod */
-	type podListWithNamespace struct {
-		list      PodList
-		namespace string
-	}
-	podChan := make(chan podListWithNamespace)
 	/* Create channel for Mesh */
 	type meshListWithNamespace struct {
 		list      MeshList
@@ -126,19 +122,9 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
+	/* Create channel for MeshPolicy */
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for Pod */
-		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Pod watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
-		}(namespace)
 		/* Setup namespaced watch for Mesh */
 		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
 		if err != nil {
@@ -168,12 +154,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 				select {
 				case <-ctx.Done():
 					return
-				case podList := <-podNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
-					}
 				case meshList := <-meshNamespacesChan:
 					select {
 					case <-ctx.Done():
@@ -190,6 +170,17 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 			}
 		}(namespace)
 	}
+	/* Setup cluster-wide watch for MeshPolicy */
+
+	meshPolicyChan, meshPolicyErrs, err := c.meshPolicy.Watch(opts)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "starting MeshPolicy watch")
+	}
+	done.Add(1)
+	go func() {
+		defer done.Done()
+		errutils.AggregateErrs(ctx, errs, meshPolicyErrs, "meshpolicies")
+	}()
 
 	snapshots := make(chan *IstioDiscoverySnapshot)
 	go func() {
@@ -221,13 +212,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case podNamespacedList := <-podChan:
-				record()
-
-				namespace := podNamespacedList.namespace
-				podList := podNamespacedList.list
-
-				currentSnapshot.Pods[namespace] = podList
 			case meshNamespacedList := <-meshChan:
 				record()
 
@@ -242,6 +226,9 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 				installList := installNamespacedList.list
 
 				currentSnapshot.Installs[namespace] = installList
+			case meshPolicyList := <-meshPolicyChan:
+				record()
+				currentSnapshot.Meshpolicies = meshPolicyList
 			}
 		}
 	}()

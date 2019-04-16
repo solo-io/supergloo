@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"go.opencensus.io/trace"
-	"go.uber.org/atomic"
 
 	"github.com/hashicorp/go-multierror"
 
@@ -48,13 +47,11 @@ func NewIstioDiscoveryEventLoop(emitter IstioDiscoveryEmitter, syncer IstioDisco
 	}
 }
 
-var count atomic.Int32
-
 func (el *istioDiscoveryEventLoop) Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error) {
 	opts = opts.WithDefaults()
 	opts.Ctx = contextutils.WithLogger(opts.Ctx, "v1.event_loop")
 	logger := contextutils.LoggerFrom(opts.Ctx)
-	logger.Infof("event loop started %v", count.Inc())
+	logger.Infof("event loop started")
 
 	errs := make(chan error)
 
@@ -91,7 +88,6 @@ func (el *istioDiscoveryEventLoop) Run(namespaces []string, opts clients.WatchOp
 					}
 				}
 			case <-opts.Ctx.Done():
-				count.Dec()
 				return
 			}
 		}

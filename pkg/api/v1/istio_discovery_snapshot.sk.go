@@ -5,34 +5,32 @@ package v1
 import (
 	"fmt"
 
+	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
+
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"
 )
 
 type IstioDiscoverySnapshot struct {
-	Pods     PodsByNamespace
-	Meshes   MeshesByNamespace
-	Installs InstallsByNamespace
+	Meshes       MeshesByNamespace
+	Installs     InstallsByNamespace
+	Meshpolicies istio_authentication_v1alpha1.MeshPolicyList
 }
 
 func (s IstioDiscoverySnapshot) Clone() IstioDiscoverySnapshot {
 	return IstioDiscoverySnapshot{
-		Pods:     s.Pods.Clone(),
-		Meshes:   s.Meshes.Clone(),
-		Installs: s.Installs.Clone(),
+		Meshes:       s.Meshes.Clone(),
+		Installs:     s.Installs.Clone(),
+		Meshpolicies: s.Meshpolicies.Clone(),
 	}
 }
 
 func (s IstioDiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
-		s.hashPods(),
 		s.hashMeshes(),
 		s.hashInstalls(),
+		s.hashMeshpolicies(),
 	)
-}
-
-func (s IstioDiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashMeshes() uint64 {
@@ -43,29 +41,28 @@ func (s IstioDiscoverySnapshot) hashInstalls() uint64 {
 	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
 }
 
+func (s IstioDiscoverySnapshot) hashMeshpolicies() uint64 {
+	return hashutils.HashAll(s.Meshpolicies.AsInterfaces()...)
+}
+
 func (s IstioDiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
+	fields = append(fields, zap.Uint64("meshpolicies", s.hashMeshpolicies()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type IstioDiscoverySnapshotStringer struct {
-	Version  uint64
-	Pods     []string
-	Meshes   []string
-	Installs []string
+	Version      uint64
+	Meshes       []string
+	Installs     []string
+	Meshpolicies []string
 }
 
 func (ss IstioDiscoverySnapshotStringer) String() string {
 	s := fmt.Sprintf("IstioDiscoverySnapshot %v\n", ss.Version)
-
-	s += fmt.Sprintf("  Pods %v\n", len(ss.Pods))
-	for _, name := range ss.Pods {
-		s += fmt.Sprintf("    %v\n", name)
-	}
 
 	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
 	for _, name := range ss.Meshes {
@@ -77,14 +74,19 @@ func (ss IstioDiscoverySnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Meshpolicies %v\n", len(ss.Meshpolicies))
+	for _, name := range ss.Meshpolicies {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
 func (s IstioDiscoverySnapshot) Stringer() IstioDiscoverySnapshotStringer {
 	return IstioDiscoverySnapshotStringer{
-		Version:  s.Hash(),
-		Pods:     s.Pods.List().NamespacesDotNames(),
-		Meshes:   s.Meshes.List().NamespacesDotNames(),
-		Installs: s.Installs.List().NamespacesDotNames(),
+		Version:      s.Hash(),
+		Meshes:       s.Meshes.List().NamespacesDotNames(),
+		Installs:     s.Installs.List().NamespacesDotNames(),
+		Meshpolicies: s.Meshpolicies.Names(),
 	}
 }

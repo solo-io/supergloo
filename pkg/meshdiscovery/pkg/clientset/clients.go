@@ -38,12 +38,13 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 }
 
 type inputClients struct {
-	Pod     v1.PodClient
-	Install v1.InstallClient
+	Pod         v1.PodClient
+	Install     v1.InstallClient
+	MeshIngress v1.MeshIngressClient
 }
 
-func newInputClients(pod v1.PodClient, install v1.InstallClient) *inputClients {
-	return &inputClients{Pod: pod, Install: install}
+func newInputClients(pod v1.PodClient, install v1.InstallClient, meshIngress v1.MeshIngressClient) *inputClients {
+	return &inputClients{Pod: pod, Install: install, MeshIngress: meshIngress}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -77,6 +78,14 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := meshIngress.Register(); err != nil {
+		return nil, err
+	}
+
 	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
@@ -93,7 +102,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods, install),
+		newInputClients(pods, install, meshIngress),
 		newDiscoveryClients(mesh),
 	), nil
 }
