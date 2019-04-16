@@ -3,23 +3,23 @@ package istio
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
 	"go.uber.org/zap"
 )
 
-type istioConfigDiscovery struct {
-	el v1.IstioDiscoveryEventLoop
-}
+const (
+	injectionLabel = "istio-injection"
+)
 
-func NewIstioConfigDiscovery(ctx context.Context, cs *clientset.Clientset) (*istioConfigDiscovery, error) {
+func NewIstioConfigDiscovery(ctx context.Context, cs *clientset.Clientset) (config.EventLoop, error) {
 	istioClient, err := clientset.IstioFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -33,21 +33,7 @@ func NewIstioConfigDiscovery(ctx context.Context, cs *clientset.Clientset) (*ist
 	syncer := newIstioConfigDiscoverSyncer(cs)
 	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
 
-	return &istioConfigDiscovery{el: el}, nil
-}
-
-func (s *istioConfigDiscovery) Run(ctx context.Context) (<-chan error, error) {
-	watchOpts := clients.WatchOpts{
-		Ctx:         ctx,
-		RefreshRate: time.Minute * 1,
-	}
-	return s.el.Run(nil, watchOpts)
-}
-
-func (s *istioConfigDiscovery) HandleError(ctx context.Context, err error) {
-	if err != nil {
-		contextutils.LoggerFrom(ctx).With(zap.Error(err)).Info("istio config discovery failure")
-	}
+	return el, nil
 }
 
 type istioConfigDiscoverSyncer struct {
@@ -89,14 +75,14 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList) FullMeshList {
-	result := make(FullMeshList, len(meshes))
+func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList) meshResourceList {
+	result := make(meshResourceList, len(meshes))
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
 		if istioMesh == nil {
 			continue
 		}
-		fullMesh := &FullMesh{
+		fullMesh := &meshResources{
 			Mesh: mesh,
 		}
 		for _, install := range installs {
@@ -116,8 +102,8 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1
 	return result
 }
 
-type FullMeshList []*FullMesh
-type FullMesh struct {
+type meshResourceList []*meshResources
+type meshResources struct {
 	Install    *v1.Install
 	MeshPolicy *v1alpha1.MeshPolicy
 	Mesh       *v1.Mesh
@@ -125,13 +111,17 @@ type FullMesh struct {
 
 // Main merge method for discovered info
 // Priority of data is as such Install > MeshPolicy > Mesh
-func (fm *FullMesh) merge() *v1.Mesh {
+func (fm *meshResources) merge() *v1.Mesh {
 	result := fm.Mesh
 	istioMesh := fm.Mesh.GetIstio()
 	if istioMesh == nil {
 		return fm.Mesh
 	}
 	mtlsConfig := &v1.MtlsConfig{}
+	if result.DiscoveryMetadata == nil {
+		result.DiscoveryMetadata = &v1.DiscoveryMetadata{}
+	}
+	result.DiscoveryMetadata.InjectedNamespaceLabel = injectionLabel
 	if fm.MeshPolicy != nil {
 		for _, peers := range fm.MeshPolicy.GetPeers() {
 			mtls := peers.GetMtls()

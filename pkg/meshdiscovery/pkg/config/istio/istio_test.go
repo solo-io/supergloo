@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -70,6 +71,9 @@ var _ = Describe("istio discovery config", func() {
 							IstioMesh: &v1.IstioInstall{
 								EnableMtls:   true,
 								IstioVersion: "1.0.9",
+								CustomRootCert: &core.ResourceRef{
+									Name: "one",
+								},
 							},
 						},
 					},
@@ -78,13 +82,13 @@ var _ = Describe("istio discovery config", func() {
 		})
 
 		It("Can merge properly with no install or mesh policy", func() {
-			fm := &FullMesh{
+			fm := &meshResources{
 				Mesh: mesh,
 			}
 			Expect(fm.merge()).To(BeEquivalentTo(fm.Mesh))
 		})
 		It("can merge properly with a mesh policy", func() {
-			fm := &FullMesh{
+			fm := &meshResources{
 				Mesh:       mesh,
 				MeshPolicy: meshPolicy,
 			}
@@ -94,20 +98,30 @@ var _ = Describe("istio discovery config", func() {
 			}))
 		})
 		It("can merge properly with install and mesh policy", func() {
-
+			fm := &meshResources{
+				Mesh:       mesh,
+				Install:    install,
+				MeshPolicy: meshPolicy,
+			}
+			merge := fm.merge()
+			Expect(merge.DiscoveryMetadata.MtlsConfig).To(BeEquivalentTo(&v1.MtlsConfig{
+				MtlsEnabled: true,
+				RootCertificate: &core.ResourceRef{
+					Name: "one",
+				},
+			}))
+			Expect(merge.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
+				MtlsConfig: &v1.MtlsConfig{
+					MtlsEnabled: true,
+					RootCertificate: &core.ResourceRef{
+						Name: "one",
+					},
+				},
+				InstallationNamespace:  "world",
+				MeshVersion:            "1.0.9",
+				InjectedNamespaceLabel: injectionLabel,
+			}))
 		})
-
-	})
-	Context("syncer", func() {
-		// var (
-		// 	syncer *istioConfigDiscoverSyncer
-		// )
-		//
-		// BeforeEach(func() {
-		// 	syncer = newIstioConfigDiscoverSyncer(cs)
-		// })
-
-		// It("can ")
 
 	})
 })

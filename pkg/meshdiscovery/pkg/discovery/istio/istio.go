@@ -66,67 +66,38 @@ func (s *istioConfigSyncer) DiscoverMeshes(ctx context.Context, snap *v1.Discove
 		return nil, nil
 	}
 
-	var discoveredMeshes v1.MeshList
+	var newMeshes v1.MeshList
 	for _, pilotPod := range istioPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
-			mesh, err := constructDiscoveryData(ctx, pilotPod, existingInstalls)
+			if meshExists(pilotPod, existingMeshes) {
+				continue
+			}
+			mesh, err := constructDiscoveredMesh(ctx, pilotPod, existingInstalls)
 			if err != nil {
 				return nil, err
 			}
 			logger.Debugf("successfully discovered mesh data for %v", mesh)
-			discoveredMeshes = append(discoveredMeshes, mesh)
+			newMeshes = append(newMeshes, mesh)
 		}
 	}
 
-	mergedMeshes, err := mergeMeshes(discoveredMeshes, existingMeshes)
-	if err != nil {
-		return nil, err
-	}
+	existingMeshes = append(existingMeshes, newMeshes...)
 
-	return mergedMeshes, nil
+	return existingMeshes, nil
 }
 
-func mergeMeshes(discoveredMeshes, existingMeshes v1.MeshList) (v1.MeshList, error) {
-	var mergedMeshes v1.MeshList
-	for _, discoveredMesh := range discoveredMeshes {
-		meshExists := false
-		for _, existingMesh := range existingMeshes {
-			istioMesh := existingMesh.GetIstio()
-			if istioMesh == nil {
-				continue
-			}
-
-			// This discovered mesh already exists, update the discovery data
-			if istioMesh.InstallationNamespace == discoveredMesh.DiscoveryMetadata.InstallationNamespace {
-				existingMesh.DiscoveryMetadata = discoveredMesh.DiscoveryMetadata
-				meshExists = true
-				break
-			}
-		}
-		if meshExists {
+func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
+	for _, mesh := range meshes {
+		istioMesh := mesh.GetIstio()
+		if istioMesh == nil {
 			continue
 		}
 
-		discoveredMesh.MeshType = &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
-				InstallationNamespace: discoveredMesh.DiscoveryMetadata.InstallationNamespace,
-				IstioVersion:          discoveredMesh.DiscoveryMetadata.MeshVersion,
-			},
+		if pod.Namespace == istioMesh.InstallationNamespace {
+			return true
 		}
-		discoveredMesh.MtlsConfig = discoveredMesh.DiscoveryMetadata.MtlsConfig
-		if discoveredMesh.Metadata.Name == "" || discoveredMesh.Metadata.Namespace == "" {
-			discoveredMesh.Metadata = core.Metadata{
-				Namespace: getWriteNamespace(),
-				Name:      fmt.Sprintf("istio-%s", discoveredMesh.DiscoveryMetadata.InstallationNamespace),
-				// Very important to add this selector or the reconcile will not pick it up later
-				Labels: DiscoverySelector,
-			}
-		}
-
-		mergedMeshes = append(mergedMeshes, discoveredMesh)
 	}
-	mergedMeshes = append(mergedMeshes, existingMeshes...)
-	return mergedMeshes, nil
+	return false
 }
 
 func getWriteNamespace() string {
@@ -136,9 +107,8 @@ func getWriteNamespace() string {
 	return "supergloo-system"
 }
 
-func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
+func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
-	mesh := &v1.Mesh{}
 
 	istioVersion, err := getVersionFromPod(istioPilotPod)
 	if err != nil {
@@ -146,13 +116,19 @@ func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod, existing
 		return nil, err
 	}
 
-	discoveryData := &v1.DiscoveryMetadata{
-		InstallationNamespace:  istioPilotPod.Namespace,
-		MeshVersion:            istioVersion,
-		InjectedNamespaceLabel: injectionLabel,
+	mesh := &v1.Mesh{
+		MeshType: &v1.Mesh_Istio{
+			Istio: &v1.IstioMesh{
+				InstallationNamespace: istioPilotPod.Namespace,
+				IstioVersion:          istioVersion,
+			},
+		},
+		Metadata: core.Metadata{
+			Namespace: getWriteNamespace(),
+			Name:      fmt.Sprintf("istio-%s", istioPilotPod.Namespace),
+			Labels:    DiscoverySelector,
+		},
 	}
-	mesh.DiscoveryMetadata = discoveryData
-
 	// If install crd exists, overwrite discovery data
 	for _, install := range existingInstalls {
 		meshInstall := install.GetMesh()
@@ -166,12 +142,14 @@ func constructDiscoveryData(ctx context.Context, istioPilotPod *v1.Pod, existing
 		// This install refers to the current mesh
 		if install.InstallationNamespace == istioPilotPod.Namespace {
 			if istioMeshInstall.EnableMtls {
-				mesh.DiscoveryMetadata.MtlsConfig = &v1.MtlsConfig{
+				mesh.MtlsConfig = &v1.MtlsConfig{
 					MtlsEnabled:     true,
 					RootCertificate: istioMeshInstall.CustomRootCert,
 				}
 			}
 			mesh.Metadata = install.Metadata
+			// Set label to be aware of discovered nature
+			mesh.Metadata.Labels = DiscoverySelector
 			// Need to explicitly set this to "" so it doesn't attempt to overwrite it.
 			mesh.Metadata.ResourceVersion = ""
 		}

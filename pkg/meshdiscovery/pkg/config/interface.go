@@ -1,10 +1,9 @@
 package config
 
 import (
-	"context"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 )
 
-type MeshConfigDiscovery interface {
-	Run(ctx context.Context) (<-chan error, error)
-	HandleError(ctx context.Context, err error)
+type EventLoop interface {
+	Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error)
 }
