@@ -3,6 +3,8 @@ package utils
 import (
 	"sort"
 
+	"github.com/solo-io/go-utils/stringutils"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/hashutils"
@@ -63,6 +65,20 @@ func LabelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]LabelsPor
 		labelsByHost[host] = append(labelsByHost[host], LabelsPortTuple{Labels: labels, Port: port})
 	}
 	return labelsByHost, nil
+}
+
+func HostsForUpstreams(upstreams gloov1.UpstreamList) ([]string, error) {
+	var hosts []string
+	for _, us := range upstreams {
+		host, err := GetHostForUpstream(us)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting host for upstream")
+		}
+		hosts = append(hosts, host)
+	}
+	hosts = stringutils.Unique(hosts)
+	sort.Strings(hosts)
+	return hosts, nil
 }
 
 func RuleAppliesToDestination(destinationHost string, destinationSelector *v1.PodSelector, upstreams gloov1.UpstreamList) (bool, error) {

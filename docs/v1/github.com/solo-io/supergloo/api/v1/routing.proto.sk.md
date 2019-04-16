@@ -13,6 +13,9 @@ weight: 5
 
 - [RoutingRule](#routingrule) **Top-Level Resource**
 - [RoutingRuleSpec](#routingrulespec)
+- [RetryPolicy](#retrypolicy)
+- [LinkerdRetryPolicy](#linkerdretrypolicy)
+- [RetryBudget](#retrybudget)
 - [TrafficShifting](#trafficshifting)
 - [FaultInjection](#faultinjection)
 - [Delay](#delay)
@@ -57,7 +60,7 @@ apply the specified RoutingRuleSpec
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `targetMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | target where we apply this rule. this can be a mesh group or an individual mesh |  |
-| `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules |  |
+| `sourceSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests originating from these pods will have the rule applied leave empty to have all pods in the mesh apply these rules > Note: Source Selectors are ignored when RoutingRules are applied to pods in a Linkerd mesh. RoutingRules will apply to all selected destinations in Linkerd, regardless of the source. |  |
 | `destinationSelector` | [.supergloo.solo.io.PodSelector](../selector.proto.sk#podselector) | requests destined for these pods will have the rule applied leave empty to apply to all destination pods in the mesh |  |
 | `requestMatchers` | [[]gloo.solo.io.Matcher](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#matcher) | if specified, this rule will only apply to http requests in the mesh matching these parameters |  |
 | `spec` | [.supergloo.solo.io.RoutingRuleSpec](../routing.proto.sk#routingrulespec) | contains the configuration that will be applied to selected pods within the target mesh(es) |  |
@@ -75,7 +78,7 @@ the routing configuration that will be applied to the mesh(es)
 "trafficShifting": .supergloo.solo.io.TrafficShifting
 "faultInjection": .supergloo.solo.io.FaultInjection
 "requestTimeout": .google.protobuf.Duration
-"retries": .istio.networking.v1alpha3.HTTPRetry
+"retries": .supergloo.solo.io.RetryPolicy
 "corsPolicy": .istio.networking.v1alpha3.CorsPolicy
 "mirror": .gloo.solo.io.Destination
 "headerManipulation": .supergloo.solo.io.HeaderManipulation
@@ -87,10 +90,77 @@ the routing configuration that will be applied to the mesh(es)
 | `trafficShifting` | [.supergloo.solo.io.TrafficShifting](../routing.proto.sk#trafficshifting) | enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |  |
 | `faultInjection` | [.supergloo.solo.io.FaultInjection](../routing.proto.sk#faultinjection) | enable fault injection on requests |  |
 | `requestTimeout` | [.google.protobuf.Duration](https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/duration) | set a timeout on requests |  |
-| `retries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | set a retry policy on requests |  |
+| `retries` | [.supergloo.solo.io.RetryPolicy](../routing.proto.sk#retrypolicy) | set a retry policy on requests |  |
 | `corsPolicy` | [.istio.networking.v1alpha3.CorsPolicy](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#corspolicy) | set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |  |
 | `mirror` | [.gloo.solo.io.Destination](../../../../gloo/projects/gloo/api/v1/proxy.proto.sk#destination) | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |  |
 | `headerManipulation` | [.supergloo.solo.io.HeaderManipulation](../routing.proto.sk#headermanipulation) | manipulate request and response headers |  |
+
+
+
+
+---
+### RetryPolicy
+
+ 
+RetryPolicy contains mesh-specific retry configuration
+Different meshes support different Retry features
+SuperGloo's RetryPolicy exposes config for multiple meshes simultaneously,
+Allowing the same RoutingRule to apply retries to different mesh types
+The configuration applied to the target mesh will use the corresponding
+config for each type, while other config types will be ignored
+
+```yaml
+"istioRetries": .istio.networking.v1alpha3.HTTPRetry
+"linkerdRetries": .supergloo.solo.io.LinkerdRetryPolicy
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `istioRetries` | [.istio.networking.v1alpha3.HTTPRetry](../../external/istio/networking/v1alpha3/virtual_service.proto.sk#httpretry) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
+| `linkerdRetries` | [.supergloo.solo.io.LinkerdRetryPolicy](../routing.proto.sk#linkerdretrypolicy) | this retry policy will be applied to any targeted Istio Mesh Insatnces |  |
+
+
+
+
+---
+### LinkerdRetryPolicy
+
+ 
+LinkerdRetryPolicy describes the maximum number of retries that should be issued to
+the destination services. Only works for Linkerd meshes.
+
+```yaml
+"retryBudget": .supergloo.solo.io.LinkerdRetryPolicy.RetryBudget
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `retryBudget` | [.supergloo.solo.io.LinkerdRetryPolicy.RetryBudget](../routing.proto.sk#retrybudget) | RetryBudget allows fine-grained management of Linkerd retry configuration. If it is not specifed, SuperGloo will use a default retry budget for the target routes & destinations |  |
+
+
+
+
+---
+### RetryBudget
+
+ 
+RetryBudget describes the maximum number of retries that should be issued to
+the destination services.
+
+```yaml
+"retryRatio": float
+"minRetriesPerSecond": int
+"ttl": string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `retryRatio` | `float` | The retryRatio is the maximum ratio of retries requests to original requests. A retryRatio of 0.2 means that retries may add at most an additional 20% to the request load. |  |
+| `minRetriesPerSecond` | `int` | This is an allowance of retries per second in addition to those allowed by the retryRatio. This allows retries to be performed, when the request rate is very low. |  |
+| `ttl` | `string` | This duration indicates for how long requests should be considered for the purposes of calculating the retryRatio. A higher value considers a larger window and therefore allows burstier retries. |  |
 
 
 

@@ -572,17 +572,17 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotPods := func(expectPods PodList, unexpectPods PodList) {
+		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
 		drain:
 			for {
 				select {
 				case snap = <-snapshots:
-					for _, expected := range expectPods {
+					for _, expected := range expectpods {
 						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
-					for _, unexpected := range unexpectPods {
+					for _, unexpected := range unexpectpods {
 						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
@@ -606,27 +606,27 @@ var _ = Describe("V1Emitter", func() {
 		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b}, nil)
+		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
 		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -1065,17 +1065,17 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotPods := func(expectPods PodList, unexpectPods PodList) {
+		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
 		drain:
 			for {
 				select {
 				case snap = <-snapshots:
-					for _, expected := range expectPods {
+					for _, expected := range expectpods {
 						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
-					for _, unexpected := range unexpectPods {
+					for _, unexpected := range unexpectpods {
 						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
@@ -1099,26 +1099,26 @@ var _ = Describe("V1Emitter", func() {
 		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b}, nil)
+		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
 		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotPods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 })

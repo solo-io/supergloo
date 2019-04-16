@@ -37,6 +37,10 @@ message RoutingRule {
 
     // requests originating from these pods will have the rule applied
     // leave empty to have all pods in the mesh apply these rules
+    //
+    // > Note: Source Selectors are ignored when RoutingRules are
+    // applied to pods in a Linkerd mesh. RoutingRules will apply to
+    // all selected destinations in Linkerd, regardless of the source.
     PodSelector source_selector = 2;
 
     // requests destined for these pods will have the rule applied
@@ -45,6 +49,7 @@ message RoutingRule {
 
     // if specified, this rule will only apply to http requests
     // in the mesh matching these parameters
+    // note that Linkerd only supports matching on Request Path and Method
     repeated gloo.solo.io.Matcher request_matchers = 4;
 
     // contains the configuration that will be applied to
@@ -71,7 +76,7 @@ message RoutingRuleSpec {
         google.protobuf.Duration request_timeout = 7;
 
         // set a retry policy on requests
-        istio.networking.v1alpha3.HTTPRetry retries = 8;
+        RetryPolicy retries = 8;
 
         // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
@@ -84,6 +89,49 @@ message RoutingRuleSpec {
 
         // manipulate request and response headers
         HeaderManipulation header_manipulation = 12;
+    }
+}
+
+// RetryPolicy contains mesh-specific retry configuration
+// Different meshes support different Retry features
+// SuperGloo's RetryPolicy exposes config for multiple meshes simultaneously,
+// Allowing the same RoutingRule to apply retries to different mesh types
+// The configuration applied to the target mesh will use the corresponding
+// config for each type, while other config types will be ignored
+message RetryPolicy {
+    // this retry policy will be applied to any targeted Istio Mesh Insatnces
+    istio.networking.v1alpha3.HTTPRetry istio_retries = 1;
+
+    // this retry policy will be applied to any targeted Istio Mesh Insatnces
+    LinkerdRetryPolicy linkerd_retries = 2;
+}
+
+// LinkerdRetryPolicy describes the maximum number of retries that should be issued to
+// the destination services. Only works for Linkerd meshes.
+message LinkerdRetryPolicy {
+
+    // RetryBudget allows fine-grained management of
+    // Linkerd retry configuration. If it is not specifed,
+    // SuperGloo will use a default retry budget for the target routes & destinations
+    RetryBudget retry_budget = 1;
+
+    // RetryBudget describes the maximum number of retries that should be issued to
+    // the destination services.
+    message RetryBudget {
+        // The retryRatio is the maximum ratio of retries requests to original
+        // requests.  A retryRatio of 0.2 means that retries may add at most an
+        // additional 20% to the request load.
+        float retry_ratio = 1;
+
+        // This is an allowance of retries per second in addition to those allowed
+        // by the retryRatio.  This allows retries to be performed, when the request
+        // rate is very low.
+        uint32 min_retries_per_second = 2;
+
+        // This duration indicates for how long requests should be considered for the
+        // purposes of calculating the retryRatio.  A higher value considers a larger
+        // window and therefore allows burstier retries.
+        string ttl = 3;
     }
 }
 
