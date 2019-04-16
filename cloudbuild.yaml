@@ -154,7 +154,7 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
     id: 'gcloud-istio-kubeconfig'
-    waitFor: ['gcloud-linkerd-kubeconfig']
+    waitFor: ['copy-linkerd-kubeconfig']
 
   # Run e2e appmesh tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
@@ -193,6 +193,7 @@ steps:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'BUILD_ID=$BUILD_ID'
+      - 'KUBECONFIG=/builder/home/.kube/linkerd-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
