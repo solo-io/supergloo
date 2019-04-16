@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Move mesh discovery into mesh specific event loops.

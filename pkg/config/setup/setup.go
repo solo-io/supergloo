@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
+	"github.com/solo-io/supergloo/pkg/registration"
 	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -21,13 +22,16 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-type EnabledConfigLoops struct {
-	Istio   bool
-	Gloo    bool
-	AppMesh bool
+type SuperglooCongigLoop struct {
+	Clientset  *clientset.Clientset
+	ErrHandler func(error)
 }
 
-func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), enabled EnabledConfigLoops) error {
+func NewSuperglooCongigLoop(clientset *clientset.Clientset, errHandler func(error)) *SuperglooCongigLoop {
+	return &SuperglooCongigLoop{Clientset: clientset, ErrHandler: errHandler}
+}
+
+func (s *SuperglooCongigLoop) Run(ctx context.Context, enabled registration.EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "config-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -36,17 +40,17 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 			return
 		}
 		logger.Errorf("config error: %v", err)
-		if customErrHandler != nil {
-			customErrHandler(err)
+		if s.ErrHandler != nil {
+			s.ErrHandler(err)
 		}
 	}
 
-	configSyncers, err := createConfigSyncers(ctx, cs, enabled)
+	configSyncers, err := createConfigSyncers(ctx, s.Clientset, enabled)
 	if err != nil {
 		return err
 	}
 
-	if err := runConfigEventLoop(ctx, cs, errHandler, configSyncers); err != nil {
+	if err := runConfigEventLoop(ctx, s.Clientset, errHandler, configSyncers); err != nil {
 		return err
 	}
 
@@ -54,7 +58,7 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled EnabledConfigLoops) (v1.ConfigSyncer, error) {
+func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled registration.EnabledConfigLoops) (v1.ConfigSyncer, error) {
 	var syncers v1.ConfigSyncers
 
 	if enabled.Istio {
