@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
 	"go.uber.org/zap"
 )
@@ -29,7 +30,7 @@ func NewIstioConfigDiscovery(ctx context.Context, cs *clientset.Clientset) (*ist
 		cs.Input.Install,
 		istioClient.MeshPolicies,
 	)
-	syncer := newIstioIstioDiscoverSyncer()
+	syncer := newIstioConfigDiscoverSyncer(cs)
 	el := v1.NewIstioDiscoveryEventLoop(emitter, syncer)
 
 	return &istioConfigDiscovery{el: el}, nil
@@ -49,14 +50,15 @@ func (s *istioConfigDiscovery) HandleError(ctx context.Context, err error) {
 	}
 }
 
-type configIstioDiscoverSyncer struct {
+type istioConfigDiscoverSyncer struct {
+	cs *clientset.Clientset
 }
 
-func newIstioIstioDiscoverSyncer() *configIstioDiscoverSyncer {
-	return &configIstioDiscoverSyncer{}
+func newIstioConfigDiscoverSyncer(cs *clientset.Clientset) *istioConfigDiscoverSyncer {
+	return &istioConfigDiscoverSyncer{cs: cs}
 }
 
-func (s *configIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySnapshot) error {
+func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-config-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
@@ -64,6 +66,10 @@ func (s *configIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		zap.Int("installs", len(snap.Installs.List())),
 		zap.Int("mesh-policies", len(snap.Meshpolicies)),
 	}
+
+	logger.Infow("begin sync", fields...)
+	defer logger.Infow("end sync", fields...)
+	logger.Debugf("full snapshot: %v", snap)
 
 	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
 	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
@@ -75,12 +81,12 @@ func (s *configIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		updatedMeshes = append(updatedMeshes, fullMesh.merge())
 	}
 
-	logger.Infow("begin sync", fields...)
-	defer logger.Infow("end sync", fields...)
-	logger.Debugf("full snapshot: %v", snap)
-
-	logger.Infof("sync completed successfully!")
-	return nil
+	meshReconciler := v1.NewMeshReconciler(s.cs.Discovery.Mesh)
+	listOpts := clients.ListOpts{
+		Ctx:      ctx,
+		Selector: istio.DiscoverySelector,
+	}
+	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList) FullMeshList {
@@ -117,6 +123,39 @@ type FullMesh struct {
 	Mesh       *v1.Mesh
 }
 
+// Main merge method for discovered info
+// Priority of data is as such Install > MeshPolicy > Mesh
 func (fm *FullMesh) merge() *v1.Mesh {
-	return nil
+	result := fm.Mesh
+	istioMesh := fm.Mesh.GetIstio()
+	if istioMesh == nil {
+		return fm.Mesh
+	}
+	mtlsConfig := &v1.MtlsConfig{}
+	if fm.MeshPolicy != nil {
+		for _, peers := range fm.MeshPolicy.GetPeers() {
+			mtls := peers.GetMtls()
+			if mtls == nil {
+				continue
+			}
+
+			// if mtls is strict and peer is optional mtls is enabled
+			if mtls.Mode == v1alpha1.MutualTls_STRICT && !fm.MeshPolicy.GetPeerIsOptional() {
+				mtlsConfig.MtlsEnabled = true
+			}
+		}
+	}
+
+	if fm.Install != nil {
+		mesh := fm.Install.GetMesh()
+		if mesh != nil {
+			istioMeshInstall := mesh.GetIstioMesh()
+			result.DiscoveryMetadata.MeshVersion = istioMeshInstall.GetIstioVersion()
+			mtlsConfig.MtlsEnabled = istioMeshInstall.GetEnableMtls()
+			mtlsConfig.RootCertificate = istioMeshInstall.CustomRootCert
+		}
+		result.DiscoveryMetadata.InstallationNamespace = fm.Install.InstallationNamespace
+	}
+	result.DiscoveryMetadata.MtlsConfig = mtlsConfig
+	return result
 }
