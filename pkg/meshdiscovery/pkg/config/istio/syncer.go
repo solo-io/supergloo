@@ -7,8 +7,10 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
 	"go.uber.org/zap"
 )
 
@@ -63,8 +65,14 @@ func (s *advancedIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDi
 		zap.Int("mesh-policies", len(snap.Meshpolicies)),
 	}
 
-	meshPolicies := snap.Meshpolicies
-	for _, policy := range meshPolicies {
+	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
+	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
+
+	fullMeshes := organizeMeshes(istioMeshes, istioInstalls, snap.Meshpolicies)
+
+	var updatedMeshes v1.MeshList
+	for _, fullMesh := range fullMeshes {
+		updatedMeshes = append(updatedMeshes, fullMesh.merge())
 	}
 
 	logger.Infow("begin sync", fields...)
@@ -72,5 +80,43 @@ func (s *advancedIstioDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDi
 	logger.Debugf("full snapshot: %v", snap)
 
 	logger.Infof("sync completed successfully!")
+	return nil
+}
+
+func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList) FullMeshList {
+	result := make(FullMeshList, len(meshes))
+	for i, mesh := range meshes {
+		istioMesh := mesh.GetIstio()
+		if istioMesh == nil {
+			continue
+		}
+		fullMesh := &FullMesh{
+			Mesh: mesh,
+		}
+		for _, install := range installs {
+			if install.InstallationNamespace == istioMesh.InstallationNamespace {
+				fullMesh.Install = install
+				break
+			}
+		}
+
+		for _, policy := range meshPolicies {
+			if policy.Metadata.Namespace == istioMesh.InstallationNamespace {
+				fullMesh.MeshPolicy = policy
+			}
+		}
+		result[i] = fullMesh
+	}
+	return result
+}
+
+type FullMeshList []*FullMesh
+type FullMesh struct {
+	Install    *v1.Install
+	MeshPolicy *v1alpha1.MeshPolicy
+	Mesh       *v1.Mesh
+}
+
+func (fm *FullMesh) merge() *v1.Mesh {
 	return nil
 }
