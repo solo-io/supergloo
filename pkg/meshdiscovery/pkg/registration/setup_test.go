@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/api/clientset"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
@@ -13,6 +11,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/test/setup"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -54,7 +53,7 @@ var _ = Describe("Setup", func() {
 			Metadata: core.Metadata{Name: "myregistration", Namespace: namespace},
 			MeshType: &v1.Mesh_Istio{},
 		}
-		_, err = cs.Input.Mesh.Write(registration, clients.WriteOpts{})
+		_, err = cs.Discovery.Mesh.Write(registration, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.RegistrationSnapshot {

@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-type AdvancedMeshDiscovery interface {
+type MeshConfigDiscovery interface {
 	Run(ctx context.Context) (<-chan error, error)
 	HandleError(ctx context.Context, err error)
 }

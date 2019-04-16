@@ -20,7 +20,7 @@ func NewDiscoveryConfigLoop(clientset *clientset.Clientset, errHandler func(erro
 }
 
 func (s *SuperglooCongigLoop) Run(ctx context.Context, enabled registration.EnabledConfigLoops) error {
-	ctx = contextutils.WithLogger(ctx, "advanced-mesh-discovery")
+	ctx = contextutils.WithLogger(ctx, "mesh-config-discovery")
 
 	plugins, err := createConfigSyncers(ctx, s.Clientset, enabled)
 	if err != nil {
@@ -35,11 +35,11 @@ func (s *SuperglooCongigLoop) Run(ctx context.Context, enabled registration.Enab
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled registration.EnabledConfigLoops) ([]config.AdvancedMeshDiscovery, error) {
-	var syncers []config.AdvancedMeshDiscovery
+func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled registration.EnabledConfigLoops) ([]config.MeshConfigDiscovery, error) {
+	var syncers []config.MeshConfigDiscovery
 
 	if enabled.Istio {
-		istioPlugin, err := istio.NewIstioAdvancedDiscovery(ctx, cs)
+		istioPlugin, err := istio.NewIstioConfigDiscovery(ctx, cs)
 		if err != nil {
 			return nil, err
 		}
@@ -50,7 +50,7 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled r
 }
 
 // start the istio config event loop
-func runConfigEventLoop(ctx context.Context, plugins []config.AdvancedMeshDiscovery) error {
+func runConfigEventLoop(ctx context.Context, plugins []config.MeshConfigDiscovery) error {
 
 	for _, plugin := range plugins {
 		plugin := plugin
