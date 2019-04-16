@@ -52,7 +52,6 @@ func (s *istioConfigSyncer) DiscoverMeshes(ctx context.Context, snap *v1.Discove
 		zap.Int("pods", len(pods)),
 		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
-		// zap.Int("meshpolicies", len(snap.Meshpolicies)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
@@ -61,14 +60,14 @@ func (s *istioConfigSyncer) DiscoverMeshes(ctx context.Context, snap *v1.Discove
 	existingMeshes := utils.GetMeshes(meshes, utils.IstioMeshFilterFunc)
 	existingInstalls := utils.GetInstalls(installs, utils.IstioInstallFilterFunc)
 
-	pilotPods := utils.FilerPodsByNamePrefix(pods, istio)
-	if len(pilotPods) == 0 {
+	istioPods := utils.FilerPodsByNamePrefix(pods, istio)
+	if len(istioPods) == 0 {
 		logger.Debugf("no pilot pods found in istio pod list")
 		return nil, nil
 	}
 
 	var discoveredMeshes v1.MeshList
-	for _, pilotPod := range pilotPods {
+	for _, pilotPod := range istioPods {
 		if strings.Contains(pilotPod.Name, istioPilot) {
 			mesh, err := constructDiscoveryData(ctx, pilotPod, existingInstalls)
 			if err != nil {

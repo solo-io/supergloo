@@ -13,7 +13,7 @@ import (
 )
 
 func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
-	ctx = contextutils.WithLogger(ctx, "registration-event-loop")
+	ctx = contextutils.WithLogger(ctx, "mesh-discovery-registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
 	errHandler := func(err error) {

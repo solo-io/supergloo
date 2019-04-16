@@ -23,7 +23,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if ok {
 			enabledFeatures.Istio = true
-			contextutils.LoggerFrom(ctx).Infof("detected istio mesh, enabling istio config syncer")
+			contextutils.LoggerFrom(ctx).Infof("detected istio mesh")
 			break
 		}
 	}
@@ -32,7 +32,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		_, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo)
 		if ok {
 			enabledFeatures.Gloo = true
-			contextutils.LoggerFrom(ctx).Infof("detected gloo mesh-ingress, enabling gloo config syncer")
+			contextutils.LoggerFrom(ctx).Infof("detected gloo mesh-ingress")
 			break
 		}
 	}
@@ -40,7 +40,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 	for _, mesh := range snap.Meshes.List() {
 		if mesh.GetAwsAppMesh() != nil {
 			enabledFeatures.AppMesh = true
-			contextutils.LoggerFrom(ctx).Infof("detected Aws App Mesh, enabling appmesh config syncer")
+			contextutils.LoggerFrom(ctx).Infof("detected Aws App Mesh")
 			break
 		}
 	}
