@@ -26,7 +26,7 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 		}
 	}
 
-	plugins := configurePlugins(ctx, cs)
+	plugins := configurePlugins()
 	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Discovery.Mesh, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
@@ -36,9 +36,9 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	return nil
 }
 
-func configurePlugins(ctx context.Context, cs *clientset.Clientset) MeshDiscoveryPlugins {
+func configurePlugins() MeshDiscoveryPlugins {
 	plugins := MeshDiscoveryPlugins{
-		istio.NewIstioConfigSyncer(ctx, cs),
+		istio.NewIstioDiscoverySyncer(),
 	}
 	return plugins
 }

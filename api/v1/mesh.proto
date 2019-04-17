@@ -107,6 +107,9 @@ message AwsAppMesh {
 message LinkerdMesh {
     // where the Linkerd control plane has been installed
     string installation_namespace = 1;
+
+    // version of istio which has been installed
+    string linkerd_version = 2;
 }
 
 // the encryption configuration that will be applied by the role

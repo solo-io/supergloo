@@ -141,12 +141,14 @@ Mesh object representing an installed Linkerd control plane
 
 ```yaml
 "installationNamespace": string
+"linkerdVersion": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `installationNamespace` | `string` | where the Linkerd control plane has been installed |  |
+| `linkerdVersion` | `string` | version of istio which has been installed |  |
 
 
 

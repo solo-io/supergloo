@@ -267,12 +267,12 @@ func (options *proxyConfigOptions) enableTLS() bool {
 }
 
 func (options *proxyConfigOptions) taggedProxyImage() string {
-	image := strings.Replace(options.proxyImage, defaultDockerRegistry, options.dockerRegistry, 1)
+	image := strings.Replace(options.proxyImage, DefaultDockerRegistry, options.dockerRegistry, 1)
 	return fmt.Sprintf("%s:%s", image, options.linkerdVersion)
 }
 
 func (options *proxyConfigOptions) taggedProxyInitImage() string {
-	image := strings.Replace(options.initImage, defaultDockerRegistry, options.dockerRegistry, 1)
+	image := strings.Replace(options.initImage, DefaultDockerRegistry, options.dockerRegistry, 1)
 	return fmt.Sprintf("%s:%s", image, options.linkerdVersion)
 }
 
@@ -316,17 +316,18 @@ func (options *proxyConfigOptions) validate() error {
 }
 
 const (
-	optionalTLS           = "optional"
-	defaultDockerRegistry = "gcr.io/linkerd-io"
-	defaultKeepaliveMs    = 10000
+	DefaultDockerRegistry = "gcr.io/linkerd-io"
+
+	optionalTLS        = "optional"
+	defaultKeepaliveMs = 10000
 )
 
 func newProxyConfigOptions() *proxyConfigOptions {
 	return &proxyConfigOptions{
 		linkerdVersion:          "stable-2.2.1",
-		proxyImage:              defaultDockerRegistry + "/proxy",
-		initImage:               defaultDockerRegistry + "/proxy-init",
-		dockerRegistry:          defaultDockerRegistry,
+		proxyImage:              DefaultDockerRegistry + "/proxy",
+		initImage:               DefaultDockerRegistry + "/proxy-init",
+		dockerRegistry:          DefaultDockerRegistry,
 		imagePullPolicy:         "IfNotPresent",
 		inboundPort:             4143,
 		outboundPort:            4140,
