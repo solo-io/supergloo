@@ -2,6 +2,8 @@ package registration
 
 import (
 	"context"
+
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 )
 
 type EnabledConfigLoops struct {
@@ -10,6 +12,5 @@ type EnabledConfigLoops struct {
 	AppMesh bool
 }
 
-type ConfigLoopStarter interface {
-	Run(ctx context.Context, enabled EnabledConfigLoops) error
-}
+type ConfigLoopStarters []ConfigLoopStarter
+type ConfigLoopStarter func(ctx context.Context, enabled EnabledConfigLoops) (config.EventLoop, error)

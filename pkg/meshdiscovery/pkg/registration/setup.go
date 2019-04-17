@@ -38,7 +38,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 // Add registration syncers here
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
-		registration.NewRegistrationSyncer(setup.NewDiscoveryConfigLoop(clientset, errHandler)),
+		registration.NewRegistrationSyncer(setup.NewDiscoveryConfigLoopStarters(clientset)...),
 	}
 }
 

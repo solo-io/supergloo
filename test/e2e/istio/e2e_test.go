@@ -41,7 +41,7 @@ var _ = Describe("istio e2e", func() {
 	istioName := "my-istio"
 	glooName := "gloo"
 
-	It("it installs istio", func() {
+	FIt("it installs istio", func() {
 		testInstallIstio(istioName)
 	})
 
@@ -77,7 +77,7 @@ var _ = Describe("istio e2e", func() {
 		testFaultInjection()
 	})
 
-	It("it uninstalls istio", func() {
+	FIt("it uninstalls istio", func() {
 		testUninstallIstio(istioName)
 	})
 

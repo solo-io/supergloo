@@ -31,7 +31,8 @@ var _ = Describe("Setup", func() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		loop := NewDiscoveryConfigLoop(cs, errHandler)
+		loop := NewDiscoveryConfigLoopStarters(cs)
+
 		err = loop.Run(ctx, registration.EnabledConfigLoops{})
 		Expect(err).NotTo(HaveOccurred())
 	})

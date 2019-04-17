@@ -2,15 +2,14 @@ package setup
 
 import (
 	"context"
-	"time"
 
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/registration"
 	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -22,62 +21,49 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-type SuperglooConfigEventLoopRunner struct {
-	Clientset  *clientset.Clientset
-	ErrHandler func(error)
-}
-
-func NewSuperglooCongigLoopStarter(clientset *clientset.Clientset, errHandler func(error)) *SuperglooConfigEventLoopRunner {
-	return &SuperglooConfigEventLoopRunner{Clientset: clientset, ErrHandler: errHandler}
-}
-
-func (s *SuperglooConfigEventLoopRunner) Run(ctx context.Context, enabled registration.EnabledConfigLoops) error {
-	ctx = contextutils.WithLogger(ctx, "config-event-loop")
-	logger := contextutils.LoggerFrom(ctx)
-
-	errHandler := func(err error) {
-		if err == nil {
-			return
-		}
-		logger.Errorf("config error: %v", err)
-		if s.ErrHandler != nil {
-			s.ErrHandler(err)
-		}
-	}
-
-	configSyncers, err := createConfigSyncers(ctx, s.Clientset, enabled)
-	if err != nil {
-		return err
-	}
-
-	if err := runConfigEventLoop(ctx, s.Clientset, errHandler, configSyncers); err != nil {
-		return err
-	}
-
-	return nil
+func NewSuperglooConfigLoopStarter(clientset *clientset.Clientset) registration.ConfigLoopStarters {
+	return registration.ConfigLoopStarters{createConfigStarters(clientset)}
 }
 
 // Add config syncers here
-func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled registration.EnabledConfigLoops) (v1.ConfigSyncer, error) {
-	var syncers v1.ConfigSyncers
+func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarter {
 
-	if enabled.Istio {
-		istioSyncer, err := createIstioConfigSyncer(ctx, cs)
-		if err != nil {
-			return nil, err
+	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (config.EventLoop, error) {
+		var syncers v1.ConfigSyncers
+
+		if enabled.Istio {
+			istioSyncer, err := createIstioConfigSyncer(ctx, cs)
+			if err != nil {
+				return nil, err
+			}
+			syncers = append(syncers, istioSyncer)
 		}
-		syncers = append(syncers, istioSyncer)
+
+		if enabled.AppMesh {
+			appMeshSyncer, err := createAppmeshConfigSyncer(ctx, cs)
+			if err != nil {
+				return nil, err
+			}
+			syncers = append(syncers, appMeshSyncer)
+		}
+
+		ctx = contextutils.WithLogger(ctx, "config-event-loop")
+
+		configEmitter := v1.NewConfigEmitter(
+			cs.Input.Mesh,
+			cs.Input.MeshIngress,
+			cs.Input.MeshGroup,
+			cs.Input.RoutingRule,
+			cs.Input.SecurityRule,
+			cs.Input.TlsSecret,
+			cs.Input.Upstream,
+			cs.Discovery.Pod,
+		)
+		configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
+
+		return configEventLoop, nil
 	}
 
-	if enabled.AppMesh {
-		appMeshSyncer, err := createAppmeshConfigSyncer(ctx, cs)
-		if err != nil {
-			return nil, err
-		}
-		syncers = append(syncers, appMeshSyncer)
-	}
-
-	return syncers, nil
 }
 
 func createAppmeshConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
@@ -117,40 +103,4 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		cs.Input.SecurityRule.BaseClient())
 
 	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
-}
-
-// start the istio config event loop
-func runConfigEventLoop(ctx context.Context, clientset *clientset.Clientset, errHandler func(err error), syncers v1.ConfigSyncer) error {
-	configEmitter := v1.NewConfigEmitter(
-		clientset.Input.Mesh,
-		clientset.Input.MeshIngress,
-		clientset.Input.MeshGroup,
-		clientset.Input.RoutingRule,
-		clientset.Input.SecurityRule,
-		clientset.Input.TlsSecret,
-		clientset.Input.Upstream,
-		clientset.Discovery.Pod,
-	)
-	configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
-
-	watchOpts := clients.WatchOpts{
-		Ctx:         ctx,
-		RefreshRate: time.Second * 1,
-	}
-
-	configEventLoopErrs, err := configEventLoop.Run(nil, watchOpts)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			select {
-			case err := <-configEventLoopErrs:
-				errHandler(err)
-			case <-ctx.Done():
-			}
-		}
-	}()
-	return nil
 }

@@ -2,19 +2,22 @@ package registration
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"go.uber.org/zap"
 )
 
 // registration syncer, activates config syncers based on registered meshes
 // enables istio config syncer as long as there's a registered istio mesh
 type RegistrationSyncer struct {
-	configLoop ConfigLoopStarter
+	configLoops ConfigLoopStarters
 }
 
-func NewRegistrationSyncer(configLoop ConfigLoopStarter) *RegistrationSyncer {
-	return &RegistrationSyncer{configLoop: configLoop}
+func NewRegistrationSyncer(configLoop ...ConfigLoopStarter) *RegistrationSyncer {
+	return &RegistrationSyncer{configLoops: configLoop}
 }
 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
@@ -45,5 +48,42 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		}
 	}
 
-	return s.configLoop.Run(ctx, enabledFeatures)
+	var configLoops ConfigLoopStarters
+	for _, loop := range s.configLoops {
+		if loop != nil {
+			configLoops = append(configLoops, loop)
+		}
+	}
+	watchOpts := clients.WatchOpts{
+		Ctx:         ctx,
+		RefreshRate: time.Minute * 1,
+	}
+	logger := contextutils.LoggerFrom(ctx)
+
+	for _, loopFunc := range configLoops {
+		loop, err := loopFunc(ctx, enabledFeatures)
+		if err != nil {
+			return err
+		}
+		if loop == nil {
+			continue
+		}
+		combinedErrs, err := loop.Run(nil, watchOpts)
+		if err != nil {
+			return err
+		}
+		go func() {
+			for {
+				select {
+				case err := <-combinedErrs:
+					if err != nil {
+						logger.With(zap.Error(err)).Info("config event loop failure")
+					}
+				case <-ctx.Done():
+				}
+			}
+		}()
+	}
+
+	return nil
 }
