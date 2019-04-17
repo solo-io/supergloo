@@ -15,7 +15,7 @@ const (
 func AddMaxRetriesFlags(set *pflag.FlagSet, opts *options.MaxRetries) {
 	set.Uint32VarP(&opts.Attempts, "attempts", "a", 0, Description_MaxRetries_Attempts)
 	set.DurationVarP(&opts.PerTryTimeout, "per-try-timeout", "t", 0, Description_MaxRetries_PerTryTimeout)
-	set.StringVarP(&opts.RetryOn, "retry-on", "ro", "", Description_MaxRetries_RetryOn)
+	set.StringVarP(&opts.RetryOn, "retry-on", "r", "", Description_MaxRetries_RetryOn)
 }
 
 const (

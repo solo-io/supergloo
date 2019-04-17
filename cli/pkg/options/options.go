@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-
 	glooOptions "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -102,7 +100,7 @@ type RoutingRuleSpec struct {
 }
 
 type Retries struct {
-	MaxRetries  v1alpha3.HTTPRetry
+	MaxRetries  MaxRetries
 	RetryBudget v1.RetryBudget
 }
 type MaxRetries struct {
