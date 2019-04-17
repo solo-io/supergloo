@@ -96,6 +96,17 @@ type Selector struct {
 type RoutingRuleSpec struct {
 	TrafficShifting TrafficShiftingValue
 	FaultInjection  FaultInjection
+	Retries         Retries
+}
+
+type Retries struct {
+	MaxRetries  MaxRetries
+	RetryBudget v1.RetryBudget
+}
+type MaxRetries struct {
+	Attempts      uint32
+	PerTryTimeout time.Duration
+	RetryOn       string
 }
 
 type FaultInjection struct {

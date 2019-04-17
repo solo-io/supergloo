@@ -47,6 +47,7 @@ be load-balanced by weight across a variety of destinations`,
 		},
 	},
 	faultInjectionSpecCommand,
+	retryCommand,
 }
 
 func applyRoutingRuleCmd(opts *options.Options) *cobra.Command {
@@ -81,15 +82,16 @@ RULE:
 }
 
 type routingRuleSpecCommand struct {
-	use             string
-	alias           string
-	short           string
-	long            string
-	subCmds         []routingRuleSpecCommand
-	mutateOpts      func(opts *options.Options)
-	specSurveyFunc  func(ctx context.Context, in *options.CreateRoutingRule) error
-	addFlagsFunc    func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
-	convertSpecFunc func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error)
+	use                string
+	alias              string
+	short              string
+	long               string
+	subCmds            []routingRuleSpecCommand
+	mutateOpts         func(opts *options.Options)
+	specSurveyFunc     func(ctx context.Context, in *options.CreateRoutingRule) error
+	addFlagsFunc       func(set *pflag.FlagSet, in *options.RoutingRuleSpec)
+	convertSpecFunc    func(in options.RoutingRuleSpec) (*v1.RoutingRuleSpec, error)
+	updateExistingFunc func(old, new *v1.RoutingRuleSpec)
 }
 
 func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Options) *cobra.Command {
@@ -127,7 +129,7 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 			if err != nil {
 				return err
 			}
-			return applyRoutingRule(opts, spec)
+			return applyRoutingRule(opts, spec, subCmd.updateExistingFunc)
 		}
 	}
 	if subCmd.addFlagsFunc != nil {
@@ -140,7 +142,7 @@ func createRoutingRuleSubcmd(subCmd routingRuleSpecCommand, opts *options.Option
 	return cmd
 }
 
-func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
+func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec, updateExistingFunc func(old, new *v1.RoutingRuleSpec)) error {
 	in, err := routingRuleFromOpts(opts)
 	if err != nil {
 		return err
@@ -152,6 +154,9 @@ func applyRoutingRule(opts *options.Options, spec *v1.RoutingRuleSpec) error {
 	if err == nil {
 		// perform update
 		in.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
+		if updateExistingFunc != nil {
+			updateExistingFunc(existing.Spec, in.Spec)
+		}
 	}
 
 	if opts.PrintKubeYaml {
