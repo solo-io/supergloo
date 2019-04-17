@@ -89,6 +89,20 @@
         "name": "Install",
         "package": "supergloo.solo.io"
       }
+    ],
+    "istioDiscovery.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authentication.v1alpha1"
+      }
     ]
   }
 }

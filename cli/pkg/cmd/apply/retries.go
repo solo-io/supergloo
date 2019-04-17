@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/supergloo/cli/pkg/constants"
+
 	"github.com/gogo/protobuf/types"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	"github.com/spf13/pflag"
@@ -27,26 +29,11 @@ See documentation at https://supergloo.solo.io for more information.`,
 	subCmds: retrySubCommands,
 }
 
-// source: https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-on
-var possibleRetryOnValues = []string{
-	"5xx",
-	"gateway-error",
-	"connect-failure",
-	"retriable-4xx",
-	"refused-stream",
-	"retriable-status-codes",
-	"cancelled",
-	"deadline-exceeded",
-	"internal",
-	"resource-exhausted",
-	"unavailable",
-}
-
 func isValidRetryOnValue(valueList string) bool {
 	vals := strings.Split(valueList, ",")
 	for _, val := range vals {
 		var valid bool
-		for _, possible := range possibleRetryOnValues {
+		for _, possible := range constants.PossibleMaxRetry_RetryOnValues {
 			if val == possible {
 				valid = true
 				break

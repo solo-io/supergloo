@@ -1279,7 +1279,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:3d114db26c1db931020fe78c14c177f20bedc9488f8c73367b86472159a21efd"
+  digest = "1:8e4944fbeb5e1ae2de2d1a5823d822d033aa72a2fb7a1466c38b12753f4fb172"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1300,13 +1300,16 @@
     "protoutils",
     "stats",
     "stringutils",
+    "surveyutils",
+    "tarutils",
     "testutils",
     "testutils/clusterlock",
     "versionutils",
+    "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "cdc321301ed97e363b0f93f0c07e886570f1751d"
-  version = "v0.7.6"
+  revision = "d974351e1f9f1773a5bbb37516c36864bbb3345d"
+  version = "v0.7.10"
 
 [[projects]]
   digest = "1:f4ef998899eadf6b2ba47f00a3c924705a53dfef0cef3f26205c9646ff894afd"
@@ -2323,6 +2326,7 @@
     "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
+    "github.com/solo-io/go-utils/surveyutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
@@ -2358,7 +2362,6 @@
     "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
-    "gopkg.in/AlecAivazis/survey.v1",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
     "k8s.io/api/admission/v1beta1",
