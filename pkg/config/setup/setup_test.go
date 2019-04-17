@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/registration"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -37,16 +38,14 @@ var _ = Describe("Setup", func() {
 
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
-		errHandler := func(err error) {
-			defer GinkgoRecover()
-			Expect(err).NotTo(HaveOccurred())
-		}
 
 		mockSyncer := &mockInstallSyncer{}
 
+		runner := NewSuperglooConfigLoopStarter(cs)
+
 		go func() {
 			defer GinkgoRecover()
-			err = runConfigEventLoop(ctx, cs, errHandler, mockSyncer)
+			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{}, runner[0])
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
