@@ -282,6 +282,14 @@
   revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
 
 [[projects]]
+  digest = "1:2e36a10556525a3ae7b944d5d540ad6cffdfaac13a952ccbec09ecc47d0d9c3f"
+  name = "github.com/emicklei/proto"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1a8bf1a13fe8f380ead99961284d36542e7ec5ea"
+  version = "v1.6.10"
+
+[[projects]]
   digest = "1:653fbbd8dacb870f864f0d593c24b6537d13c0ebb45f97d713371d7c8f2fb4e1"
   name = "github.com/envoyproxy/go-control-plane"
   packages = [
@@ -812,15 +820,42 @@
   version = "v1.1.3"
 
 [[projects]]
-  digest = "1:ecc026b3bfc30626e3a483b1c2330923bda013f3fe8ddb0e0cc0924ad61d4471"
+  digest = "1:02d482c7f3532af3fd7e146629a03c3c50a4479a5c79c69dc89c2a1922631e77"
   name = "github.com/linkerd/linkerd2"
   packages = [
+    "controller/api/util",
+    "controller/gen/apis/serviceprofile",
+    "controller/gen/apis/serviceprofile/v1alpha1",
+    "controller/gen/client/clientset/versioned",
+    "controller/gen/client/clientset/versioned/scheme",
+    "controller/gen/client/clientset/versioned/typed/serviceprofile/v1alpha1",
+    "controller/gen/client/informers/externalversions",
+    "controller/gen/client/informers/externalversions/internalinterfaces",
+    "controller/gen/client/informers/externalversions/serviceprofile",
+    "controller/gen/client/informers/externalversions/serviceprofile/v1alpha1",
+    "controller/gen/client/listers/serviceprofile/v1alpha1",
+    "controller/gen/common/healthcheck",
+    "controller/gen/public",
     "pkg/k8s",
+    "pkg/profiles",
+    "pkg/util",
     "pkg/version",
   ]
   pruneopts = "UT"
   revision = "5e47cb150a33150e5aeddc6672d8a64701a970de"
   version = "stable-2.2.1"
+
+[[projects]]
+  digest = "1:545f51639e5becb37f5bbfb22d6b8cfa5f736fc5c3a6fe699cbc9886f468e0f3"
+  name = "github.com/linkerd/linkerd2-proxy-api"
+  packages = [
+    "go/destination",
+    "go/http_types",
+    "go/net",
+  ]
+  pruneopts = "UT"
+  revision = "be7667cfd0cca15b55724949f4e625ddf49f740f"
+  version = "v0.1.7"
 
 [[projects]]
   digest = "1:2e4fcf2595948ff177e421bf0b722bf6e729d0be9521c986891ed773225aeebb"
@@ -1363,6 +1398,14 @@
   pruneopts = "UT"
   revision = "a5dbd03a2245d554160e3ae6bfdcf969fe58b431"
   version = "0.2.0"
+
+[[projects]]
+  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
+  name = "github.com/vektah/gqlgen"
+  packages = ["neelance/errors"]
+  pruneopts = "UT"
+  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
+  version = "0.3.0"
 
 [[projects]]
   digest = "1:1fa437571ae216a3f5acc6a257cfba4b2290df94e842e03e47297ebedfed1dc8"
@@ -2239,7 +2282,12 @@
     "github.com/golang/mock/gomock",
     "github.com/google/go-github/github",
     "github.com/hashicorp/go-multierror",
+    "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
+    "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
+    "github.com/linkerd/linkerd2/controller/gen/client/informers/externalversions",
+    "github.com/linkerd/linkerd2/controller/gen/client/listers/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/pkg/k8s",
+    "github.com/linkerd/linkerd2/pkg/profiles",
     "github.com/mitchellh/go-homedir",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
@@ -2285,6 +2333,7 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache",
+    "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
@@ -2304,6 +2353,7 @@
     "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
+    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",
@@ -2337,6 +2387,7 @@
     "k8s.io/client-go/util/cert",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
+    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

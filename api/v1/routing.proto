@@ -37,6 +37,10 @@ message RoutingRule {
 
     // requests originating from these pods will have the rule applied
     // leave empty to have all pods in the mesh apply these rules
+    //
+    // > Note: Source Selectors are ignored when RoutingRules are
+    // applied to pods in a Linkerd mesh. RoutingRules will apply to
+    // all selected destinations in Linkerd, regardless of the source.
     PodSelector source_selector = 2;
 
     // requests destined for these pods will have the rule applied
@@ -45,6 +49,7 @@ message RoutingRule {
 
     // if specified, this rule will only apply to http requests
     // in the mesh matching these parameters
+    // note that Linkerd only supports matching on Request Path and Method
     repeated gloo.solo.io.Matcher request_matchers = 4;
 
     // contains the configuration that will be applied to
@@ -68,10 +73,10 @@ message RoutingRuleSpec {
         FaultInjection fault_injection = 2;
 
         // set a timeout on requests
-        google.protobuf.Duration request_timeout = 7;
+        google.protobuf.Duration request_timeout = 7 [(gogoproto.stdduration) = true];
 
         // set a retry policy on requests
-        istio.networking.v1alpha3.HTTPRetry retries = 8;
+        RetryPolicy retries = 8;
 
         // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
@@ -85,6 +90,48 @@ message RoutingRuleSpec {
         // manipulate request and response headers
         HeaderManipulation header_manipulation = 12;
     }
+}
+
+// RetryPolicy contains mesh-specific retry configuration
+// Different meshes support different Retry features
+// SuperGloo's RetryPolicy exposes config for multiple meshes simultaneously,
+// Allowing the same RoutingRule to apply retries to different mesh types
+// The configuration applied to the target mesh will use the corresponding
+// config for each type, while other config types will be ignored
+message RetryPolicy {
+    // retry each failed request until success or max number of retries met
+    // this retry policy will be applied to any targeted Istio Mesh Instances
+    istio.networking.v1alpha3.HTTPRetry max_retries = 1;
+
+    // allocate a 'retry budget' for each mesh sidecar
+    // once the proxy reaches its retry budget limit, it will
+    // stop retrying all requests for the given retry window.
+    // this can be used to prevent cascading failures when
+    // outages cause bursts of retries.
+    // this retry policy will be applied to any targeted Linkerd Mesh Instances
+    RetryBudget retry_budget = 2;
+}
+
+// RetryBudget describes the maximum number of retries that should be issued to
+// the destination services. Can only be applied to Linkerd meshes
+message RetryBudget {
+
+    // The ratio of additional traffic that may be added by retries.  A
+    // retry_ratio of 0.1 means that 1 retry may be attempted for every 10 regular
+    // requests.  A retry_ratio of 1.0 means that 1 retry may be attempted for
+    // every 1 regular request (in other words, total request load may be doubled
+    // as a result of retries).
+    float retry_ratio = 1;
+
+    // The proxy may always attempt this number of retries per second, even if it
+    // would violate the retryRatio.  This is to allow retries to happen even
+    // when the request rate is very low.
+    uint32 min_retries_per_second = 2;
+
+    // This duration indicates for how long requests should be considered for the
+    // purposes of enforcing the retryRatio.  A higher value considers a larger
+    // window and therefore allows burstier retries.
+    google.protobuf.Duration ttl = 3 [(gogoproto.stdduration) = true, (gogoproto.nullable) = false];
 }
 
 // requests for this rule will be routed to these destinations
@@ -142,6 +189,7 @@ message FaultInjection {
     }
 
     // Percentage of requests to be faulted with the error code provided.
+    // Values range between 0 and 100
     double percentage = 5;
 }
 
