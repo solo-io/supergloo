@@ -1,34 +1,31 @@
 ---
-title: "supergloo apply routingrule"
+title: "supergloo apply routingrule retries"
 weight: 5
 ---
-## supergloo apply routingrule
+## supergloo apply routingrule retries
 
-Apply a routing rule to one or more meshes.
+rt
 
 ### Synopsis
 
-
-Each Routing Rule applies an HTTP routing feature to a mesh.
-
-Routing rules implement the following semantics:
-
-RULE:
-  FOR all HTTP Requests:
-  - FROM these **source pods**
-  - TO these **destination pods**
-  - MATCHING these **request matchers**
-  APPLY this rule
-
+Retry rules are used to retry failed requests within a Mesh. 
+The retries command contains subcommands for different types of retry policies. 
+The retry policy you choose may only be compatible with a certain mesh type.
+See documentation at https://supergloo.solo.io for more information.
 
 ### Options
+
+```
+  -h, --help   help for retries
+```
+
+### Options inherited from parent commands
 
 ```
       --dest-labels MapStringStringValue       apply this rule to requests sent to pods with these labels. format must be KEY=VALUE (default [])
       --dest-namespaces strings                apply this rule to requests sent to pods in these namespaces
       --dest-upstreams ResourceRefsValue       apply this rule to requests sent to these upstreams. format must be <NAMESPACE>.<NAME>. (default [])
       --dryrun                                 if true, this command will print the yaml used to create a kubernetes resource rather than directly trying to create/apply the resource
-  -h, --help                                   help for routingrule
   -i, --interactive                            run in interactive mode
       --name string                            name for the resource
       --namespace string                       namespace for the resource (default "supergloo-system")
@@ -42,8 +39,7 @@ RULE:
 
 ### SEE ALSO
 
-* [supergloo apply](../supergloo_apply)	 - apply a rule to a mesh
-* [supergloo apply routingrule faultinjection](../supergloo_apply_routingrule_faultinjection)	 - fi
-* [supergloo apply routingrule retries](../supergloo_apply_routingrule_retries)	 - rt
-* [supergloo apply routingrule trafficshifting](../supergloo_apply_routingrule_trafficshifting)	 - ts
+* [supergloo apply routingrule](../supergloo_apply_routingrule)	 - Apply a routing rule to one or more meshes.
+* [supergloo apply routingrule retries budget](../supergloo_apply_routingrule_retries_budget)	 - b
+* [supergloo apply routingrule retries max](../supergloo_apply_routingrule_retries_max)	 - m
 
