@@ -102,7 +102,13 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existin
 		return nil, err
 	}
 
-	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istioVersion, istio)
+	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istio)
+	mesh.MeshType = &v1.Mesh_Istio{
+		Istio: &v1.IstioMesh{
+			InstallationNamespace: istioPilotPod.Namespace,
+			IstioVersion:          istioVersion,
+		},
+	}
 	// If install crd exists, overwrite discovery data
 	for _, install := range existingInstalls {
 		meshInstall := install.GetMesh()

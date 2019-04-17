@@ -83,31 +83,7 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		}
 	}
 
-	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
-
-	if createdMesh != nil {
-		// update resource version if this is an overwrite
-		if existingMesh, err := s.meshClient.Read(createdMesh.Metadata.Namespace,
-			createdMesh.Metadata.Name,
-			clients.ReadOpts{Ctx: ctx}); err == nil {
-
-			logger.Infof("overwriting previous mesh %v", existingMesh.Metadata.Ref())
-			createdMesh.Metadata.ResourceVersion = existingMesh.Metadata.ResourceVersion
-		}
-
-		logger.Infof("writing installed mesh %v", createdMesh.Metadata.Ref())
-		if _, err := s.meshClient.Write(createdMesh,
-			clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
-			err := errors.Wrapf(err, "writing installed mesh object %v failed "+
-				"after successful install", createdMesh.Metadata.Ref())
-			resourceErrs.AddError(activeInstall, err)
-			logger.Errorf("%v", err)
-		}
-
-		// caller should expect the install to have been modified
-		ref := createdMesh.Metadata.Ref()
-		activeInstall.GetMesh().InstalledMesh = &ref
-	}
+	s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
 
 	// reconcile install resources
 
