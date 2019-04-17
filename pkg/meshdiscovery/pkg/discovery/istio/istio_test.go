@@ -2,6 +2,7 @@ package istio
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,8 +16,6 @@ import (
 
 var _ = Describe("istio mesh discovery unit tests", func() {
 	var (
-		snap *v1.DiscoverySnapshot
-
 		istioNamespace     = "istio-system"
 		superglooNamespace = "supergloo-system"
 	)
@@ -26,6 +25,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 		pod := &kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: namespace,
+				Name:      "istio-pilot",
 			},
 			Spec: kubev1.PodSpec{
 				Containers: []kubev1.Container{
@@ -37,30 +37,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 	}
 
 	BeforeEach(func() {
-		snap = &v1.DiscoverySnapshot{
-			Meshes: v1.MeshesByNamespace{
-				superglooNamespace: v1.MeshList{
-					{
-						Metadata: core.Metadata{Name: "one"},
-						MeshType: &v1.Mesh_Istio{
-							Istio: &v1.IstioMesh{},
-						},
-					},
-					{
-						MeshType: &v1.Mesh_AwsAppMesh{
-							AwsAppMesh: &v1.AwsAppMesh{},
-						},
-					},
-				},
-			},
-		}
-
 		clients.UseMemoryClients()
-	})
-	It("can properly filter istio meshes", func() {
-		filteredMeshes := filterIstioMeshes(snap.Meshes.List())
-		Expect(filteredMeshes).To(HaveLen(1))
-		Expect(filteredMeshes[0].Metadata.Name).To(Equal("one"))
 	})
 	Context("get version from pod", func() {
 		It("errors when no pilot container is found", func() {
@@ -106,12 +83,12 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Image: "istio-pilot:1.0.6",
 			}
 			pod := constructPod(container, istioNamespace)
-			mesh, err := constructDiscoveryData(context.TODO(), pod, nil)
+			mesh, err := constructDiscoveredMesh(context.TODO(), pod, nil)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
-				InstallationNamespace:  istioNamespace,
-				MeshVersion:            "1.0.6",
-				InjectedNamespaceLabel: "istio-injection",
+			Expect(mesh.Metadata).To(BeEquivalentTo(core.Metadata{
+				Labels:    DiscoverySelector,
+				Namespace: superglooNamespace,
+				Name:      fmt.Sprintf("istio-%s", istioNamespace),
 			}))
 		})
 		It("overwrites discovery data with install info", func() {
@@ -123,8 +100,13 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				Namespace: "hello",
 				Name:      "world",
 			}
+			installMeta := core.Metadata{
+				Namespace: superglooNamespace,
+				Name:      "my-istio",
+			}
 			installs := v1.InstallList{
 				{
+					Metadata:              installMeta,
 					InstallationNamespace: istioNamespace,
 					InstallType: &v1.Install_Mesh{
 						Mesh: &v1.MeshInstall{
@@ -138,56 +120,17 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 					},
 				},
 			}
-			mesh, err := constructDiscoveryData(context.TODO(), pod, installs)
+			mesh, err := constructDiscoveredMesh(context.TODO(), pod, installs)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(mesh.DiscoveryMetadata).To(BeEquivalentTo(&v1.DiscoveryMetadata{
-				InstallationNamespace:  istioNamespace,
-				MeshVersion:            "1.0.6",
-				InjectedNamespaceLabel: "istio-injection",
-				MtlsConfig: &v1.MtlsConfig{
-					RootCertificate: helloWorldCert,
-					MtlsEnabled:     true,
-				},
+			Expect(mesh.MtlsConfig).To(BeEquivalentTo(&v1.MtlsConfig{
+				RootCertificate: helloWorldCert,
+				MtlsEnabled:     true,
+			}))
+			Expect(mesh.Metadata).To(BeEquivalentTo(core.Metadata{
+				Labels:    DiscoverySelector,
+				Namespace: installMeta.Namespace,
+				Name:      installMeta.Name,
 			}))
 		})
-	})
-	Context("merge meshes", func() {
-		var getDiscoveredMeshes = func(namespace string) *v1.Mesh {
-			container := kubev1.Container{
-				Image: "istio-pilot:1.0.6",
-			}
-			pod := constructPod(container, namespace)
-			mesh, err := constructDiscoveryData(context.TODO(), pod, nil)
-			Expect(err).NotTo(HaveOccurred())
-			mesh.MeshType = &v1.Mesh_Istio{Istio: &v1.IstioMesh{
-				InstallationNamespace: namespace,
-				IstioVersion:          "1.0.6",
-			}}
-			return mesh
-		}
-		It("can merge into an empty existing list", func() {
-			discoveredMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
-			meshList, err := mergeMeshes(discoveredMeshes, nil)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(meshList).To(HaveLen(1))
-		})
-		It("can merge into a non empty list, with a mesh in a different Namespace", func() {
-			discoveredMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
-			existingMeshes := v1.MeshList{getDiscoveredMeshes("one")}
-			meshList, err := mergeMeshes(discoveredMeshes, existingMeshes)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(meshList).To(HaveLen(2))
-		})
-		It("can merge into a non empty list with an existing mesh", func() {
-			discoverdMeshes := v1.MeshList{getDiscoveredMeshes(istioNamespace)}
-			existingMesh := getDiscoveredMeshes(istioNamespace)
-			existingMesh.DiscoveryMetadata = nil
-			existingMeshes := v1.MeshList{existingMesh}
-			meshList, err := mergeMeshes(discoverdMeshes, existingMeshes)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(meshList).To(HaveLen(1))
-			Expect(&meshList[0]).To(Equal(&existingMeshes[0]))
-		})
-
 	})
 })

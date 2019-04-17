@@ -114,7 +114,7 @@ func testInstallIstio(meshName string) {
 	Eventually(func() error {
 		_, err := meshClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
 		return err
-	}).ShouldNot(HaveOccurred())
+	}, time.Second*30, time.Second).ShouldNot(HaveOccurred())
 
 	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, istioNamesapce,
 		"grafana",

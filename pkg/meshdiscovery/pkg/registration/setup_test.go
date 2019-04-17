@@ -1,11 +1,8 @@
-package setup
+package registration
 
 import (
 	"context"
 	"time"
-
-	"github.com/solo-io/supergloo/pkg/api/clientset"
-	"github.com/solo-io/supergloo/pkg/registration"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,6 +11,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/test/setup"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -34,39 +32,41 @@ var _ = Describe("Setup", func() {
 		setup.TeardownKube(namespace)
 		cancel()
 	})
-	It("runs the install event loop", func() {
+	It("runs the registration event loop", func() {
 
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
+		errHandler := func(err error) {
+			Expect(err).NotTo(HaveOccurred())
+		}
 
-		mockSyncer := &mockInstallSyncer{}
-
-		runner := NewSuperglooConfigLoopStarter(cs)
+		mockSyncer := &mockRegistrationSyncer{}
 
 		go func() {
 			defer GinkgoRecover()
-			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{}, runner[0])
+			err = runRegistrationEventLoop(ctx, errHandler, cs, v1.RegistrationSyncers{mockSyncer})
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
-		// create an install crd, ensure our sync gets called
-		install := &v1.Install{
-			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
+		// create a mesh crd, ensure our sync gets called
+		registration := &v1.Mesh{
+			Metadata: core.Metadata{Name: "myregistration", Namespace: namespace},
+			MeshType: &v1.Mesh_Istio{},
 		}
-		_, err = cs.Input.Install.Write(install, clients.WriteOpts{})
+		_, err = cs.Discovery.Mesh.Write(registration, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(func() *v1.ConfigSnapshot {
+		Eventually(func() *v1.RegistrationSnapshot {
 			return mockSyncer.received
 		}, time.Second*5).Should(Not(BeNil()))
 	})
 })
 
-type mockInstallSyncer struct {
-	received *v1.ConfigSnapshot
+type mockRegistrationSyncer struct {
+	received *v1.RegistrationSnapshot
 }
 
-func (s *mockInstallSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
+func (s *mockRegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	s.received = snap
 	return nil
 }
