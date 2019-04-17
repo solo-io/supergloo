@@ -42,7 +42,7 @@ func createConfigSyncers(ctx context.Context, cs *clientset.Clientset, enabled r
 	var syncers []config.EventLoop
 
 	if enabled.Istio {
-		istioPlugin, err := istio.NewIstioConfigDiscovery(ctx, cs)
+		istioPlugin, err := istio.NewIstioConfigDiscoveryRunner(ctx, cs)
 		if err != nil {
 			return nil, err
 		}

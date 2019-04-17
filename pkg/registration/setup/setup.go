@@ -64,7 +64,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 			clientset.Input.Secret,
 			kube.New(nil),
 		),
-		registration.NewRegistrationSyncer(setup.NewSuperglooCongigLoop(clientset, errHandler)),
+		registration.NewRegistrationSyncer(setup.NewSuperglooCongigLoopStarter(clientset, errHandler)),
 	}
 }
 

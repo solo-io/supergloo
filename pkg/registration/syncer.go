@@ -10,10 +10,10 @@ import (
 // registration syncer, activates config syncers based on registered meshes
 // enables istio config syncer as long as there's a registered istio mesh
 type RegistrationSyncer struct {
-	configLoop ConfigLoop
+	configLoop ConfigLoopStarter
 }
 
-func NewRegistrationSyncer(configLoop ConfigLoop) *RegistrationSyncer {
+func NewRegistrationSyncer(configLoop ConfigLoopStarter) *RegistrationSyncer {
 	return &RegistrationSyncer{configLoop: configLoop}
 }
 

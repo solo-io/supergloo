@@ -115,7 +115,7 @@ func newIstioClientset(meshpolicies v1alpha1.MeshPolicyClient) *IstioClientset {
 	return &IstioClientset{MeshPolicies: meshpolicies}
 }
 
-func IstioFromContext(ctx context.Context) (*IstioClientset, error) {
+func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err

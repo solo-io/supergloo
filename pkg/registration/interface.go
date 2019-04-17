@@ -10,6 +10,6 @@ type EnabledConfigLoops struct {
 	AppMesh bool
 }
 
-type ConfigLoop interface {
+type ConfigLoopStarter interface {
 	Run(ctx context.Context, enabled EnabledConfigLoops) error
 }

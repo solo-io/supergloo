@@ -22,16 +22,16 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 )
 
-type SuperglooCongigLoop struct {
+type SuperglooConfigEventLoopRunner struct {
 	Clientset  *clientset.Clientset
 	ErrHandler func(error)
 }
 
-func NewSuperglooCongigLoop(clientset *clientset.Clientset, errHandler func(error)) *SuperglooCongigLoop {
-	return &SuperglooCongigLoop{Clientset: clientset, ErrHandler: errHandler}
+func NewSuperglooCongigLoopStarter(clientset *clientset.Clientset, errHandler func(error)) *SuperglooConfigEventLoopRunner {
+	return &SuperglooConfigEventLoopRunner{Clientset: clientset, ErrHandler: errHandler}
 }
 
-func (s *SuperglooCongigLoop) Run(ctx context.Context, enabled registration.EnabledConfigLoops) error {
+func (s *SuperglooConfigEventLoopRunner) Run(ctx context.Context, enabled registration.EnabledConfigLoops) error {
 	ctx = contextutils.WithLogger(ctx, "config-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
