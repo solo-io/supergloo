@@ -67,6 +67,17 @@ Translate a snapshot into a set of MeshConfigs for each mesh
 Currently only active istio mesh is expected.
 */
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
+
+	// initialize plugins
+	initParams := plugins.InitParams{
+		Ctx: ctx,
+	}
+	for _, plug := range t.plugins {
+		if err := plug.Init(initParams); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
