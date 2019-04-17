@@ -156,7 +156,7 @@ func podAppmeshConfig(info *podInfo, meshName, hostName string) (*appmesh.Virtua
 		VirtualNodeName: &info.virtualNodeName,
 		Spec: &appmesh.VirtualNodeSpec{
 			// Backends get added back in later
-			// congiguration.go:222
+			// configuration.go:222
 			Backends:  []*appmesh.Backend{},
 			Listeners: listeners,
 			ServiceDiscovery: &appmesh.ServiceDiscovery{
