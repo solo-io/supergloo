@@ -1279,7 +1279,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:dffea2be4aec0bf23f07d28b4b61ae018f95953eccc22266376750c7fd01e56e"
+  digest = "1:8e4944fbeb5e1ae2de2d1a5823d822d033aa72a2fb7a1466c38b12753f4fb172"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1300,6 +1300,7 @@
     "protoutils",
     "stats",
     "stringutils",
+    "surveyutils",
     "tarutils",
     "testutils",
     "testutils/clusterlock",
@@ -1307,8 +1308,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "4eee71a38ca040d206a6c6e18654497b5659ee8e"
-  version = "v0.7.7"
+  revision = "d974351e1f9f1773a5bbb37516c36864bbb3345d"
+  version = "v0.7.10"
 
 [[projects]]
   digest = "1:f4ef998899eadf6b2ba47f00a3c924705a53dfef0cef3f26205c9646ff894afd"
@@ -2325,6 +2326,7 @@
     "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/stringutils",
+    "github.com/solo-io/go-utils/surveyutils",
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
