@@ -6,15 +6,16 @@ import (
 )
 
 const (
-	testInstallNs = "istio-was-installed-herr"
+	IstioTestInstallNs = "istio-was-installed-herr"
+	IstioTestVersion   = "1.0.6"
 )
 
 func IstioMesh(namespace string, secretRef *core.ResourceRef) *v1.Mesh {
-	return IstioMeshWithInstallNs(namespace, testInstallNs, secretRef)
+	return IstioMeshWithInstallNs(namespace, IstioTestInstallNs, secretRef)
 }
 
 func IstioMeshWithVersion(namespace, version string, secretRef *core.ResourceRef) *v1.Mesh {
-	return istioMesh(namespace, testInstallNs, version, secretRef)
+	return istioMesh(namespace, IstioTestInstallNs, version, secretRef)
 }
 
 func IstioMeshWithInstallNs(namespace, installNs string, secretRef *core.ResourceRef) *v1.Mesh {

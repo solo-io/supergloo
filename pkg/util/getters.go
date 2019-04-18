@@ -45,7 +45,7 @@ func GetMeshForInstall(install *v1.Install, meshes v1.MeshList) *v1.Mesh {
 		return getLinkerdMeshForInstall(meshInstallType.LinkerdMesh, meshes, install.InstallationNamespace)
 	case *v1.MeshInstall_IstioMesh:
 		return getIstioMeshForInstall(meshInstallType.IstioMesh, meshes, install.InstallationNamespace)
-
+	default:
+		return nil
 	}
-	return nil
 }
