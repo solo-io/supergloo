@@ -6,8 +6,8 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"go.uber.org/zap"
 )
 
@@ -49,14 +49,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		}
 	}
 
-	var configLoops ConfigLoopStarters
-	for _, loop := range s.configLoops {
-		if loop != nil {
-			configLoops = append(configLoops, loop)
-		}
-	}
-
-	for _, loopFunc := range configLoops {
+	for _, loopFunc := range s.configLoops {
 		if err := RunConfigLoop(ctx, enabledFeatures, loopFunc); err != nil {
 			return err
 		}
@@ -74,11 +67,16 @@ func RunConfigLoop(ctx context.Context, enabledFeatures EnabledConfigLoops, star
 	if err != nil {
 		return err
 	}
+
+	if loop == nil {
+		return nil
+	}
+
 	return RunEventLoop(ctx, loop, watchOpts)
 
 }
 
-func RunEventLoop(ctx context.Context, loop config.EventLoop, opts clients.WatchOpts) error {
+func RunEventLoop(ctx context.Context, loop eventloop.EventLoop, opts clients.WatchOpts) error {
 	logger := contextutils.LoggerFrom(ctx)
 	combinedErrs, err := loop.Run(nil, opts)
 	if err != nil {

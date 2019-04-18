@@ -3,8 +3,8 @@ package setup
 import (
 	"context"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/registration"
 	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 
@@ -28,7 +28,7 @@ func NewSuperglooConfigLoopStarter(clientset *clientset.Clientset) registration.
 // Add config syncers here
 func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarter {
 
-	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (config.EventLoop, error) {
+	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
 		var syncers v1.ConfigSyncers
 
 		if enabled.Istio {

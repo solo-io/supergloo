@@ -1,4 +1,4 @@
-package istio
+package linkerd
 
 import (
 	"context"
@@ -12,11 +12,12 @@ import (
 )
 
 const (
-	istio      = "istio"
-	pilot      = "pilot"
-	istioPilot = istio + "-" + pilot
+	linkerd    = "linkerd"
+	controller = "controller"
+	// Hardcoded name from helm chart for linkerd controller
+	linkerdController = linkerd + "-" + controller
 
-	istioSelector = "istio-mesh-discovery"
+	istioSelector = "linkerd-mesh-discovery"
 )
 
 var (
@@ -25,13 +26,13 @@ var (
 	}
 )
 
-type istioDiscoverySyncer struct{}
+type linkerdDiscoverySyncer struct{}
 
-func NewIstioDiscoverySyncer() *istioDiscoverySyncer {
-	return &istioDiscoverySyncer{}
+func NewLinkerdDiscoverySyncer() *linkerdDiscoverySyncer {
+	return &linkerdDiscoverySyncer{}
 }
 
-func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -48,22 +49,22 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingMeshes := utils.GetMeshes(meshes, utils.IstioMeshFilterFunc)
-	existingInstalls := utils.GetInstalls(installs, utils.IstioInstallFilterFunc)
+	existingMeshes := utils.GetMeshes(meshes, utils.LinkerdMeshFilterFunc)
+	existingInstalls := utils.GetInstalls(installs, utils.LinkerdInstallFilterFunc)
 
-	istioPods := utils.FilerPodsByNamePrefix(pods, istio)
-	if len(istioPods) == 0 {
-		logger.Debugf("no pilot pods found in istio pod list")
+	linkerdPods := utils.FilerPodsByNamePrefix(pods, linkerd)
+	if len(linkerdPods) == 0 {
+		logger.Debugf("no linkerd pods found in pod list")
 		return nil, nil
 	}
 
 	var newMeshes v1.MeshList
-	for _, istioPod := range istioPods {
-		if strings.Contains(istioPod.Name, istioPilot) {
-			if meshExists(istioPod, existingMeshes) {
+	for _, linkerdPod := range linkerdPods {
+		if strings.Contains(linkerdPod.Name, linkerdController) {
+			if meshExists(linkerdPod, existingMeshes) {
 				continue
 			}
-			mesh, err := constructDiscoveredMesh(ctx, istioPod, existingInstalls)
+			mesh, err := constructDiscoveredMesh(ctx, linkerdPod, existingInstalls)
 			if err != nil {
 				return nil, err
 			}
@@ -79,32 +80,33 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 
 func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
 	for _, mesh := range meshes {
-		istioMesh := mesh.GetIstio()
-		if istioMesh == nil {
+		linkerdMesh := mesh.GetLinkerdMesh()
+		if linkerdMesh == nil {
 			continue
 		}
 
-		if pod.Namespace == istioMesh.InstallationNamespace {
+		if pod.Namespace == linkerdMesh.InstallationNamespace {
 			return true
 		}
 	}
 	return false
 }
 
-func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
+func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	istioVersion, err := utils.GetVersionFromPodWithMatchers(istioPilotPod, []string{istio, pilot})
+	linkerdVersion, err := utils.GetVersionFromPodWithMatchers(mainPod, []string{linkerd, controller})
 	if err != nil {
-		logger.Debugf("unable to find version from pod %v", istioPilotPod)
+		logger.Debugf("unable to find version from pod %v", mainPod)
 		return nil, err
 	}
 
-	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istio)
-	mesh.MeshType = &v1.Mesh_Istio{
-		Istio: &v1.IstioMesh{
-			InstallationNamespace: istioPilotPod.Namespace,
-			IstioVersion:          istioVersion,
+	mesh := utils.BasicMeshInfo(mainPod, DiscoverySelector, linkerd)
+
+	mesh.MeshType = &v1.Mesh_LinkerdMesh{
+		LinkerdMesh: &v1.LinkerdMesh{
+			LinkerdVersion:        linkerdVersion,
+			InstallationNamespace: mainPod.Namespace,
 		},
 	}
 	// If install crd exists, overwrite discovery data
@@ -113,17 +115,14 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existin
 		if meshInstall == nil {
 			continue
 		}
-		istioMeshInstall := meshInstall.GetIstioMesh()
-		if istioMeshInstall == nil {
+		linkerdMeshInstall := meshInstall.GetLinkerdMesh()
+		if linkerdMeshInstall == nil {
 			continue
 		}
 		// This install refers to the current mesh
-		if install.InstallationNamespace == istioPilotPod.Namespace {
-			if istioMeshInstall.EnableMtls {
-				mesh.MtlsConfig = &v1.MtlsConfig{
-					MtlsEnabled:     true,
-					RootCertificate: istioMeshInstall.CustomRootCert,
-				}
+		if install.InstallationNamespace == mainPod.Namespace {
+			mesh.MtlsConfig = &v1.MtlsConfig{
+				MtlsEnabled: linkerdMeshInstall.EnableMtls,
 			}
 			mesh.Metadata = install.Metadata
 			// Set label to be aware of discovered nature

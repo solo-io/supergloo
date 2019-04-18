@@ -98,8 +98,6 @@ var _ = Describe("Install", func() {
 			namespace := "ns"
 			inst := inputs.LinkerdInstall(name, namespace, "linkerd-system", linkerd.Version_stable221, false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			meshInstall := inst.InstallType.(*v1.Install_Mesh)
-			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -123,10 +121,6 @@ var _ = Describe("Install", func() {
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						InstalledMesh: &core.ResourceRef{
-							Name:      "installed",
-							Namespace: "mesh",
-						},
 						MeshInstallType: &v1.MeshInstall_LinkerdMesh{
 							LinkerdMesh: &v1.LinkerdInstall{
 								LinkerdVersion:   linkerd.Version_stable221,

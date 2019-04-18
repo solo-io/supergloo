@@ -1262,7 +1262,7 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:3688ef2739ac57f17f9244706d0492085006686ccc1fdb112592e759c623b2fd"
+  digest = "1:25b2b21c711c898f0d16808697e86f703621dd096d587703a624cb8c113d582b"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1314,8 +1314,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "e96ddb29dcc61b164f7f982df4fbf5849e111ca5"
-  version = "v0.13.13"
+  revision = "0adb66382ca44ed5727848cefdb3ccdcb86a560c"
+  version = "v0.13.16"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1360,7 +1360,7 @@
   version = "v0.7.10"
 
 [[projects]]
-  digest = "1:f4ef998899eadf6b2ba47f00a3c924705a53dfef0cef3f26205c9646ff894afd"
+  digest = "1:0b1bbaa6bd0ac58d2e30b47367f4908f1090965a492dc8fc11c1bad693575a03"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1379,6 +1379,7 @@
     "pkg/api/v1/clients/kubesecret",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
+    "pkg/api/v1/eventloop",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
     "pkg/api/v1/resources",
@@ -1407,8 +1408,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "35f469907b0821641f1e6452dd4ad84209627a9c"
-  version = "v0.5.4"
+  revision = "c9138bf5671c8e487ce1b510339db5f6d7514598"
+  version = "v0.6.0"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2495,6 +2496,7 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
+    "github.com/solo-io/solo-kit/pkg/api/v1/eventloop",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
     "github.com/solo-io/solo-kit/pkg/api/v1/reporter",
     "github.com/solo-io/solo-kit/pkg/api/v1/resources",
