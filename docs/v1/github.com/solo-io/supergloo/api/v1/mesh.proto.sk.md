@@ -72,6 +72,7 @@ Generic discovery data shared between different meshes
 "enableAutoInject": bool
 "meshVersion": string
 "installationNamespace": string
+"meshUpstreams": []core.solo.io.ResourceRef
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 
 ```
@@ -82,6 +83,7 @@ Generic discovery data shared between different meshes
 | `enableAutoInject` | `bool` | Whether or not auto-injection is enabled for a given mesh |  |
 | `meshVersion` | `string` | version of the mesh which is installed |  |
 | `installationNamespace` | `string` | namespace which the mesh is installed into |  |
+| `meshUpstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | upstreams which point to injected pods in the mesh |  |
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
 
 

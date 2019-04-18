@@ -76,7 +76,7 @@ var _ = Describe("config translator", func() {
 	Context("get pod info", func() {
 		It("can get valid virtual node name", func() {
 			kubePod := injectedPodList[0]
-			pod, err := kubernetes.ToKube(kubePod)
+			pod, err := kubernetes.ToKubePod(kubePod)
 			Expect(err).NotTo(HaveOccurred())
 			info, err := getPodInfo(inputs.AppmeshMesh(""), pod)
 			Expect(err).NotTo(HaveOccurred())
@@ -85,7 +85,7 @@ var _ = Describe("config translator", func() {
 		})
 		It("will return nil, if meshname doesn't match virtual node path", func() {
 			kubePod := injectedPodList[0]
-			pod, err := kubernetes.ToKube(kubePod)
+			pod, err := kubernetes.ToKubePod(kubePod)
 			Expect(err).NotTo(HaveOccurred())
 			info, err := getPodInfo(inputs.AppmeshMesh("123"), pod)
 			Expect(err).NotTo(HaveOccurred())

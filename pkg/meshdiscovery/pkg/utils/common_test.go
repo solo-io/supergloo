@@ -28,7 +28,7 @@ var _ = Describe("common utils for discovery", func() {
 				},
 			},
 		}
-		return kubernetes.FromKube(pod)
+		return kubernetes.FromKubePod(pod)
 	}
 
 	Context("get version from pod", func() {

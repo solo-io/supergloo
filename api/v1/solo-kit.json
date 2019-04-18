@@ -15,6 +15,12 @@
       "type": "ServiceProfile",
       "plural_name": "serviceprofiles",
       "short_name": "sp"
+    },
+    {
+      "package": "github.com/solo-io/supergloo/api/custom/kubenamespace",
+      "type": "KubeNamespace",
+      "plural_name": "kubenamespaces",
+      "short_name": "kn"
     }
   ],
   "resource_groups": {
@@ -102,6 +108,10 @@
       {
         "name": "MeshPolicy",
         "package": "istio.authentication.v1alpha1"
+      },
+      {
+        "name": "KubeNamespace",
+        "package": "github.com/solo-io/supergloo/api/custom/kubenamespace"
       }
     ],
     "linkerdDiscovery.supergloo.solo.io": [

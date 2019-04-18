@@ -100,7 +100,7 @@ func getPodsForMesh(mesh *v1.Mesh, pods v1.PodList) (AwsAppMeshPodInfo, v1.PodLi
 	var appMeshPodList v1.PodList
 	appMeshPods := make(AwsAppMeshPodInfo, 0)
 	for _, pod := range pods {
-		kubePod, err := kubernetes.ToKube(pod)
+		kubePod, err := kubernetes.ToKubePod(pod)
 		if err != nil {
 			return nil, nil, err
 		}

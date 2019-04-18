@@ -34,7 +34,7 @@ var _ = Describe("linkerd syncer unit test", func() {
 				},
 			},
 		}
-		return kubernetes.FromKube(pod)
+		return kubernetes.FromKubePod(pod)
 	}
 
 	BeforeEach(func() {

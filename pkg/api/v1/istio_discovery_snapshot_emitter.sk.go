@@ -46,27 +46,30 @@ type IstioDiscoveryEmitter interface {
 	Mesh() MeshClient
 	Install() InstallClient
 	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
+	KubeNamespace() KubeNamespaceClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error)
 }
 
-func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
-	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, meshPolicyClient, make(chan struct{}))
+func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, kubeNamespaceClient KubeNamespaceClient) IstioDiscoveryEmitter {
+	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, meshPolicyClient, kubeNamespaceClient, make(chan struct{}))
 }
 
-func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, kubeNamespaceClient KubeNamespaceClient, emit <-chan struct{}) IstioDiscoveryEmitter {
 	return &istioDiscoveryEmitter{
-		mesh:       meshClient,
-		install:    installClient,
-		meshPolicy: meshPolicyClient,
-		forceEmit:  emit,
+		mesh:          meshClient,
+		install:       installClient,
+		meshPolicy:    meshPolicyClient,
+		kubeNamespace: kubeNamespaceClient,
+		forceEmit:     emit,
 	}
 }
 
 type istioDiscoveryEmitter struct {
-	forceEmit  <-chan struct{}
-	mesh       MeshClient
-	install    InstallClient
-	meshPolicy istio_authentication_v1alpha1.MeshPolicyClient
+	forceEmit     <-chan struct{}
+	mesh          MeshClient
+	install       InstallClient
+	meshPolicy    istio_authentication_v1alpha1.MeshPolicyClient
+	kubeNamespace KubeNamespaceClient
 }
 
 func (c *istioDiscoveryEmitter) Register() error {
@@ -77,6 +80,9 @@ func (c *istioDiscoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.meshPolicy.Register(); err != nil {
+		return err
+	}
+	if err := c.kubeNamespace.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -92,6 +98,10 @@ func (c *istioDiscoveryEmitter) Install() InstallClient {
 
 func (c *istioDiscoveryEmitter) MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient {
 	return c.meshPolicy
+}
+
+func (c *istioDiscoveryEmitter) KubeNamespace() KubeNamespaceClient {
+	return c.kubeNamespace
 }
 
 func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error) {
@@ -123,6 +133,12 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 	}
 	installChan := make(chan installListWithNamespace)
 	/* Create channel for MeshPolicy */
+	/* Create channel for KubeNamespace */
+	type kubeNamespaceListWithNamespace struct {
+		list      KubeNamespaceList
+		namespace string
+	}
+	kubeNamespaceChan := make(chan kubeNamespaceListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -147,6 +163,17 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
 		}(namespace)
+		/* Setup namespaced watch for KubeNamespace */
+		kubeNamespaceNamespacesChan, kubeNamespaceErrs, err := c.kubeNamespace.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting KubeNamespace watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, kubeNamespaceErrs, namespace+"-kubenamespaces")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -165,6 +192,12 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					}
+				case kubeNamespaceList := <-kubeNamespaceNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case kubeNamespaceChan <- kubeNamespaceListWithNamespace{list: kubeNamespaceList, namespace: namespace}:
 					}
 				}
 			}
@@ -229,6 +262,13 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 			case meshPolicyList := <-meshPolicyChan:
 				record()
 				currentSnapshot.Meshpolicies = meshPolicyList
+			case kubeNamespaceNamespacedList := <-kubeNamespaceChan:
+				record()
+
+				namespace := kubeNamespaceNamespacedList.namespace
+				kubeNamespaceList := kubeNamespaceNamespacedList.list
+
+				currentSnapshot.Kubenamespaces[namespace] = kubeNamespaceList
 			}
 		}
 	}()

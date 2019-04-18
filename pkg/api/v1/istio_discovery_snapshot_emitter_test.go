@@ -17,6 +17,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
@@ -35,14 +36,15 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1       string
-		namespace2       string
-		name1, name2     = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg              *rest.Config
-		emitter          IstioDiscoveryEmitter
-		meshClient       MeshClient
-		installClient    InstallClient
-		meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient
+		namespace1          string
+		namespace2          string
+		name1, name2        = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg                 *rest.Config
+		emitter             IstioDiscoveryEmitter
+		meshClient          MeshClient
+		installClient       InstallClient
+		meshPolicyClient    istio_authentication_v1alpha1.MeshPolicyClient
+		kubeNamespaceClient KubeNamespaceClient
 	)
 
 	BeforeEach(func() {
@@ -82,7 +84,14 @@ var _ = Describe("V1Emitter", func() {
 
 		meshPolicyClient, err = istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewIstioDiscoveryEmitter(meshClient, installClient, meshPolicyClient)
+		// KubeNamespace Constructor
+		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+
+		kubeNamespaceClient, err = NewKubeNamespaceClient(kubeNamespaceClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewIstioDiscoveryEmitter(meshClient, installClient, meshPolicyClient, kubeNamespaceClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -272,6 +281,66 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a})
+
+		/*
+			KubeNamespace
+		*/
+
+		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
+					combined := KubenamespacesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
+		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
+
+		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
+
+		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -455,5 +524,65 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotMeshpolicies(nil, istio_authentication_v1alpha1.MeshPolicyList{meshPolicy1a, meshPolicy2a})
+
+		/*
+			KubeNamespace
+		*/
+
+		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
+					combined := KubenamespacesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
+		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
+
+		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
+
+		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
 	})
 })

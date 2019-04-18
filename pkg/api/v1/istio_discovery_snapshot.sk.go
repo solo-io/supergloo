@@ -12,16 +12,18 @@ import (
 )
 
 type IstioDiscoverySnapshot struct {
-	Meshes       MeshesByNamespace
-	Installs     InstallsByNamespace
-	Meshpolicies istio_authentication_v1alpha1.MeshPolicyList
+	Meshes         MeshesByNamespace
+	Installs       InstallsByNamespace
+	Meshpolicies   istio_authentication_v1alpha1.MeshPolicyList
+	Kubenamespaces KubenamespacesByNamespace
 }
 
 func (s IstioDiscoverySnapshot) Clone() IstioDiscoverySnapshot {
 	return IstioDiscoverySnapshot{
-		Meshes:       s.Meshes.Clone(),
-		Installs:     s.Installs.Clone(),
-		Meshpolicies: s.Meshpolicies.Clone(),
+		Meshes:         s.Meshes.Clone(),
+		Installs:       s.Installs.Clone(),
+		Meshpolicies:   s.Meshpolicies.Clone(),
+		Kubenamespaces: s.Kubenamespaces.Clone(),
 	}
 }
 
@@ -30,6 +32,7 @@ func (s IstioDiscoverySnapshot) Hash() uint64 {
 		s.hashMeshes(),
 		s.hashInstalls(),
 		s.hashMeshpolicies(),
+		s.hashKubenamespaces(),
 	)
 }
 
@@ -45,20 +48,26 @@ func (s IstioDiscoverySnapshot) hashMeshpolicies() uint64 {
 	return hashutils.HashAll(s.Meshpolicies.AsInterfaces()...)
 }
 
+func (s IstioDiscoverySnapshot) hashKubenamespaces() uint64 {
+	return hashutils.HashAll(s.Kubenamespaces.List().AsInterfaces()...)
+}
+
 func (s IstioDiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 	fields = append(fields, zap.Uint64("meshpolicies", s.hashMeshpolicies()))
+	fields = append(fields, zap.Uint64("kubenamespaces", s.hashKubenamespaces()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type IstioDiscoverySnapshotStringer struct {
-	Version      uint64
-	Meshes       []string
-	Installs     []string
-	Meshpolicies []string
+	Version        uint64
+	Meshes         []string
+	Installs       []string
+	Meshpolicies   []string
+	Kubenamespaces []string
 }
 
 func (ss IstioDiscoverySnapshotStringer) String() string {
@@ -79,14 +88,20 @@ func (ss IstioDiscoverySnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Kubenamespaces %v\n", len(ss.Kubenamespaces))
+	for _, name := range ss.Kubenamespaces {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
 func (s IstioDiscoverySnapshot) Stringer() IstioDiscoverySnapshotStringer {
 	return IstioDiscoverySnapshotStringer{
-		Version:      s.Hash(),
-		Meshes:       s.Meshes.List().NamespacesDotNames(),
-		Installs:     s.Installs.List().NamespacesDotNames(),
-		Meshpolicies: s.Meshpolicies.Names(),
+		Version:        s.Hash(),
+		Meshes:         s.Meshes.List().NamespacesDotNames(),
+		Installs:       s.Installs.List().NamespacesDotNames(),
+		Meshpolicies:   s.Meshpolicies.Names(),
+		Kubenamespaces: s.Kubenamespaces.List().NamespacesDotNames(),
 	}
 }

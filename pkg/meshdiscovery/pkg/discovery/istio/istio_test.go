@@ -33,7 +33,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 				},
 			},
 		}
-		return kubernetes.FromKube(pod)
+		return kubernetes.FromKubePod(pod)
 	}
 
 	BeforeEach(func() {

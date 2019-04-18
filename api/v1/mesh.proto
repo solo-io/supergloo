@@ -63,8 +63,11 @@ message DiscoveryMetadata {
     // namespace which the mesh is installed into
     string installation_namespace = 4;
 
+    // upstreams which point to injected pods in the mesh
+    repeated core.solo.io.ResourceRef mesh_upstreams = 5;
+
     // discovered mtls config of the given mesh
-    MtlsConfig mtls_config = 5;
+    MtlsConfig mtls_config = 6;
 }
 
 // Mesh object representing an installed Istio control plane
