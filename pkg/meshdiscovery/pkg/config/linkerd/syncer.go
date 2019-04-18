@@ -113,10 +113,10 @@ func (fm *meshResources) merge() *v1.Mesh {
 	if fm.Install != nil {
 		mesh := fm.Install.GetMesh()
 		if mesh != nil {
-			istioMeshInstall := mesh.GetIstioMesh()
-			result.DiscoveryMetadata.MeshVersion = istioMeshInstall.GetIstioVersion()
-			mtlsConfig.MtlsEnabled = istioMeshInstall.GetEnableMtls()
-			mtlsConfig.RootCertificate = istioMeshInstall.CustomRootCert
+			linkerdMeshInstall := mesh.GetLinkerdMesh()
+			result.DiscoveryMetadata.MeshVersion = linkerdMeshInstall.GetLinkerdVersion()
+			result.DiscoveryMetadata.EnableAutoInject = linkerdMeshInstall.GetEnableAutoInject()
+			mtlsConfig.MtlsEnabled = linkerdMeshInstall.GetEnableMtls()
 		}
 		result.DiscoveryMetadata.InstallationNamespace = fm.Install.InstallationNamespace
 	}

@@ -141,6 +141,7 @@ func (fm *meshResources) merge() *v1.Mesh {
 		if mesh != nil {
 			istioMeshInstall := mesh.GetIstioMesh()
 			result.DiscoveryMetadata.MeshVersion = istioMeshInstall.GetIstioVersion()
+			result.DiscoveryMetadata.EnableAutoInject = istioMeshInstall.GetEnableAutoInject()
 			mtlsConfig.MtlsEnabled = istioMeshInstall.GetEnableMtls()
 			mtlsConfig.RootCertificate = istioMeshInstall.CustomRootCert
 		}
