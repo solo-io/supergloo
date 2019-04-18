@@ -163,5 +163,5 @@ func testLinkerdRetries(meshName string) {
 		return nil
 	}
 
-	Eventually(curlThreeTimes, time.Minute*50).ShouldNot(HaveOccurred())
+	Eventually(curlThreeTimes, time.Minute*3).ShouldNot(HaveOccurred())
 }

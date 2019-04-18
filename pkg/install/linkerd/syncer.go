@@ -3,6 +3,8 @@ package linkerd
 import (
 	"context"
 
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -17,8 +19,8 @@ import (
 )
 
 // calling this function with nil is valid and expected outside of tests
-func NewInstallSyncer(kubeInstaller kubeinstall.Installer, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
-	return common.NewMeshInstallSyncer("linkerd", meshClient, reporter, isLinkerdInstall, linkerdInstaller{kubeInstaller}.ensureLinkerdInstall)
+func NewInstallSyncer(kubeInstaller kubeinstall.Installer, kubeClient kubernetes.Interface, meshClient v1.MeshClient, reporter reporter.Reporter) v1.InstallSyncer {
+	return common.NewMeshInstallSyncer("linkerd", meshClient, reporter, isLinkerdInstall, linkerdInstaller{kubeInstaller: kubeInstaller, kubeClient: kubeClient}.ensureLinkerdInstall)
 }
 
 func isLinkerdInstall(install *v1.Install) bool {
@@ -31,6 +33,7 @@ func isLinkerdInstall(install *v1.Install) bool {
 
 type linkerdInstaller struct {
 	kubeInstaller kubeinstall.Installer
+	kubeClient    kubernetes.Interface
 }
 
 func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
@@ -61,7 +64,7 @@ func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.
 
 	opts := newInstallOpts(linkerd.LinkerdVersion, install.InstallationNamespace, linkerd.EnableMtls, linkerd.EnableAutoInject)
 
-	if err := opts.install(ctx, i.kubeInstaller, installLabels); err != nil {
+	if err := opts.install(ctx, i.kubeInstaller, installLabels, i.kubeClient); err != nil {
 		return nil, errors.Wrapf(err, "executing linkerd install")
 	}
 

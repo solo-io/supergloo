@@ -3,6 +3,8 @@ package linkerd_test
 import (
 	"context"
 
+	"k8s.io/client-go/kubernetes/fake"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
@@ -52,7 +54,7 @@ var _ = Describe("Syncer", func() {
 				mesh := install.InstallType.(*v1.Install_Mesh)
 				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installSyncer := NewInstallSyncer(kubeInstaller, meshClient, report)
+				installSyncer := NewInstallSyncer(kubeInstaller, fake.NewSimpleClientset(), meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 

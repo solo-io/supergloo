@@ -67,6 +67,7 @@ func createInstallSyncers(clientset *clientset.Clientset, installer kubeinstall.
 		),
 		linkerd.NewInstallSyncer(
 			installer,
+			clientset.Kube,
 			clientset.Input.Mesh,
 			reporter.NewReporter("linkerd-install-reporter", clientset.Input.Install.BaseClient()),
 		),

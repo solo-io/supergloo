@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
@@ -31,13 +33,13 @@ func newInstallOpts(installVersion string, installNamespace string, enableMtls b
 	return &installOpts{installVersion: installVersion, installNamespace: installNamespace, enableMtls: enableMtls, enableAutoInject: enableAutoInject}
 }
 
-func (o *installOpts) install(ctx context.Context, installer kubeinstall.Installer, withLabels map[string]string) error {
+func (o *installOpts) install(ctx context.Context, installer kubeinstall.Installer, withLabels map[string]string, kube kubernetes.Interface) error {
 	uri, err := o.chartURI()
 	if err != nil {
 		return err
 	}
 
-	injector, values, err := o.values()
+	injector, values, err := o.values(kube)
 	if err != nil {
 		return err
 	}
@@ -57,9 +59,16 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 		return err
 	}
 
-	// filter out the install namespace, it's created by the custom installer
 	resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
-		return resource.GroupVersionKind().Kind == "Namespace"
+		gvk := resource.GroupVersionKind()
+		// overwrite the deployment group version to apps/v1 for all deployments
+		if gvk.Group == "extensions" && gvk.Version == "v1beta1" && gvk.Kind == "Deployment" {
+			gvk.Group = "apps"
+			gvk.Version = "v1"
+		}
+
+		// filter out the install namespace, it's created by the custom installer
+		return gvk.Kind == "Namespace"
 	})
 
 	contextutils.LoggerFrom(ctx).Infof("installing linkerd with options: %#v", o)
@@ -71,7 +80,7 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 	return nil
 }
 
-func injectManifests(injector injector, in helmchart.Manifests) (helmchart.Manifests, error) {
+func injectManifests(injector *injector, in helmchart.Manifests) (helmchart.Manifests, error) {
 	input := bytes.NewBufferString(in.CombinedString())
 	out := &bytes.Buffer{}
 	err := processYAML(input, out, injector)

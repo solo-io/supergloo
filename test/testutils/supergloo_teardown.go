@@ -113,35 +113,46 @@ func DeleteSuperglooPods(kube kubernetes.Interface, superglooNamespace string) {
 
 func WaitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes ...string) error {
 	pods := clients.MustKubeClient().CoreV1().Pods(namespace)
-	getPodStatus := func(prefix string) (*kubev1.PodPhase, error) {
+	podsWithPrefixReady := func(prefix string) (bool, error) {
 		list, err := pods.List(metav1.ListOptions{})
 		if err != nil {
-			return nil, err
+			return false, err
+		}
+		if len(list.Items) == 0 {
+			return false, errors.Errorf("no pods found with prefix %v", prefix)
 		}
 		for _, pod := range list.Items {
 			if strings.HasPrefix(pod.Name, prefix) {
-				return &pod.Status.Phase, nil
+				var podReady bool
+				for _, cond := range pod.Status.Conditions {
+					if cond.Type == kubev1.ContainersReady && cond.Status == kubev1.ConditionTrue {
+						podReady = true
+						break
+					}
+				}
+				if !podReady {
+					return false, nil
+				}
 			}
 		}
-		return nil, errors.Errorf("pod with prefix %v not found", prefix)
+		return true, nil
 	}
 	failed := time.After(timeout)
-	notYetRunning := make(map[string]kubev1.PodPhase)
+	notYetRunning := make(map[string]struct{})
 	for {
 		select {
 		case <-failed:
 			return errors.Errorf("timed out waiting for pods to come online: %v", notYetRunning)
 		case <-time.After(time.Second / 2):
-			notYetRunning = make(map[string]kubev1.PodPhase)
+			notYetRunning = make(map[string]struct{})
 			for _, prefix := range podPrefixes {
-				stat, err := getPodStatus(prefix)
+				ready, err := podsWithPrefixReady(prefix)
 				if err != nil {
 					log.Printf("failed to get pod status: %v", err)
-					notYetRunning[prefix] = kubev1.PodUnknown
-					continue
+					notYetRunning[prefix] = struct{}{}
 				}
-				if *stat != kubev1.PodRunning {
-					notYetRunning[prefix] = *stat
+				if !ready {
+					notYetRunning[prefix] = struct{}{}
 				}
 			}
 			if len(notYetRunning) == 0 {
