@@ -6,9 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"go.uber.org/zap"
 )
@@ -50,9 +48,6 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		if install.GetMesh() == nil {
 			continue
 		}
-		// TODO(EItanya): fix how this works, currently it doesn't reconcile the resources properly
-		// Therefore this link isn't maintained across syncs
-		addMeshToInstall(install, meshes)
 		if s.isOurInstallType(install) {
 			if install.Disabled {
 				disabledInstalls = append(disabledInstalls, install)
@@ -63,23 +58,11 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 	}
 	// perform uninstalls first
 	for _, in := range disabledInstalls {
-		installMesh := in.GetMesh()
-		if installMesh.InstalledMesh == nil {
-			// mesh was never installed
-			resourceErrs.Accept(in)
-			continue
-		}
-		installedMesh := *installMesh.InstalledMesh
 		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
 		if err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 		} else {
 			resourceErrs.Accept(in)
-			if err := s.meshClient.Delete(installedMesh.Namespace,
-				installedMesh.Name,
-				clients.DeleteOpts{Ctx: ctx}); err != nil {
-				logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
-			}
 		}
 	}
 
@@ -120,33 +103,6 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 		for _, in := range enabledInstalls {
 			resourceErrs.AddError(in, errors.Errorf("multiple active %v installations "+
 				"are not currently supported. active installs: %v", s.name, enabledInstalls.NamespacesDotNames()))
-		}
-	}
-}
-
-func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
-	if meshInstall := in.GetMesh(); meshInstall != nil {
-		if meshInstall.InstalledMesh == nil {
-			for _, mesh := range meshes {
-				switch meshType := mesh.GetMeshType().(type) {
-				case *v1.Mesh_Istio:
-					if meshType.Istio.GetInstallationNamespace() == in.GetInstallationNamespace() &&
-						mesh.Metadata.Name == in.Metadata.Name {
-						meshInstall.InstalledMesh = &core.ResourceRef{
-							Name:      mesh.Metadata.Name,
-							Namespace: mesh.Metadata.Namespace,
-						}
-					}
-				case *v1.Mesh_LinkerdMesh:
-					if meshType.LinkerdMesh.GetInstallationNamespace() == in.GetInstallationNamespace() &&
-						mesh.Metadata.Name == in.Metadata.Name {
-						meshInstall.InstalledMesh = &core.ResourceRef{
-							Name:      mesh.Metadata.Name,
-							Namespace: mesh.Metadata.Namespace,
-						}
-					}
-				}
-			}
 		}
 	}
 }

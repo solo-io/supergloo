@@ -13,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+	EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error
 }
 
 type defaultIstioInstaller struct {
@@ -45,19 +45,10 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(install)); err != nil {
 			return errors.Wrapf(err, "uninstalling istio")
 		}
-		installMesh.InstalledMesh = nil
 		return nil
 	}
 
-	var mesh *v1.Mesh
-	if installMesh.InstalledMesh != nil {
-		var err error
-		mesh, err = meshes.Find(installMesh.InstalledMesh.Strings())
-		if err != nil {
-			return errors.Wrapf(err, "installed mesh not found")
-		}
-	}
-
+	mesh := util.GetMeshForInstall(install, meshes)
 	manifests, err := makeManifestsForInstall(ctx, install, mesh, istio)
 	if err != nil {
 		return err

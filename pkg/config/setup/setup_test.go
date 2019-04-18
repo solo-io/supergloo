@@ -34,7 +34,7 @@ var _ = Describe("Setup", func() {
 		setup.TeardownKube(namespace)
 		cancel()
 	})
-	It("runs the install event loop", func() {
+	It("runs the config event loop", func() {
 
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
@@ -45,7 +45,7 @@ var _ = Describe("Setup", func() {
 
 		go func() {
 			defer GinkgoRecover()
-			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{}, runner[0])
+			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{Istio: true}, runner[0])
 			Expect(err).NotTo(HaveOccurred())
 		}()
 

@@ -26,10 +26,6 @@ var _ = Describe("makeManifestsForInstall", func() {
 			c.istioPrefs.IstioVersion = c.version
 			install.GetMesh().MeshInstallType = &v1.MeshInstall_IstioMesh{IstioMesh: c.istioPrefs}
 		}
-		if c.existingInstall != nil {
-			ref := c.existingInstall.Metadata.Ref()
-			install.GetMesh().InstalledMesh = &ref
-		}
 		return makeManifestsForInstall(context.TODO(), install, c.existingInstall, install.GetMesh().GetIstioMesh())
 	}
 	Context("invalid opts", func() {
