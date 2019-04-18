@@ -53,7 +53,6 @@ func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.
 		if err := i.kubeInstaller.PurgeResources(ctx, installLabels); err != nil {
 			return errors.Wrapf(err, "uninstalling linkerd")
 		}
-		installMesh.InstalledMesh = nil
 		return nil
 	}
 

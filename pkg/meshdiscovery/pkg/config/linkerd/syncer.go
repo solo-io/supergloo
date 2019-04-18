@@ -12,7 +12,7 @@ const (
 	injectionLabel = "istio-injection"
 )
 
-func NewIstioConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
+func NewLinkerdConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
 	istioClient, err := clientset.IstioClientsetFromContext(ctx)
 	if err != nil {
 		return nil, err

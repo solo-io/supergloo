@@ -33,10 +33,6 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		installMeshIngress, installIsMeshIngress := install.InstallType.(*v1.Install_Ingress)
 
 		switch existingType := existing.InstallType.(type) {
-		case *v1.Install_Mesh:
-			if installIsMesh {
-				installMesh.Mesh.InstalledMesh = existingType.Mesh.InstalledMesh
-			}
 		case *v1.Install_Ingress:
 			if installIsMeshIngress {
 				installMeshIngress.Ingress.InstalledIngress = existingType.Ingress.InstalledIngress
