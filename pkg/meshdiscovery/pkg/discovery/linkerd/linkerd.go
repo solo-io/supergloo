@@ -18,8 +18,6 @@ const (
 	linkerdController = linkerd + "-" + controller
 
 	istioSelector = "linkerd-mesh-discovery"
-
-	injectionLabel = "istio-injection"
 )
 
 var (

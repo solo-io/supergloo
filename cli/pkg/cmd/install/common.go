@@ -29,7 +29,6 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		install.Metadata.ResourceVersion = existing.Metadata.ResourceVersion
 		install.InstallationNamespace = existing.InstallationNamespace
 
-		installMesh, installIsMesh := install.InstallType.(*v1.Install_Mesh)
 		installMeshIngress, installIsMeshIngress := install.InstallType.(*v1.Install_Ingress)
 
 		switch existingType := existing.InstallType.(type) {

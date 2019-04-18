@@ -17,8 +17,6 @@ const (
 	istioPilot = istio + "-" + pilot
 
 	istioSelector = "istio-mesh-discovery"
-
-	injectionLabel = "istio-injection"
 )
 
 var (

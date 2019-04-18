@@ -60,10 +60,10 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
 	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
 
-	fullMeshes := organizeMeshes(istioMeshes, istioInstalls, snap.Meshpolicies)
+	meshResources := organizeMeshes(istioMeshes, istioInstalls, snap.Meshpolicies)
 
 	var updatedMeshes v1.MeshList
-	for _, fullMesh := range fullMeshes {
+	for _, fullMesh := range meshResources {
 		updatedMeshes = append(updatedMeshes, fullMesh.merge())
 	}
 
