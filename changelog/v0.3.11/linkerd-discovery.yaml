@@ -1,4 +1,4 @@
 changelog:
-  - type: New_FEATURE
+  - type: NEW_FEATURE
     description: Implement Translator for Linkerd config with support for retrybudget
     issueLink: https://github.com/solo-io/supergloo/issues/369
