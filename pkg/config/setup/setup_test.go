@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	"github.com/solo-io/supergloo/pkg/registration"
 
@@ -39,34 +40,48 @@ var _ = Describe("Setup", func() {
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
 
-		mockSyncer := &mockInstallSyncer{}
+		mockSyncer := &mockConfigSyncer{}
 
-		runner := NewSuperglooConfigLoopStarter(cs)
+		configEmitter := v1.NewConfigEmitter(
+			cs.Input.Mesh,
+			cs.Input.MeshIngress,
+			cs.Input.MeshGroup,
+			cs.Input.RoutingRule,
+			cs.Input.SecurityRule,
+			cs.Input.TlsSecret,
+			cs.Input.Upstream,
+			cs.Discovery.Pod,
+		)
+
+		el := v1.NewConfigEventLoop(configEmitter, mockSyncer)
+		var runner registration.ConfigLoopStarter = func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
+			return el, nil
+		}
 
 		go func() {
 			defer GinkgoRecover()
-			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{Istio: true}, runner[0])
+			err = registration.RunConfigLoop(ctx, registration.EnabledConfigLoops{Istio: true}, runner)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 
 		// create an install crd, ensure our sync gets called
-		install := &v1.Install{
+		mesh := &v1.Mesh{
 			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
 		}
-		_, err = cs.Input.Install.Write(install, clients.WriteOpts{})
+		_, err = cs.Input.Mesh.Write(mesh, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.ConfigSnapshot {
 			return mockSyncer.received
-		}, time.Second*5).Should(Not(BeNil()))
+		}, time.Second*5, time.Second/2).Should(Not(BeNil()))
 	})
 })
 
-type mockInstallSyncer struct {
+type mockConfigSyncer struct {
 	received *v1.ConfigSnapshot
 }
 
-func (s *mockInstallSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
+func (s *mockConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
 	s.received = snap
 	return nil
 }
