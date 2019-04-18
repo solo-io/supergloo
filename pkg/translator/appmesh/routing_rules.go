@@ -23,7 +23,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes PodVirtual
 	}
 
 	// current limitations of appmesh traffic shifting, each upstream must be a unique service
-	uniqueUpstreamServices, err := allUpsrtreamsUnique(upstreams, rule.Destinations.Destinations)
+	uniqueUpstreamServices, err := allUpstreamsUnique(upstreams, rule.Destinations.Destinations)
 	if err != nil {
 		return err
 	} else if !uniqueUpstreamServices {
@@ -42,7 +42,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes PodVirtual
 			return errors.Wrapf(err, "invalid upstream destination")
 		}
 
-		vn, err := virtualNodeForUpsteam(upstream, vnodes)
+		vn, err := virtualNodeForUpstream(upstream, vnodes)
 		if err != nil {
 			return errors.Wrapf(err, "could not find corresponding virtual node")
 		}
@@ -67,7 +67,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, vnodes PodVirtual
 	return nil
 }
 
-func allUpsrtreamsUnique(upstreams gloov1.UpstreamList, dests []*gloov1.WeightedDestination) (bool, error) {
+func allUpstreamsUnique(upstreams gloov1.UpstreamList, dests []*gloov1.WeightedDestination) (bool, error) {
 	hosts := make(map[string]bool)
 	for _, dest := range dests {
 		usRef := dest.Destination.Upstream
@@ -87,7 +87,7 @@ func allUpsrtreamsUnique(upstreams gloov1.UpstreamList, dests []*gloov1.Weighted
 	return true, nil
 }
 
-func virtualNodeForUpsteam(upstream *gloov1.Upstream, vnodes PodVirtualNode) (*appmesh.VirtualNodeData, error) {
+func virtualNodeForUpstream(upstream *gloov1.Upstream, vnodes PodVirtualNode) (*appmesh.VirtualNodeData, error) {
 	host, err := utils.GetHostForUpstream(upstream)
 	if err != nil {
 		return nil, err
