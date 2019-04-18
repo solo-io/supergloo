@@ -6,8 +6,8 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"go.uber.org/zap"
 )
 
@@ -78,7 +78,7 @@ func RunConfigLoop(ctx context.Context, enabledFeatures EnabledConfigLoops, star
 
 }
 
-func RunEventLoop(ctx context.Context, loop config.EventLoop, opts clients.WatchOpts) error {
+func RunEventLoop(ctx context.Context, loop eventloop.EventLoop, opts clients.WatchOpts) error {
 	logger := contextutils.LoggerFrom(ctx)
 	combinedErrs, err := loop.Run(nil, opts)
 	if err != nil {

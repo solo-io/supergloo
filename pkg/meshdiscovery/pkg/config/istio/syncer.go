@@ -6,10 +6,10 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
 	"go.uber.org/zap"
@@ -19,7 +19,7 @@ const (
 	injectionLabel = "istio-injection"
 )
 
-func NewIstioConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (config.EventLoop, error) {
+func NewIstioConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
 	istioClient, err := clientset.IstioClientsetFromContext(ctx)
 	if err != nil {
 		return nil, err
