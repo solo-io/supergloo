@@ -6,9 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"go.uber.org/zap"
 )
@@ -26,7 +24,7 @@ func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter report
 }
 
 type IsInstallType func(install *v1.Install) bool
-type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) error
 
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
@@ -50,9 +48,6 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		if install.GetMesh() == nil {
 			continue
 		}
-		// TODO(EItanya): fix how this works, currently it doesn't reconcile the resources properly
-		// Therefore this link isn't maintained across syncs
-		addMeshToInstall(install, meshes)
 		if s.isOurInstallType(install) {
 			if install.Disabled {
 				disabledInstalls = append(disabledInstalls, install)
@@ -63,51 +58,15 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 	}
 	// perform uninstalls first
 	for _, in := range disabledInstalls {
-		installMesh := in.GetMesh()
-		if installMesh.InstalledMesh == nil {
-			// mesh was never installed
-			resourceErrs.Accept(in)
-			continue
-		}
-		installedMesh := *installMesh.InstalledMesh
 		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-		if _, err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
+		if err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 		} else {
 			resourceErrs.Accept(in)
-			if err := s.meshClient.Delete(installedMesh.Namespace,
-				installedMesh.Name,
-				clients.DeleteOpts{Ctx: ctx}); err != nil {
-				logger.Errorf("deleting mesh object %v failed after successful uninstall", installedMesh)
-			}
 		}
 	}
 
-	createdMesh, activeInstall := s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
-
-	if createdMesh != nil {
-		// update resource version if this is an overwrite
-		if existingMesh, err := s.meshClient.Read(createdMesh.Metadata.Namespace,
-			createdMesh.Metadata.Name,
-			clients.ReadOpts{Ctx: ctx}); err == nil {
-
-			logger.Infof("overwriting previous mesh %v", existingMesh.Metadata.Ref())
-			createdMesh.Metadata.ResourceVersion = existingMesh.Metadata.ResourceVersion
-		}
-
-		logger.Infof("writing installed mesh %v", createdMesh.Metadata.Ref())
-		if _, err := s.meshClient.Write(createdMesh,
-			clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
-			err := errors.Wrapf(err, "writing installed mesh object %v failed "+
-				"after successful install", createdMesh.Metadata.Ref())
-			resourceErrs.AddError(activeInstall, err)
-			logger.Errorf("%v", err)
-		}
-
-		// caller should expect the install to have been modified
-		ref := createdMesh.Metadata.Ref()
-		activeInstall.GetMesh().InstalledMesh = &ref
-	}
+	s.handleActiveInstalls(ctx, enabledInstalls, meshes, resourceErrs)
 
 	// reconcile install resources
 
@@ -126,52 +85,24 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
 	meshes v1.MeshList,
-	resourceErrs reporter.ResourceErrors) (*v1.Mesh, *v1.Install) {
+	resourceErrs reporter.ResourceErrors) {
 
 	switch {
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		mesh, err := s.ensureMeshInstall(ctx, in, meshes)
+		err := s.ensureMeshInstall(ctx, in, meshes)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
-			return nil, nil
+			return
 		}
 		resourceErrs.Accept(in)
 
-		return mesh, in
+		return
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
 			resourceErrs.AddError(in, errors.Errorf("multiple active %v installations "+
 				"are not currently supported. active installs: %v", s.name, enabledInstalls.NamespacesDotNames()))
-		}
-	}
-	return nil, nil
-}
-
-func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {
-	if meshInstall := in.GetMesh(); meshInstall != nil {
-		if meshInstall.InstalledMesh == nil {
-			for _, mesh := range meshes {
-				switch meshType := mesh.GetMeshType().(type) {
-				case *v1.Mesh_Istio:
-					if meshType.Istio.GetInstallationNamespace() == in.GetInstallationNamespace() &&
-						mesh.Metadata.Name == in.Metadata.Name {
-						meshInstall.InstalledMesh = &core.ResourceRef{
-							Name:      mesh.Metadata.Name,
-							Namespace: mesh.Metadata.Namespace,
-						}
-					}
-				case *v1.Mesh_LinkerdMesh:
-					if meshType.LinkerdMesh.GetInstallationNamespace() == in.GetInstallationNamespace() &&
-						mesh.Metadata.Name == in.Metadata.Name {
-						meshInstall.InstalledMesh = &core.ResourceRef{
-							Name:      mesh.Metadata.Name,
-							Namespace: mesh.Metadata.Namespace,
-						}
-					}
-				}
-			}
 		}
 	}
 }

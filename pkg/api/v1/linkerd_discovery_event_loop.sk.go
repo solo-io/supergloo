@@ -16,13 +16,13 @@ import (
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 )
 
-type RegistrationSyncer interface {
-	Sync(context.Context, *RegistrationSnapshot) error
+type LinkerdDiscoverySyncer interface {
+	Sync(context.Context, *LinkerdDiscoverySnapshot) error
 }
 
-type RegistrationSyncers []RegistrationSyncer
+type LinkerdDiscoverySyncers []LinkerdDiscoverySyncer
 
-func (s RegistrationSyncers) Sync(ctx context.Context, snapshot *RegistrationSnapshot) error {
+func (s LinkerdDiscoverySyncers) Sync(ctx context.Context, snapshot *LinkerdDiscoverySnapshot) error {
 	var multiErr *multierror.Error
 	for _, syncer := range s {
 		if err := syncer.Sync(ctx, snapshot); err != nil {
@@ -32,19 +32,19 @@ func (s RegistrationSyncers) Sync(ctx context.Context, snapshot *RegistrationSna
 	return multiErr.ErrorOrNil()
 }
 
-type registrationEventLoop struct {
-	emitter RegistrationEmitter
-	syncer  RegistrationSyncer
+type linkerdDiscoveryEventLoop struct {
+	emitter LinkerdDiscoveryEmitter
+	syncer  LinkerdDiscoverySyncer
 }
 
-func NewRegistrationEventLoop(emitter RegistrationEmitter, syncer RegistrationSyncer) eventloop.EventLoop {
-	return &registrationEventLoop{
+func NewLinkerdDiscoveryEventLoop(emitter LinkerdDiscoveryEmitter, syncer LinkerdDiscoverySyncer) eventloop.EventLoop {
+	return &linkerdDiscoveryEventLoop{
 		emitter: emitter,
 		syncer:  syncer,
 	}
 }
 
-func (el *registrationEventLoop) Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error) {
+func (el *linkerdDiscoveryEventLoop) Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error) {
 	opts = opts.WithDefaults()
 	opts.Ctx = contextutils.WithLogger(opts.Ctx, "v1.event_loop")
 	logger := contextutils.LoggerFrom(opts.Ctx)
@@ -71,7 +71,7 @@ func (el *registrationEventLoop) Run(namespaces []string, opts clients.WatchOpts
 				// cancel any open watches from previous loop
 				cancel()
 
-				ctx, span := trace.StartSpan(opts.Ctx, "registration.supergloo.solo.io.EventLoopSync")
+				ctx, span := trace.StartSpan(opts.Ctx, "linkerdDiscovery.supergloo.solo.io.EventLoopSync")
 				ctx, canc := context.WithCancel(ctx)
 				cancel = canc
 				err := el.syncer.Sync(ctx, snapshot)

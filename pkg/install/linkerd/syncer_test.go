@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/solo-kit/pkg/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/util"
 	"github.com/solo-io/supergloo/test/inputs"
@@ -45,14 +44,8 @@ var _ = Describe("Syncer", func() {
 					inputs.LinkerdInstall("a", "b", "c", "versiondoesntmatter", true),
 					inputs.LinkerdInstall("b", "b", "c", Version_stable230, false),
 				}
-				installedMesh, _ := meshClient.Write(&v1.Mesh{
-					Metadata: core.Metadata{Namespace: "a", Name: "a"},
-				}, clients.WriteOpts{})
-				ref := installedMesh.Metadata.Ref()
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-				mesh := install.InstallType.(*v1.Install_Mesh)
-				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
 				installSyncer := NewInstallSyncer(kubeInstaller, fake.NewSimpleClientset(), meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
@@ -70,12 +63,6 @@ var _ = Describe("Syncer", func() {
 				i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(i2.Status.State).To(Equal(core.Status_Accepted))
-				Expect(*i2.GetMesh().InstalledMesh).To(Equal(i2.GetMetadata().Ref()))
-
-				// installed mesh should have been removed
-				_, err = meshClient.Read(installedMesh.Metadata.Namespace, installedMesh.Metadata.Name, clients.ReadOpts{})
-				Expect(err).To(HaveOccurred())
-				Expect(errors.IsNotExist(err)).To(BeTrue())
 			})
 		})
 	})

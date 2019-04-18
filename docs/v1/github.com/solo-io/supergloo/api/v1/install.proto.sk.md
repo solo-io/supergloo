@@ -71,7 +71,6 @@ Holds all configuration shared between different mesh types
 ```yaml
 "istioMesh": .supergloo.solo.io.IstioInstall
 "linkerdMesh": .supergloo.solo.io.LinkerdInstall
-"installedMesh": .core.solo.io.ResourceRef
 
 ```
 
@@ -79,7 +78,6 @@ Holds all configuration shared between different mesh types
 | ----- | ---- | ----------- |----------- | 
 | `istioMesh` | [.supergloo.solo.io.IstioInstall](../install.proto.sk#istioinstall) | install istio |  |
 | `linkerdMesh` | [.supergloo.solo.io.LinkerdInstall](../install.proto.sk#linkerdinstall) | install linkerd |  |
-| `installedMesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Mesh crd that was created from this install read-only, set by the server after successful installation. |  |
 
 
 

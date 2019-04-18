@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -14,7 +15,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/config/istio"
 	"github.com/solo-io/supergloo/pkg/config/linkerd"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
 	"github.com/solo-io/supergloo/pkg/registration"
 	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	istiotranslator "github.com/solo-io/supergloo/pkg/translator/istio"
@@ -30,7 +30,7 @@ func NewSuperglooConfigLoopStarter(clientset *clientset.Clientset) registration.
 // Add config syncers here
 func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarter {
 
-	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (config.EventLoop, error) {
+	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
 		var syncers v1.ConfigSyncers
 
 		if enabled.Istio {

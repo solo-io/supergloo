@@ -5,8 +5,6 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/supergloo/pkg/install/common"
@@ -36,15 +34,15 @@ type linkerdInstaller struct {
 	kubeClient    kubernetes.Interface
 }
 
-func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
+func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error {
 	installMesh := install.GetMesh()
 	if installMesh == nil {
-		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
 	linkerd := installMesh.GetLinkerdMesh()
 	if linkerd == nil {
-		return nil, errors.Errorf("%v: invalid install type, only linkerd supported currently", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, only linkerd supported currently", install.Metadata.Ref())
 	}
 
 	logger := contextutils.LoggerFrom(ctx)
@@ -56,52 +54,16 @@ func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.
 	if install.Disabled {
 		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
 		if err := i.kubeInstaller.PurgeResources(ctx, installLabels); err != nil {
-			return nil, errors.Wrapf(err, "uninstalling linkerd")
+			return errors.Wrapf(err, "uninstalling linkerd")
 		}
-		installMesh.InstalledMesh = nil
-		return nil, nil
+		return nil
 	}
 
 	opts := newInstallOpts(linkerd.LinkerdVersion, install.InstallationNamespace, linkerd.EnableMtls, linkerd.EnableAutoInject)
 
 	if err := opts.install(ctx, i.kubeInstaller, installLabels, i.kubeClient); err != nil {
-		return nil, errors.Wrapf(err, "executing linkerd install")
+		return errors.Wrapf(err, "executing linkerd install")
 	}
 
-	return createOrUpdateMesh(install, installMesh, linkerd, meshes)
-}
-
-func createOrUpdateMesh(install *v1.Install, installMesh *v1.MeshInstall, linkerd *v1.LinkerdInstall, meshes v1.MeshList) (*v1.Mesh, error) {
-	var mesh *v1.Mesh
-	if installMesh.InstalledMesh != nil {
-		var err error
-		mesh, err = meshes.Find(installMesh.InstalledMesh.Strings())
-		if err != nil {
-			return nil, errors.Wrapf(err, "installed mesh not found")
-		}
-	}
-
-	if mesh != nil {
-		mesh.MeshType = &v1.Mesh_LinkerdMesh{
-			LinkerdMesh: &v1.LinkerdMesh{
-				InstallationNamespace: install.InstallationNamespace,
-			},
-		}
-		return mesh, nil
-	}
-
-	return &v1.Mesh{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		MeshType: &v1.Mesh_LinkerdMesh{
-			LinkerdMesh: &v1.LinkerdMesh{
-				InstallationNamespace: install.InstallationNamespace,
-			},
-		},
-		MtlsConfig: &v1.MtlsConfig{
-			MtlsEnabled: linkerd.EnableMtls,
-		},
-	}, nil
+	return nil
 }

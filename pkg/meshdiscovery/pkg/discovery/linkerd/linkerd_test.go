@@ -1,4 +1,4 @@
-package istio
+package linkerd
 
 import (
 	"context"
@@ -14,9 +14,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("istio mesh discovery unit tests", func() {
+var _ = Describe("linkerd syncer unit test", func() {
+
 	var (
-		istioNamespace     = "istio-system"
+		linkerdNamespace   = linkerd
 		superglooNamespace = "supergloo-system"
 	)
 
@@ -25,7 +26,7 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 		pod := &kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: namespace,
-				Name:      "istio-pilot",
+				Name:      linkerdController,
 			},
 			Spec: kubev1.PodSpec{
 				Containers: []kubev1.Container{
@@ -42,39 +43,35 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 	Context("discovery data", func() {
 		It("can properly construct the discovery data", func() {
 			container := kubev1.Container{
-				Image: "istio-pilot:1.0.6",
+				Image: "gcr.io/linkerd-io/controller:2.2.1",
 			}
-			pod := constructPod(container, istioNamespace)
+			pod := constructPod(container, linkerdNamespace)
 			mesh, err := constructDiscoveredMesh(context.TODO(), pod, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mesh.Metadata).To(BeEquivalentTo(core.Metadata{
 				Labels:    DiscoverySelector,
 				Namespace: superglooNamespace,
-				Name:      fmt.Sprintf("istio-%s", istioNamespace),
+				Name:      fmt.Sprintf("linkerd-%s", linkerdNamespace),
 			}))
 		})
 		It("overwrites discovery data with install info", func() {
 			container := kubev1.Container{
-				Image: "istio-pilot:1.0.6",
+				Image: "gcr.io/linkerd-io/controller:2.2.1",
 			}
-			pod := constructPod(container, istioNamespace)
-			helloWorldCert := &core.ResourceRef{
-				Namespace: "hello",
-				Name:      "world",
-			}
+			pod := constructPod(container, linkerdNamespace)
 			installMeta := core.Metadata{
 				Namespace: superglooNamespace,
-				Name:      "my-istio",
+				Name:      "my-linkerd",
 			}
 			installs := v1.InstallList{
 				{
 					Metadata:              installMeta,
-					InstallationNamespace: istioNamespace,
+					InstallationNamespace: linkerdNamespace,
 					InstallType: &v1.Install_Mesh{
 						Mesh: &v1.MeshInstall{
-							MeshInstallType: &v1.MeshInstall_IstioMesh{
-								IstioMesh: &v1.IstioInstall{
-									CustomRootCert: helloWorldCert,
+							MeshInstallType: &v1.MeshInstall_LinkerdMesh{
+								LinkerdMesh: &v1.LinkerdInstall{
+									LinkerdVersion: "2.2.1",
 									EnableMtls:     true,
 								},
 							},
@@ -84,15 +81,15 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 			}
 			mesh, err := constructDiscoveredMesh(context.TODO(), pod, installs)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(mesh.MtlsConfig).To(BeEquivalentTo(&v1.MtlsConfig{
-				RootCertificate: helloWorldCert,
-				MtlsEnabled:     true,
-			}))
 			Expect(mesh.Metadata).To(BeEquivalentTo(core.Metadata{
 				Labels:    DiscoverySelector,
 				Namespace: installMeta.Namespace,
 				Name:      installMeta.Name,
 			}))
+			Expect(mesh.MtlsConfig).To(BeEquivalentTo(&v1.MtlsConfig{
+				MtlsEnabled: true,
+			}))
 		})
 	})
+
 })
