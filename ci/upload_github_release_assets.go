@@ -60,7 +60,8 @@ func main() {
 	}
 
 	// Update package manager install formulas
-	status, err := pkgmgmtutils.UpdateFormulas(repoOwner, repoName, buildDir, fOpts)
+	status, err := pkgmgmtutils.UpdateFormulas(repoOwner, repoName, buildDir,
+		`supergloo-cli-(darwin|linux|windows).*\.sha256`, fOpts)
 	if err != nil {
 		logger.Fatalf("Error trying to update package manager formulas. Error was: %s", err.Error())
 	}
