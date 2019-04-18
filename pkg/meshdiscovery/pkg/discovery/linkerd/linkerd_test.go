@@ -72,6 +72,7 @@ var _ = Describe("linkerd syncer unit test", func() {
 							MeshInstallType: &v1.MeshInstall_LinkerdMesh{
 								LinkerdMesh: &v1.LinkerdInstall{
 									LinkerdVersion: "2.2.1",
+									EnableMtls:     true,
 								},
 							},
 						},
@@ -84,6 +85,9 @@ var _ = Describe("linkerd syncer unit test", func() {
 				Labels:    DiscoverySelector,
 				Namespace: installMeta.Namespace,
 				Name:      installMeta.Name,
+			}))
+			Expect(mesh.MtlsConfig).To(BeEquivalentTo(&v1.MtlsConfig{
+				MtlsEnabled: true,
 			}))
 		})
 	})

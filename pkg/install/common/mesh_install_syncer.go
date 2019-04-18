@@ -26,7 +26,7 @@ func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter report
 }
 
 type IsInstallType func(install *v1.Install) bool
-type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error)
+type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) error
 
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
@@ -71,7 +71,7 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 		}
 		installedMesh := *installMesh.InstalledMesh
 		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-		if _, err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
+		if err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 		} else {
 			resourceErrs.Accept(in)
@@ -102,27 +102,26 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 	enabledInstalls v1.InstallList,
 	meshes v1.MeshList,
-	resourceErrs reporter.ResourceErrors) (*v1.Mesh, *v1.Install) {
+	resourceErrs reporter.ResourceErrors) {
 
 	switch {
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		mesh, err := s.ensureMeshInstall(ctx, in, meshes)
+		err := s.ensureMeshInstall(ctx, in, meshes)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
-			return nil, nil
+			return
 		}
 		resourceErrs.Accept(in)
 
-		return mesh, in
+		return
 	case len(enabledInstalls) > 1:
 		for _, in := range enabledInstalls {
 			resourceErrs.AddError(in, errors.Errorf("multiple active %v installations "+
 				"are not currently supported. active installs: %v", s.name, enabledInstalls.NamespacesDotNames()))
 		}
 	}
-	return nil, nil
 }
 
 func addMeshToInstall(in *v1.Install, meshes v1.MeshList) {

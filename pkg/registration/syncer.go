@@ -49,14 +49,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		}
 	}
 
-	var configLoops ConfigLoopStarters
-	for _, loop := range s.configLoops {
-		if loop != nil {
-			configLoops = append(configLoops, loop)
-		}
-	}
-
-	for _, loopFunc := range configLoops {
+	for _, loopFunc := range s.configLoops {
 		if err := RunConfigLoop(ctx, enabledFeatures, loopFunc); err != nil {
 			return err
 		}
@@ -74,6 +67,11 @@ func RunConfigLoop(ctx context.Context, enabledFeatures EnabledConfigLoops, star
 	if err != nil {
 		return err
 	}
+
+	if loop == nil {
+		return nil
+	}
+
 	return RunEventLoop(ctx, loop, watchOpts)
 
 }

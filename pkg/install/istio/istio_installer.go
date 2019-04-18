@@ -24,18 +24,18 @@ func newIstioInstaller(kubeInstaller kubeinstall.Installer) *defaultIstioInstall
 	return &defaultIstioInstaller{kubeInstaller: kubeInstaller}
 }
 
-func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) (*v1.Mesh, error) {
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error {
 	ctx = contextutils.WithLogger(ctx, "istio-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
 	installMesh := install.GetMesh()
 	if installMesh == nil {
-		return nil, errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
 	istio := installMesh.GetIstioMesh()
 	if istio == nil {
-		return nil, errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
 
 	logger.Infof("syncing istio install %v with config %v", install.Metadata.Ref().Key(), istio)
@@ -43,10 +43,10 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	if install.Disabled {
 		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
 		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(install)); err != nil {
-			return nil, errors.Wrapf(err, "uninstalling istio")
+			return errors.Wrapf(err, "uninstalling istio")
 		}
 		installMesh.InstalledMesh = nil
-		return nil, nil
+		return nil
 	}
 
 	var mesh *v1.Mesh
@@ -54,28 +54,28 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		var err error
 		mesh, err = meshes.Find(installMesh.InstalledMesh.Strings())
 		if err != nil {
-			return nil, errors.Wrapf(err, "installed mesh not found")
+			return errors.Wrapf(err, "installed mesh not found")
 		}
 	}
 
 	manifests, err := makeManifestsForInstall(ctx, install, mesh, istio)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	rawResources, err := manifests.ResourceList()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	installNamespace := install.InstallationNamespace
 
 	logger.Infof("installing istio with options: %#v", istio)
 	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
-		return nil, errors.Wrapf(err, "reconciling install resources failed")
+		return errors.Wrapf(err, "reconciling install resources failed")
 	}
 
-	return nil, nil
+	return nil
 }
 
 func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.Mesh, istio *v1.IstioInstall) (helmchart.Manifests, error) {

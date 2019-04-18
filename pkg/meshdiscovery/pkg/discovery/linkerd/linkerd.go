@@ -123,6 +123,9 @@ func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInsta
 		}
 		// This install refers to the current mesh
 		if install.InstallationNamespace == mainPod.Namespace {
+			mesh.MtlsConfig = &v1.MtlsConfig{
+				MtlsEnabled: linkerdMeshInstall.EnableMtls,
+			}
 			mesh.Metadata = install.Metadata
 			// Set label to be aware of discovered nature
 			mesh.Metadata.Labels = DiscoverySelector

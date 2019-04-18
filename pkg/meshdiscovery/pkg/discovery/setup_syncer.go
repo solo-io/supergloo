@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -39,6 +40,7 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 func configurePlugins() MeshDiscoveryPlugins {
 	plugins := MeshDiscoveryPlugins{
 		istio.NewIstioDiscoverySyncer(),
+		linkerd.NewLinkerdDiscoverySyncer(),
 	}
 	return plugins
 }
