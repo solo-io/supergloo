@@ -1,20 +1,20 @@
 package linkerd
 
 import (
+	"bytes"
 	"context"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 const (
-	Version_stable221 = "stable-2.2.1"
+	Version_stable230 = "stable-2.3.0"
 )
 
-var supportedVersions = []string{Version_stable221}
+var supportedVersions = []string{Version_stable230}
 
 type versionedInstallOpts interface {
 	install(ctx context.Context, installer kubeinstall.Installer, withLabels map[string]string) error
@@ -37,12 +37,17 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 		return err
 	}
 
-	values, err := o.values()
+	injector, values, err := o.values()
 	if err != nil {
 		return err
 	}
 
 	manifests, err := helmchart.RenderManifests(ctx, uri, values, "linkerd2", o.installNamespace, "")
+	if err != nil {
+		return err
+	}
+
+	manifests, err = injectManifests(injector, manifests)
 	if err != nil {
 		return err
 	}
@@ -64,4 +69,15 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 	}
 
 	return nil
+}
+
+func injectManifests(injector injector, in helmchart.Manifests) (helmchart.Manifests, error) {
+	input := bytes.NewBufferString(in.CombinedString())
+	out := &bytes.Buffer{}
+	err := processYAML(input, out, injector)
+	if err != nil {
+		return nil, err
+	}
+
+	return helmchart.Manifests{{Name: "linkerd-injected-manifest", Content: out.String()}}, nil
 }

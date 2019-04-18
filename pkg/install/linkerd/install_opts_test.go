@@ -14,7 +14,7 @@ var _ = Describe("values", func() {
 	It("renders helm values correctly", func() {
 		testValues := func(enableMtls, enableAutoInject bool) {
 			o := newInstallOpts(
-				Version_stable221,
+				Version_stable230,
 				ns,
 				enableMtls,
 				enableAutoInject,
@@ -37,7 +37,7 @@ var _ = Describe("install", func() {
 	It("passes the expected resources to the installer", func() {
 		kubeInstaller := &mocks.MockKubeInstaller{}
 		o := newInstallOpts(
-			Version_stable221,
+			Version_stable230,
 			"ns",
 			true,
 			true,

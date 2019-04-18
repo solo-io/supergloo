@@ -1,28 +1,3 @@
-package utils
-
-func DeployTestRunner(namespace string) error {
-	return KubectlApply(namespace, TestRunnerYaml)
-}
-
-func DeployTestRunnerWithIstioInject(namespace, istioNamespace string) error {
-	injected, err := IstioInject(istioNamespace, TestRunnerYaml)
-	if err != nil {
-		return err
-	}
-
-	return KubectlApply(namespace, injected)
-}
-
-func DeployTestRunnerWithLinkerdInject(namespace string) error {
-	injected, err := LinkerdInject(TestRunnerYaml)
-	if err != nil {
-		return err
-	}
-
-	return KubectlApply(namespace, injected)
-}
-
-const TestRunnerYaml = `
 ##################################################################################################
 # Testrunner
 ##################################################################################################
@@ -70,4 +45,3 @@ spec:
             - sleep
             - "36000"
       restartPolicy: Always
-`

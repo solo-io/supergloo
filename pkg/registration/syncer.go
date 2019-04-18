@@ -24,11 +24,16 @@ func NewRegistrationSyncer(configLoop ...ConfigLoopStarter) *RegistrationSyncer 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	var enabledFeatures EnabledConfigLoops
 	for _, mesh := range snap.Meshes.List() {
-		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
-		if ok {
+		switch mesh.MeshType.(type) {
+		case *v1.Mesh_Istio:
 			enabledFeatures.Istio = true
-			contextutils.LoggerFrom(ctx).Infof("detected istio mesh")
-			break
+			contextutils.LoggerFrom(ctx).Infof("detected istio mesh %v", mesh.GetMetadata().Ref())
+		case *v1.Mesh_LinkerdMesh:
+			enabledFeatures.Linkerd = true
+			contextutils.LoggerFrom(ctx).Infof("detected linkerd mesh %v", mesh.GetMetadata().Ref())
+		case *v1.Mesh_AwsAppMesh:
+			enabledFeatures.AppMesh = true
+			contextutils.LoggerFrom(ctx).Infof("detected AWS AppMesh mesh %v", mesh.GetMetadata().Ref())
 		}
 	}
 
@@ -36,15 +41,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		_, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo)
 		if ok {
 			enabledFeatures.Gloo = true
-			contextutils.LoggerFrom(ctx).Infof("detected gloo mesh-ingress")
-			break
-		}
-	}
-
-	for _, mesh := range snap.Meshes.List() {
-		if mesh.GetAwsAppMesh() != nil {
-			enabledFeatures.AppMesh = true
-			contextutils.LoggerFrom(ctx).Infof("detected Aws App Mesh")
+			contextutils.LoggerFrom(ctx).Infof("detected gloo mesh-ingress %v", meshIngress.GetMetadata().Ref())
 			break
 		}
 	}

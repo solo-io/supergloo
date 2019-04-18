@@ -437,15 +437,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:01a94cea91082066582c841ccbef3c5151e1b22aa3ebbf72242b623aea8e0e6b"
+  digest = "1:aec0b39bb78bac437a8cd6b5c70af39bc83dfd1a2022412e6557e48178850b7e"
   name = "github.com/golang/protobuf"
   packages = [
+    "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
     "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
+    "ptypes/struct",
     "ptypes/timestamp",
     "ptypes/wrappers",
   ]
@@ -820,30 +822,44 @@
   version = "v1.1.3"
 
 [[projects]]
-  digest = "1:02d482c7f3532af3fd7e146629a03c3c50a4479a5c79c69dc89c2a1922631e77"
+  digest = "1:00e9a540f30e3133797198edd3d2a435df1d41c32286502488975bb6f36bdcee"
   name = "github.com/linkerd/linkerd2"
   packages = [
+    "controller/api/discovery",
+    "controller/api/public",
     "controller/api/util",
     "controller/gen/apis/serviceprofile",
     "controller/gen/apis/serviceprofile/v1alpha1",
     "controller/gen/client/clientset/versioned",
+    "controller/gen/client/clientset/versioned/fake",
     "controller/gen/client/clientset/versioned/scheme",
     "controller/gen/client/clientset/versioned/typed/serviceprofile/v1alpha1",
+    "controller/gen/client/clientset/versioned/typed/serviceprofile/v1alpha1/fake",
     "controller/gen/client/informers/externalversions",
     "controller/gen/client/informers/externalversions/internalinterfaces",
     "controller/gen/client/informers/externalversions/serviceprofile",
     "controller/gen/client/informers/externalversions/serviceprofile/v1alpha1",
     "controller/gen/client/listers/serviceprofile/v1alpha1",
     "controller/gen/common/healthcheck",
+    "controller/gen/config",
+    "controller/gen/controller/discovery",
+    "controller/gen/controller/tap",
     "controller/gen/public",
+    "controller/k8s",
+    "pkg/addr",
+    "pkg/config",
+    "pkg/healthcheck",
+    "pkg/inject",
     "pkg/k8s",
     "pkg/profiles",
+    "pkg/prometheus",
+    "pkg/tls",
     "pkg/util",
     "pkg/version",
   ]
   pruneopts = "UT"
-  revision = "5e47cb150a33150e5aeddc6672d8a64701a970de"
-  version = "stable-2.2.1"
+  revision = "e6a29728c8e3796c6acd4c9f9a17b138d51f147f"
+  version = "stable-2.3.0"
 
 [[projects]]
   digest = "1:545f51639e5becb37f5bbfb22d6b8cfa5f736fc5c3a6fe699cbc9886f468e0f3"
@@ -1086,9 +1102,11 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:93a746f1060a8acbcf69344862b2ceced80f854170e1caae089b2834c5fbf7f4"
+  digest = "1:4594833620d039a1c1e889d445988edfc2cdcc95b7e5f40fd63a9d17e2f2ed3f"
   name = "github.com/prometheus/client_golang"
   packages = [
+    "api",
+    "api/prometheus/v1",
     "prometheus",
     "prometheus/internal",
     "prometheus/promhttp",
@@ -1199,14 +1217,6 @@
   revision = "c4fab1ac1bec58281ad0667dc3f0907a9476ac47"
 
 [[projects]]
-  digest = "1:274f67cb6fed9588ea2521ecdac05a6d62a8c51c074c1fccc6a49a40ba80e925"
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
-
-[[projects]]
   digest = "1:fd61cf4ae1953d55df708acb6b91492d538f49c305b364a014049914495db426"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -1215,7 +1225,7 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:3688ef2739ac57f17f9244706d0492085006686ccc1fdb112592e759c623b2fd"
+  digest = "1:25b2b21c711c898f0d16808697e86f703621dd096d587703a624cb8c113d582b"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1267,8 +1277,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "e96ddb29dcc61b164f7f982df4fbf5849e111ca5"
-  version = "v0.13.13"
+  revision = "f767e64f7ee60139ff79e2abb547cd149067da04"
+  version = "v0.13.17"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1312,7 +1322,7 @@
   version = "v0.7.10"
 
 [[projects]]
-  digest = "1:f4ef998899eadf6b2ba47f00a3c924705a53dfef0cef3f26205c9646ff894afd"
+  digest = "1:82a17dcd777277d80fe93eddf4a55a849cd10860ea0c88f7ff56b99a6745f750"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1331,6 +1341,7 @@
     "pkg/api/v1/clients/kubesecret",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
+    "pkg/api/v1/eventloop",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
     "pkg/api/v1/resources",
@@ -1359,8 +1370,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "35f469907b0821641f1e6452dd4ad84209627a9c"
-  version = "v0.5.4"
+  revision = "e05a04cceeeba00638d7a0e06aa3ba6c2efb3a0f"
+  version = "v0.6.1"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2281,14 +2292,21 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
+    "github.com/golang/protobuf/ptypes",
     "github.com/google/go-github/github",
+    "github.com/google/uuid",
     "github.com/hashicorp/go-multierror",
     "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
     "github.com/linkerd/linkerd2/controller/gen/client/informers/externalversions",
     "github.com/linkerd/linkerd2/controller/gen/client/listers/serviceprofile/v1alpha1",
+    "github.com/linkerd/linkerd2/controller/gen/config",
+    "github.com/linkerd/linkerd2/pkg/config",
+    "github.com/linkerd/linkerd2/pkg/inject",
     "github.com/linkerd/linkerd2/pkg/k8s",
     "github.com/linkerd/linkerd2/pkg/profiles",
+    "github.com/linkerd/linkerd2/pkg/tls",
+    "github.com/linkerd/linkerd2/pkg/version",
     "github.com/mitchellh/go-homedir",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
@@ -2297,7 +2315,6 @@
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
-    "github.com/satori/go.uuid",
     "github.com/sirupsen/logrus",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
@@ -2382,6 +2399,7 @@
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",

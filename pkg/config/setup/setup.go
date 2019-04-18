@@ -3,11 +3,6 @@ package setup
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/config/appmesh"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
-	"github.com/solo-io/supergloo/pkg/registration"
-	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -16,9 +11,16 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/config/istio"
+	"github.com/solo-io/supergloo/pkg/config/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config"
+	"github.com/solo-io/supergloo/pkg/registration"
+	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	istiotranslator "github.com/solo-io/supergloo/pkg/translator/istio"
-	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
+	istioplugins "github.com/solo-io/supergloo/pkg/translator/istio/plugins"
+	linkerdtranslator "github.com/solo-io/supergloo/pkg/translator/linkerd"
+	linkerdplugins "github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 )
 
 func NewSuperglooConfigLoopStarter(clientset *clientset.Clientset) registration.ConfigLoopStarters {
@@ -37,6 +39,14 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 				return nil, err
 			}
 			syncers = append(syncers, istioSyncer)
+		}
+
+		if enabled.Linkerd {
+			linkerdSyncer, err := createLinkerdConfigSyncer(ctx, cs)
+			if err != nil {
+				return nil, err
+			}
+			syncers = append(syncers, linkerdSyncer)
 		}
 
 		if enabled.AppMesh {
@@ -84,9 +94,9 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		return nil, errors.Wrapf(err, "initializing istio clients")
 	}
 
-	translator := istiotranslator.NewTranslator(plugins.Plugins(cs.Kube))
+	translator := istiotranslator.NewTranslator(istioplugins.Plugins(cs.Kube))
 
-	reconcilers := istio.NewIstioReconcilers(map[string]string{"owner_ref": "istio-config-syncer"},
+	reconcilers := istio.NewIstioReconcilers(map[string]string{"created_by": "istio-config-syncer"},
 		rbacv1alpha1.NewRbacConfigReconciler(istioClients.RbacConfig),
 		rbacv1alpha1.NewServiceRoleReconciler(istioClients.ServiceRole),
 		rbacv1alpha1.NewServiceRoleBindingReconciler(istioClients.ServiceRoleBinding),
@@ -103,4 +113,25 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		cs.Input.SecurityRule.BaseClient())
 
 	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
+}
+
+func createLinkerdConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+	clients, err := clientset.LinkerdFromContext(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "initializing linkerd clients")
+	}
+
+	translator := linkerdtranslator.NewTranslator(linkerdplugins.Plugins(cs.Kube))
+
+	reconcilers := linkerd.NewLinkerdReconcilers(map[string]string{"created_by": "linkerd-config-syncer"},
+		v1.NewServiceProfileReconciler(clients.ServiceProfile),
+	)
+
+	newReporter := reporter.NewReporter("linkerd-config-reporter",
+		cs.Input.Mesh.BaseClient(),
+		cs.Input.Upstream.BaseClient(),
+		cs.Input.RoutingRule.BaseClient(),
+		cs.Input.SecurityRule.BaseClient())
+
+	return linkerd.NewLinkerdConfigSyncer(translator, reconcilers, newReporter), nil
 }

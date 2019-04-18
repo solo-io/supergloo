@@ -3,6 +3,9 @@ package clientset
 import (
 	"context"
 
+	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
+
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 
@@ -230,6 +233,36 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	return newIstioClients(rbacConfig, serviceRole, serviceRoleBinding, meshPolicy, destinationRule, virtualService), nil
 }
 
+func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config) (v1.ServiceProfileClient, error) {
+	linkerdClient, err := versioned.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	cache, err := linkerd.NewLinkerdCache(ctx, linkerdClient)
+	if err != nil {
+		return nil, err
+	}
+	baseServiceProfileClient := linkerd.NewResourceClient(linkerdClient, cache)
+
+	return v1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
+}
+
+func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
+	restConfig, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, err
+	}
+	/*
+		istio clients
+	*/
+	serviceProfile, err := serviceProfileClientFromConfig(ctx, restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return newLinkerdClients(serviceProfile), nil
+}
+
 type Clientset struct {
 	RestConfig *rest.Config
 
@@ -290,4 +323,12 @@ type IstioClients struct {
 
 func newIstioClients(rbacConfig rbacv1alpha1.RbacConfigClient, serviceRole rbacv1alpha1.ServiceRoleClient, serviceRoleBinding rbacv1alpha1.ServiceRoleBindingClient, meshPolicy policyv1alpha1.MeshPolicyClient, destinationRule v1alpha3.DestinationRuleClient, virtualService v1alpha3.VirtualServiceClient) *IstioClients {
 	return &IstioClients{RbacConfig: rbacConfig, ServiceRole: serviceRole, ServiceRoleBinding: serviceRoleBinding, MeshPolicy: meshPolicy, DestinationRule: destinationRule, VirtualService: virtualService}
+}
+
+type LinkerdClients struct {
+	ServiceProfile v1.ServiceProfileClient
+}
+
+func newLinkerdClients(serviceProfile v1.ServiceProfileClient) *LinkerdClients {
+	return &LinkerdClients{ServiceProfile: serviceProfile}
 }

@@ -29,7 +29,7 @@ var requestCount int
 
 func run(port uint64, failEvenRequests bool) error {
 	m := http.NewServeMux()
-	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/retry-this-route", func(w http.ResponseWriter, r *http.Request) {
 		logReq(r)
 		requestCount++
 

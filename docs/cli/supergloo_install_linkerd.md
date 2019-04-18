@@ -21,7 +21,7 @@ supergloo install linkerd [flags]
   -h, --help                            help for linkerd
       --installation-namespace string   which namespace to install Linkerd into? (default "linkerd")
       --mtls                            enable mtls? (default true)
-      --version string                  version of linkerd to install? available: [stable-2.2.1] (default "stable-2.2.1")
+      --version string                  version of linkerd to install? available: [stable-2.2.1] (default "stable-2.3.0")
 ```
 
 ### Options inherited from parent commands

@@ -41,7 +41,7 @@ var _ = Describe("Syncer", func() {
 			It("it reports success, calls installer, writes the created mesh", func() {
 				installList := v1.InstallList{
 					inputs.LinkerdInstall("a", "b", "c", "versiondoesntmatter", true),
-					inputs.LinkerdInstall("b", "b", "c", Version_stable221, false),
+					inputs.LinkerdInstall("b", "b", "c", Version_stable230, false),
 				}
 				installedMesh, _ := meshClient.Write(&v1.Mesh{
 					Metadata: core.Metadata{Namespace: "a", Name: "a"},

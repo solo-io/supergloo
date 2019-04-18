@@ -10,6 +10,7 @@ type EnabledConfigLoops struct {
 	Istio   bool
 	Gloo    bool
 	AppMesh bool
+	Linkerd bool
 }
 
 type ConfigLoopStarters []ConfigLoopStarter

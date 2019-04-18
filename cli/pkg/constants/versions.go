@@ -17,5 +17,5 @@ var SupportedIstioVersions = []string{
 }
 
 var SupportedLinkerdVersions = []string{
-	linkerd.Version_stable221,
+	linkerd.Version_stable230,
 }
