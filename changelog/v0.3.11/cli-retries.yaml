@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add Retry Routing Rule to SuperGloo CLI
+    issueLink: https://github.com/solo-io/supergloo/issues/364

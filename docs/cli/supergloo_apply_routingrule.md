@@ -44,5 +44,6 @@ RULE:
 
 * [supergloo apply](../supergloo_apply)	 - apply a rule to a mesh
 * [supergloo apply routingrule faultinjection](../supergloo_apply_routingrule_faultinjection)	 - fi
+* [supergloo apply routingrule retries](../supergloo_apply_routingrule_retries)	 - rt
 * [supergloo apply routingrule trafficshifting](../supergloo_apply_routingrule_trafficshifting)	 - ts
 

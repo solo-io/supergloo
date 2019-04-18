@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/config/setup"
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
 	"k8s.io/helm/pkg/kube"
 
@@ -47,7 +48,6 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
-		// istio.NewIstioDiscoveryReconciler(clientset.Kube, clientset.Input.Mesh),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
 			reporter.NewReporter("gloo-registration-reporter",
@@ -64,7 +64,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 			clientset.Input.Secret,
 			kube.New(nil),
 		),
-		registration.NewRegistrationSyncer(clientset, errHandler),
+		registration.NewRegistrationSyncer(setup.NewSuperglooConfigLoopStarter(clientset)...),
 	}
 }
 

@@ -7,8 +7,14 @@
     {
       "package": "github.com/solo-io/supergloo/api/custom/kubepod",
       "type": "Pod",
-      "plural_name": "Pods",
+      "plural_name": "pods",
       "short_name": "p"
+    },
+    {
+      "package": "github.com/solo-io/supergloo/api/custom/linkerd",
+      "type": "ServiceProfile",
+      "plural_name": "serviceprofiles",
+      "short_name": "sp"
     }
   ],
   "resource_groups": {
@@ -82,6 +88,20 @@
       {
         "name": "Install",
         "package": "supergloo.solo.io"
+      }
+    ],
+    "istioDiscovery.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authentication.v1alpha1"
       }
     ]
   }

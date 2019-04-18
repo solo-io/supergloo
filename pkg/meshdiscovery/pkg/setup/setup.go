@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/registration"
 )
 
 // customCtx and customErrHandler are expected to be passed by tests
@@ -24,6 +25,10 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 	}
 
 	if err := discovery.RunDiscoveryEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
+		return err
+	}
+
+	if err := registration.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
 		return err
 	}
 

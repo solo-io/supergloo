@@ -288,6 +288,8 @@ func routingRuleType(in *v1.RoutingRule) string {
 		return "TrafficShifting"
 	case *v1.RoutingRuleSpec_FaultInjection:
 		return "FaultInjection"
+	case *v1.RoutingRuleSpec_Retries:
+		return "Retries"
 	}
 	return "Unknown"
 }
@@ -306,6 +308,17 @@ func routingRuleDetails(in *v1.RoutingRule) []string {
 			add(
 				fmt.Sprintf("- %v", dest.Destination.Upstream),
 				fmt.Sprintf("  weight: %v", dest.Weight),
+			)
+		}
+	case *v1.RoutingRuleSpec_Retries:
+		if t.Retries.MaxRetries != nil {
+			add(
+				fmt.Sprintf("max retries: %v", t.Retries.MaxRetries.Attempts),
+			)
+		}
+		if t.Retries.RetryBudget != nil {
+			add(
+				fmt.Sprintf("retry budget ratio: %v", t.Retries.RetryBudget.RetryRatio),
 			)
 		}
 	case *v1.RoutingRuleSpec_FaultInjection:
