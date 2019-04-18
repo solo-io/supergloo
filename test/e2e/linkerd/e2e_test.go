@@ -53,7 +53,7 @@ func testInstallLinkerd(meshName string) {
 		}
 		Expect(i.Status.Reason).To(Equal(""))
 		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+	}, time.Minute*5).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
 		_, err := kube.CoreV1().Services(linkerdNamesapce).Get("linkerd-controller-api", metav1.GetOptions{})

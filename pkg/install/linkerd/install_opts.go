@@ -18,10 +18,6 @@ const (
 
 var supportedVersions = []string{Version_stable230}
 
-type versionedInstallOpts interface {
-	install(ctx context.Context, installer kubeinstall.Installer, withLabels map[string]string) error
-}
-
 type installOpts struct {
 	installVersion   string
 	installNamespace string
@@ -61,10 +57,11 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 
 	resources = resources.Filter(func(resource *unstructured.Unstructured) bool {
 		gvk := resource.GroupVersionKind()
-		// overwrite the deployment group version to apps/v1 for all deployments
-		if gvk.Group == "extensions" && gvk.Version == "v1beta1" && gvk.Kind == "Deployment" {
-			gvk.Group = "apps"
-			gvk.Version = "v1"
+		// overwrite the deployment group version to extensions/v1beta1 for all deployments
+		if gvk.Group == "apps" && gvk.Version == "v1" && gvk.Kind == "Deployment" {
+			gvk.Group = "extensions"
+			gvk.Version = "v1beta1"
+			resource.SetGroupVersionKind(gvk)
 		}
 
 		// filter out the install namespace, it's created by the custom installer
