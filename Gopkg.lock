@@ -1336,7 +1336,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:729a4f867966a9ee0e1c038510bbc31c93c5f43ab50e328ec478b39e5f751a9d"
+  digest = "1:d6cc93344d71912b2a4f137edc8493968f48a68f1dcddf2efb617a70567230e3"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1366,8 +1366,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "d974351e1f9f1773a5bbb37516c36864bbb3345d"
-  version = "v0.7.10"
+  revision = "a27432d89f419897df796a17456410e49a9727c3"
+  version = "v0.7.11"
 
 [[projects]]
   digest = "1:4225781d0737370f46345f2fa8a964e7620ad1cdfda51079115afc1e26130447"
