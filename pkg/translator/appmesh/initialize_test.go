@@ -68,7 +68,7 @@ var _ = Describe("Initialize AppMesh configuration object", func() {
 	})
 
 	It("correctly groups pod info by virtual node name", func() {
-		appMeshPods := make(AwsAppMeshPodInfo, 0)
+		appMeshPods := make(awsAppMeshPodInfo, 0)
 		addPod(appMeshPods, "1", "vn-1")
 		addPod(appMeshPods, "2", "vn-2")
 		addPod(appMeshPods, "3", "vn-3")
@@ -144,7 +144,7 @@ var _ = Describe("Initialize AppMesh configuration object", func() {
 	})
 })
 
-func addPod(info AwsAppMeshPodInfo, podName, vnName string) {
+func addPod(info awsAppMeshPodInfo, podName, vnName string) {
 	pod := &v1.Pod{
 		Pod: kubepod.Pod{
 			ObjectMeta: metav1.ObjectMeta{

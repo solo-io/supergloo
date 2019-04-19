@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/appmesh"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -16,9 +15,9 @@ import (
 	kubev1 "k8s.io/api/core/v1"
 )
 
-func getPodsForMesh(meshName string, pods v1.PodList) (AwsAppMeshPodInfo, v1.PodList, error) {
+func getPodsForMesh(meshName string, pods v1.PodList) (awsAppMeshPodInfo, v1.PodList, error) {
 	var appMeshPodList v1.PodList
-	appMeshPods := make(AwsAppMeshPodInfo, 0)
+	appMeshPods := make(awsAppMeshPodInfo, 0)
 	for _, pod := range pods {
 		kubePod, err := kubernetes.ToKube(pod)
 		if err != nil {
@@ -97,8 +96,8 @@ func namespaceId(meta core.Metadata) string {
 	return fmt.Sprintf("%s.%s", meta.Namespace, meta.Name)
 }
 
-func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInfo, appMeshPodList v1.PodList) (AwsAppMeshUpstreamInfo, gloov1.UpstreamList) {
-	appMeshUpstreamInfo := make(AwsAppMeshUpstreamInfo, 0)
+func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo awsAppMeshPodInfo, appMeshPodList v1.PodList) (awsAppMeshUpstreamInfo, gloov1.UpstreamList) {
+	appMeshUpstreamInfo := make(awsAppMeshUpstreamInfo, 0)
 	for _, us := range upstreams {
 
 		// Get all the appMesh pods for this upstream
@@ -126,14 +125,14 @@ func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInf
 
 }
 
-func groupByVirtualNodeName(podInfo AwsAppMeshPodInfo) map[string]AwsAppMeshPodInfo {
-	byVirtualNodeName := make(map[string]AwsAppMeshPodInfo)
+func groupByVirtualNodeName(podInfo awsAppMeshPodInfo) map[string]awsAppMeshPodInfo {
+	byVirtualNodeName := make(map[string]awsAppMeshPodInfo)
 	for pod, info := range podInfo {
 
 		vnName := info.virtualNodeName
 
 		if _, ok := byVirtualNodeName[vnName]; !ok {
-			byVirtualNodeName[vnName] = make(AwsAppMeshPodInfo, 0)
+			byVirtualNodeName[vnName] = make(awsAppMeshPodInfo, 0)
 		}
 
 		byVirtualNodeName[vnName][pod] = info
@@ -142,8 +141,8 @@ func groupByVirtualNodeName(podInfo AwsAppMeshPodInfo) map[string]AwsAppMeshPodI
 	return byVirtualNodeName
 }
 
-func initializeVirtualNodes(meshName string, podInfoByVnName map[string]AwsAppMeshPodInfo) (VirtualNodeByHost, error) {
-	virtualNodes := make(VirtualNodeByHost)
+func initializeVirtualNodes(meshName string, podInfoByVnName map[string]awsAppMeshPodInfo) (virtualNodeByHost, error) {
+	virtualNodes := make(virtualNodeByHost)
 
 	for virtualNodeName, podInfo := range podInfoByVnName {
 		services := make(map[string]bool)
@@ -194,6 +193,8 @@ func initializeVirtualNodes(meshName string, podInfoByVnName map[string]AwsAppMe
 				"multiple services match its pods: %v", virtualNodeName, fmt.Sprintf(strings.Join(names, ",")))
 		}
 
+		// TODO: virtual nodes can only have one listener, but a) a pod can expose multiple ports and b) APPMESH_APP_PORTS
+		//  can contain multiple ports. What are we supposed to do here? Enforce only a single port?
 		// Note: gloo UDS creates an upstream for every port defined on a service. This is why we collect all the ports
 		// for the upstreams that match the Virtual Node pods and verify that the resulting set contains all the ports
 		// specified in the APPMESH_APP_PORTS envs.
@@ -210,77 +211,4 @@ func initializeVirtualNodes(meshName string, podInfoByVnName map[string]AwsAppMe
 	}
 
 	return virtualNodes, nil
-}
-
-func createVirtualNode(ports []uint32, virtualNodeName, meshName, hostName string) *appmesh.VirtualNodeData {
-	var vn *appmesh.VirtualNodeData
-	listeners := make([]*appmesh.Listener, len(ports))
-	for i, v := range ports {
-		port := int64(v)
-		protocol := "http"
-		listeners[i] = &appmesh.Listener{
-			PortMapping: &appmesh.PortMapping{
-				Protocol: &protocol,
-				Port:     &port,
-			},
-		}
-	}
-	vn = &appmesh.VirtualNodeData{
-		MeshName:        &meshName,
-		VirtualNodeName: &virtualNodeName,
-		Spec: &appmesh.VirtualNodeSpec{
-			// Backends get added back in later
-			Backends:  []*appmesh.Backend{},
-			Listeners: listeners,
-			ServiceDiscovery: &appmesh.ServiceDiscovery{
-				Dns: &appmesh.DnsServiceDiscovery{
-					Hostname: &hostName,
-				},
-			},
-		},
-	}
-	return vn
-}
-
-func podAppmeshConfig(ports []uint32, virtualNodeName, meshName, hostName string) (*appmesh.VirtualNodeData, *appmesh.VirtualServiceData) {
-	var vn *appmesh.VirtualNodeData
-	var vs *appmesh.VirtualServiceData
-	listeners := make([]*appmesh.Listener, len(ports))
-	for i, v := range ports {
-		port := int64(v)
-		protocol := "http"
-		listeners[i] = &appmesh.Listener{
-			PortMapping: &appmesh.PortMapping{
-				Protocol: &protocol,
-				Port:     &port,
-			},
-		}
-	}
-	vn = &appmesh.VirtualNodeData{
-		MeshName:        &meshName,
-		VirtualNodeName: &virtualNodeName,
-		Spec: &appmesh.VirtualNodeSpec{
-			// Backends get added back in later
-			Backends:  []*appmesh.Backend{},
-			Listeners: listeners,
-			ServiceDiscovery: &appmesh.ServiceDiscovery{
-				Dns: &appmesh.DnsServiceDiscovery{
-					Hostname: &hostName,
-				},
-			},
-		},
-	}
-
-	vs = &appmesh.VirtualServiceData{
-		MeshName:           &meshName,
-		VirtualServiceName: &hostName,
-		Spec: &appmesh.VirtualServiceSpec{
-			Provider: &appmesh.VirtualServiceProvider{
-				VirtualNode: &appmesh.VirtualNodeServiceProvider{
-					VirtualNodeName: &virtualNodeName,
-				},
-			},
-		},
-	}
-	return vn, vs
 }
