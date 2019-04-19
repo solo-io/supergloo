@@ -6,6 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/solo-io/go-utils/testutils"
+	sgtestutils "github.com/solo-io/supergloo/test/testutils"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/onsi/gomega"
@@ -78,5 +83,31 @@ func CurlArgs(opts setup.CurlOpts) []string {
 
 func TestRunnerCurl(namespace string, opts setup.CurlOpts) (string, error) {
 	args := CurlArgs(opts)
-	return setup.TestRunner(namespace, args...)
+	return PodExec(map[string]string{"supergloo": "testrunner"}, namespace, args...)
+}
+
+// TestRunner executes a command inside the TestRunner container
+func PodExec(podLabels map[string]string, namespace string, command ...string) (string, error) {
+	name, err := func() (string, error) {
+		pods, err := sgtestutils.MustKubeClient().CoreV1().Pods(namespace).List(v1.ListOptions{
+			LabelSelector: labels.SelectorFromSet(podLabels).String(),
+		})
+		if err != nil {
+			return "", err
+		}
+		if len(pods.Items) < 1 {
+			return "", fmt.Errorf("no pods found with labels %v in ns %v", podLabels, namespace)
+		}
+		return pods.Items[0].Name, nil
+	}()
+	if err != nil {
+		return "", err
+	}
+	args := []string{"exec", "-i", name}
+	if namespace != "" {
+		args = append(args, "-n", namespace)
+	}
+	args = append(args, "--")
+	args = append(args, command...)
+	return testutils.KubectlOut(args...)
 }

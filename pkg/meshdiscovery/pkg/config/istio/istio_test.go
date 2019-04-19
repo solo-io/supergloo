@@ -74,6 +74,7 @@ var _ = Describe("istio discovery config", func() {
 								CustomRootCert: &core.ResourceRef{
 									Name: "one",
 								},
+								EnableAutoInject: true,
 							},
 						},
 					},
@@ -120,6 +121,7 @@ var _ = Describe("istio discovery config", func() {
 				InstallationNamespace:  "world",
 				MeshVersion:            "1.0.9",
 				InjectedNamespaceLabel: injectionLabel,
+				EnableAutoInject:       true,
 			}))
 		})
 

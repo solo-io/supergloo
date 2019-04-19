@@ -3,6 +3,9 @@ package clientset
 import (
 	"context"
 
+	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
+
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 
@@ -135,7 +138,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		restConfig,
 		kubeClient,
 		promClient,
-		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
+		newSuperglooClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -230,6 +233,36 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	return newIstioClients(rbacConfig, serviceRole, serviceRoleBinding, meshPolicy, destinationRule, virtualService), nil
 }
 
+func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config) (v1.ServiceProfileClient, error) {
+	linkerdClient, err := versioned.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	cache, err := linkerd.NewLinkerdCache(ctx, linkerdClient)
+	if err != nil {
+		return nil, err
+	}
+	baseServiceProfileClient := linkerd.NewResourceClient(linkerdClient, cache)
+
+	return v1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
+}
+
+func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
+	restConfig, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, err
+	}
+	/*
+		istio clients
+	*/
+	serviceProfile, err := serviceProfileClientFromConfig(ctx, restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return newLinkerdClients(serviceProfile), nil
+}
+
 type Clientset struct {
 	RestConfig *rest.Config
 
@@ -238,21 +271,21 @@ type Clientset struct {
 	Prometheus promv1.PrometheusConfigClient
 
 	// config for supergloo
-	Input *inputClients
+	Supergloo *SuperglooClients
 
 	// discovery resources from kubernetes
 	Discovery *discoveryClients
 }
 
-func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Input: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *SuperglooClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Supergloo: input, Discovery: discovery}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
 	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache}
 }
 
-type inputClients struct {
+type SuperglooClients struct {
 	Install      v1.InstallClient
 	Mesh         v1.MeshClient
 	MeshGroup    v1.MeshGroupClient
@@ -264,10 +297,10 @@ type inputClients struct {
 	Secret       gloov1.SecretClient
 }
 
-func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
+func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
 	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient,
-	secret gloov1.SecretClient) *inputClients {
-	return &inputClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
+	secret gloov1.SecretClient) *SuperglooClients {
+	return &SuperglooClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
 		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret}
 }
 
@@ -290,4 +323,12 @@ type IstioClients struct {
 
 func newIstioClients(rbacConfig rbacv1alpha1.RbacConfigClient, serviceRole rbacv1alpha1.ServiceRoleClient, serviceRoleBinding rbacv1alpha1.ServiceRoleBindingClient, meshPolicy policyv1alpha1.MeshPolicyClient, destinationRule v1alpha3.DestinationRuleClient, virtualService v1alpha3.VirtualServiceClient) *IstioClients {
 	return &IstioClients{RbacConfig: rbacConfig, ServiceRole: serviceRole, ServiceRoleBinding: serviceRoleBinding, MeshPolicy: meshPolicy, DestinationRule: destinationRule, VirtualService: virtualService}
+}
+
+type LinkerdClients struct {
+	ServiceProfile v1.ServiceProfileClient
+}
+
+func newLinkerdClients(serviceProfile v1.ServiceProfileClient) *LinkerdClients {
+	return &LinkerdClients{ServiceProfile: serviceProfile}
 }

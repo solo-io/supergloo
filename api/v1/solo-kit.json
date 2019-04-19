@@ -103,6 +103,16 @@
         "name": "MeshPolicy",
         "package": "istio.authentication.v1alpha1"
       }
+    ],
+    "linkerdDiscovery.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Install",
+        "package": "supergloo.solo.io"
+      }
     ]
   }
 }

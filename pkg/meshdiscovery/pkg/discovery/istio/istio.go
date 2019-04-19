@@ -3,14 +3,10 @@ package istio
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
 	"go.uber.org/zap"
 )
@@ -21,8 +17,6 @@ const (
 	istioPilot = istio + "-" + pilot
 
 	istioSelector = "istio-mesh-discovery"
-
-	injectionLabel = "istio-injection"
 )
 
 var (
@@ -31,16 +25,13 @@ var (
 	}
 )
 
-type istioConfigSyncer struct {
-	ctx context.Context
-	cs  *clientset.Clientset
+type istioDiscoverySyncer struct{}
+
+func NewIstioDiscoverySyncer() *istioDiscoverySyncer {
+	return &istioDiscoverySyncer{}
 }
 
-func NewIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) *istioConfigSyncer {
-	return &istioConfigSyncer{ctx: ctx, cs: cs}
-}
-
-func (s *istioConfigSyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -67,12 +58,12 @@ func (s *istioConfigSyncer) DiscoverMeshes(ctx context.Context, snap *v1.Discove
 	}
 
 	var newMeshes v1.MeshList
-	for _, pilotPod := range istioPods {
-		if strings.Contains(pilotPod.Name, istioPilot) {
-			if meshExists(pilotPod, existingMeshes) {
+	for _, istioPod := range istioPods {
+		if strings.Contains(istioPod.Name, istioPilot) {
+			if meshExists(istioPod, existingMeshes) {
 				continue
 			}
-			mesh, err := constructDiscoveredMesh(ctx, pilotPod, existingInstalls)
+			mesh, err := constructDiscoveredMesh(ctx, istioPod, existingInstalls)
 			if err != nil {
 				return nil, err
 			}
@@ -100,33 +91,20 @@ func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
 	return false
 }
 
-func getWriteNamespace() string {
-	if writeNamespace := os.Getenv("POD_NAMESPACE"); writeNamespace != "" {
-		return writeNamespace
-	}
-	return "supergloo-system"
-}
-
 func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	istioVersion, err := getVersionFromPod(istioPilotPod)
+	istioVersion, err := utils.GetVersionFromPodWithMatchers(istioPilotPod, []string{istio, pilot})
 	if err != nil {
 		logger.Debugf("unable to find version from pod %v", istioPilotPod)
 		return nil, err
 	}
 
-	mesh := &v1.Mesh{
-		MeshType: &v1.Mesh_Istio{
-			Istio: &v1.IstioMesh{
-				InstallationNamespace: istioPilotPod.Namespace,
-				IstioVersion:          istioVersion,
-			},
-		},
-		Metadata: core.Metadata{
-			Namespace: getWriteNamespace(),
-			Name:      fmt.Sprintf("istio-%s", istioPilotPod.Namespace),
-			Labels:    DiscoverySelector,
+	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istio)
+	mesh.MeshType = &v1.Mesh_Istio{
+		Istio: &v1.IstioMesh{
+			InstallationNamespace: istioPilotPod.Namespace,
+			IstioVersion:          istioVersion,
 		},
 	}
 	// If install crd exists, overwrite discovery data
@@ -156,14 +134,4 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existin
 	}
 
 	return mesh, nil
-}
-
-func getVersionFromPod(pod *v1.Pod) (string, error) {
-	containers := pod.Spec.Containers
-	for _, container := range containers {
-		if strings.Contains(container.Image, istio) && strings.Contains(container.Image, pilot) {
-			return utils.ImageVersion(container.Image)
-		}
-	}
-	return "", errors.Errorf("unable to find pilot container from pod")
 }

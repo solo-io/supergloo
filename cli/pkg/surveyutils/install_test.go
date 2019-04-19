@@ -80,7 +80,7 @@ var _ = Describe("SurveyLinkerdInstall", func() {
 			err := SurveyLinkerdInstall(&in)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(in.InstallationNamespace.Linkerd).To(Equal(namespace))
-			Expect(in.LinkerdInstall.LinkerdVersion).To(Equal(linkerd.Version_stable221))
+			Expect(in.LinkerdInstall.LinkerdVersion).To(Equal(linkerd.Version_stable230))
 			Expect(in.LinkerdInstall.EnableMtls).To(Equal(true))
 			Expect(in.LinkerdInstall.EnableAutoInject).To(Equal(true))
 			Expect(in.Update).To(Equal(true))

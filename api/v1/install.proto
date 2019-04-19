@@ -67,10 +67,6 @@ message MeshInstall {
         // install linkerd
         LinkerdInstall linkerd_mesh = 3;
     }
-
-    // reference to the Mesh crd that was created from this install
-    // read-only, set by the server after successful installation.
-    core.solo.io.ResourceRef installed_mesh = 6;
 }
 
 // Installation options for Istio

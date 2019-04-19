@@ -39,44 +39,6 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 	BeforeEach(func() {
 		clients.UseMemoryClients()
 	})
-	Context("get version from pod", func() {
-		It("errors when no pilot container is found", func() {
-			container := kubev1.Container{
-				Image: "istio-",
-			}
-			pod := constructPod(container, istioNamespace)
-			_, err := getVersionFromPod(pod)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to find pilot container from pod"))
-		})
-		It("errors when no version is found in image name", func() {
-			container := kubev1.Container{
-				Image: "istio-pilot",
-			}
-			pod := constructPod(container, istioNamespace)
-			_, err := getVersionFromPod(pod)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to find image version for image"))
-		})
-		It("fails when image is the incorrect format", func() {
-			container := kubev1.Container{
-				Image: "istio-pilot:10.6",
-			}
-			pod := constructPod(container, istioNamespace)
-			_, err := getVersionFromPod(pod)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to find image version for image"))
-		})
-		It("errors when no version is found in image name", func() {
-			container := kubev1.Container{
-				Image: "istio-pilot:1.0.6",
-			}
-			pod := constructPod(container, istioNamespace)
-			version, err := getVersionFromPod(pod)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(version).To(Equal("1.0.6"))
-		})
-	})
 	Context("discovery data", func() {
 		It("can properly construct the discovery data", func() {
 			container := kubev1.Container{

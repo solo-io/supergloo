@@ -57,14 +57,14 @@ var _ = Describe("Install", func() {
 				Expect(linkerd.LinkerdMesh.EnableAutoInject).To(Equal(autoInject))
 			}
 
-			installAndVerifyLinkerd("a1a", "ns", linkerd.Version_stable221, true, true)
-			installAndVerifyLinkerd("b1a", "ns", linkerd.Version_stable221, false, false)
+			installAndVerifyLinkerd("a1a", "ns", linkerd.Version_stable230, true, true)
+			installAndVerifyLinkerd("b1a", "ns", linkerd.Version_stable230, false, false)
 			installAndVerifyLinkerd("c1a", "ns", "badver", false, false)
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.LinkerdInstall(name, namespace, "any", linkerd.Version_stable221, true)
+			inst := inputs.LinkerdInstall(name, namespace, "any", linkerd.Version_stable230, true)
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -82,7 +82,7 @@ var _ = Describe("Install", func() {
 		It("should error enable on existing enabled install", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.LinkerdInstall(name, namespace, "any", linkerd.Version_stable221, false)
+			inst := inputs.LinkerdInstall(name, namespace, "any", linkerd.Version_stable230, false)
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -96,10 +96,8 @@ var _ = Describe("Install", func() {
 		It("should update existing enabled install if --update set to true", func() {
 			name := "input"
 			namespace := "ns"
-			inst := inputs.LinkerdInstall(name, namespace, "linkerd-system", linkerd.Version_stable221, false)
+			inst := inputs.LinkerdInstall(name, namespace, "linkerd-system", linkerd.Version_stable230, false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			meshInstall := inst.InstallType.(*v1.Install_Mesh)
-			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -123,13 +121,9 @@ var _ = Describe("Install", func() {
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						InstalledMesh: &core.ResourceRef{
-							Name:      "installed",
-							Namespace: "mesh",
-						},
 						MeshInstallType: &v1.MeshInstall_LinkerdMesh{
 							LinkerdMesh: &v1.LinkerdInstall{
-								LinkerdVersion:   linkerd.Version_stable221,
+								LinkerdVersion:   linkerd.Version_stable230,
 								EnableAutoInject: true,
 								EnableMtls:       true,
 							},

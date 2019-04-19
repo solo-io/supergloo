@@ -107,8 +107,6 @@ var _ = Describe("Install", func() {
 			namespace := "ns"
 			inst := inputs.IstioInstall(name, namespace, "istio-system", "1.0.5", false)
 			Expect(inst.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-			meshInstall := inst.InstallType.(*v1.Install_Mesh)
-			meshInstall.Mesh.InstalledMesh = &core.ResourceRef{"installed", "mesh"}
 			ic := clients.MustInstallClient()
 			_, err := ic.Write(inst, skclients.WriteOpts{})
 			Expect(err).NotTo(HaveOccurred())
@@ -132,10 +130,6 @@ var _ = Describe("Install", func() {
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						InstalledMesh: &core.ResourceRef{
-							Name:      "installed",
-							Namespace: "mesh",
-						},
 						MeshInstallType: &v1.MeshInstall_IstioMesh{
 							IstioMesh: &v1.IstioInstall{
 								IstioVersion:      istio.IstioVersion106,

@@ -2,7 +2,10 @@ package linkerd_test
 
 import (
 	"fmt"
+	"strings"
 	"time"
+
+	"github.com/solo-io/solo-kit/test/setup"
 
 	skerrors "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -26,6 +29,9 @@ var _ = Describe("linkerd e2e", func() {
 	It("it installs linkerd", func() {
 		testInstallLinkerd(meshName)
 	})
+	It("retries failed requests", func() {
+		testLinkerdRetries(meshName)
+	})
 	It("it uninstalls linkerd", func() {
 		testUninstallLinkerd(meshName)
 	})
@@ -47,7 +53,7 @@ func testInstallLinkerd(meshName string) {
 		}
 		Expect(i.Status.Reason).To(Equal(""))
 		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+	}, time.Minute*5).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
 		_, err := kube.CoreV1().Services(linkerdNamesapce).Get("linkerd-controller-api", metav1.GetOptions{})
@@ -65,8 +71,9 @@ func testInstallLinkerd(meshName string) {
 		"linkerd-web",
 		"linkerd-prometheus",
 		"linkerd-grafana",
-		"linkerd-ca",
+		"linkerd-identity",
 		"linkerd-proxy-injector",
+		"linkerd-sp-validator",
 	)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -115,4 +122,46 @@ func testUninstallLinkerd(meshName string) {
 		}
 		return skerrors.IsNotExist(err)
 	}, time.Minute*2).Should(BeTrue())
+}
+
+func testLinkerdRetries(meshName string) {
+	// deploy 50% failing test service
+	err := sgutils.DeployTestService(namespaceWithInject)
+	Expect(err).NotTo(HaveOccurred())
+
+	// wait for pod ready
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, namespaceWithInject,
+		"test-service",
+	)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = utils.Supergloo(fmt.Sprintf("apply routingrule retries budget "+
+		"--name my-retry-policy "+
+		"--ratio 0.5 "+
+		"--min-retries 3 "+
+		"--ttl 1m "+
+		"--target-mesh supergloo-system.%v", meshName))
+	Expect(err).NotTo(HaveOccurred())
+
+	// initially, the service will fail every other request
+	// then when the retry policy becomes active,
+	// 3 successive requests should all succeed
+	curlThreeTimes := func() error {
+		for i := 0; i < 3; i++ {
+			resp, err := sgutils.TestRunnerCurl(namespaceWithInject, setup.CurlOpts{
+				Service: "test-service." + namespaceWithInject + ".svc.cluster.local",
+				Port:    8080,
+				Path:    "/retry-this-route",
+			})
+			if err != nil {
+				return err
+			}
+			if !strings.Contains(resp, "200 OK") {
+				return fmt.Errorf("resp was not 200 OK:n\n%v", resp)
+			}
+		}
+		return nil
+	}
+
+	Eventually(curlThreeTimes, time.Minute*3).ShouldNot(HaveOccurred())
 }

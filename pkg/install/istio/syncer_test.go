@@ -22,16 +22,16 @@ type mockIstioInstaller struct {
 	errorOnInstall                    bool
 }
 
-func (i *mockIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, list v1.MeshList) (*v1.Mesh, error) {
+func (i *mockIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, list v1.MeshList) error {
 	if i.errorOnInstall {
-		return nil, errors.Errorf("i was told to error")
+		return errors.Errorf("i was told to error")
 	}
 	if install.Disabled {
 		i.disabledInstalls = append(i.disabledInstalls, install)
-		return nil, nil
+		return nil
 	}
 	i.enabledInstalls = append(i.enabledInstalls, install)
-	return &v1.Mesh{Metadata: install.Metadata}, nil
+	return nil
 }
 
 type failingMeshClient struct {
@@ -125,14 +125,8 @@ var _ = Describe("Syncer", func() {
 					inputs.IstioInstall("a", "b", "c", "versiondoesntmatter", true),
 					inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
 				}
-				installedMesh, _ := meshClient.Write(&v1.Mesh{
-					Metadata: core.Metadata{Namespace: "a", Name: "a"},
-				}, clients.WriteOpts{})
-				ref := installedMesh.Metadata.Ref()
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-				mesh := install.InstallType.(*v1.Install_Mesh)
-				mesh.Mesh.InstalledMesh = &ref
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
 				installSyncer := newTestInstallSyncer(installer, meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
@@ -148,12 +142,6 @@ var _ = Describe("Syncer", func() {
 				i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(i2.Status.State).To(Equal(core.Status_Accepted))
-				Expect(*i2.GetMesh().InstalledMesh).To(Equal(i2.GetMetadata().Ref()))
-
-				// installed mesh should have been removed
-				_, err = meshClient.Read(installedMesh.Metadata.Namespace, installedMesh.Metadata.Name, clients.ReadOpts{})
-				Expect(err).To(HaveOccurred())
-				Expect(errors.IsNotExist(err)).To(BeTrue())
 			})
 		})
 	})
@@ -181,42 +169,12 @@ var _ = Describe("Syncer", func() {
 
 			i1, err := installClient.Read("b", "a", clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(i1.Status.State).To(Equal(core.Status_Accepted))
+			Expect(i1.Status.State).To(Equal(core.Status_Rejected))
 
 			i2, err := installClient.Read("b", "b", clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(i2.Status.State).To(Equal(core.Status_Rejected))
 			Expect(i2.Status.Reason).To(ContainSubstring("install failed"))
-		})
-	})
-	Context("when mesh client fails", func() {
-		BeforeEach(func() {
-			installer = &mockIstioInstaller{}
-			meshClient = &failingMeshClient{errorOnWrite: true}
-			installClient, _ = v1.NewInstallClient(&factory.MemoryResourceClientFactory{
-				Cache: memory.NewInMemoryResourceCache(),
-			})
-			report = reporter.NewReporter("test", installClient.BaseClient())
-		})
-		It("it marks the install as rejected", func() {
-			installList := v1.InstallList{
-				inputs.IstioInstall("a", "b", "c", "versiondoesntmatter", true),
-				inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
-			}
-
-			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-			installeSyncer := newTestInstallSyncer(installer, meshClient, report)
-			err := installeSyncer.Sync(context.TODO(), snap)
-			Expect(err).NotTo(HaveOccurred())
-
-			i1, err := installClient.Read("b", "a", clients.ReadOpts{})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(i1.Status.State).To(Equal(core.Status_Accepted))
-
-			i2, err := installClient.Read("b", "b", clients.ReadOpts{})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(i2.Status.State).To(Equal(core.Status_Rejected))
-			Expect(i2.Status.Reason).To(ContainSubstring("writing installed mesh object {b b} failed after successful install"))
 		})
 	})
 })

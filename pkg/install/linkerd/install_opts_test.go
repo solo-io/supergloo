@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/client-go/kubernetes/fake"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
@@ -14,14 +16,13 @@ var _ = Describe("values", func() {
 	It("renders helm values correctly", func() {
 		testValues := func(enableMtls, enableAutoInject bool) {
 			o := newInstallOpts(
-				Version_stable221,
+				Version_stable230,
 				ns,
 				enableMtls,
 				enableAutoInject,
 			)
-			values, err := o.values()
+			_, values, err := o.values(fake.NewSimpleClientset())
 			Expect(err).NotTo(HaveOccurred())
-			Expect(values).To(ContainSubstring(fmt.Sprintf("EnableTLS: %v", enableMtls)))
 			Expect(values).To(ContainSubstring(fmt.Sprintf("ProxyAutoInjectEnabled: %v", enableAutoInject)))
 		}
 
@@ -37,16 +38,16 @@ var _ = Describe("install", func() {
 	It("passes the expected resources to the installer", func() {
 		kubeInstaller := &mocks.MockKubeInstaller{}
 		o := newInstallOpts(
-			Version_stable221,
+			Version_stable230,
 			"ns",
 			true,
 			true,
 		)
-		err := o.install(context.TODO(), kubeInstaller, nil)
+		err := o.install(context.TODO(), kubeInstaller, nil, fake.NewSimpleClientset())
 		Expect(err).NotTo(HaveOccurred())
 		calledWith := kubeInstaller.ReconcileCalledWith
 		Expect(calledWith.InstallNamespace).To(Equal("ns"))
-		Expect(calledWith.Resources).To(HaveLen(30))
+		Expect(calledWith.Resources).To(HaveLen(37))
 
 	})
 })

@@ -11,6 +11,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/errutils"
 )
@@ -31,16 +32,12 @@ func (s IstioDiscoverySyncers) Sync(ctx context.Context, snapshot *IstioDiscover
 	return multiErr.ErrorOrNil()
 }
 
-type IstioDiscoveryEventLoop interface {
-	Run(namespaces []string, opts clients.WatchOpts) (<-chan error, error)
-}
-
 type istioDiscoveryEventLoop struct {
 	emitter IstioDiscoveryEmitter
 	syncer  IstioDiscoverySyncer
 }
 
-func NewIstioDiscoveryEventLoop(emitter IstioDiscoveryEmitter, syncer IstioDiscoverySyncer) IstioDiscoveryEventLoop {
+func NewIstioDiscoveryEventLoop(emitter IstioDiscoveryEmitter, syncer IstioDiscoverySyncer) eventloop.EventLoop {
 	return &istioDiscoveryEventLoop{
 		emitter: emitter,
 		syncer:  syncer,

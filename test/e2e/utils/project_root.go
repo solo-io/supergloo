@@ -27,7 +27,7 @@ func MustProjectRoot() string {
 }
 
 func MustTestFiles() string {
-	return filepath.Join(MustProjectRoot(), "test", "e2e", "istio", "files")
+	return filepath.Join(MustProjectRoot(), "test", "e2e", "files")
 }
 
 func MustTestFile(filename string) string {

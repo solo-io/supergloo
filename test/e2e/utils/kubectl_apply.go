@@ -27,6 +27,18 @@ func IstioInject(istioNamespace, input string) (string, error) {
 	}
 	return output.String(), nil
 }
+func LinkerdInject(input string) (string, error) {
+	cmd := exec.Command("linkerd", "inject", "-")
+	cmd.Stdin = bytes.NewBuffer([]byte(input))
+	output := &bytes.Buffer{}
+	cmd.Stdout = output
+	cmd.Stderr = output
+	err := cmd.Run()
+	if err != nil {
+		return "", errors.Wrapf(err, "linkerd inject failed: %v", output.String())
+	}
+	return output.String(), nil
+}
 
 func KubectlApply(namespace, yamlStr string) error {
 	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "apply", "-n", namespace, "-f", "-")

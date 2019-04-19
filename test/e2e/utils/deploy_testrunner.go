@@ -4,7 +4,7 @@ func DeployTestRunner(namespace string) error {
 	return KubectlApply(namespace, TestRunnerYaml)
 }
 
-func DeployTestRunnerWithInject(namespace, istioNamespace string) error {
+func DeployTestRunnerWithIstioInject(namespace, istioNamespace string) error {
 	injected, err := IstioInject(istioNamespace, TestRunnerYaml)
 	if err != nil {
 		return err
@@ -13,7 +13,20 @@ func DeployTestRunnerWithInject(namespace, istioNamespace string) error {
 	return KubectlApply(namespace, injected)
 }
 
+func DeployTestRunnerWithLinkerdInject(namespace string) error {
+	injected, err := LinkerdInject(TestRunnerYaml)
+	if err != nil {
+		return err
+	}
+
+	return KubectlApply(namespace, injected)
+}
+
 const TestRunnerYaml = `
+##################################################################################################
+# Testrunner
+##################################################################################################
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -27,24 +40,34 @@ metadata:
     supergloo: testrunner
 spec:
   ports:
-  - port: 8080
-    name: http
+    - port: 8080
+      name: http
   selector:
     supergloo: testrunner
 ---
-apiVersion: v1
-kind: Pod
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  labels:
-    supergloo: testrunner
   name: testrunner
 spec:
-  serviceAccountName: testrunner
-  containers:
-  - image: soloio/testrunner:testing-8671e8b9
-    imagePullPolicy: IfNotPresent
-    command:
-      - sleep
-      - "36000"
-    name: testrunner
-  restartPolicy: Always`
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: testrunner
+        supergloo: testrunner
+    spec:
+      serviceAccountName: testrunner
+      containers:
+        - name: testrunner
+          image: soloio/testrunner:testing-8671e8b9
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          command:
+            - sleep
+            - "36000"
+      restartPolicy: Always
+`
