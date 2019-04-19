@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
 )
 
 var _ = Describe("discovery syncer", func() {

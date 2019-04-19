@@ -7,7 +7,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
 )
 

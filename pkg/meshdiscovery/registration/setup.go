@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/setup"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/setup"
 	"github.com/solo-io/supergloo/pkg/registration"
 )
 

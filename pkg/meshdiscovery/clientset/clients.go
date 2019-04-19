@@ -3,6 +3,7 @@ package clientset
 import (
 	"context"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -39,12 +40,14 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 
 type inputClients struct {
 	Pod         v1.PodClient
+	Namespace   v1.KubeNamespaceClient
 	Install     v1.InstallClient
 	MeshIngress v1.MeshIngressClient
+	Upstream    gloov1.UpstreamClient
 }
 
-func newInputClients(pod v1.PodClient, install v1.InstallClient, meshIngress v1.MeshIngressClient) *inputClients {
-	return &inputClients{Pod: pod, Install: install, MeshIngress: meshIngress}
+func newInputClients(pod v1.PodClient, namespace v1.KubeNamespaceClient, install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
+	return &inputClients{Pod: pod, Namespace: namespace, Install: install, MeshIngress: meshIngress, Upstream: upstream}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -94,15 +97,31 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	/*
+		gloo config clients
+	*/
+
+	upstream, err := gloov1.NewUpstreamClient(clientForCrd(gloov1.UpstreamCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := upstream.Register(); err != nil {
+		return nil, err
+	}
+
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	podBase := customkube.NewPodResourceClient(kubeClient, kubeCoreCache)
 	pods := v1.NewPodClientWithBase(podBase)
 
+	namespaceBase := customkube.NewnamespaceResourceClient(kubeClient, kubeCoreCache)
+	namespace := v1.NewKubeNamespaceClientWithBase(namespaceBase)
+
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods, install, meshIngress),
+		newInputClients(pods, namespace, install, meshIngress, upstream),
 		newDiscoveryClients(mesh),
 	), nil
 }

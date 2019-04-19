@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/config/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/istio"
 	"github.com/solo-io/supergloo/pkg/registration"
 )
 

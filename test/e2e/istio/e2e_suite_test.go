@@ -10,7 +10,7 @@ import (
 
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
-	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
+	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/test/e2e/utils"

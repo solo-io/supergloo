@@ -106,12 +106,20 @@
         "package": "supergloo.solo.io"
       },
       {
-        "name": "MeshPolicy",
-        "package": "istio.authentication.v1alpha1"
-      },
-      {
         "name": "KubeNamespace",
         "package": "github.com/solo-io/supergloo/api/custom/kubenamespace"
+      },
+      {
+        "name": "Pod",
+        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      },
+      {
+        "name": "MeshPolicy",
+        "package": "istio.authentication.v1alpha1"
       }
     ],
     "linkerdDiscovery.supergloo.solo.io": [

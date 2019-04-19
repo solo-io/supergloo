@@ -6,9 +6,9 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/registration"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/registration"
 )
 
 // customCtx and customErrHandler are expected to be passed by tests

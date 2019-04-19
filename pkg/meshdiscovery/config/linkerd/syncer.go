@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/discovery/linkerd"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/utils"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
 )
 
