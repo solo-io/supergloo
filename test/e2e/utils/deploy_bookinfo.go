@@ -22,7 +22,7 @@ func DeployBookInfoWithInject(namespace, istioNamespace string) error {
 	return KubectlApply(namespace, injected)
 }
 
-// loads bookinfo from <root>/test/e2e/istio/files/bookinfo.yaml
+// loads bookinfo from <root>/test/e2e/files/bookinfo.yaml
 var IstioBookInfoYaml = func() string {
 	bookinfoYamlFile := MustTestFile("bookinfo.yaml")
 	b, err := ioutil.ReadFile(bookinfoYamlFile)
@@ -33,10 +33,10 @@ var IstioBookInfoYaml = func() string {
 }()
 
 const (
-	AppmeshBookInfoYaml = BookinfoYaml + appmeshServices
+	AppmeshBookInfoYaml = bookinfoYaml + appmeshServices
 )
 
-const BookinfoYaml = `# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml
+const bookinfoYaml = `# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml
 # Copyright 2017 Istio Authors
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");

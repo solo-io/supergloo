@@ -51,17 +51,17 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
 			reporter.NewReporter("gloo-registration-reporter",
-				clientset.Input.Mesh.BaseClient(),
-				clientset.Input.MeshIngress.BaseClient(),
+				clientset.Supergloo.Mesh.BaseClient(),
+				clientset.Supergloo.MeshIngress.BaseClient(),
 			),
 			clientset,
 		),
 		appmesh.NewAppMeshRegistrationSyncer(
 			reporter.NewReporter("app-mesh-registration-reporter",
-				clientset.Input.Mesh.BaseClient(),
+				clientset.Supergloo.Mesh.BaseClient(),
 			),
 			clientset.Kube,
-			clientset.Input.Secret,
+			clientset.Supergloo.Secret,
 			kube.New(nil),
 		),
 		registration.NewRegistrationSyncer(setup.NewSuperglooConfigLoopStarter(clientset)...),
@@ -70,7 +70,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 
 // start the registration event loop
 func runRegistrationEventLoop(ctx context.Context, errHandler func(err error), clientset *clientset.Clientset, syncers v1.RegistrationSyncer) error {
-	registrationEmitter := v1.NewRegistrationEmitter(clientset.Input.Mesh, clientset.Input.MeshIngress)
+	registrationEmitter := v1.NewRegistrationEmitter(clientset.Supergloo.Mesh, clientset.Supergloo.MeshIngress)
 	registrationEventLoop := v1.NewRegistrationEventLoop(registrationEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

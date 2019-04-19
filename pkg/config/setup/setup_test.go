@@ -43,13 +43,13 @@ var _ = Describe("Setup", func() {
 		mockSyncer := &mockConfigSyncer{}
 
 		configEmitter := v1.NewConfigEmitter(
-			cs.Input.Mesh,
-			cs.Input.MeshIngress,
-			cs.Input.MeshGroup,
-			cs.Input.RoutingRule,
-			cs.Input.SecurityRule,
-			cs.Input.TlsSecret,
-			cs.Input.Upstream,
+			cs.Supergloo.Mesh,
+			cs.Supergloo.MeshIngress,
+			cs.Supergloo.MeshGroup,
+			cs.Supergloo.RoutingRule,
+			cs.Supergloo.SecurityRule,
+			cs.Supergloo.TlsSecret,
+			cs.Supergloo.Upstream,
 			cs.Discovery.Pod,
 		)
 
@@ -68,7 +68,7 @@ var _ = Describe("Setup", func() {
 		mesh := &v1.Mesh{
 			Metadata: core.Metadata{Name: "myinstall", Namespace: namespace},
 		}
-		_, err = cs.Input.Mesh.Write(mesh, clients.WriteOpts{})
+		_, err = cs.Supergloo.Mesh.Write(mesh, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.ConfigSnapshot {

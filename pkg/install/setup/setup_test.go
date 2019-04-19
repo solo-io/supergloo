@@ -55,7 +55,7 @@ var _ = Describe("Setup", func() {
 			Metadata:    core.Metadata{Name: "myinstall", Namespace: namespace},
 			InstallType: &v1.Install_Mesh{},
 		}
-		_, err = cs.Input.Install.Write(install, clients.WriteOpts{})
+		_, err = cs.Supergloo.Install.Write(install, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.InstallSnapshot {

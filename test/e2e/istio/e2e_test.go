@@ -469,7 +469,7 @@ func deployPrometheus(namespace string) error {
 		"--set", "rbac.create=true",
 		"--set", "server.persistentVolume.enabled=false",
 		"--set", "alertmanager.enabled=false",
-		"files/prometheus-8.9.0.tgz")
+		sgutils.MustTestFile("prometheus-8.9.0.tgz"))
 	if err != nil {
 		return err
 	}

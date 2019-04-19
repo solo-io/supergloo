@@ -68,7 +68,7 @@ func AddLinkerdInstallFlags(set *pflag.FlagSet, in *options.Install) {
 
 	set.StringVar(&in.LinkerdInstall.LinkerdVersion,
 		"version",
-		linkerd.Version_stable221,
+		linkerd.Version_stable230,
 		fmt.Sprintf("version of linkerd to install? available: %v", constants.SupportedLinkerdVersions))
 
 	set.BoolVar(&in.LinkerdInstall.EnableMtls,

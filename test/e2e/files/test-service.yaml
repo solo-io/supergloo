@@ -1,0 +1,41 @@
+##################################################################################################
+# Test service
+##################################################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  labels:
+    app: test-service
+spec:
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: test-service
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: test-service-v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-service
+        version: v1
+    spec:
+      serviceAccountName: test-service
+      containers:
+        - name: test-service
+          image: quay.io/solo-io/test-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          args: ['--fail-half']
