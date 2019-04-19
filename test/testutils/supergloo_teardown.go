@@ -118,21 +118,25 @@ func WaitUntilPodsRunning(timeout time.Duration, namespace string, podPrefixes .
 		if err != nil {
 			return false, err
 		}
-		if len(list.Items) == 0 {
-			return false, errors.Errorf("no pods found with prefix %v", prefix)
-		}
+		var podsWithPrefix []kubev1.Pod
 		for _, pod := range list.Items {
 			if strings.HasPrefix(pod.Name, prefix) {
-				var podReady bool
-				for _, cond := range pod.Status.Conditions {
-					if cond.Type == kubev1.ContainersReady && cond.Status == kubev1.ConditionTrue {
-						podReady = true
-						break
-					}
+				podsWithPrefix = append(podsWithPrefix, pod)
+			}
+		}
+		if len(podsWithPrefix) == 0 {
+			return false, errors.Errorf("no pods found with prefix %v", prefix)
+		}
+		for _, pod := range podsWithPrefix {
+			var podReady bool
+			for _, cond := range pod.Status.Conditions {
+				if cond.Type == kubev1.ContainersReady && cond.Status == kubev1.ConditionTrue {
+					podReady = true
+					break
 				}
-				if !podReady {
-					return false, nil
-				}
+			}
+			if !podReady {
+				return false, nil
 			}
 		}
 		return true, nil
