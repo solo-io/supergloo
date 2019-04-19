@@ -15,7 +15,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	selectorutils "github.com/solo-io/supergloo/pkg/translator/utils"
-	"github.com/solo-io/supergloo/pkg/util"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -23,7 +22,6 @@ import (
 const (
 	injectionLabel = "istio-injection"
 	enabled        = "enabled"
-	disabled       = "disabled"
 )
 
 var (
@@ -69,6 +67,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		zap.Int("mesh-policies", len(snap.Meshpolicies)),
 		zap.Int("namespaces", len(snap.Kubenamespaces.List())),
 		zap.Int("pods", len(snap.Pods.List())),
+		zap.Int("upstreams", len(snap.Upstreams.List())),
 	}
 
 	logger.Infow("begin sync", fields...)
@@ -77,10 +76,10 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 
 	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
 	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
-	injectedNamespaces := util.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
+	injectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
 		return labels.SelectorFromSet(injectedSelector).Matches(labels.Set(namespace.Labels))
 	})
-	injectedPodsByNamespace := util.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
+	injectedPodsByNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
 		func(pod *v1.Pod) bool {
 			return true
 		},
@@ -110,20 +109,8 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList,
 	injectedPods v1.PodsByNamespace, upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
-	var namespaces []string
-	for namespace := range injectedPods {
-		namespaces = append(namespaces, namespace)
-	}
-	// Assume all pods in namespace have been injected,
-	// so use pod namespace selector to get upstreams
-	selector := &v1.PodSelector{
-		SelectorType: &v1.PodSelector_NamespaceSelector_{
-			NamespaceSelector: &v1.PodSelector_NamespaceSelector{
-				Namespaces: namespaces,
-			},
-		},
-	}
 
+	selector := utils.InjectionNamespaceSelector(injectedPods)
 
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
@@ -176,7 +163,6 @@ func (fm *meshResources) merge() *v1.Mesh {
 	if result.DiscoveryMetadata == nil {
 		result.DiscoveryMetadata = &v1.DiscoveryMetadata{}
 	}
-
 
 	var meshUpstreams []*core.ResourceRef
 	for _, upstream := range fm.Upstreams {

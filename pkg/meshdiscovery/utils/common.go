@@ -48,3 +48,49 @@ func BasicMeshInfo(mainPod *v1.Pod, discoverySelector map[string]string, meshTyp
 	}
 	return mesh
 }
+
+type NamespaceListFilterFunc = func(namespace *v1.KubeNamespace) bool
+
+func FilterNamespaces(namespaces v1.KubeNamespaceList, filterFunc NamespaceListFilterFunc) v1.KubeNamespaceList {
+	var result v1.KubeNamespaceList
+	for _, namespace := range namespaces {
+		if filterFunc(namespace) {
+			result = append(result, namespace)
+		}
+	}
+	return result
+}
+
+type InjetedPodFilterFunc = func(pod *v1.Pod) bool
+
+// TODO(EItanya): figure out a heuristic for when a singular pod has been injected
+func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
+	filterFunc InjetedPodFilterFunc) v1.PodsByNamespace {
+	result := make(v1.PodsByNamespace)
+	for _, namespace := range namespaces {
+		result[namespace.Name] = v1.PodList{}
+		for _, pod := range pods {
+			if pod.Namespace == namespace.Name && filterFunc(pod) {
+				result[namespace.Name] = append(result[namespace.Name], pod)
+			}
+		}
+
+	}
+	return result
+}
+
+func InjectionNamespaceSelector(injectedPods v1.PodsByNamespace) *v1.PodSelector {
+	var namespaces []string
+	for namespace := range injectedPods {
+		namespaces = append(namespaces, namespace)
+	}
+	// Assume all pods in namespace have been injected,
+	// so use pod namespace selector to get upstreams
+	return &v1.PodSelector{
+		SelectorType: &v1.PodSelector_NamespaceSelector_{
+			NamespaceSelector: &v1.PodSelector_NamespaceSelector{
+				Namespaces: namespaces,
+			},
+		},
+	}
+}

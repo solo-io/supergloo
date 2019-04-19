@@ -4,24 +4,31 @@ import (
 	"context"
 	"fmt"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
+	selectorutils "github.com/solo-io/supergloo/pkg/translator/utils"
 	"go.uber.org/zap"
 )
 
 const (
 	injectionAnnotation = "linkerd.io/inject"
+	enabled             = "enabled"
 )
 
 func NewLinkerdConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
 	emitter := v1.NewLinkerdDiscoveryEmitter(
 		cs.Discovery.Mesh,
 		cs.Input.Install,
+		cs.Input.Namespace,
+		cs.Input.Pod,
+		cs.Input.Upstream,
 	)
 	syncer := newLinkerdConfigDiscoverSyncer(cs)
 	el := v1.NewLinkerdDiscoveryEventLoop(emitter, syncer)
@@ -38,11 +45,14 @@ func newLinkerdConfigDiscoverSyncer(cs *clientset.Clientset) *linkerdConfigDisco
 }
 
 func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.LinkerdDiscoverySnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-config-discovery-sync-%v", snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
 		zap.Int("meshes", len(snap.Meshes.List())),
 		zap.Int("installs", len(snap.Installs.List())),
+		zap.Int("namespaces", len(snap.Kubenamespaces.List())),
+		zap.Int("pods", len(snap.Pods.List())),
+		zap.Int("upstreams", len(snap.Upstreams.List())),
 	}
 
 	logger.Infow("begin sync", fields...)
@@ -51,8 +61,26 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 
 	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc)
 	linkerdInstalls := utils.GetInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
+	injectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
+		for key, val := range namespace.Annotations {
+			if key == injectionAnnotation && val == enabled {
+				return true
+			}
+		}
+		return false
+	})
+	injectedPodsByNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
+		func(pod *v1.Pod) bool {
+			return true
+		},
+	)
 
-	meshResources := organizeMeshes(linkerdMeshes, linkerdInstalls)
+	meshResources := organizeMeshes(
+		linkerdMeshes,
+		linkerdInstalls,
+		injectedPodsByNamespace,
+		snap.Upstreams.List(),
+	)
 
 	var updatedMeshes v1.MeshList
 	for _, fullMesh := range meshResources {
@@ -68,8 +96,12 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func organizeMeshes(meshes v1.MeshList, installs v1.InstallList) meshResourceList {
+func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1.PodsByNamespace,
+	upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
+
+	selector := utils.InjectionNamespaceSelector(injectedPods)
+
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
 		if istioMesh == nil {
@@ -85,6 +117,12 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList) meshResourceLis
 			}
 		}
 
+		// Currently injection is a constant so there's no way to distinguish between
+		// multiple istio deployments in a single cluster
+		if upstreams, err := selectorutils.UpstreamsForSelector(selector, upstreams); err == nil {
+			fullMesh.Upstreams = upstreams
+		}
+
 		result[i] = fullMesh
 	}
 	return result
@@ -92,8 +130,9 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList) meshResourceLis
 
 type meshResourceList []*meshResources
 type meshResources struct {
-	Install *v1.Install
-	Mesh    *v1.Mesh
+	Install   *v1.Install
+	Mesh      *v1.Mesh
+	Upstreams gloov1.UpstreamList
 }
 
 // Main merge method for discovered info
@@ -108,6 +147,14 @@ func (fm *meshResources) merge() *v1.Mesh {
 	if result.DiscoveryMetadata == nil {
 		result.DiscoveryMetadata = &v1.DiscoveryMetadata{}
 	}
+
+	var meshUpstreams []*core.ResourceRef
+	for _, upstream := range fm.Upstreams {
+		ref := upstream.Metadata.Ref()
+		meshUpstreams = append(meshUpstreams, &ref)
+	}
+	result.DiscoveryMetadata.MeshUpstreams = meshUpstreams
+
 	result.DiscoveryMetadata.InjectedNamespaceLabel = injectionAnnotation
 
 	if fm.Install != nil {

@@ -9,12 +9,15 @@ import (
 	"os"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	kuberc "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/utils/log"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/solo-kit/test/setup"
@@ -33,13 +36,16 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1    string
-		namespace2    string
-		name1, name2  = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg           *rest.Config
-		emitter       LinkerdDiscoveryEmitter
-		meshClient    MeshClient
-		installClient InstallClient
+		namespace1          string
+		namespace2          string
+		name1, name2        = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg                 *rest.Config
+		emitter             LinkerdDiscoveryEmitter
+		meshClient          MeshClient
+		installClient       InstallClient
+		kubeNamespaceClient KubeNamespaceClient
+		podClient           PodClient
+		upstreamClient      gloo_solo_io.UpstreamClient
 	)
 
 	BeforeEach(func() {
@@ -70,7 +76,30 @@ var _ = Describe("V1Emitter", func() {
 
 		installClient, err = NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient)
+		// KubeNamespace Constructor
+		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+
+		kubeNamespaceClient, err = NewKubeNamespaceClient(kubeNamespaceClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		// Pod Constructor
+		podClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+
+		podClient, err = NewPodClient(podClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		// Upstream Constructor
+		upstreamClientFactory := &factory.KubeResourceClientFactory{
+			Crd:         gloo_solo_io.UpstreamCrd,
+			Cfg:         cfg,
+			SharedCache: kuberc.NewKubeCache(context.TODO()),
+		}
+
+		upstreamClient, err = gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -208,6 +237,186 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
+
+		/*
+			KubeNamespace
+		*/
+
+		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
+					combined := KubenamespacesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
+		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
+
+		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
+
+		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
+
+		/*
+			Pod
+		*/
+
+		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectpods {
+						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectpods {
+						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
+					combined := PodsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+
+		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+
+		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+
+		/*
+			Upstream
+		*/
+
+		assertSnapshotUpstreams := func(expectUpstreams gloo_solo_io.UpstreamList, unexpectUpstreams gloo_solo_io.UpstreamList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectUpstreams {
+						if _, err := snap.Upstreams.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectUpstreams {
+						if _, err := snap.Upstreams.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := upstreamClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := upstreamClient.List(namespace2, clients.ListOpts{})
+					combined := gloo_solo_io.UpstreamsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		upstream1a, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		upstream1b, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b}, nil)
+		upstream2a, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		upstream2b, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b}, nil)
+
+		err = upstreamClient.Delete(upstream2a.GetMetadata().Namespace, upstream2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = upstreamClient.Delete(upstream2b.GetMetadata().Namespace, upstream2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b}, gloo_solo_io.UpstreamList{upstream2a, upstream2b})
+
+		err = upstreamClient.Delete(upstream1a.GetMetadata().Namespace, upstream1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = upstreamClient.Delete(upstream1b.GetMetadata().Namespace, upstream1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(nil, gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -341,5 +550,185 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
+
+		/*
+			KubeNamespace
+		*/
+
+		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectkubenamespaces {
+						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
+					combined := KubenamespacesByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
+		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
+
+		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
+
+		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
+
+		/*
+			Pod
+		*/
+
+		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectpods {
+						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectpods {
+						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
+					combined := PodsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+
+		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+
+		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+
+		/*
+			Upstream
+		*/
+
+		assertSnapshotUpstreams := func(expectUpstreams gloo_solo_io.UpstreamList, unexpectUpstreams gloo_solo_io.UpstreamList) {
+		drain:
+			for {
+				select {
+				case snap = <-snapshots:
+					for _, expected := range expectUpstreams {
+						if _, err := snap.Upstreams.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+							continue drain
+						}
+					}
+					for _, unexpected := range unexpectUpstreams {
+						if _, err := snap.Upstreams.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+							continue drain
+						}
+					}
+					break drain
+				case err := <-errs:
+					Expect(err).NotTo(HaveOccurred())
+				case <-time.After(time.Second * 10):
+					nsList1, _ := upstreamClient.List(namespace1, clients.ListOpts{})
+					nsList2, _ := upstreamClient.List(namespace2, clients.ListOpts{})
+					combined := gloo_solo_io.UpstreamsByNamespace{
+						namespace1: nsList1,
+						namespace2: nsList2,
+					}
+					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
+				}
+			}
+		}
+		upstream1a, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		upstream1b, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace2, name1), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b}, nil)
+		upstream2a, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		upstream2b, err := upstreamClient.Write(gloo_solo_io.NewUpstream(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b}, nil)
+
+		err = upstreamClient.Delete(upstream2a.GetMetadata().Namespace, upstream2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = upstreamClient.Delete(upstream2b.GetMetadata().Namespace, upstream2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(gloo_solo_io.UpstreamList{upstream1a, upstream1b}, gloo_solo_io.UpstreamList{upstream2a, upstream2b})
+
+		err = upstreamClient.Delete(upstream1a.GetMetadata().Namespace, upstream1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		err = upstreamClient.Delete(upstream1b.GetMetadata().Namespace, upstream1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotUpstreams(nil, gloo_solo_io.UpstreamList{upstream1a, upstream1b, upstream2a, upstream2b})
 	})
 })

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -37,12 +39,36 @@ var _ = Describe("LinkerdDiscoveryEventLoop", func() {
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient)
+		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		kubeNamespaceClient, err := NewKubeNamespaceClient(kubeNamespaceClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		podClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		podClient, err := NewPodClient(podClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		upstreamClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.KubeNamespace().Write(NewKubeNamespace(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockLinkerdDiscoverySyncer{}
 		el := NewLinkerdDiscoveryEventLoop(emitter, sync)

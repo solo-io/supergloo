@@ -130,16 +130,18 @@
       {
         "name": "Install",
         "package": "supergloo.solo.io"
-      }
-    ],
-    "linkerdDiscovery.supergloo.solo.io": [
-      {
-        "name": "Mesh",
-        "package": "supergloo.solo.io"
       },
       {
-        "name": "Install",
-        "package": "supergloo.solo.io"
+        "name": "KubeNamespace",
+        "package": "github.com/solo-io/supergloo/api/custom/kubenamespace"
+      },
+      {
+        "name": "Pod",
+        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
       }
     ]
   }
