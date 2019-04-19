@@ -98,4 +98,4 @@
 
 [[constraint]]
   name = "github.com/linkerd/linkerd2"
-  version = "stable-2.2.1"
+  version = "stable-2.3.0"

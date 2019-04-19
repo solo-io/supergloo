@@ -3,6 +3,8 @@ package linkerd_test
 import (
 	"context"
 
+	"k8s.io/client-go/kubernetes/fake"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/installutils/kubeinstall/mocks"
@@ -40,18 +42,18 @@ var _ = Describe("Syncer", func() {
 			It("it reports success, calls installer, writes the created mesh", func() {
 				installList := v1.InstallList{
 					inputs.LinkerdInstall("a", "b", "c", "versiondoesntmatter", true),
-					inputs.LinkerdInstall("b", "b", "c", Version_stable221, false),
+					inputs.LinkerdInstall("b", "b", "c", Version_stable230, false),
 				}
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
-				installSyncer := NewInstallSyncer(kubeInstaller, meshClient, report)
+				installSyncer := NewInstallSyncer(kubeInstaller, fake.NewSimpleClientset(), meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(kubeInstaller.PurgeCalledWith.InstallLabels).To(Equal(util.LabelsForResource(installList[0])))
 				Expect(kubeInstaller.ReconcileCalledWith.InstallLabels).To(Equal(util.LabelsForResource(installList[1])))
-				Expect(kubeInstaller.ReconcileCalledWith.Resources).To(HaveLen(30))
+				Expect(kubeInstaller.ReconcileCalledWith.Resources).To(HaveLen(37))
 				Expect(kubeInstaller.ReconcileCalledWith.InstallNamespace).To(Equal(installList[1].InstallationNamespace))
 
 				i1, err := installClient.Read("b", "a", clients.ReadOpts{})

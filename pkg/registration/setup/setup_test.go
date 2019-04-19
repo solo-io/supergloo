@@ -54,7 +54,7 @@ var _ = Describe("Setup", func() {
 			Metadata: core.Metadata{Name: "myregistration", Namespace: namespace},
 			MeshType: &v1.Mesh_Istio{},
 		}
-		_, err = cs.Input.Mesh.Write(registration, clients.WriteOpts{})
+		_, err = cs.Supergloo.Mesh.Write(registration, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() *v1.RegistrationSnapshot {

@@ -167,8 +167,8 @@ var _ = Describe("gloo registration syncers", func() {
 			Expect(err).NotTo(HaveOccurred())
 			cs.Kube = kubeClient
 			newReporter := reporter.NewReporter("gloo-registration-reporter",
-				cs.Input.Mesh.BaseClient(),
-				cs.Input.MeshIngress.BaseClient())
+				cs.Supergloo.Mesh.BaseClient(),
+				cs.Supergloo.MeshIngress.BaseClient())
 			syncer = NewGlooRegistrationSyncer(newReporter, cs)
 		})
 
