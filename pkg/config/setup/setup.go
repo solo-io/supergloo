@@ -50,7 +50,7 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 		}
 
 		if enabled.AppMesh {
-			appMeshSyncer, err := createAppmeshConfigSyncer(ctx, cs)
+			appMeshSyncer, err := createAppmeshConfigSyncer(cs)
 			if err != nil {
 				return nil, err
 			}
@@ -60,13 +60,13 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 		ctx = contextutils.WithLogger(ctx, "config-event-loop")
 
 		configEmitter := v1.NewConfigEmitter(
-			cs.Input.Mesh,
-			cs.Input.MeshIngress,
-			cs.Input.MeshGroup,
-			cs.Input.RoutingRule,
-			cs.Input.SecurityRule,
-			cs.Input.TlsSecret,
-			cs.Input.Upstream,
+			cs.Supergloo.Mesh,
+			cs.Supergloo.MeshIngress,
+			cs.Supergloo.MeshGroup,
+			cs.Supergloo.RoutingRule,
+			cs.Supergloo.SecurityRule,
+			cs.Supergloo.TlsSecret,
+			cs.Supergloo.Upstream,
 			cs.Discovery.Pod,
 		)
 		configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
@@ -76,14 +76,10 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 
 }
 
-func createAppmeshConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+func createAppmeshConfigSyncer(cs *clientset.Clientset) (v1.ConfigSyncer, error) {
 	translator := appmeshtranslator.NewAppMeshTranslator()
 
-	newReporter := reporter.NewReporter("appmesh-config-reporter",
-		cs.Input.Mesh.BaseClient(),
-		cs.Input.Upstream.BaseClient(),
-		cs.Input.RoutingRule.BaseClient(),
-		cs.Input.SecurityRule.BaseClient())
+	newReporter := makeReporter("appmesh-config-reporter", cs.Supergloo)
 
 	return appmesh.NewAppMeshConfigSyncer(translator, newReporter)
 }
@@ -103,14 +99,10 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 		policyv1alpha1.NewMeshPolicyReconciler(istioClients.MeshPolicy),
 		v1alpha3.NewDestinationRuleReconciler(istioClients.DestinationRule),
 		v1alpha3.NewVirtualServiceReconciler(istioClients.VirtualService),
-		v1.NewTlsSecretReconciler(cs.Input.TlsSecret),
+		v1.NewTlsSecretReconciler(cs.Supergloo.TlsSecret),
 	)
 
-	newReporter := reporter.NewReporter("istio-config-reporter",
-		cs.Input.Mesh.BaseClient(),
-		cs.Input.Upstream.BaseClient(),
-		cs.Input.RoutingRule.BaseClient(),
-		cs.Input.SecurityRule.BaseClient())
+	newReporter := makeReporter("istio-config-reporter", cs.Supergloo)
 
 	return istio.NewIstioConfigSyncer(translator, reconcilers, newReporter), nil
 }
@@ -127,11 +119,15 @@ func createLinkerdConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1
 		v1.NewServiceProfileReconciler(clients.ServiceProfile),
 	)
 
-	newReporter := reporter.NewReporter("linkerd-config-reporter",
-		cs.Input.Mesh.BaseClient(),
-		cs.Input.Upstream.BaseClient(),
-		cs.Input.RoutingRule.BaseClient(),
-		cs.Input.SecurityRule.BaseClient())
+	newReporter := makeReporter("linkerd-config-reporter", cs.Supergloo)
 
 	return linkerd.NewLinkerdConfigSyncer(translator, reconcilers, newReporter), nil
+}
+
+func makeReporter(name string, cs *clientset.SuperglooClients) reporter.Reporter {
+	return reporter.NewReporter(name,
+		cs.Mesh.BaseClient(),
+		cs.Upstream.BaseClient(),
+		cs.RoutingRule.BaseClient(),
+		cs.SecurityRule.BaseClient())
 }

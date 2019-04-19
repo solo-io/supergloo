@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/solo-io/supergloo/pkg/translator/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -23,10 +25,16 @@ func NewLinkerdConfigSyncer(translator linkerd.Translator, reconcilers Reconcile
 }
 
 func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-translation-sync-%v", snap.Hash()))
+
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	logger.Infof("begin sync %v", snap.Hash())
-	defer logger.Infof("end sync %v", snap.Hash())
+	fields := []interface{}{
+		zap.Int("meshes", len(snap.Meshes.List())),
+		zap.Int("routing_rules", len(snap.Routingrules.List())),
+	}
+
+	logger.Infow("begin sync", fields...)
+	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
 	meshConfigs, resourceErrs, err := s.translator.Translate(ctx, snap)

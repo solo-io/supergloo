@@ -138,7 +138,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		restConfig,
 		kubeClient,
 		promClient,
-		newInputClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
+		newSuperglooClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -271,21 +271,21 @@ type Clientset struct {
 	Prometheus promv1.PrometheusConfigClient
 
 	// config for supergloo
-	Input *inputClients
+	Supergloo *SuperglooClients
 
 	// discovery resources from kubernetes
 	Discovery *discoveryClients
 }
 
-func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Input: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *SuperglooClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Supergloo: input, Discovery: discovery}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
 	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache}
 }
 
-type inputClients struct {
+type SuperglooClients struct {
 	Install      v1.InstallClient
 	Mesh         v1.MeshClient
 	MeshGroup    v1.MeshGroupClient
@@ -297,10 +297,10 @@ type inputClients struct {
 	Secret       gloov1.SecretClient
 }
 
-func newInputClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
+func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
 	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient,
-	secret gloov1.SecretClient) *inputClients {
-	return &inputClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
+	secret gloov1.SecretClient) *SuperglooClients {
+	return &SuperglooClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
 		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret}
 }
 
