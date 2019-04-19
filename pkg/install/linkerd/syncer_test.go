@@ -53,7 +53,7 @@ var _ = Describe("Syncer", func() {
 
 				Expect(kubeInstaller.PurgeCalledWith.InstallLabels).To(Equal(util.LabelsForResource(installList[0])))
 				Expect(kubeInstaller.ReconcileCalledWith.InstallLabels).To(Equal(util.LabelsForResource(installList[1])))
-				Expect(kubeInstaller.ReconcileCalledWith.Resources).To(HaveLen(30))
+				Expect(kubeInstaller.ReconcileCalledWith.Resources).To(HaveLen(37))
 				Expect(kubeInstaller.ReconcileCalledWith.InstallNamespace).To(Equal(installList[1].InstallationNamespace))
 
 				i1, err := installClient.Read("b", "a", clients.ReadOpts{})
