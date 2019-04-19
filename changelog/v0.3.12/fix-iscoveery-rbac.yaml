@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix Mesh Discovery RBAC
+    issueLink: https://github.com/solo-io/supergloo/issues/375
