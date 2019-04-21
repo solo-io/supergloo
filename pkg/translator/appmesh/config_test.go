@@ -137,23 +137,6 @@ package appmesh
 //				Expect(err).To(HaveOccurred())
 //				Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 0 found"))
 //			})
-//
-//			It("Cannot have > 2 matchers", func() {
-//				routingRules := v1.RoutingRuleList{
-//					{
-//						Spec: &v1.RoutingRuleSpec{
-//							RuleType: &v1.RoutingRuleSpec_FaultInjection{},
-//						},
-//						RequestMatchers: []*gloov1.Matcher{
-//							{}, {},
-//						},
-//					},
-//				}
-//				typedConfig := defaultConfig()
-//				err := typedConfig.ProcessRoutingRules(routingRules)
-//				Expect(err).To(HaveOccurred())
-//				Expect(err.Error()).To(ContainSubstring("appmesh requires exactly one matcher, 2 found"))
-//			})
 //			It("must be a prefix matcher", func() {
 //				routingRules := v1.RoutingRuleList{
 //					{

@@ -33,7 +33,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, virtualNodes virt
 		upstream, err := upstreams.Find(dest.Destination.Upstream.Strings())
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "cannot route traffic to upstream %s. It either does not exist or it "+
-				"does not match any pods injected with the appmesh sidecar", dest.Destination.Upstream.Strings())
+				"does not match any pods injected with the appmesh sidecar", dest.Destination.Upstream.Key())
 		}
 
 		host, err := utils.GetHostForUpstream(upstream)
@@ -72,8 +72,9 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, virtualNodes virt
 		for port := range destinationPorts {
 			ports = append(ports, fmt.Sprint(port))
 		}
-		return nil, 0, errors.Errorf("multiple ports found for weighted destinations: %s. We currently support splitting traffic "+
-			"only between multiple destinations on the same port for AWS AppMesh", strings.Join(ports, ", "))
+		return nil, 0, errors.Errorf("multiple ports found for weighted destinations: %s. Supergloo currently "+
+			"supports splitting traffic only between multiple destinations on the same port for AWS AppMesh",
+			strings.Join(ports, ", "))
 	}
 	var port uint32
 	for p := range destinationPorts { // only one port here

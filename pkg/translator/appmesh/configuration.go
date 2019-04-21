@@ -40,6 +40,7 @@ type AwsAppMeshConfiguration interface {
 type awsAppMeshConfiguration struct {
 	// We build these objects once in the constructor. They are meant to help in all the translation operations where we
 	// probably will need to look up pods by upstreams and vice-versa multiple times.
+	podList      v1.PodList
 	upstreamInfo awsAppMeshUpstreamInfo
 	upstreamList gloov1.UpstreamList
 
@@ -73,6 +74,7 @@ func NewAwsAppMeshConfiguration(meshName string, pods v1.PodList, upstreams gloo
 	}
 
 	return &awsAppMeshConfiguration{
+		podList:      appMeshPodList,
 		upstreamInfo: appMeshUpstreamInfo,
 		upstreamList: appMeshUpstreamList,
 
@@ -119,6 +121,9 @@ func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) 
 		c.Routes = append(c.Routes, createRoutes(c.MeshName, destinationHost, *virtualRouter.VirtualRouterName, routes)...)
 
 		// Create Virtual Service
+		// Note: this will overwrite existing Virtual Services with the same name. This is not a problem, since the only
+		// way a VS could be already present, is if it had been created by a prior invocation of AllowAll and does not
+		// have VRs or Routes associated with it, meaning that no other cleanup is necessary
 		virtualService := createVirtualServiceWithVirtualRouterProvider(c.MeshName, destinationHost, *virtualRouter.VirtualRouterName)
 		c.VirtualServices[destinationHost] = virtualService
 

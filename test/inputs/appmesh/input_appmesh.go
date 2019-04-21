@@ -1,4 +1,4 @@
-package inputs
+package appmesh
 
 import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
