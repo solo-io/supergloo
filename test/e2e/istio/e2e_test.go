@@ -114,15 +114,12 @@ func testInstallIstio(meshName string) {
 	}, time.Second*30, time.Second).ShouldNot(HaveOccurred())
 
 	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, istioNamesapce,
-		"grafana",
 		"istio-citadel",
 		"istio-galley",
 		"istio-pilot",
 		"istio-policy",
 		"istio-sidecar-injector",
 		"istio-telemetry",
-		"istio-tracing",
-		"prometheus",
 	)
 	Expect(err).NotTo(HaveOccurred())
 

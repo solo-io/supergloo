@@ -132,12 +132,9 @@ var _ = Describe("Install", func() {
 					Mesh: &v1.MeshInstall{
 						MeshInstallType: &v1.MeshInstall_IstioMesh{
 							IstioMesh: &v1.IstioInstall{
-								IstioVersion:      istio.IstioVersion106,
-								EnableAutoInject:  true,
-								EnableMtls:        true,
-								InstallGrafana:    true,
-								InstallPrometheus: true,
-								InstallJaeger:     true,
+								IstioVersion:     istio.IstioVersion106,
+								EnableAutoInject: true,
+								EnableMtls:       true,
 							},
 						},
 					},
