@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -22,16 +21,14 @@ import (
 
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/test/setup"
-	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
-	v1 "k8s.io/api/core/v1"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/errors"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/solo-kit/test/setup"
 	"github.com/solo-io/supergloo/cli/test/utils"
+	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -359,7 +356,7 @@ func testUninstallIstio(meshName string) {
 }
 
 func testConfigurePrometheus(meshName, promNamespace string) {
-	err := deployPrometheus(promNamespace)
+	err := sgutils.DeployPrometheus(kube, promNamespace)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = utils.Supergloo(fmt.Sprintf("set mesh stats "+
@@ -454,43 +451,4 @@ func getCerts(appLabel, namespace string) (string, string, error) {
 		return "", "", err
 	}
 	return rootCert, certChain, nil
-}
-
-func deployPrometheus(namespace string) error {
-	_, err := kube.CoreV1().Namespaces().Create(&v1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: namespace},
-	})
-	if err != nil {
-		return err
-	}
-
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"--set", "server.persistentVolume.enabled=false",
-		"--set", "alertmanager.enabled=false",
-		sgutils.MustTestFile("prometheus-8.9.0.tgz"))
-	if err != nil {
-		return err
-	}
-
-	err = sgutils.KubectlApply(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	Eventually(func() error {
-		_, err := kube.ExtensionsV1beta1().Deployments(namespace).Get("prometheus-server", metav1.GetOptions{})
-		return err
-	}, time.Minute*2).ShouldNot(HaveOccurred())
-
-	return sgtestutils.WaitUntilPodsRunning(time.Minute, namespace, "prometheus-server")
-}
-
-func helmTemplate(args ...string) (string, error) {
-	out, err := exec.Command("helm", append([]string{"template"}, args...)...).CombinedOutput()
-	if err != nil {
-		return "", errors.Wrapf(err, "helm template failed: %v", string(out))
-	}
-	return string(out), nil
 }

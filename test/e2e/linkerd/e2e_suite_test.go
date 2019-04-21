@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/solo-io/supergloo/test/e2e/utils"
+
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 
@@ -137,6 +139,10 @@ func teardown() {
 	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
+	err := utils.TeardownPrometheus(kube, promNamespace)
+	if err != nil {
+		log.Printf("failed to teardown prometheus: %v", err)
+	}
 	testutils.TeardownWithPrefix(kube, "linkerd")
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
