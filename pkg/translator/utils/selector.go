@@ -116,6 +116,14 @@ func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods v1.PodList) (v1.Pod
 		if !ok {
 			continue
 		}
+
+		// This upstream refers to a service without selectors. These services are used to abstract backends which are
+		// not pods. Skip it because otherwise the nil selector will match any pod in the loop below.
+		// (see https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors)
+		if kubeUs.Kube.Selector == nil {
+			continue
+		}
+
 		selectors = append(selectors, namespacedSelector{namespace: kubeUs.Kube.ServiceNamespace, selector: kubeUs.Kube.Selector})
 	}
 	for _, pod := range allPods {
