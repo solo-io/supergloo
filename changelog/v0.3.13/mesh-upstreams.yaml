@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add mesh upstreams to discovery metadata
+    issueLink: https://github.com/solo-io/supergloo/issues/379
