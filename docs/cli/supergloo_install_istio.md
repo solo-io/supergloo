@@ -18,12 +18,12 @@ supergloo install istio [flags]
 
 ```
       --auto-inject                     enable auto-injection? (default true)
-      --grafana                         add grafana to the install? (default true)
+      --grafana                         add grafana to the install?
   -h, --help                            help for istio
       --installation-namespace string   which namespace to install Istio into? (default "istio-system")
-      --jaeger                          add jaeger to the install? (default true)
+      --jaeger                          add jaeger to the install?
       --mtls                            enable mtls? (default true)
-      --prometheus                      add prometheus to the install? (default true)
+      --prometheus                      add prometheus to the install?
       --version string                  version of istio to install? available: [1.0.3 1.0.5 1.0.6] (default "1.0.6")
 ```
 
