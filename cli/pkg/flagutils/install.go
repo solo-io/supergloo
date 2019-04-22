@@ -45,17 +45,17 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 
 	set.BoolVar(&in.IstioInstall.InstallGrafana,
 		"grafana",
-		true,
+		false,
 		"add grafana to the install?")
 
 	set.BoolVar(&in.IstioInstall.InstallPrometheus,
 		"prometheus",
-		true,
+		false,
 		"add prometheus to the install?")
 
 	set.BoolVar(&in.IstioInstall.InstallJaeger,
 		"jaeger",
-		true,
+		false,
 		"add jaeger to the install?")
 
 }
