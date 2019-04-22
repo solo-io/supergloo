@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Updates translator for AWS App Mesh and adds more translator tests.
