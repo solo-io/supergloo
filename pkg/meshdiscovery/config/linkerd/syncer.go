@@ -20,6 +20,9 @@ import (
 const (
 	injectionAnnotation = "linkerd.io/inject"
 	enabled             = "enabled"
+	disabled            = "disabled"
+
+	proxyContainer = "linkerd-proxy"
 )
 
 func NewLinkerdConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
@@ -69,16 +72,28 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 		}
 		return false
 	})
-	injectedPodsByNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
+	nonInjectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
+
+		for key := range namespace.Annotations {
+			if key == injectionAnnotation {
+				return false
+			}
+		}
+		return true
+	})
+	injectedPodsByAnnotatedNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
+		utils.InjectedPodsByProxyContainerName(proxyContainer),
+	)
+	injectedPodsByAnnotatedPods := utils.GetInjectedPods(nonInjectedNamespaces, snap.Pods.List(),
 		func(pod *v1.Pod) bool {
-			return true
+			return false
 		},
 	)
 
 	meshResources := organizeMeshes(
 		linkerdMeshes,
 		linkerdInstalls,
-		injectedPodsByNamespace,
+		injectedPodsByAnnotatedNamespace,
 		snap.Upstreams.List(),
 	)
 

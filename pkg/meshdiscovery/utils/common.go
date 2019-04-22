@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const SelectorPrefix = "discovered_by"
@@ -61,11 +62,11 @@ func FilterNamespaces(namespaces v1.KubeNamespaceList, filterFunc NamespaceListF
 	return result
 }
 
-type InjetedPodFilterFunc = func(pod *v1.Pod) bool
+type InjectedPodFilterFunc = func(pod *v1.Pod) bool
 
 // TODO(EItanya): figure out a heuristic for when a singular pod has been injected
 func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
-	filterFunc InjetedPodFilterFunc) v1.PodsByNamespace {
+	filterFunc InjectedPodFilterFunc) v1.PodsByNamespace {
 	result := make(v1.PodsByNamespace)
 	for _, namespace := range namespaces {
 		result[namespace.Name] = v1.PodList{}
@@ -77,6 +78,18 @@ func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
 
 	}
 	return result
+}
+
+func InjectedPodsByProxyContainerName(proxyContainerName string) InjectedPodFilterFunc {
+	return func(pod *v1.Pod) bool {
+		for _, container := range pod.Spec.Containers {
+			if container.Name == proxyContainerName &&
+				pod.Status.Phase == corev1.PodRunning {
+				return true
+			}
+		}
+		return false
+	}
 }
 
 func InjectionNamespaceSelector(injectedPods v1.PodsByNamespace) *v1.PodSelector {

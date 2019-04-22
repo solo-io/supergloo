@@ -22,6 +22,8 @@ import (
 const (
 	injectionLabel = "istio-injection"
 	enabled        = "enabled"
+
+	proxyContainer = "istio-proxy"
 )
 
 var (
@@ -80,9 +82,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		return labels.SelectorFromSet(injectedSelector).Matches(labels.Set(namespace.Labels))
 	})
 	injectedPodsByNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
-		func(pod *v1.Pod) bool {
-			return true
-		},
+		utils.InjectedPodsByProxyContainerName(proxyContainer),
 	)
 
 	meshResources := organizeMeshes(
