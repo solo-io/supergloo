@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Stop shadowing error that occurs on installation cache init

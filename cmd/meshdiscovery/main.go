@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"time"
 
@@ -10,17 +11,27 @@ import (
 )
 
 func main() {
+
 	if err := run(); err != nil {
 		log.Fatalf("err in main: %v", err.Error())
 	}
 }
 
 func run() error {
+	opts := setupFlags()
 	errs := make(chan error)
 	start := time.Now()
 	check.CallCheck("meshdiscovery", version.Version, start)
 	go func() {
-		errs <- setup.Main(nil, nil)
+		errs <- setup.Main(nil, nil, opts)
 	}()
 	return <-errs
+}
+
+func setupFlags() *setup.MeshDiscoveryOptions {
+	opts := &setup.MeshDiscoveryOptions{}
+	flag.BoolVar(&opts.DisableConfigLoop, "disable-config", false, "set to true to disable mesh"+
+		"config discovery")
+	flag.Parse()
+	return opts
 }

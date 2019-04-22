@@ -38,7 +38,7 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 		logger.Infof("beginning install cache sync, this may take a while...")
 		started := time.Now()
 		if err := installCache.Init(ctx, cs.RestConfig, kubeinstall.DefaultFilters...); err != nil {
-			logger.Fatalf("failed to initialize installation cache!")
+			logger.Fatalf("failed to initialize installation cache: %v", err)
 		}
 		logger.Infof("finished install cache sync. took %v", time.Now().Sub(started))
 	}()
