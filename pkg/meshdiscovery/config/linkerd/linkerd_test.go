@@ -6,11 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	kubev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("istio discovery config", func() {
@@ -94,92 +91,5 @@ var _ = Describe("istio discovery config", func() {
 			}))
 		})
 
-	})
-
-	Context("filtering annotated pods", func() {
-		var (
-			injectionEnabled = map[string]string{
-				injectionAnnotation: enabled,
-			}
-			injectionDisabled = map[string]string{
-				injectionAnnotation: disabled,
-			}
-		)
-
-		It("Only use annotated pods", func() {
-			pod := &kubev1.Pod{
-				Status: kubev1.PodStatus{
-					Phase: kubev1.PodRunning,
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Annotations: injectionEnabled,
-				},
-				Spec: kubev1.PodSpec{
-					Containers: []kubev1.Container{
-						{
-							Name: proxyContainer,
-						},
-					},
-				},
-			}
-			namespace := &kubev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "one",
-				},
-			}
-			useNamespace := kubernetes.FromKubeNamespace(namespace)
-			usePod := kubernetes.FromKubePod(pod)
-			Expect(injectedPodsWithNamespaceAnnotation(usePod, useNamespace)).To(BeTrue())
-		})
-		It("uses all pods in injected namespaces", func() {
-			pod := &kubev1.Pod{
-				Status: kubev1.PodStatus{
-					Phase: kubev1.PodRunning,
-				},
-				Spec: kubev1.PodSpec{
-					Containers: []kubev1.Container{
-						{
-							Name: proxyContainer,
-						},
-					},
-				},
-			}
-			namespace := &kubev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "one",
-					Annotations: injectionEnabled,
-				},
-			}
-			useNamespace := kubernetes.FromKubeNamespace(namespace)
-			usePod := kubernetes.FromKubePod(pod)
-			Expect(injectedPodsWithNamespaceAnnotation(usePod, useNamespace)).To(BeTrue())
-
-		})
-		It("skips disabled pods in injected namespaces", func() {
-			pod := &kubev1.Pod{
-				Status: kubev1.PodStatus{
-					Phase: kubev1.PodRunning,
-				},
-				ObjectMeta: metav1.ObjectMeta{
-					Annotations: injectionDisabled,
-				},
-				Spec: kubev1.PodSpec{
-					Containers: []kubev1.Container{
-						{
-							Name: proxyContainer,
-						},
-					},
-				},
-			}
-			namespace := &kubev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "one",
-					Annotations: injectionEnabled,
-				},
-			}
-			useNamespace := kubernetes.FromKubeNamespace(namespace)
-			usePod := kubernetes.FromKubePod(pod)
-			Expect(injectedPodsWithNamespaceAnnotation(usePod, useNamespace)).To(BeFalse())
-		})
 	})
 })

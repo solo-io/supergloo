@@ -39,12 +39,6 @@ var _ = Describe("LinkerdDiscoveryEventLoop", func() {
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		kubeNamespaceClient, err := NewKubeNamespaceClient(kubeNamespaceClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -57,14 +51,12 @@ var _ = Describe("LinkerdDiscoveryEventLoop", func() {
 		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient)
+		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, podClient, upstreamClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.KubeNamespace().Write(NewKubeNamespace(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

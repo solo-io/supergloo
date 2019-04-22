@@ -45,34 +45,31 @@ type LinkerdDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Install() InstallClient
-	KubeNamespace() KubeNamespaceClient
 	Pod() PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *LinkerdDiscoverySnapshot, <-chan error, error)
 }
 
-func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, kubeNamespaceClient KubeNamespaceClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient) LinkerdDiscoveryEmitter {
-	return NewLinkerdDiscoveryEmitterWithEmit(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient, make(chan struct{}))
+func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient) LinkerdDiscoveryEmitter {
+	return NewLinkerdDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, make(chan struct{}))
 }
 
-func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, kubeNamespaceClient KubeNamespaceClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
+func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
 	return &linkerdDiscoveryEmitter{
-		mesh:          meshClient,
-		install:       installClient,
-		kubeNamespace: kubeNamespaceClient,
-		pod:           podClient,
-		upstream:      upstreamClient,
-		forceEmit:     emit,
+		mesh:      meshClient,
+		install:   installClient,
+		pod:       podClient,
+		upstream:  upstreamClient,
+		forceEmit: emit,
 	}
 }
 
 type linkerdDiscoveryEmitter struct {
-	forceEmit     <-chan struct{}
-	mesh          MeshClient
-	install       InstallClient
-	kubeNamespace KubeNamespaceClient
-	pod           PodClient
-	upstream      gloo_solo_io.UpstreamClient
+	forceEmit <-chan struct{}
+	mesh      MeshClient
+	install   InstallClient
+	pod       PodClient
+	upstream  gloo_solo_io.UpstreamClient
 }
 
 func (c *linkerdDiscoveryEmitter) Register() error {
@@ -80,9 +77,6 @@ func (c *linkerdDiscoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.install.Register(); err != nil {
-		return err
-	}
-	if err := c.kubeNamespace.Register(); err != nil {
 		return err
 	}
 	if err := c.pod.Register(); err != nil {
@@ -100,10 +94,6 @@ func (c *linkerdDiscoveryEmitter) Mesh() MeshClient {
 
 func (c *linkerdDiscoveryEmitter) Install() InstallClient {
 	return c.install
-}
-
-func (c *linkerdDiscoveryEmitter) KubeNamespace() KubeNamespaceClient {
-	return c.kubeNamespace
 }
 
 func (c *linkerdDiscoveryEmitter) Pod() PodClient {
@@ -142,12 +132,6 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
-	/* Create channel for KubeNamespace */
-	type kubeNamespaceListWithNamespace struct {
-		list      KubeNamespaceList
-		namespace string
-	}
-	kubeNamespaceChan := make(chan kubeNamespaceListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
 		list      PodList
@@ -183,17 +167,6 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
-		}(namespace)
-		/* Setup namespaced watch for KubeNamespace */
-		kubeNamespaceNamespacesChan, kubeNamespaceErrs, err := c.kubeNamespace.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting KubeNamespace watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, kubeNamespaceErrs, namespace+"-kubenamespaces")
 		}(namespace)
 		/* Setup namespaced watch for Pod */
 		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
@@ -235,12 +208,6 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
-					}
-				case kubeNamespaceList := <-kubeNamespaceNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case kubeNamespaceChan <- kubeNamespaceListWithNamespace{list: kubeNamespaceList, namespace: namespace}:
 					}
 				case podList := <-podNamespacesChan:
 					select {
@@ -303,13 +270,6 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 				installList := installNamespacedList.list
 
 				currentSnapshot.Installs[namespace] = installList
-			case kubeNamespaceNamespacedList := <-kubeNamespaceChan:
-				record()
-
-				namespace := kubeNamespaceNamespacedList.namespace
-				kubeNamespaceList := kubeNamespaceNamespacedList.list
-
-				currentSnapshot.Kubenamespaces[namespace] = kubeNamespaceList
 			case podNamespacedList := <-podChan:
 				record()
 

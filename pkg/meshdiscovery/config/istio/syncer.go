@@ -14,21 +14,22 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
-	selectorutils "github.com/solo-io/supergloo/pkg/translator/utils"
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
-	injectionLabel = "istio-injection"
-	enabled        = "enabled"
+	namespaceInjectionLabel = "istio-injection"
+	enabled                 = "true"
+	disabled                = "false"
+
+	podInjectionAnnotation = "sidecar.istio.io/inject"
 
 	proxyContainer = "istio-proxy"
 )
 
 var (
 	injectedSelector = map[string]string{
-		injectionLabel: enabled,
+		namespaceInjectionLabel: enabled,
 	}
 )
 
@@ -41,7 +42,6 @@ func NewIstioConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset)
 	emitter := v1.NewIstioDiscoveryEmitter(
 		cs.Discovery.Mesh,
 		cs.Input.Install,
-		cs.Input.Namespace,
 		cs.Input.Pod,
 		cs.Input.Upstream,
 		istioClient.MeshPolicies,
@@ -67,7 +67,6 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		zap.Int("meshes", len(snap.Meshes.List())),
 		zap.Int("installs", len(snap.Installs.List())),
 		zap.Int("mesh-policies", len(snap.Meshpolicies)),
-		zap.Int("namespaces", len(snap.Kubenamespaces.List())),
 		zap.Int("pods", len(snap.Pods.List())),
 		zap.Int("upstreams", len(snap.Upstreams.List())),
 	}
@@ -78,18 +77,13 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 
 	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
 	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
-	injectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
-		return labels.SelectorFromSet(injectedSelector).Matches(labels.Set(namespace.Labels))
-	})
-	injectedPodsByNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
-		utils.InjectedPodsByProxyContainerName(proxyContainer),
-	)
+	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
 	meshResources := organizeMeshes(
 		istioMeshes,
 		istioInstalls,
 		snap.Meshpolicies,
-		injectedPodsByNamespace,
+		injectedPods,
 		snap.Upstreams.List(),
 	)
 
@@ -109,8 +103,6 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList,
 	injectedPods v1.PodsByNamespace, upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
-
-	selector := utils.InjectionNamespaceSelector(injectedPods)
 
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
@@ -134,9 +126,7 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1
 		}
 		// Currently injection is a constant so there's no way to distinguish between
 		// multiple istio deployments in a single cluster
-		if upstreams, err := selectorutils.UpstreamsForSelector(selector, upstreams); err == nil {
-			fullMesh.Upstreams = upstreams
-		}
+		fullMesh.Upstreams = utils.GetUpstreamsForInjectedPods(injectedPods.List(), upstreams)
 
 		result[i] = fullMesh
 	}
@@ -171,7 +161,7 @@ func (fm *meshResources) merge() *v1.Mesh {
 	}
 	result.DiscoveryMetadata.MeshUpstreams = meshUpstreams
 
-	result.DiscoveryMetadata.InjectedNamespaceLabel = injectionLabel
+	result.DiscoveryMetadata.InjectedNamespaceLabel = namespaceInjectionLabel
 	if fm.MeshPolicy != nil {
 		for _, peers := range fm.MeshPolicy.GetPeers() {
 			mtls := peers.GetMtls()

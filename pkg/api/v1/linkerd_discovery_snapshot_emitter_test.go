@@ -36,16 +36,15 @@ var _ = Describe("V1Emitter", func() {
 		return
 	}
 	var (
-		namespace1          string
-		namespace2          string
-		name1, name2        = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
-		cfg                 *rest.Config
-		emitter             LinkerdDiscoveryEmitter
-		meshClient          MeshClient
-		installClient       InstallClient
-		kubeNamespaceClient KubeNamespaceClient
-		podClient           PodClient
-		upstreamClient      gloo_solo_io.UpstreamClient
+		namespace1     string
+		namespace2     string
+		name1, name2   = "angela" + helpers.RandString(3), "bob" + helpers.RandString(3)
+		cfg            *rest.Config
+		emitter        LinkerdDiscoveryEmitter
+		meshClient     MeshClient
+		installClient  InstallClient
+		podClient      PodClient
+		upstreamClient gloo_solo_io.UpstreamClient
 	)
 
 	BeforeEach(func() {
@@ -76,13 +75,6 @@ var _ = Describe("V1Emitter", func() {
 
 		installClient, err = NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		// KubeNamespace Constructor
-		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-
-		kubeNamespaceClient, err = NewKubeNamespaceClient(kubeNamespaceClientFactory)
-		Expect(err).NotTo(HaveOccurred())
 		// Pod Constructor
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
@@ -99,7 +91,7 @@ var _ = Describe("V1Emitter", func() {
 
 		upstreamClient, err = gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient)
+		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, podClient, upstreamClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -237,66 +229,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
-
-		/*
-			KubeNamespace
-		*/
-
-		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectkubenamespaces {
-						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectkubenamespaces {
-						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
-					combined := KubenamespacesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
-		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
-
-		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
-
-		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
 
 		/*
 			Pod
@@ -550,66 +482,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotInstalls(nil, InstallList{install1a, install1b, install2a, install2b})
-
-		/*
-			KubeNamespace
-		*/
-
-		assertSnapshotkubenamespaces := func(expectkubenamespaces KubeNamespaceList, unexpectkubenamespaces KubeNamespaceList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectkubenamespaces {
-						if _, err := snap.Kubenamespaces.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectkubenamespaces {
-						if _, err := snap.Kubenamespaces.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := kubeNamespaceClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := kubeNamespaceClient.List(namespace2, clients.ListOpts{})
-					combined := KubenamespacesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		kubeNamespace1a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		kubeNamespace1b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, nil)
-		kubeNamespace2a, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		kubeNamespace2b, err := kubeNamespaceClient.Write(NewKubeNamespace(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b}, nil)
-
-		err = kubeNamespaceClient.Delete(kubeNamespace2a.GetMetadata().Namespace, kubeNamespace2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = kubeNamespaceClient.Delete(kubeNamespace2b.GetMetadata().Namespace, kubeNamespace2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(KubeNamespaceList{kubeNamespace1a, kubeNamespace1b}, KubeNamespaceList{kubeNamespace2a, kubeNamespace2b})
-
-		err = kubeNamespaceClient.Delete(kubeNamespace1a.GetMetadata().Namespace, kubeNamespace1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = kubeNamespaceClient.Delete(kubeNamespace1b.GetMetadata().Namespace, kubeNamespace1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotkubenamespaces(nil, KubeNamespaceList{kubeNamespace1a, kubeNamespace1b, kubeNamespace2a, kubeNamespace2b})
 
 		/*
 			Pod

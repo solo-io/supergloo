@@ -13,22 +13,20 @@ import (
 )
 
 type IstioDiscoverySnapshot struct {
-	Meshes         MeshesByNamespace
-	Installs       InstallsByNamespace
-	Kubenamespaces KubenamespacesByNamespace
-	Pods           PodsByNamespace
-	Upstreams      gloo_solo_io.UpstreamsByNamespace
-	Meshpolicies   istio_authentication_v1alpha1.MeshPolicyList
+	Meshes       MeshesByNamespace
+	Installs     InstallsByNamespace
+	Pods         PodsByNamespace
+	Upstreams    gloo_solo_io.UpstreamsByNamespace
+	Meshpolicies istio_authentication_v1alpha1.MeshPolicyList
 }
 
 func (s IstioDiscoverySnapshot) Clone() IstioDiscoverySnapshot {
 	return IstioDiscoverySnapshot{
-		Meshes:         s.Meshes.Clone(),
-		Installs:       s.Installs.Clone(),
-		Kubenamespaces: s.Kubenamespaces.Clone(),
-		Pods:           s.Pods.Clone(),
-		Upstreams:      s.Upstreams.Clone(),
-		Meshpolicies:   s.Meshpolicies.Clone(),
+		Meshes:       s.Meshes.Clone(),
+		Installs:     s.Installs.Clone(),
+		Pods:         s.Pods.Clone(),
+		Upstreams:    s.Upstreams.Clone(),
+		Meshpolicies: s.Meshpolicies.Clone(),
 	}
 }
 
@@ -36,7 +34,6 @@ func (s IstioDiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashMeshes(),
 		s.hashInstalls(),
-		s.hashKubenamespaces(),
 		s.hashPods(),
 		s.hashUpstreams(),
 		s.hashMeshpolicies(),
@@ -49,10 +46,6 @@ func (s IstioDiscoverySnapshot) hashMeshes() uint64 {
 
 func (s IstioDiscoverySnapshot) hashInstalls() uint64 {
 	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
-}
-
-func (s IstioDiscoverySnapshot) hashKubenamespaces() uint64 {
-	return hashutils.HashAll(s.Kubenamespaces.List().AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashPods() uint64 {
@@ -71,7 +64,6 @@ func (s IstioDiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
-	fields = append(fields, zap.Uint64("kubenamespaces", s.hashKubenamespaces()))
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("meshpolicies", s.hashMeshpolicies()))
@@ -80,13 +72,12 @@ func (s IstioDiscoverySnapshot) HashFields() []zap.Field {
 }
 
 type IstioDiscoverySnapshotStringer struct {
-	Version        uint64
-	Meshes         []string
-	Installs       []string
-	Kubenamespaces []string
-	Pods           []string
-	Upstreams      []string
-	Meshpolicies   []string
+	Version      uint64
+	Meshes       []string
+	Installs     []string
+	Pods         []string
+	Upstreams    []string
+	Meshpolicies []string
 }
 
 func (ss IstioDiscoverySnapshotStringer) String() string {
@@ -99,11 +90,6 @@ func (ss IstioDiscoverySnapshotStringer) String() string {
 
 	s += fmt.Sprintf("  Installs %v\n", len(ss.Installs))
 	for _, name := range ss.Installs {
-		s += fmt.Sprintf("    %v\n", name)
-	}
-
-	s += fmt.Sprintf("  Kubenamespaces %v\n", len(ss.Kubenamespaces))
-	for _, name := range ss.Kubenamespaces {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
@@ -127,12 +113,11 @@ func (ss IstioDiscoverySnapshotStringer) String() string {
 
 func (s IstioDiscoverySnapshot) Stringer() IstioDiscoverySnapshotStringer {
 	return IstioDiscoverySnapshotStringer{
-		Version:        s.Hash(),
-		Meshes:         s.Meshes.List().NamespacesDotNames(),
-		Installs:       s.Installs.List().NamespacesDotNames(),
-		Kubenamespaces: s.Kubenamespaces.List().NamespacesDotNames(),
-		Pods:           s.Pods.List().NamespacesDotNames(),
-		Upstreams:      s.Upstreams.List().NamespacesDotNames(),
-		Meshpolicies:   s.Meshpolicies.Names(),
+		Version:      s.Hash(),
+		Meshes:       s.Meshes.List().NamespacesDotNames(),
+		Installs:     s.Installs.List().NamespacesDotNames(),
+		Pods:         s.Pods.List().NamespacesDotNames(),
+		Upstreams:    s.Upstreams.List().NamespacesDotNames(),
+		Meshpolicies: s.Meshpolicies.Names(),
 	}
 }

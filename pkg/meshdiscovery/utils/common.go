@@ -5,9 +5,11 @@ import (
 	"os"
 	"strings"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -50,60 +52,34 @@ func BasicMeshInfo(mainPod *v1.Pod, discoverySelector map[string]string, meshTyp
 	return mesh
 }
 
-type NamespaceListFilterFunc = func(namespace *v1.KubeNamespace) bool
-
-func FilterNamespaces(namespaces v1.KubeNamespaceList, filterFunc NamespaceListFilterFunc) v1.KubeNamespaceList {
-	var result v1.KubeNamespaceList
-	for _, namespace := range namespaces {
-		if filterFunc(namespace) {
-			result = append(result, namespace)
-		}
-	}
-	return result
-}
-
-type InjectedPodFilterFunc = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool
-
-// TODO(EItanya): figure out a heuristic for when a singular pod has been injected
-func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
-	filterFunc InjectedPodFilterFunc) v1.PodsByNamespace {
+func InjectedPodsByNamespace(pods v1.PodList, proxyContainerName string) v1.PodsByNamespace {
 	result := make(v1.PodsByNamespace)
-	for _, namespace := range namespaces {
-		result[namespace.Name] = v1.PodList{}
-		for _, pod := range pods {
-			if pod.Namespace == namespace.Name && filterFunc(pod, namespace) {
-				result.Add(pod)
-			}
+	for _, pod := range pods {
+		if isInjectedPodRunning(pod, proxyContainerName) {
+			result.Add(pod)
 		}
-
 	}
 	return result
 }
 
-func InjectedPodsByProxyContainerName(proxyContainerName string) InjectedPodFilterFunc {
-	return func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
-		for _, container := range pod.Spec.Containers {
-			if container.Name == proxyContainerName &&
-				pod.Status.Phase == corev1.PodRunning {
-				return true
-			}
+func isInjectedPodRunning(pod *v1.Pod, proxyContainerName string) bool {
+	for _, container := range pod.Spec.Containers {
+		if container.Name == proxyContainerName &&
+			pod.Status.Phase == corev1.PodRunning {
+			return true
 		}
-		return false
 	}
+	return false
+
 }
 
-func InjectionNamespaceSelector(injectedPods v1.PodsByNamespace) *v1.PodSelector {
-	var namespaces []string
-	for namespace := range injectedPods {
-		namespaces = append(namespaces, namespace)
+func GetUpstreamsForInjectedPods(pods v1.PodList, upstreams gloov1.UpstreamList) gloov1.UpstreamList {
+	var result gloov1.UpstreamList
+	for _, us := range upstreams {
+		podsForUpstream := utils.PodsForUpstreams(gloov1.UpstreamList{us}, pods)
+		if len(podsForUpstream) > 0 {
+			result = append(result, us)
+		}
 	}
-	// Assume all pods in namespace have been injected,
-	// so use pod namespace selector to get upstreams
-	return &v1.PodSelector{
-		SelectorType: &v1.PodSelector_NamespaceSelector_{
-			NamespaceSelector: &v1.PodSelector_NamespaceSelector{
-				Namespaces: namespaces,
-			},
-		},
-	}
+	return result
 }

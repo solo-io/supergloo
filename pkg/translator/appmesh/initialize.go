@@ -69,10 +69,7 @@ func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo AwsAppMeshPodInf
 	for _, us := range upstreams {
 
 		// Get all the appMesh pods for this upstream
-		pods, err := utils.PodsForUpstreams(gloov1.UpstreamList{us}, appMeshPodList)
-		if err != nil {
-			return nil, nil, err
-		}
+		pods := utils.PodsForUpstreams(gloov1.UpstreamList{us}, appMeshPodList)
 		if len(pods) > 0 {
 			appMeshUpstreamInfo[us] = pods
 		}

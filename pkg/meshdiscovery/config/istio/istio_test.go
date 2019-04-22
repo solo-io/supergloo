@@ -120,7 +120,7 @@ var _ = Describe("istio discovery config", func() {
 				},
 				InstallationNamespace:  "world",
 				MeshVersion:            "1.0.9",
-				InjectedNamespaceLabel: injectionLabel,
+				InjectedNamespaceLabel: namespaceInjectionLabel,
 				EnableAutoInject:       true,
 			}))
 		})

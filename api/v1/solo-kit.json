@@ -106,10 +106,6 @@
         "package": "supergloo.solo.io"
       },
       {
-        "name": "KubeNamespace",
-        "package": "github.com/solo-io/supergloo/api/custom/kubenamespace"
-      },
-      {
         "name": "Pod",
         "package": "github.com/solo-io/supergloo/api/custom/kubepod"
       },
@@ -130,10 +126,6 @@
       {
         "name": "Install",
         "package": "supergloo.solo.io"
-      },
-      {
-        "name": "KubeNamespace",
-        "package": "github.com/solo-io/supergloo/api/custom/kubenamespace"
       },
       {
         "name": "Pod",

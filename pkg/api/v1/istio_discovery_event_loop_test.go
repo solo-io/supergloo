@@ -40,12 +40,6 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		installClient, err := NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		kubeNamespaceClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		kubeNamespaceClient, err := NewKubeNamespaceClient(kubeNamespaceClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -64,14 +58,12 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		meshPolicyClient, err := istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewIstioDiscoveryEmitter(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient, meshPolicyClient)
+		emitter = NewIstioDiscoveryEmitter(meshClient, installClient, podClient, upstreamClient, meshPolicyClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.KubeNamespace().Write(NewKubeNamespace(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

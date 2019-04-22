@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
-	selectorutils "github.com/solo-io/supergloo/pkg/translator/utils"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +28,6 @@ func NewLinkerdConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientse
 	emitter := v1.NewLinkerdDiscoveryEmitter(
 		cs.Discovery.Mesh,
 		cs.Input.Install,
-		cs.Input.Namespace,
 		cs.Input.Pod,
 		cs.Input.Upstream,
 	)
@@ -53,7 +51,6 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	fields := []interface{}{
 		zap.Int("meshes", len(snap.Meshes.List())),
 		zap.Int("installs", len(snap.Installs.List())),
-		zap.Int("namespaces", len(snap.Kubenamespaces.List())),
 		zap.Int("pods", len(snap.Pods.List())),
 		zap.Int("upstreams", len(snap.Upstreams.List())),
 	}
@@ -64,32 +61,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 
 	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc)
 	linkerdInstalls := utils.GetInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
-	injectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
-		for key, val := range namespace.Annotations {
-			if key == injectionAnnotation && val == enabled {
-				return true
-			}
-		}
-		return false
-	})
-	nonInjectedNamespaces := utils.FilterNamespaces(snap.Kubenamespaces.List(), func(namespace *v1.KubeNamespace) bool {
-
-		for key := range namespace.Annotations {
-			if key == injectionAnnotation {
-				return false
-			}
-		}
-		return true
-	})
-	injectedPods := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
-		injectedPodsWithNamespaceAnnotation,
-	)
-
-	injectedPods.Add(
-		utils.GetInjectedPods(nonInjectedNamespaces, snap.Pods.List(),
-			injectedPodsWithPodAnnotation,
-		).List()...,
-	)
+	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
 	meshResources := organizeMeshes(
 		linkerdMeshes,
@@ -112,31 +84,9 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-var injectedPodsWithPodAnnotation = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
-	annotated := false
-	for key, value := range pod.Annotations {
-		if key == injectionAnnotation && value == enabled {
-			annotated = true
-		}
-	}
-	return annotated && utils.InjectedPodsByProxyContainerName(proxyContainer)(pod, namespace)
-}
-
-var injectedPodsWithNamespaceAnnotation = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
-	annotated := true
-	for key, value := range pod.Annotations {
-		if key == injectionAnnotation && value == disabled {
-			annotated = false
-		}
-	}
-	return annotated && utils.InjectedPodsByProxyContainerName(proxyContainer)(pod, namespace)
-}
-
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1.PodsByNamespace,
 	upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
-
-	selector := utils.InjectionNamespaceSelector(injectedPods)
 
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
@@ -155,9 +105,7 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1
 
 		// Currently injection is a constant so there's no way to distinguish between
 		// multiple istio deployments in a single cluster
-		if upstreams, err := selectorutils.UpstreamsForSelector(selector, upstreams); err == nil {
-			fullMesh.Upstreams = upstreams
-		}
+		fullMesh.Upstreams = utils.GetUpstreamsForInjectedPods(injectedPods.List(), upstreams)
 
 		result[i] = fullMesh
 	}

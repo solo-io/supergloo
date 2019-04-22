@@ -46,37 +46,34 @@ type IstioDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Install() InstallClient
-	KubeNamespace() KubeNamespaceClient
 	Pod() PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error)
 }
 
-func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, kubeNamespaceClient KubeNamespaceClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
-	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, kubeNamespaceClient, podClient, upstreamClient, meshPolicyClient, make(chan struct{}))
+func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
+	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, kubeNamespaceClient KubeNamespaceClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
 	return &istioDiscoveryEmitter{
-		mesh:          meshClient,
-		install:       installClient,
-		kubeNamespace: kubeNamespaceClient,
-		pod:           podClient,
-		upstream:      upstreamClient,
-		meshPolicy:    meshPolicyClient,
-		forceEmit:     emit,
+		mesh:       meshClient,
+		install:    installClient,
+		pod:        podClient,
+		upstream:   upstreamClient,
+		meshPolicy: meshPolicyClient,
+		forceEmit:  emit,
 	}
 }
 
 type istioDiscoveryEmitter struct {
-	forceEmit     <-chan struct{}
-	mesh          MeshClient
-	install       InstallClient
-	kubeNamespace KubeNamespaceClient
-	pod           PodClient
-	upstream      gloo_solo_io.UpstreamClient
-	meshPolicy    istio_authentication_v1alpha1.MeshPolicyClient
+	forceEmit  <-chan struct{}
+	mesh       MeshClient
+	install    InstallClient
+	pod        PodClient
+	upstream   gloo_solo_io.UpstreamClient
+	meshPolicy istio_authentication_v1alpha1.MeshPolicyClient
 }
 
 func (c *istioDiscoveryEmitter) Register() error {
@@ -84,9 +81,6 @@ func (c *istioDiscoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.install.Register(); err != nil {
-		return err
-	}
-	if err := c.kubeNamespace.Register(); err != nil {
 		return err
 	}
 	if err := c.pod.Register(); err != nil {
@@ -107,10 +101,6 @@ func (c *istioDiscoveryEmitter) Mesh() MeshClient {
 
 func (c *istioDiscoveryEmitter) Install() InstallClient {
 	return c.install
-}
-
-func (c *istioDiscoveryEmitter) KubeNamespace() KubeNamespaceClient {
-	return c.kubeNamespace
 }
 
 func (c *istioDiscoveryEmitter) Pod() PodClient {
@@ -153,12 +143,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
-	/* Create channel for KubeNamespace */
-	type kubeNamespaceListWithNamespace struct {
-		list      KubeNamespaceList
-		namespace string
-	}
-	kubeNamespaceChan := make(chan kubeNamespaceListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
 		list      PodList
@@ -195,17 +179,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
-		}(namespace)
-		/* Setup namespaced watch for KubeNamespace */
-		kubeNamespaceNamespacesChan, kubeNamespaceErrs, err := c.kubeNamespace.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting KubeNamespace watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, kubeNamespaceErrs, namespace+"-kubenamespaces")
 		}(namespace)
 		/* Setup namespaced watch for Pod */
 		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
@@ -247,12 +220,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
-					}
-				case kubeNamespaceList := <-kubeNamespaceNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case kubeNamespaceChan <- kubeNamespaceListWithNamespace{list: kubeNamespaceList, namespace: namespace}:
 					}
 				case podList := <-podNamespacesChan:
 					select {
@@ -326,13 +293,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 				installList := installNamespacedList.list
 
 				currentSnapshot.Installs[namespace] = installList
-			case kubeNamespaceNamespacedList := <-kubeNamespaceChan:
-				record()
-
-				namespace := kubeNamespaceNamespacedList.namespace
-				kubeNamespaceList := kubeNamespaceNamespacedList.list
-
-				currentSnapshot.Kubenamespaces[namespace] = kubeNamespaceList
 			case podNamespacedList := <-podChan:
 				record()
 
