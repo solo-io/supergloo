@@ -13,6 +13,7 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 )
 
+// This scenario contains a routing rule that splits traffic matching one destination upstream across three upstreams.
 type routingRuleScenario1 struct {
 	meshName     string
 	allResources appmeshInputs.TestResourceSet
@@ -43,40 +44,40 @@ func (s *routingRuleScenario1) VerifyExpectations(configuration appmesh.AwsAppMe
 
 func routingRuleScenario1Expectations(configuration appmesh.AwsAppMeshConfiguration) {
 	config, ok := configuration.(*appmesh.AwsAppMeshConfigurationImpl)
-	ExpectWithOffset(1, ok).To(BeTrue())
+	ExpectWithOffset(2, ok).To(BeTrue())
 
 	// Verify virtual nodes
-	ExpectWithOffset(1, config.VirtualNodes).To(HaveLen(6))
+	ExpectWithOffset(2, config.VirtualNodes).To(HaveLen(6))
 	for hostname, expectedVn := range routingRule1VirtualNodes() {
 
 		vn, ok := config.VirtualNodes[hostname]
-		ExpectWithOffset(1, ok).To(BeTrue())
-		ExpectWithOffset(1, vn.MeshName).To(BeEquivalentTo(expectedVn.MeshName))
-		ExpectWithOffset(1, vn.VirtualNodeName).To(BeEquivalentTo(expectedVn.VirtualNodeName))
-		ExpectWithOffset(1, vn.Spec.Listeners).To(ConsistOf(expectedVn.Spec.Listeners))
-		ExpectWithOffset(1, vn.Spec.ServiceDiscovery).To(BeEquivalentTo(expectedVn.Spec.ServiceDiscovery))
-		ExpectWithOffset(1, vn.Spec.Backends).To(ConsistOf(expectedVn.Spec.Backends))
+		ExpectWithOffset(2, ok).To(BeTrue())
+		ExpectWithOffset(2, vn.MeshName).To(BeEquivalentTo(expectedVn.MeshName))
+		ExpectWithOffset(2, vn.VirtualNodeName).To(BeEquivalentTo(expectedVn.VirtualNodeName))
+		ExpectWithOffset(2, vn.Spec.Listeners).To(ConsistOf(expectedVn.Spec.Listeners))
+		ExpectWithOffset(2, vn.Spec.ServiceDiscovery).To(BeEquivalentTo(expectedVn.Spec.ServiceDiscovery))
+		ExpectWithOffset(2, vn.Spec.Backends).To(ConsistOf(expectedVn.Spec.Backends))
 	}
 
 	// Verify virtual services
-	ExpectWithOffset(1, config.VirtualServices).To(HaveLen(1))
+	ExpectWithOffset(2, config.VirtualServices).To(HaveLen(1))
 	for hostname, expectedVs := range routingRule1VirtualServices() {
 		vs, ok := config.VirtualServices[hostname]
-		ExpectWithOffset(1, ok).To(BeTrue())
-		ExpectWithOffset(1, vs.VirtualServiceName).To(BeEquivalentTo(expectedVs.VirtualServiceName))
-		ExpectWithOffset(1, vs.MeshName).To(BeEquivalentTo(expectedVs.MeshName))
-		ExpectWithOffset(1, vs.Spec.Provider.VirtualNode).To(BeEquivalentTo(expectedVs.Spec.Provider.VirtualNode))
-		ExpectWithOffset(1, vs.Spec.Provider.VirtualRouter).To(BeEquivalentTo(expectedVs.Spec.Provider.VirtualRouter))
+		ExpectWithOffset(2, ok).To(BeTrue())
+		ExpectWithOffset(2, vs.VirtualServiceName).To(BeEquivalentTo(expectedVs.VirtualServiceName))
+		ExpectWithOffset(2, vs.MeshName).To(BeEquivalentTo(expectedVs.MeshName))
+		ExpectWithOffset(2, vs.Spec.Provider.VirtualNode).To(BeEquivalentTo(expectedVs.Spec.Provider.VirtualNode))
+		ExpectWithOffset(2, vs.Spec.Provider.VirtualRouter).To(BeEquivalentTo(expectedVs.Spec.Provider.VirtualRouter))
 	}
 
 	// Verify virtual routers
-	ExpectWithOffset(1, config.VirtualRouters).To(HaveLen(1))
-	ExpectWithOffset(1, config.VirtualRouters).To(ConsistOf(routingRule1VirtualRouters()))
+	ExpectWithOffset(2, config.VirtualRouters).To(HaveLen(1))
+	ExpectWithOffset(2, config.VirtualRouters).To(ConsistOf(routingRule1VirtualRouters()))
 
 	// Verify routes
 	routes := config.Routes
 	expectedRoutes := routingRule1Routes()
-	ExpectWithOffset(1, routes).To(BeEquivalentTo(expectedRoutes))
+	ExpectWithOffset(2, routes).To(BeEquivalentTo(expectedRoutes))
 }
 
 func routingRule1VirtualNodes() map[string]*appmeshApi.VirtualNodeData {

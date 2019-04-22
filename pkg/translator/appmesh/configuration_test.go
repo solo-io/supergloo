@@ -62,6 +62,21 @@ var _ = Describe("Configuration", func() {
 			})
 		})
 
+		When("when a single traffic shifting rule is applied and subsequently all traffic is allowed", func() {
+			BeforeEach(func() {
+				scenario = scenarios.RoutingRule3()
+			})
+
+			It("produces the correct configuration object", func() {
+				err = config.ProcessRoutingRules(scenario.GetRoutingRules())
+				Expect(err).NotTo(HaveOccurred())
+				err = config.AllowAll()
+				Expect(err).NotTo(HaveOccurred())
+
+				scenario.VerifyExpectations(config)
+			})
+		})
+
 		When("two traffic shifting rules that differ only on the matched path prefix are applied", func() {
 			BeforeEach(func() {
 				scenario = scenarios.RoutingRule2()
