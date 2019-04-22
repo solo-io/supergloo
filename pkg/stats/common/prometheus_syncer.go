@@ -127,7 +127,7 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 		}
 
 		// remove all scrape configs and start fresh
-		removed := promCfg.RemoveScrapeConfigs(superGlooScrapePrefix)
+		removed := promCfg.RemoveScrapeConfigs(fmt.Sprintf("%v-%v", superGlooScrapePrefix, s.syncerName))
 
 		// add all scrape configs
 		added := promCfg.AddScrapeConfigs(scrapeConfigsToAdd)

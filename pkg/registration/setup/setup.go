@@ -4,21 +4,19 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/config/setup"
-	"github.com/solo-io/supergloo/pkg/registration/appmesh"
-	"k8s.io/helm/pkg/kube"
-
-	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-
-	"github.com/solo-io/supergloo/pkg/registration/gloo"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/config/setup"
 	"github.com/solo-io/supergloo/pkg/registration"
+	"github.com/solo-io/supergloo/pkg/registration/appmesh"
+	"github.com/solo-io/supergloo/pkg/registration/gloo"
 	"github.com/solo-io/supergloo/pkg/registration/istio"
 	istiostats "github.com/solo-io/supergloo/pkg/stats/istio"
+	linkerdstats "github.com/solo-io/supergloo/pkg/stats/linkerd"
+	"k8s.io/helm/pkg/kube"
 )
 
 func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
@@ -49,6 +47,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(e
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
+		linkerdstats.NewLinkerdPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
 			reporter.NewReporter("gloo-registration-reporter",
 				clientset.Supergloo.Mesh.BaseClient(),

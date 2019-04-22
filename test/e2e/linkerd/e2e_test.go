@@ -29,6 +29,11 @@ var _ = Describe("linkerd e2e", func() {
 	It("it installs linkerd", func() {
 		testInstallLinkerd(meshName)
 	})
+
+	It("it configures prometheus", func() {
+		testConfigurePrometheus(meshName, promNamespace)
+	})
+
 	It("retries failed requests", func() {
 		testLinkerdRetries(meshName)
 	})
@@ -164,4 +169,21 @@ func testLinkerdRetries(meshName string) {
 	}
 
 	Eventually(curlThreeTimes, time.Minute*3).ShouldNot(HaveOccurred())
+}
+
+func testConfigurePrometheus(meshName, promNamespace string) {
+	err := sgutils.DeployPrometheus(kube, promNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = utils.Supergloo(fmt.Sprintf("set mesh stats "+
+		"--target-mesh supergloo-system.%v "+
+		"--prometheus-configmap %v.prometheus-server", meshName, promNamespace))
+	Expect(err).NotTo(HaveOccurred())
+
+	// assert the sample is valid
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
+		Service: "prometheus-server." + promNamespace + ".svc.cluster.local",
+		Port:    80,
+		Path:    `/api/v1/query?query=request_total\{\}`,
+	}, `"job":"linkerd-proxy"`, time.Minute*5)
 }

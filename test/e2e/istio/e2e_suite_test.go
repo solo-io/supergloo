@@ -138,7 +138,7 @@ func teardown() {
 	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)
-	err := teardownPrometheus(promNamespace)
+	err := utils.TeardownPrometheus(kube, promNamespace)
 	if err != nil {
 		log.Printf("failed to teardown prometheus: %v", err)
 	}
@@ -151,28 +151,4 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown(istioNamesapce)
 	testutils.WaitForNamespaceTeardown(glooNamespace)
 	log.Printf("done!")
-}
-
-func teardownPrometheus(namespace string) error {
-	manifest, err := helmTemplate("--name=prometheus",
-		"--namespace="+namespace,
-		"--set", "rbac.create=true",
-		"--set", "server.persistentVolume.enabled=false",
-		"--set", "alertmanager.enabled=false",
-		utils.MustTestFile("prometheus-8.9.0.tgz"))
-	if err != nil {
-		return err
-	}
-
-	err = utils.KubectlDelete(namespace, manifest)
-	if err != nil {
-		return err
-	}
-
-	err = kube.CoreV1().Namespaces().Delete(namespace, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
