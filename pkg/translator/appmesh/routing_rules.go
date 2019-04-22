@@ -53,7 +53,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, virtualNodes virt
 		virtualNode, ok := virtualNodes[host]
 		if !ok {
 			// This should never happen, as we ensure that each virtual node has a DNS-discoverable hostname during the
-			// initialization of the awsAppMeshConfiguration object.
+			// initialization of the AwsAppMeshConfigurationImpl object.
 			return nil, 0, errors.Errorf("could not determine Virtual Node for hostname %s", host)
 		}
 

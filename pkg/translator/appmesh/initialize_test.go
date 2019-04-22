@@ -126,8 +126,7 @@ var _ = Describe("Initialize AppMesh configuration object", func() {
 
 			_, err = initializeVirtualNodes("appmesh", groupByVirtualNodeName(podInfo))
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("multiple services match its pods: " +
-				"my-app.test-ns.svc.cluster.local,another-svc-matching-vn.test-ns.svc.cluster.local"))
+			Expect(err.Error()).To(ContainSubstring("multiple services match its pods"))
 		})
 
 		It("fails if the upstreams matching its pods are missing a mapping for one of the ports specified via the APPMESH_APP_PORTS env ", func() {

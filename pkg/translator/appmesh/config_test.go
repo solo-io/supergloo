@@ -18,13 +18,13 @@ package appmesh
 //		upstreamList    gloov1.UpstreamList
 //	)
 //
-//	var defaultConfig = func() *awsAppMeshConfiguration {
+//	var defaultConfig = func() *AwsAppMeshConfigurationImpl {
 //		mesh := inputs.AppmeshMesh("")
 //		config, err := NewAwsAppMeshConfiguration(mesh, injectedPodList, upstreamList)
 //		Expect(err).NotTo(HaveOccurred())
 //		err = config.AllowAll()
 //		Expect(err).NotTo(HaveOccurred())
-//		typedConfig, ok := config.(*awsAppMeshConfiguration)
+//		typedConfig, ok := config.(*AwsAppMeshConfigurationImpl)
 //		Expect(ok).To(BeTrue())
 //		err = typedConfig.initialize()
 //		Expect(err).NotTo(HaveOccurred())
@@ -81,7 +81,7 @@ package appmesh
 //			Expect(err).NotTo(HaveOccurred())
 //			err = config.AllowAll()
 //			Expect(err).NotTo(HaveOccurred())
-//			typedConfig, ok := config.(*awsAppMeshConfiguration)
+//			typedConfig, ok := config.(*AwsAppMeshConfigurationImpl)
 //			Expect(ok).To(BeTrue())
 //			Expect(typedConfig.MeshName).To(Equal(mesh.Metadata.Name))
 //		})
@@ -116,7 +116,7 @@ package appmesh
 //			Expect(err).NotTo(HaveOccurred())
 //			err = config.AllowAll()
 //			Expect(err).NotTo(HaveOccurred())
-//			typedConfig, ok := config.(*awsAppMeshConfiguration)
+//			typedConfig, ok := config.(*AwsAppMeshConfigurationImpl)
 //			Expect(ok).To(BeTrue())
 //			Expect(typedConfig.MeshName).To(Equal(mesh.Metadata.Name))
 //		})

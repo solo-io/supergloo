@@ -37,12 +37,12 @@ type AwsAppMeshConfiguration interface {
 }
 
 // Represents the output of the App Mesh translator
-type awsAppMeshConfiguration struct {
+type AwsAppMeshConfigurationImpl struct {
 	// We build these objects once in the constructor. They are meant to help in all the translation operations where we
 	// probably will need to look up pods by upstreams and vice-versa multiple times.
-	podList      v1.PodList
+	PodList      v1.PodList
 	upstreamInfo awsAppMeshUpstreamInfo
-	upstreamList gloov1.UpstreamList
+	UpstreamList gloov1.UpstreamList
 
 	// These are the actual results of the translations
 	MeshName        string
@@ -73,10 +73,10 @@ func NewAwsAppMeshConfiguration(meshName string, pods v1.PodList, upstreams gloo
 		return nil, err
 	}
 
-	return &awsAppMeshConfiguration{
-		podList:      appMeshPodList,
+	return &AwsAppMeshConfigurationImpl{
+		PodList:      appMeshPodList,
 		upstreamInfo: appMeshUpstreamInfo,
-		upstreamList: appMeshUpstreamList,
+		UpstreamList: appMeshUpstreamList,
 
 		MeshName:        meshName,
 		VirtualNodes:    virtualNodes,
@@ -84,12 +84,12 @@ func NewAwsAppMeshConfiguration(meshName string, pods v1.PodList, upstreams gloo
 	}, nil
 }
 
-func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) error {
+func (c *AwsAppMeshConfigurationImpl) ProcessRoutingRules(rules v1.RoutingRuleList) error {
 
 	routeMap := make(routesByDestinationAndPort)
 	for _, rule := range rules {
 
-		routesByDestination, listenerPort, err := processRoutingRule(rule, c.upstreamList, c.VirtualNodes)
+		routesByDestination, destinationPort, err := processRoutingRule(rule, c.UpstreamList, c.VirtualNodes)
 		if err != nil {
 			return errors.Wrapf(err, "failed to process routing role %s", rule.Metadata.Ref())
 		}
@@ -99,7 +99,7 @@ func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) 
 			if _, ok := routeMap[destinationHost]; !ok {
 				routeMap[destinationHost] = make(routesByPort)
 			}
-			routeMap[destinationHost][listenerPort] = append(routeMap[destinationHost][listenerPort], routes...)
+			routeMap[destinationHost][destinationPort] = append(routeMap[destinationHost][destinationPort], routes...)
 		}
 	}
 
@@ -146,12 +146,12 @@ func (c *awsAppMeshConfiguration) ProcessRoutingRules(rules v1.RoutingRuleList) 
 	return nil
 }
 
-func (c *awsAppMeshConfiguration) AllowAll() error {
+func (c *AwsAppMeshConfigurationImpl) AllowAll() error {
 
 	// Create missing Virtual Services
-	for host := range c.VirtualNodes {
+	for host, vn := range c.VirtualNodes {
 		if _, ok := c.VirtualServices[host]; !ok {
-			c.VirtualServices[host] = createVirtualServiceWithVirtualNodeProvider(c.MeshName, host, host)
+			c.VirtualServices[host] = createVirtualServiceWithVirtualNodeProvider(c.MeshName, host, *vn.VirtualNodeName)
 		}
 	}
 
@@ -364,15 +364,18 @@ func createVirtualServiceWithVirtualNodeProvider(meshName, hostname, virtualNode
 func createRoutes(meshName, hostname, virtualRouterName string, routes []*appmesh.HttpRoute) (out []*appmesh.RouteData) {
 	for i, route := range routes {
 		name := fmt.Sprintf("%s-%d", hostname, i)
-		routeData := &appmesh.RouteData{
-			VirtualRouterName: &virtualRouterName,
-			MeshName:          &meshName,
-			RouteName:         &name,
-			Spec: &appmesh.RouteSpec{
-				HttpRoute: route,
-			},
-		}
-		out = append(out, routeData)
+		out = append(out, createRoute(meshName, name, virtualRouterName, route))
 	}
 	return
+}
+
+func createRoute(meshName, routeName, virtualRouterName string, routeSpec *appmesh.HttpRoute) *appmesh.RouteData {
+	return &appmesh.RouteData{
+		VirtualRouterName: &virtualRouterName,
+		MeshName:          &meshName,
+		RouteName:         &routeName,
+		Spec: &appmesh.RouteSpec{
+			HttpRoute: routeSpec,
+		},
+	}
 }

@@ -1,132 +1,74 @@
-package correct
+package scenarios
 
 import (
-	appmeshApi "github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/solo-io/supergloo/test/inputs/appmesh"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	translator "github.com/solo-io/supergloo/pkg/translator/appmesh"
+	inputs "github.com/solo-io/supergloo/test/inputs/appmesh"
 )
 
-func GetAllResources() appmesh.TestResourceSet {
-	resources := make(appmesh.TestResourceSet)
+type AppMeshTestScenario interface {
+	GetMeshName() string
+	GetResources() inputs.TestResourceSet
+	GetRoutingRules() v1.RoutingRuleList
+	VerifyExpectations(configuration translator.AwsAppMeshConfiguration)
+}
 
-	resources["product-page"] = appmesh.PodsServicesUpstreamsTuple{
+func GetAllResources() inputs.TestResourceSet {
+	resources := make(inputs.TestResourceSet)
+
+	resources["product-page"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{productPagePod},
 		Services:  []string{productPageSvc},
 		Upstreams: []string{productPageUs},
 	}
 
-	resources["details"] = appmesh.PodsServicesUpstreamsTuple{
+	resources["details"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{detailsPod},
 		Services:  []string{detailsSvc},
 		Upstreams: []string{detailsUs},
 	}
 
-	resources["reviews-v1"] = appmesh.PodsServicesUpstreamsTuple{
+	resources["reviews-v1"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{reviewsV1Pod},
 		Services:  []string{reviewsV1Svc},
 		Upstreams: []string{reviewsV1Us},
 	}
 
-	resources["reviews-v2"] = appmesh.PodsServicesUpstreamsTuple{
+	resources["reviews-v2"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{reviewsV2Pod1, reviewsV2Pod2},
 		Services:  []string{reviewsV2Svc},
 		Upstreams: []string{reviewsV2Us},
 	}
 
-	resources["reviews-v3"] = appmesh.PodsServicesUpstreamsTuple{
+	resources["reviews-v3"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{reviewsV3Pod},
 		Services:  []string{reviewsV3Svc},
 		Upstreams: []string{reviewsV3Us},
 	}
 
-	resources["ratings"] = appmesh.PodsServicesUpstreamsTuple{
+	resources["ratings"] = inputs.PodsServicesUpstreamsTuple{
 		Pods:      []string{ratingsPod},
 		Services:  []string{ratingsSvc},
 		Upstreams: []string{ratingsUs},
 	}
 
-	resources["other"] = appmesh.PodsServicesUpstreamsTuple{
-		Pods:      []string{discoveryPod, appmesh.KubernetesPods},
-		Services:  []string{appmesh.KubernetesServices},
-		Upstreams: []string{appmesh.KubernetesUpstreams},
+	resources["other"] = inputs.PodsServicesUpstreamsTuple{
+		Pods:      []string{discoveryPod, inputs.KubernetesPods},
+		Services:  []string{inputs.KubernetesServices},
+		Upstreams: []string{inputs.KubernetesUpstreams},
 	}
 
 	return resources
 }
 
-func GetAppMeshRelatedResources() appmesh.TestResourceSet {
-	resources := make(appmesh.TestResourceSet)
+func GetAppMeshRelatedResources() inputs.TestResourceSet {
+	resources := make(inputs.TestResourceSet)
 	for name, tuple := range GetAllResources() {
 		if name != "other" {
 			resources[name] = tuple
 		}
 	}
 	return resources
-}
-
-// Returns the virtual node set as it is before any Routing Rules have been processed or all traffic has been allowed
-func GetExpectedInitVirtualNodes() map[string]*appmeshApi.VirtualNodeData {
-	return map[string]*appmeshApi.VirtualNodeData{
-		productPageHostname: createVirtualNode(productPageVnName, productPageHostname, MeshName, "http", 9080, nil),
-		detailsHostname:     createVirtualNode(detailsVnName, detailsHostname, MeshName, "http", 9080, nil),
-		reviewsV1Hostname:   createVirtualNode(reviewsV1VnName, reviewsV1Hostname, MeshName, "http", 9080, nil),
-		reviewsV2Hostname:   createVirtualNode(reviewsV2VnName, reviewsV2Hostname, MeshName, "http", 9080, nil),
-		reviewsV3Hostname:   createVirtualNode(reviewsV3VnName, reviewsV3Hostname, MeshName, "http", 9080, nil),
-		ratingsHostname:     createVirtualNode(ratingsVnName, ratingsHostname, MeshName, "http", 9080, nil),
-	}
-}
-
-// Returns the virtual node set as it is expected to be after allowing all traffic (no Routing Rules)
-func GetExpectedVirtualNodesOnlyAllowAll() map[string]*appmeshApi.VirtualNodeData {
-	return map[string]*appmeshApi.VirtualNodeData{
-		productPageHostname: createVirtualNode(productPageVnName, productPageHostname, MeshName, "http", 9080, allHostsMinus(productPageHostname)),
-		detailsHostname:     createVirtualNode(detailsVnName, detailsHostname, MeshName, "http", 9080, allHostsMinus(detailsHostname)),
-		reviewsV1Hostname:   createVirtualNode(reviewsV1VnName, reviewsV1Hostname, MeshName, "http", 9080, allHostsMinus(reviewsV1Hostname)),
-		reviewsV2Hostname:   createVirtualNode(reviewsV2VnName, reviewsV2Hostname, MeshName, "http", 9080, allHostsMinus(reviewsV2Hostname)),
-		reviewsV3Hostname:   createVirtualNode(reviewsV3VnName, reviewsV3Hostname, MeshName, "http", 9080, allHostsMinus(reviewsV3Hostname)),
-		ratingsHostname:     createVirtualNode(ratingsVnName, ratingsHostname, MeshName, "http", 9080, allHostsMinus(ratingsHostname)),
-	}
-}
-
-func createVirtualNode(name, host, mesh, protocol string, port int64, backendHosts []string) *appmeshApi.VirtualNodeData {
-	var backends []*appmeshApi.Backend
-	for _, vs := range backendHosts {
-		vsName := vs
-		backends = append(backends, &appmeshApi.Backend{
-			VirtualService: &appmeshApi.VirtualServiceBackend{
-				VirtualServiceName: &vsName,
-			},
-		})
-	}
-	return &appmeshApi.VirtualNodeData{
-		MeshName:        &mesh,
-		VirtualNodeName: &name,
-		Spec: &appmeshApi.VirtualNodeSpec{
-			ServiceDiscovery: &appmeshApi.ServiceDiscovery{
-				Dns: &appmeshApi.DnsServiceDiscovery{
-					Hostname: &host,
-				},
-			},
-			Listeners: []*appmeshApi.Listener{
-				{
-					PortMapping: &appmeshApi.PortMapping{
-						Port:     &port,
-						Protocol: &protocol,
-					},
-				},
-			},
-			Backends: backends,
-		},
-	}
-}
-
-// Returns a slice of all hosts except the given one
-func allHostsMinus(excludedHost string) (out []string) {
-	for _, host := range allHostnames {
-		if host != excludedHost {
-			out = append(out, host)
-		}
-	}
-	return
 }
 
 var (
@@ -258,7 +200,6 @@ spec:
       defaultMode: 420
       secretName: default-token-kmzll
 `
-
 var productPagePod = `
 apiVersion: v1
 kind: Pod
@@ -371,7 +312,6 @@ spec:
       secretName: default-token-kmzll
   
 `
-
 var ratingsPod = `
 apiVersion: v1
 kind: Pod
@@ -483,7 +423,6 @@ spec:
       defaultMode: 420
       secretName: default-token-kmzll
 `
-
 var reviewsV1Pod = `
 apiVersion: v1
 kind: Pod
@@ -595,7 +534,6 @@ spec:
       defaultMode: 420
       secretName: default-token-kmzll
 `
-
 var reviewsV2Pod1 = `
 apiVersion: v1
 kind: Pod
