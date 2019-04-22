@@ -62,7 +62,7 @@ func FilterNamespaces(namespaces v1.KubeNamespaceList, filterFunc NamespaceListF
 	return result
 }
 
-type InjectedPodFilterFunc = func(pod *v1.Pod) bool
+type InjectedPodFilterFunc = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool
 
 // TODO(EItanya): figure out a heuristic for when a singular pod has been injected
 func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
@@ -71,8 +71,8 @@ func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
 	for _, namespace := range namespaces {
 		result[namespace.Name] = v1.PodList{}
 		for _, pod := range pods {
-			if pod.Namespace == namespace.Name && filterFunc(pod) {
-				result[namespace.Name] = append(result[namespace.Name], pod)
+			if pod.Namespace == namespace.Name && filterFunc(pod, namespace) {
+				result.Add(pod)
 			}
 		}
 
@@ -81,7 +81,7 @@ func GetInjectedPods(namespaces v1.KubeNamespaceList, pods v1.PodList,
 }
 
 func InjectedPodsByProxyContainerName(proxyContainerName string) InjectedPodFilterFunc {
-	return func(pod *v1.Pod) bool {
+	return func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
 		for _, container := range pod.Spec.Containers {
 			if container.Name == proxyContainerName &&
 				pod.Status.Phase == corev1.PodRunning {

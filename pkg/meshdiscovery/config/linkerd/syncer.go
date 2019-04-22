@@ -81,19 +81,20 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 		}
 		return true
 	})
-	injectedPodsByAnnotatedNamespace := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
-		utils.InjectedPodsByProxyContainerName(proxyContainer),
+	injectedPods := utils.GetInjectedPods(injectedNamespaces, snap.Pods.List(),
+		injectedPodsWithNamespaceAnnotation,
 	)
-	injectedPodsByAnnotatedPods := utils.GetInjectedPods(nonInjectedNamespaces, snap.Pods.List(),
-		func(pod *v1.Pod) bool {
-			return false
-		},
+
+	injectedPods.Add(
+		utils.GetInjectedPods(nonInjectedNamespaces, snap.Pods.List(),
+			injectedPodsWithPodAnnotation,
+		).List()...,
 	)
 
 	meshResources := organizeMeshes(
 		linkerdMeshes,
 		linkerdInstalls,
-		injectedPodsByAnnotatedNamespace,
+		injectedPods,
 		snap.Upstreams.List(),
 	)
 
@@ -109,6 +110,26 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	}
 
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
+}
+
+var injectedPodsWithPodAnnotation = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
+	annotated := false
+	for key, value := range pod.Annotations {
+		if key == injectionAnnotation && value == enabled {
+			annotated = true
+		}
+	}
+	return annotated && utils.InjectedPodsByProxyContainerName(proxyContainer)(pod, namespace)
+}
+
+var injectedPodsWithNamespaceAnnotation = func(pod *v1.Pod, namespace *v1.KubeNamespace) bool {
+	annotated := true
+	for key, value := range pod.Annotations {
+		if key == injectionAnnotation && value == disabled {
+			annotated = false
+		}
+	}
+	return annotated && utils.InjectedPodsByProxyContainerName(proxyContainer)(pod, namespace)
 }
 
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1.PodsByNamespace,
