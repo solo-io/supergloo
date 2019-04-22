@@ -22,7 +22,7 @@ metadata:
   name: mesh-discovery
 rules:
   - apiGroups: [""]
-    resources: ["configmaps", "pods", "services", "secrets", "endpoints"]
+    resources: ["configmaps", "pods", "services", "secrets", "endpoints", "namespace"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["authentication.istio.io"]
     resources: ["meshpolicies"]
@@ -32,6 +32,9 @@ rules:
     verbs: ["get", "create"]
   - apiGroups: ["supergloo.solo.io"]
     resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["gloo.solo.io"]
+    resources: ["settings", "upstreams"]
     verbs: ["*"]
 
 {{- end }}

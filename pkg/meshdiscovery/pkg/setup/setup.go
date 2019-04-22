@@ -28,8 +28,12 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 		return err
 	}
 
-	if err := registration.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
-		return err
+	if os.Getenv("DISABLE_DISCOVERY_CONFIG") == "" {
+		if err := registration.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
+			return err
+		}
+	} else {
+		contextutils.LoggerFrom(rootCtx).Info("discovery config has been disabled")
 	}
 
 	<-rootCtx.Done()
