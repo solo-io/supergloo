@@ -22,7 +22,7 @@ metadata:
   name: mesh-discovery
 rules:
   - apiGroups: [""]
-    resources: ["configmaps", "pods", "services", "secrets", "endpoints", "namespace"]
+    resources: ["configmaps", "pods", "services", "secrets", "endpoints", "namespaces"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["authentication.istio.io"]
     resources: ["meshpolicies"]
