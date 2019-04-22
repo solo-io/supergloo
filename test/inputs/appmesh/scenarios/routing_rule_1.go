@@ -38,12 +38,16 @@ func (s *routingRuleScenario1) GetRoutingRules() v1.RoutingRuleList {
 }
 
 func (s *routingRuleScenario1) VerifyExpectations(configuration appmesh.AwsAppMeshConfiguration) {
+	routingRuleScenario1Expectations(configuration)
+}
+
+func routingRuleScenario1Expectations(configuration appmesh.AwsAppMeshConfiguration) {
 	config, ok := configuration.(*appmesh.AwsAppMeshConfigurationImpl)
 	ExpectWithOffset(1, ok).To(BeTrue())
 
 	// Verify virtual nodes
 	ExpectWithOffset(1, config.VirtualNodes).To(HaveLen(6))
-	for hostname, expectedVn := range s.expectedVirtualNodes() {
+	for hostname, expectedVn := range routingRule1VirtualNodes() {
 
 		vn, ok := config.VirtualNodes[hostname]
 		ExpectWithOffset(1, ok).To(BeTrue())
@@ -56,7 +60,7 @@ func (s *routingRuleScenario1) VerifyExpectations(configuration appmesh.AwsAppMe
 
 	// Verify virtual services
 	ExpectWithOffset(1, config.VirtualServices).To(HaveLen(1))
-	for hostname, expectedVs := range s.expectedVirtualServices() {
+	for hostname, expectedVs := range routingRule1VirtualServices() {
 		vs, ok := config.VirtualServices[hostname]
 		ExpectWithOffset(1, ok).To(BeTrue())
 		ExpectWithOffset(1, vs.VirtualServiceName).To(BeEquivalentTo(expectedVs.VirtualServiceName))
@@ -67,15 +71,15 @@ func (s *routingRuleScenario1) VerifyExpectations(configuration appmesh.AwsAppMe
 
 	// Verify virtual routers
 	ExpectWithOffset(1, config.VirtualRouters).To(HaveLen(1))
-	ExpectWithOffset(1, config.VirtualRouters).To(ConsistOf(s.expectedVirtualRouters()))
+	ExpectWithOffset(1, config.VirtualRouters).To(ConsistOf(routingRule1VirtualRouters()))
 
 	// Verify routes
 	routes := config.Routes
-	expectedRoutes := s.expectedRoutes()
+	expectedRoutes := routingRule1Routes()
 	ExpectWithOffset(1, routes).To(BeEquivalentTo(expectedRoutes))
 }
 
-func (s *routingRuleScenario1) expectedVirtualNodes() map[string]*appmeshApi.VirtualNodeData {
+func routingRule1VirtualNodes() map[string]*appmeshApi.VirtualNodeData {
 	return map[string]*appmeshApi.VirtualNodeData{
 		productPageHostname: createVirtualNode(productPageVnName, productPageHostname, MeshName, "http", 9080, []string{reviewsV1Hostname}),
 		detailsHostname:     createVirtualNode(detailsVnName, detailsHostname, MeshName, "http", 9080, []string{reviewsV1Hostname}),
@@ -86,17 +90,17 @@ func (s *routingRuleScenario1) expectedVirtualNodes() map[string]*appmeshApi.Vir
 	}
 }
 
-func (s *routingRuleScenario1) expectedVirtualServices() map[string]*appmeshApi.VirtualServiceData {
+func routingRule1VirtualServices() map[string]*appmeshApi.VirtualServiceData {
 	return map[string]*appmeshApi.VirtualServiceData{
 		reviewsV1Hostname: createVirtualServiceWithVr(reviewsV1Hostname, MeshName, reviewsV1Hostname),
 	}
 }
 
-func (s *routingRuleScenario1) expectedVirtualRouters() []*appmeshApi.VirtualRouterData {
+func routingRule1VirtualRouters() []*appmeshApi.VirtualRouterData {
 	return []*appmeshApi.VirtualRouterData{createVirtualRouter(MeshName, reviewsV1Hostname, 9080)}
 }
 
-func (s *routingRuleScenario1) expectedRoutes() []*appmeshApi.RouteData {
+func routingRule1Routes() []*appmeshApi.RouteData {
 	action := createRouteAction([]vnWeightTuple{
 		{
 			virtualNode: reviewsV1VnName,

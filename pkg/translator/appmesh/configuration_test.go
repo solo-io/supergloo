@@ -61,5 +61,18 @@ var _ = Describe("Configuration", func() {
 				scenario.VerifyExpectations(config)
 			})
 		})
+
+		When("two traffic shifting rules that differ only on the matched path prefix are applied", func() {
+			BeforeEach(func() {
+				scenario = scenarios.RoutingRule2()
+			})
+
+			It("produces the correct configuration object", func() {
+				err = config.ProcessRoutingRules(scenario.GetRoutingRules())
+				Expect(err).NotTo(HaveOccurred())
+
+				scenario.VerifyExpectations(config)
+			})
+		})
 	})
 })
