@@ -21,6 +21,10 @@ func Main(customCtx context.Context, customErrHandler func(error), opts *MeshDis
 		stats.StartStatsServer()
 	}
 
+	if opts == nil {
+		opts = &MeshDiscoveryOptions{}
+	}
+
 	rootCtx := createRootContext(customCtx)
 
 	clientSet, err := clientset.ClientsetFromContext(rootCtx)
