@@ -41,12 +41,12 @@ var _ = Describe("istio discovery config", func() {
 			mesh = &v1.Mesh{
 				MeshType: &v1.Mesh_Linkerd{
 					Linkerd: &v1.LinkerdMesh{
-						InstallationNamespace: "hello",
+						InstallationNamespace: "world",
 					},
 				},
 				MtlsConfig: &v1.MtlsConfig{},
 				DiscoveryMetadata: &v1.DiscoveryMetadata{
-					InstallationNamespace: "hello",
+					InstallationNamespace: "world",
 				},
 			}
 			install = &v1.Install{
@@ -65,6 +65,17 @@ var _ = Describe("istio discovery config", func() {
 			}
 		})
 
+		It("can organize meshes", func() {
+			fullMeshes := organizeMeshes(
+				v1.MeshList{mesh},
+				v1.InstallList{install},
+				nil,
+				nil,
+			)
+			Expect(fullMeshes).To(HaveLen(1))
+			Expect(fullMeshes[0].Mesh).To(BeEquivalentTo(mesh))
+			Expect(fullMeshes[0].Install).To(BeEquivalentTo(install))
+		})
 		It("Can merge properly with no install or mesh policy", func() {
 			fm := &meshResources{
 				Mesh: mesh,

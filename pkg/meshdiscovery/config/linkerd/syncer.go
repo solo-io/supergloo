@@ -89,15 +89,15 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1
 	result := make(meshResourceList, len(meshes))
 
 	for i, mesh := range meshes {
-		istioMesh := mesh.GetIstio()
-		if istioMesh == nil {
+		linkerdMesh := mesh.GetLinkerd()
+		if linkerdMesh == nil {
 			continue
 		}
 		fullMesh := &meshResources{
 			Mesh: mesh,
 		}
 		for _, install := range installs {
-			if install.InstallationNamespace == istioMesh.InstallationNamespace {
+			if install.InstallationNamespace == linkerdMesh.InstallationNamespace {
 				fullMesh.Install = install
 				break
 			}
