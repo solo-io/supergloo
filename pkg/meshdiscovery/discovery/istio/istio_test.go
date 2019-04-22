@@ -72,8 +72,8 @@ var _ = Describe("istio mesh discovery unit tests", func() {
 					InstallationNamespace: istioNamespace,
 					InstallType: &v1.Install_Mesh{
 						Mesh: &v1.MeshInstall{
-							MeshInstallType: &v1.MeshInstall_IstioMesh{
-								IstioMesh: &v1.IstioInstall{
+							MeshInstallType: &v1.MeshInstall_Istio{
+								Istio: &v1.IstioInstall{
 									CustomRootCert: helloWorldCert,
 									EnableMtls:     true,
 								},

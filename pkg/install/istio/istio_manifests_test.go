@@ -23,10 +23,10 @@ var _ = Describe("makeManifestsForInstall", func() {
 	test := func(c testCase) (helmchart.Manifests, error) {
 		install := inputs.IstioInstall("test", "mesh", c.installNs, c.version, false)
 		if c.istioPrefs != nil {
-			c.istioPrefs.IstioVersion = c.version
-			install.GetMesh().MeshInstallType = &v1.MeshInstall_IstioMesh{IstioMesh: c.istioPrefs}
+			c.istioPrefs.Version = c.version
+			install.GetMesh().MeshInstallType = &v1.MeshInstall_Istio{Istio: c.istioPrefs}
 		}
-		return makeManifestsForInstall(context.TODO(), install, c.existingInstall, install.GetMesh().GetIstioMesh())
+		return makeManifestsForInstall(context.TODO(), install, c.existingInstall, install.GetMesh().GetIstio())
 	}
 	Context("invalid opts", func() {
 		It("errors on version", func() {

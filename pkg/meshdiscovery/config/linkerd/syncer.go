@@ -123,7 +123,7 @@ type meshResources struct {
 // Priority of data is as such Install > Mesh
 func (fm *meshResources) merge() *v1.Mesh {
 	result := fm.Mesh
-	linkerdMesh := fm.Mesh.GetLinkerdMesh()
+	linkerdMesh := fm.Mesh.GetLinkerd()
 	if linkerdMesh == nil {
 		return fm.Mesh
 	}
@@ -137,15 +137,15 @@ func (fm *meshResources) merge() *v1.Mesh {
 		ref := upstream.Metadata.Ref()
 		meshUpstreams = append(meshUpstreams, &ref)
 	}
-	result.DiscoveryMetadata.MeshUpstreams = meshUpstreams
+	result.DiscoveryMetadata.Upstreams = meshUpstreams
 
 	result.DiscoveryMetadata.InjectedNamespaceLabel = injectionAnnotation
 
 	if fm.Install != nil {
 		mesh := fm.Install.GetMesh()
 		if mesh != nil {
-			linkerdMeshInstall := mesh.GetLinkerdMesh()
-			result.DiscoveryMetadata.MeshVersion = linkerdMeshInstall.GetLinkerdVersion()
+			linkerdMeshInstall := mesh.GetLinkerd()
+			result.DiscoveryMetadata.MeshVersion = linkerdMeshInstall.GetVersion()
 			result.DiscoveryMetadata.EnableAutoInject = linkerdMeshInstall.GetEnableAutoInject()
 			mtlsConfig.MtlsEnabled = linkerdMeshInstall.GetEnableMtls()
 		}

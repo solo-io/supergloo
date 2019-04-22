@@ -104,7 +104,7 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existin
 	mesh.MeshType = &v1.Mesh_Istio{
 		Istio: &v1.IstioMesh{
 			InstallationNamespace: istioPilotPod.Namespace,
-			IstioVersion:          istioVersion,
+			Version:               istioVersion,
 		},
 	}
 	// If install crd exists, overwrite discovery data
@@ -113,7 +113,7 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existin
 		if meshInstall == nil {
 			continue
 		}
-		istioMeshInstall := meshInstall.GetIstioMesh()
+		istioMeshInstall := meshInstall.GetIstio()
 		if istioMeshInstall == nil {
 			continue
 		}

@@ -69,10 +69,10 @@ var _ = Describe("linkerd syncer unit test", func() {
 					InstallationNamespace: linkerdNamespace,
 					InstallType: &v1.Install_Mesh{
 						Mesh: &v1.MeshInstall{
-							MeshInstallType: &v1.MeshInstall_LinkerdMesh{
-								LinkerdMesh: &v1.LinkerdInstall{
-									LinkerdVersion: "2.2.1",
-									EnableMtls:     true,
+							MeshInstallType: &v1.MeshInstall_Linkerd{
+								Linkerd: &v1.LinkerdInstall{
+									Version:    "2.2.1",
+									EnableMtls: true,
 								},
 							},
 						},

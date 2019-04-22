@@ -65,20 +65,20 @@ func installGlooFromOpts(opts *options.Options) (*v1.Install, error) {
 
 func validateGlooInstall(opts *options.Options) error {
 	var err error
-	version := opts.Install.GlooIngressInstall.GlooVersion
+	version := opts.Install.GlooIngressInstall.Version
 	if version == "latest" {
 		version, err = helpers.GetLatestVersion(opts.Ctx, "gloo")
 		if err != nil {
 			return errors.Wrapf(err, "unable to get latest release version from gloo")
 		} else {
-			opts.Install.GlooIngressInstall.GlooVersion = version
+			opts.Install.GlooIngressInstall.Version = version
 		}
 	} else {
-		version, err = helpers.IsValidVersion(opts.Ctx, "gloo", opts.Install.GlooIngressInstall.GlooVersion)
+		version, err = helpers.IsValidVersion(opts.Ctx, "gloo", opts.Install.GlooIngressInstall.Version)
 		if err != nil {
-			return errors.Wrapf(err, "%v is not a supported gloo version", opts.Install.GlooIngressInstall.GlooVersion)
+			return errors.Wrapf(err, "%v is not a supported gloo version", opts.Install.GlooIngressInstall.Version)
 		} else {
-			opts.Install.GlooIngressInstall.GlooVersion = version
+			opts.Install.GlooIngressInstall.Version = version
 		}
 	}
 

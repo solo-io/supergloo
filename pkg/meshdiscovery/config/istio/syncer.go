@@ -19,10 +19,12 @@ import (
 
 const (
 	namespaceInjectionLabel = "istio-injection"
-	enabled                 = "true"
-	disabled                = "false"
+	enabled                 = "enabled"
+	disabled                = "disabled"
 
 	podInjectionAnnotation = "sidecar.istio.io/inject"
+	podAnnotationEnabled   = "true"
+	podAnnotationDisabled  = "false"
 
 	proxyContainer = "istio-proxy"
 )
@@ -159,7 +161,7 @@ func (fm *meshResources) merge() *v1.Mesh {
 		ref := upstream.Metadata.Ref()
 		meshUpstreams = append(meshUpstreams, &ref)
 	}
-	result.DiscoveryMetadata.MeshUpstreams = meshUpstreams
+	result.DiscoveryMetadata.Upstreams = meshUpstreams
 
 	result.DiscoveryMetadata.InjectedNamespaceLabel = namespaceInjectionLabel
 	if fm.MeshPolicy != nil {
@@ -179,8 +181,8 @@ func (fm *meshResources) merge() *v1.Mesh {
 	if fm.Install != nil {
 		mesh := fm.Install.GetMesh()
 		if mesh != nil {
-			istioMeshInstall := mesh.GetIstioMesh()
-			result.DiscoveryMetadata.MeshVersion = istioMeshInstall.GetIstioVersion()
+			istioMeshInstall := mesh.GetIstio()
+			result.DiscoveryMetadata.MeshVersion = istioMeshInstall.GetVersion()
 			result.DiscoveryMetadata.EnableAutoInject = istioMeshInstall.GetEnableAutoInject()
 			mtlsConfig.MtlsEnabled = istioMeshInstall.GetEnableMtls()
 			mtlsConfig.RootCertificate = istioMeshInstall.CustomRootCert

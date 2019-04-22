@@ -67,10 +67,10 @@ var _ = Describe("istio discovery config", func() {
 				InstallationNamespace: "world",
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						MeshInstallType: &v1.MeshInstall_IstioMesh{
-							IstioMesh: &v1.IstioInstall{
-								EnableMtls:   true,
-								IstioVersion: "1.0.9",
+						MeshInstallType: &v1.MeshInstall_Istio{
+							Istio: &v1.IstioInstall{
+								EnableMtls: true,
+								Version:    "1.0.9",
 								CustomRootCert: &core.ResourceRef{
 									Name: "one",
 								},

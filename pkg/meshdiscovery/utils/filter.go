@@ -11,7 +11,7 @@ var IstioInstallFilterFunc InstallFilterFunc = func(install *v1.Install) bool {
 	if meshInstall == nil {
 		return false
 	}
-	if istioMeshInstall := meshInstall.GetIstioMesh(); istioMeshInstall != nil {
+	if istioMeshInstall := meshInstall.GetIstio(); istioMeshInstall != nil {
 		return true
 	}
 	return false
@@ -22,7 +22,7 @@ var LinkerdInstallFilterFunc InstallFilterFunc = func(install *v1.Install) bool 
 	if meshInstall == nil {
 		return false
 	}
-	if linkerdMeshInstall := meshInstall.GetLinkerdMesh(); linkerdMeshInstall != nil {
+	if linkerdMeshInstall := meshInstall.GetLinkerd(); linkerdMeshInstall != nil {
 		return true
 	}
 	return false
@@ -38,7 +38,7 @@ var IstioMeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
 }
 
 var LinkerdMeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
-	if linkerdMesh := mesh.GetLinkerdMesh(); linkerdMesh != nil {
+	if linkerdMesh := mesh.GetLinkerd(); linkerdMesh != nil {
 		return true
 	}
 	return false

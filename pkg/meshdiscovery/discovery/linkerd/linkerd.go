@@ -80,7 +80,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
 	for _, mesh := range meshes {
-		linkerdMesh := mesh.GetLinkerdMesh()
+		linkerdMesh := mesh.GetLinkerd()
 		if linkerdMesh == nil {
 			continue
 		}
@@ -103,9 +103,9 @@ func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInsta
 
 	mesh := utils.BasicMeshInfo(mainPod, DiscoverySelector, linkerd)
 
-	mesh.MeshType = &v1.Mesh_LinkerdMesh{
-		LinkerdMesh: &v1.LinkerdMesh{
-			LinkerdVersion:        linkerdVersion,
+	mesh.MeshType = &v1.Mesh_Linkerd{
+		Linkerd: &v1.LinkerdMesh{
+			Version:               linkerdVersion,
 			InstallationNamespace: mainPod.Namespace,
 		},
 	}
@@ -115,7 +115,7 @@ func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInsta
 		if meshInstall == nil {
 			continue
 		}
-		linkerdMeshInstall := meshInstall.GetLinkerdMesh()
+		linkerdMeshInstall := meshInstall.GetLinkerd()
 		if linkerdMeshInstall == nil {
 			continue
 		}

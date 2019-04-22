@@ -39,8 +39,8 @@ var _ = Describe("istio discovery config", func() {
 		)
 		BeforeEach(func() {
 			mesh = &v1.Mesh{
-				MeshType: &v1.Mesh_LinkerdMesh{
-					LinkerdMesh: &v1.LinkerdMesh{
+				MeshType: &v1.Mesh_Linkerd{
+					Linkerd: &v1.LinkerdMesh{
 						InstallationNamespace: "hello",
 					},
 				},
@@ -53,9 +53,9 @@ var _ = Describe("istio discovery config", func() {
 				InstallationNamespace: "world",
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						MeshInstallType: &v1.MeshInstall_LinkerdMesh{
-							LinkerdMesh: &v1.LinkerdInstall{
-								LinkerdVersion:   "2.2.1",
+						MeshInstallType: &v1.MeshInstall_Linkerd{
+							Linkerd: &v1.LinkerdInstall{
+								Version:          "2.2.1",
 								EnableMtls:       true,
 								EnableAutoInject: true,
 							},
