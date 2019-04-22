@@ -13,39 +13,40 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 )
 
-// This scenario is identical to routing_rule_1, but all traffic is allowed after the routing rules are applied.
-type routingRuleScenario3 struct {
+// This scenario contains a routing rule that splits traffic matching one destination upstream across three upstreams.
+type routingRuleScenario4 struct {
 	meshName     string
 	allResources appmeshInputs.TestResourceSet
 }
 
-func RoutingRule3() AppMeshTestScenario {
-	return &routingRuleScenario3{
+// In this scenario, we apply a rule that matches requests for any of the reviews upstreams (v1,v2,v3) and direct them
+// to the latest version (v3).
+func RoutingRule4() AppMeshTestScenario {
+	return &routingRuleScenario4{
 		meshName:     MeshName,
 		allResources: GetAllResources(),
 	}
 }
 
-func (s *routingRuleScenario3) GetMeshName() string {
+func (s *routingRuleScenario4) GetMeshName() string {
 	return s.meshName
 }
 
-func (s *routingRuleScenario3) GetResources() appmeshInputs.TestResourceSet {
+func (s *routingRuleScenario4) GetResources() appmeshInputs.TestResourceSet {
 	return s.allResources
 }
 
-func (s *routingRuleScenario3) GetRoutingRules() v1.RoutingRuleList {
+func (s *routingRuleScenario4) GetRoutingRules() v1.RoutingRuleList {
 	return v1.RoutingRuleList{s.getRoutingRule()}
 }
 
-func (s *routingRuleScenario3) VerifyExpectations(configuration appmesh.AwsAppMeshConfiguration) {
+func (s *routingRuleScenario4) VerifyExpectations(configuration appmesh.AwsAppMeshConfiguration) {
 	config, ok := configuration.(*appmesh.AwsAppMeshConfigurationImpl)
 	ExpectWithOffset(1, ok).To(BeTrue())
 
 	// Verify virtual nodes
 	ExpectWithOffset(1, config.VirtualNodes).To(HaveLen(6))
 	for hostname, expectedVn := range s.virtualNodes() {
-
 		vn, ok := config.VirtualNodes[hostname]
 		ExpectWithOffset(1, ok).To(BeTrue())
 		ExpectWithOffset(1, vn.MeshName).To(BeEquivalentTo(expectedVn.MeshName))
@@ -67,7 +68,7 @@ func (s *routingRuleScenario3) VerifyExpectations(configuration appmesh.AwsAppMe
 	}
 
 	// Verify virtual routers
-	ExpectWithOffset(1, config.VirtualRouters).To(HaveLen(1))
+	ExpectWithOffset(1, config.VirtualRouters).To(HaveLen(3))
 	ExpectWithOffset(1, config.VirtualRouters).To(ConsistOf(s.virtualRouters()))
 
 	// Verify routes
@@ -76,7 +77,7 @@ func (s *routingRuleScenario3) VerifyExpectations(configuration appmesh.AwsAppMe
 	ExpectWithOffset(1, routes).To(ConsistOf(expectedRoutes))
 }
 
-func (s *routingRuleScenario3) virtualNodes() map[string]*appmeshApi.VirtualNodeData {
+func (s *routingRuleScenario4) virtualNodes() map[string]*appmeshApi.VirtualNodeData {
 	return map[string]*appmeshApi.VirtualNodeData{
 		productPageHostname: createVirtualNode(productPageVnName, productPageHostname, MeshName, "http", 9080, allHostsMinus(productPageHostname)),
 		detailsHostname:     createVirtualNode(detailsVnName, detailsHostname, MeshName, "http", 9080, allHostsMinus(detailsHostname)),
@@ -87,45 +88,44 @@ func (s *routingRuleScenario3) virtualNodes() map[string]*appmeshApi.VirtualNode
 	}
 }
 
-func (s *routingRuleScenario3) virtualServices() map[string]*appmeshApi.VirtualServiceData {
+func (s *routingRuleScenario4) virtualServices() map[string]*appmeshApi.VirtualServiceData {
 	return map[string]*appmeshApi.VirtualServiceData{
 		productPageHostname: createVirtualServiceWithVn(productPageHostname, MeshName, productPageVnName),
 		detailsHostname:     createVirtualServiceWithVn(detailsHostname, MeshName, detailsVnName),
-		// This one has a Virtual Router as provider
+
+		// These three have a Virtual Router as provider
 		reviewsV1Hostname: createVirtualServiceWithVr(reviewsV1Hostname, MeshName, reviewsV1Hostname),
-		reviewsV2Hostname: createVirtualServiceWithVn(reviewsV2Hostname, MeshName, reviewsV2VnName),
-		reviewsV3Hostname: createVirtualServiceWithVn(reviewsV3Hostname, MeshName, reviewsV3VnName),
-		ratingsHostname:   createVirtualServiceWithVn(ratingsHostname, MeshName, ratingsVnName),
+		reviewsV2Hostname: createVirtualServiceWithVr(reviewsV2Hostname, MeshName, reviewsV2Hostname),
+		reviewsV3Hostname: createVirtualServiceWithVr(reviewsV3Hostname, MeshName, reviewsV3Hostname),
+
+		ratingsHostname: createVirtualServiceWithVn(ratingsHostname, MeshName, ratingsVnName),
 	}
 }
 
-func (s *routingRuleScenario3) virtualRouters() []*appmeshApi.VirtualRouterData {
-	return []*appmeshApi.VirtualRouterData{createVirtualRouter(MeshName, reviewsV1Hostname, 9080)}
+func (s *routingRuleScenario4) virtualRouters() []*appmeshApi.VirtualRouterData {
+	return []*appmeshApi.VirtualRouterData{
+		createVirtualRouter(MeshName, reviewsV1Hostname, 9080),
+		createVirtualRouter(MeshName, reviewsV2Hostname, 9080),
+		createVirtualRouter(MeshName, reviewsV3Hostname, 9080),
+	}
 }
 
-func (s *routingRuleScenario3) routes() []*appmeshApi.RouteData {
+func (s *routingRuleScenario4) routes() []*appmeshApi.RouteData {
 	action := createRouteAction([]vnWeightTuple{
 		{
-			virtualNode: reviewsV1VnName,
-			weight:      80,
-		},
-		{
-			virtualNode: reviewsV2VnName,
-			weight:      10,
-		},
-		{
 			virtualNode: reviewsV3VnName,
-			weight:      10,
+			weight:      100,
 		},
 	})
 
 	return []*appmeshApi.RouteData{
-		createRoute(MeshName, fmt.Sprintf("%s-%d", reviewsV1Hostname, 0), reviewsV1Hostname, "/test", action),
-		createRoute(MeshName, fmt.Sprintf("%s-%d", reviewsV1Hostname, 1), reviewsV1Hostname, "/", action),
+		createRoute(MeshName, fmt.Sprintf("%s-%d", reviewsV1Hostname, 0), reviewsV1Hostname, "/", action),
+		createRoute(MeshName, fmt.Sprintf("%s-%d", reviewsV2Hostname, 0), reviewsV2Hostname, "/", action),
+		createRoute(MeshName, fmt.Sprintf("%s-%d", reviewsV3Hostname, 0), reviewsV3Hostname, "/", action),
 	}
 }
 
-func (s *routingRuleScenario3) getRoutingRule() *v1.RoutingRule {
+func (s *routingRuleScenario4) getRoutingRule() *v1.RoutingRule {
 	return &v1.RoutingRule{
 		Metadata: core.Metadata{
 			Name:      "reviews",
@@ -137,25 +137,7 @@ func (s *routingRuleScenario3) getRoutingRule() *v1.RoutingRule {
 					Destinations: &gloov1.MultiDestination{
 						Destinations: []*gloov1.WeightedDestination{
 							{
-								Weight: 80,
-								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-9080",
-									},
-								},
-							},
-							{
-								Weight: 10,
-								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-v2-9080",
-									},
-								},
-							},
-							{
-								Weight: 10,
+								Weight: 100,
 								Destination: &gloov1.Destination{
 									Upstream: core.ResourceRef{
 										Namespace: "gloo-system",
@@ -169,12 +151,6 @@ func (s *routingRuleScenario3) getRoutingRule() *v1.RoutingRule {
 			},
 		},
 		RequestMatchers: []*gloov1.Matcher{
-
-			{
-				PathSpecifier: &gloov1.Matcher_Prefix{
-					Prefix: "/test",
-				},
-			},
 			{
 				PathSpecifier: &gloov1.Matcher_Prefix{
 					Prefix: "/",
@@ -182,13 +158,11 @@ func (s *routingRuleScenario3) getRoutingRule() *v1.RoutingRule {
 			},
 		},
 		DestinationSelector: &v1.PodSelector{
-			SelectorType: &v1.PodSelector_UpstreamSelector_{
-				UpstreamSelector: &v1.PodSelector_UpstreamSelector{
-					Upstreams: []core.ResourceRef{
-						{
-							Namespace: "gloo-system",
-							Name:      "default-reviews-9080",
-						},
+			SelectorType: &v1.PodSelector_LabelSelector_{
+				LabelSelector: &v1.PodSelector_LabelSelector{
+					LabelsToMatch: map[string]string{
+						// matches all 'reviews' services/upstreams
+						"app": "reviews",
 					},
 				},
 			},

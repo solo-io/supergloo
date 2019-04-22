@@ -77,7 +77,7 @@ func routingRuleScenario1Expectations(configuration appmesh.AwsAppMeshConfigurat
 	// Verify routes
 	routes := config.Routes
 	expectedRoutes := routingRule1Routes()
-	ExpectWithOffset(2, routes).To(BeEquivalentTo(expectedRoutes))
+	ExpectWithOffset(2, routes).To(ConsistOf(expectedRoutes))
 }
 
 func routingRule1VirtualNodes() map[string]*appmeshApi.VirtualNodeData {

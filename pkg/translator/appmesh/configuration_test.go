@@ -89,5 +89,21 @@ var _ = Describe("Configuration", func() {
 				scenario.VerifyExpectations(config)
 			})
 		})
+
+		When("when a single traffic shifting rule matching multiple destinations is applied", func() {
+			BeforeEach(func() {
+				scenario = scenarios.RoutingRule4()
+			})
+
+			It("produces the correct configuration object", func() {
+				err = config.ProcessRoutingRules(scenario.GetRoutingRules())
+				Expect(err).NotTo(HaveOccurred())
+				err = config.AllowAll()
+				Expect(err).NotTo(HaveOccurred())
+
+				scenario.VerifyExpectations(config)
+			})
+		})
+
 	})
 })
