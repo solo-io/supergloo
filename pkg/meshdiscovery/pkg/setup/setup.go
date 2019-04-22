@@ -11,8 +11,12 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/registration"
 )
 
+type MeshDiscoveryOptions struct {
+	DisableConfigLoop bool
+}
+
 // customCtx and customErrHandler are expected to be passed by tests
-func Main(customCtx context.Context, customErrHandler func(error)) error {
+func Main(customCtx context.Context, customErrHandler func(error), opts *MeshDiscoveryOptions) error {
 	if os.Getenv("START_STATS_SERVER") != "" {
 		stats.StartStatsServer()
 	}
@@ -28,7 +32,7 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 		return err
 	}
 
-	if os.Getenv("DISABLE_DISCOVERY_CONFIG") == "" {
+	if !opts.DisableConfigLoop {
 		if err := registration.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
 			return err
 		}
