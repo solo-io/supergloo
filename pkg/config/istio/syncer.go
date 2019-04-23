@@ -49,7 +49,8 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) e
 
 		logger.Infof("reconciling config for mesh %v: ", mesh.Metadata.Ref())
 		if err := s.reconcilers.ReconcileAll(ctx, config); err != nil {
-			return errors.Wrapf(err, "reconciling config for %v", mesh.Metadata.Ref())
+			logger.Errorf("failed to reconcile config for mesh %s: %v", mesh.Metadata.Ref().Key(), err)
+			resourceErrs.AddError(mesh, errors.Wrapf(err, "reconciling configuration"))
 		}
 	}
 
