@@ -73,15 +73,14 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 
 		return configEventLoop, nil
 	}
-
 }
 
 func createAppmeshConfigSyncer(cs *clientset.Clientset) (v1.ConfigSyncer, error) {
 	translator := appmeshtranslator.NewAppMeshTranslator()
-
+	reconciler := appmesh.NewReconciler(appmesh.NewAppMeshClientBuilder(cs.Supergloo.Secret))
 	newReporter := makeReporter("appmesh-config-reporter", cs.Supergloo)
 
-	return appmesh.NewAppMeshConfigSyncer(translator, newReporter)
+	return appmesh.NewAppMeshConfigSyncer(translator, reconciler, newReporter)
 }
 
 func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {

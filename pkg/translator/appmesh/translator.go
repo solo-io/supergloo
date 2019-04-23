@@ -17,7 +17,7 @@ const (
 )
 
 type Translator interface {
-	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]AwsAppMeshConfiguration, reporter.ResourceErrors, error)
+	Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*ResourceSnapshot, reporter.ResourceErrors, error)
 }
 
 type appMeshTranslator struct{}
@@ -26,7 +26,7 @@ func NewAppMeshTranslator() Translator {
 	return &appMeshTranslator{}
 }
 
-func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]AwsAppMeshConfiguration, reporter.ResourceErrors, error) {
+func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*ResourceSnapshot, reporter.ResourceErrors, error) {
 	meshes := snapshot.Meshes.List()
 	meshGroups := snapshot.Meshgroups.List()
 	upstreams := snapshot.Upstreams.List()
@@ -43,7 +43,7 @@ func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSn
 	// We currently don't handle security rules for App Mesh
 	routingRulesByMesh := utils.GroupRulesByMesh(routingRules, nil, meshes, meshGroups, resourceErrs)
 
-	perMeshConfig := make(map[*v1.Mesh]AwsAppMeshConfiguration)
+	perMeshConfig := make(map[*v1.Mesh]*ResourceSnapshot)
 	for _, mesh := range meshes {
 		if mesh.GetAwsAppMesh() == nil {
 			// Skip if not of type AppMesh
@@ -56,7 +56,7 @@ func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSn
 			contextutils.LoggerFrom(ctx).Errorf("translating for mesh %v failed: %v", mesh.Metadata.Ref(), err)
 			continue
 		}
-		perMeshConfig[mesh] = appMeshConfig
+		perMeshConfig[mesh] = appMeshConfig.ResourceSnapshot()
 	}
 
 	return perMeshConfig, resourceErrs, nil

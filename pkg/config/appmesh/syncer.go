@@ -13,11 +13,16 @@ import (
 
 type appMeshConfigSyncer struct {
 	translator appmesh.Translator
+	reconciler Reconciler
 	reporter   reporter.Reporter
 }
 
-func NewAppMeshConfigSyncer(translator appmesh.Translator, reporter reporter.Reporter) (v1.ConfigSyncer, error) {
-	return &appMeshConfigSyncer{translator: translator, reporter: reporter}, nil
+func NewAppMeshConfigSyncer(translator appmesh.Translator, reconciler Reconciler, reporter reporter.Reporter) (v1.ConfigSyncer, error) {
+	return &appMeshConfigSyncer{
+		translator: translator,
+		reconciler: reconciler,
+		reporter:   reporter,
+	}, nil
 }
 
 func (s *appMeshConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
@@ -27,29 +32,30 @@ func (s *appMeshConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot)
 	defer logger.Infof("end sync %v", snap.Hash())
 	logger.Debugf("full snapshot: %v", snap)
 
-	meshConfigs, resourceErrs, err := s.translator.Translate(ctx, snap)
+	// Translate
+	appMeshResourcesByMesh, resourceErrs, err := s.translator.Translate(ctx, snap)
 	if err != nil {
 		return errors.Wrapf(err, "AWS App Mesh translation failed")
 	}
-
+	// No need to return here; if the error was related to the mesh, it shouldn't have been
+	// added to the meshConfigs. all meshConfigs are considered to be valid
 	if err := resourceErrs.Validate(); err != nil {
 		logger.Errorf("invalid configuration or internal error: %v", err)
 	}
 
-	// No need to return here; if the error was related to the mesh, it shouldn't have been
-	// added to the meshConfigs. all meshConfigs are considered to be valid
-
-	for mesh, config := range meshConfigs {
+	// Reconcile
+	for mesh, resources := range appMeshResourcesByMesh {
 		if mesh.GetAwsAppMesh() == nil {
 			return errors.Errorf("internal error: a non AWS App Mesh appeared in the mesh config snapshot")
 		}
-
-		logger.Infof("reconciling config for mesh %v: ", mesh.Metadata.Ref())
-		// TODO: implement reconciliation
-		logger.Debugf("App Mesh Configuration  is: %v", config)
+		logger.Infof("reconciling config for mesh %v", mesh.Metadata.Ref().Key())
+		if err := s.reconciler.Reconcile(ctx, mesh, resources); err != nil {
+			logger.Errorf("error while reconciling configuration for mesh [%s]: %v", mesh.Metadata.Ref().Key(), err)
+			resourceErrs.AddError(mesh, errors.Wrapf(err, "reconciling mesh config"))
+		}
 	}
 
-	// finally, write reports
+	// Write reports
 	if err := s.reporter.WriteReports(ctx, resourceErrs, nil); err != nil {
 		return errors.Wrapf(err, "writing reports")
 	}
