@@ -6,13 +6,13 @@ import (
 
 func getLinkerdMeshForInstall(install *v1.LinkerdInstall, meshes v1.MeshList, namespace string) *v1.Mesh {
 	for _, mesh := range meshes {
-		linkerdMesh := mesh.GetLinkerdMesh()
+		linkerdMesh := mesh.GetLinkerd()
 		if linkerdMesh == nil {
 			continue
 		}
 
 		if linkerdMesh.InstallationNamespace == namespace &&
-			linkerdMesh.LinkerdVersion == install.LinkerdVersion {
+			linkerdMesh.Version == install.Version {
 			return mesh
 		}
 	}
@@ -27,7 +27,7 @@ func getIstioMeshForInstall(install *v1.IstioInstall, meshes v1.MeshList, namesp
 		}
 
 		if istioMesh.InstallationNamespace == namespace &&
-			istioMesh.IstioVersion == install.IstioVersion {
+			istioMesh.Version == install.Version {
 			return mesh
 		}
 	}
@@ -41,10 +41,10 @@ func GetMeshForInstall(install *v1.Install, meshes v1.MeshList) *v1.Mesh {
 	}
 
 	switch meshInstallType := meshInstall.Mesh.GetMeshInstallType().(type) {
-	case *v1.MeshInstall_LinkerdMesh:
-		return getLinkerdMeshForInstall(meshInstallType.LinkerdMesh, meshes, install.InstallationNamespace)
-	case *v1.MeshInstall_IstioMesh:
-		return getIstioMeshForInstall(meshInstallType.IstioMesh, meshes, install.InstallationNamespace)
+	case *v1.MeshInstall_Linkerd:
+		return getLinkerdMeshForInstall(meshInstallType.Linkerd, meshes, install.InstallationNamespace)
+	case *v1.MeshInstall_Istio:
+		return getIstioMeshForInstall(meshInstallType.Istio, meshes, install.InstallationNamespace)
 	default:
 		return nil
 	}

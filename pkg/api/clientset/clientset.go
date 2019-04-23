@@ -131,7 +131,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
-	podBase := customkube.NewResourceClient(kubeClient, kubeCoreCache)
+	podBase := customkube.NewPodResourceClient(kubeClient, kubeCoreCache)
 	pods := v1.NewPodClientWithBase(podBase)
 
 	return newClientset(

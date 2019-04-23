@@ -50,8 +50,8 @@ func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
 		InstallationNamespace: opts.Install.InstallationNamespace.Istio,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				MeshInstallType: &v1.MeshInstall_IstioMesh{
-					IstioMesh: &opts.Install.IstioInstall,
+				MeshInstallType: &v1.MeshInstall_Istio{
+					Istio: &opts.Install.IstioInstall,
 				},
 			},
 		},
@@ -63,14 +63,14 @@ func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
 func validateIstioInstall(in options.Install) error {
 	var validVersion bool
 	for _, ver := range constants.SupportedIstioVersions {
-		if in.IstioInstall.IstioVersion == ver {
+		if in.IstioInstall.Version == ver {
 			validVersion = true
 			break
 		}
 	}
 	if !validVersion {
 		return errors.Errorf("%v is not a supported "+
-			"istio version", in.IstioInstall.IstioVersion)
+			"istio version", in.IstioInstall.Version)
 	}
 
 	return nil

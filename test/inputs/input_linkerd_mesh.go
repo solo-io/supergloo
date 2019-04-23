@@ -26,10 +26,10 @@ func linkerdMesh(namespace, installNs, version string, secretRef *core.ResourceR
 			Namespace: namespace,
 			Name:      "fancy-linkerd",
 		},
-		MeshType: &v1.Mesh_LinkerdMesh{
-			LinkerdMesh: &v1.LinkerdMesh{
+		MeshType: &v1.Mesh_Linkerd{
+			Linkerd: &v1.LinkerdMesh{
 				InstallationNamespace: installNs,
-				LinkerdVersion:        version,
+				Version:               version,
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

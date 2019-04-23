@@ -104,12 +104,11 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	tlsSecrets := snapshot.Tlssecrets.List()
 
 	for _, mesh := range meshes {
-		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
-		if !ok {
-			// we only want istio meshes
+		istio := mesh.GetIstio()
+		if istio == nil {
 			continue
 		}
-		writeNamespace := istio.Istio.InstallationNamespace
+		writeNamespace := istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
 			writeNamespace: writeNamespace,

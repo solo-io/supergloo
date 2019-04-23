@@ -33,7 +33,7 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
-	istio := installMesh.GetIstioMesh()
+	istio := installMesh.GetIstio()
 	if istio == nil {
 		return errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
 	}
@@ -95,9 +95,9 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 		EnableJaeger:     istio.InstallJaeger,
 	}
 
-	installVersion, ok := supportedIstioVersions[istio.IstioVersion]
+	installVersion, ok := supportedIstioVersions[istio.Version]
 	if !ok {
-		return nil, errors.Errorf("%v is not a suppported istio version. available: %v", istio.IstioVersion, supportedIstioVersions)
+		return nil, errors.Errorf("%v is not a suppported istio version. available: %v", istio.Version, supportedIstioVersions)
 	}
 
 	chartParams := helmChartParams{

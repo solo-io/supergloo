@@ -19,7 +19,7 @@ import (
 	gotestutils "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
+	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"

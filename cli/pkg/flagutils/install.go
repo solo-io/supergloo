@@ -28,7 +28,7 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"istio-system",
 		"which namespace to install Istio into?")
 
-	set.StringVar(&in.IstioInstall.IstioVersion,
+	set.StringVar(&in.IstioInstall.Version,
 		"version",
 		istio.IstioVersion106,
 		fmt.Sprintf("version of istio to install? available: %v", constants.SupportedIstioVersions))
@@ -66,7 +66,7 @@ func AddLinkerdInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"linkerd",
 		"which namespace to install Linkerd into?")
 
-	set.StringVar(&in.LinkerdInstall.LinkerdVersion,
+	set.StringVar(&in.LinkerdInstall.Version,
 		"version",
 		linkerd.Version_stable230,
 		fmt.Sprintf("version of linkerd to install? available: %v", constants.SupportedLinkerdVersions))
@@ -89,7 +89,7 @@ func AddGlooIngressInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"gloo-system",
 		"which namespace to install Gloo into?")
 
-	set.StringVar(&in.GlooIngressInstall.GlooVersion,
+	set.StringVar(&in.GlooIngressInstall.Version,
 		"version",
 		"latest",
 		fmt.Sprintf("version of gloo to install? available: %v", constants.SupportedGlooVersions))

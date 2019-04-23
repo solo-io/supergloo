@@ -49,7 +49,7 @@ var _ = Describe("gloo install", func() {
 				install := getInstall(name)
 				glooIngress := MustGlooInstallType(install)
 				if version != "latest" {
-					Expect(glooIngress.Gloo.GlooVersion).To(Equal(strings.TrimPrefix(version, "v")))
+					Expect(glooIngress.Gloo.Version).To(Equal(strings.TrimPrefix(version, "v")))
 				}
 			}
 

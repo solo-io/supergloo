@@ -25,10 +25,10 @@ var _ = Describe("istio installer", func() {
 	testInputs := func(c testCase) (*v1.Install, *v1.Mesh, *v1.IstioInstall) {
 		install := inputs.IstioInstall("test", "mesh", c.installNs, c.version, c.disabled)
 		if c.istioPrefs != nil {
-			c.istioPrefs.IstioVersion = c.version
-			install.GetMesh().MeshInstallType = &v1.MeshInstall_IstioMesh{IstioMesh: c.istioPrefs}
+			c.istioPrefs.Version = c.version
+			install.GetMesh().MeshInstallType = &v1.MeshInstall_Istio{Istio: c.istioPrefs}
 		}
-		return install, c.existingInstall, install.GetMesh().GetIstioMesh()
+		return install, c.existingInstall, install.GetMesh().GetIstio()
 	}
 	Context("install disabled", func() {
 		It("calls purge with the expected labels, sets installed mesh to nil", func() {

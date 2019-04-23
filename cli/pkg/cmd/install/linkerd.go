@@ -50,8 +50,8 @@ func installLinkerdFromOpts(opts *options.Options) (*v1.Install, error) {
 		InstallationNamespace: opts.Install.InstallationNamespace.Linkerd,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				MeshInstallType: &v1.MeshInstall_LinkerdMesh{
-					LinkerdMesh: &opts.Install.LinkerdInstall,
+				MeshInstallType: &v1.MeshInstall_Linkerd{
+					Linkerd: &opts.Install.LinkerdInstall,
 				},
 			},
 		},
@@ -63,14 +63,14 @@ func installLinkerdFromOpts(opts *options.Options) (*v1.Install, error) {
 func validateLinkerdInstall(in options.Install) error {
 	var validVersion bool
 	for _, ver := range constants.SupportedLinkerdVersions {
-		if in.LinkerdInstall.LinkerdVersion == ver {
+		if in.LinkerdInstall.Version == ver {
 			validVersion = true
 			break
 		}
 	}
 	if !validVersion {
 		return errors.Errorf("%v is not a supported "+
-			"linkerd version", in.LinkerdInstall.LinkerdVersion)
+			"linkerd version", in.LinkerdInstall.Version)
 	}
 
 	return nil

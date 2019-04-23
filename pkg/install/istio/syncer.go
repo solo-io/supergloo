@@ -20,5 +20,5 @@ func isIstioInstall(install *v1.Install) bool {
 	if mesh == nil {
 		return false
 	}
-	return mesh.GetIstioMesh() != nil
+	return mesh.GetIstio() != nil
 }

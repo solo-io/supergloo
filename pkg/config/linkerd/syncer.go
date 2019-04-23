@@ -50,7 +50,7 @@ func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot)
 	// added to the meshConfigs. all meshConfigs are considered to be valid
 
 	for mesh, config := range meshConfigs {
-		_, ok := mesh.MeshType.(*v1.Mesh_LinkerdMesh)
+		_, ok := mesh.MeshType.(*v1.Mesh_Linkerd)
 		if !ok {
 			return errors.Errorf("internal error: a non linkerd-mesh appeared in the mesh config snapshot")
 		}
