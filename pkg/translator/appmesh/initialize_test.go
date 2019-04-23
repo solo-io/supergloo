@@ -10,9 +10,7 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/protoutils"
 	"github.com/solo-io/supergloo/api/custom/kubepod"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -153,8 +151,8 @@ func addPod(info awsAppMeshPodInfo, podName, vnName string) {
 	info[pod] = &podInfo{virtualNodeName: vnName}
 }
 
-func getPod(podYaml string) *corev1.Pod {
-	var podObj corev1.Pod
+func getPod(podYaml string) *v1.Pod {
+	var podObj v1.Pod
 	err := yaml.Unmarshal([]byte(podYaml), &podObj)
 	if err != nil {
 		panic(err) // should never happen
@@ -165,7 +163,7 @@ func getPod(podYaml string) *corev1.Pod {
 func getPodList(podYamls ...string) v1.PodList {
 	var podList v1.PodList
 	for _, yml := range podYamls {
-		podList = append(podList, kubernetes.FromKube(getPod(yml)))
+		podList = append(podList, getPod(yml))
 	}
 	return podList
 }

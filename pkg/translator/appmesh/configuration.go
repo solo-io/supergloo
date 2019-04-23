@@ -267,23 +267,25 @@ func buildAppmeshMatchers(rule *v1.RoutingRule) ([]*appmesh.HttpRouteMatch, erro
 }
 
 // Fails if multiple rules target the given host on different ports.
-func validate(host string, routeMap routesByPort) (port uint32, routes []*appmesh.HttpRoute, err error) {
+func validate(host string, routeMap routesByPort) (uint32, []*appmesh.HttpRoute, error) {
 	if len(routeMap) > 1 {
 		var ports []string
 		for port := range routeMap {
 			ports = append(ports, fmt.Sprint(port))
 		}
-		err = errors.Errorf("the Routing Rules resulted in multiple Routes to different ports (%s) on host %s. "+
+		return 0, nil, errors.Errorf("the Routing Rules resulted in multiple Routes to different ports (%s) on host %s. "+
 			"Supergloo cannot translate this configuration as AWS App Mesh currently requires a single listener "+
 			"to be specified on the Virtual Router for a DNS service name (Virtual Service)",
 			strings.Join(ports, ","), host)
-		return
+
 	}
 
+	var port uint32
+	var routes []*appmesh.HttpRoute
 	for p, r := range routeMap {
 		port, routes = p, r
 	}
-	return
+	return port, routes, nil
 }
 
 func createVirtualNode(ports []uint32, virtualNodeName, meshName, hostName string) *appmesh.VirtualNodeData {

@@ -9,22 +9,15 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
-	kubev1 "k8s.io/api/core/v1"
 )
 
 func getPodsForMesh(meshName string, pods v1.PodList) (awsAppMeshPodInfo, v1.PodList, error) {
 	var appMeshPodList v1.PodList
 	appMeshPods := make(awsAppMeshPodInfo, 0)
 	for _, pod := range pods {
-		kubePod, err := kubernetes.ToKube(pod)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		info, err := getPodInfo(meshName, kubePod)
+		info, err := getPodInfo(meshName, pod)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -44,9 +37,9 @@ func getPodsForMesh(meshName string, pods v1.PodList) (awsAppMeshPodInfo, v1.Pod
 	return appMeshPods, appMeshPodList, nil
 }
 
-func getPodInfo(meshName string, kubePod *kubev1.Pod) (*podInfo, error) {
+func getPodInfo(meshName string, pod *v1.Pod) (*podInfo, error) {
 	var info *podInfo
-	for _, container := range kubePod.Spec.Containers {
+	for _, container := range pod.Spec.Containers {
 		for _, env := range container.Env {
 			if env.Name == PodVirtualNodeEnvName {
 
@@ -56,7 +49,7 @@ func getPodInfo(meshName string, kubePod *kubev1.Pod) (*podInfo, error) {
 				vnNameParts := strings.Split(env.Value, "/")
 				if len(vnNameParts) != 4 {
 					return nil, errors.Errorf("unexpected format for %s env for pod %s.%s. Expected format is [%s] but found [%s]",
-						PodVirtualNodeEnvName, kubePod.Namespace, kubePod.Name, "mesh/meshName/virtualNode/virtualNodeName", env.Value)
+						PodVirtualNodeEnvName, pod.Namespace, pod.Name, "mesh/meshName/virtualNode/virtualNodeName", env.Value)
 				}
 
 				if podMeshName := vnNameParts[1]; podMeshName == meshName {
@@ -70,7 +63,7 @@ func getPodInfo(meshName string, kubePod *kubev1.Pod) (*podInfo, error) {
 
 	// info is non-nil is this pod has the appmesh sidecar
 	if info != nil {
-		for _, initContainer := range kubePod.Spec.InitContainers {
+		for _, initContainer := range pod.Spec.InitContainers {
 			for _, env := range initContainer.Env {
 				if env.Name == PodPortsEnvName {
 					for _, portStr := range strings.Split(env.Value, ",") {
@@ -85,7 +78,7 @@ func getPodInfo(meshName string, kubePod *kubev1.Pod) (*podInfo, error) {
 			}
 		}
 		if len(info.ports) == 0 {
-			return nil, errors.Errorf("could not find %s env on any initContainer for pod %s", PodPortsEnvName, kubePod.Name)
+			return nil, errors.Errorf("could not find %s env on any initContainer for pod %s", PodPortsEnvName, pod.Name)
 		}
 	}
 
