@@ -3,7 +3,7 @@ package appmesh_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	appmesh2 "github.com/solo-io/supergloo/pkg/translator/appmesh"
+	translator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	"github.com/solo-io/supergloo/test/inputs/appmesh/scenarios"
 )
 
@@ -11,14 +11,14 @@ var _ = Describe("Configuration", func() {
 
 	var (
 		scenario scenarios.AppMeshTestScenario
-		config   appmesh2.AwsAppMeshConfiguration
+		config   translator.AwsAppMeshConfiguration
 		err      error
 	)
 
 	Context("kubernetes resources have been configured correctly", func() {
 
 		JustBeforeEach(func() {
-			config, err = appmesh2.NewAwsAppMeshConfiguration(
+			config, err = translator.NewAwsAppMeshConfiguration(
 				scenario.GetMeshName(),
 				scenario.GetResources().MustGetPodList(),
 				scenario.GetResources().MustGetUpstreams())

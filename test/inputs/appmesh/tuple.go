@@ -6,7 +6,6 @@ import (
 	"github.com/ghodss/yaml"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/protoutils"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	kubev1 "k8s.io/api/core/v1"
 )
@@ -55,13 +54,12 @@ func (t *PodsServicesUpstreamsTuple) MustGetPodList() v1.PodList {
 	var podList v1.PodList
 	for _, podYaml := range t.Pods {
 		for _, podManifest := range strings.Split(podYaml, "---") {
-			var podObj kubev1.Pod
+			var podObj v1.Pod
 			err := yaml.Unmarshal([]byte(podManifest), &podObj)
 			if err != nil {
 				panic("failed to unmarshal test pod")
 			}
-			customPod := kubernetes.FromKube(&podObj)
-			podList = append(podList, customPod)
+			podList = append(podList, &podObj)
 		}
 	}
 	return podList

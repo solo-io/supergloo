@@ -91,7 +91,7 @@ func (c *AwsAppMeshConfigurationImpl) ProcessRoutingRules(rules v1.RoutingRuleLi
 
 		routesByDestination, destinationPort, err := processRoutingRule(rule, c.UpstreamList, c.VirtualNodes)
 		if err != nil {
-			return errors.Wrapf(err, "failed to process routing role %s", rule.Metadata.Ref())
+			return errors.Wrapf(err, "failed to process routing role %s", rule.Metadata.Ref().Key())
 		}
 
 		// merge the results for this route into the map
@@ -229,7 +229,7 @@ func processRoutingRule(rule *v1.RoutingRule, upstreams gloov1.UpstreamList, vir
 	if err != nil {
 		// Error is only thrown if it's an upstream selector and the upstream could not be found in the given list
 		return nil, 0, errors.Wrapf(err, "the destination selector for routing rule %s does not match any pod injected "+
-			"with the App Mesh sidecar", rule.Metadata.Ref())
+			"with the App Mesh sidecar", rule.Metadata.Ref().Key())
 	}
 	uniqueHostnames := make(map[string]bool)
 	for _, destUpstream := range destUpstreams {
@@ -249,18 +249,23 @@ func processRoutingRule(rule *v1.RoutingRule, upstreams gloov1.UpstreamList, vir
 }
 
 func buildAppmeshMatchers(rule *v1.RoutingRule) ([]*appmesh.HttpRouteMatch, error) {
+	matchers := rule.GetRequestMatchers()
+	if len(matchers) == 0 {
+		return nil, errors.Errorf("routing rule %s has zero matchers. At least one matcher is required", rule.Metadata.Ref().Key())
+	}
+
 	var awsMatchers []*appmesh.HttpRouteMatch
-	for _, matcher := range rule.GetRequestMatchers() {
+	for _, matcher := range matchers {
 		pathSpecifier := matcher.GetPathSpecifier()
 		if pathSpecifier == nil {
-			return nil, errors.Errorf("path specifier for routing rule %s cannot be nil", rule.Metadata.Ref())
+			return nil, errors.Errorf("path specifier for routing rule %s cannot be nil", rule.Metadata.Ref().Key())
 		}
 		switch matchType := pathSpecifier.(type) {
 		case *gloov1.Matcher_Prefix:
 			awsMatchers = append(awsMatchers, &appmesh.HttpRouteMatch{Prefix: &matchType.Prefix})
 		default:
 			return nil, errors.Errorf("unsupported matcher type %T on routing rule %s. AppMesh currently "+
-				"supports only path prefix matchers", matcher.GetPathSpecifier(), rule.Metadata.Ref())
+				"supports only path prefix matchers", matcher.GetPathSpecifier(), rule.Metadata.Ref().Key())
 		}
 	}
 	return awsMatchers, nil
