@@ -74,12 +74,12 @@ var _ = Describe("istio e2e", func() {
 		testFaultInjection()
 	})
 
-	It("it uninstalls istio", func() {
-		testUninstallIstio(istioName)
-	})
-
 	It("it uninstalls gloo", func() {
 		testUninstallGloo(glooName)
+	})
+
+	It("it uninstalls istio", func() {
+		testUninstallIstio(istioName)
 	})
 })
 
