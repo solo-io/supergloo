@@ -87,8 +87,12 @@ var _ = Describe("istio e2e", func() {
    tests
 */
 func testInstallIstio(meshName string) {
+	version := istio.IstioVersion113
+	if istioVersion := os.Getenv("ISTIO_VERSION"); istioVersion != "" {
+		version = istioVersion
+	}
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --version=%v --mtls=true --auto-inject=true",
-		meshName, istio.IstioVersion113))
+		meshName, version))
 	Expect(err).NotTo(HaveOccurred())
 
 	installClient := clients.MustInstallClient()
