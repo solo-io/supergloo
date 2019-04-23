@@ -178,7 +178,7 @@ func getSubjectsForSelector(selector *v1.PodSelector,
 		serviceAccounts = append(serviceAccounts, newSa)
 	}
 	for _, p := range selectedPods {
-		kubePod, err := kubernetes.ToKube(p)
+		kubePod, err := kubernetes.ToKubePod(p)
 		if err != nil {
 			return nil, errors.Wrapf(err, "internal error: converting custom pod object")
 		}

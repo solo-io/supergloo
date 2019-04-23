@@ -12,9 +12,9 @@ func IstioInstall(name, namespace, installNs, version string, disabled bool) *v1
 		InstallationNamespace: installNs,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				MeshInstallType: &v1.MeshInstall_IstioMesh{
-					IstioMesh: &v1.IstioInstall{
-						IstioVersion: version,
+				MeshInstallType: &v1.MeshInstall_Istio{
+					Istio: &v1.IstioInstall{
+						Version: version,
 					},
 				},
 			},
@@ -29,11 +29,11 @@ func LinkerdInstall(name, namespace, installNs, version string, disabled bool) *
 		InstallationNamespace: installNs,
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
-				MeshInstallType: &v1.MeshInstall_LinkerdMesh{
-					LinkerdMesh: &v1.LinkerdInstall{
+				MeshInstallType: &v1.MeshInstall_Linkerd{
+					Linkerd: &v1.LinkerdInstall{
 						EnableAutoInject: true,
 						EnableMtls:       true,
-						LinkerdVersion:   version,
+						Version:          version,
 					},
 				},
 			},
@@ -50,7 +50,7 @@ func GlooIstall(name, namespace, installNs, version string, disabled bool) *v1.I
 			Ingress: &v1.MeshIngressInstall{
 				IngressInstallType: &v1.MeshIngressInstall_Gloo{
 					Gloo: &v1.GlooInstall{
-						GlooVersion: version,
+						Version: version,
 					},
 				},
 			},
@@ -67,8 +67,8 @@ func GlooIstallWithMeshes(name, namespace, installNs, version string, disabled b
 			Ingress: &v1.MeshIngressInstall{
 				IngressInstallType: &v1.MeshIngressInstall_Gloo{
 					Gloo: &v1.GlooInstall{
-						GlooVersion: version,
-						Meshes:      targetMeshes,
+						Version: version,
+						Meshes:  targetMeshes,
 					},
 				},
 			},

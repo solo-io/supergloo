@@ -31,7 +31,7 @@ var _ = Describe("PodBaseClient", func() {
 		kube := testutils.MustKubeClient()
 		kcache, err := cache.NewKubeCoreCache(context.TODO(), kube)
 		Expect(err).NotTo(HaveOccurred())
-		rc := NewResourceClient(kube, kcache)
+		rc := NewPodResourceClient(kube, kcache)
 
 		pod, err := kube.CoreV1().Pods(namespace).Create(&kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -58,7 +58,7 @@ var _ = Describe("PodBaseClient", func() {
 		Expect(pods).To(HaveLen(1))
 		Expect(pods[0].GetMetadata().Name).To(Equal(pod.Name))
 		Expect(pods[0].GetMetadata().Namespace).To(Equal(pod.Namespace))
-		kubePod, err := ToKube(pods[0])
+		kubePod, err := ToKubePod(pods[0])
 		Expect(err).NotTo(HaveOccurred())
 		Expect(kubePod.Spec.Containers).To(Equal(pod.Spec.Containers))
 	})

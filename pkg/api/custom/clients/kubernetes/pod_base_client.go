@@ -17,19 +17,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type ResourceClient struct {
+type KubeCoreResourceClient struct {
 	kube  kubernetes.Interface
 	cache cache.KubeCoreCache
 }
 
-func NewResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *ResourceClient {
-	return &ResourceClient{
+type PodResourceClient KubeCoreResourceClient
+
+func NewPodResourceClient(kube kubernetes.Interface, cache cache.KubeCoreCache) *PodResourceClient {
+	return &PodResourceClient{
 		kube:  kube,
 		cache: cache,
 	}
 }
 
-func FromKube(pod *kubev1.Pod) *v1.Pod {
+func FromKubePod(pod *kubev1.Pod) *v1.Pod {
 
 	podCopy := pod.DeepCopy()
 	kubePod := kubepod.Pod(*podCopy)
@@ -40,7 +42,7 @@ func FromKube(pod *kubev1.Pod) *v1.Pod {
 	return resource
 }
 
-func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
+func ToKubePod(resource resources.Resource) (*kubev1.Pod, error) {
 	podResource, ok := resource.(*v1.Pod)
 	if !ok {
 		return nil, errors.Errorf("internal error: invalid resource %v passed to pod-only client", resources.Kind(resource))
@@ -51,21 +53,21 @@ func ToKube(resource resources.Resource) (*kubev1.Pod, error) {
 	return &pod, nil
 }
 
-var _ clients.ResourceClient = &ResourceClient{}
+var _ clients.ResourceClient = &PodResourceClient{}
 
-func (rc *ResourceClient) Kind() string {
+func (rc *PodResourceClient) Kind() string {
 	return resources.Kind(&v1.Pod{})
 }
 
-func (rc *ResourceClient) NewResource() resources.Resource {
+func (rc *PodResourceClient) NewResource() resources.Resource {
 	return resources.Clone(&v1.Pod{})
 }
 
-func (rc *ResourceClient) Register() error {
+func (rc *PodResourceClient) Register() error {
 	return nil
 }
 
-func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (resources.Resource, error) {
+func (rc *PodResourceClient) Read(namespace, name string, opts clients.ReadOpts) (resources.Resource, error) {
 	if err := resources.ValidateName(name); err != nil {
 		return nil, errors.Wrapf(err, "validation error")
 	}
@@ -78,7 +80,7 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 		}
 		return nil, errors.Wrapf(err, "reading podObj from kubernetes")
 	}
-	resource := FromKube(podObj)
+	resource := FromKubePod(podObj)
 
 	if resource == nil {
 		return nil, errors.Errorf("podObj %v is not kind %v", name, rc.Kind())
@@ -86,7 +88,7 @@ func (rc *ResourceClient) Read(namespace, name string, opts clients.ReadOpts) (r
 	return resource, nil
 }
 
-func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteOpts) (resources.Resource, error) {
+func (rc *PodResourceClient) Write(resource resources.Resource, opts clients.WriteOpts) (resources.Resource, error) {
 	opts = opts.WithDefaults()
 	if err := resources.Validate(resource); err != nil {
 		return nil, errors.Wrapf(err, "validation error")
@@ -96,7 +98,7 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 	// mutate and return clone
 	clone := resources.Clone(resource)
 	clone.SetMetadata(meta)
-	podObj, err := ToKube(resource)
+	podObj, err := ToKubePod(resource)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +126,7 @@ func (rc *ResourceClient) Write(resource resources.Resource, opts clients.WriteO
 	return rc.Read(podObj.Namespace, podObj.Name, clients.ReadOpts{Ctx: opts.Ctx})
 }
 
-func (rc *ResourceClient) Delete(namespace, name string, opts clients.DeleteOpts) error {
+func (rc *PodResourceClient) Delete(namespace, name string, opts clients.DeleteOpts) error {
 	opts = opts.WithDefaults()
 	if !rc.exist(namespace, name) {
 		if !opts.IgnoreNotExist {
@@ -139,7 +141,7 @@ func (rc *ResourceClient) Delete(namespace, name string, opts clients.DeleteOpts
 	return nil
 }
 
-func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resources.ResourceList, error) {
+func (rc *PodResourceClient) List(namespace string, opts clients.ListOpts) (resources.ResourceList, error) {
 	opts = opts.WithDefaults()
 
 	podObjList, err := rc.cache.PodLister().Pods(namespace).List(labels.SelectorFromSet(opts.Selector))
@@ -148,7 +150,7 @@ func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resourc
 	}
 	var resourceList resources.ResourceList
 	for _, podObj := range podObjList {
-		resource := FromKube(podObj)
+		resource := FromKubePod(podObj)
 
 		if resource == nil {
 			continue
@@ -163,56 +165,11 @@ func (rc *ResourceClient) List(namespace string, opts clients.ListOpts) (resourc
 	return resourceList, nil
 }
 
-func (rc *ResourceClient) Watch(namespace string, opts clients.WatchOpts) (<-chan resources.ResourceList, <-chan error, error) {
-	opts = opts.WithDefaults()
-	watch := rc.cache.Subscribe()
-
-	resourcesChan := make(chan resources.ResourceList)
-	errs := make(chan error)
-	// prevent flooding the channel with duplicates
-	var previous *resources.ResourceList
-	updateResourceList := func() {
-		list, err := rc.List(namespace, clients.ListOpts{
-			Ctx:      opts.Ctx,
-			Selector: opts.Selector,
-		})
-		if err != nil {
-			errs <- err
-			return
-		}
-		if previous != nil {
-			if list.Equal(*previous) {
-				return
-			}
-		}
-		previous = &list
-		resourcesChan <- list
-	}
-
-	go func() {
-		defer rc.cache.Unsubscribe(watch)
-		defer close(resourcesChan)
-		defer close(errs)
-
-		// watch should open up with an initial read
-		updateResourceList()
-		for {
-			select {
-			case _, ok := <-watch:
-				if !ok {
-					return
-				}
-				updateResourceList()
-			case <-opts.Ctx.Done():
-				return
-			}
-		}
-	}()
-
-	return resourcesChan, errs, nil
+func (rc *PodResourceClient) Watch(namespace string, opts clients.WatchOpts) (<-chan resources.ResourceList, <-chan error, error) {
+	return KubeResourceWatch(rc.cache, rc.List, namespace, opts)
 }
 
-func (rc *ResourceClient) exist(namespace, name string) bool {
+func (rc *PodResourceClient) exist(namespace, name string) bool {
 	_, err := rc.kube.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 	return err == nil
 }

@@ -13,7 +13,7 @@ func SurveyIstioInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Istio, clients.MustGetNamespaces()); err != nil {
 		return err
 	}
-	if err := cliutil.ChooseFromList("which version of Istio to install? ", &in.IstioInstall.IstioVersion, constants.SupportedIstioVersions); err != nil {
+	if err := cliutil.ChooseFromList("which version of Istio to install? ", &in.IstioInstall.Version, constants.SupportedIstioVersions); err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func SurveyLinkerdInstall(in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Linkerd, clients.MustGetNamespaces()); err != nil {
 		return err
 	}
-	if err := cliutil.ChooseFromList("which version of Linkerd to install? ", &in.LinkerdInstall.LinkerdVersion, constants.SupportedLinkerdVersions); err != nil {
+	if err := cliutil.ChooseFromList("which version of Linkerd to install? ", &in.LinkerdInstall.Version, constants.SupportedLinkerdVersions); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func SurveyGlooInstall(ctx context.Context, in *options.Install) error {
 	if err := cliutil.ChooseFromList("which namespace to install to? ", &in.InstallationNamespace.Gloo, clients.MustGetNamespaces()); err != nil {
 		return err
 	}
-	if err := cliutil.ChooseFromList("which version of Gloo to install? ", &in.GlooIngressInstall.GlooVersion, constants.SupportedGlooVersions); err != nil {
+	if err := cliutil.ChooseFromList("which version of Gloo to install? ", &in.GlooIngressInstall.Version, constants.SupportedGlooVersions); err != nil {
 		return err
 	}
 

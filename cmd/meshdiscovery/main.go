@@ -6,7 +6,7 @@ import (
 	"time"
 
 	check "github.com/solo-io/go-checkpoint"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/pkg/setup"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/pkg/version"
 )
 

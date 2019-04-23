@@ -18,11 +18,11 @@ func NewLinkerdPrometheusSyncer(client prometheusv1.PrometheusConfigClient, kube
 }
 
 func chooseMesh(mesh *v1.Mesh) bool {
-	return mesh.GetLinkerdMesh() != nil
+	return mesh.GetLinkerd() != nil
 }
 
 func getScrapeConfigs(mesh *v1.Mesh) ([]*config.ScrapeConfig, error) {
-	linkerd := mesh.GetLinkerdMesh()
+	linkerd := mesh.GetLinkerd()
 	if linkerd == nil {
 		return nil, errors.Errorf("internal error: mesh %v was expected to be type linkerd", mesh.Metadata.Ref())
 	}

@@ -83,12 +83,12 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	}
 
 	for _, mesh := range meshes {
-		linkerd, ok := mesh.MeshType.(*v1.Mesh_LinkerdMesh)
+		linkerd, ok := mesh.MeshType.(*v1.Mesh_Linkerd)
 		if !ok {
 			// we only want linkerd meshes
 			continue
 		}
-		writeNamespace := linkerd.LinkerdMesh.InstallationNamespace
+		writeNamespace := linkerd.Linkerd.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
 			writeNamespace: writeNamespace,

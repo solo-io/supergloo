@@ -27,7 +27,7 @@ var _ = Describe("gloo installer", func() {
 	testInputs := func(c testCase) (*v1.Install, *v1.MeshIngress, *v1.GlooInstall) {
 		install := inputs.GlooIstallWithMeshes("test", "mesh", c.installNs, c.version, c.disabled, c.targetMeshes)
 		if c.glooPrefs != nil {
-			c.glooPrefs.GlooVersion = c.version
+			c.glooPrefs.Version = c.version
 			install.GetIngress().IngressInstallType = &v1.MeshIngressInstall_Gloo{Gloo: c.glooPrefs}
 		}
 		if c.existingInstall != nil {

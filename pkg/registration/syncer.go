@@ -28,7 +28,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		case *v1.Mesh_Istio:
 			enabledFeatures.Istio = true
 			contextutils.LoggerFrom(ctx).Infof("detected istio mesh %v", mesh.GetMetadata().Ref())
-		case *v1.Mesh_LinkerdMesh:
+		case *v1.Mesh_Linkerd:
 			enabledFeatures.Linkerd = true
 			contextutils.LoggerFrom(ctx).Infof("detected linkerd mesh %v", mesh.GetMetadata().Ref())
 		case *v1.Mesh_AwsAppMesh:

@@ -31,7 +31,7 @@ message Mesh {
     oneof mesh_type {
         IstioMesh istio = 1;
         AwsAppMesh aws_app_mesh = 4;
-        LinkerdMesh linkerd_mesh = 5;
+        LinkerdMesh linkerd = 5;
     }
 
     // mtls config specifies configuration options for enabling mutual
@@ -63,8 +63,11 @@ message DiscoveryMetadata {
     // namespace which the mesh is installed into
     string installation_namespace = 4;
 
+    // upstreams which point to injected pods in the mesh
+    repeated core.solo.io.ResourceRef upstreams = 5;
+
     // discovered mtls config of the given mesh
-    MtlsConfig mtls_config = 5;
+    MtlsConfig mtls_config = 6;
 }
 
 // Mesh object representing an installed Istio control plane
@@ -73,7 +76,7 @@ message IstioMesh {
     string installation_namespace = 1;
 
     // version of istio which has been installed
-    string istio_version = 2;
+    string version = 2;
 }
 
 // Mesh object representing AWS App Mesh
@@ -112,7 +115,7 @@ message LinkerdMesh {
     string installation_namespace = 1;
 
     // version of istio which has been installed
-    string linkerd_version = 2;
+    string version = 2;
 }
 
 // the encryption configuration that will be applied by the role

@@ -52,9 +52,9 @@ var _ = Describe("Install", func() {
 				Expect(err).NotTo(HaveOccurred())
 				install := getInstall(name)
 				linkerd := MustLinkerdInstallType(install)
-				Expect(linkerd.LinkerdMesh.LinkerdVersion).To(Equal(version))
-				Expect(linkerd.LinkerdMesh.EnableMtls).To(Equal(mtls))
-				Expect(linkerd.LinkerdMesh.EnableAutoInject).To(Equal(autoInject))
+				Expect(linkerd.Linkerd.Version).To(Equal(version))
+				Expect(linkerd.Linkerd.EnableMtls).To(Equal(mtls))
+				Expect(linkerd.Linkerd.EnableAutoInject).To(Equal(autoInject))
 			}
 
 			installAndVerifyLinkerd("a1a", "ns", linkerd.Version_stable230, true, true)
@@ -121,9 +121,9 @@ var _ = Describe("Install", func() {
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						MeshInstallType: &v1.MeshInstall_LinkerdMesh{
-							LinkerdMesh: &v1.LinkerdInstall{
-								LinkerdVersion:   linkerd.Version_stable230,
+						MeshInstallType: &v1.MeshInstall_Linkerd{
+							Linkerd: &v1.LinkerdInstall{
+								Version:          linkerd.Version_stable230,
 								EnableAutoInject: true,
 								EnableMtls:       true,
 							},
@@ -135,10 +135,10 @@ var _ = Describe("Install", func() {
 	})
 })
 
-func MustLinkerdInstallType(install *v1.Install) *v1.MeshInstall_LinkerdMesh {
+func MustLinkerdInstallType(install *v1.Install) *v1.MeshInstall_Linkerd {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
-	Expect(mesh.Mesh.MeshInstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_LinkerdMesh{}))
-	linkerdMesh := mesh.Mesh.MeshInstallType.(*v1.MeshInstall_LinkerdMesh)
+	Expect(mesh.Mesh.MeshInstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_Linkerd{}))
+	linkerdMesh := mesh.Mesh.MeshInstallType.(*v1.MeshInstall_Linkerd)
 	return linkerdMesh
 }
