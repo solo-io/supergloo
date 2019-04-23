@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Support Istio v1.1.3
+    issueLink: https://github.com/solo-io/supergloo/issues/386

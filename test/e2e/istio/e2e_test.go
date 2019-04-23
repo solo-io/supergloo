@@ -88,7 +88,7 @@ var _ = Describe("istio e2e", func() {
 */
 func testInstallIstio(meshName string) {
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --version=%v --mtls=true --auto-inject=true",
-		meshName, istio.IstioVersion106))
+		meshName, istio.IstioVersion113))
 	Expect(err).NotTo(HaveOccurred())
 
 	installClient := clients.MustInstallClient()
@@ -162,7 +162,7 @@ func testGlooInstall(glooName, istioName string) {
 		}
 		Expect(i.Status.Reason).To(Equal(""))
 		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+	}, time.Minute*4).Should(Equal(core.Status_Accepted))
 
 	meshIngressClient := clients.MustMeshIngressClient()
 	Eventually(func() error {

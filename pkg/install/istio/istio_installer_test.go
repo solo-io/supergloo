@@ -51,7 +51,7 @@ var _ = Describe("istio installer", func() {
 		It("calls reconcile resources with the expected resources and labels, sets installed mesh", func() {
 			install, mesh, istio := testInputs(testCase{
 				installNs: "ok",
-				version:   IstioVersion106,
+				version:   IstioVersion113,
 			})
 			kubeInstaller := &mocks.MockKubeInstaller{}
 			installer := newIstioInstaller(kubeInstaller)

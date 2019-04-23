@@ -1336,10 +1336,11 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:d6cc93344d71912b2a4f137edc8493968f48a68f1dcddf2efb617a70567230e3"
+  digest = "1:3931668fc6419cd73787a006481223e9bdfcbd69e3bbe5ebbe1db48c6c592d64"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
+    "clicore/constants",
     "clidoc",
     "cliutils",
     "contextutils",
@@ -1366,8 +1367,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "a27432d89f419897df796a17456410e49a9727c3"
-  version = "v0.7.11"
+  revision = "4c9efc9c7315fe213d80605c78009bd3bee3c4e7"
+  version = "v0.7.15"
 
 [[projects]]
   digest = "1:4225781d0737370f46345f2fa8a964e7620ad1cdfda51079115afc1e26130447"

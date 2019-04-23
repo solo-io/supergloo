@@ -124,6 +124,8 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 		return nil, errors.Wrapf(err, "rendering install manifests")
 	}
 
+	manifests = append(manifests, installVersion.extraManifests...)
+
 	// based on https://istio.io/blog/2018/soft-multitenancy/#multiple-istio-control-planes
 	for i, man := range manifests {
 		man.Content = strings.Replace(man.Content, "istio-system", installNamespace, -1)

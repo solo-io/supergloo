@@ -14,6 +14,7 @@ var SupportedIstioVersions = []string{
 	istio.IstioVersion103,
 	istio.IstioVersion105,
 	istio.IstioVersion106,
+	istio.IstioVersion113,
 }
 
 var SupportedLinkerdVersions = []string{
