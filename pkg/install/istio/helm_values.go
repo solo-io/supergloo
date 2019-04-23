@@ -91,8 +91,14 @@ global:
     # destination rules or service annotations.
     enabled: {{ .Mtls.Enabled }}
 
+#
+# security configuration
+#
 security:
   enabled: true
+  replicaCount: 1
+  image: citadel
+  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
 
 #
 # ingress configuration
@@ -121,14 +127,6 @@ gateways:
 #
 sidecarInjectorWebhook:
   enabled: {{ .AutoInject.Enabled }}
-
-#
-# security configuration
-#
-security:
-  replicaCount: 1
-  image: citadel
-  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
 
 #
 # addons configuration
