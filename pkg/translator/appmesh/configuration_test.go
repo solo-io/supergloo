@@ -15,16 +15,16 @@ var _ = Describe("Configuration", func() {
 		err      error
 	)
 
-	JustBeforeEach(func() {
-		config, err = appmesh2.NewAwsAppMeshConfiguration(
-			scenario.GetMeshName(),
-			scenario.GetResources().MustGetPodList(),
-			scenario.GetResources().MustGetUpstreams())
-		Expect(err).NotTo(HaveOccurred())
-		Expect(config).NotTo(BeNil())
-	})
-
 	Context("kubernetes resources have been configured correctly", func() {
+
+		JustBeforeEach(func() {
+			config, err = appmesh2.NewAwsAppMeshConfiguration(
+				scenario.GetMeshName(),
+				scenario.GetResources().MustGetPodList(),
+				scenario.GetResources().MustGetUpstreams())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(config).NotTo(BeNil())
+		})
 
 		When("the configuration is initialized", func() {
 			BeforeEach(func() {

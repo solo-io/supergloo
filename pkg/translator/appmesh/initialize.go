@@ -106,7 +106,7 @@ func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo awsAppMeshPodInf
 			appMeshUpstreamInfo[us] = pods
 		}
 
-		// Add this upstream to the info the pod it belongs to
+		// Add this upstream to the info of the pod it belongs to
 		for _, pod := range pods {
 			podInfo[pod].upstreams = append(podInfo[pod].upstreams, us)
 		}
