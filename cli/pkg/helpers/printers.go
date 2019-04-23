@@ -57,9 +57,9 @@ func installType(in *v1.Install) string {
 	switch installType := in.InstallType.(type) {
 	case *v1.Install_Mesh:
 		switch installType.Mesh.MeshInstallType.(type) {
-		case *v1.MeshInstall_IstioMesh:
+		case *v1.MeshInstall_Istio:
 			return "Istio Mesh"
-		case *v1.MeshInstall_LinkerdMesh:
+		case *v1.MeshInstall_Linkerd:
 			return "Linkerd Mesh"
 		}
 	case *v1.Install_Ingress:
@@ -83,29 +83,29 @@ func installDetails(in *v1.Install) []string {
 	switch installType := in.InstallType.(type) {
 	case *v1.Install_Mesh:
 		switch meshType := installType.Mesh.MeshInstallType.(type) {
-		case *v1.MeshInstall_IstioMesh:
+		case *v1.MeshInstall_Istio:
 			add(
-				fmt.Sprintf("version: %v", meshType.IstioMesh.IstioVersion),
+				fmt.Sprintf("version: %v", meshType.Istio.Version),
 				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
-				fmt.Sprintf("mtls enabled: %v", meshType.IstioMesh.EnableMtls),
-				fmt.Sprintf("auto inject enabled: %v", meshType.IstioMesh.EnableAutoInject),
+				fmt.Sprintf("mtls enabled: %v", meshType.Istio.EnableMtls),
+				fmt.Sprintf("auto inject enabled: %v", meshType.Istio.EnableAutoInject),
 			)
-			if meshType.IstioMesh.CustomRootCert != nil {
+			if meshType.Istio.CustomRootCert != nil {
 				add(
-					fmt.Sprintf("mtls enabled: %v", meshType.IstioMesh.CustomRootCert),
+					fmt.Sprintf("mtls enabled: %v", meshType.Istio.CustomRootCert),
 				)
 			}
 			add(
-				fmt.Sprintf("grafana enabled: %v", meshType.IstioMesh.InstallGrafana),
-				fmt.Sprintf("prometheus enabled: %v", meshType.IstioMesh.InstallPrometheus),
-				fmt.Sprintf("jaeger enabled: %v", meshType.IstioMesh.InstallJaeger),
+				fmt.Sprintf("grafana enabled: %v", meshType.Istio.InstallGrafana),
+				fmt.Sprintf("prometheus enabled: %v", meshType.Istio.InstallPrometheus),
+				fmt.Sprintf("jaeger enabled: %v", meshType.Istio.InstallJaeger),
 			)
-		case *v1.MeshInstall_LinkerdMesh:
+		case *v1.MeshInstall_Linkerd:
 			add(
-				fmt.Sprintf("version: %v", meshType.LinkerdMesh.LinkerdVersion),
+				fmt.Sprintf("version: %v", meshType.Linkerd.Version),
 				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
-				fmt.Sprintf("mtls enabled: %v", meshType.LinkerdMesh.EnableMtls),
-				fmt.Sprintf("auto inject enabled: %v", meshType.LinkerdMesh.EnableAutoInject),
+				fmt.Sprintf("mtls enabled: %v", meshType.Linkerd.EnableMtls),
+				fmt.Sprintf("auto inject enabled: %v", meshType.Linkerd.EnableAutoInject),
 			)
 		}
 	case *v1.Install_Ingress:

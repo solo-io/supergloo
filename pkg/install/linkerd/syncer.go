@@ -26,7 +26,7 @@ func isLinkerdInstall(install *v1.Install) bool {
 	if mesh == nil {
 		return false
 	}
-	return mesh.GetLinkerdMesh() != nil
+	return mesh.GetLinkerd() != nil
 }
 
 type linkerdInstaller struct {
@@ -40,7 +40,7 @@ func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.
 		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
 	}
 
-	linkerd := installMesh.GetLinkerdMesh()
+	linkerd := installMesh.GetLinkerd()
 	if linkerd == nil {
 		return errors.Errorf("%v: invalid install type, only linkerd supported currently", install.Metadata.Ref())
 	}
@@ -59,7 +59,7 @@ func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.
 		return nil
 	}
 
-	opts := newInstallOpts(linkerd.LinkerdVersion, install.InstallationNamespace, linkerd.EnableMtls, linkerd.EnableAutoInject)
+	opts := newInstallOpts(linkerd.Version, install.InstallationNamespace, linkerd.EnableMtls, linkerd.EnableAutoInject)
 
 	if err := opts.install(ctx, i.kubeInstaller, installLabels, i.kubeClient); err != nil {
 		return errors.Wrapf(err, "executing linkerd install")

@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -43,17 +45,21 @@ type LinkerdDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Install() InstallClient
+	Pod() PodClient
+	Upstream() gloo_solo_io.UpstreamClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *LinkerdDiscoverySnapshot, <-chan error, error)
 }
 
-func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient) LinkerdDiscoveryEmitter {
-	return NewLinkerdDiscoveryEmitterWithEmit(meshClient, installClient, make(chan struct{}))
+func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient) LinkerdDiscoveryEmitter {
+	return NewLinkerdDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, make(chan struct{}))
 }
 
-func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
+func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
 	return &linkerdDiscoveryEmitter{
 		mesh:      meshClient,
 		install:   installClient,
+		pod:       podClient,
+		upstream:  upstreamClient,
 		forceEmit: emit,
 	}
 }
@@ -62,6 +68,8 @@ type linkerdDiscoveryEmitter struct {
 	forceEmit <-chan struct{}
 	mesh      MeshClient
 	install   InstallClient
+	pod       PodClient
+	upstream  gloo_solo_io.UpstreamClient
 }
 
 func (c *linkerdDiscoveryEmitter) Register() error {
@@ -69,6 +77,12 @@ func (c *linkerdDiscoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.install.Register(); err != nil {
+		return err
+	}
+	if err := c.pod.Register(); err != nil {
+		return err
+	}
+	if err := c.upstream.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -80,6 +94,14 @@ func (c *linkerdDiscoveryEmitter) Mesh() MeshClient {
 
 func (c *linkerdDiscoveryEmitter) Install() InstallClient {
 	return c.install
+}
+
+func (c *linkerdDiscoveryEmitter) Pod() PodClient {
+	return c.pod
+}
+
+func (c *linkerdDiscoveryEmitter) Upstream() gloo_solo_io.UpstreamClient {
+	return c.upstream
 }
 
 func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *LinkerdDiscoverySnapshot, <-chan error, error) {
@@ -110,6 +132,18 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 		namespace string
 	}
 	installChan := make(chan installListWithNamespace)
+	/* Create channel for Pod */
+	type podListWithNamespace struct {
+		list      PodList
+		namespace string
+	}
+	podChan := make(chan podListWithNamespace)
+	/* Create channel for Upstream */
+	type upstreamListWithNamespace struct {
+		list      gloo_solo_io.UpstreamList
+		namespace string
+	}
+	upstreamChan := make(chan upstreamListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -134,6 +168,28 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
 		}(namespace)
+		/* Setup namespaced watch for Pod */
+		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Pod watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
+		}(namespace)
+		/* Setup namespaced watch for Upstream */
+		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Upstream watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -152,6 +208,18 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 					case <-ctx.Done():
 						return
 					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					}
+				case podList := <-podNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
+					}
+				case upstreamList := <-upstreamNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
 					}
 				}
 			}
@@ -202,6 +270,20 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 				installList := installNamespacedList.list
 
 				currentSnapshot.Installs[namespace] = installList
+			case podNamespacedList := <-podChan:
+				record()
+
+				namespace := podNamespacedList.namespace
+				podList := podNamespacedList.list
+
+				currentSnapshot.Pods[namespace] = podList
+			case upstreamNamespacedList := <-upstreamChan:
+				record()
+
+				namespace := upstreamNamespacedList.namespace
+				upstreamList := upstreamNamespacedList.list
+
+				currentSnapshot.Upstreams[namespace] = upstreamList
 			}
 		}
 	}()

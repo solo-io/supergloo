@@ -31,7 +31,7 @@ func istioMesh(namespace, installNs, version string, secretRef *core.ResourceRef
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
 				InstallationNamespace: installNs,
-				IstioVersion:          version,
+				Version:               version,
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

@@ -62,10 +62,10 @@ message MeshInstall {
     // currently only istio is supported
     oneof mesh_install_type {
         // install istio
-        IstioInstall istio_mesh = 2;
+        IstioInstall istio = 2;
 
         // install linkerd
-        LinkerdInstall linkerd_mesh = 3;
+        LinkerdInstall linkerd = 3;
     }
 }
 
@@ -73,7 +73,7 @@ message MeshInstall {
 message IstioInstall {
 
     // which version of the istio helm chart to install
-    string istio_version = 2;
+    string version = 2;
 
     // enable auto injection of pods
     bool enable_auto_inject = 3;
@@ -101,7 +101,7 @@ message IstioInstall {
 message LinkerdInstall {
 
     // which version of the Linkerd helm chart to install
-    string linkerd_version = 2;
+    string version = 2;
 
     // enable auto injection of pods
     bool enable_auto_inject = 3;
@@ -135,7 +135,7 @@ message GlooInstall {
 
     // which version of the gloo helm chart to install
     // ignored if using custom helm chart
-    string gloo_version = 2;
+    string version = 2;
 
     // reference to the Mesh(s) that this ingress is acting upon
     repeated core.solo.io.ResourceRef meshes = 3;

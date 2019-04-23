@@ -140,12 +140,12 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, gloo *v1.
 	if install.InstallationNamespace == "" {
 		return nil, errors.Errorf("must provide installation namespace")
 	}
-	if gloo.GlooVersion == "" {
+	if gloo.Version == "" {
 		return nil, errors.Errorf("must provide gloo version")
 	}
 
 	manifests, err := helmchart.RenderManifests(ctx,
-		glooManifestUrl(gloo.GlooVersion),
+		glooManifestUrl(gloo.Version),
 		helmValues,
 		"gloo", // release name used in some manifests for rendering
 		install.InstallationNamespace,

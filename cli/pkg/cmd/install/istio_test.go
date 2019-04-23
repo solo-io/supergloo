@@ -58,12 +58,12 @@ var _ = Describe("Install", func() {
 				Expect(err).NotTo(HaveOccurred())
 				install := getInstall(name)
 				istio := MustIstioInstallType(install)
-				Expect(istio.IstioMesh.IstioVersion).To(Equal(version))
-				Expect(istio.IstioMesh.EnableMtls).To(Equal(mtls))
-				Expect(istio.IstioMesh.EnableAutoInject).To(Equal(autoInject))
-				Expect(istio.IstioMesh.InstallPrometheus).To(Equal(prometheus))
-				Expect(istio.IstioMesh.InstallJaeger).To(Equal(jaeger))
-				Expect(istio.IstioMesh.InstallGrafana).To(Equal(grafana))
+				Expect(istio.Istio.Version).To(Equal(version))
+				Expect(istio.Istio.EnableMtls).To(Equal(mtls))
+				Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
+				Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
+				Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
+				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
 			}
 
 			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
@@ -130,9 +130,9 @@ var _ = Describe("Install", func() {
 				Disabled:              false,
 				InstallType: &v1.Install_Mesh{
 					Mesh: &v1.MeshInstall{
-						MeshInstallType: &v1.MeshInstall_IstioMesh{
-							IstioMesh: &v1.IstioInstall{
-								IstioVersion:     istio.IstioVersion106,
+						MeshInstallType: &v1.MeshInstall_Istio{
+							Istio: &v1.IstioInstall{
+								Version:          istio.IstioVersion106,
 								EnableAutoInject: true,
 								EnableMtls:       true,
 							},
@@ -144,10 +144,10 @@ var _ = Describe("Install", func() {
 	})
 })
 
-func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_IstioMesh {
+func MustIstioInstallType(install *v1.Install) *v1.MeshInstall_Istio {
 	Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
 	mesh := install.InstallType.(*v1.Install_Mesh)
-	Expect(mesh.Mesh.MeshInstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_IstioMesh{}))
-	istioMesh := mesh.Mesh.MeshInstallType.(*v1.MeshInstall_IstioMesh)
+	Expect(mesh.Mesh.MeshInstallType).To(BeAssignableToTypeOf(&v1.MeshInstall_Istio{}))
+	istioMesh := mesh.Mesh.MeshInstallType.(*v1.MeshInstall_Istio)
 	return istioMesh
 }
