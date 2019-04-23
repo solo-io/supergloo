@@ -51,7 +51,7 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 	existingMeshes := utils.GetMeshes(meshes, utils.IstioMeshFilterFunc)
 	existingInstalls := utils.GetInstalls(installs, utils.IstioInstallFilterFunc)
 
-	istioPods := utils.FilerPodsByNamePrefix(pods, istio)
+	istioPods := utils.FilterRunningPodsByNamePrefix(pods, istio)
 	if len(istioPods) == 0 {
 		logger.Debugf("no pilot pods found in istio pod list")
 		return nil, nil

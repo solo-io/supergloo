@@ -52,7 +52,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	existingMeshes := utils.GetMeshes(meshes, utils.LinkerdMeshFilterFunc)
 	existingInstalls := utils.GetInstalls(installs, utils.LinkerdInstallFilterFunc)
 
-	linkerdPods := utils.FilerPodsByNamePrefix(pods, linkerd)
+	linkerdPods := utils.FilterRunningPodsByNamePrefix(pods, linkerd)
 	if len(linkerdPods) == 0 {
 		logger.Debugf("no linkerd pods found in pod list")
 		return nil, nil
