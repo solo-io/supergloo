@@ -353,7 +353,7 @@ func testUninstallIstio(meshName string) {
 			return false
 		}
 		return skerrors.IsNotExist(err)
-	}, time.Minute*5).Should(BeTrue())
+	}, time.Minute*2).Should(BeTrue())
 }
 
 func testConfigurePrometheus(meshName, promNamespace string) {
