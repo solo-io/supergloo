@@ -28,10 +28,10 @@ func GetNamespaceForUpstream(us *gloov1.Upstream) string {
 func GetHostForUpstream(us *gloov1.Upstream) (string, error) {
 	hosts, err := GetHostsForUpstream(us)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to get hosts for upstream")
+		return "", errors.Wrapf(err, "failed to get hosts for upstream %s", us.Metadata.Ref())
 	}
 	if len(hosts) < 1 {
-		return "", errors.Errorf("failed to get hosts for upstream")
+		return "", errors.Errorf("failed to get hosts for upstream %s", us.Metadata.Ref())
 	}
 	return hosts[0], nil
 }

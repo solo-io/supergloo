@@ -103,7 +103,6 @@ func GetTestResources(decoder runtime.Decoder) *ResourcesForTest {
 		AppMeshNoSelector:                     appMeshNoSelector,
 		IstioMesh:                             istioMesh,
 		TemplateData:                          getTemplateData(),
-		InjectedPodList:                       MustGetInjectedPodList(),
 	}
 }
 
