@@ -44,9 +44,12 @@ var LinkerdMeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
 	return false
 }
 
-func GetInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.InstallList {
+func GetActiveInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.InstallList {
 	var result v1.InstallList
 	for _, install := range installs {
+		if install.Disabled {
+			continue
+		}
 		if filterFunc(install) {
 			result = append(result, install)
 		}

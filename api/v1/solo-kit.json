@@ -88,10 +88,6 @@
         "package": "github.com/solo-io/supergloo/api/custom/kubepod"
       },
       {
-        "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
         "name": "Install",
         "package": "supergloo.solo.io"
       }

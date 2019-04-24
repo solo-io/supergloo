@@ -1324,8 +1324,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "0adb66382ca44ed5727848cefdb3ccdcb86a560c"
-  version = "v0.13.16"
+  revision = "98407bab5c9d214d396f753cf28cb8af791db618"
+  version = "v0.13.19"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -2496,6 +2496,7 @@
     "github.com/solo-io/go-utils/installutils/helmchart",
     "github.com/solo-io/go-utils/installutils/kubeinstall",
     "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
+    "github.com/solo-io/go-utils/installutils/kuberesource",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/logger",
     "github.com/solo-io/go-utils/pkgmgmtutils",

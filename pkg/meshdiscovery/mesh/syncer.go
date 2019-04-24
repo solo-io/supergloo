@@ -31,7 +31,6 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	multierr := &multierror.Error{}
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("mesh-discovery-syncer-%v", snap.Hash()))
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
 		zap.Int("installs", len(snap.Installs.List())),
 		zap.Int("pods", len(snap.Pods.List())),
 	}
@@ -51,7 +50,9 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	}
 
 	// reconcile all discovered meshes
-	err := s.meshReconciler.Reconcile("", discoveredMeshes, nil, clients.ListOpts{})
+	err := s.meshReconciler.Reconcile("", discoveredMeshes, func(original, desired *v1.Mesh) (b bool, e error) {
+		return false, nil
+	}, clients.ListOpts{})
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}

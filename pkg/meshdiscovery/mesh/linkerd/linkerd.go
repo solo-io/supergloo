@@ -17,12 +17,12 @@ const (
 	// Hardcoded name from helm chart for linkerd controller
 	linkerdController = linkerd + "-" + controller
 
-	istioSelector = "linkerd-mesh-discovery"
+	linkerdSelector = "linkerd-mesh-discovery"
 )
 
 var (
 	DiscoverySelector = map[string]string{
-		utils.SelectorPrefix: istioSelector,
+		utils.SelectorPrefix: linkerdSelector,
 	}
 )
 
@@ -38,32 +38,20 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 	pods := snap.Pods.List()
 	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),
-		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingMeshes := utils.GetMeshes(meshes, utils.LinkerdMeshFilterFunc)
-	existingInstalls := utils.GetInstalls(installs, utils.LinkerdInstallFilterFunc)
-
-	linkerdPods := utils.FilterRunningPodsByNamePrefix(pods, linkerd)
-	if len(linkerdPods) == 0 {
-		logger.Debugf("no linkerd pods found in pod list")
-		return nil, nil
-	}
+	existingInstalls := utils.GetActiveInstalls(installs, utils.LinkerdInstallFilterFunc)
 
 	var newMeshes v1.MeshList
-	for _, linkerdPod := range linkerdPods {
+	for _, linkerdPod := range utils.SelectRunningPods(pods) {
 		if strings.Contains(linkerdPod.Name, linkerdController) {
-			if meshExists(linkerdPod, existingMeshes) {
-				continue
-			}
 			mesh, err := constructDiscoveredMesh(ctx, linkerdPod, existingInstalls)
 			if err != nil {
 				return nil, err
@@ -73,9 +61,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 		}
 	}
 
-	existingMeshes = append(existingMeshes, newMeshes...)
-
-	return existingMeshes, nil
+	return newMeshes, nil
 }
 
 func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
