@@ -42,16 +42,16 @@ var _ = Describe("istio e2e", func() {
 		testInstallIstio(istioName)
 	})
 
+	It("it installs gloo", func() {
+		testGlooInstall(glooName, istioName)
+	})
+
 	It("it enforces policy", func() {
 		testPolicy(istioName)
 	})
 
 	It("it configures prometheus", func() {
 		testConfigurePrometheus(istioName, promNamespace)
-	})
-
-	It("it installs gloo", func() {
-		testGlooInstall(glooName, istioName)
 	})
 
 	It("it enables mtls", func() {

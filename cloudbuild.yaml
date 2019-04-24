@@ -44,7 +44,8 @@ steps:
     id: 'check-format'
   - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     entrypoint: 'bash'
-    args: ['ci/check-code-and-docs-gen.sh']
+    args: ['-c', 'echo hi']
+#    args: ['ci/check-code-and-docs-gen.sh']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
