@@ -127,7 +127,6 @@ steps:
       - /builder/home/.kube/aws-config
     waitFor: ['aws-kubeconfig-setup']
     id: 'copy-aws-kubeconfig'
-
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
 
     # start setting up other kubeconfigs
@@ -183,7 +182,7 @@ steps:
     entrypoint: sh
     args: ['-c', 'for i in $(find test/e2e/appmesh | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
-    waitFor: ['copy-aws-kubeconfig']
+    waitFor: ['gcloud-istio-kubeconfig']
     id: 'appmesh-test'
 
   # Run e2e istio-latest tests
@@ -217,7 +216,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
-    waitFor: ['copy-istio-10x-kubeconfig']
+    waitFor: ['gcloud-istio-kubeconfig']
     id: 'istio-10x-test'
 
   # Run e2e linkerd tests
@@ -230,7 +229,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
-    waitFor: ['copy-linkerd-kubeconfig']
+    waitFor: ['gcloud-istio-kubeconfig']
     id: 'linkerd-test'
 
   # Build everything
