@@ -71,7 +71,7 @@ func (t *appMeshTranslator) translateMesh(
 	pods v1.PodList,
 	resourceErrs reporter.ResourceErrors) (AwsAppMeshConfiguration, error) {
 
-	config, err := NewAwsAppMeshConfiguration(mesh, pods, upstreams)
+	config, err := NewAwsAppMeshConfiguration(mesh.Metadata.Name, pods, upstreams)
 	if err != nil {
 		return nil, err
 	}

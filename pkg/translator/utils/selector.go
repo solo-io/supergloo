@@ -82,8 +82,7 @@ func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, al
 		if err != nil {
 			return nil, errors.Wrap(err, "getting upstreams for pods")
 		}
-		pods := PodsForUpstreams(selectedUpstreams, allPods)
-		return pods, nil
+		return PodsForUpstreams(selectedUpstreams, allPods), nil
 	case *v1.PodSelector_NamespaceSelector_:
 		for _, pod := range allPods {
 			var podInSelectedNamespace bool

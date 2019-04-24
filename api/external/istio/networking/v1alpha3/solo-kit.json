@@ -7,6 +7,6 @@
     "resource_groups": null,
     "crd_group_override": "networking.istio.io",
     "custom_resources": null,
-    "ProjectFile": "",
-    "GoPackage": ""
+    "go_package": "",
+    "ProjectFile": ""
 }
