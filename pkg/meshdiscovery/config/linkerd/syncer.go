@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
@@ -84,7 +85,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods v1.PodsByNamespace,
+func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods kubernetes.PodsByNamespace,
 	upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
 

@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -41,17 +43,17 @@ func init() {
 
 type DiscoveryEmitter interface {
 	Register() error
-	Pod() PodClient
+	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Mesh() MeshClient
 	Install() InstallClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient PodClient, meshClient MeshClient, installClient InstallClient) DiscoveryEmitter {
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, meshClient MeshClient, installClient InstallClient) DiscoveryEmitter {
 	return NewDiscoveryEmitterWithEmit(podClient, meshClient, installClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, meshClient MeshClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:       podClient,
 		mesh:      meshClient,
@@ -62,7 +64,7 @@ func NewDiscoveryEmitterWithEmit(podClient PodClient, meshClient MeshClient, ins
 
 type discoveryEmitter struct {
 	forceEmit <-chan struct{}
-	pod       PodClient
+	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	mesh      MeshClient
 	install   InstallClient
 }
@@ -80,7 +82,7 @@ func (c *discoveryEmitter) Register() error {
 	return nil
 }
 
-func (c *discoveryEmitter) Pod() PodClient {
+func (c *discoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
 }
 
@@ -110,7 +112,7 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 	ctx := opts.Ctx
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
-		list      PodList
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)

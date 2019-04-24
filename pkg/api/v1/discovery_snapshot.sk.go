@@ -5,12 +5,14 @@ package v1
 import (
 	"fmt"
 
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 	"go.uber.org/zap"
 )
 
 type DiscoverySnapshot struct {
-	Pods     PodsByNamespace
+	Pods     github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
 	Meshes   MeshesByNamespace
 	Installs InstallsByNamespace
 }

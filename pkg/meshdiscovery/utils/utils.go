@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/errors"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 )
 
 func ImageVersion(image string) (string, error) {
@@ -17,8 +17,8 @@ func ImageVersion(image string) (string, error) {
 	return imageTag, nil
 }
 
-func FilerPodsByNamePrefix(pods v1.PodList, namePrefix string) v1.PodList {
-	var result v1.PodList
+func FilerPodsByNamePrefix(pods kubernetes.PodList, namePrefix string) kubernetes.PodList {
+	var result kubernetes.PodList
 	for _, pod := range pods {
 		if strings.Contains(pod.Name, namePrefix) {
 			result = append(result, pod)

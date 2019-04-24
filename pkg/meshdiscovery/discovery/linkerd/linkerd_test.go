@@ -6,9 +6,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	skpod "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +22,7 @@ var _ = Describe("linkerd syncer unit test", func() {
 		superglooNamespace = "supergloo-system"
 	)
 
-	var constructPod = func(container kubev1.Container, namespace string) *v1.Pod {
+	var constructPod = func(container kubev1.Container, namespace string) *kubernetes.Pod {
 
 		pod := &kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -34,7 +35,7 @@ var _ = Describe("linkerd syncer unit test", func() {
 				},
 			},
 		}
-		return kubernetes.FromKubePod(pod)
+		return skpod.FromKubePod(pod)
 	}
 
 	BeforeEach(func() {

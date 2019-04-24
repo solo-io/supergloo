@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -50,15 +51,15 @@ type ConfigEmitter interface {
 	SecurityRule() SecurityRuleClient
 	TlsSecret() TlsSecretClient
 	Upstream() gloo_solo_io.UpstreamClient
-	Pod() PodClient
+	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient PodClient) ConfigEmitter {
+func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient) ConfigEmitter {
 	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient PodClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:         meshClient,
 		meshIngress:  meshIngressClient,
@@ -81,7 +82,7 @@ type configEmitter struct {
 	securityRule SecurityRuleClient
 	tlsSecret    TlsSecretClient
 	upstream     gloo_solo_io.UpstreamClient
-	pod          PodClient
+	pod          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 }
 
 func (c *configEmitter) Register() error {
@@ -140,7 +141,7 @@ func (c *configEmitter) Upstream() gloo_solo_io.UpstreamClient {
 	return c.upstream
 }
 
-func (c *configEmitter) Pod() PodClient {
+func (c *configEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
 }
 
@@ -204,7 +205,7 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 	upstreamChan := make(chan upstreamListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
-		list      PodList
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,7 +49,7 @@ var _ = Describe("V1Emitter", func() {
 		securityRuleClient SecurityRuleClient
 		tlsSecretClient    TlsSecretClient
 		upstreamClient     gloo_solo_io.UpstreamClient
-		podClient          PodClient
+		podClient          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	)
 
 	BeforeEach(func() {
@@ -127,7 +128,7 @@ var _ = Describe("V1Emitter", func() {
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 
-		podClient, err = NewPodClient(podClientFactory)
+		podClient, err = github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
 	})
@@ -572,7 +573,7 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
+		assertSnapshotpods := func(expectpods github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList, unexpectpods github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList) {
 		drain:
 			for {
 				select {
@@ -593,7 +594,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := PodsByNamespace{
+					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -601,32 +602,32 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		pod1a, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
-		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		pod1b, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b}, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotpods(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 	It("tracks snapshots on changes to any resource using AllNamespace", func() {
 		ctx := context.Background()
@@ -1065,7 +1066,7 @@ var _ = Describe("V1Emitter", func() {
 			Pod
 		*/
 
-		assertSnapshotpods := func(expectpods PodList, unexpectpods PodList) {
+		assertSnapshotpods := func(expectpods github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList, unexpectpods github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList) {
 		drain:
 			for {
 				select {
@@ -1086,7 +1087,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := PodsByNamespace{
+					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -1094,31 +1095,31 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		pod1a, err := podClient.Write(NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		pod1a, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		pod1b, err := podClient.Write(NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotpods(PodList{pod1a, pod1b}, nil)
-		pod2a, err := podClient.Write(NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		pod2b, err := podClient.Write(NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		pod1b, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(PodList{pod1a, pod1b, pod2a, pod2b}, nil)
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b}, nil)
+		pod2a, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		pod2b, err := podClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b}, nil)
 
 		err = podClient.Delete(pod2a.GetMetadata().Namespace, pod2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod2b.GetMetadata().Namespace, pod2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(PodList{pod1a, pod1b}, PodList{pod2a, pod2b})
+		assertSnapshotpods(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b}, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod2a, pod2b})
 
 		err = podClient.Delete(pod1a.GetMetadata().Namespace, pod1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = podClient.Delete(pod1b.GetMetadata().Namespace, pod1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotpods(nil, PodList{pod1a, pod1b, pod2a, pod2b})
+		assertSnapshotpods(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b})
 	})
 })

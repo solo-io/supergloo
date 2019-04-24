@@ -7,6 +7,7 @@ import (
 	appmeshApi "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
@@ -20,8 +21,8 @@ type podInfo struct {
 	upstreams gloov1.UpstreamList
 }
 
-type awsAppMeshPodInfo map[*v1.Pod]*podInfo
-type awsAppMeshUpstreamInfo map[*gloov1.Upstream][]*v1.Pod
+type awsAppMeshPodInfo map[*kubernetes.Pod]*podInfo
+type awsAppMeshUpstreamInfo map[*gloov1.Upstream][]*kubernetes.Pod
 
 type virtualNodeByHost map[string]*appmeshApi.VirtualNodeData
 type virtualServiceByHost map[string]*appmeshApi.VirtualServiceData
@@ -51,7 +52,7 @@ type AwsAppMeshConfiguration interface {
 type AwsAppMeshConfigurationImpl struct {
 	// We build these objects once in the constructor. They are meant to help in all the translation operations where we
 	// probably will need to look up pods by upstreams and vice-versa multiple times.
-	PodList      v1.PodList
+	PodList      kubernetes.PodList
 	upstreamInfo awsAppMeshUpstreamInfo
 	UpstreamList gloov1.UpstreamList
 
@@ -63,7 +64,7 @@ type AwsAppMeshConfigurationImpl struct {
 	Routes          []*appmeshApi.RouteData
 }
 
-func NewAwsAppMeshConfiguration(meshName string, pods v1.PodList, upstreams gloov1.UpstreamList) (AwsAppMeshConfiguration, error) {
+func NewAwsAppMeshConfiguration(meshName string, pods kubernetes.PodList, upstreams gloov1.UpstreamList) (AwsAppMeshConfiguration, error) {
 
 	// Get all pods that point to this mesh via the APPMESH_VIRTUAL_NODE_NAME env set on their AWS App Mesh sidecar.
 	appMeshPodInfo, appMeshPodList, err := getPodsForMesh(meshName, pods)

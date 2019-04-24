@@ -3,8 +3,8 @@ package utils
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	skkube "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,7 +15,7 @@ var _ = Describe("common utils for discovery", func() {
 		istioNamespace = "istio-system"
 	)
 
-	var constructPod = func(container kubev1.Container, namespace string) *v1.Pod {
+	var constructPod = func(container kubev1.Container, namespace string) *kubernetes.Pod {
 
 		pod := &kubev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
@@ -28,7 +28,7 @@ var _ = Describe("common utils for discovery", func() {
 				},
 			},
 		}
-		return kubernetes.FromKubePod(pod)
+		return skkube.FromKubePod(pod)
 	}
 
 	Context("get version from pod", func() {

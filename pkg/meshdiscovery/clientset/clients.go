@@ -5,11 +5,13 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
+	sknamespace "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace"
+	skpod "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
-	customkube "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
+	skkube "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/client-go/kubernetes"
@@ -39,14 +41,14 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 }
 
 type inputClients struct {
-	Pod         v1.PodClient
-	Namespace   v1.KubeNamespaceClient
+	Pod         skkube.PodClient
+	Namespace   skkube.KubeNamespaceClient
 	Install     v1.InstallClient
 	MeshIngress v1.MeshIngressClient
 	Upstream    gloov1.UpstreamClient
 }
 
-func newInputClients(pod v1.PodClient, namespace v1.KubeNamespaceClient, install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
+func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
 	return &inputClients{Pod: pod, Namespace: namespace, Install: install, MeshIngress: meshIngress, Upstream: upstream}
 }
 
@@ -111,11 +113,9 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
-	podBase := customkube.NewPodResourceClient(kubeClient, kubeCoreCache)
-	pods := v1.NewPodClientWithBase(podBase)
+	pods := skpod.NewPodClient(kubeClient, kubeCoreCache)
 
-	namespaceBase := customkube.NewnamespaceResourceClient(kubeClient, kubeCoreCache)
-	namespace := v1.NewKubeNamespaceClientWithBase(namespaceBase)
+	namespace := sknamespace.NewNamespaceClient(kubeClient, kubeCoreCache)
 
 	return newClientset(
 		restConfig,

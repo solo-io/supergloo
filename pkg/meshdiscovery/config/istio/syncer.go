@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -103,7 +104,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 }
 
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList,
-	injectedPods v1.PodsByNamespace, upstreams gloov1.UpstreamList) meshResourceList {
+	injectedPods kubernetes.PodsByNamespace, upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
 
 	for i, mesh := range meshes {

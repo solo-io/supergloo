@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/ghodss/yaml"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -42,7 +43,7 @@ type ResourcesForTest struct {
 	MatchingPod                           pod
 	MatchingPodWithoutPorts               pod
 	NonMatchingPod                        pod
-	InjectedPodList                       v1.PodList
+	InjectedPodList                       kubernetes.PodList
 	AppMeshInjectEnabledLabelSelector     *v1.Mesh
 	AppMeshInjectEnabledNamespaceSelector *v1.Mesh
 	AppMeshInjectDisabled                 *v1.Mesh
