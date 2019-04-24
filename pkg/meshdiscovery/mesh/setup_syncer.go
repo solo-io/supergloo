@@ -1,12 +1,12 @@
-package discovery
+package mesh
 
 import (
 	"context"
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"

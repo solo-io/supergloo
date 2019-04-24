@@ -1,4 +1,4 @@
-package discovery_test
+package mesh_test
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
 )
 
 var _ = Describe("discovery syncer", func() {
@@ -23,7 +23,7 @@ var _ = Describe("discovery syncer", func() {
 		ctx := context.TODO()
 		snap := &v1.DiscoverySnapshot{}
 		mockPlugin := istio.NewMockIstioMeshDiscovery()
-		syncer := discovery.NewMeshDiscoverySyncer(meshClient, mockPlugin)
+		syncer := mesh.NewMeshDiscoverySyncer(meshClient, mockPlugin)
 		err := syncer.Sync(ctx, snap)
 		Expect(err).NotTo(HaveOccurred())
 	})

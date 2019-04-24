@@ -1,4 +1,4 @@
-package discovery
+package mesh
 
 import (
 	"context"

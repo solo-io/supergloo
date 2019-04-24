@@ -32,7 +32,7 @@ func NewIstioDiscoverySyncer() *istioDiscoverySyncer {
 }
 
 func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
 	pods := snap.Pods.List()
