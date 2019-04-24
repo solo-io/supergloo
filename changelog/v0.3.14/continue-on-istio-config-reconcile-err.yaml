@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    description: |
+      Istio config syncer now does not return immediately if an error occurred while reconciling a mesh configuration.
+      Instead it keeps note of the error and goes on to reconcile the configurations for the remaining meshes.
