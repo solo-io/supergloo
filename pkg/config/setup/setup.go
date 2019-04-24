@@ -50,11 +50,7 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 		}
 
 		if enabled.AppMesh {
-			appMeshSyncer, err := createAppmeshConfigSyncer(cs)
-			if err != nil {
-				return nil, err
-			}
-			syncers = append(syncers, appMeshSyncer)
+			syncers = append(syncers, createAppmeshConfigSyncer(cs))
 		}
 
 		ctx = contextutils.WithLogger(ctx, "config-event-loop")
@@ -75,7 +71,7 @@ func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarte
 	}
 }
 
-func createAppmeshConfigSyncer(cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+func createAppmeshConfigSyncer(cs *clientset.Clientset) v1.ConfigSyncer {
 	translator := appmeshtranslator.NewAppMeshTranslator()
 	reconciler := appmesh.NewReconciler(appmesh.NewAppMeshClientBuilder(cs.Supergloo.Secret))
 	newReporter := makeReporter("appmesh-config-reporter", cs.Supergloo)

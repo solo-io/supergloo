@@ -17,12 +17,12 @@ type appMeshConfigSyncer struct {
 	reporter   reporter.Reporter
 }
 
-func NewAppMeshConfigSyncer(translator appmesh.Translator, reconciler Reconciler, reporter reporter.Reporter) (v1.ConfigSyncer, error) {
+func NewAppMeshConfigSyncer(translator appmesh.Translator, reconciler Reconciler, reporter reporter.Reporter) v1.ConfigSyncer {
 	return &appMeshConfigSyncer{
 		translator: translator,
 		reconciler: reconciler,
 		reporter:   reporter,
-	}, nil
+	}
 }
 
 func (s *appMeshConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
