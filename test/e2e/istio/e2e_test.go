@@ -127,7 +127,7 @@ func testInstallIstio(meshName string) {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	time.Sleep(time.Second * 5) // give the sidecar injector extra time to wake up
+	time.Sleep(time.Second * 15) // give the sidecar injector extra time to wake up
 
 	err = sgutils.DeployTestRunner(basicNamespace)
 	Expect(err).NotTo(HaveOccurred())
