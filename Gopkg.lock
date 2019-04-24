@@ -1420,7 +1420,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "855e2473a403ec87aa9d59ea0570ac1ded92e193"
+  revision = "ff72e241a8f046ac6b873f7ee6e8241e9cbf5b42"
+  version = "v0.7.0"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"

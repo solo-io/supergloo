@@ -46,7 +46,7 @@
 
 [[override]]
   name = "github.com/solo-io/solo-kit"
-  revision = "855e2473a403ec87aa9d59ea0570ac1ded92e193"
+  version = "0.7.0"
 
 [[override]]
   name = "github.com/solo-io/go-utils"
