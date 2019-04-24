@@ -11,6 +11,8 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
+//go:generate mockgen -destination=./client_builder_mock.go -source client_builder.go -package appmesh
+
 func NewAppMeshClientBuilder(secrets gloov1.SecretClient) ClientBuilder {
 	return &clientBuilder{
 		secrets: secrets,
