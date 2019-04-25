@@ -1,27 +1,15 @@
 package linkerd
 
 import (
-	"context"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 )
 
 var _ = Describe("istio discovery config", func() {
 
-	var (
-		cs  *clientset.Clientset
-		ctx context.Context
-	)
-
 	BeforeEach(func() {
-		var err error
-		ctx = context.TODO()
-		cs, err = clientset.ClientsetFromContext(ctx)
-		Expect(err).NotTo(HaveOccurred())
 		clients.UseMemoryClients()
 	})
 

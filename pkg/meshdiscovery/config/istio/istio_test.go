@@ -1,29 +1,17 @@
 package istio
 
 import (
-	"context"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 )
 
 var _ = Describe("istio discovery config", func() {
 
-	var (
-		cs  *clientset.Clientset
-		ctx context.Context
-	)
-
 	BeforeEach(func() {
-		var err error
-		ctx = context.TODO()
-		cs, err = clientset.ClientsetFromContext(ctx)
-		Expect(err).NotTo(HaveOccurred())
 		clients.UseMemoryClients()
 	})
 

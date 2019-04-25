@@ -27,10 +27,10 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	manager := registration.NewPubsub()
-	newDiscoveryConfigLoops(ctx, cs, manager)
+	pubsub := registration.NewPubsub()
+	newDiscoveryConfigLoops(ctx, cs, pubsub)
 
-	registrationSyncers := createRegistrationSyncers(manager)
+	registrationSyncers := createRegistrationSyncers(pubsub)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
@@ -39,15 +39,15 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 	return nil
 }
 
-func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, manager *registration.PubSub) {
-	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, manager)
-	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, manager)
+func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, pubsub *registration.PubSub) {
+	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, pubsub)
+	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, pubsub)
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(manager *registration.PubSub) v1.RegistrationSyncer {
+func createRegistrationSyncers(pubsub *registration.PubSub) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
-		registration.NewRegistrationSyncer(manager),
+		registration.NewRegistrationSyncer(pubsub),
 	}
 }
 
