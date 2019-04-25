@@ -166,7 +166,7 @@ steps:
   # setup istio kubeconfig
   # no copy necessary
   - name: gcr.io/cloud-builders/gcloud
-    args: ['container', 'clusters', 'get-credentials', 'supergloo-test']
+    args: ['container', 'clusters', 'get-credentials', 'supergloo-istio-v11x']
     id: 'gcloud-istio-kubeconfig'
     waitFor: ['copy-istio-10x-kubeconfig']
 
