@@ -216,7 +216,7 @@ func testCertRotation(meshName string) {
 		Service: "details." + namespaceWithInject + ".svc.cluster.local",
 		Port:    9080,
 		Path:    "/details/1",
-	}, `"author":"William Shakespeare"`, time.Minute*1)
+	}, `"author":"William Shakespeare"`, time.Minute*8)
 }
 
 func testMtls() {
