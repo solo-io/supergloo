@@ -23,10 +23,6 @@ import (
 	linkerdplugins "github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 )
 
-func NewSuperglooConfigLoopStarter(clientset *clientset.Clientset) registration.ConfigLoopStarters {
-	return registration.ConfigLoopStarters{createConfigStarters(clientset)}
-}
-
 // Add config syncers here
 func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarter {
 
