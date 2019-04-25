@@ -141,7 +141,7 @@ func (mr *MockClientMockRecorder) CreateMesh(ctx, meshName interface{}) *gomock.
 }
 
 // CreateVirtualNode mocks base method
-func (m *MockClient) CreateVirtualNode(ctx context.Context, virtualNode appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
+func (m *MockClient) CreateVirtualNode(ctx context.Context, virtualNode *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVirtualNode", ctx, virtualNode)
 	ret0, _ := ret[0].(*appmesh.VirtualNodeData)
@@ -156,7 +156,7 @@ func (mr *MockClientMockRecorder) CreateVirtualNode(ctx, virtualNode interface{}
 }
 
 // CreateVirtualService mocks base method
-func (m *MockClient) CreateVirtualService(ctx context.Context, virtualService appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
+func (m *MockClient) CreateVirtualService(ctx context.Context, virtualService *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVirtualService", ctx, virtualService)
 	ret0, _ := ret[0].(*appmesh.VirtualServiceData)
@@ -171,7 +171,7 @@ func (mr *MockClientMockRecorder) CreateVirtualService(ctx, virtualService inter
 }
 
 // CreateVirtualRouter mocks base method
-func (m *MockClient) CreateVirtualRouter(ctx context.Context, virtualRouter appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
+func (m *MockClient) CreateVirtualRouter(ctx context.Context, virtualRouter *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVirtualRouter", ctx, virtualRouter)
 	ret0, _ := ret[0].(*appmesh.VirtualRouterData)
@@ -186,7 +186,7 @@ func (mr *MockClientMockRecorder) CreateVirtualRouter(ctx, virtualRouter interfa
 }
 
 // CreateRoute mocks base method
-func (m *MockClient) CreateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error) {
+func (m *MockClient) CreateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRoute", ctx, route)
 	ret0, _ := ret[0].(*appmesh.RouteData)
@@ -201,7 +201,7 @@ func (mr *MockClientMockRecorder) CreateRoute(ctx, route interface{}) *gomock.Ca
 }
 
 // UpdateVirtualNode mocks base method
-func (m *MockClient) UpdateVirtualNode(ctx context.Context, virtualNode appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
+func (m *MockClient) UpdateVirtualNode(ctx context.Context, virtualNode *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVirtualNode", ctx, virtualNode)
 	ret0, _ := ret[0].(*appmesh.VirtualNodeData)
@@ -216,7 +216,7 @@ func (mr *MockClientMockRecorder) UpdateVirtualNode(ctx, virtualNode interface{}
 }
 
 // UpdateVirtualService mocks base method
-func (m *MockClient) UpdateVirtualService(ctx context.Context, virtualService appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
+func (m *MockClient) UpdateVirtualService(ctx context.Context, virtualService *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVirtualService", ctx, virtualService)
 	ret0, _ := ret[0].(*appmesh.VirtualServiceData)
@@ -231,7 +231,7 @@ func (mr *MockClientMockRecorder) UpdateVirtualService(ctx, virtualService inter
 }
 
 // UpdateVirtualRouter mocks base method
-func (m *MockClient) UpdateVirtualRouter(ctx context.Context, virtualRouter appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
+func (m *MockClient) UpdateVirtualRouter(ctx context.Context, virtualRouter *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVirtualRouter", ctx, virtualRouter)
 	ret0, _ := ret[0].(*appmesh.VirtualRouterData)
@@ -246,7 +246,7 @@ func (mr *MockClientMockRecorder) UpdateVirtualRouter(ctx, virtualRouter interfa
 }
 
 // UpdateRoute mocks base method
-func (m *MockClient) UpdateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error) {
+func (m *MockClient) UpdateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateRoute", ctx, route)
 	ret0, _ := ret[0].(*appmesh.RouteData)
