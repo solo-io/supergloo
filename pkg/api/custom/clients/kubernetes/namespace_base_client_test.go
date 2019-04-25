@@ -11,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	. "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
@@ -46,25 +45,23 @@ var _ = Describe("Namespace base client", func() {
 		err := kube.CoreV1().Namespaces().Delete(namespace, &metav1.DeleteOptions{})
 		Expect(err).NotTo(HaveOccurred())
 	})
-	It("converts a kubernetes pod to solo-kit resource", func() {
+	It("converts a kubernetes namespace to solo-kit resource", func() {
 
 		rc := NewnamespaceResourceClient(kube, kcache)
 
-		var namespaces resources.ResourceList
-		Eventually(func() (resources.ResourceList, error) {
+		Eventually(func() (bool, error) {
 			var err error
-			namespaces, err = rc.List(namespace, clients.ListOpts{})
-			return namespaces, err
-		}, time.Minute, time.Second*15).ShouldNot(HaveLen(0))
-
-		Expect(namespaces).NotTo(HaveLen(0))
-		foundNamespace := false
-		for _, v := range namespaces {
-			if v.GetMetadata().Name == namespaceObj.Name &&
-				v.GetMetadata().Namespace == namespaceObj.Namespace {
-				foundNamespace = true
+			namespaces, err := rc.List(namespace, clients.ListOpts{})
+			if err != nil {
+				return false, err
 			}
-		}
-		Expect(foundNamespace).To(BeTrue())
+			for _, v := range namespaces {
+				if v.GetMetadata().Name == namespaceObj.Name &&
+					v.GetMetadata().Namespace == namespaceObj.Namespace {
+					return true, nil
+				}
+			}
+			return false, nil
+		}, time.Second*10).Should(BeTrue())
 	})
 })

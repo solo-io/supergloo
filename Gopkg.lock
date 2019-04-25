@@ -1324,8 +1324,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "0adb66382ca44ed5727848cefdb3ccdcb86a560c"
-  version = "v0.13.16"
+  revision = "98407bab5c9d214d396f753cf28cb8af791db618"
+  version = "v0.13.19"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1336,10 +1336,11 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:d6cc93344d71912b2a4f137edc8493968f48a68f1dcddf2efb617a70567230e3"
+  digest = "1:f88da8f73e0b2c86593fdd65065e00c3e057134ca8302840174733cd99b4dd7f"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
+    "clicore/constants",
     "clidoc",
     "cliutils",
     "contextutils",
@@ -1366,11 +1367,11 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "a27432d89f419897df796a17456410e49a9727c3"
-  version = "v0.7.11"
+  revision = "0615c838ea7df7a3f83f6a8551e186ad60966547"
+  version = "v0.7.16"
 
 [[projects]]
-  digest = "1:0174cc322baca9bb1cf42432ccc7b37703b162bdba9f894b75206a6936073560"
+  digest = "1:4f85efe022ce1de4d8012db89d50ccca8215e6cfe71608fbde1358e951e91553"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "pkg/api/v1/clients",
@@ -1419,8 +1420,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "87812f959e22cd2a5d64777dc112c52be5216894"
-  version = "v0.6.5"
+  revision = "ff72e241a8f046ac6b873f7ee6e8241e9cbf5b42"
+  version = "v0.7.0"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2495,6 +2496,7 @@
     "github.com/solo-io/go-utils/installutils/helmchart",
     "github.com/solo-io/go-utils/installutils/kubeinstall",
     "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
+    "github.com/solo-io/go-utils/installutils/kuberesource",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/logger",
     "github.com/solo-io/go-utils/pkgmgmtutils",

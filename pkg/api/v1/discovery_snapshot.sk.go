@@ -11,14 +11,12 @@ import (
 
 type DiscoverySnapshot struct {
 	Pods     PodsByNamespace
-	Meshes   MeshesByNamespace
 	Installs InstallsByNamespace
 }
 
 func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 	return DiscoverySnapshot{
 		Pods:     s.Pods.Clone(),
-		Meshes:   s.Meshes.Clone(),
 		Installs: s.Installs.Clone(),
 	}
 }
@@ -26,17 +24,12 @@ func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 func (s DiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashPods(),
-		s.hashMeshes(),
 		s.hashInstalls(),
 	)
 }
 
 func (s DiscoverySnapshot) hashPods() uint64 {
 	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
-}
-
-func (s DiscoverySnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) hashInstalls() uint64 {
@@ -46,7 +39,6 @@ func (s DiscoverySnapshot) hashInstalls() uint64 {
 func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
-	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
@@ -55,7 +47,6 @@ func (s DiscoverySnapshot) HashFields() []zap.Field {
 type DiscoverySnapshotStringer struct {
 	Version  uint64
 	Pods     []string
-	Meshes   []string
 	Installs []string
 }
 
@@ -64,11 +55,6 @@ func (ss DiscoverySnapshotStringer) String() string {
 
 	s += fmt.Sprintf("  Pods %v\n", len(ss.Pods))
 	for _, name := range ss.Pods {
-		s += fmt.Sprintf("    %v\n", name)
-	}
-
-	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
-	for _, name := range ss.Meshes {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
@@ -84,7 +70,6 @@ func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
 	return DiscoverySnapshotStringer{
 		Version:  s.Hash(),
 		Pods:     s.Pods.List().NamespacesDotNames(),
-		Meshes:   s.Meshes.List().NamespacesDotNames(),
 		Installs: s.Installs.List().NamespacesDotNames(),
 	}
 }

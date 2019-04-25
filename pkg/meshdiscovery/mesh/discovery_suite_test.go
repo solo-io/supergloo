@@ -1,4 +1,4 @@
-package discovery_test
+package mesh_test
 
 import (
 	"testing"
