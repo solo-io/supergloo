@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 var _ = Describe("registration helpers", func() {
@@ -78,7 +79,7 @@ var _ = Describe("registration helpers", func() {
 			subscriber.Listen(ctx)
 			manager.publish(ctx, EnabledConfigLoops{})
 			Eventually(func() int {
-				return cl.enabledCalled
+				return len(cl.allLoops)
 			}, time.Second*10, time.Second/2).Should(Equal(2))
 			Expect(cl.startCalled).To(Equal(0))
 			cancel()
@@ -113,16 +114,123 @@ var _ = Describe("registration helpers", func() {
 
 	})
 
+	Context("syncer", func() {
+		var (
+			subscriber *Subscriber
+			cl         *mockConfigLoop
+			syncer     *RegistrationSyncer
+		)
+
+		BeforeEach(func() {
+			cl = newMockConfigLoop()
+			subscriber = NewSubscriber(ctx, manager, cl)
+			syncer = NewRegistrationSyncer(manager)
+		})
+
+		It("can handle a single mesh", func() {
+			subscriber.Listen(ctx)
+			snap := &v1.RegistrationSnapshot{
+				Meshes: v1.MeshesByNamespace{
+					"": v1.MeshList{
+						{
+							MeshType: &v1.Mesh_Istio{
+								Istio: &v1.IstioMesh{},
+							},
+						},
+					},
+				},
+			}
+			err := syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() bool {
+				if len(cl.allLoops) == 0 {
+					return false
+				}
+				// use second as first is initial all false obj
+				return cl.allLoops[1].Istio
+			}, time.Second*10, time.Second/2).Should(BeTrue())
+		})
+		It("can handle a single mesh ingress", func() {
+			subscriber.Listen(ctx)
+			snap := &v1.RegistrationSnapshot{
+				Meshingresses: v1.MeshingressesByNamespace{
+					"": v1.MeshIngressList{
+						{
+							MeshIngressType: &v1.MeshIngress_Gloo{
+								Gloo: &v1.GlooMeshIngress{},
+							},
+						},
+					},
+				},
+			}
+			err := syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() bool {
+				if len(cl.allLoops) == 0 {
+					return false
+				}
+				// use second as first is initial all false obj
+				return cl.allLoops[1].Gloo
+			}, time.Second*10, time.Second/2).Should(BeTrue())
+		})
+
+		It("can handle multiple subscribers", func() {
+			subscriber2 := NewSubscriber(ctx, manager, cl)
+			subscriber3 := NewSubscriber(ctx, manager, cl)
+			subscriber.Listen(ctx)
+			subscriber2.Listen(ctx)
+			subscriber3.Listen(ctx)
+
+			snap := &v1.RegistrationSnapshot{
+				Meshingresses: v1.MeshingressesByNamespace{
+					"": v1.MeshIngressList{
+						{
+							MeshIngressType: &v1.MeshIngress_Gloo{
+								Gloo: &v1.GlooMeshIngress{},
+							},
+						},
+					},
+				},
+				Meshes: v1.MeshesByNamespace{
+					"": v1.MeshList{
+						{
+							MeshType: &v1.Mesh_Istio{
+								Istio: &v1.IstioMesh{},
+							},
+						},
+					},
+				},
+			}
+			err := syncer.Sync(ctx, snap)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() int {
+				return len(cl.allLoops)
+			}, time.Second*10, time.Second/2).Should(Equal(6))
+			cancel()
+
+			Eventually(func() int {
+				return cl.contextCancelled
+			}, time.Second*10, time.Second/2).Should(Equal(3))
+			Expect(cl.allLoops[5].Gloo).To(BeTrue())
+			Expect(cl.allLoops[5].Istio).To(BeTrue())
+			Expect(cl.allLoops[5].Linkerd).To(BeFalse())
+			Expect(cl.allLoops[5].AppMesh).To(BeFalse())
+		})
+	})
+
 })
 
 type mockConfigLoop struct {
 	startCalled      int
-	enabledCalled    int
 	contextCancelled int
+	allLoops         []EnabledConfigLoops
 }
 
 func (mcl *mockConfigLoop) Enabled(enabled EnabledConfigLoops) bool {
-	mcl.enabledCalled++
+	mcl.allLoops = append(mcl.allLoops, enabled)
 	return enabled.Istio
 }
 
