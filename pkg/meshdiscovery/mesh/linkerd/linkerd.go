@@ -47,7 +47,6 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-
 	existingInstalls := utils.GetActiveInstalls(installs, utils.LinkerdInstallFilterFunc)
 
 	var newMeshes v1.MeshList
@@ -64,7 +63,6 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 	return newMeshes, nil
 }
-
 
 func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
