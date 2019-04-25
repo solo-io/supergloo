@@ -28,16 +28,14 @@ var _ = Describe("ClientsetFromContext", func() {
 
 var _ = Describe("IstioClientsFromContext", func() {
 	It("initializes all the clients in the Clientset struct", func() {
-
 		istio, err := IstioFromContext(context.TODO())
 		Expect(err).NotTo(HaveOccurred())
 		Expect(istio).NotTo(BeNil())
 		Expect(istio.RbacConfig).NotTo(BeNil())
 		Expect(istio.ServiceRole).NotTo(BeNil())
+		Expect(istio.ServiceRoleBinding).NotTo(BeNil())
 		Expect(istio.MeshPolicy).NotTo(BeNil())
 		Expect(istio.DestinationRule).NotTo(BeNil())
-		Expect(istio.ServiceRoleBinding).NotTo(BeNil())
 		Expect(istio.VirtualService).NotTo(BeNil())
-
 	})
 })

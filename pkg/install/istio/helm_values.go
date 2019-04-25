@@ -3,6 +3,8 @@ package istio
 import (
 	"bytes"
 	"text/template"
+
+	"github.com/solo-io/go-utils/installutils/helmchart"
 )
 
 var supportedIstioVersions = map[string]versionedInstall{
@@ -18,9 +20,15 @@ var supportedIstioVersions = map[string]versionedInstall{
 		chartPath:      IstioVersion106Chart,
 		valuesTemplate: helmValuesTemplate,
 	},
+	IstioVersion113: {
+		extraManifests: istio113ExtraManifests,
+		chartPath:      IstioVersion113Chart,
+		valuesTemplate: helmValuesTemplate,
+	},
 }
 
 type versionedInstall struct {
+	extraManifests helmchart.Manifests
 	chartPath      string
 	valuesTemplate *template.Template
 }
@@ -86,7 +94,6 @@ global:
 #
 # security configuration
 #
-
 security:
   replicaCount: 1
   image: citadel
@@ -120,8 +127,6 @@ gateways:
 #
 sidecarInjectorWebhook:
   enabled: {{ .AutoInject.Enabled }}
-
-
 
 #
 # addons configuration

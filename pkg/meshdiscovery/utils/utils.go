@@ -2,7 +2,6 @@ package utils
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/solo-io/go-utils/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -17,10 +16,17 @@ func ImageVersion(image string) (string, error) {
 	return imageTag, nil
 }
 
-func FilerPodsByNamePrefix(pods v1.PodList, namePrefix string) v1.PodList {
+func SelectRunningPods(pods v1.PodList) v1.PodList {
 	var result v1.PodList
 	for _, pod := range pods {
-		if strings.Contains(pod.Name, namePrefix) {
+		podRunning := true
+		for _, stat := range pod.Status.ContainerStatuses {
+			if stat.State.Running == nil {
+				podRunning = false
+				break
+			}
+		}
+		if podRunning {
 			result = append(result, pod)
 		}
 	}

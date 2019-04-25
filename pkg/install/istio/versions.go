@@ -9,4 +9,7 @@ const (
 
 	IstioVersion106      = "1.0.6"
 	IstioVersion106Chart = "https://storage.googleapis.com/supergloo-charts/istio-1.0.6.tgz"
+
+	IstioVersion113      = "1.1.3"
+	IstioVersion113Chart = "https://storage.googleapis.com/supergloo-charts/istio-1.1.3.tgz"
 )

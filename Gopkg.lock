@@ -2496,6 +2496,7 @@
     "github.com/solo-io/go-utils/installutils/helmchart",
     "github.com/solo-io/go-utils/installutils/kubeinstall",
     "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
+    "github.com/solo-io/go-utils/installutils/kuberesource",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/logger",
     "github.com/solo-io/go-utils/pkgmgmtutils",

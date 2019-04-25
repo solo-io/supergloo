@@ -38,7 +38,7 @@ func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfig
 // TODO (ilackarms): figure out a way to have multiple syncers report on the same resource
 // currently prometheusSyncer returns errors instead of reporting
 func (s *prometheusSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-%v", s.syncerName, snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-prometheus-syncer-%v", s.syncerName, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infof("begin sync %v", snap.Stringer())
 	defer logger.Infof("end sync %v", snap.Stringer())

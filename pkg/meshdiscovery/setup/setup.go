@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/registration"
 )
 
@@ -32,7 +32,7 @@ func Main(customCtx context.Context, customErrHandler func(error), opts *MeshDis
 		return err
 	}
 
-	if err := discovery.RunDiscoveryEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
+	if err := mesh.RunDiscoveryEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
 		return err
 	}
 

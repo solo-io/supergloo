@@ -31,11 +31,16 @@ var (
 )
 
 func Run(version, pullPolicy, prefix string) error {
-	rootPrefix = prefix
 	glooVersion, err := getOsGlooVersion()
 	if err != nil {
 		return err
 	}
+
+	return RunWithGlooVersion(version, pullPolicy, prefix, glooVersion)
+}
+
+func RunWithGlooVersion(version, pullPolicy, prefix, glooVersion string) error {
+	rootPrefix = prefix
 	osGlooVersion = glooVersion
 
 	if err := generateValuesYaml(version, pullPolicy); err != nil {

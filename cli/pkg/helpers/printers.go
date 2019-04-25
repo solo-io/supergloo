@@ -237,6 +237,8 @@ func tablePrintMeshes(list v1.MeshList, w io.Writer) {
 			switch mesh.MeshType.(type) {
 			case *v1.Mesh_Istio:
 				return "Istio"
+			case *v1.Mesh_Linkerd:
+				return "Linkerd"
 			case *v1.Mesh_AwsAppMesh:
 				return "AppMesh"
 			}

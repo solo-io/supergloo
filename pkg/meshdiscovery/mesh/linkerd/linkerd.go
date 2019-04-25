@@ -17,12 +17,12 @@ const (
 	// Hardcoded name from helm chart for linkerd controller
 	linkerdController = linkerd + "-" + controller
 
-	istioSelector = "linkerd-mesh-discovery"
+	linkerdSelector = "linkerd-mesh-discovery"
 )
 
 var (
 	DiscoverySelector = map[string]string{
-		utils.SelectorPrefix: istioSelector,
+		utils.SelectorPrefix: linkerdSelector,
 	}
 )
 
@@ -33,7 +33,7 @@ func NewLinkerdDiscoverySyncer() *linkerdDiscoverySyncer {
 }
 
 func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
 	pods := snap.Pods.List()
@@ -47,16 +47,11 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingInstalls := utils.GetInstalls(installs, utils.LinkerdInstallFilterFunc)
 
-	linkerdPods := utils.FilerPodsByNamePrefix(pods, linkerd)
-	if len(linkerdPods) == 0 {
-		logger.Debugf("no linkerd pods found in pod list")
-		return nil, nil
-	}
+	existingInstalls := utils.GetActiveInstalls(installs, utils.LinkerdInstallFilterFunc)
 
 	var newMeshes v1.MeshList
-	for _, linkerdPod := range linkerdPods {
+	for _, linkerdPod := range utils.SelectRunningPods(pods) {
 		if strings.Contains(linkerdPod.Name, linkerdController) {
 			mesh, err := constructDiscoveredMesh(ctx, linkerdPod, existingInstalls)
 			if err != nil {
@@ -69,6 +64,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 	return newMeshes, nil
 }
+
 
 func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)

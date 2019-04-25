@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"github.com/solo-io/supergloo/pkg/registration"
 	"go.uber.org/zap"
@@ -75,7 +75,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	logger.Debugf("full snapshot: %v", snap)
 
 	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc)
-	linkerdInstalls := utils.GetInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
+	linkerdInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
 	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
 	meshResources := organizeMeshes(
