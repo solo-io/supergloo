@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Added reconciler to sync App Mesh translator output with AWS API resources.
