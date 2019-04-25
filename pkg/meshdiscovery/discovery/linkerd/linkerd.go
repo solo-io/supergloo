@@ -38,18 +38,15 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 	pods := snap.Pods.List()
 	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),
-		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingMeshes := utils.GetMeshes(meshes, utils.LinkerdMeshFilterFunc)
 	existingInstalls := utils.GetInstalls(installs, utils.LinkerdInstallFilterFunc)
 
 	linkerdPods := utils.FilerPodsByNamePrefix(pods, linkerd)
@@ -61,9 +58,6 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	var newMeshes v1.MeshList
 	for _, linkerdPod := range linkerdPods {
 		if strings.Contains(linkerdPod.Name, linkerdController) {
-			if meshExists(linkerdPod, existingMeshes) {
-				continue
-			}
 			mesh, err := constructDiscoveredMesh(ctx, linkerdPod, existingInstalls)
 			if err != nil {
 				return nil, err
@@ -73,23 +67,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 		}
 	}
 
-	existingMeshes = append(existingMeshes, newMeshes...)
-
-	return existingMeshes, nil
-}
-
-func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
-	for _, mesh := range meshes {
-		linkerdMesh := mesh.GetLinkerd()
-		if linkerdMesh == nil {
-			continue
-		}
-
-		if pod.Namespace == linkerdMesh.InstallationNamespace {
-			return true
-		}
-	}
-	return false
+	return newMeshes, nil
 }
 
 func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {

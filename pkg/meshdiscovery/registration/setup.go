@@ -27,7 +27,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	manager := registration.NewManager()
+	manager := registration.NewPubsub()
 	newDiscoveryConfigLoops(ctx, cs, manager)
 
 	registrationSyncers := createRegistrationSyncers(manager)
@@ -39,13 +39,13 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 	return nil
 }
 
-func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, manager *registration.Manager) {
+func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, manager *registration.PubSub) {
 	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, manager)
 	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, manager)
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(manager *registration.Manager) v1.RegistrationSyncer {
+func createRegistrationSyncers(manager *registration.PubSub) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		registration.NewRegistrationSyncer(manager),
 	}

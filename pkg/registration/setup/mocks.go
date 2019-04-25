@@ -2,7 +2,7 @@
 // Source: github.com/solo-io/supergloo/pkg/registration (interfaces: ConfigLoop)
 
 // Package mock_registration is a generated GoMock package.
-package mock_registration
+package setup
 
 import (
 	context "context"

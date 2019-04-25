@@ -3,9 +3,7 @@ package setup
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
@@ -15,57 +13,12 @@ import (
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/config/istio"
 	"github.com/solo-io/supergloo/pkg/config/linkerd"
-	"github.com/solo-io/supergloo/pkg/registration"
 	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	istiotranslator "github.com/solo-io/supergloo/pkg/translator/istio"
 	istioplugins "github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 	linkerdtranslator "github.com/solo-io/supergloo/pkg/translator/linkerd"
 	linkerdplugins "github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 )
-
-// Add config syncers here
-func createConfigStarters(cs *clientset.Clientset) registration.ConfigLoopStarter {
-
-	return func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
-		var syncers v1.ConfigSyncers
-
-		if enabled.Istio {
-			istioSyncer, err := createIstioConfigSyncer(ctx, cs)
-			if err != nil {
-				return nil, err
-			}
-			syncers = append(syncers, istioSyncer)
-		}
-
-		if enabled.Linkerd {
-			linkerdSyncer, err := createLinkerdConfigSyncer(ctx, cs)
-			if err != nil {
-				return nil, err
-			}
-			syncers = append(syncers, linkerdSyncer)
-		}
-
-		if enabled.AppMesh {
-			syncers = append(syncers, createAppmeshConfigSyncer(cs))
-		}
-
-		ctx = contextutils.WithLogger(ctx, "config-event-loop")
-
-		configEmitter := v1.NewConfigEmitter(
-			cs.Supergloo.Mesh,
-			cs.Supergloo.MeshIngress,
-			cs.Supergloo.MeshGroup,
-			cs.Supergloo.RoutingRule,
-			cs.Supergloo.SecurityRule,
-			cs.Supergloo.TlsSecret,
-			cs.Supergloo.Upstream,
-			cs.Discovery.Pod,
-		)
-		configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
-
-		return configEventLoop, nil
-	}
-}
 
 func createAppmeshConfigSyncer(cs *clientset.Clientset) v1.ConfigSyncer {
 	translator := appmeshtranslator.NewAppMeshTranslator()

@@ -47,7 +47,7 @@ func configurePlugins() MeshDiscoveryPlugins {
 
 // start the mesh discovery event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Discovery.Mesh, c.Input.Install)
+	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Input.Install)
 	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

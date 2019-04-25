@@ -13,16 +13,16 @@ import (
 
 type Reciever <-chan EnabledConfigLoops
 
-type Manager struct {
+type PubSub struct {
 	subscriberCache []chan EnabledConfigLoops
 	subscriberLock  sync.RWMutex
 }
 
-func NewManager() *Manager {
-	return &Manager{}
+func NewPubsub() *PubSub {
+	return &PubSub{}
 }
 
-func (r *Manager) Subscribe() Reciever {
+func (r *PubSub) Subscribe() Reciever {
 	r.subscriberLock.Lock()
 	defer r.subscriberLock.Unlock()
 	c := make(chan EnabledConfigLoops, 10)
@@ -30,7 +30,7 @@ func (r *Manager) Subscribe() Reciever {
 	return c
 }
 
-func (r *Manager) Unsubscribe(c Reciever) {
+func (r *PubSub) Unsubscribe(c Reciever) {
 	r.subscriberLock.Lock()
 	defer r.subscriberLock.Unlock()
 	for i, subscriber := range r.subscriberCache {
@@ -41,7 +41,7 @@ func (r *Manager) Unsubscribe(c Reciever) {
 	}
 }
 
-func (r *Manager) publish(ctx context.Context, config EnabledConfigLoops) {
+func (r *PubSub) publish(ctx context.Context, config EnabledConfigLoops) {
 	r.subscriberLock.RLock()
 	defer r.subscriberLock.RUnlock()
 	for _, subscriber := range r.subscriberCache {
@@ -60,7 +60,7 @@ type Subscriber struct {
 	configLoop     ConfigLoop
 }
 
-func NewSubscriber(ctx context.Context, manager *Manager, cl ConfigLoop) *Subscriber {
+func NewSubscriber(ctx context.Context, manager *PubSub, cl ConfigLoop) *Subscriber {
 	ch := manager.Subscribe()
 	go func() {
 		<-ctx.Done()

@@ -25,12 +25,6 @@ var _ = Describe("istio discovery config", func() {
 		clients.UseMemoryClients()
 	})
 
-	Context("plugin creation", func() {
-		It("can be initialized without an error", func() {
-			_, err := NewLinkerdConfigDiscoveryRunner(ctx, cs)
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
 	Context("full mesh", func() {
 
 		var (

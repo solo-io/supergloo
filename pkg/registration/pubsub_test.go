@@ -1,21 +1,26 @@
 package registration
 
 import (
+	"context"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 )
 
 var _ = Describe("registration helpers", func() {
 	var (
-		manager *Manager
+		manager *PubSub
+		ctx     context.Context
+		cancel  context.CancelFunc
 	)
 	BeforeEach(func() {
-		manager = NewManager()
+		manager = NewPubsub()
+		ctx, cancel = context.WithCancel(context.TODO())
 	})
 
-	Context("manager", func() {
+	Context("pubsub", func() {
 
 		It("Allows for multiple subscribers to be added and removed", func() {
 			watches := make([]Reciever, 3)
@@ -41,7 +46,7 @@ var _ = Describe("registration helpers", func() {
 					recievedUpdates++
 				}()
 			}
-			manager.publish(EnabledConfigLoops{})
+			manager.publish(ctx, EnabledConfigLoops{})
 			Eventually(func() int {
 				return recievedUpdates
 			}, time.Second*15, time.Second/2).Should(Equal(4))
@@ -50,19 +55,21 @@ var _ = Describe("registration helpers", func() {
 
 	})
 
-	Context("listener", func() {
+	Context("subscriber", func() {
+		var (
+			subscriber *Subscriber
+			cl         *mockConfigLoop
+		)
 
-		It("Allows for multiple subscribers to be added and removed", func() {
-			watches := make([]Reciever, 3)
-			for i := 0; i < 4; i++ {
-				watches = append(watches, manager.Subscribe())
-			}
-			Expect(manager.subscriberCache).To(HaveLen(4))
+		BeforeEach(func() {
+			cl = newMockConfigLoop()
+			subscriber = NewSubscriber(ctx, manager, cl)
+		})
 
-			for _, watch := range watches {
-				manager.Unsubscribe(watch)
-				Expect(manager.subscriberCache).NotTo(ContainElement(watch))
-			}
+		It("cancelling the parent context automatically unsubscribes the subscriber", func() {
+			Expect(manager.subscriberCache).To(HaveLen(1))
+			cancel()
+			Expect(manager.subscriberCache).To(HaveLen(0))
 		})
 
 		It("send updates to all available recievers", func() {
@@ -72,3 +79,18 @@ var _ = Describe("registration helpers", func() {
 	})
 
 })
+
+type mockConfigLoop struct {
+}
+
+func (*mockConfigLoop) Enabled(enabled EnabledConfigLoops) bool {
+	return true
+}
+
+func (*mockConfigLoop) Start(ctx context.Context, enabled EnabledConfigLoops) (eventloop.EventLoop, error) {
+	return nil, nil
+}
+
+func newMockConfigLoop() *mockConfigLoop {
+	return &mockConfigLoop{}
+}

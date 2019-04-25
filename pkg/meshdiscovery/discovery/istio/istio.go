@@ -37,18 +37,15 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 
 	pods := snap.Pods.List()
 	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),
-		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingMeshes := utils.GetMeshes(meshes, utils.IstioMeshFilterFunc)
 	existingInstalls := utils.GetInstalls(installs, utils.IstioInstallFilterFunc)
 
 	istioPods := utils.FilerPodsByNamePrefix(pods, istio)
@@ -60,9 +57,6 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 	var newMeshes v1.MeshList
 	for _, istioPod := range istioPods {
 		if strings.Contains(istioPod.Name, istioPilot) {
-			if meshExists(istioPod, existingMeshes) {
-				continue
-			}
 			mesh, err := constructDiscoveredMesh(ctx, istioPod, existingInstalls)
 			if err != nil {
 				return nil, err
@@ -72,23 +66,7 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 		}
 	}
 
-	existingMeshes = append(existingMeshes, newMeshes...)
-
-	return existingMeshes, nil
-}
-
-func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
-	for _, mesh := range meshes {
-		istioMesh := mesh.GetIstio()
-		if istioMesh == nil {
-			continue
-		}
-
-		if pod.Namespace == istioMesh.InstallationNamespace {
-			return true
-		}
-	}
-	return false
+	return newMeshes, nil
 }
 
 func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {

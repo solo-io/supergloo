@@ -36,7 +36,7 @@ var (
 	}
 )
 
-func StartIstioDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, manager *registration.Manager) {
+func StartIstioDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, manager *registration.PubSub) {
 	sgConfigLoop := &istioDiscoveryConfigLoop{cs: cs}
 	sgListener := registration.NewSubscriber(ctx, manager, sgConfigLoop)
 	sgListener.Listen(ctx)

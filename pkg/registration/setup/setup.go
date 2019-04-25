@@ -33,7 +33,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	manager := registration.NewManager()
+	manager := registration.NewPubsub()
 	setup.StartSuperglooConfigLoop(ctx, cs, manager)
 
 	registrationSyncers := createRegistrationSyncers(cs, manager)
@@ -46,7 +46,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, manager *registration.Manager) v1.RegistrationSyncer {
+func createRegistrationSyncers(clientset *clientset.Clientset, manager *registration.PubSub) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),

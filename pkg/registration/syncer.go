@@ -10,10 +10,10 @@ import (
 // registration syncer, activates config syncers based on registered meshes
 // enables istio config syncer as long as there's a registered istio mesh
 type RegistrationSyncer struct {
-	manager *Manager
+	manager *PubSub
 }
 
-func NewRegistrationSyncer(manager *Manager) *RegistrationSyncer {
+func NewRegistrationSyncer(manager *PubSub) *RegistrationSyncer {
 	return &RegistrationSyncer{manager: manager}
 }
 
