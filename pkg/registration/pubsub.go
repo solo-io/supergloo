@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type Reciever <-chan EnabledConfigLoops
+type Receiver <-chan EnabledConfigLoops
 
 type PubSub struct {
 	subscriberCache []chan EnabledConfigLoops
@@ -22,7 +22,7 @@ func NewPubsub() *PubSub {
 	return &PubSub{}
 }
 
-func (r *PubSub) Subscribe() Reciever {
+func (r *PubSub) subscribe() Receiver {
 	r.subscriberLock.Lock()
 	defer r.subscriberLock.Unlock()
 	c := make(chan EnabledConfigLoops, 10)
@@ -30,7 +30,7 @@ func (r *PubSub) Subscribe() Reciever {
 	return c
 }
 
-func (r *PubSub) Unsubscribe(c Reciever) {
+func (r *PubSub) unsubscribe(c Receiver) {
 	r.subscriberLock.Lock()
 	defer r.subscriberLock.Unlock()
 	for i, subscriber := range r.subscriberCache {
@@ -56,15 +56,15 @@ func (r *PubSub) publish(ctx context.Context, config EnabledConfigLoops) {
 }
 
 type Subscriber struct {
-	enabledChannel Reciever
+	enabledChannel Receiver
 	configLoop     ConfigLoop
 }
 
 func NewSubscriber(ctx context.Context, pubsub *PubSub, cl ConfigLoop) *Subscriber {
-	ch := pubsub.Subscribe()
+	ch := pubsub.subscribe()
 	go func() {
 		<-ctx.Done()
-		pubsub.Unsubscribe(ch)
+		pubsub.unsubscribe(ch)
 	}()
 	return &Subscriber{enabledChannel: ch, configLoop: cl}
 }
