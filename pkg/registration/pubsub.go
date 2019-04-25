@@ -60,11 +60,11 @@ type Subscriber struct {
 	configLoop     ConfigLoop
 }
 
-func NewSubscriber(ctx context.Context, manager *PubSub, cl ConfigLoop) *Subscriber {
-	ch := manager.Subscribe()
+func NewSubscriber(ctx context.Context, pubsub *PubSub, cl ConfigLoop) *Subscriber {
+	ch := pubsub.Subscribe()
 	go func() {
 		<-ctx.Done()
-		manager.Unsubscribe(ch)
+		pubsub.Unsubscribe(ch)
 	}()
 	return &Subscriber{enabledChannel: ch, configLoop: cl}
 }
@@ -73,6 +73,7 @@ func (l *Subscriber) Listen(parentCtx context.Context) {
 	go func() {
 		previousState := EnabledConfigLoops{}
 		childCtx, cancel := context.WithCancel(parentCtx)
+		defer cancel()
 		logger := contextutils.LoggerFrom(parentCtx)
 
 		for {
@@ -91,7 +92,7 @@ func (l *Subscriber) Listen(parentCtx context.Context) {
 					childCtx, cancel = context.WithCancel(parentCtx)
 					err := RunConfigLoop(childCtx, nextState, l.configLoop.Start)
 					if err != nil {
-						logger.Errorw("could not start config loop")
+						logger.Errorw("could not start config loop", zap.Error(err))
 						return
 					}
 				}

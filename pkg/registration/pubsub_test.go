@@ -69,11 +69,46 @@ var _ = Describe("registration helpers", func() {
 		It("cancelling the parent context automatically unsubscribes the subscriber", func() {
 			Expect(manager.subscriberCache).To(HaveLen(1))
 			cancel()
-			Expect(manager.subscriberCache).To(HaveLen(0))
+			Eventually(func() int {
+				return len(manager.subscriberCache)
+			}, time.Second*10, time.Second/2).Should(Equal(0))
 		})
 
-		It("send updates to all available recievers", func() {
+		It("call enabled properly", func() {
+			subscriber.Listen(ctx)
+			manager.publish(ctx, EnabledConfigLoops{})
+			Eventually(func() int {
+				return cl.enabledCalled
+			}, time.Second*10, time.Second/2).Should(Equal(2))
+			Expect(cl.startCalled).To(Equal(0))
+			cancel()
+		})
 
+		It("calls start properly", func() {
+			subscriber.Listen(ctx)
+			manager.publish(ctx, EnabledConfigLoops{
+				Istio: true,
+			})
+			Eventually(func() int {
+				return cl.startCalled
+			}, time.Second*10, time.Second/2).Should(Equal(1))
+			manager.publish(ctx, EnabledConfigLoops{
+				Istio: true,
+			})
+			manager.publish(ctx, EnabledConfigLoops{})
+			Eventually(func() int {
+				return cl.contextCancelled
+			}, time.Second*10, time.Second/2).Should(Equal(1))
+			manager.publish(ctx, EnabledConfigLoops{
+				Istio: true,
+			})
+			Eventually(func() int {
+				return cl.startCalled
+			}, time.Second*10, time.Second/2).Should(Equal(2))
+			cancel()
+			Eventually(func() int {
+				return cl.contextCancelled
+			}, time.Second*10, time.Second/2).Should(Equal(2))
 		})
 
 	})
@@ -81,16 +116,25 @@ var _ = Describe("registration helpers", func() {
 })
 
 type mockConfigLoop struct {
+	startCalled      int
+	enabledCalled    int
+	contextCancelled int
 }
 
-func (*mockConfigLoop) Enabled(enabled EnabledConfigLoops) bool {
-	return true
+func (mcl *mockConfigLoop) Enabled(enabled EnabledConfigLoops) bool {
+	mcl.enabledCalled++
+	return enabled.Istio
 }
 
-func (*mockConfigLoop) Start(ctx context.Context, enabled EnabledConfigLoops) (eventloop.EventLoop, error) {
+func (mcl *mockConfigLoop) Start(ctx context.Context, enabled EnabledConfigLoops) (eventloop.EventLoop, error) {
+	mcl.startCalled++
+	go func() {
+		<-ctx.Done()
+		mcl.contextCancelled++
+	}()
 	return nil, nil
 }
 
 func newMockConfigLoop() *mockConfigLoop {
-	return &mockConfigLoop{}
+	return &mockConfigLoop{startCalled: 0}
 }
