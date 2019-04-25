@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Added function to list all AWS App Mesh API resources for a particular mesh.
