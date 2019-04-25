@@ -14,23 +14,11 @@ type Resources struct {
 }
 
 func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resources, error) {
-
-	type virtualRouter struct {
-		name       string
-		routeNames []string
-	}
-
 	var (
-		requestWg           sync.WaitGroup
-		virtualNodesChan    = make(chan []string, 10)
-		virtualServicesChan = make(chan []string, 10)
-		virtualRouterChan   = make(chan virtualRouter, 10)
-		errorChan           = make(chan error, 10)
-		collectWg           sync.WaitGroup
-		vnNames,
-		vsNames []string
-		virtualRouters = make(map[string][]string)
-		err            *multierror.Error
+		requestWg        sync.WaitGroup
+		vnNames, vsNames []string
+		vrMap            = sync.Map{}
+		errorChan        = make(chan error, 10)
 	)
 
 	// Virtual Nodes
@@ -43,7 +31,7 @@ func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resou
 			errorChan <- err
 			return
 		}
-		virtualNodesChan <- vNodes
+		vnNames = vNodes
 	}()
 
 	// Virtual Services
@@ -56,7 +44,7 @@ func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resou
 			errorChan <- err
 			return
 		}
-		virtualServicesChan <- vServices
+		vsNames = vServices
 	}()
 
 	// Virtual Routers
@@ -64,7 +52,6 @@ func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resou
 	go func() {
 		defer requestWg.Done()
 
-		// Get all virtual routers
 		vRouters, err := client.ListVirtualRouters(ctx, meshName)
 		if err != nil {
 			errorChan <- err
@@ -84,62 +71,34 @@ func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resou
 					errorChan <- err
 					return
 				} else {
-					virtualRouterChan <- virtualRouter{name: vrName, routeNames: routes}
+					vrMap.Store(vrName, routes)
 				}
 			}(vr)
 		}
 		routeWg.Wait()
 	}()
 
-	// Close channels when all workers have finished
-	go func() {
-		requestWg.Wait()
-		close(virtualNodesChan)
-		close(virtualServicesChan)
-		close(virtualRouterChan)
-		close(errorChan)
-	}()
+	requestWg.Wait()
+	close(errorChan)
 
-	// Collect the results
-	// Each `range` statement will block until the correspondent channel is closed
-	collectWg.Add(1)
-	go func() {
-		defer collectWg.Done()
-		for vn := range virtualNodesChan {
-			vnNames = vn
-		}
-	}()
-
-	collectWg.Add(1)
-	go func() {
-		defer collectWg.Done()
-		for vs := range virtualServicesChan {
-			vsNames = vs
-		}
-	}()
-
-	collectWg.Add(1)
-	go func() {
-		defer collectWg.Done()
-		for vr := range virtualRouterChan {
-			virtualRouters[vr.name] = vr.routeNames
-		}
-	}()
-
-	collectWg.Add(1)
-	go func() {
-		defer collectWg.Done()
-		for e := range errorChan {
-			err = multierror.Append(err, e)
-		}
-	}()
-
-	// Wait on resource collection to finish
-	collectWg.Wait()
-
+	// Collect errors
+	var err *multierror.Error
+	for e := range errorChan {
+		err = multierror.Append(err, e)
+	}
 	if mergedError := err.ErrorOrNil(); mergedError != nil {
 		return nil, errors.Wrapf(mergedError, "failed to list all App Mesh resources for mesh %s", meshName)
 	}
+
+	// Transform VR map to regular map
+	virtualRouters := make(map[string][]string)
+	vrMap.Range(func(key, value interface{}) bool {
+		vrName := key.(string)
+		vrRoutes := value.([]string)
+		virtualRouters[vrName] = vrRoutes
+
+		return true
+	})
 
 	return &Resources{
 		VirtualNodes:    vnNames,
