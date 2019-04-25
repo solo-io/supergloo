@@ -44,8 +44,7 @@ steps:
     id: 'check-format'
   - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     entrypoint: 'bash'
-    args: ['-c', 'echo hi']
-#    args: ['ci/check-code-and-docs-gen.sh']
+    args: ['ci/check-code-and-docs-gen.sh']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
@@ -197,7 +196,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    args: ['-c', 'echo "This test is currently disabled until Istio 1.1.x support is finished in SuperGloo"']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'istio-11x-test'
 
