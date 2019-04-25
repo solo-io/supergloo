@@ -210,6 +210,13 @@ func testCertRotation(meshName string) {
 
 	Expect(certChain).To(HaveSuffix(inputs.CertChain))
 
+	// check that communication still works
+	// curl should succeed from injected testrunner
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/details/1",
+	}, `"author":"William Shakespeare"`, time.Minute*1)
 }
 
 func testMtls() {
