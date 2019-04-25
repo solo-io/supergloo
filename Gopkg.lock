@@ -130,7 +130,7 @@
   version = "v2.2.0"
 
 [[projects]]
-  digest = "1:bac7fc3890504b2f4ce95a5277836ac7c0c653534c23569d03967eedcb0d8a86"
+  digest = "1:db59f043a93c944991296451eb6b4137388cfe1ff91a272942d43767d4793c7d"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -170,8 +170,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "f9b35e02297c8fcca7a55dd30ed8d4e9dc64f5a3"
-  version = "v1.18.5"
+  revision = "c44180fe5d17e41f3aa22bdea42c073b344bcaac"
+  version = "v1.19.17"
 
 [[projects]]
   branch = "master"
@@ -2557,6 +2557,7 @@
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/util/intstr",
+    "k8s.io/apimachinery/pkg/util/rand",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/apimachinery/pkg/util/yaml",
