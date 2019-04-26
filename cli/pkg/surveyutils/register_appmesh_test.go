@@ -51,7 +51,7 @@ var _ = Describe("RegisterAppmesh", func() {
 				c.ExpectString("Choose a secret that contains the AWS credentials to " +
 					"connect to AWS App Mesh (hint: you can easily create one with 'supergloo create secret aws -i')")
 				c.SendLine("")
-				c.ExpectString("In which AWS region do you want AWS App Mes resources to be created?")
+				c.ExpectString("In which AWS region do you want AWS App Mesh resources to be created?")
 				c.PressDown()
 				c.SendLine("") // select "ap-northeast-2"
 				c.ExpectString("Do you want SuperGloo to auto-inject your pods with the AWS App Mesh sidecar proxies?")
@@ -76,7 +76,7 @@ var _ = Describe("RegisterAppmesh", func() {
 					c.ExpectString("Choose a secret that contains the AWS credentials to " +
 						"connect to AWS App Mesh (hint: you can easily create one with 'supergloo create secret aws -i')")
 					c.SendLine("")
-					c.ExpectString("In which AWS region do you want AWS App Mes resources to be created?")
+					c.ExpectString("In which AWS region do you want AWS App Mesh resources to be created?")
 					c.PressDown()
 					c.PressDown()
 					c.SendLine("") // select "ap-southeast-1"
@@ -115,7 +115,7 @@ var _ = Describe("RegisterAppmesh", func() {
 					c.ExpectString("Choose a secret that contains the AWS credentials to " +
 						"connect to AWS App Mesh (hint: you can easily create one with 'supergloo create secret aws -i')")
 					c.SendLine("")
-					c.ExpectString("In which AWS region do you want AWS App Mes resources to be created?")
+					c.ExpectString("In which AWS region do you want AWS App Mesh resources to be created?")
 					c.PressDown()
 					c.PressDown()
 					c.SendLine("") // select "ap-southeast-1"
@@ -154,7 +154,7 @@ var _ = Describe("RegisterAppmesh", func() {
 					c.ExpectString("Choose a secret that contains the AWS credentials to " +
 						"connect to AWS App Mesh (hint: you can easily create one with 'supergloo create secret aws -i')")
 					c.SendLine("")
-					c.ExpectString("In which AWS region do you want AWS App Mes resources to be created?")
+					c.ExpectString("In which AWS region do you want AWS App Mesh resources to be created?")
 					c.PressDown()
 					c.PressDown()
 					c.SendLine("") // select "ap-southeast-1"

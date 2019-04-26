@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
 )
 
@@ -52,7 +53,10 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	// reconcile all discovered meshes
 	err := s.meshReconciler.Reconcile("", discoveredMeshes, func(original, desired *v1.Mesh) (b bool, e error) {
 		return false, nil
-	}, clients.ListOpts{})
+	}, clients.ListOpts{
+		Ctx:      ctx,
+		Selector: map[string]string{utils.SelectorCreatedByPrefix: utils.SelectorCreatedByValue},
+	})
 	if err != nil {
 		multierr = multierror.Append(multierr, err)
 	}
