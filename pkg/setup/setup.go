@@ -7,7 +7,9 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/config/setup"
 	installsetup "github.com/solo-io/supergloo/pkg/install/setup"
+	"github.com/solo-io/supergloo/pkg/registration"
 	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
 )
 
@@ -28,9 +30,13 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 		return err
 	}
 
-	if err := registrationsetup.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
+	pubsub := registration.NewPubsub()
+
+	if err := registrationsetup.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler, pubsub); err != nil {
 		return err
 	}
+
+	setup.StartSuperglooConfigLoop(rootCtx, clientSet, pubsub)
 
 	<-rootCtx.Done()
 	return nil

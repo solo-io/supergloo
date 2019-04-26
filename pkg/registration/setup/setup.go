@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/config/setup"
 	"github.com/solo-io/supergloo/pkg/registration"
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
 	"github.com/solo-io/supergloo/pkg/registration/gloo"
@@ -19,7 +18,7 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
 	ctx = contextutils.WithLogger(ctx, "registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -33,10 +32,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	manager := registration.NewPubsub()
-	setup.StartSuperglooConfigLoop(ctx, cs, manager)
-
-	registrationSyncers := createRegistrationSyncers(cs, manager)
+	registrationSyncers := createRegistrationSyncers(cs, pubsub)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
@@ -46,7 +42,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, manager *registration.PubSub) v1.RegistrationSyncer {
+func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
@@ -66,7 +62,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, manager *registra
 			clientset.Supergloo.Secret,
 			kube.New(nil),
 		),
-		registration.NewRegistrationSyncer(manager),
+		registration.NewRegistrationSyncer(pubSub),
 	}
 }
 

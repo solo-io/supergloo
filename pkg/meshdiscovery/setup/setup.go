@@ -7,8 +7,11 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/registration"
+	discreg "github.com/solo-io/supergloo/pkg/meshdiscovery/registration"
+	"github.com/solo-io/supergloo/pkg/registration"
 )
 
 type MeshDiscoveryOptions struct {
@@ -37,9 +40,12 @@ func Main(customCtx context.Context, customErrHandler func(error), opts *MeshDis
 	}
 
 	if !opts.DisableConfigLoop {
-		if err := registration.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler); err != nil {
+		pubsub := registration.NewPubsub()
+		if err := discreg.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler, pubsub); err != nil {
 			return err
 		}
+
+		newDiscoveryConfigLoops(rootCtx, clientSet, pubsub)
 	} else {
 		contextutils.LoggerFrom(rootCtx).Info("discovery config has been disabled")
 	}
@@ -55,4 +61,9 @@ func createRootContext(customCtx context.Context) context.Context {
 	}
 	rootCtx = contextutils.WithLogger(rootCtx, "meshdiscovery")
 	return rootCtx
+}
+
+func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, pubsub *registration.PubSub) {
+	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, pubsub)
+	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, pubsub)
 }

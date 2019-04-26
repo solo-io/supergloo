@@ -8,12 +8,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/istio"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/linkerd"
 	"github.com/solo-io/supergloo/pkg/registration"
 )
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-discovery-registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -27,9 +25,6 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	pubsub := registration.NewPubsub()
-	newDiscoveryConfigLoops(ctx, cs, pubsub)
-
 	registrationSyncers := createRegistrationSyncers(pubsub)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
@@ -37,11 +32,6 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 	}
 
 	return nil
-}
-
-func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, pubsub *registration.PubSub) {
-	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, pubsub)
-	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, pubsub)
 }
 
 // Add registration syncers here

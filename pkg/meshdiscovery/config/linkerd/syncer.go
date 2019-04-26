@@ -25,9 +25,9 @@ const (
 	proxyContainer = "linkerd-proxy"
 )
 
-func StartLinkerdDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, manager *registration.PubSub) {
+func StartLinkerdDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, pubSub *registration.PubSub) {
 	sgConfigLoop := &linkerdDiscoveryConfigLoop{cs: cs}
-	sgListener := registration.NewSubscriber(ctx, manager, sgConfigLoop)
+	sgListener := registration.NewSubscriber(ctx, pubSub, sgConfigLoop)
 	sgListener.Listen(ctx)
 }
 

@@ -12,12 +12,12 @@ import (
 
 var _ = Describe("registration helpers", func() {
 	var (
-		manager *PubSub
-		ctx     context.Context
-		cancel  context.CancelFunc
+		pubSub *PubSub
+		ctx    context.Context
+		cancel context.CancelFunc
 	)
 	BeforeEach(func() {
-		manager = NewPubsub()
+		pubSub = NewPubsub()
 		ctx, cancel = context.WithCancel(context.TODO())
 	})
 
@@ -26,13 +26,13 @@ var _ = Describe("registration helpers", func() {
 		It("Allows for multiple subscribers to be added and removed", func() {
 			watches := make([]Receiver, 3)
 			for i := 0; i < 4; i++ {
-				watches = append(watches, manager.subscribe())
+				watches = append(watches, pubSub.subscribe())
 			}
-			Expect(manager.subscriberCache).To(HaveLen(4))
+			Expect(pubSub.subscriberCache).To(HaveLen(4))
 
 			for _, watch := range watches {
-				manager.unsubscribe(watch)
-				Expect(manager.subscriberCache).NotTo(ContainElement(watch))
+				pubSub.unsubscribe(watch)
+				Expect(pubSub.subscriberCache).NotTo(ContainElement(watch))
 			}
 		})
 
@@ -40,14 +40,14 @@ var _ = Describe("registration helpers", func() {
 			watches := make([]Receiver, 3)
 			recievedUpdates := 0
 			for i := 0; i < 4; i++ {
-				reciever := manager.subscribe()
+				reciever := pubSub.subscribe()
 				watches = append(watches, reciever)
 				go func() {
 					<-reciever
 					recievedUpdates++
 				}()
 			}
-			manager.publish(ctx, EnabledConfigLoops{})
+			pubSub.publish(ctx, EnabledConfigLoops{})
 			Eventually(func() int {
 				return recievedUpdates
 			}, time.Second*15, time.Second/2).Should(Equal(4))
@@ -64,20 +64,20 @@ var _ = Describe("registration helpers", func() {
 
 		BeforeEach(func() {
 			cl = newMockConfigLoop()
-			subscriber = NewSubscriber(ctx, manager, cl)
+			subscriber = NewSubscriber(ctx, pubSub, cl)
 		})
 
 		It("cancelling the parent context automatically unsubscribes the subscriber", func() {
-			Expect(manager.subscriberCache).To(HaveLen(1))
+			Expect(pubSub.subscriberCache).To(HaveLen(1))
 			cancel()
 			Eventually(func() int {
-				return len(manager.subscriberCache)
+				return len(pubSub.subscriberCache)
 			}, time.Second*10, time.Second/2).Should(Equal(0))
 		})
 
 		It("call enabled properly", func() {
 			subscriber.Listen(ctx)
-			manager.publish(ctx, EnabledConfigLoops{})
+			pubSub.publish(ctx, EnabledConfigLoops{})
 			Eventually(func() int {
 				return len(cl.allLoops)
 			}, time.Second*10, time.Second/2).Should(Equal(2))
@@ -87,20 +87,20 @@ var _ = Describe("registration helpers", func() {
 
 		It("calls start properly", func() {
 			subscriber.Listen(ctx)
-			manager.publish(ctx, EnabledConfigLoops{
+			pubSub.publish(ctx, EnabledConfigLoops{
 				Istio: true,
 			})
 			Eventually(func() int {
 				return cl.startCalled
 			}, time.Second*10, time.Second/2).Should(Equal(1))
-			manager.publish(ctx, EnabledConfigLoops{
+			pubSub.publish(ctx, EnabledConfigLoops{
 				Istio: true,
 			})
-			manager.publish(ctx, EnabledConfigLoops{})
+			pubSub.publish(ctx, EnabledConfigLoops{})
 			Eventually(func() int {
 				return cl.contextCancelled
 			}, time.Second*10, time.Second/2).Should(Equal(1))
-			manager.publish(ctx, EnabledConfigLoops{
+			pubSub.publish(ctx, EnabledConfigLoops{
 				Istio: true,
 			})
 			Eventually(func() int {
@@ -123,8 +123,8 @@ var _ = Describe("registration helpers", func() {
 
 		BeforeEach(func() {
 			cl = newMockConfigLoop()
-			subscriber = NewSubscriber(ctx, manager, cl)
-			syncer = NewRegistrationSyncer(manager)
+			subscriber = NewSubscriber(ctx, pubSub, cl)
+			syncer = NewRegistrationSyncer(pubSub)
 		})
 
 		It("can handle a single mesh", func() {
@@ -177,8 +177,8 @@ var _ = Describe("registration helpers", func() {
 		})
 
 		It("can handle multiple subscribers", func() {
-			subscriber2 := NewSubscriber(ctx, manager, cl)
-			subscriber3 := NewSubscriber(ctx, manager, cl)
+			subscriber2 := NewSubscriber(ctx, pubSub, cl)
+			subscriber3 := NewSubscriber(ctx, pubSub, cl)
 			subscriber.Listen(ctx)
 			subscriber2.Listen(ctx)
 			subscriber3.Listen(ctx)

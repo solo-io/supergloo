@@ -10,11 +10,11 @@ import (
 // registration syncer, activates config syncers based on registered meshes
 // enables istio config syncer as long as there's a registered istio mesh
 type RegistrationSyncer struct {
-	manager *PubSub
+	pubSub *PubSub
 }
 
-func NewRegistrationSyncer(manager *PubSub) *RegistrationSyncer {
-	return &RegistrationSyncer{manager: manager}
+func NewRegistrationSyncer(pubSub *PubSub) *RegistrationSyncer {
+	return &RegistrationSyncer{pubSub: pubSub}
 }
 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
@@ -43,7 +43,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 	}
 
 	// Send updates to all subscribers
-	s.manager.publish(ctx, enabledFeatures)
+	s.pubSub.publish(ctx, enabledFeatures)
 
 	return nil
 }
