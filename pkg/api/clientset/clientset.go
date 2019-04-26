@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
+	"github.com/solo-io/supergloo/pkg/api/crdcache"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
 
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
@@ -35,7 +36,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := kube.NewKubeCache(ctx)
+	crdCache := crdcache.GetCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
 	if err != nil {
 		return nil, err
@@ -148,7 +149,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := kube.NewKubeCache(ctx)
+	crdCache := crdcache.GetCache(ctx)
 	/*
 		istio clients
 	*/

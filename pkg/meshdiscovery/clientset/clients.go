@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
+	"github.com/solo-io/supergloo/pkg/api/crdcache"
 	customkube "github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -64,7 +65,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := kube.NewKubeCache(ctx)
+	crdCache := crdcache.GetCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
 	if err != nil {
 		return nil, err
@@ -138,7 +139,7 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := kube.NewKubeCache(ctx)
+	crdCache := crdcache.GetCache(ctx)
 	/*
 		istio clients
 	*/
