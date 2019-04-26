@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/errors"
 )
 
@@ -78,16 +77,15 @@ func ListAllForMesh(ctx context.Context, client Client, meshName string) (*Resou
 		routeWg.Wait()
 	}()
 
-	requestWg.Wait()
-	close(errorChan)
+	// Close in separate go routine so we can start consuming the errors, the channel might fill up and we wait forever
+	go func() {
+		requestWg.Wait()
+		close(errorChan)
+	}()
 
 	// Collect errors
-	var err *multierror.Error
-	for e := range errorChan {
-		err = multierror.Append(err, e)
-	}
-	if mergedError := err.ErrorOrNil(); mergedError != nil {
-		return nil, errors.Wrapf(mergedError, "failed to list all App Mesh resources for mesh %s", meshName)
+	if err := drainErrorChannel(errorChan); err != nil {
+		return nil, errors.Wrapf(err, "failed to list all App Mesh resources for mesh %s", meshName)
 	}
 
 	// Transform VR map to regular map

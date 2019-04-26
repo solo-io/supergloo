@@ -1336,41 +1336,6 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:f88da8f73e0b2c86593fdd65065e00c3e057134ca8302840174733cd99b4dd7f"
-  name = "github.com/solo-io/go-utils"
-  packages = [
-    "changelogutils",
-    "clicore/constants",
-    "clidoc",
-    "cliutils",
-    "contextutils",
-    "docsutils",
-    "errors",
-    "githubutils",
-    "hashutils",
-    "installutils/helmchart",
-    "installutils/kubeinstall",
-    "installutils/kubeinstall/mocks",
-    "installutils/kuberesource",
-    "kubeinstallutils",
-    "kubeutils",
-    "logger",
-    "pkgmgmtutils",
-    "protoutils",
-    "stats",
-    "stringutils",
-    "surveyutils",
-    "tarutils",
-    "testutils",
-    "testutils/clusterlock",
-    "versionutils",
-    "vfsutils",
-  ]
-  pruneopts = "UT"
-  revision = "0615c838ea7df7a3f83f6a8551e186ad60966547"
-  version = "v0.7.16"
-
-[[projects]]
   digest = "1:afb427d4c85d7e002bb1f605ce593f6a83239b9218bb078deda2366a7af49d4a"
   name = "github.com/solo-io/solo-kit"
   packages = [
