@@ -122,9 +122,8 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string)
 		ServerCertKey: base64.StdEncoding.EncodeToString(certs.serverCertKey),
 		CaBundle:      base64.StdEncoding.EncodeToString(certs.caCertificate),
 		Image: Image{
-			Name: webhookImageName,
-			// TODO(EItanya): default to something other than undefined
-			Tag:        version.Version,
+			Name:       webhookImageName,
+			Tag:        version.GetWebhookImageTag(),
 			PullPolicy: webhookImagePullPolicy,
 		},
 	}

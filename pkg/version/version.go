@@ -13,3 +13,11 @@ var (
 func IsReleaseVersion() bool {
 	return Version != UndefinedVersion && Version != DevVersion
 }
+
+func GetWebhookImageTag() string {
+	defaultTag := "latest"
+	if IsReleaseVersion() {
+		defaultTag = Version
+	}
+	return defaultTag
+}
