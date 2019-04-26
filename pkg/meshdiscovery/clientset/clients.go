@@ -5,6 +5,7 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
@@ -55,8 +56,13 @@ func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCac
 	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache}
 }
 
+type clientsetKey struct{}
+
 // initialize all resource clients here that will share a cache
 func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
+	crdCache, created := crdcache.GetCrdCache(ctx, clientsetKey{})
+	var clientsToRegister []clients.ResourceClient
+
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err
@@ -65,7 +71,6 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := crdcache.GetCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
 	if err != nil {
 		return nil, err
@@ -78,25 +83,19 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := mesh.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, mesh.BaseClient())
 
 	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := meshIngress.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, meshIngress.BaseClient())
 
 	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := install.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, install.BaseClient())
 
 	/*
 		gloo config clients
@@ -106,9 +105,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := upstream.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, upstream.BaseClient())
 
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
@@ -117,6 +114,12 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 
 	namespaceBase := customkube.NewnamespaceResourceClient(kubeClient, kubeCoreCache)
 	namespace := v1.NewKubeNamespaceClientWithBase(namespaceBase)
+
+	if created {
+		if err := registerClients(clientsToRegister); err != nil {
+			return nil, err
+		}
+	}
 
 	return newClientset(
 		restConfig,
@@ -134,12 +137,16 @@ func newIstioClientset(meshpolicies v1alpha1.MeshPolicyClient) *IstioClientset {
 	return &IstioClientset{MeshPolicies: meshpolicies}
 }
 
+type istioClientsetKey struct{}
+
 func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
+	crdCache, created := crdcache.GetCrdCache(ctx, istioClientsetKey{})
+	var clientsToRegister []clients.ResourceClient
+
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err
 	}
-	crdCache := crdcache.GetCache(ctx)
 	/*
 		istio clients
 	*/
@@ -153,9 +160,22 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := meshPolicyConfig.Register(); err != nil {
-		return nil, err
-	}
-	return newIstioClientset(meshPolicyConfig), nil
+	clientsToRegister = append(clientsToRegister, meshPolicyConfig.BaseClient())
 
+	if created {
+		if err := registerClients(clientsToRegister); err != nil {
+			return nil, err
+		}
+	}
+
+	return newIstioClientset(meshPolicyConfig), nil
+}
+
+func registerClients(clients []clients.ResourceClient) error {
+	for _, client := range clients {
+		if err := client.Register(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -8,23 +8,31 @@ import (
 )
 
 var (
-	sharedCache     kube.SharedCache
-	sharedCacheLock sync.Mutex
+	cacheMap = sync.Map{}
 )
 
-func GetCache(ctx context.Context) kube.SharedCache {
-	// Lock this function as it can be called by multiple go routines simultaneously
-	sharedCacheLock.Lock()
-	defer sharedCacheLock.Unlock()
-	if sharedCache == nil {
-		sharedCache = kube.NewKubeCache(ctx)
-	}
-	return sharedCache
+func storeCache(key interface{}, cache kube.SharedCache) {
+	cacheMap.Store(key, cache)
 }
 
-func ResetCache(ctx context.Context) kube.SharedCache {
-	sharedCacheLock.Lock()
-	defer sharedCacheLock.Unlock()
-	sharedCache = kube.NewKubeCache(ctx)
-	return sharedCache
+func loadCache(key interface{}) kube.SharedCache {
+	val, ok := cacheMap.Load(key)
+	if !ok {
+		return nil
+	}
+	cache, ok := val.(kube.SharedCache)
+	if !ok {
+		return nil
+	}
+	return cache
+}
+
+// returns cache, created
+func GetCrdCache(ctx context.Context, key interface{}) (kube.SharedCache, bool) {
+	if val := loadCache(key); val != nil {
+		return val, false
+	}
+	newCache := kube.NewKubeCache(ctx)
+	storeCache(key, newCache)
+	return newCache, true
 }

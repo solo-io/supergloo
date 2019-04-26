@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/crdcache"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
 
@@ -26,8 +27,13 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+type clientsetKey struct{}
+
 // initialize all resource clients here that will share a cache
 func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
+	crdCache, created := crdcache.GetCrdCache(ctx, clientsetKey{})
+	var clientsToRegister []clients.ResourceClient
+
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err
@@ -36,7 +42,6 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	crdCache := crdcache.GetCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
 	if err != nil {
 		return nil, err
@@ -54,57 +59,43 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := install.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, install.BaseClient())
 
 	mesh, err := v1.NewMeshClient(clientForCrd(v1.MeshCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := mesh.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, mesh.BaseClient())
 
 	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := meshIngress.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, meshIngress.BaseClient())
 
 	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := meshGroup.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, meshGroup.BaseClient())
 
 	upstream, err := gloov1.NewUpstreamClient(clientForCrd(gloov1.UpstreamCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := upstream.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, upstream.BaseClient())
 
 	routingRule, err := v1.NewRoutingRuleClient(clientForCrd(v1.RoutingRuleCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := routingRule.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, routingRule.BaseClient())
 
 	securityRule, err := v1.NewSecurityRuleClient(clientForCrd(v1.SecurityRuleCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
-	if err := securityRule.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, securityRule.BaseClient())
 
 	// ilackarms: should we use Kube secret here? these secrets follow a different format (specific to istio)
 	tlsSecret, err := v1.NewTlsSecretClient(&factory.KubeSecretClientFactory{
@@ -115,9 +106,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := tlsSecret.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, tlsSecret.BaseClient())
 
 	secret, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
 		Clientset: kubeClient,
@@ -126,8 +115,12 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := secret.Register(); err != nil {
-		return nil, err
+	clientsToRegister = append(clientsToRegister, secret.BaseClient())
+
+	if created {
+		if err := registerClients(clientsToRegister); err != nil {
+			return nil, err
+		}
 	}
 
 	// special resource client wired up to kubernetes pods
@@ -144,12 +137,25 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	), nil
 }
 
+func registerClients(clients []clients.ResourceClient) error {
+	for _, client := range clients {
+		if err := client.Register(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type istioClientsetKey struct{}
+
 func IstioFromContext(ctx context.Context) (*IstioClients, error) {
+	crdCache, created := crdcache.GetCrdCache(ctx, istioClientsetKey{})
+	var clientsToRegister []clients.ResourceClient
+
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err
 	}
-	crdCache := crdcache.GetCache(ctx)
 	/*
 		istio clients
 	*/
@@ -163,9 +169,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := rbacConfig.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, rbacConfig.BaseClient())
 
 	serviceRole, err := rbacv1alpha1.NewServiceRoleClient(&factory.KubeResourceClientFactory{
 		Crd:             rbacv1alpha1.ServiceRoleCrd,
@@ -176,9 +180,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := serviceRole.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, serviceRole.BaseClient())
 
 	serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(&factory.KubeResourceClientFactory{
 		Crd:             rbacv1alpha1.ServiceRoleBindingCrd,
@@ -189,9 +191,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := serviceRoleBinding.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, serviceRoleBinding.BaseClient())
 
 	meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
 		Crd:             policyv1alpha1.MeshPolicyCrd,
@@ -202,9 +202,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := meshPolicy.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, meshPolicy.BaseClient())
 
 	destinationRule, err := v1alpha3.NewDestinationRuleClient(&factory.KubeResourceClientFactory{
 		Crd:             v1alpha3.DestinationRuleCrd,
@@ -215,9 +213,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := destinationRule.Register(); err != nil {
-		return nil, err
-	}
+	clientsToRegister = append(clientsToRegister, destinationRule.BaseClient())
 
 	virtualService, err := v1alpha3.NewVirtualServiceClient(&factory.KubeResourceClientFactory{
 		Crd:             v1alpha3.VirtualServiceCrd,
@@ -228,9 +224,14 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := virtualService.Register(); err != nil {
-		return nil, err
+	clientsToRegister = append(clientsToRegister, virtualService.BaseClient())
+
+	if created {
+		if err := registerClients(clientsToRegister); err != nil {
+			return nil, err
+		}
 	}
+
 	return newIstioClients(rbacConfig, serviceRole, serviceRoleBinding, meshPolicy, destinationRule, virtualService), nil
 }
 
@@ -278,8 +279,8 @@ type Clientset struct {
 	Discovery *discoveryClients
 }
 
-func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, input *SuperglooClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Supergloo: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus promv1.PrometheusConfigClient, supergloo *SuperglooClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Supergloo: supergloo, Discovery: discovery}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
