@@ -64,20 +64,6 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	return newMeshes, nil
 }
 
-func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
-	for _, mesh := range meshes {
-		linkerdMesh := mesh.GetLinkerd()
-		if linkerdMesh == nil {
-			continue
-		}
-
-		if pod.Namespace == linkerdMesh.InstallationNamespace {
-			return true
-		}
-	}
-	return false
-}
-
 func constructDiscoveredMesh(ctx context.Context, mainPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 

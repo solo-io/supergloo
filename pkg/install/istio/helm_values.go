@@ -95,6 +95,9 @@ global:
 # security configuration
 #
 security:
+  replicaCount: 1
+  image: citadel
+  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
   enabled: true
   replicaCount: 1
   image: citadel
