@@ -23,7 +23,8 @@ const (
 
 var (
 	DiscoverySelector = map[string]string{
-		utils.SelectorPrefix: linkerdSelector,
+		utils.SelectorDiscoveredByPrefix: linkerdSelector,
+		utils.SelectorCreatedByPrefix:    utils.SelectorCreatedByValue,
 	}
 )
 

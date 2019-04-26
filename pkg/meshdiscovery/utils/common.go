@@ -14,7 +14,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-const SelectorPrefix = "discovered_by"
+const (
+	SelectorDiscoveredByPrefix = "discovered_by"
+	SelectorCreatedByPrefix    = "created_by"
+	SelectorCreatedByValue     = "mesh-discovery"
+)
 
 func MeshWriteNamespace() string {
 	if writeNamespace := os.Getenv("POD_NAMESPACE"); writeNamespace != "" {

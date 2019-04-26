@@ -22,7 +22,8 @@ const (
 
 var (
 	DiscoverySelector = map[string]string{
-		utils.SelectorPrefix: istioSelector,
+		utils.SelectorDiscoveredByPrefix: istioSelector,
+		utils.SelectorCreatedByPrefix:    utils.SelectorCreatedByValue,
 	}
 )
 
