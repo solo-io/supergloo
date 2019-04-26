@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/solo-io/go-utils/errors"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 )
 
 func ImageVersion(image string) (string, error) {
@@ -16,8 +16,8 @@ func ImageVersion(image string) (string, error) {
 	return imageTag, nil
 }
 
-func SelectRunningPods(pods v1.PodList) v1.PodList {
-	var result v1.PodList
+func SelectRunningPods(pods kubernetes.PodList) kubernetes.PodList {
+	var result kubernetes.PodList
 	for _, pod := range pods {
 		podRunning := true
 		for _, stat := range pod.Status.ContainerStatuses {

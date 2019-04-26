@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
@@ -63,7 +64,7 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 	return newMeshes, nil
 }
 
-func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
+func constructDiscoveredMesh(ctx context.Context, istioPilotPod *kubernetes.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	istioVersion, err := utils.GetVersionFromPodWithMatchers(istioPilotPod, []string{istio, pilot})

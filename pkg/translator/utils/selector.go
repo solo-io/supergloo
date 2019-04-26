@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -56,11 +57,11 @@ func UpstreamsForSelector(selector *v1.PodSelector, allUpstreams gloov1.Upstream
 	return selectedUpstreams, nil
 }
 
-func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allPods v1.PodList) (v1.PodList, error) {
+func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allPods kubernetes.PodList) (kubernetes.PodList, error) {
 	if selector == nil {
 		return allPods, nil
 	}
-	var selectedPods v1.PodList
+	var selectedPods kubernetes.PodList
 
 	switch selectorType := selector.SelectorType.(type) {
 	case *v1.PodSelector_LabelSelector_:
@@ -108,8 +109,8 @@ type namespacedSelector struct {
 	selector  map[string]string
 }
 
-func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods v1.PodList) v1.PodList {
-	var selectedPods v1.PodList
+func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods kubernetes.PodList) kubernetes.PodList {
+	var selectedPods kubernetes.PodList
 	var selectors []namespacedSelector
 	for _, us := range upstreams {
 		kubeUs, ok := us.UpstreamSpec.UpstreamType.(*gloov1.UpstreamSpec_Kube)

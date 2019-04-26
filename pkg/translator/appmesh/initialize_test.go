@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/protoutils"
-	"github.com/solo-io/supergloo/api/custom/kubepod"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	skpod "github.com/solo-io/solo-kit/api/external/kubernetes/pod"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -142,8 +142,8 @@ var _ = Describe("Initialize AppMesh configuration object", func() {
 })
 
 func addPod(info awsAppMeshPodInfo, podName, vnName string) {
-	pod := &v1.Pod{
-		Pod: kubepod.Pod{
+	pod := &kubernetes.Pod{
+		Pod: skpod.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: podName},
 		},
@@ -151,8 +151,8 @@ func addPod(info awsAppMeshPodInfo, podName, vnName string) {
 	info[pod] = &podInfo{virtualNodeName: vnName}
 }
 
-func getPod(podYaml string) *v1.Pod {
-	var podObj v1.Pod
+func getPod(podYaml string) *kubernetes.Pod {
+	var podObj kubernetes.Pod
 	err := yaml.Unmarshal([]byte(podYaml), &podObj)
 	if err != nil {
 		panic(err) // should never happen
@@ -160,8 +160,8 @@ func getPod(podYaml string) *v1.Pod {
 	return &podObj
 }
 
-func getPodList(podYamls ...string) v1.PodList {
-	var podList v1.PodList
+func getPodList(podYamls ...string) kubernetes.PodList {
+	var podList kubernetes.PodList
 	for _, yml := range podYamls {
 		podList = append(podList, getPod(yml))
 	}

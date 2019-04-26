@@ -3,24 +3,15 @@
   "name": "supergloo.solo.io",
   "version": "v1",
   "docs_dir": "docs/v1",
+  "imports": [
+    "github.com/solo-io/solo-kit/api/external/kubernetes"
+  ],
   "custom_resources": [
-    {
-      "package": "github.com/solo-io/supergloo/api/custom/kubepod",
-      "type": "Pod",
-      "plural_name": "pods",
-      "short_name": "p"
-    },
     {
       "package": "github.com/solo-io/supergloo/api/custom/linkerd",
       "type": "ServiceProfile",
       "plural_name": "serviceprofiles",
       "short_name": "sp"
-    },
-    {
-      "package": "github.com/solo-io/supergloo/api/custom/kubenamespace",
-      "type": "KubeNamespace",
-      "plural_name": "kubenamespaces",
-      "short_name": "kn"
     }
   ],
   "resource_groups": {
@@ -55,7 +46,7 @@
       },
       {
         "name": "Pod",
-        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       }
     ],
     "install.supergloo.solo.io": [
@@ -85,7 +76,7 @@
     "discovery.supergloo.solo.io": [
       {
         "name": "Pod",
-        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
         "name": "Install",
@@ -103,7 +94,7 @@
       },
       {
         "name": "Pod",
-        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
         "name": "Upstream",
@@ -125,7 +116,7 @@
       },
       {
         "name": "Pod",
-        "package": "github.com/solo-io/supergloo/api/custom/kubepod"
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
         "name": "Upstream",

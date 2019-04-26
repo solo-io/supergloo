@@ -7,6 +7,7 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
@@ -22,7 +23,7 @@ func MeshWriteNamespace() string {
 	return "supergloo-system"
 }
 
-func GetVersionFromPodWithMatchers(pod *v1.Pod, podStringMatchers []string) (string, error) {
+func GetVersionFromPodWithMatchers(pod *kubernetes.Pod, podStringMatchers []string) (string, error) {
 	containers := pod.Spec.Containers
 	for _, container := range containers {
 		if stringContainsAll(podStringMatchers, container.Image) {
@@ -41,7 +42,7 @@ func stringContainsAll(podStringMatchers []string, matchString string) bool {
 	return true
 }
 
-func BasicMeshInfo(mainPod *v1.Pod, discoverySelector map[string]string, meshType string) *v1.Mesh {
+func BasicMeshInfo(mainPod *kubernetes.Pod, discoverySelector map[string]string, meshType string) *v1.Mesh {
 	mesh := &v1.Mesh{
 		Metadata: core.Metadata{
 			Namespace: MeshWriteNamespace(),
@@ -52,8 +53,8 @@ func BasicMeshInfo(mainPod *v1.Pod, discoverySelector map[string]string, meshTyp
 	return mesh
 }
 
-func InjectedPodsByNamespace(pods v1.PodList, proxyContainerName string) v1.PodsByNamespace {
-	result := make(v1.PodsByNamespace)
+func InjectedPodsByNamespace(pods kubernetes.PodList, proxyContainerName string) kubernetes.PodsByNamespace {
+	result := make(kubernetes.PodsByNamespace)
 	for _, pod := range pods {
 		if isInjectedPodRunning(pod, proxyContainerName) {
 			result.Add(pod)
@@ -62,7 +63,7 @@ func InjectedPodsByNamespace(pods v1.PodList, proxyContainerName string) v1.Pods
 	return result
 }
 
-func isInjectedPodRunning(pod *v1.Pod, proxyContainerName string) bool {
+func isInjectedPodRunning(pod *kubernetes.Pod, proxyContainerName string) bool {
 	for _, container := range pod.Spec.Containers {
 		if container.Name == proxyContainerName &&
 			pod.Status.Phase == corev1.PodRunning {
@@ -73,7 +74,7 @@ func isInjectedPodRunning(pod *v1.Pod, proxyContainerName string) bool {
 
 }
 
-func GetUpstreamsForInjectedPods(pods v1.PodList, upstreams gloov1.UpstreamList) gloov1.UpstreamList {
+func GetUpstreamsForInjectedPods(pods kubernetes.PodList, upstreams gloov1.UpstreamList) gloov1.UpstreamList {
 	var result gloov1.UpstreamList
 	for _, us := range upstreams {
 		podsForUpstream := utils.PodsForUpstreams(gloov1.UpstreamList{us}, pods)

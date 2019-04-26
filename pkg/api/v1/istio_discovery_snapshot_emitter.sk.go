@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
 	"go.opencensus.io/stats"
@@ -46,17 +47,17 @@ type IstioDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Install() InstallClient
-	Pod() PodClient
+	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error)
 }
 
-func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
 	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
 	return &istioDiscoveryEmitter{
 		mesh:       meshClient,
 		install:    installClient,
@@ -71,7 +72,7 @@ type istioDiscoveryEmitter struct {
 	forceEmit  <-chan struct{}
 	mesh       MeshClient
 	install    InstallClient
-	pod        PodClient
+	pod        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	upstream   gloo_solo_io.UpstreamClient
 	meshPolicy istio_authentication_v1alpha1.MeshPolicyClient
 }
@@ -103,7 +104,7 @@ func (c *istioDiscoveryEmitter) Install() InstallClient {
 	return c.install
 }
 
-func (c *istioDiscoveryEmitter) Pod() PodClient {
+func (c *istioDiscoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
 }
 
@@ -145,7 +146,7 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 	installChan := make(chan installListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
-		list      PodList
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)

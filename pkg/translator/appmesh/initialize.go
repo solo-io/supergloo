@@ -8,13 +8,13 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
-func getPodsForMesh(meshName string, pods v1.PodList) (awsAppMeshPodInfo, v1.PodList, error) {
-	var appMeshPodList v1.PodList
+func getPodsForMesh(meshName string, pods kubernetes.PodList) (awsAppMeshPodInfo, kubernetes.PodList, error) {
+	var appMeshPodList kubernetes.PodList
 	appMeshPods := make(awsAppMeshPodInfo, 0)
 	for _, pod := range pods {
 		info, err := getPodInfo(meshName, pod)
@@ -37,7 +37,7 @@ func getPodsForMesh(meshName string, pods v1.PodList) (awsAppMeshPodInfo, v1.Pod
 	return appMeshPods, appMeshPodList, nil
 }
 
-func getPodInfo(meshName string, pod *v1.Pod) (*podInfo, error) {
+func getPodInfo(meshName string, pod *kubernetes.Pod) (*podInfo, error) {
 	var info *podInfo
 	for _, container := range pod.Spec.Containers {
 		for _, env := range container.Env {
@@ -89,7 +89,7 @@ func namespaceId(meta core.Metadata) string {
 	return fmt.Sprintf("%s.%s", meta.Namespace, meta.Name)
 }
 
-func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo awsAppMeshPodInfo, appMeshPodList v1.PodList) (awsAppMeshUpstreamInfo, gloov1.UpstreamList) {
+func getUpstreamsForMesh(upstreams gloov1.UpstreamList, podInfo awsAppMeshPodInfo, appMeshPodList kubernetes.PodList) (awsAppMeshUpstreamInfo, gloov1.UpstreamList) {
 	appMeshUpstreamInfo := make(awsAppMeshUpstreamInfo, 0)
 	for _, us := range upstreams {
 

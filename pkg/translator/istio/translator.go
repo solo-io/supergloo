@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -142,7 +143,7 @@ func (t *translator) translateMesh(
 	input inputMeshConfig,
 	upstreams gloov1.UpstreamList,
 	tlsSecrets v1.TlsSecretList,
-	pods v1.PodList,
+	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
 	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
