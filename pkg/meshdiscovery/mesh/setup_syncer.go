@@ -1,12 +1,12 @@
-package discovery
+package mesh
 
 import (
 	"context"
 	"time"
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -47,7 +47,7 @@ func configurePlugins() MeshDiscoveryPlugins {
 
 // start the mesh discovery event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Discovery.Mesh, c.Input.Install)
+	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Input.Install)
 	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

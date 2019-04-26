@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/go-utils/installutils/kuberesource"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/supergloo/pkg/install/linkerd"
 
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
@@ -37,7 +40,7 @@ func RunInstallEventLoop(ctx context.Context, cs *clientset.Clientset, customErr
 	go func() {
 		logger.Infof("beginning install cache sync, this may take a while...")
 		started := time.Now()
-		if err := installCache.Init(ctx, cs.RestConfig, kubeinstall.DefaultFilters...); err != nil {
+		if err := installCache.Init(ctx, cs.RestConfig, append(kubeinstall.DefaultFilters, cacheFilters...)...); err != nil {
 			logger.Fatalf("failed to initialize installation cache: %v", err)
 		}
 		logger.Infof("finished install cache sync. took %v", time.Now().Sub(started))
@@ -104,4 +107,23 @@ func startEventLoop(ctx context.Context, errHandler func(err error), c *clientse
 		}
 	}()
 	return nil
+}
+
+/*
+to speed up the cache init, filter out resource types
+*/
+var cacheFilters = []kuberesource.FilterResource{
+	func(resource schema.GroupVersionResource) bool {
+		for _, ignoredType := range ignoreTypesForInstall {
+			if resource.String() == ignoredType.String() {
+				return true
+			}
+		}
+		return false
+	},
+}
+
+// types the installer should ignore and the cache should skip
+var ignoreTypesForInstall = []schema.GroupVersionResource{
+	{Resource: "certificatesigningrequests", Version: "v1beta1", Group: "certificates.k8s.io"},
 }

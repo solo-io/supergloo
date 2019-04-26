@@ -32,38 +32,26 @@ func NewIstioDiscoverySyncer() *istioDiscoverySyncer {
 }
 
 func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translation-sync-%v", snap.Hash()))
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
 	pods := snap.Pods.List()
 	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),
-		zap.Int("meshes", len(meshes)),
 		zap.Int("installs", len(installs)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	existingMeshes := utils.GetMeshes(meshes, utils.IstioMeshFilterFunc)
-	existingInstalls := utils.GetInstalls(installs, utils.IstioInstallFilterFunc)
-
-	istioPods := utils.FilerPodsByNamePrefix(pods, istio)
-	if len(istioPods) == 0 {
-		logger.Debugf("no pilot pods found in istio pod list")
-		return nil, nil
-	}
+	existingInstalls := utils.GetActiveInstalls(installs, utils.IstioInstallFilterFunc)
 
 	var newMeshes v1.MeshList
-	for _, istioPod := range istioPods {
-		if strings.Contains(istioPod.Name, istioPilot) {
-			if meshExists(istioPod, existingMeshes) {
-				continue
-			}
-			mesh, err := constructDiscoveredMesh(ctx, istioPod, existingInstalls)
+	for _, pod := range utils.SelectRunningPods(pods) {
+		if strings.Contains(pod.Name, istioPilot) {
+			mesh, err := constructDiscoveredMesh(ctx, pod, existingInstalls)
 			if err != nil {
 				return nil, err
 			}
@@ -72,23 +60,7 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 		}
 	}
 
-	existingMeshes = append(existingMeshes, newMeshes...)
-
-	return existingMeshes, nil
-}
-
-func meshExists(pod *v1.Pod, meshes v1.MeshList) bool {
-	for _, mesh := range meshes {
-		istioMesh := mesh.GetIstio()
-		if istioMesh == nil {
-			continue
-		}
-
-		if pod.Namespace == istioMesh.InstallationNamespace {
-			return true
-		}
-	}
-	return false
+	return newMeshes, nil
 }
 
 func constructDiscoveredMesh(ctx context.Context, istioPilotPod *v1.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {

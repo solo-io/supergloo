@@ -42,16 +42,16 @@ var _ = Describe("istio e2e", func() {
 		testInstallIstio(istioName)
 	})
 
+	It("it installs gloo", func() {
+		testGlooInstall(glooName, istioName)
+	})
+
 	It("it enforces policy", func() {
 		testPolicy(istioName)
 	})
 
 	It("it configures prometheus", func() {
 		testConfigurePrometheus(istioName, promNamespace)
-	})
-
-	It("it installs gloo", func() {
-		testGlooInstall(glooName, istioName)
 	})
 
 	It("it enables mtls", func() {
@@ -74,12 +74,12 @@ var _ = Describe("istio e2e", func() {
 		testFaultInjection()
 	})
 
-	It("it uninstalls istio", func() {
-		testUninstallIstio(istioName)
-	})
-
 	It("it uninstalls gloo", func() {
 		testUninstallGloo(glooName)
+	})
+
+	It("it uninstalls istio", func() {
+		testUninstallIstio(istioName)
 	})
 })
 
@@ -87,8 +87,12 @@ var _ = Describe("istio e2e", func() {
    tests
 */
 func testInstallIstio(meshName string) {
+	version := istio.IstioVersion113
+	if istioVersion := os.Getenv("ISTIO_VERSION"); istioVersion != "" {
+		version = istioVersion
+	}
 	err := utils.Supergloo(fmt.Sprintf("install istio --name=%v --version=%v --mtls=true --auto-inject=true",
-		meshName, istio.IstioVersion106))
+		meshName, version))
 	Expect(err).NotTo(HaveOccurred())
 
 	installClient := clients.MustInstallClient()
@@ -100,7 +104,7 @@ func testInstallIstio(meshName string) {
 		}
 		Expect(i.Status.Reason).To(Equal(""))
 		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+	}, time.Minute*5).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
 		_, err := kube.CoreV1().Services(istioNamesapce).Get("istio-pilot", metav1.GetOptions{})
@@ -122,6 +126,8 @@ func testInstallIstio(meshName string) {
 		"istio-telemetry",
 	)
 	Expect(err).NotTo(HaveOccurred())
+
+	time.Sleep(time.Second * 15) // give the sidecar injector extra time to wake up
 
 	err = sgutils.DeployTestRunner(basicNamespace)
 	Expect(err).NotTo(HaveOccurred())
@@ -162,7 +168,7 @@ func testGlooInstall(glooName, istioName string) {
 		}
 		Expect(i.Status.Reason).To(Equal(""))
 		return i.Status.State, nil
-	}, time.Minute*2).Should(Equal(core.Status_Accepted))
+	}, time.Minute*4).Should(Equal(core.Status_Accepted))
 
 	meshIngressClient := clients.MustMeshIngressClient()
 	Eventually(func() error {
@@ -204,6 +210,13 @@ func testCertRotation(meshName string) {
 
 	Expect(certChain).To(HaveSuffix(inputs.CertChain))
 
+	// check that communication still works
+	// curl should succeed from injected testrunner
+	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, namespaceWithInject, setup.CurlOpts{
+		Service: "details." + namespaceWithInject + ".svc.cluster.local",
+		Port:    9080,
+		Path:    "/details/1",
+	}, `"author":"William Shakespeare"`, time.Minute*8)
 }
 
 func testMtls() {

@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
 )
@@ -78,7 +78,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 	logger.Debugf("full snapshot: %v", snap)
 
 	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
-	istioInstalls := utils.GetInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
+	istioInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
 	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
 	meshResources := organizeMeshes(
