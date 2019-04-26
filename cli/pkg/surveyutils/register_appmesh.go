@@ -32,7 +32,7 @@ func SurveyAppmeshRegistration(ctx context.Context, opts *options.Options) error
 
 	// Set AWS region
 	if err := cliutil.ChooseFromList(
-		"In which AWS region do you want AWS App Mes resources to be created?",
+		"In which AWS region do you want AWS App Mesh resources to be created?",
 		&opts.RegisterAppMesh.Region,
 		strings.Split(appmesh.AppMeshAvailableRegions, ","),
 	); err != nil {
