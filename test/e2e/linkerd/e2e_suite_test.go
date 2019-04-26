@@ -16,7 +16,6 @@ import (
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	gotestutils "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
@@ -38,7 +37,7 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
-	promNamespace                       = "prometheus-test" + gotestutils.RandString(4)
+	promNamespace                       = "prometheus-test"
 )
 
 const (
@@ -113,7 +112,7 @@ var _ = BeforeSuite(func() {
 	// start discovery
 	var superglooErr error
 	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-	err = generate.Run("dev", "Always", projectRoot)
+	err = generate.RunWithGlooVersion("dev", "Always", projectRoot, "0.13.18")
 	if err == nil {
 		superglooErr = sgutils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
 	} else {

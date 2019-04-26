@@ -79,10 +79,6 @@
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
-        "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
         "name": "Install",
         "package": "supergloo.solo.io"
       }

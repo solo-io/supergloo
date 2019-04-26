@@ -3,6 +3,8 @@ package istio
 import (
 	"bytes"
 	"text/template"
+
+	"github.com/solo-io/go-utils/installutils/helmchart"
 )
 
 var supportedIstioVersions = map[string]versionedInstall{
@@ -18,9 +20,15 @@ var supportedIstioVersions = map[string]versionedInstall{
 		chartPath:      IstioVersion106Chart,
 		valuesTemplate: helmValuesTemplate,
 	},
+	IstioVersion113: {
+		extraManifests: istio113ExtraManifests,
+		chartPath:      IstioVersion113Chart,
+		valuesTemplate: helmValuesTemplate,
+	},
 }
 
 type versionedInstall struct {
+	extraManifests helmchart.Manifests
 	chartPath      string
 	valuesTemplate *template.Template
 }
@@ -83,8 +91,17 @@ global:
     # destination rules or service annotations.
     enabled: {{ .Mtls.Enabled }}
 
+#
+# security configuration
+#
 security:
+  replicaCount: 1
+  image: citadel
+  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
   enabled: true
+  replicaCount: 1
+  image: citadel
+  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
 
 #
 # ingress configuration
@@ -113,14 +130,6 @@ gateways:
 #
 sidecarInjectorWebhook:
   enabled: {{ .AutoInject.Enabled }}
-
-#
-# security configuration
-#
-security:
-  replicaCount: 1
-  image: citadel
-  selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
 
 #
 # addons configuration

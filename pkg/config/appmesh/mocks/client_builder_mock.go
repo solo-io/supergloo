@@ -9,6 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	appmesh "github.com/solo-io/supergloo/pkg/config/appmesh"
 )
 
 // MockClientBuilder is a mock of ClientBuilder interface
@@ -35,10 +36,10 @@ func (m *MockClientBuilder) EXPECT() *MockClientBuilderMockRecorder {
 }
 
 // GetClientInstance mocks base method
-func (m *MockClientBuilder) GetClientInstance(secretRef *core.ResourceRef, region string) (Client, error) {
+func (m *MockClientBuilder) GetClientInstance(secretRef *core.ResourceRef, region string) (appmesh.Client, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClientInstance", secretRef, region)
-	ret0, _ := ret[0].(Client)
+	ret0, _ := ret[0].(appmesh.Client)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

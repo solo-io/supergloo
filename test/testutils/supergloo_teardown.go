@@ -106,7 +106,7 @@ func DeleteSuperglooPods(kube kubernetes.Interface, superglooNamespace string) {
 				}
 			}
 			return nil
-		}, time.Second*60).ShouldNot(HaveOccurred())
+		}, time.Second*120).ShouldNot(HaveOccurred())
 	}
 
 }

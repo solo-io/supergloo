@@ -42,7 +42,6 @@ var _ = Describe("V1Emitter", func() {
 		cfg           *rest.Config
 		emitter       DiscoveryEmitter
 		podClient     github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-		meshClient    MeshClient
 		installClient InstallClient
 	)
 
@@ -63,15 +62,6 @@ var _ = Describe("V1Emitter", func() {
 
 		podClient, err = github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		// Mesh Constructor
-		meshClientFactory := &factory.KubeResourceClientFactory{
-			Crd:         MeshCrd,
-			Cfg:         cfg,
-			SharedCache: kuberc.NewKubeCache(context.TODO()),
-		}
-
-		meshClient, err = NewMeshClient(meshClientFactory)
-		Expect(err).NotTo(HaveOccurred())
 		// Install Constructor
 		installClientFactory := &factory.KubeResourceClientFactory{
 			Crd:         InstallCrd,
@@ -81,7 +71,7 @@ var _ = Describe("V1Emitter", func() {
 
 		installClient, err = NewInstallClient(installClientFactory)
 		Expect(err).NotTo(HaveOccurred())
-		emitter = NewDiscoveryEmitter(podClient, meshClient, installClient)
+		emitter = NewDiscoveryEmitter(podClient, installClient)
 	})
 	AfterEach(func() {
 		setup.TeardownKube(namespace1)
@@ -159,66 +149,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotpods(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b})
-
-		/*
-			Mesh
-		*/
-
-		assertSnapshotMeshes := func(expectMeshes MeshList, unexpectMeshes MeshList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
-					combined := MeshesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		mesh1a, err := meshClient.Write(NewMesh(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		mesh1b, err := meshClient.Write(NewMesh(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, nil)
-		mesh2a, err := meshClient.Write(NewMesh(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		mesh2b, err := meshClient.Write(NewMesh(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
-
-		err = meshClient.Delete(mesh2a.GetMetadata().Namespace, mesh2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh2b.GetMetadata().Namespace, mesh2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
-
-		err = meshClient.Delete(mesh1a.GetMetadata().Namespace, mesh1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh1b.GetMetadata().Namespace, mesh1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
 
 		/*
 			Install
@@ -352,66 +282,6 @@ var _ = Describe("V1Emitter", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		assertSnapshotpods(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList{pod1a, pod1b, pod2a, pod2b})
-
-		/*
-			Mesh
-		*/
-
-		assertSnapshotMeshes := func(expectMeshes MeshList, unexpectMeshes MeshList) {
-		drain:
-			for {
-				select {
-				case snap = <-snapshots:
-					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
-							continue drain
-						}
-					}
-					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
-							continue drain
-						}
-					}
-					break drain
-				case err := <-errs:
-					Expect(err).NotTo(HaveOccurred())
-				case <-time.After(time.Second * 10):
-					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
-					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
-					combined := MeshesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
-					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
-				}
-			}
-		}
-		mesh1a, err := meshClient.Write(NewMesh(namespace1, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		mesh1b, err := meshClient.Write(NewMesh(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, nil)
-		mesh2a, err := meshClient.Write(NewMesh(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		mesh2b, err := meshClient.Write(NewMesh(namespace2, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b, mesh2a, mesh2b}, nil)
-
-		err = meshClient.Delete(mesh2a.GetMetadata().Namespace, mesh2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh2b.GetMetadata().Namespace, mesh2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(MeshList{mesh1a, mesh1b}, MeshList{mesh2a, mesh2b})
-
-		err = meshClient.Delete(mesh1a.GetMetadata().Namespace, mesh1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		err = meshClient.Delete(mesh1b.GetMetadata().Namespace, mesh1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotMeshes(nil, MeshList{mesh1a, mesh1b, mesh2a, mesh2b})
 
 		/*
 			Install

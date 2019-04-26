@@ -130,7 +130,7 @@
   version = "v2.2.0"
 
 [[projects]]
-  digest = "1:bac7fc3890504b2f4ce95a5277836ac7c0c653534c23569d03967eedcb0d8a86"
+  digest = "1:db59f043a93c944991296451eb6b4137388cfe1ff91a272942d43767d4793c7d"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -170,8 +170,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "f9b35e02297c8fcca7a55dd30ed8d4e9dc64f5a3"
-  version = "v1.18.5"
+  revision = "c44180fe5d17e41f3aa22bdea42c073b344bcaac"
+  version = "v1.19.17"
 
 [[projects]]
   branch = "master"
@@ -1336,7 +1336,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:f88da8f73e0b2c86593fdd65065e00c3e057134ca8302840174733cd99b4dd7f"
+  digest = "1:d1b2c14977096d5b57e352af181fd5fa5c8a2ce8ac1a7532798c39345131f661"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1367,8 +1367,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "0615c838ea7df7a3f83f6a8551e186ad60966547"
-  version = "v0.7.16"
+  revision = "7689982a1f5578696be98cedde309559e29cbbca"
+  version = "v0.7.17"
 
 [[projects]]
   digest = "1:de225ea8ecc7b8660fa708041ef6f7a3ebf4aed6a7ca4beb94f2a95877db9d42"
@@ -2501,6 +2501,7 @@
     "github.com/solo-io/go-utils/installutils/helmchart",
     "github.com/solo-io/go-utils/installutils/kubeinstall",
     "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
+    "github.com/solo-io/go-utils/installutils/kuberesource",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/logger",
     "github.com/solo-io/go-utils/pkgmgmtutils",
@@ -2566,6 +2567,7 @@
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/util/intstr",
+    "k8s.io/apimachinery/pkg/util/rand",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/apimachinery/pkg/util/yaml",

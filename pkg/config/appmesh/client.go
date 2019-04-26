@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate mockgen -destination=./client_mock.go -source client.go -package appmesh
+//go:generate mockgen -destination=./mocks/client_mock.go -source client.go -package appmesh
 
 // Represents the App Mesh API
 type Client interface {
@@ -26,16 +26,16 @@ type Client interface {
 
 	// Create operations
 	CreateMesh(ctx context.Context, meshName string) (*appmesh.MeshData, error)
-	CreateVirtualNode(ctx context.Context, virtualNode appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error)
-	CreateVirtualService(ctx context.Context, virtualService appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error)
-	CreateVirtualRouter(ctx context.Context, virtualRouter appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error)
-	CreateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error)
+	CreateVirtualNode(ctx context.Context, virtualNode *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error)
+	CreateVirtualService(ctx context.Context, virtualService *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error)
+	CreateVirtualRouter(ctx context.Context, virtualRouter *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error)
+	CreateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error)
 
 	// Update operations
-	UpdateVirtualNode(ctx context.Context, virtualNode appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error)
-	UpdateVirtualService(ctx context.Context, virtualService appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error)
-	UpdateVirtualRouter(ctx context.Context, virtualRouter appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error)
-	UpdateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error)
+	UpdateVirtualNode(ctx context.Context, virtualNode *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error)
+	UpdateVirtualService(ctx context.Context, virtualService *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error)
+	UpdateVirtualRouter(ctx context.Context, virtualRouter *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error)
+	UpdateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error)
 
 	// Delete operations
 	DeleteMesh(ctx context.Context, meshName string) error
@@ -196,7 +196,7 @@ func (c *client) CreateMesh(ctx context.Context, meshName string) (*appmesh.Mesh
 	}
 }
 
-func (c *client) CreateVirtualNode(ctx context.Context, vn appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
+func (c *client) CreateVirtualNode(ctx context.Context, vn *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
 	input := &appmesh.CreateVirtualNodeInput{
 		MeshName:        vn.MeshName,
 		VirtualNodeName: vn.VirtualNodeName,
@@ -212,7 +212,7 @@ func (c *client) CreateVirtualNode(ctx context.Context, vn appmesh.VirtualNodeDa
 	}
 }
 
-func (c *client) CreateVirtualService(ctx context.Context, vs appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
+func (c *client) CreateVirtualService(ctx context.Context, vs *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
 	input := &appmesh.CreateVirtualServiceInput{
 		MeshName:           vs.MeshName,
 		VirtualServiceName: vs.VirtualServiceName,
@@ -228,7 +228,7 @@ func (c *client) CreateVirtualService(ctx context.Context, vs appmesh.VirtualSer
 	}
 }
 
-func (c *client) CreateVirtualRouter(ctx context.Context, vr appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
+func (c *client) CreateVirtualRouter(ctx context.Context, vr *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
 	input := &appmesh.CreateVirtualRouterInput{
 		MeshName:          vr.MeshName,
 		VirtualRouterName: vr.VirtualRouterName,
@@ -244,7 +244,7 @@ func (c *client) CreateVirtualRouter(ctx context.Context, vr appmesh.VirtualRout
 	}
 }
 
-func (c *client) CreateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error) {
+func (c *client) CreateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error) {
 	input := &appmesh.CreateRouteInput{
 		MeshName:          route.MeshName,
 		RouteName:         route.RouteName,
@@ -263,7 +263,7 @@ func (c *client) CreateRoute(ctx context.Context, route appmesh.RouteData) (*app
 	}
 }
 
-func (c *client) UpdateVirtualNode(ctx context.Context, vn appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
+func (c *client) UpdateVirtualNode(ctx context.Context, vn *appmesh.VirtualNodeData) (*appmesh.VirtualNodeData, error) {
 	input := &appmesh.UpdateVirtualNodeInput{
 		MeshName:        vn.MeshName,
 		VirtualNodeName: vn.VirtualNodeName,
@@ -279,7 +279,7 @@ func (c *client) UpdateVirtualNode(ctx context.Context, vn appmesh.VirtualNodeDa
 	}
 }
 
-func (c *client) UpdateVirtualService(ctx context.Context, vs appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
+func (c *client) UpdateVirtualService(ctx context.Context, vs *appmesh.VirtualServiceData) (*appmesh.VirtualServiceData, error) {
 	input := &appmesh.UpdateVirtualServiceInput{
 		MeshName:           vs.MeshName,
 		VirtualServiceName: vs.VirtualServiceName,
@@ -295,7 +295,7 @@ func (c *client) UpdateVirtualService(ctx context.Context, vs appmesh.VirtualSer
 	}
 }
 
-func (c *client) UpdateVirtualRouter(ctx context.Context, vr appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
+func (c *client) UpdateVirtualRouter(ctx context.Context, vr *appmesh.VirtualRouterData) (*appmesh.VirtualRouterData, error) {
 	input := &appmesh.UpdateVirtualRouterInput{
 		MeshName:          vr.MeshName,
 		VirtualRouterName: vr.VirtualRouterName,
@@ -311,7 +311,7 @@ func (c *client) UpdateVirtualRouter(ctx context.Context, vr appmesh.VirtualRout
 	}
 }
 
-func (c *client) UpdateRoute(ctx context.Context, route appmesh.RouteData) (*appmesh.RouteData, error) {
+func (c *client) UpdateRoute(ctx context.Context, route *appmesh.RouteData) (*appmesh.RouteData, error) {
 	input := &appmesh.UpdateRouteInput{
 		MeshName:          route.MeshName,
 		RouteName:         route.RouteName,

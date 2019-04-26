@@ -2,7 +2,6 @@ package utils
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
@@ -17,10 +16,17 @@ func ImageVersion(image string) (string, error) {
 	return imageTag, nil
 }
 
-func FilerPodsByNamePrefix(pods kubernetes.PodList, namePrefix string) kubernetes.PodList {
+func SelectRunningPods(pods kubernetes.PodList) kubernetes.PodList {
 	var result kubernetes.PodList
 	for _, pod := range pods {
-		if strings.Contains(pod.Name, namePrefix) {
+		podRunning := true
+		for _, stat := range pod.Status.ContainerStatuses {
+			if stat.State.Running == nil {
+				podRunning = false
+				break
+			}
+		}
+		if podRunning {
 			result = append(result, pod)
 		}
 	}

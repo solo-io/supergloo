@@ -14,6 +14,7 @@ var SupportedIstioVersions = []string{
 	istio.IstioVersion103,
 	istio.IstioVersion105,
 	istio.IstioVersion106,
+	//istio.IstioVersion113, //TODO: enable when istio1.1x is ready to ship
 }
 
 var SupportedLinkerdVersions = []string{

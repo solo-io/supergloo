@@ -12,8 +12,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/discovery/linkerd"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
+	"github.com/solo-io/supergloo/pkg/registration"
 	"go.uber.org/zap"
 )
 
@@ -25,14 +26,28 @@ const (
 	proxyContainer = "linkerd-proxy"
 )
 
-func NewLinkerdConfigDiscoveryRunner(ctx context.Context, cs *clientset.Clientset) (eventloop.EventLoop, error) {
+func StartLinkerdDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, pubSub *registration.PubSub) {
+	sgConfigLoop := &linkerdDiscoveryConfigLoop{cs: cs}
+	sgListener := registration.NewSubscriber(ctx, pubSub, sgConfigLoop)
+	sgListener.Listen(ctx)
+}
+
+type linkerdDiscoveryConfigLoop struct {
+	cs *clientset.Clientset
+}
+
+func (cl *linkerdDiscoveryConfigLoop) Enabled(enabled registration.EnabledConfigLoops) bool {
+	return enabled.Linkerd
+}
+
+func (cl *linkerdDiscoveryConfigLoop) Start(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
 	emitter := v1.NewLinkerdDiscoveryEmitter(
-		cs.Discovery.Mesh,
-		cs.Input.Install,
-		cs.Input.Pod,
-		cs.Input.Upstream,
+		cl.cs.Discovery.Mesh,
+		cl.cs.Input.Install,
+		cl.cs.Input.Pod,
+		cl.cs.Input.Upstream,
 	)
-	syncer := newLinkerdConfigDiscoverSyncer(cs)
+	syncer := newLinkerdConfigDiscoverSyncer(cl.cs)
 	el := v1.NewLinkerdDiscoveryEventLoop(emitter, syncer)
 
 	return el, nil
@@ -61,7 +76,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	logger.Debugf("full snapshot: %v", snap)
 
 	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc)
-	linkerdInstalls := utils.GetInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
+	linkerdInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
 	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
 	meshResources := organizeMeshes(

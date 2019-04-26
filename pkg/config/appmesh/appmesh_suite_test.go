@@ -1,4 +1,4 @@
-package discovery_test
+package appmesh_test
 
 import (
 	"testing"
@@ -7,7 +7,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestDiscovery(t *testing.T) {
+var T *testing.T
+
+func TestAppmesh(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Discovery Suite")
+	T = t
+	RunSpecs(t, "Appmesh Suite")
 }

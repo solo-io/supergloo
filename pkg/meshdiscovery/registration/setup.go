@@ -8,11 +8,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/setup"
 	"github.com/solo-io/supergloo/pkg/registration"
 )
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
 	ctx = contextutils.WithLogger(ctx, "mesh-discovery-registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -26,7 +25,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	registrationSyncers := createRegistrationSyncers(cs, errHandler)
+	registrationSyncers := createRegistrationSyncers(pubsub)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
@@ -36,9 +35,9 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, errHandler func(error)) v1.RegistrationSyncer {
+func createRegistrationSyncers(pubsub *registration.PubSub) v1.RegistrationSyncer {
 	return v1.RegistrationSyncers{
-		registration.NewRegistrationSyncer(setup.NewDiscoveryConfigLoopStarters(clientset)...),
+		registration.NewRegistrationSyncer(pubsub),
 	}
 }
 

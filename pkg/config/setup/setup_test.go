@@ -54,7 +54,7 @@ var _ = Describe("Setup", func() {
 		)
 
 		el := v1.NewConfigEventLoop(configEmitter, mockSyncer)
-		var runner registration.ConfigLoopStarter = func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
+		var runner = func(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
 			return el, nil
 		}
 

@@ -1,0 +1,6 @@
+changelog:
+  - type: NEW_FEATURE
+    description: >
+      In an effort to reduce jitter in our event loops, they will now be created via diffs rather than
+      on every iteration of the parent event loops.
+    issueLink: https://github.com/solo-io/supergloo/issues/395
