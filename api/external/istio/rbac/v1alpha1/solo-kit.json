@@ -6,6 +6,7 @@
     "docs_dir": "",
     "resource_groups": null,
     "crd_group_override": "rbac.istio.io",
+    "imports": null,
     "custom_resources": null,
     "go_package": "",
     "ProjectFile": ""

@@ -50,7 +50,7 @@
 
 [[override]]
   name = "github.com/solo-io/go-utils"
-  version = "0.7.15"
+  version = "0.7.17"
 
 [[constraint]]
   name = "github.com/solo-io/gloo"

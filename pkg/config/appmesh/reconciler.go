@@ -23,7 +23,7 @@ type reconciler struct {
 	clientBuilder ClientBuilder
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, mesh *v1.Mesh, desiredResources *translator.ResourceSnapshot) error {
+func (r *reconciler) Reconcile(ctx context.Context, mesh *v1.Mesh, snapshot *translator.ResourceSnapshot) error {
 
 	// Get instance of AppMesh API client
 	client, err := r.clientBuilder.GetClientInstance(mesh.GetAwsAppMesh().AwsSecret, mesh.GetAwsAppMesh().Region)
@@ -36,16 +36,15 @@ func (r *reconciler) Reconcile(ctx context.Context, mesh *v1.Mesh, desiredResour
 		return err
 	}
 
-	// TODO: implement
+	helper := newHelper(ctx, client, snapshot)
 	if existingMesh == nil {
-		// Mesh does not exist, this is the easy case: just create everything
+		if err := helper.createAll(); err != nil {
+			return err
+		}
 	} else {
-		// 1. List the existing resources of each type
-		// 2. For each of the desired resources in the snapshot:
-		//   - if it does not exist, create it
-		//   - if it does already exist, overwrite the existing one
-		// 3. For each of the existing resources, if it has no correspondent desired resource, then delete it
+		if err := helper.reconcile(); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
