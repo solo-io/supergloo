@@ -10,6 +10,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
@@ -43,7 +44,7 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		podClient, err := NewPodClient(podClientFactory)
+		podClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		upstreamClientFactory := &factory.MemoryResourceClientFactory{
@@ -65,7 +66,7 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

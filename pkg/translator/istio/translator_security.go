@@ -6,9 +6,10 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/kubernetes"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
@@ -23,7 +24,7 @@ type SecurityConfig struct {
 func createSecurityConfig(writeNamespace string,
 	rules v1.SecurityRuleList,
 	upstreams gloov1.UpstreamList,
-	pods v1.PodList,
+	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) SecurityConfig {
 
 	rbacConfig := &v1alpha1.RbacConfig{
@@ -115,7 +116,7 @@ func hostsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) (
 	return groupedHostnames, nil
 }
 
-func createServiceRolesFromRule(rule *v1.SecurityRule, upstreams gloov1.UpstreamList, pods v1.PodList) (v1alpha1.ServiceRoleList, v1alpha1.ServiceRoleBindingList, error) {
+func createServiceRolesFromRule(rule *v1.SecurityRule, upstreams gloov1.UpstreamList, pods kubernetes.PodList) (v1alpha1.ServiceRoleList, v1alpha1.ServiceRoleBindingList, error) {
 	hostsWithNamespaces, err := hostsForSelector(rule.DestinationSelector, upstreams)
 	if err != nil {
 		return nil, nil, err
@@ -161,7 +162,7 @@ func principalName(s core.ResourceRef) string {
 
 func getSubjectsForSelector(selector *v1.PodSelector,
 	upstreams gloov1.UpstreamList,
-	pods v1.PodList) ([]*v1alpha1.Subject, error) {
+	pods kubernetes.PodList) ([]*v1alpha1.Subject, error) {
 	selectedPods, err := utils.PodsForSelector(selector, upstreams, pods)
 	if err != nil {
 		return nil, errors.Wrapf(err, "selecting pods")
@@ -178,7 +179,7 @@ func getSubjectsForSelector(selector *v1.PodSelector,
 		serviceAccounts = append(serviceAccounts, newSa)
 	}
 	for _, p := range selectedPods {
-		kubePod, err := kubernetes.ToKubePod(p)
+		kubePod, err := pod.ToKubePod(p)
 		if err != nil {
 			return nil, errors.Wrapf(err, "internal error: converting custom pod object")
 		}
@@ -208,7 +209,7 @@ func createServiceRoleBinding(
 	serviceRoleNamespace string,
 	sourceSelector *v1.PodSelector,
 	upstreams gloov1.UpstreamList,
-	pods v1.PodList) (*v1alpha1.ServiceRoleBinding, error) {
+	pods kubernetes.PodList) (*v1alpha1.ServiceRoleBinding, error) {
 
 	subjects, err := getSubjectsForSelector(sourceSelector, upstreams, pods)
 	if err != nil {

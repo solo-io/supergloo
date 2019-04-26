@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
@@ -68,7 +69,7 @@ func (t *appMeshTranslator) translateMesh(
 	mesh *v1.Mesh,
 	routingRules v1.RoutingRuleList,
 	upstreams gloov1.UpstreamList,
-	pods v1.PodList,
+	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) (AwsAppMeshConfiguration, error) {
 
 	config, err := NewAwsAppMeshConfiguration(mesh.Metadata.Name, pods, upstreams)

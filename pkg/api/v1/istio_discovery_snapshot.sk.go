@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
@@ -15,7 +16,7 @@ import (
 type IstioDiscoverySnapshot struct {
 	Meshes       MeshesByNamespace
 	Installs     InstallsByNamespace
-	Pods         PodsByNamespace
+	Pods         github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
 	Upstreams    gloo_solo_io.UpstreamsByNamespace
 	Meshpolicies istio_authentication_v1alpha1.MeshPolicyList
 }

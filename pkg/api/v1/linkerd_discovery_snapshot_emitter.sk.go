@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -45,16 +46,16 @@ type LinkerdDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
 	Install() InstallClient
-	Pod() PodClient
+	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *LinkerdDiscoverySnapshot, <-chan error, error)
 }
 
-func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient) LinkerdDiscoveryEmitter {
+func NewLinkerdDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient) LinkerdDiscoveryEmitter {
 	return NewLinkerdDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, make(chan struct{}))
 }
 
-func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient PodClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
+func NewLinkerdDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, emit <-chan struct{}) LinkerdDiscoveryEmitter {
 	return &linkerdDiscoveryEmitter{
 		mesh:      meshClient,
 		install:   installClient,
@@ -68,7 +69,7 @@ type linkerdDiscoveryEmitter struct {
 	forceEmit <-chan struct{}
 	mesh      MeshClient
 	install   InstallClient
-	pod       PodClient
+	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	upstream  gloo_solo_io.UpstreamClient
 }
 
@@ -96,7 +97,7 @@ func (c *linkerdDiscoveryEmitter) Install() InstallClient {
 	return c.install
 }
 
-func (c *linkerdDiscoveryEmitter) Pod() PodClient {
+func (c *linkerdDiscoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
 }
 
@@ -134,7 +135,7 @@ func (c *linkerdDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 	installChan := make(chan installListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
-		list      PodList
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)

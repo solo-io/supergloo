@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -28,7 +30,7 @@ var _ = Describe("DiscoveryEventLoop", func() {
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		podClient, err := NewPodClient(podClientFactory)
+		podClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		installClientFactory := &factory.MemoryResourceClientFactory{
@@ -40,7 +42,7 @@ var _ = Describe("DiscoveryEventLoop", func() {
 		emitter = NewDiscoveryEmitter(podClient, installClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.Pod().Write(NewPod(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
