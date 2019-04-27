@@ -1,0 +1,13 @@
+{
+  "name": "linkerd.io",
+  "version": "v1",
+  "go_package": "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1",
+  "custom_resources": [
+    {
+      "package": "github.com/solo-io/supergloo/api/external/linkerd",
+      "type": "ServiceProfile",
+      "plural_name": "serviceprofiles",
+      "short_name": "sp"
+    }
+  ]
+}

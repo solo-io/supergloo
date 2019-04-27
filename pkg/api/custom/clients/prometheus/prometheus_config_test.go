@@ -3,6 +3,9 @@ package prometheus
 import (
 	"strings"
 
+	"github.com/solo-io/supergloo/api/external/prometheus"
+	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/prometheus/prometheus/config"
@@ -11,16 +14,16 @@ import (
 
 var _ = Describe("PrometheusConfig", func() {
 	It("adds scrape configs", func() {
-		cfg := &Config{}
+		cfg := &v1.PrometheusConfig{}
 		scs := inputs.InputIstioPrometheusScrapeConfigs()
 		added := cfg.AddScrapeConfigs(scs)
 		Expect(added).To(Equal(len(scs)))
-		sortConfigs(scs)
+		prometheus.SortConfigs(scs)
 		Expect(cfg.ScrapeConfigs).To(Equal(scs))
 	})
 	It("removes scrape configs by prefix", func() {
 		scs := inputs.InputIstioPrometheusScrapeConfigs()
-		cfg := &Config{ScrapeConfigs: scs}
+		cfg := &v1.PrometheusConfig{PrometheusConfig: prometheus.PrometheusConfig{Config: prometheus.Config{ScrapeConfigs: scs}}}
 		removed := cfg.RemoveScrapeConfigs("istio")
 		var scsWithoutIstio []*config.ScrapeConfig
 		for _, sc := range scs {
@@ -30,12 +33,12 @@ var _ = Describe("PrometheusConfig", func() {
 			scsWithoutIstio = append(scsWithoutIstio, sc)
 		}
 		Expect(removed).To(Equal(len(scsWithoutIstio)))
-		sortConfigs(scsWithoutIstio)
+		prometheus.SortConfigs(scsWithoutIstio)
 		Expect(cfg.ScrapeConfigs).To(Equal(scsWithoutIstio))
 	})
 	It("removes scrape configs by name", func() {
 		scs := inputs.InputIstioPrometheusScrapeConfigs()
-		cfg := &Config{ScrapeConfigs: scs}
+		cfg := &v1.PrometheusConfig{PrometheusConfig: prometheus.PrometheusConfig{Config: prometheus.Config{ScrapeConfigs: scs}}}
 		for _, sc := range scs {
 			removed := cfg.RemoveScrapeConfigs(sc.JobName)
 			Expect(removed).To(Equal(1))

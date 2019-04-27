@@ -11,7 +11,6 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	"github.com/solo-io/supergloo/pkg/stats/istio"
 
 	. "github.com/onsi/ginkgo"
@@ -82,10 +81,8 @@ var _ = Describe("PrometheusSyncer", func() {
 			cfg2Updated, err := client.Read(cfg2.Metadata.Namespace, cfg2.Metadata.Name, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
 
-			promCfg1, err := prometheus.ConfigFromResource(cfg1Updated)
-			Expect(err).NotTo(HaveOccurred())
-			promCfg2, err := prometheus.ConfigFromResource(cfg2Updated)
-			Expect(err).NotTo(HaveOccurred())
+			promCfg1 := cfg1Updated.Config
+			promCfg2 := cfg2Updated.Config
 
 			scsIstio1, _ := istio.PrometheusScrapeConfigs(ns1)
 			scsIstio2, _ := istio.PrometheusScrapeConfigs(ns2)
