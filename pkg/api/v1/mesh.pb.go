@@ -38,15 +38,8 @@ type Mesh struct {
 	//	*Mesh_AwsAppMesh
 	//	*Mesh_Linkerd
 	MeshType isMesh_MeshType `protobuf_oneof:"mesh_type"`
-	// mtls config specifies configuration options for enabling mutual
-	// tls between pods in this mesh
-	MtlsConfig *MtlsConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	// configuration for propagating stats and metrics from
-	// mesh controllers and sidecars to a centralized datastore
-	// such as prometheus
-	MonitoringConfig *MonitoringConfig `protobuf:"bytes,3,opt,name=monitoring_config,json=monitoringConfig,proto3" json:"monitoring_config,omitempty"`
 	// object which represents the data mesh discovery finds about a given mesh
-	DiscoveryMetadata    *DiscoveryMetadata `protobuf:"bytes,6,opt,name=discovery_metadata,json=discoveryMetadata,proto3" json:"discovery_metadata,omitempty"`
+	Discovery            *DiscoveryMetadata `protobuf:"bytes,6,opt,name=discovery,proto3" json:"discovery,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`
 	XXX_sizecache        int32              `json:"-"`
@@ -85,10 +78,10 @@ type Mesh_Istio struct {
 	Istio *IstioMesh `protobuf:"bytes,1,opt,name=istio,proto3,oneof"`
 }
 type Mesh_AwsAppMesh struct {
-	AwsAppMesh *AwsAppMesh `protobuf:"bytes,4,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof"`
+	AwsAppMesh *AwsAppMesh `protobuf:"bytes,2,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof"`
 }
 type Mesh_Linkerd struct {
-	Linkerd *LinkerdMesh `protobuf:"bytes,5,opt,name=linkerd,proto3,oneof"`
+	Linkerd *LinkerdMesh `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof"`
 }
 
 func (*Mesh_Istio) isMesh_MeshType()      {}
@@ -137,23 +130,9 @@ func (m *Mesh) GetLinkerd() *LinkerdMesh {
 	return nil
 }
 
-func (m *Mesh) GetMtlsConfig() *MtlsConfig {
+func (m *Mesh) GetDiscovery() *DiscoveryMetadata {
 	if m != nil {
-		return m.MtlsConfig
-	}
-	return nil
-}
-
-func (m *Mesh) GetMonitoringConfig() *MonitoringConfig {
-	if m != nil {
-		return m.MonitoringConfig
-	}
-	return nil
-}
-
-func (m *Mesh) GetDiscoveryMetadata() *DiscoveryMetadata {
-	if m != nil {
-		return m.DiscoveryMetadata
+		return m.Discovery
 	}
 	return nil
 }
@@ -177,12 +156,12 @@ func _Mesh_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 			return err
 		}
 	case *Mesh_AwsAppMesh:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.AwsAppMesh); err != nil {
 			return err
 		}
 	case *Mesh_Linkerd:
-		_ = b.EncodeVarint(5<<3 | proto.WireBytes)
+		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.Linkerd); err != nil {
 			return err
 		}
@@ -204,7 +183,7 @@ func _Mesh_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (
 		err := b.DecodeMessage(msg)
 		m.MeshType = &Mesh_Istio{msg}
 		return true, err
-	case 4: // mesh_type.aws_app_mesh
+	case 2: // mesh_type.aws_app_mesh
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -212,7 +191,7 @@ func _Mesh_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (
 		err := b.DecodeMessage(msg)
 		m.MeshType = &Mesh_AwsAppMesh{msg}
 		return true, err
-	case 5: // mesh_type.linkerd
+	case 3: // mesh_type.linkerd
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
 		}
@@ -251,107 +230,20 @@ func _Mesh_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
-// Generic discovery data shared between different meshes
-type DiscoveryMetadata struct {
-	// list of namespaces which we know are being injected by a given mesh
-	InjectedNamespaceLabel string `protobuf:"bytes,1,opt,name=injected_namespace_label,json=injectedNamespaceLabel,proto3" json:"injected_namespace_label,omitempty"`
-	// Whether or not auto-injection is enabled for a given mesh
-	EnableAutoInject bool `protobuf:"varint,2,opt,name=enable_auto_inject,json=enableAutoInject,proto3" json:"enable_auto_inject,omitempty"`
-	// version of the mesh which is installed
-	MeshVersion string `protobuf:"bytes,3,opt,name=mesh_version,json=meshVersion,proto3" json:"mesh_version,omitempty"`
-	// namespace which the mesh is installed into
-	InstallationNamespace string `protobuf:"bytes,4,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
-	// upstreams which point to injected pods in the mesh
-	Upstreams []*core.ResourceRef `protobuf:"bytes,5,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
-	// discovered mtls config of the given mesh
-	MtlsConfig           *MtlsConfig `protobuf:"bytes,6,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *DiscoveryMetadata) Reset()         { *m = DiscoveryMetadata{} }
-func (m *DiscoveryMetadata) String() string { return proto.CompactTextString(m) }
-func (*DiscoveryMetadata) ProtoMessage()    {}
-func (*DiscoveryMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_713281dd1a237b0d, []int{1}
-}
-func (m *DiscoveryMetadata) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DiscoveryMetadata.Unmarshal(m, b)
-}
-func (m *DiscoveryMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DiscoveryMetadata.Marshal(b, m, deterministic)
-}
-func (m *DiscoveryMetadata) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DiscoveryMetadata.Merge(m, src)
-}
-func (m *DiscoveryMetadata) XXX_Size() int {
-	return xxx_messageInfo_DiscoveryMetadata.Size(m)
-}
-func (m *DiscoveryMetadata) XXX_DiscardUnknown() {
-	xxx_messageInfo_DiscoveryMetadata.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DiscoveryMetadata proto.InternalMessageInfo
-
-func (m *DiscoveryMetadata) GetInjectedNamespaceLabel() string {
-	if m != nil {
-		return m.InjectedNamespaceLabel
-	}
-	return ""
-}
-
-func (m *DiscoveryMetadata) GetEnableAutoInject() bool {
-	if m != nil {
-		return m.EnableAutoInject
-	}
-	return false
-}
-
-func (m *DiscoveryMetadata) GetMeshVersion() string {
-	if m != nil {
-		return m.MeshVersion
-	}
-	return ""
-}
-
-func (m *DiscoveryMetadata) GetInstallationNamespace() string {
-	if m != nil {
-		return m.InstallationNamespace
-	}
-	return ""
-}
-
-func (m *DiscoveryMetadata) GetUpstreams() []*core.ResourceRef {
-	if m != nil {
-		return m.Upstreams
-	}
-	return nil
-}
-
-func (m *DiscoveryMetadata) GetMtlsConfig() *MtlsConfig {
-	if m != nil {
-		return m.MtlsConfig
-	}
-	return nil
-}
-
 // Mesh object representing an installed Istio control plane
 type IstioMesh struct {
-	// where the istio control plane has been installed
-	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
-	// version of istio which has been installed
-	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Install              *IstioInstall `protobuf:"bytes,1,opt,name=install,proto3" json:"install,omitempty"`
+	Config               *MeshConfig   `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
 }
 
 func (m *IstioMesh) Reset()         { *m = IstioMesh{} }
 func (m *IstioMesh) String() string { return proto.CompactTextString(m) }
 func (*IstioMesh) ProtoMessage()    {}
 func (*IstioMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_713281dd1a237b0d, []int{2}
+	return fileDescriptor_713281dd1a237b0d, []int{1}
 }
 func (m *IstioMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioMesh.Unmarshal(m, b)
@@ -371,18 +263,93 @@ func (m *IstioMesh) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_IstioMesh proto.InternalMessageInfo
 
-func (m *IstioMesh) GetInstallationNamespace() string {
+func (m *IstioMesh) GetInstall() *IstioInstall {
 	if m != nil {
-		return m.InstallationNamespace
+		return m.Install
 	}
-	return ""
+	return nil
 }
 
-func (m *IstioMesh) GetVersion() string {
+func (m *IstioMesh) GetConfig() *MeshConfig {
 	if m != nil {
-		return m.Version
+		return m.Config
 	}
-	return ""
+	return nil
+}
+
+type IstioInstall struct {
+	// Generic installation options
+	Options *InstallOptions `protobuf:"bytes,1,opt,name=options,proto3" json:"options,omitempty"`
+	// enable auto injection of pods
+	EnableAutoInject bool `protobuf:"varint,3,opt,name=enable_auto_inject,json=enableAutoInject,proto3" json:"enable_auto_inject,omitempty"`
+	// install grafana with istio
+	Grafana bool `protobuf:"varint,6,opt,name=grafana,proto3" json:"grafana,omitempty"`
+	// install prometheus with istio
+	Prometheus bool `protobuf:"varint,7,opt,name=prometheus,proto3" json:"prometheus,omitempty"`
+	// install jaeger with istio
+	Jaeger               bool     `protobuf:"varint,8,opt,name=jaeger,proto3" json:"jaeger,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *IstioInstall) Reset()         { *m = IstioInstall{} }
+func (m *IstioInstall) String() string { return proto.CompactTextString(m) }
+func (*IstioInstall) ProtoMessage()    {}
+func (*IstioInstall) Descriptor() ([]byte, []int) {
+	return fileDescriptor_713281dd1a237b0d, []int{2}
+}
+func (m *IstioInstall) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_IstioInstall.Unmarshal(m, b)
+}
+func (m *IstioInstall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_IstioInstall.Marshal(b, m, deterministic)
+}
+func (m *IstioInstall) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_IstioInstall.Merge(m, src)
+}
+func (m *IstioInstall) XXX_Size() int {
+	return xxx_messageInfo_IstioInstall.Size(m)
+}
+func (m *IstioInstall) XXX_DiscardUnknown() {
+	xxx_messageInfo_IstioInstall.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_IstioInstall proto.InternalMessageInfo
+
+func (m *IstioInstall) GetOptions() *InstallOptions {
+	if m != nil {
+		return m.Options
+	}
+	return nil
+}
+
+func (m *IstioInstall) GetEnableAutoInject() bool {
+	if m != nil {
+		return m.EnableAutoInject
+	}
+	return false
+}
+
+func (m *IstioInstall) GetGrafana() bool {
+	if m != nil {
+		return m.Grafana
+	}
+	return false
+}
+
+func (m *IstioInstall) GetPrometheus() bool {
+	if m != nil {
+		return m.Prometheus
+	}
+	return false
+}
+
+func (m *IstioInstall) GetJaeger() bool {
+	if m != nil {
+		return m.Jaeger
+	}
+	return false
 }
 
 // Mesh object representing AWS App Mesh
@@ -480,13 +447,11 @@ func (m *AwsAppMesh) GetSidecarPatchConfigMap() *core.ResourceRef {
 
 // Mesh object representing an installed Linkerd control plane
 type LinkerdMesh struct {
-	// where the Linkerd control plane has been installed
-	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
-	// version of istio which has been installed
-	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Install              *LinkerdInstall `protobuf:"bytes,1,opt,name=install,proto3" json:"install,omitempty"`
+	Config               *MeshConfig     `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
 func (m *LinkerdMesh) Reset()         { *m = LinkerdMesh{} }
@@ -513,18 +478,262 @@ func (m *LinkerdMesh) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_LinkerdMesh proto.InternalMessageInfo
 
-func (m *LinkerdMesh) GetInstallationNamespace() string {
+func (m *LinkerdMesh) GetInstall() *LinkerdInstall {
+	if m != nil {
+		return m.Install
+	}
+	return nil
+}
+
+func (m *LinkerdMesh) GetConfig() *MeshConfig {
+	if m != nil {
+		return m.Config
+	}
+	return nil
+}
+
+type LinkerdInstall struct {
+	// Generic installation options
+	Options *InstallOptions `protobuf:"bytes,1,opt,name=options,proto3" json:"options,omitempty"`
+	// enable auto injection of pods
+	EnableAutoInject     bool     `protobuf:"varint,3,opt,name=enable_auto_inject,json=enableAutoInject,proto3" json:"enable_auto_inject,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LinkerdInstall) Reset()         { *m = LinkerdInstall{} }
+func (m *LinkerdInstall) String() string { return proto.CompactTextString(m) }
+func (*LinkerdInstall) ProtoMessage()    {}
+func (*LinkerdInstall) Descriptor() ([]byte, []int) {
+	return fileDescriptor_713281dd1a237b0d, []int{5}
+}
+func (m *LinkerdInstall) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LinkerdInstall.Unmarshal(m, b)
+}
+func (m *LinkerdInstall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LinkerdInstall.Marshal(b, m, deterministic)
+}
+func (m *LinkerdInstall) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LinkerdInstall.Merge(m, src)
+}
+func (m *LinkerdInstall) XXX_Size() int {
+	return xxx_messageInfo_LinkerdInstall.Size(m)
+}
+func (m *LinkerdInstall) XXX_DiscardUnknown() {
+	xxx_messageInfo_LinkerdInstall.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LinkerdInstall proto.InternalMessageInfo
+
+func (m *LinkerdInstall) GetOptions() *InstallOptions {
+	if m != nil {
+		return m.Options
+	}
+	return nil
+}
+
+func (m *LinkerdInstall) GetEnableAutoInject() bool {
+	if m != nil {
+		return m.EnableAutoInject
+	}
+	return false
+}
+
+type InstallOptions struct {
+	// disables this install
+	// setting this to true will cause supergloo not to
+	// install this mesh, or uninstall an active install
+	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
+	// where the ingress has been installed
+	InstallationNamespace string `protobuf:"bytes,2,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
+	// which version to install
+	// ignored if using custom helm chart
+	Version              string   `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *InstallOptions) Reset()         { *m = InstallOptions{} }
+func (m *InstallOptions) String() string { return proto.CompactTextString(m) }
+func (*InstallOptions) ProtoMessage()    {}
+func (*InstallOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_713281dd1a237b0d, []int{6}
+}
+func (m *InstallOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_InstallOptions.Unmarshal(m, b)
+}
+func (m *InstallOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_InstallOptions.Marshal(b, m, deterministic)
+}
+func (m *InstallOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InstallOptions.Merge(m, src)
+}
+func (m *InstallOptions) XXX_Size() int {
+	return xxx_messageInfo_InstallOptions.Size(m)
+}
+func (m *InstallOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_InstallOptions.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_InstallOptions proto.InternalMessageInfo
+
+func (m *InstallOptions) GetDisabled() bool {
+	if m != nil {
+		return m.Disabled
+	}
+	return false
+}
+
+func (m *InstallOptions) GetInstallationNamespace() string {
 	if m != nil {
 		return m.InstallationNamespace
 	}
 	return ""
 }
 
-func (m *LinkerdMesh) GetVersion() string {
+func (m *InstallOptions) GetVersion() string {
 	if m != nil {
 		return m.Version
 	}
 	return ""
+}
+
+type MeshConfig struct {
+	// mtls config specifies configuration options for enabling mutual
+	// tls between pods in this mesh
+	MtlsConfig *MtlsConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
+	// configuration for propagating stats and metrics from
+	// mesh controllers and sidecars to a centralized datastore
+	// such as prometheus
+	MonitoringConfig     *MonitoringConfig `protobuf:"bytes,3,opt,name=monitoring_config,json=monitoringConfig,proto3" json:"monitoring_config,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *MeshConfig) Reset()         { *m = MeshConfig{} }
+func (m *MeshConfig) String() string { return proto.CompactTextString(m) }
+func (*MeshConfig) ProtoMessage()    {}
+func (*MeshConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_713281dd1a237b0d, []int{7}
+}
+func (m *MeshConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshConfig.Unmarshal(m, b)
+}
+func (m *MeshConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshConfig.Marshal(b, m, deterministic)
+}
+func (m *MeshConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshConfig.Merge(m, src)
+}
+func (m *MeshConfig) XXX_Size() int {
+	return xxx_messageInfo_MeshConfig.Size(m)
+}
+func (m *MeshConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshConfig proto.InternalMessageInfo
+
+func (m *MeshConfig) GetMtlsConfig() *MtlsConfig {
+	if m != nil {
+		return m.MtlsConfig
+	}
+	return nil
+}
+
+func (m *MeshConfig) GetMonitoringConfig() *MonitoringConfig {
+	if m != nil {
+		return m.MonitoringConfig
+	}
+	return nil
+}
+
+// Generic discovery data shared between different meshes
+type DiscoveryMetadata struct {
+	// list of namespaces which we know are being injected by a given mesh
+	InjectedNamespaceLabel string `protobuf:"bytes,1,opt,name=injected_namespace_label,json=injectedNamespaceLabel,proto3" json:"injected_namespace_label,omitempty"`
+	// Whether or not auto-injection is enabled for a given mesh
+	EnableAutoInject bool `protobuf:"varint,2,opt,name=enable_auto_inject,json=enableAutoInject,proto3" json:"enable_auto_inject,omitempty"`
+	// version of the mesh which is installed
+	MeshVersion string `protobuf:"bytes,3,opt,name=mesh_version,json=meshVersion,proto3" json:"mesh_version,omitempty"`
+	// namespace which the mesh is installed into
+	InstallationNamespace string `protobuf:"bytes,4,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
+	// upstreams which point to injected pods in the mesh
+	Upstreams []*core.ResourceRef `protobuf:"bytes,5,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
+	// discovered mtls config of the given mesh
+	MtlsConfig           *MtlsConfig `protobuf:"bytes,6,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *DiscoveryMetadata) Reset()         { *m = DiscoveryMetadata{} }
+func (m *DiscoveryMetadata) String() string { return proto.CompactTextString(m) }
+func (*DiscoveryMetadata) ProtoMessage()    {}
+func (*DiscoveryMetadata) Descriptor() ([]byte, []int) {
+	return fileDescriptor_713281dd1a237b0d, []int{8}
+}
+func (m *DiscoveryMetadata) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DiscoveryMetadata.Unmarshal(m, b)
+}
+func (m *DiscoveryMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DiscoveryMetadata.Marshal(b, m, deterministic)
+}
+func (m *DiscoveryMetadata) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DiscoveryMetadata.Merge(m, src)
+}
+func (m *DiscoveryMetadata) XXX_Size() int {
+	return xxx_messageInfo_DiscoveryMetadata.Size(m)
+}
+func (m *DiscoveryMetadata) XXX_DiscardUnknown() {
+	xxx_messageInfo_DiscoveryMetadata.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DiscoveryMetadata proto.InternalMessageInfo
+
+func (m *DiscoveryMetadata) GetInjectedNamespaceLabel() string {
+	if m != nil {
+		return m.InjectedNamespaceLabel
+	}
+	return ""
+}
+
+func (m *DiscoveryMetadata) GetEnableAutoInject() bool {
+	if m != nil {
+		return m.EnableAutoInject
+	}
+	return false
+}
+
+func (m *DiscoveryMetadata) GetMeshVersion() string {
+	if m != nil {
+		return m.MeshVersion
+	}
+	return ""
+}
+
+func (m *DiscoveryMetadata) GetInstallationNamespace() string {
+	if m != nil {
+		return m.InstallationNamespace
+	}
+	return ""
+}
+
+func (m *DiscoveryMetadata) GetUpstreams() []*core.ResourceRef {
+	if m != nil {
+		return m.Upstreams
+	}
+	return nil
+}
+
+func (m *DiscoveryMetadata) GetMtlsConfig() *MtlsConfig {
+	if m != nil {
+		return m.MtlsConfig
+	}
+	return nil
 }
 
 // the encryption configuration that will be applied by the role
@@ -549,7 +758,7 @@ func (m *MtlsConfig) Reset()         { *m = MtlsConfig{} }
 func (m *MtlsConfig) String() string { return proto.CompactTextString(m) }
 func (*MtlsConfig) ProtoMessage()    {}
 func (*MtlsConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_713281dd1a237b0d, []int{5}
+	return fileDescriptor_713281dd1a237b0d, []int{9}
 }
 func (m *MtlsConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MtlsConfig.Unmarshal(m, b)
@@ -602,7 +811,7 @@ func (m *MonitoringConfig) Reset()         { *m = MonitoringConfig{} }
 func (m *MonitoringConfig) String() string { return proto.CompactTextString(m) }
 func (*MonitoringConfig) ProtoMessage()    {}
 func (*MonitoringConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_713281dd1a237b0d, []int{6}
+	return fileDescriptor_713281dd1a237b0d, []int{10}
 }
 func (m *MonitoringConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MonitoringConfig.Unmarshal(m, b)
@@ -646,7 +855,7 @@ func (m *MeshGroup) Reset()         { *m = MeshGroup{} }
 func (m *MeshGroup) String() string { return proto.CompactTextString(m) }
 func (*MeshGroup) ProtoMessage()    {}
 func (*MeshGroup) Descriptor() ([]byte, []int) {
-	return fileDescriptor_713281dd1a237b0d, []int{7}
+	return fileDescriptor_713281dd1a237b0d, []int{11}
 }
 func (m *MeshGroup) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshGroup.Unmarshal(m, b)
@@ -689,10 +898,14 @@ func (m *MeshGroup) GetMeshes() []*core.ResourceRef {
 
 func init() {
 	proto.RegisterType((*Mesh)(nil), "supergloo.solo.io.Mesh")
-	proto.RegisterType((*DiscoveryMetadata)(nil), "supergloo.solo.io.DiscoveryMetadata")
 	proto.RegisterType((*IstioMesh)(nil), "supergloo.solo.io.IstioMesh")
+	proto.RegisterType((*IstioInstall)(nil), "supergloo.solo.io.IstioInstall")
 	proto.RegisterType((*AwsAppMesh)(nil), "supergloo.solo.io.AwsAppMesh")
 	proto.RegisterType((*LinkerdMesh)(nil), "supergloo.solo.io.LinkerdMesh")
+	proto.RegisterType((*LinkerdInstall)(nil), "supergloo.solo.io.LinkerdInstall")
+	proto.RegisterType((*InstallOptions)(nil), "supergloo.solo.io.InstallOptions")
+	proto.RegisterType((*MeshConfig)(nil), "supergloo.solo.io.MeshConfig")
+	proto.RegisterType((*DiscoveryMetadata)(nil), "supergloo.solo.io.DiscoveryMetadata")
 	proto.RegisterType((*MtlsConfig)(nil), "supergloo.solo.io.MtlsConfig")
 	proto.RegisterType((*MonitoringConfig)(nil), "supergloo.solo.io.MonitoringConfig")
 	proto.RegisterType((*MeshGroup)(nil), "supergloo.solo.io.MeshGroup")
@@ -703,64 +916,72 @@ func init() {
 }
 
 var fileDescriptor_713281dd1a237b0d = []byte{
-	// 900 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0xcd, 0x6e, 0xdc, 0x36,
-	0x10, 0xce, 0xfe, 0x78, 0xe3, 0x9d, 0x0d, 0xd0, 0x5d, 0xd6, 0x36, 0x94, 0xa0, 0x75, 0xd2, 0x6d,
-	0x81, 0xe6, 0x90, 0x48, 0xb0, 0xdb, 0xa2, 0x86, 0x0f, 0x05, 0x6c, 0xa7, 0x48, 0x03, 0x64, 0x03,
-	0x43, 0x2e, 0x7a, 0x28, 0x8a, 0x0a, 0x5c, 0x69, 0x56, 0xcb, 0x5a, 0x12, 0x09, 0x92, 0xb2, 0x91,
-	0xab, 0x9f, 0xa6, 0x6f, 0xd2, 0x9e, 0xfa, 0x02, 0x45, 0x73, 0xe8, 0x1b, 0xb8, 0x4f, 0x50, 0x90,
-	0xa2, 0xb4, 0x89, 0xb3, 0xde, 0x38, 0x40, 0x0f, 0x3d, 0x49, 0x9c, 0xf9, 0xbe, 0xe1, 0x70, 0xe6,
-	0xe3, 0x10, 0xfc, 0x94, 0xe9, 0x79, 0x39, 0xf5, 0x63, 0x9e, 0x07, 0x8a, 0x67, 0xfc, 0x31, 0xe3,
-	0x81, 0x2a, 0x05, 0xca, 0x34, 0xe3, 0x3c, 0xa0, 0x82, 0x05, 0x67, 0x3b, 0x41, 0x8e, 0x6a, 0xee,
-	0x0b, 0xc9, 0x35, 0x27, 0xa3, 0xc6, 0xe9, 0x1b, 0xb8, 0xcf, 0xf8, 0xbd, 0x8d, 0x94, 0xa7, 0xdc,
-	0x7a, 0x03, 0xf3, 0x57, 0x01, 0xef, 0x6d, 0xa7, 0x9c, 0xa7, 0x19, 0x06, 0x76, 0x35, 0x2d, 0x67,
-	0x41, 0x52, 0x4a, 0xaa, 0x19, 0x2f, 0xae, 0xf3, 0x9f, 0x4b, 0x2a, 0x04, 0x4a, 0xe5, 0xfc, 0x3b,
-	0xcb, 0x12, 0x33, 0xdf, 0x53, 0xa6, 0x17, 0x79, 0x69, 0x9a, 0x50, 0x4d, 0x1d, 0x25, 0xb8, 0x01,
-	0x45, 0x69, 0xaa, 0xcb, 0x7a, 0x8f, 0x47, 0x37, 0x20, 0x48, 0x9c, 0xbd, 0x47, 0x46, 0xf5, 0xda,
-	0x51, 0x76, 0x6f, 0x52, 0x5d, 0x85, 0x19, 0xc6, 0x9a, 0xcb, 0x8a, 0x33, 0xfe, 0xad, 0x0b, 0xdd,
-	0x09, 0xaa, 0x39, 0x79, 0x0a, 0xbd, 0x2a, 0x5b, 0x2f, 0x79, 0xd0, 0x7a, 0x38, 0xd8, 0xdd, 0xf0,
-	0x63, 0x2e, 0xb1, 0x2e, 0xbb, 0x7f, 0x62, 0x7d, 0x87, 0x77, 0x7f, 0x7f, 0x75, 0xff, 0xd6, 0x3f,
-	0xaf, 0xee, 0x8f, 0x34, 0x2a, 0x9d, 0xb0, 0xd9, 0x6c, 0x7f, 0xcc, 0xd2, 0x82, 0x4b, 0x1c, 0x87,
-	0x8e, 0x4e, 0xf6, 0x60, 0xbd, 0xae, 0x94, 0x87, 0x36, 0xd4, 0xd6, 0x9b, 0xa1, 0x26, 0xce, 0x7b,
-	0xd8, 0x35, 0xc1, 0xc2, 0x06, 0x4d, 0xbe, 0x84, 0x35, 0xa6, 0x34, 0xe3, 0x5e, 0xcb, 0xd2, 0x3e,
-	0xf2, 0xdf, 0xea, 0xbe, 0xff, 0xcc, 0xf8, 0x4d, 0xbe, 0xdf, 0xdd, 0x0a, 0x2b, 0x30, 0x39, 0x80,
-	0x3b, 0xf4, 0x5c, 0x45, 0x54, 0x88, 0xc8, 0x28, 0xc7, 0xeb, 0x5a, 0xf2, 0xc7, 0x4b, 0xc8, 0x07,
-	0xe7, 0xea, 0x40, 0x08, 0xc7, 0x06, 0xda, 0xac, 0xc8, 0x3e, 0xdc, 0xce, 0x58, 0x71, 0x8a, 0x32,
-	0xf1, 0xd6, 0x2c, 0x7b, 0x7b, 0x09, 0xfb, 0x79, 0x85, 0x70, 0xf4, 0x9a, 0x40, 0xbe, 0x81, 0x41,
-	0xae, 0x33, 0x15, 0xc5, 0xbc, 0x98, 0xb1, 0xd4, 0x6b, 0x5f, 0xbb, 0xfb, 0x44, 0x67, 0xea, 0xc8,
-	0x82, 0x42, 0xc8, 0x9b, 0x7f, 0x72, 0x0c, 0xa3, 0x9c, 0x17, 0x4c, 0x73, 0xc9, 0x8a, 0xb4, 0x8e,
-	0xd2, 0xb1, 0x51, 0x3e, 0x5d, 0x16, 0xa5, 0xc1, 0xba, 0x58, 0xc3, 0xfc, 0x8a, 0x85, 0x9c, 0x00,
-	0x49, 0x98, 0x8a, 0xf9, 0x19, 0xca, 0x97, 0x51, 0xd3, 0x8a, 0x9e, 0x0d, 0xf9, 0xd9, 0x92, 0x90,
-	0x4f, 0x6a, 0x70, 0xdd, 0x98, 0x70, 0x94, 0x5c, 0x35, 0xed, 0x7f, 0x78, 0x71, 0xd9, 0xed, 0x40,
-	0x2b, 0xbf, 0xb8, 0xec, 0xae, 0x93, 0x9e, 0x29, 0x34, 0xaa, 0xc3, 0x01, 0xf4, 0xcd, 0x5f, 0xa4,
-	0x5f, 0x0a, 0x1c, 0xff, 0xd1, 0x86, 0xd1, 0x5b, 0xa1, 0xc8, 0x1e, 0x78, 0xac, 0xf8, 0x05, 0x63,
-	0x8d, 0x49, 0x54, 0xd0, 0x1c, 0x95, 0xa0, 0x31, 0x46, 0x19, 0x9d, 0x62, 0x66, 0xdb, 0xdc, 0x0f,
-	0xb7, 0x6a, 0xff, 0x8b, 0xda, 0xfd, 0xdc, 0x78, 0xc9, 0x23, 0x20, 0x58, 0xd0, 0x69, 0x86, 0x11,
-	0x2d, 0x35, 0x8f, 0x2a, 0x94, 0xad, 0xef, 0x7a, 0x38, 0xac, 0x3c, 0x07, 0xa5, 0xe6, 0xcf, 0xac,
-	0x9d, 0x7c, 0x02, 0x77, 0x6c, 0x2a, 0x67, 0x28, 0x15, 0xe3, 0x85, 0xad, 0x60, 0x3f, 0x1c, 0x18,
-	0xdb, 0x0f, 0x95, 0x89, 0x7c, 0x05, 0x5b, 0xac, 0x50, 0x9a, 0x66, 0x99, 0x9d, 0x0c, 0x8b, 0x74,
-	0xac, 0x64, 0xfa, 0xe1, 0xe6, 0xeb, 0xde, 0x26, 0x19, 0xf2, 0x35, 0xf4, 0x4b, 0xa1, 0xb4, 0x44,
-	0x9a, 0x2b, 0x6f, 0xed, 0x41, 0xe7, 0xe1, 0x60, 0xf7, 0xee, 0x9b, 0x82, 0x0e, 0x51, 0xf1, 0x52,
-	0xc6, 0x18, 0xe2, 0x2c, 0x5c, 0x60, 0xaf, 0x2a, 0xa3, 0xf7, 0x9e, 0xca, 0x18, 0xff, 0x04, 0xfd,
-	0x46, 0xee, 0x2b, 0x92, 0x6f, 0xad, 0x4a, 0xde, 0x83, 0xdb, 0x75, 0x45, 0xda, 0x16, 0x57, 0x2f,
-	0xc7, 0x7f, 0xb5, 0x01, 0x16, 0x17, 0x82, 0xec, 0x81, 0xb9, 0x10, 0x91, 0xc2, 0x58, 0xa2, 0x76,
-	0x17, 0x70, 0xd5, 0x31, 0xe9, 0xb9, 0x3a, 0xb1, 0x58, 0xb2, 0x05, 0x3d, 0x89, 0xe9, 0x62, 0x07,
-	0xb7, 0xba, 0xa6, 0x7f, 0x9d, 0x6b, 0xfa, 0x37, 0x01, 0x52, 0x21, 0xcc, 0xe1, 0xea, 0x19, 0xe5,
-	0xee, 0xf2, 0xb2, 0xdb, 0x78, 0xcc, 0x93, 0x13, 0x87, 0x0a, 0x47, 0x0d, 0xb3, 0x36, 0x99, 0xcd,
-	0xcf, 0x98, 0xd4, 0x25, 0xcd, 0xa2, 0x82, 0x27, 0xb5, 0xe0, 0xd6, 0x6c, 0x82, 0x43, 0xe7, 0x79,
-	0xc1, 0x13, 0x27, 0xb5, 0x10, 0x3c, 0xc5, 0x12, 0x8c, 0xa9, 0x8c, 0x04, 0xd5, 0xf1, 0xdc, 0xb5,
-	0x2c, 0xca, 0xa9, 0x70, 0x6d, 0x5b, 0x51, 0x8a, 0x4d, 0x47, 0x3d, 0x36, 0xcc, 0xaa, 0x75, 0x13,
-	0x2a, 0xc6, 0x3f, 0xc3, 0xe0, 0xb5, 0x89, 0xf1, 0xdf, 0xf7, 0xaf, 0x04, 0x58, 0xe8, 0xc6, 0xca,
-	0xdf, 0x68, 0xad, 0xaa, 0x6b, 0x62, 0x83, 0xae, 0x87, 0x56, 0x7f, 0xdf, 0x56, 0x26, 0xf2, 0x04,
-	0x86, 0x92, 0x73, 0x1d, 0xc5, 0x28, 0x35, 0x9b, 0xb1, 0x98, 0x6a, 0x74, 0x73, 0x66, 0xc5, 0xe1,
-	0x3e, 0x30, 0x94, 0xa3, 0x05, 0x63, 0x3c, 0x87, 0xe1, 0xd5, 0x11, 0x44, 0xbe, 0x87, 0x4d, 0x21,
-	0x79, 0x8e, 0x7a, 0x8e, 0x65, 0x2d, 0xf7, 0x9c, 0x0a, 0xe5, 0xb5, 0xde, 0x71, 0x5b, 0xdc, 0x0b,
-	0xb0, 0xb1, 0x60, 0x1f, 0x35, 0xe4, 0xf1, 0x9f, 0x2d, 0xe8, 0x9b, 0xd2, 0x3d, 0x95, 0xbc, 0x14,
-	0xff, 0x87, 0xe7, 0x69, 0x07, 0xdc, 0xdc, 0xf3, 0x3a, 0xef, 0x9a, 0x02, 0x0e, 0xb8, 0xef, 0x5d,
-	0x5c, 0x76, 0xbb, 0xd0, 0xce, 0xd3, 0x8b, 0xcb, 0xee, 0x1d, 0x02, 0xc6, 0x9a, 0x9a, 0xe3, 0xa8,
-	0xc3, 0xc7, 0xbf, 0xfe, 0xbd, 0xdd, 0xfa, 0xf1, 0xf3, 0x95, 0x2f, 0xb6, 0x38, 0x4d, 0xdd, 0xab,
-	0x3d, 0xed, 0xd9, 0xd7, 0xfa, 0x8b, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x9c, 0x90, 0x85, 0xa4,
-	0x41, 0x09, 0x00, 0x00,
+	// 1028 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0x51, 0x6f, 0x1b, 0x45,
+	0x10, 0xae, 0x63, 0xd7, 0xb1, 0x27, 0x51, 0x49, 0x96, 0x24, 0xba, 0x46, 0x90, 0x34, 0x07, 0x12,
+	0x3c, 0xb4, 0xb6, 0x52, 0xa8, 0x08, 0x41, 0x42, 0x8a, 0x53, 0x54, 0x22, 0x35, 0x25, 0xba, 0x20,
+	0x1e, 0x78, 0x39, 0xad, 0xef, 0xc6, 0xe7, 0x6d, 0xee, 0x6e, 0x4f, 0xbb, 0x7b, 0x89, 0x2a, 0xd4,
+	0x07, 0xf2, 0x43, 0x78, 0xe2, 0x81, 0x9f, 0x82, 0x84, 0xc4, 0x1f, 0x40, 0xf4, 0x81, 0x7f, 0x10,
+	0x7e, 0x01, 0xda, 0xbd, 0xbd, 0x73, 0x9c, 0xda, 0x4e, 0x22, 0x21, 0xc4, 0x93, 0x6f, 0x67, 0xbe,
+	0x6f, 0x76, 0xe6, 0x9b, 0xd9, 0xf5, 0x42, 0x27, 0x62, 0x6a, 0x98, 0xf7, 0x3b, 0x01, 0x4f, 0xba,
+	0x92, 0xc7, 0xfc, 0x11, 0xe3, 0x5d, 0x99, 0x67, 0x28, 0xa2, 0x98, 0xf3, 0x2e, 0xcd, 0x58, 0xf7,
+	0x74, 0xbb, 0x9b, 0xa0, 0x1c, 0x76, 0x32, 0xc1, 0x15, 0x27, 0xcb, 0x95, 0xb3, 0xa3, 0xe1, 0x1d,
+	0xc6, 0xd7, 0x57, 0x22, 0x1e, 0x71, 0xe3, 0xed, 0xea, 0xaf, 0x02, 0xb8, 0xbe, 0x11, 0x71, 0x1e,
+	0xc5, 0xd8, 0x35, 0xab, 0x7e, 0x3e, 0xe8, 0x86, 0xb9, 0xa0, 0x8a, 0xf1, 0x74, 0x9a, 0xff, 0x4c,
+	0xd0, 0x2c, 0x43, 0x21, 0xad, 0x7f, 0x7b, 0x52, 0x62, 0xfa, 0xf7, 0x84, 0xa9, 0x51, 0x5e, 0x8a,
+	0x86, 0x54, 0x51, 0x4b, 0xe9, 0xde, 0x80, 0x22, 0x15, 0x55, 0x79, 0xb9, 0xc7, 0xc3, 0x1b, 0x10,
+	0x04, 0x0e, 0x6e, 0x91, 0x51, 0xb9, 0xb6, 0x94, 0xc7, 0x37, 0x51, 0x57, 0x62, 0x8c, 0x81, 0xe2,
+	0xa2, 0xe0, 0xb8, 0x3f, 0xd7, 0xa1, 0x71, 0x88, 0x72, 0x48, 0x9e, 0x41, 0xb3, 0xc8, 0xd6, 0x09,
+	0x1f, 0xd4, 0x3e, 0x5e, 0x78, 0xbc, 0xd2, 0x09, 0xb8, 0xc0, 0x52, 0xf6, 0xce, 0xb1, 0xf1, 0xf5,
+	0xee, 0xff, 0xfa, 0x66, 0xf3, 0xce, 0xdf, 0x6f, 0x36, 0x97, 0x15, 0x4a, 0x15, 0xb2, 0xc1, 0x60,
+	0xd7, 0x65, 0x51, 0xca, 0x05, 0xba, 0x9e, 0xa5, 0x93, 0x1d, 0x68, 0x95, 0x4a, 0x39, 0x68, 0x42,
+	0xad, 0x8d, 0x87, 0x3a, 0xb4, 0xde, 0x5e, 0x43, 0x07, 0xf3, 0x2a, 0x34, 0xf9, 0x14, 0xee, 0x32,
+	0xa9, 0x18, 0x77, 0x6a, 0x86, 0xf6, 0x5e, 0xe7, 0xad, 0xee, 0x77, 0x0e, 0xb4, 0x5f, 0xe7, 0xfb,
+	0xf5, 0x1d, 0xaf, 0x00, 0x93, 0x3d, 0x58, 0xa4, 0x67, 0xd2, 0xa7, 0x59, 0xe6, 0xeb, 0xc9, 0x71,
+	0xe6, 0x0c, 0xf9, 0xfd, 0x09, 0xe4, 0xbd, 0x33, 0xb9, 0x97, 0x65, 0x96, 0x0d, 0xb4, 0x5a, 0x91,
+	0x5d, 0x98, 0x8f, 0x59, 0x7a, 0x82, 0x22, 0x74, 0xea, 0x86, 0xbd, 0x31, 0x81, 0xfd, 0xbc, 0x40,
+	0x58, 0x7a, 0x49, 0x20, 0x3d, 0x68, 0x87, 0x4c, 0x06, 0xfc, 0x14, 0xc5, 0x2b, 0xa7, 0x69, 0xd8,
+	0x1f, 0x4e, 0x60, 0x3f, 0x2d, 0x31, 0x65, 0xf5, 0xde, 0x88, 0xb6, 0xfb, 0xee, 0xf9, 0x45, 0xa3,
+	0x0e, 0xb5, 0xe4, 0xfc, 0xa2, 0xd1, 0x22, 0x4d, 0x5d, 0x05, 0xca, 0xde, 0x02, 0xb4, 0xf5, 0x97,
+	0xaf, 0x5e, 0x65, 0xe8, 0xbe, 0x86, 0x76, 0x55, 0x3a, 0xf9, 0x1c, 0xe6, 0x59, 0x2a, 0x15, 0x8d,
+	0x63, 0xab, 0xd4, 0xe6, 0x34, 0xa5, 0x0e, 0x0a, 0x98, 0x57, 0xe2, 0xc9, 0x13, 0x68, 0x06, 0x3c,
+	0x1d, 0xb0, 0x68, 0x86, 0x4c, 0x7a, 0x8f, 0x7d, 0x03, 0xf2, 0x2c, 0xd8, 0xfd, 0xad, 0x06, 0x8b,
+	0x97, 0x03, 0x92, 0x2f, 0x60, 0x9e, 0x67, 0xfa, 0x7c, 0x49, 0x9b, 0xc2, 0xd6, 0xa4, 0x14, 0x0a,
+	0xf0, 0x37, 0x05, 0xd0, 0x2b, 0x19, 0xe4, 0x21, 0x10, 0x4c, 0x69, 0x3f, 0x46, 0x9f, 0xe6, 0x8a,
+	0xfb, 0x2c, 0x7d, 0x89, 0x81, 0x32, 0xca, 0xb7, 0xbc, 0xa5, 0xc2, 0xb3, 0x97, 0x2b, 0x7e, 0x60,
+	0xec, 0xc4, 0x81, 0xf9, 0x48, 0xd0, 0x01, 0x4d, 0xa9, 0x91, 0xb7, 0xe5, 0x95, 0x4b, 0xb2, 0x01,
+	0x90, 0x09, 0x9e, 0xa0, 0x1a, 0x62, 0x2e, 0x9d, 0x79, 0xe3, 0xbc, 0x64, 0x21, 0x6b, 0xd0, 0x7c,
+	0x49, 0x31, 0x42, 0xe1, 0xb4, 0x8c, 0xcf, 0xae, 0xdc, 0x3f, 0xe7, 0x00, 0x46, 0xb3, 0x40, 0x76,
+	0x40, 0xcf, 0x82, 0x2f, 0x31, 0x10, 0xa8, 0x6c, 0x39, 0xf7, 0xc7, 0x47, 0xd6, 0x43, 0xc9, 0x73,
+	0x11, 0xa0, 0x87, 0x03, 0xaf, 0x4d, 0xcf, 0xe4, 0xb1, 0xc1, 0xea, 0x0d, 0x04, 0x46, 0x8c, 0xa7,
+	0x46, 0xcd, 0xb6, 0x67, 0x57, 0xb7, 0x2c, 0xf0, 0x10, 0x48, 0x81, 0x60, 0x3c, 0xf5, 0xcb, 0xe3,
+	0xe9, 0x34, 0xa6, 0x0e, 0xe2, 0x11, 0x0f, 0x8f, 0x2d, 0xca, 0x5b, 0xae, 0x98, 0xa5, 0x49, 0x6f,
+	0x7e, 0xca, 0x84, 0xca, 0x69, 0xec, 0xa7, 0x3c, 0x44, 0x3f, 0xa6, 0x7d, 0x8c, 0x9d, 0xbb, 0x26,
+	0xc1, 0x25, 0xeb, 0x79, 0xc1, 0x43, 0x7c, 0xae, 0xed, 0xc4, 0x03, 0x47, 0xb2, 0x10, 0x03, 0x2a,
+	0xfc, 0x8c, 0xaa, 0x60, 0xe8, 0x17, 0x1d, 0xf7, 0x13, 0x9a, 0xd9, 0x69, 0x9e, 0x21, 0xc5, 0xaa,
+	0xa5, 0x1e, 0x69, 0x66, 0x31, 0x32, 0x87, 0x34, 0x73, 0x7f, 0xac, 0xc1, 0xc2, 0xa5, 0xd3, 0xa2,
+	0x87, 0x65, 0x7c, 0x5e, 0xb7, 0xa6, 0x1f, 0xaf, 0x7f, 0x6b, 0x62, 0x7f, 0x80, 0x7b, 0xe3, 0x11,
+	0xff, 0xc3, 0x91, 0x75, 0x5f, 0xc3, 0xbd, 0xf1, 0x40, 0x64, 0x1d, 0x5a, 0x21, 0x93, 0x1a, 0x16,
+	0x9a, 0xdd, 0x5b, 0x5e, 0xb5, 0x26, 0x4f, 0x60, 0xcd, 0x16, 0x6b, 0xfe, 0xb1, 0xfc, 0x94, 0x26,
+	0x28, 0x33, 0x1a, 0xa0, 0x9d, 0xaa, 0xd5, 0xcb, 0xde, 0x17, 0xa5, 0x53, 0x9f, 0x8b, 0x53, 0x14,
+	0x52, 0x4f, 0x5f, 0xdd, 0xe0, 0xca, 0xa5, 0xfb, 0x53, 0x0d, 0x60, 0x24, 0x09, 0xf9, 0x12, 0x16,
+	0x12, 0x15, 0x4b, 0xff, 0x7a, 0x19, 0x55, 0x2c, 0xad, 0x8c, 0x90, 0x54, 0xdf, 0xe4, 0x08, 0x96,
+	0x13, 0x9e, 0x32, 0xc5, 0x05, 0x4b, 0xa3, 0x32, 0x4a, 0x71, 0x4f, 0x7e, 0x30, 0x29, 0x4a, 0x85,
+	0xb5, 0xb1, 0x96, 0x92, 0x2b, 0x16, 0xf7, 0xf7, 0x39, 0x58, 0x7e, 0xeb, 0x42, 0x24, 0x3b, 0xe0,
+	0x14, 0xba, 0x62, 0x38, 0xd2, 0xc0, 0x8e, 0x6f, 0xcd, 0x54, 0xb8, 0x56, 0xfa, 0x2b, 0x15, 0x8a,
+	0x21, 0x9e, 0xdc, 0x9d, 0xb9, 0x29, 0xe7, 0x6d, 0x0b, 0x16, 0xcd, 0xc5, 0x3a, 0xae, 0xde, 0x82,
+	0xb6, 0x7d, 0x57, 0x98, 0x66, 0xb4, 0xa4, 0x31, 0xab, 0x25, 0x9f, 0x41, 0x3b, 0xcf, 0xa4, 0x12,
+	0x48, 0x13, 0xe9, 0xdc, 0x7d, 0x50, 0xbf, 0xe6, 0x22, 0xa9, 0xb0, 0x57, 0x5b, 0xd4, 0xbc, 0x65,
+	0x8b, 0xdc, 0x1c, 0x60, 0xe4, 0x31, 0x05, 0xea, 0x68, 0x45, 0xe5, 0xe5, 0xc0, 0x99, 0x1d, 0xbe,
+	0x2a, 0x4c, 0xe4, 0x29, 0x2c, 0x09, 0xce, 0x95, 0x1f, 0xa0, 0x50, 0x6c, 0xc0, 0x02, 0xaa, 0xd0,
+	0xb6, 0x74, 0x46, 0xc2, 0xef, 0x68, 0xca, 0xfe, 0x88, 0xe1, 0x0e, 0x61, 0xe9, 0x6a, 0xb7, 0xc9,
+	0xb7, 0xb0, 0x3a, 0xba, 0x82, 0x6d, 0x41, 0x09, 0xcd, 0xf4, 0xa1, 0x9b, 0xad, 0x87, 0x7d, 0x0e,
+	0xac, 0x8c, 0xd8, 0xfb, 0x15, 0xd9, 0xfd, 0xa3, 0x06, 0x6d, 0x3d, 0xd2, 0xcf, 0x04, 0xcf, 0xb3,
+	0xff, 0xc3, 0x5b, 0x65, 0x1b, 0xec, 0xff, 0xb4, 0x53, 0xbf, 0xae, 0xcf, 0x16, 0xb8, 0xeb, 0x9c,
+	0x5f, 0x34, 0x1a, 0x30, 0x97, 0x44, 0xe7, 0x17, 0x8d, 0x45, 0x02, 0xda, 0x1a, 0xe9, 0x72, 0x64,
+	0xef, 0xd1, 0x2f, 0x7f, 0x6d, 0xd4, 0xbe, 0xff, 0x68, 0xe6, 0xf3, 0x2d, 0x3b, 0x89, 0xec, 0x13,
+	0xae, 0xdf, 0x34, 0x4f, 0xb7, 0x4f, 0xfe, 0x09, 0x00, 0x00, 0xff, 0xff, 0x7e, 0xbb, 0xa0, 0x8f,
+	0x4e, 0x0b, 0x00, 0x00,
 }
 
 func (this *Mesh) Equal(that interface{}) bool {
@@ -797,13 +1018,7 @@ func (this *Mesh) Equal(that interface{}) bool {
 	} else if !this.MeshType.Equal(that1.MeshType) {
 		return false
 	}
-	if !this.MtlsConfig.Equal(that1.MtlsConfig) {
-		return false
-	}
-	if !this.MonitoringConfig.Equal(that1.MonitoringConfig) {
-		return false
-	}
-	if !this.DiscoveryMetadata.Equal(that1.DiscoveryMetadata) {
+	if !this.Discovery.Equal(that1.Discovery) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -883,53 +1098,6 @@ func (this *Mesh_Linkerd) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *DiscoveryMetadata) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DiscoveryMetadata)
-	if !ok {
-		that2, ok := that.(DiscoveryMetadata)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.InjectedNamespaceLabel != that1.InjectedNamespaceLabel {
-		return false
-	}
-	if this.EnableAutoInject != that1.EnableAutoInject {
-		return false
-	}
-	if this.MeshVersion != that1.MeshVersion {
-		return false
-	}
-	if this.InstallationNamespace != that1.InstallationNamespace {
-		return false
-	}
-	if len(this.Upstreams) != len(that1.Upstreams) {
-		return false
-	}
-	for i := range this.Upstreams {
-		if !this.Upstreams[i].Equal(that1.Upstreams[i]) {
-			return false
-		}
-	}
-	if !this.MtlsConfig.Equal(that1.MtlsConfig) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
 func (this *IstioMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -949,10 +1117,49 @@ func (this *IstioMesh) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.InstallationNamespace != that1.InstallationNamespace {
+	if !this.Install.Equal(that1.Install) {
 		return false
 	}
-	if this.Version != that1.Version {
+	if !this.Config.Equal(that1.Config) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *IstioInstall) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IstioInstall)
+	if !ok {
+		that2, ok := that.(IstioInstall)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Options.Equal(that1.Options) {
+		return false
+	}
+	if this.EnableAutoInject != that1.EnableAutoInject {
+		return false
+	}
+	if this.Grafana != that1.Grafana {
+		return false
+	}
+	if this.Prometheus != that1.Prometheus {
+		return false
+	}
+	if this.Jaeger != that1.Jaeger {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -1021,10 +1228,150 @@ func (this *LinkerdMesh) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
+	if !this.Install.Equal(that1.Install) {
+		return false
+	}
+	if !this.Config.Equal(that1.Config) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *LinkerdInstall) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*LinkerdInstall)
+	if !ok {
+		that2, ok := that.(LinkerdInstall)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Options.Equal(that1.Options) {
+		return false
+	}
+	if this.EnableAutoInject != that1.EnableAutoInject {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *InstallOptions) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*InstallOptions)
+	if !ok {
+		that2, ok := that.(InstallOptions)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Disabled != that1.Disabled {
+		return false
+	}
 	if this.InstallationNamespace != that1.InstallationNamespace {
 		return false
 	}
 	if this.Version != that1.Version {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MeshConfig) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MeshConfig)
+	if !ok {
+		that2, ok := that.(MeshConfig)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.MtlsConfig.Equal(that1.MtlsConfig) {
+		return false
+	}
+	if !this.MonitoringConfig.Equal(that1.MonitoringConfig) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *DiscoveryMetadata) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*DiscoveryMetadata)
+	if !ok {
+		that2, ok := that.(DiscoveryMetadata)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.InjectedNamespaceLabel != that1.InjectedNamespaceLabel {
+		return false
+	}
+	if this.EnableAutoInject != that1.EnableAutoInject {
+		return false
+	}
+	if this.MeshVersion != that1.MeshVersion {
+		return false
+	}
+	if this.InstallationNamespace != that1.InstallationNamespace {
+		return false
+	}
+	if len(this.Upstreams) != len(that1.Upstreams) {
+		return false
+	}
+	for i := range this.Upstreams {
+		if !this.Upstreams[i].Equal(that1.Upstreams[i]) {
+			return false
+		}
+	}
+	if !this.MtlsConfig.Equal(that1.MtlsConfig) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

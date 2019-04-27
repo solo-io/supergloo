@@ -41,19 +41,17 @@ func init() {
 
 type InstallEmitter interface {
 	Register() error
-	Install() InstallClient
 	Mesh() MeshClient
 	MeshIngress() MeshIngressClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *InstallSnapshot, <-chan error, error)
 }
 
-func NewInstallEmitter(installClient InstallClient, meshClient MeshClient, meshIngressClient MeshIngressClient) InstallEmitter {
-	return NewInstallEmitterWithEmit(installClient, meshClient, meshIngressClient, make(chan struct{}))
+func NewInstallEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient) InstallEmitter {
+	return NewInstallEmitterWithEmit(meshClient, meshIngressClient, make(chan struct{}))
 }
 
-func NewInstallEmitterWithEmit(installClient InstallClient, meshClient MeshClient, meshIngressClient MeshIngressClient, emit <-chan struct{}) InstallEmitter {
+func NewInstallEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, emit <-chan struct{}) InstallEmitter {
 	return &installEmitter{
-		install:     installClient,
 		mesh:        meshClient,
 		meshIngress: meshIngressClient,
 		forceEmit:   emit,
@@ -62,15 +60,11 @@ func NewInstallEmitterWithEmit(installClient InstallClient, meshClient MeshClien
 
 type installEmitter struct {
 	forceEmit   <-chan struct{}
-	install     InstallClient
 	mesh        MeshClient
 	meshIngress MeshIngressClient
 }
 
 func (c *installEmitter) Register() error {
-	if err := c.install.Register(); err != nil {
-		return err
-	}
 	if err := c.mesh.Register(); err != nil {
 		return err
 	}
@@ -78,10 +72,6 @@ func (c *installEmitter) Register() error {
 		return err
 	}
 	return nil
-}
-
-func (c *installEmitter) Install() InstallClient {
-	return c.install
 }
 
 func (c *installEmitter) Mesh() MeshClient {
@@ -108,12 +98,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 	errs := make(chan error)
 	var done sync.WaitGroup
 	ctx := opts.Ctx
-	/* Create channel for Install */
-	type installListWithNamespace struct {
-		list      InstallList
-		namespace string
-	}
-	installChan := make(chan installListWithNamespace)
 	/* Create channel for Mesh */
 	type meshListWithNamespace struct {
 		list      MeshList
@@ -128,17 +112,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 	meshIngressChan := make(chan meshIngressListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
-		/* Setup namespaced watch for Install */
-		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Install watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
-		}(namespace)
 		/* Setup namespaced watch for Mesh */
 		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
 		if err != nil {
@@ -168,12 +141,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 				select {
 				case <-ctx.Done():
 					return
-				case installList := <-installNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
-					}
 				case meshList := <-meshNamespacesChan:
 					select {
 					case <-ctx.Done():
@@ -221,13 +188,6 @@ func (c *installEmitter) Snapshots(watchNamespaces []string, opts clients.WatchO
 			case <-c.forceEmit:
 				sentSnapshot := currentSnapshot.Clone()
 				snapshots <- &sentSnapshot
-			case installNamespacedList := <-installChan:
-				record()
-
-				namespace := installNamespacedList.namespace
-				installList := installNamespacedList.list
-
-				currentSnapshot.Installs[namespace] = installList
 			case meshNamespacedList := <-meshChan:
 				record()
 

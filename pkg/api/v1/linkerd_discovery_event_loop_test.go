@@ -34,12 +34,6 @@ var _ = Describe("LinkerdDiscoveryEventLoop", func() {
 		meshClient, err := NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		installClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		installClient, err := NewInstallClient(installClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -52,12 +46,10 @@ var _ = Describe("LinkerdDiscoveryEventLoop", func() {
 		upstreamClient, err := gloo_solo_io.NewUpstreamClient(upstreamClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewLinkerdDiscoveryEmitter(meshClient, installClient, podClient, upstreamClient)
+		emitter = NewLinkerdDiscoveryEmitter(meshClient, podClient, upstreamClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

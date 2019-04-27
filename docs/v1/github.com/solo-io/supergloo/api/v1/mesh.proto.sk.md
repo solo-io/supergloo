@@ -12,10 +12,14 @@ weight: 5
 
 
 - [Mesh](#mesh) **Top-Level Resource**
-- [DiscoveryMetadata](#discoverymetadata)
 - [IstioMesh](#istiomesh)
+- [IstioInstall](#istioinstall)
 - [AwsAppMesh](#awsappmesh)
 - [LinkerdMesh](#linkerdmesh)
+- [LinkerdInstall](#linkerdinstall)
+- [InstallOptions](#installoptions)
+- [MeshConfig](#meshconfig)
+- [DiscoveryMetadata](#discoverymetadata)
 - [MtlsConfig](#mtlsconfig)
 - [MonitoringConfig](#monitoringconfig)
 - [MeshGroup](#meshgroup) **Top-Level Resource**
@@ -41,9 +45,7 @@ Meshes represent a currently registered service mesh.
 "istio": .supergloo.solo.io.IstioMesh
 "awsAppMesh": .supergloo.solo.io.AwsAppMesh
 "linkerd": .supergloo.solo.io.LinkerdMesh
-"mtlsConfig": .supergloo.solo.io.MtlsConfig
-"monitoringConfig": .supergloo.solo.io.MonitoringConfig
-"discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
+"discovery": .supergloo.solo.io.DiscoveryMetadata
 
 ```
 
@@ -54,37 +56,7 @@ Meshes represent a currently registered service mesh.
 | `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#istiomesh) |  |  |
 | `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#awsappmesh) |  |  |
 | `linkerd` | [.supergloo.solo.io.LinkerdMesh](../mesh.proto.sk#linkerdmesh) |  |  |
-| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
-| `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
-| `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh |  |
-
-
-
-
----
-### DiscoveryMetadata
-
- 
-Generic discovery data shared between different meshes
-
-```yaml
-"injectedNamespaceLabel": string
-"enableAutoInject": bool
-"meshVersion": string
-"installationNamespace": string
-"upstreams": []core.solo.io.ResourceRef
-"mtlsConfig": .supergloo.solo.io.MtlsConfig
-
-```
-
-| Field | Type | Description | Default |
-| ----- | ---- | ----------- |----------- | 
-| `injectedNamespaceLabel` | `string` | list of namespaces which we know are being injected by a given mesh |  |
-| `enableAutoInject` | `bool` | Whether or not auto-injection is enabled for a given mesh |  |
-| `meshVersion` | `string` | version of the mesh which is installed |  |
-| `installationNamespace` | `string` | namespace which the mesh is installed into |  |
-| `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | upstreams which point to injected pods in the mesh |  |
-| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
+| `discovery` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh |  |
 
 
 
@@ -96,15 +68,40 @@ Generic discovery data shared between different meshes
 Mesh object representing an installed Istio control plane
 
 ```yaml
-"installationNamespace": string
-"version": string
+"install": .supergloo.solo.io.IstioInstall
+"config": .supergloo.solo.io.MeshConfig
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installationNamespace` | `string` | where the istio control plane has been installed |  |
-| `version` | `string` | version of istio which has been installed |  |
+| `install` | [.supergloo.solo.io.IstioInstall](../mesh.proto.sk#istioinstall) |  |  |
+| `config` | [.supergloo.solo.io.MeshConfig](../mesh.proto.sk#meshconfig) |  |  |
+
+
+
+
+---
+### IstioInstall
+
+
+
+```yaml
+"options": .supergloo.solo.io.InstallOptions
+"enableAutoInject": bool
+"grafana": bool
+"prometheus": bool
+"jaeger": bool
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `options` | [.supergloo.solo.io.InstallOptions](../mesh.proto.sk#installoptions) | Generic installation options |  |
+| `enableAutoInject` | `bool` | enable auto injection of pods |  |
+| `grafana` | `bool` | install grafana with istio |  |
+| `prometheus` | `bool` | install prometheus with istio |  |
+| `jaeger` | `bool` | install jaeger with istio |  |
 
 
 
@@ -144,6 +141,45 @@ Mesh object representing AWS App Mesh
 Mesh object representing an installed Linkerd control plane
 
 ```yaml
+"install": .supergloo.solo.io.LinkerdInstall
+"config": .supergloo.solo.io.MeshConfig
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `install` | [.supergloo.solo.io.LinkerdInstall](../mesh.proto.sk#linkerdinstall) |  |  |
+| `config` | [.supergloo.solo.io.MeshConfig](../mesh.proto.sk#meshconfig) |  |  |
+
+
+
+
+---
+### LinkerdInstall
+
+
+
+```yaml
+"options": .supergloo.solo.io.InstallOptions
+"enableAutoInject": bool
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `options` | [.supergloo.solo.io.InstallOptions](../mesh.proto.sk#installoptions) | Generic installation options |  |
+| `enableAutoInject` | `bool` | enable auto injection of pods |  |
+
+
+
+
+---
+### InstallOptions
+
+
+
+```yaml
+"disabled": bool
 "installationNamespace": string
 "version": string
 
@@ -151,8 +187,56 @@ Mesh object representing an installed Linkerd control plane
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installationNamespace` | `string` | where the Linkerd control plane has been installed |  |
-| `version` | `string` | version of istio which has been installed |  |
+| `disabled` | `bool` | disables this install setting this to true will cause supergloo not to install this mesh, or uninstall an active install |  |
+| `installationNamespace` | `string` | where the ingress has been installed |  |
+| `version` | `string` | which version to install ignored if using custom helm chart |  |
+
+
+
+
+---
+### MeshConfig
+
+
+
+```yaml
+"mtlsConfig": .supergloo.solo.io.MtlsConfig
+"monitoringConfig": .supergloo.solo.io.MonitoringConfig
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
+| `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
+
+
+
+
+---
+### DiscoveryMetadata
+
+ 
+Generic discovery data shared between different meshes
+
+```yaml
+"injectedNamespaceLabel": string
+"enableAutoInject": bool
+"meshVersion": string
+"installationNamespace": string
+"upstreams": []core.solo.io.ResourceRef
+"mtlsConfig": .supergloo.solo.io.MtlsConfig
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `injectedNamespaceLabel` | `string` | list of namespaces which we know are being injected by a given mesh |  |
+| `enableAutoInject` | `bool` | Whether or not auto-injection is enabled for a given mesh |  |
+| `meshVersion` | `string` | version of the mesh which is installed |  |
+| `installationNamespace` | `string` | namespace which the mesh is installed into |  |
+| `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | upstreams which point to injected pods in the mesh |  |
+| `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | discovered mtls config of the given mesh |  |
 
 
 

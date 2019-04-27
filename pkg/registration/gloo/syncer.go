@@ -53,15 +53,15 @@ func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot
 func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingress *v1.MeshIngress, meshes v1.MeshList) error {
 	logger := contextutils.LoggerFrom(ctx)
 
-	_, isGloo := ingress.MeshIngressType.(*v1.MeshIngress_Gloo)
-	if !isGloo {
+	glooIngress := ingress.GetGloo()
+	if glooIngress == nil {
 		return errors.Errorf("only gloo mesh ingress currently supported")
 	}
 	targetMeshes := ingress.Meshes
 
-	deployment, err := s.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
+	deployment, err := s.cs.Kube.ExtensionsV1beta1().Deployments(glooIngress.Install.Options.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", ingress.InstallationNamespace)
+		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", glooIngress.Install.Options.InstallationNamespace)
 	}
 
 	// This mutates the deployment
@@ -75,7 +75,7 @@ func (s *glooMtlsSyncer) handleGlooMeshIngressConfig(ctx context.Context, ingres
 	}
 
 	logger.Infof("about to modify deployment for %s.%s", deployment.Namespace, deployment.Name)
-	_, err = s.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Update(deployment)
+	_, err = s.cs.Kube.ExtensionsV1beta1().Deployments(glooIngress.Install.Options.InstallationNamespace).Update(deployment)
 	if err != nil {
 		return errors.Wrapf(err, "unable to rewrite deployment after update")
 	}

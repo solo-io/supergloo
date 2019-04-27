@@ -124,9 +124,9 @@ func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshLis
 			return nil, err
 		}
 		var deploymentVolumeInfo *DeploymentVolumeInfo
-		switch mesh.MeshType.(type) {
+		switch meshType := mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
-			if mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled {
+			if meshType.Istio.Config. != nil && mesh.MtlsConfig.MtlsEnabled {
 				deploymentVolumeInfo = NewDeploymentVolumeInfo(resource, "istio.default")
 			}
 		default:

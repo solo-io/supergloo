@@ -25,12 +25,15 @@ type prometheusSyncer struct {
 	syncerName    string
 	client        prometheusv1.PrometheusConfigClient
 	kube          kubernetes.Interface
-	chooseMesh    func(mesh *v1.Mesh) bool
+	getConfig     func(mesh *v1.Mesh) *v1.MeshConfig
 	scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)
 }
 
-func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface, chooseMesh func(mesh *v1.Mesh) bool, scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)) *prometheusSyncer {
-	return &prometheusSyncer{syncerName: syncerName, client: client, kube: kube, chooseMesh: chooseMesh, scrapeConfigs: scrapeConfigs}
+type ScrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)
+type GetMeshConfig func(mesh *v1.Mesh) *v1.MeshConfig
+
+func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface, chooseMesh GetMeshConfig, scrapeConfigs ScrapeConfigs) *prometheusSyncer {
+	return &prometheusSyncer{syncerName: syncerName, client: client, kube: kube, getConfig: chooseMesh, scrapeConfigs: scrapeConfigs}
 }
 
 // Ensure all prometheus configs contain scrape configs for the meshes which target them
@@ -62,12 +65,13 @@ func (s *prometheusSyncer) getPromCfgsWithMeshes(meshes v1.MeshList) map[core.Re
 	promConfigsWithMeshes := make(map[core.ResourceRef][]*v1.Mesh)
 
 	for _, mesh := range meshes {
-		if !s.chooseMesh(mesh) {
+		meshConfig := s.getConfig(mesh)
+		if meshConfig == nil {
 			continue
 		}
 
 		// we only care about meshes with monitoring configs
-		monitoring := mesh.GetMonitoringConfig()
+		monitoring := meshConfig.GetMonitoringConfig()
 		if monitoring == nil {
 			continue
 		}

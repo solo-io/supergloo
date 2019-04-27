@@ -43,13 +43,12 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 type inputClients struct {
 	Pod         skkube.PodClient
 	Namespace   skkube.KubeNamespaceClient
-	Install     v1.InstallClient
 	MeshIngress v1.MeshIngressClient
 	Upstream    gloov1.UpstreamClient
 }
 
-func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
-	return &inputClients{Pod: pod, Namespace: namespace, Install: install, MeshIngress: meshIngress, Upstream: upstream}
+func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
+	return &inputClients{Pod: pod, Namespace: namespace, MeshIngress: meshIngress, Upstream: upstream}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -91,14 +90,6 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := install.Register(); err != nil {
-		return nil, err
-	}
-
 	/*
 		gloo config clients
 	*/
@@ -120,7 +111,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods, namespace, install, meshIngress, upstream),
+		newInputClients(pods, namespace, meshIngress, upstream),
 		newDiscoveryClients(mesh),
 	), nil
 }

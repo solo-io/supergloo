@@ -25,12 +25,6 @@ var _ = Describe("InstallEventLoop", func() {
 
 	BeforeEach(func() {
 
-		installClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		installClient, err := NewInstallClient(installClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		meshClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -43,11 +37,9 @@ var _ = Describe("InstallEventLoop", func() {
 		meshIngressClient, err := NewMeshIngressClient(meshIngressClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewInstallEmitter(installClient, meshClient, meshIngressClient)
+		emitter = NewInstallEmitter(meshClient, meshIngressClient)
 	})
 	It("runs sync function on a new snapshot", func() {
-		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.MeshIngress().Write(NewMeshIngress(namespace, "jerry"), clients.WriteOpts{})

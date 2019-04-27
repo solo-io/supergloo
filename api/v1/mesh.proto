@@ -28,55 +28,39 @@ message Mesh {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
+
+
     oneof mesh_type {
         IstioMesh istio = 1;
-        AwsAppMesh aws_app_mesh = 4;
-        LinkerdMesh linkerd = 5;
+        AwsAppMesh aws_app_mesh = 2;
+        LinkerdMesh linkerd = 3;
     }
 
-    // mtls config specifies configuration options for enabling mutual
-    // tls between pods in this mesh
-    MtlsConfig mtls_config = 2;
-
-    // configuration for propagating stats and metrics from
-    // mesh controllers and sidecars to a centralized datastore
-    // such as prometheus
-    MonitoringConfig monitoring_config = 3;
-
     // object which represents the data mesh discovery finds about a given mesh
-    DiscoveryMetadata discovery_metadata = 6;
+    DiscoveryMetadata discovery = 6;
 }
 
-
-// Generic discovery data shared between different meshes
-message DiscoveryMetadata {
-
-    // list of namespaces which we know are being injected by a given mesh
-    string injected_namespace_label = 1;
-
-    // Whether or not auto-injection is enabled for a given mesh
-    bool enable_auto_inject = 2;
-
-    // version of the mesh which is installed
-    string mesh_version = 3;
-
-    // namespace which the mesh is installed into
-    string installation_namespace = 4;
-
-    // upstreams which point to injected pods in the mesh
-    repeated core.solo.io.ResourceRef upstreams = 5;
-
-    // discovered mtls config of the given mesh
-    MtlsConfig mtls_config = 6;
-}
 
 // Mesh object representing an installed Istio control plane
 message IstioMesh {
-    // where the istio control plane has been installed
-    string installation_namespace = 1;
+    IstioInstall install = 1;
 
-    // version of istio which has been installed
-    string version = 2;
+    MeshConfig config = 2;
+}
+
+message IstioInstall {
+    // Generic installation options
+    InstallOptions options = 1;
+    // enable auto injection of pods
+    bool enable_auto_inject = 3;
+    // install grafana with istio
+    bool grafana = 6;
+
+    // install prometheus with istio
+    bool prometheus = 7;
+
+    // install jaeger with istio
+    bool jaeger = 8;
 }
 
 // Mesh object representing AWS App Mesh
@@ -111,11 +95,67 @@ message AwsAppMesh {
 
 // Mesh object representing an installed Linkerd control plane
 message LinkerdMesh {
-    // where the Linkerd control plane has been installed
-    string installation_namespace = 1;
+    LinkerdInstall install = 1;
 
-    // version of istio which has been installed
-    string version = 2;
+    MeshConfig config = 2;
+}
+
+message LinkerdInstall {
+    // Generic installation options
+    InstallOptions options = 1;
+    // enable auto injection of pods
+    bool enable_auto_inject = 3;
+}
+
+
+
+message InstallOptions {
+    // disables this install
+    // setting this to true will cause supergloo not to
+    // install this mesh, or uninstall an active install
+    bool disabled = 1;
+
+    // where the ingress has been installed
+    string installation_namespace = 2;
+
+    // which version to install
+    // ignored if using custom helm chart
+    string version = 3;
+}
+
+message MeshConfig {
+    // mtls config specifies configuration options for enabling mutual
+    // tls between pods in this mesh
+    MtlsConfig mtls_config = 2;
+
+    // configuration for propagating stats and metrics from
+    // mesh controllers and sidecars to a centralized datastore
+    // such as prometheus
+    MonitoringConfig monitoring_config = 3;
+}
+
+
+
+// Generic discovery data shared between different meshes
+message DiscoveryMetadata {
+
+    // list of namespaces which we know are being injected by a given mesh
+    string injected_namespace_label = 1;
+
+    // Whether or not auto-injection is enabled for a given mesh
+    bool enable_auto_inject = 2;
+
+    // version of the mesh which is installed
+    string mesh_version = 3;
+
+    // namespace which the mesh is installed into
+    string installation_namespace = 4;
+
+    // upstreams which point to injected pods in the mesh
+    repeated core.solo.io.ResourceRef upstreams = 5;
+
+    // discovered mtls config of the given mesh
+    MtlsConfig mtls_config = 6;
 }
 
 // the encryption configuration that will be applied by the role

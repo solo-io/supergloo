@@ -73,7 +73,6 @@ func MeshIngressClientTest(namespace string, client MeshIngressClient, name1, na
 	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
 	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.InstallationNamespace).To(Equal(input.InstallationNamespace))
 	Expect(r1.Meshes).To(Equal(input.Meshes))
 
 	_, err = client.Write(input, clients.WriteOpts{

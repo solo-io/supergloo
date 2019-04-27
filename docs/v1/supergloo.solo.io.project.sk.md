@@ -21,7 +21,6 @@ API Version: `supergloo.solo.io.v1`
 - [Endpoint](../github.com/solo-io/gloo/projects/gloo/api/v1/endpoint.proto.sk#endpoint)
 - [Gateway](../github.com/solo-io/gloo/projects/gateway/api/v1/gateway.proto.sk#gateway)
 - [Ingress](../github.com/solo-io/gloo/projects/ingress/api/v1/ingress.proto.sk#ingress)
-- [Install](../github.com/solo-io/supergloo/api/v1/install.proto.sk#install)
 - [KubeService](../github.com/solo-io/gloo/projects/ingress/api/v1/service.proto.sk#kubeservice)
 - [Mesh](../github.com/solo-io/supergloo/api/v1/mesh.proto.sk#mesh)
 - [MeshGroup](../github.com/solo-io/supergloo/api/v1/mesh.proto.sk#meshgroup)

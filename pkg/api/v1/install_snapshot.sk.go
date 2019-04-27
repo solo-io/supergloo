@@ -10,14 +10,12 @@ import (
 )
 
 type InstallSnapshot struct {
-	Installs      InstallsByNamespace
 	Meshes        MeshesByNamespace
 	Meshingresses MeshingressesByNamespace
 }
 
 func (s InstallSnapshot) Clone() InstallSnapshot {
 	return InstallSnapshot{
-		Installs:      s.Installs.Clone(),
 		Meshes:        s.Meshes.Clone(),
 		Meshingresses: s.Meshingresses.Clone(),
 	}
@@ -25,14 +23,9 @@ func (s InstallSnapshot) Clone() InstallSnapshot {
 
 func (s InstallSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
-		s.hashInstalls(),
 		s.hashMeshes(),
 		s.hashMeshingresses(),
 	)
-}
-
-func (s InstallSnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
 }
 
 func (s InstallSnapshot) hashMeshes() uint64 {
@@ -45,7 +38,6 @@ func (s InstallSnapshot) hashMeshingresses() uint64 {
 
 func (s InstallSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("installs", s.hashInstalls()))
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
 	fields = append(fields, zap.Uint64("meshingresses", s.hashMeshingresses()))
 
@@ -54,18 +46,12 @@ func (s InstallSnapshot) HashFields() []zap.Field {
 
 type InstallSnapshotStringer struct {
 	Version       uint64
-	Installs      []string
 	Meshes        []string
 	Meshingresses []string
 }
 
 func (ss InstallSnapshotStringer) String() string {
 	s := fmt.Sprintf("InstallSnapshot %v\n", ss.Version)
-
-	s += fmt.Sprintf("  Installs %v\n", len(ss.Installs))
-	for _, name := range ss.Installs {
-		s += fmt.Sprintf("    %v\n", name)
-	}
 
 	s += fmt.Sprintf("  Meshes %v\n", len(ss.Meshes))
 	for _, name := range ss.Meshes {
@@ -83,7 +69,6 @@ func (ss InstallSnapshotStringer) String() string {
 func (s InstallSnapshot) Stringer() InstallSnapshotStringer {
 	return InstallSnapshotStringer{
 		Version:       s.Hash(),
-		Installs:      s.Installs.List().NamespacesDotNames(),
 		Meshes:        s.Meshes.List().NamespacesDotNames(),
 		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
 	}

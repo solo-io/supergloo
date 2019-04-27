@@ -15,10 +15,10 @@ func NewInstallSyncer(kubeInstaller kubeinstall.Installer, meshClient v1.MeshCli
 	return common.NewMeshInstallSyncer("istio", meshClient, reporter, isIstioInstall, istioInstaller.EnsureIstioInstall)
 }
 
-func isIstioInstall(install *v1.Install) bool {
-	mesh := install.GetMesh()
-	if mesh == nil {
-		return false
+func isIstioInstall(mesh *v1.Mesh) *v1.InstallOptions {
+	istio := mesh.GetIstio()
+	if istio == nil {
+		return nil
 	}
-	return mesh.GetIstio() != nil
+	return istio.Install.Options
 }

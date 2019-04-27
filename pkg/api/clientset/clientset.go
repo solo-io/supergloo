@@ -50,14 +50,6 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	/*
 		supergloo config clients
 	*/
-	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := install.Register(); err != nil {
-		return nil, err
-	}
-
 	mesh, err := v1.NewMeshClient(clientForCrd(v1.MeshCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
@@ -138,7 +130,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		restConfig,
 		kubeClient,
 		promClient,
-		newSuperglooClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
+		newSuperglooClients(mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -286,7 +278,6 @@ func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCac
 }
 
 type SuperglooClients struct {
-	Install      v1.InstallClient
 	Mesh         v1.MeshClient
 	MeshGroup    v1.MeshGroupClient
 	MeshIngress  v1.MeshIngressClient
@@ -297,10 +288,10 @@ type SuperglooClients struct {
 	Secret       gloov1.SecretClient
 }
 
-func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
+func newSuperglooClients(mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
 	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient,
 	secret gloov1.SecretClient) *SuperglooClients {
-	return &SuperglooClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
+	return &SuperglooClients{Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
 		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret}
 }
 

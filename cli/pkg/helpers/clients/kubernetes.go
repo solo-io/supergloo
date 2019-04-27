@@ -62,38 +62,6 @@ func UseMemoryClients() {
 	fakeKubeClientset = fake.NewSimpleClientset()
 }
 
-func MustInstallClient() v1.InstallClient {
-	client, err := InstallClient()
-	if err != nil {
-		log.Fatalf("failed to create install client: %v", err)
-	}
-	return client
-}
-
-func InstallClient() (v1.InstallClient, error) {
-	if memoryResourceClient != nil {
-		return v1.NewInstallClient(memoryResourceClient)
-	}
-
-	cfg, err := kubeutils.GetConfig("", "")
-	if err != nil {
-		return nil, errors.Wrapf(err, "getting kube config")
-	}
-	sharedCache := kube.NewKubeCache(context.TODO())
-	installClient, err := v1.NewInstallClient(&factory.KubeResourceClientFactory{
-		Crd:         v1.InstallCrd,
-		Cfg:         cfg,
-		SharedCache: sharedCache,
-	})
-	if err != nil {
-		return nil, errors.Wrapf(err, "creating install client")
-	}
-	if err := installClient.Register(); err != nil {
-		return nil, err
-	}
-	return installClient, nil
-}
-
 func MustRoutingRuleClient() v1.RoutingRuleClient {
 	client, err := RoutingRuleClient()
 	if err != nil {

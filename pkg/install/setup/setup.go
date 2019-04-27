@@ -66,25 +66,25 @@ func createInstallSyncers(clientset *clientset.Clientset, installer kubeinstall.
 		istio.NewInstallSyncer(
 			installer,
 			clientset.Supergloo.Mesh,
-			reporter.NewReporter("istio-install-reporter", clientset.Supergloo.Install.BaseClient()),
+			reporter.NewReporter("istio-install-reporter", clientset.Supergloo.Mesh.BaseClient()),
 		),
 		linkerd.NewInstallSyncer(
 			installer,
 			clientset.Kube,
 			clientset.Supergloo.Mesh,
-			reporter.NewReporter("linkerd-install-reporter", clientset.Supergloo.Install.BaseClient()),
+			reporter.NewReporter("linkerd-install-reporter", clientset.Supergloo.Mesh.BaseClient()),
 		),
 		gloo.NewInstallSyncer(
 			installer,
 			clientset.Supergloo.MeshIngress,
-			reporter.NewReporter("gloo-install-reporter", clientset.Supergloo.Install.BaseClient()),
+			reporter.NewReporter("gloo-install-reporter", clientset.Supergloo.MeshIngress.BaseClient()),
 		),
 	}
 }
 
 // start the install event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.InstallSyncers) error {
-	installEmitter := v1.NewInstallEmitter(c.Supergloo.Install, c.Supergloo.Mesh, c.Supergloo.MeshIngress)
+	installEmitter := v1.NewInstallEmitter(c.Supergloo.Mesh, c.Supergloo.MeshIngress)
 	installEventLoop := v1.NewInstallEventLoop(installEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

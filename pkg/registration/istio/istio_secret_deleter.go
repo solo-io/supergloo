@@ -32,11 +32,12 @@ func (d *IstioSecretDeleter) Sync(ctx context.Context, snap *v1.RegistrationSnap
 
 	// delete citadel certs for any istio mesh which specifies a root cert
 	for _, mesh := range snap.Meshes.List() {
-		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
+		istio, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			continue
 		}
-		if mesh.MtlsConfig == nil || !mesh.MtlsConfig.MtlsEnabled || mesh.MtlsConfig.RootCertificate == nil {
+		if istio.Istio.Config.MtlsConfig == nil ||
+			!istio.Istio.Config.MtlsConfig.MtlsEnabled || istio.Istio.Config.MtlsConfig.RootCertificate == nil {
 			continue
 		}
 

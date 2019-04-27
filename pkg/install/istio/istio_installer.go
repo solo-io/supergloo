@@ -13,7 +13,7 @@ import (
 )
 
 type Installer interface {
-	EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error
+	EnsureIstioInstall(ctx context.Context, mesh *v1.Mesh) error
 }
 
 type defaultIstioInstaller struct {
@@ -24,32 +24,26 @@ func newIstioInstaller(kubeInstaller kubeinstall.Installer) *defaultIstioInstall
 	return &defaultIstioInstaller{kubeInstaller: kubeInstaller}
 }
 
-func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error {
+func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, mesh *v1.Mesh) error {
 	ctx = contextutils.WithLogger(ctx, "istio-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
-	installMesh := install.GetMesh()
-	if installMesh == nil {
-		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
-	}
-
-	istio := installMesh.GetIstio()
+	istio := mesh.GetIstio()
 	if istio == nil {
-		return errors.Errorf("%v: invalid install type, only istio supported currently", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, only istio supported currently", mesh.GetMetadata().Ref().Key())
 	}
 
-	logger.Infof("syncing istio install %v with config %v", install.Metadata.Ref().Key(), istio)
+	logger.Infof("syncing istio install %v with config %v", mesh.GetMetadata().Ref().Key(), istio)
 
-	if install.Disabled {
-		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
-		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(install)); err != nil {
+	if istio.Install.Options.Disabled {
+		logger.Infof("purging resources for disabled install %v", mesh.GetMetadata().Ref().Key())
+		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(mesh)); err != nil {
 			return errors.Wrapf(err, "uninstalling istio")
 		}
 		return nil
 	}
 
-	mesh := util.GetMeshForInstall(install, meshes)
-	manifests, err := makeManifestsForInstall(ctx, install, mesh, istio)
+	manifests, err := makeManifestsForInstall(ctx, mesh, istio)
 	if err != nil {
 		return err
 	}
@@ -59,45 +53,45 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 		return err
 	}
 
-	installNamespace := install.InstallationNamespace
+	installNamespace := istio.Install.Options.InstallationNamespace
 
 	logger.Infof("installing istio with options: %#v", istio)
-	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
+	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(mesh)); err != nil {
 		return errors.Wrapf(err, "reconciling install resources failed")
 	}
 
 	return nil
 }
 
-func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.Mesh, istio *v1.IstioInstall) (helmchart.Manifests, error) {
-	if install.InstallationNamespace == "" {
+func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.IstioMesh) (helmchart.Manifests, error) {
+	if istio.Install.Options.InstallationNamespace == "" {
 		return nil, errors.Errorf("must provide installation namespace")
 	}
 
 	// self-signed cert is true if a rootcert is not set on either the install or the mesh
 	// mesh takes precedence because it has been created from install, the expected place for config
 	// to be updated after install
-	selfSignedCert := istio.CustomRootCert == nil
+	selfSignedCert := istio.Config.MtlsConfig.RootCertificate == nil
 	if mesh != nil {
-		selfSignedCert = mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil
+		selfSignedCert = istio.Config.MtlsConfig != nil && istio.Config.MtlsConfig.RootCertificate == nil
 	}
 	mtlsOptions := mtlsInstallOptions{
-		Enabled: istio.EnableMtls,
+		Enabled: istio.Config.MtlsConfig.MtlsEnabled,
 		// self signed cert is true if using the buildtin istio cert
 		SelfSignedCert: selfSignedCert,
 	}
 	autoInjectOptions := autoInjectInstallOptions{
-		Enabled: istio.EnableAutoInject,
+		Enabled: istio.Install.EnableAutoInject,
 	}
 	observabilityOptions := observabilityInstallOptions{
-		EnableGrafana:    istio.InstallGrafana,
-		EnablePrometheus: istio.InstallPrometheus,
-		EnableJaeger:     istio.InstallJaeger,
+		EnableGrafana:    istio.Install.Grafana,
+		EnablePrometheus: istio.Install.Prometheus,
+		EnableJaeger:     istio.Install.Jaeger,
 	}
 
-	installVersion, ok := supportedIstioVersions[istio.Version]
+	installVersion, ok := supportedIstioVersions[istio.Install.Options.Version]
 	if !ok {
-		return nil, errors.Errorf("%v is not a suppported istio version. available: %v", istio.Version, supportedIstioVersions)
+		return nil, errors.Errorf("%v is not a suppported istio version. available: %v", istio.Install.Options.Version, supportedIstioVersions)
 	}
 
 	chartParams := helmChartParams{
@@ -111,7 +105,7 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 	if err != nil {
 		return nil, errors.Wrapf(err, "rendering helm values")
 	}
-	installNamespace := install.InstallationNamespace
+	installNamespace := istio.Install.Options.InstallationNamespace
 
 	manifests, err := helmchart.RenderManifests(ctx,
 		installVersion.chartPath,

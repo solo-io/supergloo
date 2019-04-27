@@ -23,43 +23,37 @@ func NewMeshInstallSyncer(name string, meshClient v1.MeshClient, reporter report
 	return &MeshInstallSyncer{name: name, meshClient: meshClient, reporter: reporter, isOurInstallType: isOurInstallType, ensureMeshInstall: ensureMeshInstall}
 }
 
-type IsInstallType func(install *v1.Install) bool
-type EnsureMeshInstall func(ctx context.Context, install *v1.Install, meshes v1.MeshList) error
+type IsInstallType func(mesh *v1.Mesh) *v1.InstallOptions
+type EnsureMeshInstall func(ctx context.Context, mesh *v1.Mesh) error
 
 func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
 		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("ingresses", len(snap.Meshingresses.List())),
-		zap.Int("installs", len(snap.Installs.List())),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	resourceErrs := make(reporter.ResourceErrors)
 
-	installs := snap.Installs.List()
 	meshes := snap.Meshes.List()
 
 	// split installs by which are active, inactive
 	// if more than 1 active install of a single mesh type, they get errored
-	var enabledInstalls, disabledInstalls v1.InstallList
-	for _, install := range installs {
-		if install.GetMesh() == nil {
-			continue
-		}
-		if s.isOurInstallType(install) {
-			if install.Disabled {
-				disabledInstalls = append(disabledInstalls, install)
+	var enabledInstalls, disabledInstalls v1.MeshList
+	for _, mesh := range meshes {
+		if options := s.isOurInstallType(mesh); options != nil {
+			if options.Disabled {
+				disabledInstalls = append(disabledInstalls, mesh)
 			} else {
-				enabledInstalls = append(enabledInstalls, install)
+				enabledInstalls = append(enabledInstalls, mesh)
 			}
 		}
 	}
 	// perform uninstalls first
 	for _, in := range disabledInstalls {
 		logger.Infof("ensuring install %v is disabled", in.Metadata.Ref())
-		if err := s.ensureMeshInstall(ctx, in, meshes); err != nil {
+		if err := s.ensureMeshInstall(ctx, in); err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "uninstall failed"))
 		} else {
 			resourceErrs.Accept(in)
@@ -83,7 +77,7 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 }
 
 func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
-	enabledInstalls v1.InstallList,
+	enabledInstalls v1.MeshList,
 	meshes v1.MeshList,
 	resourceErrs reporter.ResourceErrors) {
 
@@ -91,7 +85,7 @@ func (s *MeshInstallSyncer) handleActiveInstalls(ctx context.Context,
 	case len(enabledInstalls) == 1:
 		in := enabledInstalls[0]
 		contextutils.LoggerFrom(ctx).Infof("ensuring install %v is enabled", in.Metadata.Ref())
-		err := s.ensureMeshInstall(ctx, in, meshes)
+		err := s.ensureMeshInstall(ctx, in)
 		if err != nil {
 			resourceErrs.AddError(in, errors.Wrapf(err, "install failed"))
 			return

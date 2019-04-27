@@ -10,8 +10,6 @@ import (
 	"github.com/solo-io/go-utils/installutils/kubeinstall"
 	"github.com/solo-io/supergloo/pkg/util"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -24,7 +22,7 @@ const (
 )
 
 type Installer interface {
-	EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error)
+	EnsureGlooInstall(ctx context.Context, mesh *v1.MeshIngress) error
 }
 
 type glooInstaller struct {
@@ -35,39 +33,33 @@ func newGlooInstaller(kubeInstaller kubeinstall.Installer) *glooInstaller {
 	return &glooInstaller{kubeInstaller: kubeInstaller}
 }
 
-func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList, meshIngresses v1.MeshIngressList) (*v1.MeshIngress, error) {
+func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, ingress *v1.MeshIngress) error {
 	ctx = contextutils.WithLogger(ctx, "gloo-ingress-installer")
 	logger := contextutils.LoggerFrom(ctx)
 
-	installIngress := install.GetIngress()
-	if installIngress == nil {
-		return nil, errors.Errorf("non ingress install detected in ingress install, %v", install.Metadata.Ref())
+	gloo := ingress.GetGloo()
+	if gloo == nil {
+		return errors.Errorf("%v: invalid install type, only gloo ingress supported currently", ingress.Metadata.Ref().Key())
 	}
 
-	glooInstall := installIngress.GetGloo()
-	if glooInstall == nil {
-		return nil, errors.Errorf("%v: invalid install type, only gloo ingress supported currently", install.Metadata.Ref())
-	}
+	logger.Infof("syncing gloo install %v with config %v", ingress.Metadata.Ref().Key(), gloo)
 
-	logger.Infof("syncing gloo install %v with config %v", install.Metadata.Ref(), glooInstall)
-
-	if install.Disabled {
-		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
-		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(install)); err != nil {
-			return nil, errors.Wrapf(err, "uninstalling gloo")
+	if gloo.Install.Options.Disabled {
+		logger.Infof("purging resources for disabled install %v", ingress.Metadata.Ref().Key())
+		if err := i.kubeInstaller.PurgeResources(ctx, util.LabelsForResource(ingress)); err != nil {
+			return errors.Wrapf(err, "uninstalling gloo")
 		}
-		installIngress.InstalledIngress = nil
-		return nil, nil
+		return nil
 	}
 
-	manifests, err := makeManifestsForInstall(ctx, install, glooInstall)
+	manifests, err := makeManifestsForInstall(ctx, ingress, gloo.Install)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	rawResources, err := manifests.ResourceList()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// filter out upstreams, supergloo installs them
@@ -78,77 +70,29 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 		return false
 	})
 
-	installNamespace := install.InstallationNamespace
+	installNamespace := gloo.Install.Options.InstallationNamespace
 
-	var meshIngress *v1.MeshIngress
-	if installIngress.InstalledIngress != nil {
-		var err error
-		meshIngress, err = meshIngresses.Find(installIngress.InstalledIngress.Strings())
-		if err != nil {
-			return nil, errors.Wrapf(err, "installed ingress not found")
-		}
+	logger.Infof("installing gloo with options: %#v", gloo)
+	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(ingress)); err != nil {
+		return errors.Wrapf(err, "reconciling install resources failed")
 	}
 
-	var meshRefs []*core.ResourceRef
-	for _, glooMesh := range glooInstall.Meshes {
-		mesh, err := meshes.Find(glooMesh.Namespace, glooMesh.Name)
-		if err != nil {
-			return nil, errors.Wrapf(err, "target mesh not found")
-		}
-		ref := mesh.Metadata.Ref()
-		meshRefs = append(meshRefs, &ref)
-	}
-
-	logger.Infof("installing gloo with options: %#v", glooInstall)
-	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
-		return nil, errors.Wrapf(err, "reconciling install resources failed")
-	}
-
-	meshIngress = createOrUpdateMeshIngress(meshIngress, install, glooInstall, meshRefs)
-
-	// caller should expect the install to have been modified
-	ref := meshIngress.Metadata.Ref()
-	installIngress.InstalledIngress = &ref
-
-	return meshIngress, nil
+	return nil
 }
 
-func createOrUpdateMeshIngress(meshIngress *v1.MeshIngress, install *v1.Install, glooInstall *v1.GlooInstall, meshRefs []*core.ResourceRef) *v1.MeshIngress {
-
-	if meshIngress != nil {
-		meshIngress.Meshes = meshRefs
-		meshIngress.InstallationNamespace = install.InstallationNamespace
-		meshIngress.MeshIngressType = &v1.MeshIngress_Gloo{
-			Gloo: &v1.GlooMeshIngress{},
-		}
-		return meshIngress
-	}
-	return &v1.MeshIngress{
-		Metadata: core.Metadata{
-			Namespace: install.Metadata.Namespace,
-			Name:      install.Metadata.Name,
-		},
-		InstallationNamespace: install.InstallationNamespace,
-		MeshIngressType: &v1.MeshIngress_Gloo{
-			Gloo: &v1.GlooMeshIngress{},
-		},
-		Meshes: meshRefs,
-	}
-}
-
-func makeManifestsForInstall(ctx context.Context, install *v1.Install, gloo *v1.GlooInstall) (helmchart.Manifests, error) {
-	if install.InstallationNamespace == "" {
+func makeManifestsForInstall(ctx context.Context, ingress *v1.MeshIngress, gloo *v1.GlooInstall) (helmchart.Manifests, error) {
+	if gloo.Options.InstallationNamespace == "" {
 		return nil, errors.Errorf("must provide installation namespace")
 	}
-	if gloo.Version == "" {
+	if gloo.Options.InstallationNamespace == "" {
 		return nil, errors.Errorf("must provide gloo version")
 	}
 
 	manifests, err := helmchart.RenderManifests(ctx,
-		glooManifestUrl(gloo.Version),
+		glooManifestUrl(gloo.Options.Version),
 		helmValues,
 		"gloo", // release name used in some manifests for rendering
-		install.InstallationNamespace,
+		gloo.Options.InstallationNamespace,
 		"", // use default kube version
 	)
 	if err != nil {

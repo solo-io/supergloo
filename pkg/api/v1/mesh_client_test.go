@@ -73,9 +73,7 @@ func MeshClientTest(namespace string, client MeshClient, name1, name2, name3 str
 	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
 	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
 	Expect(r1.Status).To(Equal(input.Status))
-	Expect(r1.MtlsConfig).To(Equal(input.MtlsConfig))
-	Expect(r1.MonitoringConfig).To(Equal(input.MonitoringConfig))
-	Expect(r1.DiscoveryMetadata).To(Equal(input.DiscoveryMetadata))
+	Expect(r1.Discovery).To(Equal(input.Discovery))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

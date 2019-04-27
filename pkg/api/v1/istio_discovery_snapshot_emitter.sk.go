@@ -46,21 +46,19 @@ func init() {
 type IstioDiscoveryEmitter interface {
 	Register() error
 	Mesh() MeshClient
-	Install() InstallClient
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	MeshPolicy() istio_authentication_v1alpha1.MeshPolicyClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *IstioDiscoverySnapshot, <-chan error, error)
 }
 
-func NewIstioDiscoveryEmitter(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
-	return NewIstioDiscoveryEmitterWithEmit(meshClient, installClient, podClient, upstreamClient, meshPolicyClient, make(chan struct{}))
+func NewIstioDiscoveryEmitter(meshClient MeshClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient) IstioDiscoveryEmitter {
+	return NewIstioDiscoveryEmitterWithEmit(meshClient, podClient, upstreamClient, meshPolicyClient, make(chan struct{}))
 }
 
-func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient InstallClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
+func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, meshPolicyClient istio_authentication_v1alpha1.MeshPolicyClient, emit <-chan struct{}) IstioDiscoveryEmitter {
 	return &istioDiscoveryEmitter{
 		mesh:       meshClient,
-		install:    installClient,
 		pod:        podClient,
 		upstream:   upstreamClient,
 		meshPolicy: meshPolicyClient,
@@ -71,7 +69,6 @@ func NewIstioDiscoveryEmitterWithEmit(meshClient MeshClient, installClient Insta
 type istioDiscoveryEmitter struct {
 	forceEmit  <-chan struct{}
 	mesh       MeshClient
-	install    InstallClient
 	pod        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	upstream   gloo_solo_io.UpstreamClient
 	meshPolicy istio_authentication_v1alpha1.MeshPolicyClient
@@ -79,9 +76,6 @@ type istioDiscoveryEmitter struct {
 
 func (c *istioDiscoveryEmitter) Register() error {
 	if err := c.mesh.Register(); err != nil {
-		return err
-	}
-	if err := c.install.Register(); err != nil {
 		return err
 	}
 	if err := c.pod.Register(); err != nil {
@@ -98,10 +92,6 @@ func (c *istioDiscoveryEmitter) Register() error {
 
 func (c *istioDiscoveryEmitter) Mesh() MeshClient {
 	return c.mesh
-}
-
-func (c *istioDiscoveryEmitter) Install() InstallClient {
-	return c.install
 }
 
 func (c *istioDiscoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
@@ -138,12 +128,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		namespace string
 	}
 	meshChan := make(chan meshListWithNamespace)
-	/* Create channel for Install */
-	type installListWithNamespace struct {
-		list      InstallList
-		namespace string
-	}
-	installChan := make(chan installListWithNamespace)
 	/* Create channel for Pod */
 	type podListWithNamespace struct {
 		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
@@ -169,17 +153,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
-		}(namespace)
-		/* Setup namespaced watch for Install */
-		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Install watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
 		}(namespace)
 		/* Setup namespaced watch for Pod */
 		podNamespacesChan, podErrs, err := c.pod.Watch(namespace, opts)
@@ -215,12 +188,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 					case <-ctx.Done():
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
-					}
-				case installList := <-installNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
 					}
 				case podList := <-podNamespacesChan:
 					select {
@@ -287,13 +254,6 @@ func (c *istioDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients
 				meshList := meshNamespacedList.list
 
 				currentSnapshot.Meshes[namespace] = meshList
-			case installNamespacedList := <-installChan:
-				record()
-
-				namespace := installNamespacedList.namespace
-				installList := installNamespacedList.list
-
-				currentSnapshot.Installs[namespace] = installList
 			case podNamespacedList := <-podChan:
 				record()
 

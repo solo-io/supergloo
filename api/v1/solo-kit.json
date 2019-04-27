@@ -51,10 +51,6 @@
     ],
     "install.supergloo.solo.io": [
       {
-        "name": "Install",
-        "package": "supergloo.solo.io"
-      },
-      {
         "name": "Mesh",
         "package": "supergloo.solo.io"
       },
@@ -77,19 +73,11 @@
       {
         "name": "Pod",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
-        "name": "Install",
-        "package": "supergloo.solo.io"
       }
     ],
     "istioDiscovery.supergloo.solo.io": [
       {
         "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Install",
         "package": "supergloo.solo.io"
       },
       {
@@ -108,10 +96,6 @@
     "linkerdDiscovery.supergloo.solo.io": [
       {
         "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Install",
         "package": "supergloo.solo.io"
       },
       {

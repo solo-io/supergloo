@@ -7,6 +7,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+	"github.com/solo-io/supergloo/pkg/util"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -109,7 +110,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		if istio == nil {
 			continue
 		}
-		writeNamespace := istio.InstallationNamespace
+		writeNamespace := util.GetMeshInstallatioNamespace(mesh)
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
 			writeNamespace: writeNamespace,
@@ -146,7 +147,13 @@ func (t *translator) translateMesh(
 	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
-	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
+
+	istioMesh := input.mesh.GetIstio()
+	if istioMesh == nil {
+		return nil, errors.Errorf("wrong mesh type passed into translate mesh function, requires istio")
+	}
+
+	mtlsEnabled := istioMesh.Config.MtlsConfig != nil && istioMesh.Config.MtlsConfig.MtlsEnabled
 	rules := input.rules
 
 	destinationHostsPortsAndLabels, err := utils.LabelsAndPortsByHost(upstreams)
@@ -206,8 +213,8 @@ func (t *translator) translateMesh(
 	}
 
 	var rootCert *v1.TlsSecret
-	if input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.RootCertificate != nil {
-		tlsSecret, err := tlsSecrets.Find(input.mesh.MtlsConfig.RootCertificate.Strings())
+	if istioMesh.Config.MtlsConfig != nil && istioMesh.Config.MtlsConfig.RootCertificate != nil {
+		tlsSecret, err := tlsSecrets.Find(istioMesh.Config.MtlsConfig.RootCertificate.Strings())
 		if err != nil {
 			return nil, errors.Wrapf(err, "finding tls secret for mesh root cert")
 		}

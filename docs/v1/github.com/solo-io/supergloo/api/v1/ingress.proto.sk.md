@@ -13,6 +13,8 @@ weight: 5
 
 - [MeshIngress](#meshingress) **Top-Level Resource**
 - [GlooMeshIngress](#gloomeshingress)
+- [GlooInstall](#glooinstall)
+- [MeshIngressConfig](#meshingressconfig)
   
 
 
@@ -35,7 +37,6 @@ if necessary, to enable proxying services which are using mTLS for communication
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
 "gloo": .supergloo.solo.io.GlooMeshIngress
-"installationNamespace": string
 "meshes": []core.solo.io.ResourceRef
 
 ```
@@ -45,7 +46,6 @@ if necessary, to enable proxying services which are using mTLS for communication
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk#metadata) | Metadata contains the object metadata for this resource |  |
 | `gloo` | [.supergloo.solo.io.GlooMeshIngress](../ingress.proto.sk#gloomeshingress) |  |  |
-| `installationNamespace` | `string` | where the ingress has been installed |  |
 | `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | reference to the Mesh(s) that this ingress is acting upon enable the ingress to route to services within these mTLS-enabled meshes |  |
 
 
@@ -56,6 +56,42 @@ if necessary, to enable proxying services which are using mTLS for communication
 
  
 Mesh ingress object for gloo
+
+```yaml
+"install": .supergloo.solo.io.GlooInstall
+"config": .supergloo.solo.io.MeshIngressConfig
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `install` | [.supergloo.solo.io.GlooInstall](../ingress.proto.sk#glooinstall) |  |  |
+| `config` | [.supergloo.solo.io.MeshIngressConfig](../ingress.proto.sk#meshingressconfig) |  |  |
+
+
+
+
+---
+### GlooInstall
+
+
+
+```yaml
+"options": .supergloo.solo.io.InstallOptions
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `options` | [.supergloo.solo.io.InstallOptions](../mesh.proto.sk#installoptions) | Generic installation options |  |
+
+
+
+
+---
+### MeshIngressConfig
+
+
 
 ```yaml
 

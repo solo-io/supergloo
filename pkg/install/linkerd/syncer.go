@@ -21,12 +21,12 @@ func NewInstallSyncer(kubeInstaller kubeinstall.Installer, kubeClient kubernetes
 	return common.NewMeshInstallSyncer("linkerd", meshClient, reporter, isLinkerdInstall, linkerdInstaller{kubeInstaller: kubeInstaller, kubeClient: kubeClient}.ensureLinkerdInstall)
 }
 
-func isLinkerdInstall(install *v1.Install) bool {
-	mesh := install.GetMesh()
-	if mesh == nil {
-		return false
+func isLinkerdInstall(mesh *v1.Mesh) *v1.InstallOptions {
+	linkerd := mesh.GetLinkerd()
+	if linkerd == nil {
+		return nil
 	}
-	return mesh.GetLinkerd() != nil
+	return linkerd.Install.Options
 }
 
 type linkerdInstaller struct {
@@ -34,32 +34,28 @@ type linkerdInstaller struct {
 	kubeClient    kubernetes.Interface
 }
 
-func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, install *v1.Install, meshes v1.MeshList) error {
-	installMesh := install.GetMesh()
-	if installMesh == nil {
-		return errors.Errorf("%v: invalid install type, must be a mesh", install.Metadata.Ref())
-	}
-
-	linkerd := installMesh.GetLinkerd()
+func (i linkerdInstaller) ensureLinkerdInstall(ctx context.Context, mesh *v1.Mesh) error {
+	linkerd := mesh.GetLinkerd()
 	if linkerd == nil {
-		return errors.Errorf("%v: invalid install type, only linkerd supported currently", install.Metadata.Ref())
+		return errors.Errorf("%v: invalid install type, only linkerd supported currently", mesh.Metadata.Ref().Key())
 	}
 
 	logger := contextutils.LoggerFrom(ctx)
 
-	logger.Infof("syncing linkerd install %v with config %v", install.Metadata.Ref().Key(), linkerd)
+	logger.Infof("syncing linkerd install %v with config %v", mesh.Metadata.Ref().Key(), linkerd)
 
-	installLabels := util.LabelsForResource(install)
+	installLabels := util.LabelsForResource(mesh)
 
-	if install.Disabled {
-		logger.Infof("purging resources for disabled install %v", install.Metadata.Ref())
+	if linkerd.Install.Options.Disabled {
+		logger.Infof("purging resources for disabled install %v", mesh.Metadata.Ref().Key())
 		if err := i.kubeInstaller.PurgeResources(ctx, installLabels); err != nil {
 			return errors.Wrapf(err, "uninstalling linkerd")
 		}
 		return nil
 	}
 
-	opts := newInstallOpts(linkerd.Version, install.InstallationNamespace, linkerd.EnableMtls, linkerd.EnableAutoInject)
+	opts := newInstallOpts(linkerd.Install.Options.Version, linkerd.Install.Options.InstallationNamespace,
+		linkerd.Config.MtlsConfig.MtlsEnabled, linkerd.Install.EnableAutoInject)
 
 	if err := opts.install(ctx, i.kubeInstaller, installLabels, i.kubeClient); err != nil {
 		return errors.Wrapf(err, "executing linkerd install")

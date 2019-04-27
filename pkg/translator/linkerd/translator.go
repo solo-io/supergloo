@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/linkerd/linkerd2/pkg/profiles"
+	"github.com/solo-io/supergloo/pkg/util"
 	"sigs.k8s.io/yaml"
 
 	linkerdv1alpha1 "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
@@ -83,12 +84,13 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	}
 
 	for _, mesh := range meshes {
-		linkerd, ok := mesh.MeshType.(*v1.Mesh_Linkerd)
-		if !ok {
+		linkerd := mesh.GetLinkerd()
+		if linkerd == nil {
 			// we only want linkerd meshes
 			continue
 		}
-		writeNamespace := linkerd.Linkerd.InstallationNamespace
+
+		writeNamespace := util.GetMeshInstallatioNamespace(mesh)
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
 			writeNamespace: writeNamespace,

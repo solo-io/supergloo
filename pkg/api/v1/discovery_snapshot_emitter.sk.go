@@ -44,18 +44,16 @@ func init() {
 type DiscoveryEmitter interface {
 	Register() error
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	Install() InstallClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, installClient InstallClient) DiscoveryEmitter {
-	return NewDiscoveryEmitterWithEmit(podClient, installClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:       podClient,
-		install:   installClient,
 		forceEmit: emit,
 	}
 }
@@ -63,14 +61,10 @@ func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v
 type discoveryEmitter struct {
 	forceEmit <-chan struct{}
 	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	install   InstallClient
 }
 
 func (c *discoveryEmitter) Register() error {
 	if err := c.pod.Register(); err != nil {
-		return err
-	}
-	if err := c.install.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -78,10 +72,6 @@ func (c *discoveryEmitter) Register() error {
 
 func (c *discoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
-}
-
-func (c *discoveryEmitter) Install() InstallClient {
-	return c.install
 }
 
 func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
@@ -106,12 +96,6 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)
-	/* Create channel for Install */
-	type installListWithNamespace struct {
-		list      InstallList
-		namespace string
-	}
-	installChan := make(chan installListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Pod */
@@ -125,17 +109,6 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
 		}(namespace)
-		/* Setup namespaced watch for Install */
-		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Install watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
-		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -148,12 +121,6 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 					case <-ctx.Done():
 						return
 					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
-					}
-				case installList := <-installNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
 					}
 				}
 			}
@@ -197,13 +164,6 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 				podList := podNamespacedList.list
 
 				currentSnapshot.Pods[namespace] = podList
-			case installNamespacedList := <-installChan:
-				record()
-
-				namespace := installNamespacedList.namespace
-				installList := installNamespacedList.list
-
-				currentSnapshot.Installs[namespace] = installList
 			}
 		}
 	}()

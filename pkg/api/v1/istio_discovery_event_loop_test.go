@@ -35,12 +35,6 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		meshClient, err := NewMeshClient(meshClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		installClientFactory := &factory.MemoryResourceClientFactory{
-			Cache: memory.NewInMemoryResourceCache(),
-		}
-		installClient, err := NewInstallClient(installClientFactory)
-		Expect(err).NotTo(HaveOccurred())
-
 		podClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
@@ -59,12 +53,10 @@ var _ = Describe("IstioDiscoveryEventLoop", func() {
 		meshPolicyClient, err := istio_authentication_v1alpha1.NewMeshPolicyClient(meshPolicyClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewIstioDiscoveryEmitter(meshClient, installClient, podClient, upstreamClient, meshPolicyClient)
+		emitter = NewIstioDiscoveryEmitter(meshClient, podClient, upstreamClient, meshPolicyClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
-		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
