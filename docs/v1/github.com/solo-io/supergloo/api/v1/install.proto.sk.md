@@ -96,6 +96,8 @@ Installation options for Istio
 "installGrafana": bool
 "installPrometheus": bool
 "installJaeger": bool
+"enableIngress": bool
+"enableEgress": bool
 
 ```
 
@@ -108,6 +110,8 @@ Installation options for Istio
 | `installGrafana` | `bool` | install grafana with istio |  |
 | `installPrometheus` | `bool` | install prometheus with istio |  |
 | `installJaeger` | `bool` | install jaeger with istio |  |
+| `enableIngress` | `bool` | enable ingress gateway |  |
+| `enableEgress` | `bool` | enable egress gateway |  |
 
 
 

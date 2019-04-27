@@ -18,8 +18,10 @@ supergloo install istio [flags]
 
 ```
       --auto-inject                     enable auto-injection? (default true)
+      --egress                          enable egress gateway?
       --grafana                         add grafana to the install?
   -h, --help                            help for istio
+      --ingress                         enable ingress gateway?
       --installation-namespace string   which namespace to install Istio into? (default "istio-system")
       --jaeger                          add jaeger to the install?
       --mtls                            enable mtls? (default true)
