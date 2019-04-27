@@ -559,6 +559,14 @@
   revision = "ff9851476e985a4f27ed846d6babd7b24b763da5"
 
 [[projects]]
+  digest = "1:d5f97fc268267ec1b61c3453058c738246fc3e746f14b1ae25161513b7367b0c"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c5c6c98bc25355028a63748a498942a6398ccd22"
+  version = "v1.7.1"
+
+[[projects]]
   branch = "master"
   digest = "1:86c1210529e69d69860f2bb3ee9ccce0b595aa3f9165e7dd1388e5c612915888"
   name = "github.com/gregjones/httpcache"
@@ -2457,6 +2465,7 @@
     "github.com/golang/mock/gomock",
     "github.com/golang/protobuf/ptypes",
     "github.com/google/go-github/github",
+    "github.com/gorilla/mux",
     "github.com/hashicorp/go-multierror",
     "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
@@ -2533,7 +2542,6 @@
     "github.com/solo-io/solo-kit/pkg/code-generator/docgen/options",
     "github.com/solo-io/solo-kit/pkg/code-generator/model",
     "github.com/solo-io/solo-kit/pkg/errors",
-    "github.com/solo-io/solo-kit/pkg/utils/errutils",
     "github.com/solo-io/solo-kit/pkg/utils/hashutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/pkg/utils/log",
@@ -2543,10 +2551,6 @@
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "github.com/vektah/gqlgen/neelance/errors",
-    "go.opencensus.io/stats",
-    "go.opencensus.io/stats/view",
-    "go.opencensus.io/tag",
-    "go.opencensus.io/trace",
     "go.uber.org/zap",
     "golang.org/x/oauth2",
     "gopkg.in/ini.v1",
