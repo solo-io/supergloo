@@ -5,5 +5,5 @@
 set -ex
 
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"/../..
-make -C ${BASEDIR} supergloo-docker
+make -C ${BASEDIR} docker
 docker save quay.io/solo-io/supergloo:dev | ( eval $(minikube docker-env) && docker load)

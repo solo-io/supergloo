@@ -95,6 +95,12 @@ message IstioInstall {
     // install jaeger with istio
     bool install_jaeger = 8;
 
+    // enable ingress gateway
+    bool enable_ingress = 10;
+
+    // enable egress gateway
+    bool enable_egress = 11;
+
 }
 
 // Installation options for Linkerd
