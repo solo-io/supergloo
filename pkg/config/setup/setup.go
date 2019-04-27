@@ -3,6 +3,8 @@ package setup
 import (
 	"context"
 
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
+
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
@@ -60,7 +62,7 @@ func createLinkerdConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1
 	translator := linkerdtranslator.NewTranslator(linkerdplugins.Plugins(cs.Kube))
 
 	reconcilers := linkerd.NewLinkerdReconcilers(map[string]string{"created_by": "linkerd-config-syncer"},
-		v1.NewServiceProfileReconciler(clients.ServiceProfile),
+		linkerdv1.NewServiceProfileReconciler(clients.ServiceProfile),
 	)
 
 	newReporter := makeReporter("linkerd-config-reporter", cs.Supergloo)

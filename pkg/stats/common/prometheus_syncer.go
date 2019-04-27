@@ -119,12 +119,7 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 			scrapeConfigsToAdd = append(scrapesForMesh, scrapeConfigsToAdd...)
 		}
 
-		// render config struct from solo kit resource
-		promCfg, err := prometheus.ConfigFromResource(originalCfg)
-		if err != nil {
-			return errors.Wrapf(err, "internal error: failed converting %v to prometheus config. cannot sync",
-				cfgRef)
-		}
+		promCfg := originalCfg.Clone().(*prometheusv1.PrometheusConfig)
 
 		// remove all scrape configs and start fresh
 		removed := promCfg.RemoveScrapeConfigs(fmt.Sprintf("%v-%v", superGlooScrapePrefix, s.syncerName))
@@ -137,37 +132,17 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 			continue
 		}
 
-		// compare with duplicate of original config, only update if diff
-		// TODO (ilackarms): investigate a better way to duplicate promCfgs
-		originalPromCfg, err := prometheus.ConfigFromResource(originalCfg)
-		if err != nil {
-			return errors.Wrapf(err, "internal error: failed converting %v to prometheus config. cannot sync",
-				cfgRef)
-		}
-		if hashutils.HashAll(promCfg) == hashutils.HashAll(originalPromCfg) {
+		if hashutils.HashAll(promCfg.ScrapeConfigs) == hashutils.HashAll(originalCfg.PrometheusConfig) {
 			continue
 		}
 
-		// create a configmap from the new prom cfg and save it to storage
-		promConfigMap, err := prometheus.ConfigToResource(promCfg)
-		if err != nil {
-			return errors.Wrapf(err, "internal error: failed converting %v from prometheus config to configmap. cannot sync",
-				cfgRef)
-		}
-
-		// copy metadata for writing
-		promConfigMap.Metadata = originalCfg.Metadata
-		// copy alerts and rules configuration - we currently ignore
-		promConfigMap.Alerts = originalCfg.Alerts
-		promConfigMap.Rules = originalCfg.Rules
-
 		contextutils.LoggerFrom(ctx).Infof("prometheus %v syncing %v prometheus scrape configs", cfgRef.Key(), added)
 
-		if _, err := s.client.Write(promConfigMap, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
+		if _, err := s.client.Write(promCfg, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
 			return errors.Wrapf(err, "writing updated prometheus config to storage")
 		}
 
-		updatedPromConfigs = append(updatedPromConfigs, promConfigMap.Metadata.Ref())
+		updatedPromConfigs = append(updatedPromConfigs, promCfg.Metadata.Ref())
 	}
 
 	return s.bouncePodsWithConfigs(ctx, updatedPromConfigs)
