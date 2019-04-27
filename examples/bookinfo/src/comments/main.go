@@ -78,7 +78,7 @@ func replyWithComment(w http.ResponseWriter, r *http.Request) error {
 
 func comments(id string) comment {
 	return comment{
-		Author:   fmt.Sprintf("lurker %v", id),
+		Author:   fmt.Sprintf("user %v", id),
 		Time:     fmt.Sprintf("%v hours ago", id),
 		Likes:    6,
 		Dislikes: 3,
@@ -87,10 +87,11 @@ func comments(id string) comment {
 }
 
 var commentContents = []string{
-	`You're talking to the guy who build his own programming language, his own stdlib, his own game engine, his own C compiler, his own package manager, etc. Does that *really* surprise you? ;)`,
-	`“If you try really hard, you *can* write safe code in C/C++” is the flat-earth movement of software engineering`,
-	`The use cases for generics are rather limited. Collections, yes. Beyond that, it's usually someone getting cute.`,
-	`Learn C programming and the rest will come`,
+	`i really had to say it was a great book, a lot of fun, very exciting`,
+	`the book was good and i would read it again`,
+	`to be honest i didn't really read it but i heard it was good'`,
+	`i like the book'`,
+	`good`,
 }
 
 func randComment() string {
