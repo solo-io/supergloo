@@ -44,17 +44,19 @@ func init() {
 type DiscoveryEmitter interface {
 	Register() error
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	ConfigMap() ConfigMapClient
 	Install() InstallClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, installClient InstallClient) DiscoveryEmitter {
-	return NewDiscoveryEmitterWithEmit(podClient, installClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient ConfigMapClient, installClient InstallClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, configMapClient, installClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient ConfigMapClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:       podClient,
+		configMap: configMapClient,
 		install:   installClient,
 		forceEmit: emit,
 	}
@@ -63,11 +65,15 @@ func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v
 type discoveryEmitter struct {
 	forceEmit <-chan struct{}
 	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	configMap ConfigMapClient
 	install   InstallClient
 }
 
 func (c *discoveryEmitter) Register() error {
 	if err := c.pod.Register(); err != nil {
+		return err
+	}
+	if err := c.configMap.Register(); err != nil {
 		return err
 	}
 	if err := c.install.Register(); err != nil {
@@ -78,6 +84,10 @@ func (c *discoveryEmitter) Register() error {
 
 func (c *discoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
+}
+
+func (c *discoveryEmitter) ConfigMap() ConfigMapClient {
+	return c.configMap
 }
 
 func (c *discoveryEmitter) Install() InstallClient {
@@ -106,6 +116,12 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)
+	/* Create channel for ConfigMap */
+	type configMapListWithNamespace struct {
+		list      ConfigMapList
+		namespace string
+	}
+	configMapChan := make(chan configMapListWithNamespace)
 	/* Create channel for Install */
 	type installListWithNamespace struct {
 		list      InstallList
@@ -124,6 +140,17 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		go func(namespace string) {
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
+		}(namespace)
+		/* Setup namespaced watch for ConfigMap */
+		configMapNamespacesChan, configMapErrs, err := c.configMap.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting ConfigMap watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, configMapErrs, namespace+"-configmaps")
 		}(namespace)
 		/* Setup namespaced watch for Install */
 		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
@@ -148,6 +175,12 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 					case <-ctx.Done():
 						return
 					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
+					}
+				case configMapList := <-configMapNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case configMapChan <- configMapListWithNamespace{list: configMapList, namespace: namespace}:
 					}
 				case installList := <-installNamespacesChan:
 					select {
@@ -197,6 +230,13 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 				podList := podNamespacedList.list
 
 				currentSnapshot.Pods[namespace] = podList
+			case configMapNamespacedList := <-configMapChan:
+				record()
+
+				namespace := configMapNamespacedList.namespace
+				configMapList := configMapNamespacedList.list
+
+				currentSnapshot.Configmaps[namespace] = configMapList
 			case installNamespacedList := <-installChan:
 				record()
 

@@ -12,6 +12,12 @@
       "type": "ServiceProfile",
       "plural_name": "serviceprofiles",
       "short_name": "sp"
+    },
+    {
+      "package": "github.com/solo-io/supergloo/api/custom/kubernetes/configmap",
+      "type": "ConfigMap",
+      "plural_name": "configmaps",
+      "short_name": "cm"
     }
   ],
   "resource_groups": {
@@ -77,6 +83,10 @@
       {
         "name": "Pod",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "ConfigMap",
+        "package": "github.com/solo-io/supergloo/api/custom/kubernetes/configmap"
       },
       {
         "name": "Install",
