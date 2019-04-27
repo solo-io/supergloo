@@ -94,6 +94,10 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 		EnablePrometheus: istio.InstallPrometheus,
 		EnableJaeger:     istio.InstallJaeger,
 	}
+	gatewayOptions := gatewayInstallOptions{
+		EnableEgress:  istio.EnableEgress,
+		EnableIngress: istio.EnableIngress,
+	}
 
 	installVersion, ok := supportedIstioVersions[istio.Version]
 	if !ok {
@@ -105,6 +109,7 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 		Mtls:           mtlsOptions,
 		AutoInject:     autoInjectOptions,
 		Observability:  observabilityOptions,
+		Gateway:        gatewayOptions,
 	}
 
 	helmValues, err := chartParams.helmValues()

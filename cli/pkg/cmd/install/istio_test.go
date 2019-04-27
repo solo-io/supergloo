@@ -36,6 +36,8 @@ var _ = Describe("Install", func() {
 				version string,
 				mtls,
 				autoInject,
+				ingress,
+				egress,
 				prometheus,
 				jaeger,
 				grafana bool) {
@@ -46,6 +48,8 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--version=%v ", version) +
 					fmt.Sprintf("--mtls=%v ", mtls) +
 					fmt.Sprintf("--auto-inject=%v ", autoInject) +
+					fmt.Sprintf("--ingress=%v ", ingress) +
+					fmt.Sprintf("--egress=%v ", egress) +
 					fmt.Sprintf("--grafana=%v ", grafana) +
 					fmt.Sprintf("--prometheus=%v ", prometheus) +
 					fmt.Sprintf("--jaeger=%v", jaeger))
@@ -61,14 +65,16 @@ var _ = Describe("Install", func() {
 				Expect(istio.Istio.Version).To(Equal(version))
 				Expect(istio.Istio.EnableMtls).To(Equal(mtls))
 				Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
+				Expect(istio.Istio.EnableIngress).To(Equal(ingress))
+				Expect(istio.Istio.EnableEgress).To(Equal(egress))
 				Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
 				Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
 				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
 			}
 
-			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
-			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
-			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
+			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true, true, true)
+			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false, false, false)
+			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false, false, false)
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"
