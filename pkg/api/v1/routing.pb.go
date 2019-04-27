@@ -47,7 +47,7 @@ func (x FaultInjection_Delay_Type) String() string {
 	return proto.EnumName(FaultInjection_Delay_Type_name, int32(x))
 }
 func (FaultInjection_Delay_Type) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{5, 0, 0}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{5, 0, 0}
 }
 
 // a routing rule applies some L7 routing features to an existing mesh
@@ -91,7 +91,7 @@ func (m *RoutingRule) Reset()         { *m = RoutingRule{} }
 func (m *RoutingRule) String() string { return proto.CompactTextString(m) }
 func (*RoutingRule) ProtoMessage()    {}
 func (*RoutingRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{0}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{0}
 }
 func (m *RoutingRule) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RoutingRule.Unmarshal(m, b)
@@ -184,7 +184,7 @@ func (m *RoutingRuleSpec) Reset()         { *m = RoutingRuleSpec{} }
 func (m *RoutingRuleSpec) String() string { return proto.CompactTextString(m) }
 func (*RoutingRuleSpec) ProtoMessage()    {}
 func (*RoutingRuleSpec) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{1}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{1}
 }
 func (m *RoutingRuleSpec) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RoutingRuleSpec.Unmarshal(m, b)
@@ -500,7 +500,7 @@ func (m *RetryPolicy) Reset()         { *m = RetryPolicy{} }
 func (m *RetryPolicy) String() string { return proto.CompactTextString(m) }
 func (*RetryPolicy) ProtoMessage()    {}
 func (*RetryPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{2}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{2}
 }
 func (m *RetryPolicy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RetryPolicy.Unmarshal(m, b)
@@ -560,7 +560,7 @@ func (m *RetryBudget) Reset()         { *m = RetryBudget{} }
 func (m *RetryBudget) String() string { return proto.CompactTextString(m) }
 func (*RetryBudget) ProtoMessage()    {}
 func (*RetryBudget) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{3}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{3}
 }
 func (m *RetryBudget) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RetryBudget.Unmarshal(m, b)
@@ -615,7 +615,7 @@ func (m *TrafficShifting) Reset()         { *m = TrafficShifting{} }
 func (m *TrafficShifting) String() string { return proto.CompactTextString(m) }
 func (*TrafficShifting) ProtoMessage()    {}
 func (*TrafficShifting) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{4}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{4}
 }
 func (m *TrafficShifting) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TrafficShifting.Unmarshal(m, b)
@@ -663,7 +663,7 @@ func (m *FaultInjection) Reset()         { *m = FaultInjection{} }
 func (m *FaultInjection) String() string { return proto.CompactTextString(m) }
 func (*FaultInjection) ProtoMessage()    {}
 func (*FaultInjection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{5}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{5}
 }
 func (m *FaultInjection) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FaultInjection.Unmarshal(m, b)
@@ -817,7 +817,7 @@ func (m *FaultInjection_Delay) Reset()         { *m = FaultInjection_Delay{} }
 func (m *FaultInjection_Delay) String() string { return proto.CompactTextString(m) }
 func (*FaultInjection_Delay) ProtoMessage()    {}
 func (*FaultInjection_Delay) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{5, 0}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{5, 0}
 }
 func (m *FaultInjection_Delay) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FaultInjection_Delay.Unmarshal(m, b)
@@ -868,7 +868,7 @@ func (m *FaultInjection_Abort) Reset()         { *m = FaultInjection_Abort{} }
 func (m *FaultInjection_Abort) String() string { return proto.CompactTextString(m) }
 func (*FaultInjection_Abort) ProtoMessage()    {}
 func (*FaultInjection_Abort) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{5, 1}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{5, 1}
 }
 func (m *FaultInjection_Abort) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FaultInjection_Abort.Unmarshal(m, b)
@@ -985,7 +985,7 @@ func (m *HeaderManipulation) Reset()         { *m = HeaderManipulation{} }
 func (m *HeaderManipulation) String() string { return proto.CompactTextString(m) }
 func (*HeaderManipulation) ProtoMessage()    {}
 func (*HeaderManipulation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_routing_c36e0af5a904fbd5, []int{6}
+	return fileDescriptor_routing_4acc7adbf16b3e56, []int{6}
 }
 func (m *HeaderManipulation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HeaderManipulation.Unmarshal(m, b)
@@ -1623,10 +1623,10 @@ func (this *HeaderManipulation) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/routing.proto", fileDescriptor_routing_c36e0af5a904fbd5)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/routing.proto", fileDescriptor_routing_4acc7adbf16b3e56)
 }
 
-var fileDescriptor_routing_c36e0af5a904fbd5 = []byte{
+var fileDescriptor_routing_4acc7adbf16b3e56 = []byte{
 	// 1168 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x56, 0x41, 0x73, 0x1b, 0x35,
 	0x14, 0xb6, 0x63, 0x3b, 0x8d, 0x9f, 0xd3, 0x38, 0x55, 0xdd, 0x74, 0xeb, 0x43, 0x9a, 0x7a, 0x60,

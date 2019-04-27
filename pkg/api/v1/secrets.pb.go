@@ -39,7 +39,7 @@ func (m *TlsSecret) Reset()         { *m = TlsSecret{} }
 func (m *TlsSecret) String() string { return proto.CompactTextString(m) }
 func (*TlsSecret) ProtoMessage()    {}
 func (*TlsSecret) Descriptor() ([]byte, []int) {
-	return fileDescriptor_secrets_6985fe60c4e5a597, []int{0}
+	return fileDescriptor_secrets_03fb4ec823befe82, []int{0}
 }
 func (m *TlsSecret) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TlsSecret.Unmarshal(m, b)
@@ -138,10 +138,10 @@ func (this *TlsSecret) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/secrets.proto", fileDescriptor_secrets_6985fe60c4e5a597)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/secrets.proto", fileDescriptor_secrets_03fb4ec823befe82)
 }
 
-var fileDescriptor_secrets_6985fe60c4e5a597 = []byte{
+var fileDescriptor_secrets_03fb4ec823befe82 = []byte{
 	// 330 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x51, 0xbd, 0x4e, 0xf3, 0x30,
 	0x14, 0xfd, 0xd2, 0xcf, 0x2a, 0xd4, 0x05, 0x24, 0x22, 0x84, 0xa2, 0x08, 0x95, 0xa8, 0x0b, 0x5d,

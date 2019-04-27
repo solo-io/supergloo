@@ -54,7 +54,7 @@ func (m *Mesh) Reset()         { *m = Mesh{} }
 func (m *Mesh) String() string { return proto.CompactTextString(m) }
 func (*Mesh) ProtoMessage()    {}
 func (*Mesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{0}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{0}
 }
 func (m *Mesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Mesh.Unmarshal(m, b)
@@ -272,7 +272,7 @@ func (m *DiscoveryMetadata) Reset()         { *m = DiscoveryMetadata{} }
 func (m *DiscoveryMetadata) String() string { return proto.CompactTextString(m) }
 func (*DiscoveryMetadata) ProtoMessage()    {}
 func (*DiscoveryMetadata) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{1}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{1}
 }
 func (m *DiscoveryMetadata) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DiscoveryMetadata.Unmarshal(m, b)
@@ -349,7 +349,7 @@ func (m *IstioMesh) Reset()         { *m = IstioMesh{} }
 func (m *IstioMesh) String() string { return proto.CompactTextString(m) }
 func (*IstioMesh) ProtoMessage()    {}
 func (*IstioMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{2}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{2}
 }
 func (m *IstioMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioMesh.Unmarshal(m, b)
@@ -414,7 +414,7 @@ func (m *AwsAppMesh) Reset()         { *m = AwsAppMesh{} }
 func (m *AwsAppMesh) String() string { return proto.CompactTextString(m) }
 func (*AwsAppMesh) ProtoMessage()    {}
 func (*AwsAppMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{3}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{3}
 }
 func (m *AwsAppMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AwsAppMesh.Unmarshal(m, b)
@@ -491,7 +491,7 @@ func (m *LinkerdMesh) Reset()         { *m = LinkerdMesh{} }
 func (m *LinkerdMesh) String() string { return proto.CompactTextString(m) }
 func (*LinkerdMesh) ProtoMessage()    {}
 func (*LinkerdMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{4}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{4}
 }
 func (m *LinkerdMesh) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LinkerdMesh.Unmarshal(m, b)
@@ -547,7 +547,7 @@ func (m *MtlsConfig) Reset()         { *m = MtlsConfig{} }
 func (m *MtlsConfig) String() string { return proto.CompactTextString(m) }
 func (*MtlsConfig) ProtoMessage()    {}
 func (*MtlsConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{5}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{5}
 }
 func (m *MtlsConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MtlsConfig.Unmarshal(m, b)
@@ -600,7 +600,7 @@ func (m *MonitoringConfig) Reset()         { *m = MonitoringConfig{} }
 func (m *MonitoringConfig) String() string { return proto.CompactTextString(m) }
 func (*MonitoringConfig) ProtoMessage()    {}
 func (*MonitoringConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{6}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{6}
 }
 func (m *MonitoringConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MonitoringConfig.Unmarshal(m, b)
@@ -644,7 +644,7 @@ func (m *MeshGroup) Reset()         { *m = MeshGroup{} }
 func (m *MeshGroup) String() string { return proto.CompactTextString(m) }
 func (*MeshGroup) ProtoMessage()    {}
 func (*MeshGroup) Descriptor() ([]byte, []int) {
-	return fileDescriptor_mesh_a3d38d6d0c15736e, []int{7}
+	return fileDescriptor_mesh_084e1ab72f2a9ebe, []int{7}
 }
 func (m *MeshGroup) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshGroup.Unmarshal(m, b)
@@ -1066,10 +1066,10 @@ func (this *MeshGroup) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/mesh.proto", fileDescriptor_mesh_a3d38d6d0c15736e)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/mesh.proto", fileDescriptor_mesh_084e1ab72f2a9ebe)
 }
 
-var fileDescriptor_mesh_a3d38d6d0c15736e = []byte{
+var fileDescriptor_mesh_084e1ab72f2a9ebe = []byte{
 	// 900 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0xcd, 0x6e, 0xdc, 0x36,
 	0x10, 0xce, 0xfe, 0x78, 0xe3, 0x9d, 0x0d, 0xd0, 0x5d, 0xd6, 0x36, 0x94, 0xa0, 0x75, 0xd2, 0x6d,

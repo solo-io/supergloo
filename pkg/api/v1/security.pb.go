@@ -73,7 +73,7 @@ func (m *SecurityRule) Reset()         { *m = SecurityRule{} }
 func (m *SecurityRule) String() string { return proto.CompactTextString(m) }
 func (*SecurityRule) ProtoMessage()    {}
 func (*SecurityRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_security_6037efaa6756cdfc, []int{0}
+	return fileDescriptor_security_5e223d2f5a69ca1c, []int{0}
 }
 func (m *SecurityRule) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SecurityRule.Unmarshal(m, b)
@@ -202,10 +202,10 @@ func (this *SecurityRule) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/security.proto", fileDescriptor_security_6037efaa6756cdfc)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/security.proto", fileDescriptor_security_5e223d2f5a69ca1c)
 }
 
-var fileDescriptor_security_6037efaa6756cdfc = []byte{
+var fileDescriptor_security_5e223d2f5a69ca1c = []byte{
 	// 397 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xcf, 0xae, 0xd2, 0x40,
 	0x14, 0x87, 0xe5, 0x52, 0x89, 0x0e, 0xff, 0xe2, 0x48, 0x4c, 0xc5, 0x04, 0x89, 0x2e, 0x60, 0x21,

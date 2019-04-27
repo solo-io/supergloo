@@ -46,7 +46,7 @@ func (m *PrometheusConfig) Reset()         { *m = PrometheusConfig{} }
 func (m *PrometheusConfig) String() string { return proto.CompactTextString(m) }
 func (*PrometheusConfig) ProtoMessage()    {}
 func (*PrometheusConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_config_957596f799cd49f3, []int{0}
+	return fileDescriptor_config_07d29fd31eed2d37, []int{0}
 }
 func (m *PrometheusConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrometheusConfig.Unmarshal(m, b)
@@ -135,10 +135,10 @@ func (this *PrometheusConfig) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/prometheus/v1/config.proto", fileDescriptor_config_957596f799cd49f3)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/prometheus/v1/config.proto", fileDescriptor_config_07d29fd31eed2d37)
 }
 
-var fileDescriptor_config_957596f799cd49f3 = []byte{
+var fileDescriptor_config_07d29fd31eed2d37 = []byte{
 	// 287 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x72, 0x49, 0xcf, 0x2c, 0xc9,
 	0x28, 0x4d, 0xd2, 0x4b, 0xce, 0xcf, 0xd5, 0x2f, 0xce, 0xcf, 0xc9, 0xd7, 0xcd, 0xcc, 0xd7, 0x2f,

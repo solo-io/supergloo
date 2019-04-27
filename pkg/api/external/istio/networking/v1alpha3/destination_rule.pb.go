@@ -65,7 +65,7 @@ func (x LoadBalancerSettings_SimpleLB) String() string {
 	return proto.EnumName(LoadBalancerSettings_SimpleLB_name, int32(x))
 }
 func (LoadBalancerSettings_SimpleLB) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{3, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{3, 0}
 }
 
 // TLS connection mode
@@ -104,7 +104,7 @@ func (x TLSSettings_TLSmode) String() string {
 	return proto.EnumName(TLSSettings_TLSmode_name, int32(x))
 }
 func (TLSSettings_TLSmode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{6, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{6, 0}
 }
 
 // `DestinationRule` defines policies that apply to traffic intended for a
@@ -220,7 +220,7 @@ func (m *DestinationRule) Reset()         { *m = DestinationRule{} }
 func (m *DestinationRule) String() string { return proto.CompactTextString(m) }
 func (*DestinationRule) ProtoMessage()    {}
 func (*DestinationRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{0}
 }
 func (m *DestinationRule) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DestinationRule.Unmarshal(m, b)
@@ -308,7 +308,7 @@ func (m *TrafficPolicy) Reset()         { *m = TrafficPolicy{} }
 func (m *TrafficPolicy) String() string { return proto.CompactTextString(m) }
 func (*TrafficPolicy) ProtoMessage()    {}
 func (*TrafficPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{1}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{1}
 }
 func (m *TrafficPolicy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TrafficPolicy.Unmarshal(m, b)
@@ -390,7 +390,7 @@ func (m *TrafficPolicy_PortTrafficPolicy) Reset()         { *m = TrafficPolicy_P
 func (m *TrafficPolicy_PortTrafficPolicy) String() string { return proto.CompactTextString(m) }
 func (*TrafficPolicy_PortTrafficPolicy) ProtoMessage()    {}
 func (*TrafficPolicy_PortTrafficPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{1, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{1, 0}
 }
 func (m *TrafficPolicy_PortTrafficPolicy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TrafficPolicy_PortTrafficPolicy.Unmarshal(m, b)
@@ -502,7 +502,7 @@ func (m *Subset) Reset()         { *m = Subset{} }
 func (m *Subset) String() string { return proto.CompactTextString(m) }
 func (*Subset) ProtoMessage()    {}
 func (*Subset) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{2}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{2}
 }
 func (m *Subset) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Subset.Unmarshal(m, b)
@@ -628,7 +628,7 @@ func (m *LoadBalancerSettings) Reset()         { *m = LoadBalancerSettings{} }
 func (m *LoadBalancerSettings) String() string { return proto.CompactTextString(m) }
 func (*LoadBalancerSettings) ProtoMessage()    {}
 func (*LoadBalancerSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{3}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{3}
 }
 func (m *LoadBalancerSettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LoadBalancerSettings.Unmarshal(m, b)
@@ -789,7 +789,7 @@ func (m *LoadBalancerSettings_ConsistentHashLB) Reset()         { *m = LoadBalan
 func (m *LoadBalancerSettings_ConsistentHashLB) String() string { return proto.CompactTextString(m) }
 func (*LoadBalancerSettings_ConsistentHashLB) ProtoMessage()    {}
 func (*LoadBalancerSettings_ConsistentHashLB) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{3, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{3, 0}
 }
 func (m *LoadBalancerSettings_ConsistentHashLB) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LoadBalancerSettings_ConsistentHashLB.Unmarshal(m, b)
@@ -977,7 +977,7 @@ func (m *LoadBalancerSettings_ConsistentHashLB_HTTPCookie) String() string {
 }
 func (*LoadBalancerSettings_ConsistentHashLB_HTTPCookie) ProtoMessage() {}
 func (*LoadBalancerSettings_ConsistentHashLB_HTTPCookie) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{3, 0, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{3, 0, 0}
 }
 func (m *LoadBalancerSettings_ConsistentHashLB_HTTPCookie) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LoadBalancerSettings_ConsistentHashLB_HTTPCookie.Unmarshal(m, b)
@@ -1041,7 +1041,7 @@ func (m *LoadBalancerSettings_LocalityWeightSetting) String() string {
 }
 func (*LoadBalancerSettings_LocalityWeightSetting) ProtoMessage() {}
 func (*LoadBalancerSettings_LocalityWeightSetting) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{3, 1}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{3, 1}
 }
 func (m *LoadBalancerSettings_LocalityWeightSetting) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LoadBalancerSettings_LocalityWeightSetting.Unmarshal(m, b)
@@ -1114,7 +1114,7 @@ func (m *ConnectionPoolSettings) Reset()         { *m = ConnectionPoolSettings{}
 func (m *ConnectionPoolSettings) String() string { return proto.CompactTextString(m) }
 func (*ConnectionPoolSettings) ProtoMessage()    {}
 func (*ConnectionPoolSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{4}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{4}
 }
 func (m *ConnectionPoolSettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConnectionPoolSettings.Unmarshal(m, b)
@@ -1165,7 +1165,7 @@ func (m *ConnectionPoolSettings_TCPSettings) Reset()         { *m = ConnectionPo
 func (m *ConnectionPoolSettings_TCPSettings) String() string { return proto.CompactTextString(m) }
 func (*ConnectionPoolSettings_TCPSettings) ProtoMessage()    {}
 func (*ConnectionPoolSettings_TCPSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{4, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{4, 0}
 }
 func (m *ConnectionPoolSettings_TCPSettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConnectionPoolSettings_TCPSettings.Unmarshal(m, b)
@@ -1233,7 +1233,7 @@ func (m *ConnectionPoolSettings_TCPSettings_TcpKeepalive) String() string {
 }
 func (*ConnectionPoolSettings_TCPSettings_TcpKeepalive) ProtoMessage() {}
 func (*ConnectionPoolSettings_TCPSettings_TcpKeepalive) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{4, 0, 0}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{4, 0, 0}
 }
 func (m *ConnectionPoolSettings_TCPSettings_TcpKeepalive) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConnectionPoolSettings_TCPSettings_TcpKeepalive.Unmarshal(m, b)
@@ -1295,7 +1295,7 @@ func (m *ConnectionPoolSettings_HTTPSettings) Reset()         { *m = ConnectionP
 func (m *ConnectionPoolSettings_HTTPSettings) String() string { return proto.CompactTextString(m) }
 func (*ConnectionPoolSettings_HTTPSettings) ProtoMessage()    {}
 func (*ConnectionPoolSettings_HTTPSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{4, 1}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{4, 1}
 }
 func (m *ConnectionPoolSettings_HTTPSettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConnectionPoolSettings_HTTPSettings.Unmarshal(m, b)
@@ -1412,7 +1412,7 @@ func (m *OutlierDetection) Reset()         { *m = OutlierDetection{} }
 func (m *OutlierDetection) String() string { return proto.CompactTextString(m) }
 func (*OutlierDetection) ProtoMessage()    {}
 func (*OutlierDetection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{5}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{5}
 }
 func (m *OutlierDetection) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_OutlierDetection.Unmarshal(m, b)
@@ -1550,7 +1550,7 @@ func (m *TLSSettings) Reset()         { *m = TLSSettings{} }
 func (m *TLSSettings) String() string { return proto.CompactTextString(m) }
 func (*TLSSettings) ProtoMessage()    {}
 func (*TLSSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_destination_rule_0371deb434ac363d, []int{6}
+	return fileDescriptor_destination_rule_247ec642d02aab2e, []int{6}
 }
 func (m *TLSSettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLSSettings.Unmarshal(m, b)
@@ -2291,10 +2291,10 @@ func (this *TLSSettings) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/destination_rule.proto", fileDescriptor_destination_rule_0371deb434ac363d)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/destination_rule.proto", fileDescriptor_destination_rule_247ec642d02aab2e)
 }
 
-var fileDescriptor_destination_rule_0371deb434ac363d = []byte{
+var fileDescriptor_destination_rule_247ec642d02aab2e = []byte{
 	// 1656 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xcf, 0x6f, 0x23, 0xb7,
 	0x15, 0xb6, 0x7e, 0x58, 0xb6, 0x9f, 0xfc, 0x43, 0x66, 0xdd, 0xad, 0x56, 0x05, 0xb2, 0x1b, 0xa1,

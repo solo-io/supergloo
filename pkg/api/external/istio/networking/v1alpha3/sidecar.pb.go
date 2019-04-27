@@ -50,7 +50,7 @@ func (x ConfigScope) String() string {
 	return proto.EnumName(ConfigScope_name, int32(x))
 }
 func (ConfigScope) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{0}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{0}
 }
 
 // $hide_from_docs
@@ -86,7 +86,7 @@ func (x CaptureMode) String() string {
 	return proto.EnumName(CaptureMode_name, int32(x))
 }
 func (CaptureMode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{1}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{1}
 }
 
 // `Sidecar` describes the configuration of the sidecar proxy that mediates
@@ -162,7 +162,7 @@ func (m *Sidecar) Reset()         { *m = Sidecar{} }
 func (m *Sidecar) String() string { return proto.CompactTextString(m) }
 func (*Sidecar) ProtoMessage()    {}
 func (*Sidecar) Descriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{0}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{0}
 }
 func (m *Sidecar) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Sidecar.Unmarshal(m, b)
@@ -235,7 +235,7 @@ func (m *IstioIngressListener) Reset()         { *m = IstioIngressListener{} }
 func (m *IstioIngressListener) String() string { return proto.CompactTextString(m) }
 func (*IstioIngressListener) ProtoMessage()    {}
 func (*IstioIngressListener) Descriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{1}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{1}
 }
 func (m *IstioIngressListener) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioIngressListener.Unmarshal(m, b)
@@ -336,7 +336,7 @@ func (m *IstioEgressListener) Reset()         { *m = IstioEgressListener{} }
 func (m *IstioEgressListener) String() string { return proto.CompactTextString(m) }
 func (*IstioEgressListener) ProtoMessage()    {}
 func (*IstioEgressListener) Descriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{2}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{2}
 }
 func (m *IstioEgressListener) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioEgressListener.Unmarshal(m, b)
@@ -406,7 +406,7 @@ func (m *WorkloadSelector) Reset()         { *m = WorkloadSelector{} }
 func (m *WorkloadSelector) String() string { return proto.CompactTextString(m) }
 func (*WorkloadSelector) ProtoMessage()    {}
 func (*WorkloadSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_sidecar_8da35ecb0e4627b5, []int{3}
+	return fileDescriptor_sidecar_09d491001f8de0e0, []int{3}
 }
 func (m *WorkloadSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WorkloadSelector.Unmarshal(m, b)
@@ -596,10 +596,10 @@ func (this *WorkloadSelector) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/sidecar.proto", fileDescriptor_sidecar_8da35ecb0e4627b5)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/sidecar.proto", fileDescriptor_sidecar_09d491001f8de0e0)
 }
 
-var fileDescriptor_sidecar_8da35ecb0e4627b5 = []byte{
+var fileDescriptor_sidecar_09d491001f8de0e0 = []byte{
 	// 566 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0xcd, 0x72, 0xda, 0x3c,
 	0x14, 0x8d, 0x80, 0x8f, 0x04, 0x39, 0xf3, 0xd5, 0x55, 0x59, 0xb8, 0x2c, 0x5a, 0xca, 0x22, 0x43,

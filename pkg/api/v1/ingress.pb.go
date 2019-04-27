@@ -51,7 +51,7 @@ func (m *MeshIngress) Reset()         { *m = MeshIngress{} }
 func (m *MeshIngress) String() string { return proto.CompactTextString(m) }
 func (*MeshIngress) ProtoMessage()    {}
 func (*MeshIngress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ingress_a51819d2c07f97b7, []int{0}
+	return fileDescriptor_ingress_6cd0743509f15105, []int{0}
 }
 func (m *MeshIngress) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshIngress.Unmarshal(m, b)
@@ -190,7 +190,7 @@ func (m *GlooMeshIngress) Reset()         { *m = GlooMeshIngress{} }
 func (m *GlooMeshIngress) String() string { return proto.CompactTextString(m) }
 func (*GlooMeshIngress) ProtoMessage()    {}
 func (*GlooMeshIngress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ingress_a51819d2c07f97b7, []int{1}
+	return fileDescriptor_ingress_6cd0743509f15105, []int{1}
 }
 func (m *GlooMeshIngress) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GlooMeshIngress.Unmarshal(m, b)
@@ -314,10 +314,10 @@ func (this *GlooMeshIngress) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/ingress.proto", fileDescriptor_ingress_a51819d2c07f97b7)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/ingress.proto", fileDescriptor_ingress_6cd0743509f15105)
 }
 
-var fileDescriptor_ingress_a51819d2c07f97b7 = []byte{
+var fileDescriptor_ingress_6cd0743509f15105 = []byte{
 	// 387 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xc1, 0xce, 0xd2, 0x40,
 	0x10, 0xc7, 0x29, 0x34, 0x44, 0x97, 0x18, 0xd2, 0x8a, 0xa4, 0x60, 0x22, 0xa4, 0x17, 0x39, 0xc8,

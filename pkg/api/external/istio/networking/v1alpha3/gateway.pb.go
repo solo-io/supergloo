@@ -65,7 +65,7 @@ func (x Server_TLSOptions_TLSmode) String() string {
 	return proto.EnumName(Server_TLSOptions_TLSmode_name, int32(x))
 }
 func (Server_TLSOptions_TLSmode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{1, 0, 0}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{1, 0, 0}
 }
 
 // TLS protocol versions.
@@ -103,7 +103,7 @@ func (x Server_TLSOptions_TLSProtocol) String() string {
 	return proto.EnumName(Server_TLSOptions_TLSProtocol_name, int32(x))
 }
 func (Server_TLSOptions_TLSProtocol) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{1, 0, 1}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{1, 0, 1}
 }
 
 // `Gateway` describes a load balancer operating at the edge of the mesh
@@ -259,7 +259,7 @@ func (m *Gateway) Reset()         { *m = Gateway{} }
 func (m *Gateway) String() string { return proto.CompactTextString(m) }
 func (*Gateway) ProtoMessage()    {}
 func (*Gateway) Descriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{0}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{0}
 }
 func (m *Gateway) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Gateway.Unmarshal(m, b)
@@ -396,7 +396,7 @@ func (m *Server) Reset()         { *m = Server{} }
 func (m *Server) String() string { return proto.CompactTextString(m) }
 func (*Server) ProtoMessage()    {}
 func (*Server) Descriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{1}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{1}
 }
 func (m *Server) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Server.Unmarshal(m, b)
@@ -488,7 +488,7 @@ func (m *Server_TLSOptions) Reset()         { *m = Server_TLSOptions{} }
 func (m *Server_TLSOptions) String() string { return proto.CompactTextString(m) }
 func (*Server_TLSOptions) ProtoMessage()    {}
 func (*Server_TLSOptions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{1, 0}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{1, 0}
 }
 func (m *Server_TLSOptions) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Server_TLSOptions.Unmarshal(m, b)
@@ -591,7 +591,7 @@ func (m *Port) Reset()         { *m = Port{} }
 func (m *Port) String() string { return proto.CompactTextString(m) }
 func (*Port) ProtoMessage()    {}
 func (*Port) Descriptor() ([]byte, []int) {
-	return fileDescriptor_gateway_e952eb7cec1ac9c1, []int{2}
+	return fileDescriptor_gateway_18b4124ee91ddaea, []int{2}
 }
 func (m *Port) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Port.Unmarshal(m, b)
@@ -821,10 +821,10 @@ func (this *Port) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/gateway.proto", fileDescriptor_gateway_e952eb7cec1ac9c1)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/networking/v1alpha3/gateway.proto", fileDescriptor_gateway_18b4124ee91ddaea)
 }
 
-var fileDescriptor_gateway_e952eb7cec1ac9c1 = []byte{
+var fileDescriptor_gateway_18b4124ee91ddaea = []byte{
 	// 727 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xdf, 0x6e, 0xfa, 0x36,
 	0x14, 0xfe, 0x05, 0x28, 0x7f, 0x0e, 0x3f, 0x4a, 0x6a, 0xa1, 0x29, 0xe3, 0x62, 0xed, 0x98, 0xa6,

@@ -41,7 +41,7 @@ func (m *PodSelector) Reset()         { *m = PodSelector{} }
 func (m *PodSelector) String() string { return proto.CompactTextString(m) }
 func (*PodSelector) ProtoMessage()    {}
 func (*PodSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_selector_fc1b1a669982033a, []int{0}
+	return fileDescriptor_selector_54224229dd81571d, []int{0}
 }
 func (m *PodSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PodSelector.Unmarshal(m, b)
@@ -213,7 +213,7 @@ func (m *PodSelector_LabelSelector) Reset()         { *m = PodSelector_LabelSele
 func (m *PodSelector_LabelSelector) String() string { return proto.CompactTextString(m) }
 func (*PodSelector_LabelSelector) ProtoMessage()    {}
 func (*PodSelector_LabelSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_selector_fc1b1a669982033a, []int{0, 0}
+	return fileDescriptor_selector_54224229dd81571d, []int{0, 0}
 }
 func (m *PodSelector_LabelSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PodSelector_LabelSelector.Unmarshal(m, b)
@@ -255,7 +255,7 @@ func (m *PodSelector_UpstreamSelector) Reset()         { *m = PodSelector_Upstre
 func (m *PodSelector_UpstreamSelector) String() string { return proto.CompactTextString(m) }
 func (*PodSelector_UpstreamSelector) ProtoMessage()    {}
 func (*PodSelector_UpstreamSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_selector_fc1b1a669982033a, []int{0, 1}
+	return fileDescriptor_selector_54224229dd81571d, []int{0, 1}
 }
 func (m *PodSelector_UpstreamSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PodSelector_UpstreamSelector.Unmarshal(m, b)
@@ -294,7 +294,7 @@ func (m *PodSelector_NamespaceSelector) Reset()         { *m = PodSelector_Names
 func (m *PodSelector_NamespaceSelector) String() string { return proto.CompactTextString(m) }
 func (*PodSelector_NamespaceSelector) ProtoMessage()    {}
 func (*PodSelector_NamespaceSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_selector_fc1b1a669982033a, []int{0, 2}
+	return fileDescriptor_selector_54224229dd81571d, []int{0, 2}
 }
 func (m *PodSelector_NamespaceSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PodSelector_NamespaceSelector.Unmarshal(m, b)
@@ -531,10 +531,10 @@ func (this *PodSelector_NamespaceSelector) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/selector.proto", fileDescriptor_selector_fc1b1a669982033a)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/selector.proto", fileDescriptor_selector_54224229dd81571d)
 }
 
-var fileDescriptor_selector_fc1b1a669982033a = []byte{
+var fileDescriptor_selector_54224229dd81571d = []byte{
 	// 407 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0xcb, 0x6e, 0xda, 0x40,
 	0x14, 0xc5, 0x40, 0x2b, 0xf9, 0x22, 0x0a, 0x1e, 0xb1, 0xa0, 0x5e, 0x50, 0xd4, 0x4d, 0x59, 0xc0,

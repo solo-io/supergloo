@@ -57,7 +57,7 @@ func (m *Install) Reset()         { *m = Install{} }
 func (m *Install) String() string { return proto.CompactTextString(m) }
 func (*Install) ProtoMessage()    {}
 func (*Install) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{0}
+	return fileDescriptor_install_80607a97f4038e83, []int{0}
 }
 func (m *Install) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Install.Unmarshal(m, b)
@@ -236,7 +236,7 @@ func (m *MeshInstall) Reset()         { *m = MeshInstall{} }
 func (m *MeshInstall) String() string { return proto.CompactTextString(m) }
 func (*MeshInstall) ProtoMessage()    {}
 func (*MeshInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{1}
+	return fileDescriptor_install_80607a97f4038e83, []int{1}
 }
 func (m *MeshInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshInstall.Unmarshal(m, b)
@@ -397,7 +397,7 @@ func (m *IstioInstall) Reset()         { *m = IstioInstall{} }
 func (m *IstioInstall) String() string { return proto.CompactTextString(m) }
 func (*IstioInstall) ProtoMessage()    {}
 func (*IstioInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{2}
+	return fileDescriptor_install_80607a97f4038e83, []int{2}
 }
 func (m *IstioInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IstioInstall.Unmarshal(m, b)
@@ -497,7 +497,7 @@ func (m *LinkerdInstall) Reset()         { *m = LinkerdInstall{} }
 func (m *LinkerdInstall) String() string { return proto.CompactTextString(m) }
 func (*LinkerdInstall) ProtoMessage()    {}
 func (*LinkerdInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{3}
+	return fileDescriptor_install_80607a97f4038e83, []int{3}
 }
 func (m *LinkerdInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LinkerdInstall.Unmarshal(m, b)
@@ -561,7 +561,7 @@ func (m *MeshIngressInstall) Reset()         { *m = MeshIngressInstall{} }
 func (m *MeshIngressInstall) String() string { return proto.CompactTextString(m) }
 func (*MeshIngressInstall) ProtoMessage()    {}
 func (*MeshIngressInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{4}
+	return fileDescriptor_install_80607a97f4038e83, []int{4}
 }
 func (m *MeshIngressInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshIngressInstall.Unmarshal(m, b)
@@ -684,7 +684,7 @@ func (m *GlooInstall) Reset()         { *m = GlooInstall{} }
 func (m *GlooInstall) String() string { return proto.CompactTextString(m) }
 func (*GlooInstall) ProtoMessage()    {}
 func (*GlooInstall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_install_a1c3eba2fde794f0, []int{5}
+	return fileDescriptor_install_80607a97f4038e83, []int{5}
 }
 func (m *GlooInstall) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GlooInstall.Unmarshal(m, b)
@@ -1081,10 +1081,10 @@ func (this *GlooInstall) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/install.proto", fileDescriptor_install_a1c3eba2fde794f0)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/v1/install.proto", fileDescriptor_install_80607a97f4038e83)
 }
 
-var fileDescriptor_install_a1c3eba2fde794f0 = []byte{
+var fileDescriptor_install_80607a97f4038e83 = []byte{
 	// 702 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0x4d, 0x4e, 0xdb, 0x4e,
 	0x14, 0xc7, 0x24, 0xff, 0x24, 0xbc, 0xf0, 0x4f, 0xc9, 0x14, 0x90, 0x61, 0x41, 0x68, 0x2a, 0x04,

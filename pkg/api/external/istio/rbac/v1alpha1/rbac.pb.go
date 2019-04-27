@@ -116,7 +116,7 @@ func (x EnforcementMode) String() string {
 	return proto.EnumName(EnforcementMode_name, int32(x))
 }
 func (EnforcementMode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{0}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{0}
 }
 
 type RbacConfig_Mode int32
@@ -152,7 +152,7 @@ func (x RbacConfig_Mode) String() string {
 	return proto.EnumName(RbacConfig_Mode_name, int32(x))
 }
 func (RbacConfig_Mode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{5, 0}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{5, 0}
 }
 
 // ServiceRole specification contains a list of access rules (permissions).
@@ -175,7 +175,7 @@ func (m *ServiceRole) Reset()         { *m = ServiceRole{} }
 func (m *ServiceRole) String() string { return proto.CompactTextString(m) }
 func (*ServiceRole) ProtoMessage()    {}
 func (*ServiceRole) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{0}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{0}
 }
 func (m *ServiceRole) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ServiceRole.Unmarshal(m, b)
@@ -250,7 +250,7 @@ func (m *AccessRule) Reset()         { *m = AccessRule{} }
 func (m *AccessRule) String() string { return proto.CompactTextString(m) }
 func (*AccessRule) ProtoMessage()    {}
 func (*AccessRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{1}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{1}
 }
 func (m *AccessRule) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AccessRule.Unmarshal(m, b)
@@ -317,7 +317,7 @@ func (m *AccessRule_Constraint) Reset()         { *m = AccessRule_Constraint{} }
 func (m *AccessRule_Constraint) String() string { return proto.CompactTextString(m) }
 func (*AccessRule_Constraint) ProtoMessage()    {}
 func (*AccessRule_Constraint) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{1, 0}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{1, 0}
 }
 func (m *AccessRule_Constraint) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AccessRule_Constraint.Unmarshal(m, b)
@@ -377,7 +377,7 @@ func (m *ServiceRoleBinding) Reset()         { *m = ServiceRoleBinding{} }
 func (m *ServiceRoleBinding) String() string { return proto.CompactTextString(m) }
 func (*ServiceRoleBinding) ProtoMessage()    {}
 func (*ServiceRoleBinding) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{2}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{2}
 }
 func (m *ServiceRoleBinding) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ServiceRoleBinding.Unmarshal(m, b)
@@ -452,7 +452,7 @@ func (m *Subject) Reset()         { *m = Subject{} }
 func (m *Subject) String() string { return proto.CompactTextString(m) }
 func (*Subject) ProtoMessage()    {}
 func (*Subject) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{3}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{3}
 }
 func (m *Subject) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Subject.Unmarshal(m, b)
@@ -511,7 +511,7 @@ func (m *RoleRef) Reset()         { *m = RoleRef{} }
 func (m *RoleRef) String() string { return proto.CompactTextString(m) }
 func (*RoleRef) ProtoMessage()    {}
 func (*RoleRef) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{4}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{4}
 }
 func (m *RoleRef) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RoleRef.Unmarshal(m, b)
@@ -595,7 +595,7 @@ func (m *RbacConfig) Reset()         { *m = RbacConfig{} }
 func (m *RbacConfig) String() string { return proto.CompactTextString(m) }
 func (*RbacConfig) ProtoMessage()    {}
 func (*RbacConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{5}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{5}
 }
 func (m *RbacConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RbacConfig.Unmarshal(m, b)
@@ -672,7 +672,7 @@ func (m *RbacConfig_Target) Reset()         { *m = RbacConfig_Target{} }
 func (m *RbacConfig_Target) String() string { return proto.CompactTextString(m) }
 func (*RbacConfig_Target) ProtoMessage()    {}
 func (*RbacConfig_Target) Descriptor() ([]byte, []int) {
-	return fileDescriptor_rbac_786e9e97e13adb1e, []int{5, 0}
+	return fileDescriptor_rbac_9d3d48ea92656b3b, []int{5, 0}
 }
 func (m *RbacConfig_Target) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RbacConfig_Target.Unmarshal(m, b)
@@ -1044,10 +1044,10 @@ func (this *RbacConfig_Target) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/rbac/v1alpha1/rbac.proto", fileDescriptor_rbac_786e9e97e13adb1e)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/rbac/v1alpha1/rbac.proto", fileDescriptor_rbac_9d3d48ea92656b3b)
 }
 
-var fileDescriptor_rbac_786e9e97e13adb1e = []byte{
+var fileDescriptor_rbac_9d3d48ea92656b3b = []byte{
 	// 830 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0x3d, 0x6f, 0xdb, 0x46,
 	0x18, 0x36, 0x25, 0x5a, 0xb2, 0x5f, 0xb9, 0xb6, 0x72, 0x51, 0x02, 0x56, 0x28, 0x62, 0x97, 0x2d,

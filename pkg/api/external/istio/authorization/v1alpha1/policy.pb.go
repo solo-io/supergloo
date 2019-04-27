@@ -49,7 +49,7 @@ func (x PrincipalBinding) String() string {
 	return proto.EnumName(PrincipalBinding_name, int32(x))
 }
 func (PrincipalBinding) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{0}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{0}
 }
 
 // Defines the acceptable connection TLS mode.
@@ -75,7 +75,7 @@ func (x MutualTls_Mode) String() string {
 	return proto.EnumName(MutualTls_Mode_name, int32(x))
 }
 func (MutualTls_Mode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{1, 0}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{1, 0}
 }
 
 // Describes how to match a given string. Match is case-sensitive.
@@ -95,7 +95,7 @@ func (m *StringMatch) Reset()         { *m = StringMatch{} }
 func (m *StringMatch) String() string { return proto.CompactTextString(m) }
 func (*StringMatch) ProtoMessage()    {}
 func (*StringMatch) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{0}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{0}
 }
 func (m *StringMatch) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StringMatch.Unmarshal(m, b)
@@ -289,7 +289,7 @@ func (m *MutualTls) Reset()         { *m = MutualTls{} }
 func (m *MutualTls) String() string { return proto.CompactTextString(m) }
 func (*MutualTls) ProtoMessage()    {}
 func (*MutualTls) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{1}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{1}
 }
 func (m *MutualTls) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MutualTls.Unmarshal(m, b)
@@ -439,7 +439,7 @@ func (m *Jwt) Reset()         { *m = Jwt{} }
 func (m *Jwt) String() string { return proto.CompactTextString(m) }
 func (*Jwt) ProtoMessage()    {}
 func (*Jwt) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{2}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{2}
 }
 func (m *Jwt) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Jwt.Unmarshal(m, b)
@@ -520,7 +520,7 @@ func (m *Jwt_TriggerRule) Reset()         { *m = Jwt_TriggerRule{} }
 func (m *Jwt_TriggerRule) String() string { return proto.CompactTextString(m) }
 func (*Jwt_TriggerRule) ProtoMessage()    {}
 func (*Jwt_TriggerRule) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{2, 0}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{2, 0}
 }
 func (m *Jwt_TriggerRule) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Jwt_TriggerRule.Unmarshal(m, b)
@@ -573,7 +573,7 @@ func (m *PeerAuthenticationMethod) Reset()         { *m = PeerAuthenticationMeth
 func (m *PeerAuthenticationMethod) String() string { return proto.CompactTextString(m) }
 func (*PeerAuthenticationMethod) ProtoMessage()    {}
 func (*PeerAuthenticationMethod) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{3}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{3}
 }
 func (m *PeerAuthenticationMethod) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PeerAuthenticationMethod.Unmarshal(m, b)
@@ -718,7 +718,7 @@ func (m *OriginAuthenticationMethod) Reset()         { *m = OriginAuthentication
 func (m *OriginAuthenticationMethod) String() string { return proto.CompactTextString(m) }
 func (*OriginAuthenticationMethod) ProtoMessage()    {}
 func (*OriginAuthenticationMethod) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{4}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{4}
 }
 func (m *OriginAuthenticationMethod) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_OriginAuthenticationMethod.Unmarshal(m, b)
@@ -867,7 +867,7 @@ func (m *Policy) Reset()         { *m = Policy{} }
 func (m *Policy) String() string { return proto.CompactTextString(m) }
 func (*Policy) ProtoMessage()    {}
 func (*Policy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{5}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{5}
 }
 func (m *Policy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Policy.Unmarshal(m, b)
@@ -996,7 +996,7 @@ func (m *MeshPolicy) Reset()         { *m = MeshPolicy{} }
 func (m *MeshPolicy) String() string { return proto.CompactTextString(m) }
 func (*MeshPolicy) ProtoMessage()    {}
 func (*MeshPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{6}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{6}
 }
 func (m *MeshPolicy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MeshPolicy.Unmarshal(m, b)
@@ -1103,7 +1103,7 @@ func (m *TargetSelector) Reset()         { *m = TargetSelector{} }
 func (m *TargetSelector) String() string { return proto.CompactTextString(m) }
 func (*TargetSelector) ProtoMessage()    {}
 func (*TargetSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{7}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{7}
 }
 func (m *TargetSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TargetSelector.Unmarshal(m, b)
@@ -1154,7 +1154,7 @@ func (m *PortSelector) Reset()         { *m = PortSelector{} }
 func (m *PortSelector) String() string { return proto.CompactTextString(m) }
 func (*PortSelector) ProtoMessage()    {}
 func (*PortSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_policy_fe530442c06b1f51, []int{8}
+	return fileDescriptor_policy_63d9d0192c688a7b, []int{8}
 }
 func (m *PortSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PortSelector.Unmarshal(m, b)
@@ -1902,10 +1902,10 @@ func (this *PortSelector_Name) Equal(that interface{}) bool {
 }
 
 func init() {
-	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto", fileDescriptor_policy_fe530442c06b1f51)
+	proto.RegisterFile("github.com/solo-io/supergloo/api/external/istio/authorization/v1alpha1/policy.proto", fileDescriptor_policy_63d9d0192c688a7b)
 }
 
-var fileDescriptor_policy_fe530442c06b1f51 = []byte{
+var fileDescriptor_policy_63d9d0192c688a7b = []byte{
 	// 986 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0xcd, 0x6e, 0xe3, 0x36,
 	0x10, 0x8e, 0x63, 0xc5, 0xb1, 0xc7, 0x89, 0xe1, 0x25, 0x82, 0x40, 0x9b, 0x76, 0x9b, 0x40, 0x27,
