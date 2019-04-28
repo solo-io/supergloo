@@ -11,6 +11,7 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
 	"github.com/solo-io/supergloo/pkg/registration"
+	"github.com/solo-io/supergloo/pkg/translator/appmesh"
 	"go.uber.org/zap"
 )
 
@@ -44,30 +45,45 @@ func (cl *appmeshDiscoveryConfigLoop) Start(ctx context.Context, enabled registr
 	return el, nil
 }
 
-func newAppmeshDiscoveryConfigSyncer(c *clientset.Clientset) *appmeshDiscoveryConfigSyncer {
-	return &appmeshDiscoveryConfigSyncer{c: c}
+func newAppmeshDiscoveryConfigSyncer(cs *clientset.Clientset) *appmeshDiscoveryConfigSyncer {
+	return &appmeshDiscoveryConfigSyncer{cs: cs}
 }
 
 type appmeshDiscoveryConfigSyncer struct {
-	c *clientset.Clientset
+	cs *clientset.Clientset
 }
 
-func (*appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.AppmeshDiscoverySnapshot) error {
+func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.AppmeshDiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-config-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
+	pods, meshes, upstreams := snap.Pods.List(), snap.Meshes.List(), snap.Upstreams.List()
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("pods", len(snap.Pods.List())),
-		zap.Int("upstreams", len(snap.Upstreams.List())),
+		zap.Int("meshes", len(meshes)),
+		zap.Int("pods", len(pods)),
+		zap.Int("upstreams", len(upstreams)),
 	}
 
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
+	var updatedMeshes v1.MeshList
+	for _, mesh := range snap.Meshes.List() {
+		config, err := appmesh.NewAwsAppMeshConfiguration(mesh.Metadata.Name, pods, upstreams)
+		if err != nil {
+			return err
+		}
+
+	}
+
 	meshReconciler := v1.NewMeshReconciler(s.cs.Discovery.Mesh)
 	listOpts := clients.ListOpts{
 		Ctx:      ctx,
 		Selector: istio.DiscoverySelector,
 	}
+	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
+}
+
+func updatedMesh(config *appmesh.AwsAppMeshConfiguration) *v1.Mesh {
+	return nil
 }
