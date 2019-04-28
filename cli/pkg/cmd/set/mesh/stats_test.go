@@ -3,6 +3,8 @@ package mesh_test
 import (
 	"fmt"
 
+	"github.com/solo-io/supergloo/api/external/prometheus"
+
 	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -26,9 +28,11 @@ var _ = Describe("Stats", func() {
 			MeshType: &v1.Mesh_Istio{Istio: &v1.IstioMesh{}},
 		}, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{Metadata: promCfg1}, skclients.WriteOpts{})
+		_, err = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{
+			PrometheusConfig: prometheus.PrometheusConfig{Metadata: promCfg1}}, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{Metadata: promCfg2}, skclients.WriteOpts{})
+		_, err = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{
+			PrometheusConfig: prometheus.PrometheusConfig{Metadata: promCfg2}}, skclients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 

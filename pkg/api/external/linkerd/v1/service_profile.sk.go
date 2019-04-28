@@ -5,7 +5,7 @@ package v1
 import (
 	"sort"
 
-	github_com_solo_io_supergloo_api_custom_linkerd "github.com/solo-io/supergloo/api/custom/linkerd"
+	github_com_solo_io_supergloo_api_external_linkerd "github.com/solo-io/supergloo/api/external/linkerd"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -26,13 +26,13 @@ func NewServiceProfile(namespace, name string) *ServiceProfile {
 
 type CloneableServiceProfile interface {
 	resources.Resource
-	Clone() *github_com_solo_io_supergloo_api_custom_linkerd.ServiceProfile
+	Clone() *github_com_solo_io_supergloo_api_external_linkerd.ServiceProfile
 }
 
-var _ CloneableServiceProfile = &github_com_solo_io_supergloo_api_custom_linkerd.ServiceProfile{}
+var _ CloneableServiceProfile = &github_com_solo_io_supergloo_api_external_linkerd.ServiceProfile{}
 
 type ServiceProfile struct {
-	github_com_solo_io_supergloo_api_custom_linkerd.ServiceProfile
+	github_com_solo_io_supergloo_api_external_linkerd.ServiceProfile
 }
 
 func (r *ServiceProfile) Clone() resources.Resource {

@@ -5,37 +5,48 @@ package v1
 import (
 	"sort"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
+	github_com_solo_io_supergloo_api_external_prometheus "github.com/solo-io/supergloo/api/external/prometheus"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func NewPrometheusConfig(namespace, name string) *PrometheusConfig {
 	prometheusconfig := &PrometheusConfig{}
-	prometheusconfig.SetMetadata(core.Metadata{
+	prometheusconfig.PrometheusConfig.SetMetadata(core.Metadata{
 		Name:      name,
 		Namespace: namespace,
 	})
 	return prometheusconfig
 }
 
-func (r *PrometheusConfig) SetMetadata(meta core.Metadata) {
-	r.Metadata = meta
+// require custom resource to implement Clone() as well as resources.Resource interface
+
+type CloneablePrometheusConfig interface {
+	resources.Resource
+	Clone() *github_com_solo_io_supergloo_api_external_prometheus.PrometheusConfig
+}
+
+var _ CloneablePrometheusConfig = &github_com_solo_io_supergloo_api_external_prometheus.PrometheusConfig{}
+
+type PrometheusConfig struct {
+	github_com_solo_io_supergloo_api_external_prometheus.PrometheusConfig
+}
+
+func (r *PrometheusConfig) Clone() resources.Resource {
+	return &PrometheusConfig{PrometheusConfig: *r.PrometheusConfig.Clone()}
 }
 
 func (r *PrometheusConfig) Hash() uint64 {
-	metaCopy := r.GetMetadata()
-	metaCopy.ResourceVersion = ""
-	return hashutils.HashAll(
-		metaCopy,
-		r.Prometheus,
-		r.Alerts,
-		r.Rules,
-	)
+	clone := r.PrometheusConfig.Clone()
+
+	resources.UpdateMetadata(clone, func(meta *core.Metadata) {
+		meta.ResourceVersion = ""
+	})
+
+	return hashutils.HashAll(clone)
 }
 
 type PrometheusConfigList []*PrometheusConfig
@@ -131,25 +142,3 @@ func (byNamespace PrometheusconfigsByNamespace) Clone() PrometheusconfigsByNames
 	}
 	return cloned
 }
-
-var _ resources.Resource = &PrometheusConfig{}
-
-// Kubernetes Adapter for PrometheusConfig
-
-func (o *PrometheusConfig) GetObjectKind() schema.ObjectKind {
-	t := PrometheusConfigCrd.TypeMeta()
-	return &t
-}
-
-func (o *PrometheusConfig) DeepCopyObject() runtime.Object {
-	return resources.Clone(o).(*PrometheusConfig)
-}
-
-var PrometheusConfigCrd = crd.NewCrd("config.prometheus.io",
-	"prometheusconfigs",
-	"config.prometheus.io",
-	"v1",
-	"PrometheusConfig",
-	"pc",
-	false,
-	&PrometheusConfig{})

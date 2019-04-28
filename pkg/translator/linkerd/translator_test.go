@@ -3,8 +3,11 @@ package linkerd_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/api/external/linkerd"
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
+
 	"github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
-	"github.com/solo-io/supergloo/api/custom/linkerd"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -34,7 +37,7 @@ var _ = Describe("Translator", func() {
 		Expect(meshConfig).To(HaveKey(inputMesh))
 		cfg := meshConfig[inputMesh]
 		Expect(cfg.ServiceProfiles).To(HaveLen(2))
-		Expect(cfg.ServiceProfiles[0]).To(Equal(&v1.ServiceProfile{
+		Expect(cfg.ServiceProfiles[0]).To(Equal(&linkerdv1.ServiceProfile{
 			ServiceProfile: linkerd.ServiceProfile{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ratings.bookinfo-installed-here.svc.cluster.local",
@@ -54,7 +57,7 @@ var _ = Describe("Translator", func() {
 				},
 			},
 		}))
-		Expect(cfg.ServiceProfiles[1]).To(Equal(&v1.ServiceProfile{
+		Expect(cfg.ServiceProfiles[1]).To(Equal(&linkerdv1.ServiceProfile{
 			ServiceProfile: linkerd.ServiceProfile{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "reviews.bookinfo-installed-here.svc.cluster.local",
