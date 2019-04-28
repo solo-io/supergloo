@@ -82,12 +82,12 @@ func (s *appmeshDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 		return nil, err
 	}
 
-	newMeshes, err := constructAwsMeshes(ctx, awsClient, amd.region, &secretRef)
+	discoveredMeshes, err := constructAwsMeshes(ctx, awsClient, amd.region, &secretRef)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not construct meshes for appmesh")
 	}
 
-	return newMeshes, nil
+	return discoveredMeshes, nil
 }
 
 func (s *appmeshDiscoverySyncer) getAwsSecret() (*gloov1.Secret, error) {

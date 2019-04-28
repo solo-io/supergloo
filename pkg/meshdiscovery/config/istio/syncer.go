@@ -38,9 +38,9 @@ var (
 )
 
 func StartIstioDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, pubSub *registration.PubSub) {
-	sgConfigLoop := &istioDiscoveryConfigLoop{cs: cs}
-	sgListener := registration.NewSubscriber(ctx, pubSub, sgConfigLoop)
-	sgListener.Listen(ctx)
+	configLoop := &istioDiscoveryConfigLoop{cs: cs}
+	listener := registration.NewSubscriber(ctx, pubSub, configLoop)
+	listener.Listen(ctx)
 }
 
 type istioDiscoveryConfigLoop struct {
