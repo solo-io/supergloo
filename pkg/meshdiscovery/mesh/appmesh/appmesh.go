@@ -69,15 +69,21 @@ func (s *appmeshDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 		return nil, nil
 	}
 
+	// For the next 2 errors return nil so it doesn't crash other discovery not having this
+	// Maybe pull this logic out, but better it start working later if it's added
 	glooSecret, err := s.getAwsSecret()
 	if err != nil {
-		return nil, err
+		logger.Errorw("could not find secret to authenticate with aws", zap.Error(err))
+		return nil, nil
 	}
 	secretRef := glooSecret.Metadata.Ref()
 
 	awsClient, err := s.cb.GetClientInstance(&secretRef, amd.region)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not get client instance for aws")
+		logger.Errorw("authentication with aws failed for the given credentials",
+			zap.Error(err), zap.String("secret", secretRef.Key()),
+		)
+		return nil, nil
 	}
 
 	newMeshes, err := constructAwsMeshes(ctx, awsClient, amd.region, &secretRef)
