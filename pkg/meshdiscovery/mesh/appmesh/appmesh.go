@@ -27,6 +27,8 @@ const (
 	kubeSysyem   = "kube-system"
 
 	appmeshSelector = "appmesh-mesh-discovery"
+
+	DefaultVirtualNodeLabel = "virtual-node"
 )
 
 var (
@@ -174,6 +176,7 @@ func constructAwsMeshes(ctx context.Context, client appmesh.Client, region strin
 					EnableAutoInject: true,
 					AwsSecret:        secret,
 					Region:           region,
+					VirtualNodeLabel: DefaultVirtualNodeLabel,
 				},
 			},
 			DiscoveryMetadata: &v1.DiscoveryMetadata{},
