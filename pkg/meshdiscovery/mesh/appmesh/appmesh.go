@@ -109,6 +109,33 @@ type appmeshDiscoveryData struct {
 	region     string
 }
 
+/*
+	This function attempts to discover appmesh meshes using a couple heuristics based out of
+	experience and the aws docs.
+
+	1) a config map located in the kube-system namespace named "aws-auth"
+		https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
+	2) at least one exists pod in the kube-system namespsace is named aws-pod.
+	from what we can tell each one of these pods represent one of the worker
+	nodes for the cluster. Each node has a nodeAffinity for one of the worker
+	nodes. An example:
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchFields:
+          - key: metadata.name
+            operator: In
+            values:
+            - ip-192-168-225-224.ec2.internal
+
+	As an added bonus these pods run a container which specifies the image tag
+	contains a reference to the region in it's full name. An example:
+
+		602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.3.2
+
+*/
 func newAppmeshDiscoveryData(ctx context.Context, configMaps skkube.ConfigMapList, pods skkube.PodList) *appmeshDiscoveryData {
 	logger := contextutils.LoggerFrom(ctx)
 
