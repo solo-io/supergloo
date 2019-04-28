@@ -1379,11 +1379,13 @@
   version = "v0.7.17"
 
 [[projects]]
-  digest = "1:de225ea8ecc7b8660fa708041ef6f7a3ebf4aed6a7ca4beb94f2a95877db9d42"
+  digest = "1:da48a7b42a263b4dc13c7b77417239ee2865df5b21fa310165505b6e4ddb67e4"
   name = "github.com/solo-io/solo-kit"
   packages = [
+    "api/external/kubernetes/configmap",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
+    "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/v1/clients",
@@ -1403,6 +1405,7 @@
     "pkg/api/v1/clients/kubesecret",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
+    "pkg/api/v1/clients/wrapper",
     "pkg/api/v1/eventloop",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
@@ -1433,8 +1436,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "6686c4f5f21002d80a7d98b137fe94e470ca5f58"
-  version = "v0.7.0"
+  revision = "dc5feeb21add5f0d9c3d858cadf05ec90451efca"
+  version = "v0.7.2"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2522,6 +2525,7 @@
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",

@@ -104,6 +104,7 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast) ; done']
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['compile-tests']
     id: 'test'
 

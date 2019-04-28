@@ -71,6 +71,10 @@
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
+        "name": "ConfigMap",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
         "name": "Install",
         "package": "supergloo.solo.io"
       }
