@@ -1,20 +1,20 @@
 package prometheus
 
 import (
-	"encoding/json"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"gopkg.in/yaml.v2"
 )
 
 type PrometheusConfig struct {
-	Metadata core.Metadata
-	Config
-	Alerts string // inline as a string, not processed by supergloo
-	Rules  string // inline as a string, not processed by supergloo
+	Metadata core.Metadata `yaml:"metadata"`
+	Config   `yaml:"config"`
+	Alerts   string `yaml:"alerts"` // inline as a string, not processed by supergloo
+	Rules    string `yaml:"rules"`  // inline as a string, not processed by supergloo
 }
 
 func (c *PrometheusConfig) GetMetadata() core.Metadata {
@@ -30,12 +30,12 @@ func (c *PrometheusConfig) Equal(that interface{}) bool {
 }
 
 func (c *PrometheusConfig) Clone() *PrometheusConfig {
-	raw, err := json.Marshal(c)
+	raw, err := yaml.Marshal(c)
 	if err != nil {
 		panic(err)
 	}
 	var newC PrometheusConfig
-	if err := json.Unmarshal(raw, &newC); err != nil {
+	if err := yaml.Unmarshal(raw, &newC); err != nil {
 		panic(err)
 	}
 	return &newC
