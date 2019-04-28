@@ -51,7 +51,7 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 
 	existingInstalls := utils.GetActiveInstalls(installs, utils.LinkerdInstallFilterFunc)
 
-	var newMeshes v1.MeshList
+	var discoveredMeshes v1.MeshList
 	for _, linkerdPod := range utils.SelectRunningPods(pods) {
 		if strings.Contains(linkerdPod.Name, linkerdController) {
 			mesh, err := constructDiscoveredMesh(ctx, linkerdPod, existingInstalls)
@@ -59,11 +59,11 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 				return nil, err
 			}
 			logger.Debugf("successfully discovered mesh data for %v", mesh)
-			newMeshes = append(newMeshes, mesh)
+			discoveredMeshes = append(discoveredMeshes, mesh)
 		}
 	}
 
-	return newMeshes, nil
+	return discoveredMeshes, nil
 }
 
 func constructDiscoveredMesh(ctx context.Context, mainPod *kubernetes.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
