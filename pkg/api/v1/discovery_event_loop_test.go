@@ -36,7 +36,7 @@ var _ = Describe("DiscoveryEventLoop", func() {
 		configMapClientFactory := &factory.MemoryResourceClientFactory{
 			Cache: memory.NewInMemoryResourceCache(),
 		}
-		configMapClient, err := NewConfigMapClient(configMapClientFactory)
+		configMapClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMapClient(configMapClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
 		installClientFactory := &factory.MemoryResourceClientFactory{
@@ -50,7 +50,7 @@ var _ = Describe("DiscoveryEventLoop", func() {
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = emitter.ConfigMap().Write(NewConfigMap(namespace, "jerry"), clients.WriteOpts{})
+		_, err = emitter.ConfigMap().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Install().Write(NewInstall(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())

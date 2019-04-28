@@ -1,4 +1,4 @@
-package kubernetes_test
+package appmesh
 
 import (
 	"testing"
@@ -7,7 +7,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestNamespace(t *testing.T) {
+var (
+	T *testing.T
+)
+
+func TestAppmesh(t *testing.T) {
+	T = t
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Namespace Suite")
+	RunSpecs(t, "Appmesh Suite")
 }

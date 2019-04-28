@@ -42,7 +42,7 @@ var _ = Describe("V1Emitter", func() {
 		cfg             *rest.Config
 		emitter         DiscoveryEmitter
 		podClient       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-		configMapClient ConfigMapClient
+		configMapClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient
 		installClient   InstallClient
 	)
 
@@ -68,7 +68,7 @@ var _ = Describe("V1Emitter", func() {
 			Cache: memory.NewInMemoryResourceCache(),
 		}
 
-		configMapClient, err = NewConfigMapClient(configMapClientFactory)
+		configMapClient, err = github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMapClient(configMapClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 		// Install Constructor
 		installClientFactory := &factory.KubeResourceClientFactory{
@@ -162,7 +162,7 @@ var _ = Describe("V1Emitter", func() {
 			ConfigMap
 		*/
 
-		assertSnapshotconfigmaps := func(expectconfigmaps ConfigMapList, unexpectconfigmaps ConfigMapList) {
+		assertSnapshotconfigmaps := func(expectconfigmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList, unexpectconfigmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList) {
 		drain:
 			for {
 				select {
@@ -183,7 +183,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := configMapClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := configMapClient.List(namespace2, clients.ListOpts{})
-					combined := ConfigmapsByNamespace{
+					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -191,32 +191,32 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		configMap1a, err := configMapClient.Write(NewConfigMap(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		configMap1a, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		configMap1b, err := configMapClient.Write(NewConfigMap(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b}, nil)
-		configMap2a, err := configMapClient.Write(NewConfigMap(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		configMap2b, err := configMapClient.Write(NewConfigMap(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		configMap1b, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b}, nil)
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b}, nil)
+		configMap2a, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		configMap2b, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b}, nil)
 
 		err = configMapClient.Delete(configMap2a.GetMetadata().Namespace, configMap2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configMapClient.Delete(configMap2b.GetMetadata().Namespace, configMap2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b}, ConfigMapList{configMap2a, configMap2b})
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b}, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap2a, configMap2b})
 
 		err = configMapClient.Delete(configMap1a.GetMetadata().Namespace, configMap1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configMapClient.Delete(configMap1b.GetMetadata().Namespace, configMap1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(nil, ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b})
+		assertSnapshotconfigmaps(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b})
 
 		/*
 			Install
@@ -355,7 +355,7 @@ var _ = Describe("V1Emitter", func() {
 			ConfigMap
 		*/
 
-		assertSnapshotconfigmaps := func(expectconfigmaps ConfigMapList, unexpectconfigmaps ConfigMapList) {
+		assertSnapshotconfigmaps := func(expectconfigmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList, unexpectconfigmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList) {
 		drain:
 			for {
 				select {
@@ -376,7 +376,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := configMapClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := configMapClient.List(namespace2, clients.ListOpts{})
-					combined := ConfigmapsByNamespace{
+					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace{
 						namespace1: nsList1,
 						namespace2: nsList2,
 					}
@@ -384,32 +384,32 @@ var _ = Describe("V1Emitter", func() {
 				}
 			}
 		}
-		configMap1a, err := configMapClient.Write(NewConfigMap(namespace1, name1), clients.WriteOpts{Ctx: ctx})
+		configMap1a, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace1, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
-		configMap1b, err := configMapClient.Write(NewConfigMap(namespace2, name1), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b}, nil)
-		configMap2a, err := configMapClient.Write(NewConfigMap(namespace1, name2), clients.WriteOpts{Ctx: ctx})
-		Expect(err).NotTo(HaveOccurred())
-		configMap2b, err := configMapClient.Write(NewConfigMap(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		configMap1b, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace2, name1), clients.WriteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b}, nil)
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b}, nil)
+		configMap2a, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace1, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+		configMap2b, err := configMapClient.Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace2, name2), clients.WriteOpts{Ctx: ctx})
+		Expect(err).NotTo(HaveOccurred())
+
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b}, nil)
 
 		err = configMapClient.Delete(configMap2a.GetMetadata().Namespace, configMap2a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configMapClient.Delete(configMap2b.GetMetadata().Namespace, configMap2b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(ConfigMapList{configMap1a, configMap1b}, ConfigMapList{configMap2a, configMap2b})
+		assertSnapshotconfigmaps(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b}, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap2a, configMap2b})
 
 		err = configMapClient.Delete(configMap1a.GetMetadata().Namespace, configMap1a.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 		err = configMapClient.Delete(configMap1b.GetMetadata().Namespace, configMap1b.GetMetadata().Name, clients.DeleteOpts{Ctx: ctx})
 		Expect(err).NotTo(HaveOccurred())
 
-		assertSnapshotconfigmaps(nil, ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b})
+		assertSnapshotconfigmaps(nil, github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList{configMap1a, configMap1b, configMap2a, configMap2b})
 
 		/*
 			Install

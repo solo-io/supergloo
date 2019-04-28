@@ -75,7 +75,7 @@ func constructDiscoveredMesh(ctx context.Context, mainPod *kubernetes.Pod, exist
 		return nil, err
 	}
 
-	mesh := utils.BasicMeshInfo(mainPod, DiscoverySelector, linkerd)
+	mesh := utils.BasicMeshInfo(mainPod.Namespace, DiscoverySelector, linkerd)
 
 	mesh.MeshType = &v1.Mesh_Linkerd{
 		Linkerd: &v1.LinkerdMesh{

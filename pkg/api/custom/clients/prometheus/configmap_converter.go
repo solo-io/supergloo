@@ -81,9 +81,9 @@ func (c *prometheusConfigmapConverter) ToKubeConfigMap(ctx context.Context, rc *
 
 func ResourceClientFactory(kube kubernetes.Interface, kubeCache cache.KubeCoreCache) factory.ResourceClientFactory {
 	return &factory.KubeConfigMapClientFactory{
-		Clientset:        kube,
-		Cache:            kubeCache,
-		PlainConfigmaps:  true,
-		CustomtConverter: NewPrometheusConfigmapConverter(),
+		Clientset:       kube,
+		Cache:           kubeCache,
+		PlainConfigmaps: true,
+		CustomConverter: NewPrometheusConfigmapConverter(),
 	}
 }

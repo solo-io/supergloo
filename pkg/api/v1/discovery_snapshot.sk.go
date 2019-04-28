@@ -13,7 +13,7 @@ import (
 
 type DiscoverySnapshot struct {
 	Pods       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
-	Configmaps ConfigmapsByNamespace
+	Configmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace
 	Installs   InstallsByNamespace
 }
 

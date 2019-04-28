@@ -30,14 +30,14 @@ func MeshWriteNamespace() string {
 func GetVersionFromPodWithMatchers(pod *kubernetes.Pod, podStringMatchers []string) (string, error) {
 	containers := pod.Spec.Containers
 	for _, container := range containers {
-		if stringContainsAll(podStringMatchers, container.Image) {
+		if StringContainsAll(podStringMatchers, container.Image) {
 			return ImageVersion(container.Image)
 		}
 	}
 	return "", errors.Errorf("unable to find matching container from pod")
 }
 
-func stringContainsAll(podStringMatchers []string, matchString string) bool {
+func StringContainsAll(podStringMatchers []string, matchString string) bool {
 	for _, substr := range podStringMatchers {
 		if !strings.Contains(matchString, substr) {
 			return false
@@ -46,11 +46,11 @@ func stringContainsAll(podStringMatchers []string, matchString string) bool {
 	return true
 }
 
-func BasicMeshInfo(mainPod *kubernetes.Pod, discoverySelector map[string]string, meshType string) *v1.Mesh {
+func BasicMeshInfo(meshNamespace string, discoverySelector map[string]string, meshType string) *v1.Mesh {
 	mesh := &v1.Mesh{
 		Metadata: core.Metadata{
 			Namespace: MeshWriteNamespace(),
-			Name:      fmt.Sprintf("%s-%s", meshType, mainPod.Namespace),
+			Name:      fmt.Sprintf("%s-%s", meshType, meshNamespace),
 			Labels:    discoverySelector,
 		},
 	}

@@ -44,16 +44,16 @@ func init() {
 type DiscoveryEmitter interface {
 	Register() error
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	ConfigMap() ConfigMapClient
+	ConfigMap() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient
 	Install() InstallClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient ConfigMapClient, installClient InstallClient) DiscoveryEmitter {
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient, installClient InstallClient) DiscoveryEmitter {
 	return NewDiscoveryEmitterWithEmit(podClient, configMapClient, installClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient ConfigMapClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:       podClient,
 		configMap: configMapClient,
@@ -65,7 +65,7 @@ func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v
 type discoveryEmitter struct {
 	forceEmit <-chan struct{}
 	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	configMap ConfigMapClient
+	configMap github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient
 	install   InstallClient
 }
 
@@ -86,7 +86,7 @@ func (c *discoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resource
 	return c.pod
 }
 
-func (c *discoveryEmitter) ConfigMap() ConfigMapClient {
+func (c *discoveryEmitter) ConfigMap() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient {
 	return c.configMap
 }
 
@@ -118,7 +118,7 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 	podChan := make(chan podListWithNamespace)
 	/* Create channel for ConfigMap */
 	type configMapListWithNamespace struct {
-		list      ConfigMapList
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
 		namespace string
 	}
 	configMapChan := make(chan configMapListWithNamespace)

@@ -74,7 +74,7 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *kubernetes.Pod,
 		return nil, err
 	}
 
-	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istio)
+	mesh := utils.BasicMeshInfo(istioPilotPod.Namespace, DiscoverySelector, istio)
 	mesh.MeshType = &v1.Mesh_Istio{
 		Istio: &v1.IstioMesh{
 			InstallationNamespace: istioPilotPod.Namespace,
