@@ -130,7 +130,6 @@ type appmeshDiscoveryData struct {
             values:
             - ip-192-168-225-224.ec2.internal
 
-	Not heavily tested, but we feel that this will be accurate for most cases.
 	As an added bonus these pods run a container which specifies the image tag
 	contains a reference to the region in it's full name. An example:
 
