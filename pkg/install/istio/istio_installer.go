@@ -79,7 +79,7 @@ func makeManifestsForInstall(ctx context.Context, install *v1.Install, mesh *v1.
 	// to be updated after install
 	selfSignedCert := istio.CustomRootCert == nil
 	if mesh != nil {
-		selfSignedCert = mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil
+		selfSignedCert = mesh.MtlsConfig == nil || (mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil)
 	}
 	mtlsOptions := mtlsInstallOptions{
 		Enabled: istio.EnableMtls,

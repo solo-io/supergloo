@@ -3,6 +3,8 @@ package surveyutils_test
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/api/external/prometheus"
+
 	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -22,8 +24,10 @@ var _ = Describe("SetStats", func() {
 		clients.UseMemoryClients()
 		_, _ = clients.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "my", Name: "mesh"}}, skclients.WriteOpts{})
 		_, _ = clients.MustMeshClient().Write(&v1.Mesh{Metadata: core.Metadata{Namespace: "your", Name: "mesh"}}, skclients.WriteOpts{})
-		_, _ = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{Metadata: core.Metadata{Namespace: "my", Name: "cfg"}}, skclients.WriteOpts{})
-		_, _ = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{Metadata: core.Metadata{Namespace: "your", Name: "cfg"}}, skclients.WriteOpts{})
+		_, _ = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{
+			PrometheusConfig: prometheus.PrometheusConfig{Metadata: core.Metadata{Namespace: "my", Name: "cfg"}}}, skclients.WriteOpts{})
+		_, _ = clients.MustPrometheusConfigClient().Write(&promv1.PrometheusConfig{
+			PrometheusConfig: prometheus.PrometheusConfig{Metadata: core.Metadata{Namespace: "your", Name: "cfg"}}}, skclients.WriteOpts{})
 	})
 	It("sets the target mesh and prometheus configs from lists", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {

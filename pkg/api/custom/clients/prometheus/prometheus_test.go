@@ -10,7 +10,6 @@ import (
 	. "github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	. "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"github.com/solo-io/supergloo/test/inputs"
-	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -40,32 +39,9 @@ var _ = Describe("Prometheus Config Conversion", func() {
 			Expect(err).NotTo(HaveOccurred())
 			original, err := client.Read(namespace, name, clients.ReadOpts{})
 			Expect(err).NotTo(HaveOccurred())
-			cfg, err := ConfigFromResource(original)
-			Expect(err).NotTo(HaveOccurred())
+			cfg := original.Config
 			Expect(cfg.ScrapeConfigs).To(HaveLen(7))
 			Expect(cfg.ScrapeConfigs[0].JobName).To(Equal("kubernetes-apiservers"))
-		})
-		It("CRUDs Configs", func() {
-			name := "prometheus-config"
-			err := CreatePrometheusConfigmap(namespace, name, kube)
-			Expect(err).NotTo(HaveOccurred())
-			original, err := client.Read(namespace, name, clients.ReadOpts{})
-			Expect(err).NotTo(HaveOccurred())
-			cfg, err := ConfigFromResource(original)
-			Expect(err).NotTo(HaveOccurred())
-			converted, err := ConfigToResource(cfg)
-			Expect(err).NotTo(HaveOccurred())
-			cfg2, err := ConfigFromResource(converted)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(cfg).To(Equal(cfg2))
-
-			yam1, err := yaml.Marshal(cfg)
-			Expect(err).NotTo(HaveOccurred())
-			yam2, err := yaml.Marshal(cfg2)
-			Expect(err).NotTo(HaveOccurred())
-			str1 := string(yam1)
-			str2 := string(yam2)
-			Expect(str1).To(Equal(str2))
 		})
 	})
 })

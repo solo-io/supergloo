@@ -1,0 +1,7 @@
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 242-811-625
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): details:9080
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): comments:9080
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): reviews:9080
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): reviews:9080
+INFO:werkzeug:127.0.0.1 - - [26/Apr/2019 14:22:38] "GET /productpage?u=normal HTTP/1.1" 200 -
