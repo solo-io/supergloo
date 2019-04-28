@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
@@ -73,7 +74,9 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 		if err != nil {
 			return err
 		}
-
+		if typedConfig, ok := config.(*appmesh.AwsAppMeshConfigurationImpl); ok {
+			updatedMeshes = append(updatedMeshes, updatedMesh(mesh, typedConfig))
+		}
 	}
 
 	meshReconciler := v1.NewMeshReconciler(s.cs.Discovery.Mesh)
@@ -84,6 +87,22 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func updatedMesh(config *appmesh.AwsAppMeshConfiguration) *v1.Mesh {
+func updatedMesh(mesh *v1.Mesh, config *appmesh.AwsAppMeshConfigurationImpl) *v1.Mesh {
+	result := mesh
+	awsMesh := mesh.GetAwsAppMesh()
+	if awsMesh == nil {
+		return mesh
+	}
+	if result.DiscoveryMetadata == nil {
+		result.DiscoveryMetadata = &v1.DiscoveryMetadata{}
+	}
+
+	var meshUpstreams []*core.ResourceRef
+	for _, upstream := range config.UpstreamList {
+		ref := upstream.Metadata.Ref()
+		meshUpstreams = append(meshUpstreams, &ref)
+	}
+	result.DiscoveryMetadata.Upstreams = meshUpstreams
+
 	return nil
 }
