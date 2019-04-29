@@ -4,14 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	cliclients "github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/kubernetes"
@@ -80,12 +77,6 @@ func (v *validator) validateSecret(ctx context.Context, appMesh *v1.AwsAppMesh) 
 
 func (v *validator) validateAutoInjectionConfig(ctx context.Context, appMesh *v1.AwsAppMesh) error {
 
-	// Get the namespace in which supergloo is running
-	superglooNamespace, err := util.GetSuperglooNamespace(v.kube)
-	if err != nil {
-		return err
-	}
-
 	// Validate selector for pod sidecar injection
 	podSelector := appMesh.InjectionSelector
 	if podSelector == nil {
@@ -95,17 +86,8 @@ func (v *validator) validateAutoInjectionConfig(ctx context.Context, appMesh *v1
 		return errors.Errorf("upstream injection selectors are currently not supported")
 	}
 
-	// If the patch config map is not set, default it our own
-	if appMesh.SidecarPatchConfigMap == nil {
-		appMesh.SidecarPatchConfigMap = &core.ResourceRef{
-			Namespace: superglooNamespace,
-			Name:      webhookName,
-		}
-	}
-
-	// If its our standard map, then we don't care if it does not exists as we will create it; if not return an error
-	configMapRef := appMesh.SidecarPatchConfigMap
-	if configMapRef.Namespace != superglooNamespace || configMapRef.Name != webhookName {
+	// If this is nil, the webhook will default to our standard map: <supergloo_namespace>.sidecar-injector
+	if configMapRef := appMesh.SidecarPatchConfigMap; configMapRef != nil {
 		_, err := v.kube.CoreV1().ConfigMaps(configMapRef.Namespace).Get(configMapRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return errors.Wrapf(err, "failed to find SidecarPatchConfigMap")

@@ -13,3 +13,12 @@ var (
 func IsReleaseVersion() bool {
 	return Version != UndefinedVersion && Version != DevVersion
 }
+
+func GetWebhookImageTag() string {
+	// TODO(marco): temporarily default to a manually tagged image to make tests pass. Each build will soon build and push its own images.
+	defaultTag := "temporary-for-tests"
+	if IsReleaseVersion() {
+		defaultTag = Version
+	}
+	return defaultTag
+}
