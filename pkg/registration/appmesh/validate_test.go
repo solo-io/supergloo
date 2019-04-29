@@ -3,6 +3,9 @@ package appmesh
 import (
 	"context"
 
+	v12 "k8s.io/api/core/v1"
+	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -41,6 +44,8 @@ var _ = Describe("Validate App Mesh meshes", func() {
 		secretClient.EXPECT().Read(testNamespace, gomock.Not("aws-secret"), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
 
 		kube = fake.NewSimpleClientset()
+		_, err := kube.CoreV1().ConfigMaps(testNamespace).Create(&v12.ConfigMap{ObjectMeta: v13.ObjectMeta{Namespace: testNamespace, Name: webhookName}})
+		Expect(err).NotTo(HaveOccurred())
 
 		validator = NewAppMeshValidator(kube, secretClient)
 	})

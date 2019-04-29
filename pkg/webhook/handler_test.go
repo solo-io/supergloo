@@ -123,6 +123,17 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		}))
 	})
 
+	It("uses the default config map if the mesh is missing the SidecarPatchConfigMap field", func() {
+		clients.SetClientSet(mockClientMeshNoConfigMap)
+
+		response, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
+		Expect(err).NotTo(HaveOccurred())
+		Expect(response.Allowed).To(BeTrue())
+		pt := admissionv1beta1.PatchTypeJSONPatch
+		Expect(response.PatchType).To(BeEquivalentTo(&pt))
+		Expect(len(response.Patch)).NotTo(BeZero())
+	})
+
 	It("does not patch pod that does not match injection selector", func() {
 		clients.SetClientSet(mockClientLabelSelector)
 
@@ -153,15 +164,6 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		Expect(response.Patch).To(BeNil())
 	})
 
-	It("fails if auto-injection is enabled but the mesh is missing the SidecarPatchConfigMap field", func() {
-		clients.SetClientSet(mockClientMeshNoConfigMap)
-
-		_, err := admit(context.TODO(), testData.MatchingPod.ToRequest())
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("SidecarPatchConfigMap is nil for mesh"))
-
-	})
-
 	It("fails if auto-injection is enabled but the mesh is missing the InjectionSelector field", func() {
 		clients.SetClientSet(mockClientMeshNoSelector)
 
@@ -183,6 +185,7 @@ func buildMock(ctrl *gomock.Controller, configMapToReturn *corev1.ConfigMap, mes
 	slice := []*v1.Mesh(meshesToReturn)
 	mockClient := clients.NewMockWebhookResourceClient(ctrl)
 	mockClient.EXPECT().ListMeshes(gomock.Any(), gomock.Any()).Return(slice, nil).AnyTimes()
-	mockClient.EXPECT().GetConfigMap(gomock.Any(), gomock.Any()).Return(configMapToReturn, nil).AnyTimes()
+	mockClient.EXPECT().GetConfigMap("supergloo-system", "sidecar-injector").Return(configMapToReturn, nil).AnyTimes()
+	mockClient.EXPECT().GetSuperglooNamespace().Return("supergloo-system", nil).AnyTimes()
 	return mockClient
 }

@@ -129,7 +129,7 @@ var appMeshInjectEnabledLabelSelector = &v1.Mesh{
 			VirtualNodeLabel: "virtual-node",
 			EnableAutoInject: true,
 			SidecarPatchConfigMap: &core.ResourceRef{
-				Name:      "sidecar-injector-webhook-configmap",
+				Name:      "sidecar-injector",
 				Namespace: "supergloo-system",
 			},
 			InjectionSelector: &v1.PodSelector{
@@ -149,7 +149,7 @@ var appMeshInjectEnabledNamespaceSelector = &v1.Mesh{
 			VirtualNodeLabel: "virtual-node",
 			EnableAutoInject: true,
 			SidecarPatchConfigMap: &core.ResourceRef{
-				Name:      "sidecar-injector-webhook-configmap",
+				Name:      "sidecar-injector",
 				Namespace: "supergloo-system",
 			},
 			InjectionSelector: &v1.PodSelector{
@@ -168,7 +168,7 @@ var appMeshInjectDisabled = &v1.Mesh{
 			VirtualNodeLabel: "virtual-node",
 			EnableAutoInject: false,
 			SidecarPatchConfigMap: &core.ResourceRef{
-				Name:      "sidecar-injector-webhook-configmap",
+				Name:      "sidecar-injector",
 				Namespace: "supergloo-system",
 			},
 			InjectionSelector: &v1.PodSelector{
@@ -204,7 +204,7 @@ var appMeshNoSelector = &v1.Mesh{
 			VirtualNodeLabel: "virtual-node",
 			EnableAutoInject: true,
 			SidecarPatchConfigMap: &core.ResourceRef{
-				Name:      "sidecar-injector-webhook-configmap",
+				Name:      "sidecar-injector",
 				Namespace: "supergloo-system"}}}}
 
 var istioMesh = &v1.Mesh{

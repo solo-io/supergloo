@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/solo-io/supergloo/pkg/util"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -21,6 +23,7 @@ import (
 type WebhookResourceClient interface {
 	ListMeshes(namespace string, opts clients.ListOpts) (v1.MeshList, error)
 	GetConfigMap(namespace, name string) (*corev1.ConfigMap, error)
+	GetSuperglooNamespace() (string, error)
 }
 
 // Contains the resource clients required by the webhook
@@ -35,6 +38,10 @@ func (c *webhookClientSet) ListMeshes(namespace string, opts clients.ListOpts) (
 
 func (c *webhookClientSet) GetConfigMap(namespace, name string) (*corev1.ConfigMap, error) {
 	return c.kubeClient.CoreV1().ConfigMaps(namespace).Get(name, metav1.GetOptions{})
+}
+
+func (c *webhookClientSet) GetSuperglooNamespace() (string, error) {
+	return util.GetSuperglooNamespace(c.kubeClient)
 }
 
 var (
