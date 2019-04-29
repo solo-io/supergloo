@@ -53,9 +53,8 @@ var _ = Describe("E2e", func() {
 func testRegisterAppmesh(meshName, secretName string) {
 	region, vnLabel := "us-east-1", "app"
 	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
-		"--secret %s.%s --select-namespaces %s --virtual-node-label %s --configmap %s.%s",
-		meshName, region, superglooNamespace, secretName, namespaceWithInject, vnLabel,
-		superglooNamespace, "sidecar-injector"))
+		"--secret %s.%s --select-namespaces %s --virtual-node-label %s",
+		meshName, region, superglooNamespace, secretName, namespaceWithInject, vnLabel))
 	Expect(err).NotTo(HaveOccurred())
 
 	meshClient := clients.MustMeshClient()

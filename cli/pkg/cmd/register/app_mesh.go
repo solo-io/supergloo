@@ -3,8 +3,6 @@ package register
 import (
 	"strings"
 
-	"github.com/solo-io/supergloo/pkg/util"
-
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 
 	"github.com/pkg/errors"
@@ -132,18 +130,6 @@ func validateFlags(opts *options.Options) error {
 
 	if opts.RegisterAppMesh.VirtualNodeLabel == "" {
 		return errors.Errorf("you must provide a virtual node label if auto-injection is enabled")
-	}
-
-	// TODO(marco): temporary fix, otherwise current version of webhook will fail
-	if opts.RegisterAppMesh.ConfigMap.Name == "" || opts.RegisterAppMesh.ConfigMap.Namespace == "" {
-
-		// Get the namespace in which supergloo is running
-		superglooNamespace, err := util.GetSuperglooNamespace(clients.MustKubeClient())
-		if err != nil {
-			return err
-		}
-		opts.RegisterAppMesh.ConfigMap.Namespace = superglooNamespace
-		opts.RegisterAppMesh.ConfigMap.Name = "sidecar-injector"
 	}
 
 	return nil
