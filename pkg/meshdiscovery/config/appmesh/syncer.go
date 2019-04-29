@@ -10,9 +10,10 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
-	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/appmesh"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"github.com/solo-io/supergloo/pkg/registration"
-	"github.com/solo-io/supergloo/pkg/translator/appmesh"
+	appmeshcfg "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	"go.uber.org/zap"
 )
 
@@ -68,13 +69,15 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
+	appmeshMeshes := utils.GetMeshes(snap.Meshes.List(), utils.AppmeshFilterFunc, utils.FilterByLabels(appmesh.DiscoverySelector))
+
 	var updatedMeshes v1.MeshList
-	for _, mesh := range snap.Meshes.List() {
-		config, err := appmesh.NewAwsAppMeshConfiguration(mesh.Metadata.Name, pods, upstreams)
+	for _, mesh := range appmeshMeshes {
+		config, err := appmeshcfg.NewAwsAppMeshConfiguration(mesh.Metadata.Name, pods, upstreams)
 		if err != nil {
 			return err
 		}
-		if typedConfig, ok := config.(*appmesh.AwsAppMeshConfigurationImpl); ok {
+		if typedConfig, ok := config.(*appmeshcfg.AwsAppMeshConfigurationImpl); ok {
 			updatedMeshes = append(updatedMeshes, updatedMesh(mesh, typedConfig))
 		}
 	}
@@ -82,12 +85,12 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 	meshReconciler := v1.NewMeshReconciler(s.cs.Discovery.Mesh)
 	listOpts := clients.ListOpts{
 		Ctx:      ctx,
-		Selector: istio.DiscoverySelector,
+		Selector: appmesh.DiscoverySelector,
 	}
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func updatedMesh(mesh *v1.Mesh, config *appmesh.AwsAppMeshConfigurationImpl) *v1.Mesh {
+func updatedMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) *v1.Mesh {
 	result := mesh
 	awsMesh := mesh.GetAwsAppMesh()
 	if awsMesh == nil {

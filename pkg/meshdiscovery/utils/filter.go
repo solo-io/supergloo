@@ -2,6 +2,7 @@ package utils
 
 import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type InstallFilterFunc func(install *v1.Install) bool
@@ -44,25 +45,44 @@ var LinkerdMeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
 	return false
 }
 
-func GetActiveInstalls(installs v1.InstallList, filterFunc InstallFilterFunc) v1.InstallList {
+var AppmeshFilterFunc MeshFilterFunc = func(mesh *v1.Mesh) bool {
+	if appmeshMesh := mesh.GetAwsAppMesh(); appmeshMesh != nil {
+		return true
+	}
+	return false
+}
+
+func FilterByLabels(meshLabels map[string]string) MeshFilterFunc {
+	return func(mesh *v1.Mesh) bool {
+		return labels.SelectorFromSet(meshLabels).Matches(labels.Set(mesh.Metadata.GetLabels()))
+	}
+}
+
+func GetActiveInstalls(installs v1.InstallList, filterFuncs ...InstallFilterFunc) v1.InstallList {
 	var result v1.InstallList
 	for _, install := range installs {
 		if install.Disabled {
 			continue
 		}
-		if filterFunc(install) {
-			result = append(result, install)
+		for _, filterFunc := range filterFuncs {
+			if !filterFunc(install) {
+				continue
+			}
 		}
+		result = append(result, install)
 	}
 	return result
 }
 
-func GetMeshes(meshes v1.MeshList, filterFunc MeshFilterFunc) v1.MeshList {
+func GetMeshes(meshes v1.MeshList, filterFuncs ...MeshFilterFunc) v1.MeshList {
 	var result v1.MeshList
 	for _, mesh := range meshes {
-		if filterFunc(mesh) {
-			result = append(result, mesh)
+		for _, filterFunc := range filterFuncs {
+			if !filterFunc(mesh) {
+				continue
+			}
 		}
+		result = append(result, mesh)
 	}
 	return result
 }

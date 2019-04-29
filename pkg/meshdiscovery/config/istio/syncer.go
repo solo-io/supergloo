@@ -93,7 +93,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc)
+	istioMeshes := utils.GetMeshes(snap.Meshes.List(), utils.IstioMeshFilterFunc, utils.FilterByLabels(istio.DiscoverySelector))
 	istioInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.IstioInstallFilterFunc)
 	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
