@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -79,7 +80,11 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 			return err
 		}
 		if typedConfig, ok := config.(*appmeshcfg.AwsAppMeshConfigurationImpl); ok {
-			updatedMeshes = append(updatedMeshes, updatedMesh(mesh, typedConfig))
+			updatedMesh, err := updateMesh(mesh, typedConfig)
+			if err != nil {
+				return err
+			}
+			updatedMeshes = append(updatedMeshes, updatedMesh)
 		}
 	}
 
@@ -90,11 +95,11 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 	return s.reconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func updatedMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) *v1.Mesh {
+func updateMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) (*v1.Mesh, error) {
 	result := mesh
 	awsMesh := mesh.GetAwsAppMesh()
 	if awsMesh == nil {
-		return mesh
+		return nil, errors.Errorf("non aws app mesh CRD found in aws app mesh config discovery")
 	}
 	if result.DiscoveryMetadata == nil {
 		result.DiscoveryMetadata = &v1.DiscoveryMetadata{}
@@ -106,6 +111,7 @@ func updatedMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) 
 		meshUpstreams = append(meshUpstreams, &ref)
 	}
 	result.DiscoveryMetadata.Upstreams = meshUpstreams
+	result.DiscoveryMetadata.EnableAutoInject = awsMesh.EnableAutoInject
 
-	return result
+	return result, nil
 }
