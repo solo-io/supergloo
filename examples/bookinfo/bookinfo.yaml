@@ -212,9 +212,9 @@ spec:
       serviceAccountName: bookinfo-productpage
       containers:
         - name: productpage
-          env:
-            - name: COMMENTS_HOSTNAME
-              value: comments.default2.svc.cluster.local
+          #env:
+          #  - name: COMMENTS_HOSTNAME
+          #    value: comments.default2.svc.cluster.local
           image: docker.io/ilackarms/productpage-pro:latest
           imagePullPolicy: IfNotPresent
           ports:

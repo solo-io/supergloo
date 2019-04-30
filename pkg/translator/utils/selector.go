@@ -8,6 +8,23 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+func HostnameSelected(hostname string, selector *v1.PodSelector, upstreams gloov1.UpstreamList) (bool, error) {
+	upstreamsFor, err := UpstreamsForSelector(selector, upstreams)
+	if err != nil {
+		return false, errors.Wrapf(err, "getting upstreams for selector")
+	}
+	for _, us := range upstreamsFor {
+		host, err := GetHostForUpstream(us)
+		if err != nil {
+			return false, err
+		}
+		if host == hostname {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func UpstreamsForSelector(selector *v1.PodSelector, allUpstreams gloov1.UpstreamList) (gloov1.UpstreamList, error) {
 	if selector == nil {
 		return allUpstreams, nil

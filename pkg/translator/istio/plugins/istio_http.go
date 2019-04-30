@@ -20,7 +20,7 @@ func (p *istioHttpPlugin) Init(params InitParams) error {
 
 var notImplementedErr = errors.Errorf("rule type not implemented")
 
-func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
+func (p *istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
 	switch rule := in.RuleType.(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
 		if err := processTrafficShiftingRule(params.Upstreams, rule.TrafficShifting, out); err != nil {
