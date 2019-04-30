@@ -12,6 +12,7 @@ RELEASE := $(shell go run build/main.go parse-env release)
 VERSION := $(shell go run build/main.go parse-env version)
 IMAGE_TAG := $(shell go run build/main.go parse-env image-tag)
 CONTAINER_REPO_PREFIX := $(shell go run build/main.go parse-env container-prefix)
+HELM_REPO := $(shell go run build/main.go parse-env helm-repo)
 
 # use this, or the shorter alias "must", as a dependency for any target that uses
 # values produced by the build tool
@@ -21,7 +22,9 @@ validate-computed-values:
 		$(RELEASE) \
 		$(VERSION) \
 		$(CONTAINER_REPO_PREFIX) \
-		$(IMAGE_TAG)
+		$(IMAGE_TAG) \
+		$(HELM_REPO)
+
 
 .PHONY: preview-computed-values
 preview-computed-values: must
@@ -29,7 +32,8 @@ preview-computed-values: must
 		release: $(RELEASE), \
 		version: $(VERSION), \
 		container-prefix: $(CONTAINER_REPO_PREFIX), \
-		image-tag: $(IMAGE_TAG)
+		image-tag: $(IMAGE_TAG), \
+		HELM-REPOSITORY: $(HELM_REPO)
 
 #### END OF MANAGED PORTION
 
@@ -177,28 +181,43 @@ endif
 #----------------------------------------------------------------------------------
 
 HELM_SYNC_DIR := $(OUTPUT_DIR)/helm
-HELM_DIR := install/helm
+HELM_CHART_DIR := install/helm/supergloo
 MANIFEST_DIR := install/manifest
 
 .PHONY: manifest
-manifest: helm-template install/manifest/supergloo.yaml update-helm-chart
+manifest: fetch-helm-repo helm-generate render-manifest helm-package-chart push-helm-repo
 
-# creates Chart.yaml, values.yaml, and requirements.yaml
-.PHONY: helm-template
-helm-template:
-	mkdir -p $(MANIFEST_DIR)
-	go run install/helm/supergloo/generate-values.go $(VERSION) $(IMAGE_TAG)
+### Generates Chart.yaml, values.yaml, and requirements.yaml
+.PHONY: helm-generate
+helm-generate:
+	go run $(HELM_CHART_DIR)/generate-values.go $(VERSION) $(IMAGE_TAG)
 
-update-helm-chart: helm-template
-	mkdir -p $(HELM_SYNC_DIR)/charts
-	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_DIR)/supergloo
+### Packages the chart and regenerates the repo index file
+helm-package-chart: helm-dirs helm-generate
+	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_CHART_DIR)
 	helm repo index $(HELM_SYNC_DIR)
 
-install/manifest/supergloo.yaml: helm-template
-	helm template install/helm/supergloo --namespace supergloo-system --name=supergloo > $@
+### Render manifest for release assets
+.PHONY: render-manifest
+render-manifest: $(MANIFEST_DIR)/supergloo.yaml
 
-.PHONY: render-yaml
-render-yaml: install/manifest/supergloo.yaml
+$(MANIFEST_DIR)/supergloo.yaml: helm-dirs helm-generate
+	helm template $(HELM_CHART_DIR) --namespace supergloo-system --name=supergloo > $@
+
+### Recipes to pull/push from rempote chart repository
+.PHONY: fetch-helm-repo
+fetch-helm-repo: helm-dirs
+	gsutil -m rsync -r $(HELM_REPO) $(HELM_SYNC_DIR)
+
+.PHONY: push-helm-repo
+push-helm-repo: helm-dirs
+	gsutil -m rsync -r $(HELM_SYNC_DIR) $(HELM_REPO)
+
+### Creates required directories
+.PHONY: helm-dirs
+helm-dirs:
+	mkdir -p $(MANIFEST_DIR)
+	mkdir -p $(HELM_SYNC_DIR)/charts
 
 
 #----------------------------------------------------------------------------------
@@ -207,7 +226,7 @@ render-yaml: install/manifest/supergloo.yaml
 
 # If this is not a release, this target is a no-op
 .PHONY: upload-github-release-assets
-upload-github-release-assets: build-cli render-yaml
+upload-github-release-assets: build-cli render-manifest
 	go run ci/upload_github_release_assets.go
 
 
