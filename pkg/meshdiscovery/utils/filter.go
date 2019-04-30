@@ -77,12 +77,16 @@ func GetActiveInstalls(installs v1.InstallList, filterFuncs ...InstallFilterFunc
 func GetMeshes(meshes v1.MeshList, filterFuncs ...MeshFilterFunc) v1.MeshList {
 	var result v1.MeshList
 	for _, mesh := range meshes {
+		validMesh := true
 		for _, filterFunc := range filterFuncs {
 			if !filterFunc(mesh) {
-				continue
+				validMesh = false
+				break
 			}
 		}
-		result = append(result, mesh)
+		if validMesh {
+			result = append(result, mesh)
+		}
 	}
 	return result
 }

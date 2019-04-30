@@ -41,18 +41,19 @@ func (cl *appmeshDiscoveryConfigLoop) Start(ctx context.Context, enabled registr
 		cl.cs.Input.Pod,
 		cl.cs.Input.Upstream,
 	)
-	syncer := newAppmeshDiscoveryConfigSyncer(cl.cs)
+	reconciler := v1.NewMeshReconciler(cl.cs.Discovery.Mesh)
+	syncer := newAppmeshDiscoveryConfigSyncer(reconciler)
 	el := v1.NewAppmeshDiscoveryEventLoop(emitter, syncer)
 
 	return el, nil
 }
 
-func newAppmeshDiscoveryConfigSyncer(cs *clientset.Clientset) *appmeshDiscoveryConfigSyncer {
-	return &appmeshDiscoveryConfigSyncer{cs: cs}
+func newAppmeshDiscoveryConfigSyncer(reconciler v1.MeshReconciler) *appmeshDiscoveryConfigSyncer {
+	return &appmeshDiscoveryConfigSyncer{reconciler: reconciler}
 }
 
 type appmeshDiscoveryConfigSyncer struct {
-	cs *clientset.Clientset
+	reconciler v1.MeshReconciler
 }
 
 func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.AppmeshDiscoverySnapshot) error {
@@ -82,12 +83,11 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 		}
 	}
 
-	meshReconciler := v1.NewMeshReconciler(s.cs.Discovery.Mesh)
 	listOpts := clients.ListOpts{
 		Ctx:      ctx,
 		Selector: appmesh.DiscoverySelector,
 	}
-	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
+	return s.reconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
 func updatedMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) *v1.Mesh {
@@ -107,5 +107,5 @@ func updatedMesh(mesh *v1.Mesh, config *appmeshcfg.AwsAppMeshConfigurationImpl) 
 	}
 	result.DiscoveryMetadata.Upstreams = meshUpstreams
 
-	return nil
+	return result
 }
