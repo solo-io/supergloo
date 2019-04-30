@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
-    descrition: Change the behavior of the CLI to create the install namespace if it does not exist to begin with.
+    description: Change the behavior of the CLI to create the install namespace if it does not exist to begin with.
     issueLink: https://github.com/solo-io/supergloo/issues/413
