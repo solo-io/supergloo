@@ -1101,14 +1101,6 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
-  digest = "1:ccda8b9b5889f60d21ab3639f5074ea6865d89a42a6efc40e8aa65e659f84e9f"
-  name = "github.com/openshift/api"
-  packages = ["security/v1"]
-  pruneopts = "UT"
-  revision = "0d921e363e951d89f583292c60d013c318df64dc"
-  version = "v3.9.0"
-
-[[projects]]
   digest = "1:b2ee62e09bec113cf086d2ce0769efcc7bf79481aba8373fd8f7884e94df3462"
   name = "github.com/pelletier/go-buffruneio"
   packages = ["."]
@@ -2485,7 +2477,6 @@
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
-    "github.com/openshift/api/security/v1",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
@@ -2569,7 +2560,6 @@
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
-    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
