@@ -118,6 +118,20 @@
         "name": "Upstream",
         "package": "gloo.solo.io"
       }
+    ],
+    "appmeshDiscovery.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Pod",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      }
     ]
   }
 }
