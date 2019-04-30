@@ -71,6 +71,17 @@ func GetAppMeshRelatedResources() inputs.TestResourceSet {
 	return resources
 }
 
+func SumAppMeshRelatedResources() *inputs.PodsServicesUpstreamsTuple {
+	allResources := GetAllResources()
+	resources := &inputs.PodsServicesUpstreamsTuple{}
+	for _, resource := range allResources {
+		resources.Upstreams = append(resources.Upstreams, resource.Upstreams...)
+		resources.Pods = append(resources.Pods, resource.Pods...)
+		resources.Services = append(resources.Services, resource.Services...)
+	}
+	return resources
+}
+
 var (
 	MeshName            = "test-mesh"
 	productPageVnName   = "productpage-vn"

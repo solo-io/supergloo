@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/config/linkerd"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh"
@@ -66,4 +67,5 @@ func createRootContext(customCtx context.Context) context.Context {
 func newDiscoveryConfigLoops(ctx context.Context, clientset *clientset.Clientset, pubsub *registration.PubSub) {
 	istio.StartIstioDiscoveryConfigLoop(ctx, clientset, pubsub)
 	linkerd.StartLinkerdDiscoveryConfigLoop(ctx, clientset, pubsub)
+	appmesh.StartAppmeshDiscoveryConfigLoop(ctx, clientset, pubsub)
 }

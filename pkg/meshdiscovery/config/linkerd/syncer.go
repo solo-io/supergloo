@@ -75,7 +75,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc)
+	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc, utils.FilterByLabels(linkerd.DiscoverySelector))
 	linkerdInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
 	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
 
