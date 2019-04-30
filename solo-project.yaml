@@ -6,4 +6,10 @@ config:
   test_container_registry:
     gcr:
       base_url: gcr.io
-      project_name: solo-public
+      project_id: solo-public
+  release_helm_repository:
+    google_cloud_storage:
+      bucket_url: gs://solo-helm/
+  test_helm_repository:
+    google_cloud_storage:
+      bucket_url: gs://solo-helm-test/
