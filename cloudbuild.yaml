@@ -43,7 +43,7 @@ steps:
     args: ['check-format']
     waitFor: ['dep']
     id: 'check-format'
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
     entrypoint: 'bash'
     args: ['ci/check-code-and-docs-gen.sh']
     env:
@@ -125,6 +125,7 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'TAGGED_VERSION=$TAG_NAME'
       - 'BUILD_ID=$BUILD_ID'
+      - 'HELM_HOME=/root/.helm' # tell helm where to find data
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['unit-tests']
     id: 'helm-chart'
@@ -271,6 +272,7 @@ steps:
   ################################################################
   # Release
   ################################################################
+  # Wait for all the previous steps to complete
   - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
     args: ['upload-github-release-assets', 'push-docs']
     env:
@@ -278,11 +280,9 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'TAGGED_VERSION=$TAG_NAME'
       - 'BUILD_ID=$BUILD_ID'
-      - 'HELM_HOME=/root/.helm' # tell helm where to find data
     dir: './gopath/src/github.com/solo-io/supergloo'
     secretEnv: ['GITHUB_TOKEN', 'FIREBASE_TOKEN']
     id: 'release'
-    waitFor: ['docker', 'helm-chart', 'cli']
 
 secrets:
   - kmsKeyName: projects/solo-public/locations/global/keyRings/build/cryptoKeys/build-key
