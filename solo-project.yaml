@@ -9,7 +9,7 @@ config:
       project_id: solo-public
   release_helm_repository:
     google_cloud_storage:
-      bucket_url: gs://solo-helm/
+      bucket_url: gs://supergloo-helm/
   test_helm_repository:
     google_cloud_storage:
-      bucket_url: gs://solo-helm-test/
+      bucket_url: gs://supergloo-helm-test/
