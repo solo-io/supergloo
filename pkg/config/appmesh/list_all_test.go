@@ -24,7 +24,10 @@ var _ = Describe("List all App Mesh resources", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("correctly lists all resources for a mesh", func() {

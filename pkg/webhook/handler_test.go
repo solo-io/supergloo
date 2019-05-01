@@ -24,11 +24,11 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		mockClientIstio,
 		mockClientMeshNoConfigMap,
 		mockClientMeshNoSelector *clients.MockWebhookResourceClient
+		ctrl *gomock.Controller
 	)
 
 	BeforeEach(func() {
-		ctrl := gomock.NewController(T)
-		defer ctrl.Finish()
+		ctrl = gomock.NewController(T)
 
 		RegisterSidecarInjectionHandler()
 
@@ -41,6 +41,10 @@ var _ = Describe("handle AdmissionReview requests", func() {
 		mockClientMeshNoConfigMap = buildMock(ctrl, configMap, testData.AppMeshNoConfigMap)
 		mockClientMeshNoSelector = buildMock(ctrl, configMap, testData.AppMeshNoSelector)
 		mockClientIstio = buildMock(ctrl, configMap, testData.IstioMesh)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("correctly patches pod that matches injection label selector", func() {
