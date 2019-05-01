@@ -6,20 +6,19 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/linkerd/linkerd2/pkg/profiles"
-	"github.com/solo-io/supergloo/pkg/util"
-	"sigs.k8s.io/yaml"
-
 	linkerdv1alpha1 "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
-
+	"github.com/linkerd/linkerd2/pkg/profiles"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"github.com/solo-io/supergloo/pkg/util"
+	"sigs.k8s.io/yaml"
 )
 
 type Translator interface {
@@ -29,7 +28,7 @@ type Translator interface {
 
 // A container for the entire set of config for a single linkerd mesh
 type MeshConfig struct {
-	ServiceProfiles v1.ServiceProfileList
+	ServiceProfiles linkerdv1.ServiceProfileList
 }
 
 func (c *MeshConfig) Sort() {
@@ -174,7 +173,7 @@ func (t *translator) translateMesh(
 	}
 
 	// create a service profile for each upstream with routing rules
-	var serviceProfiles v1.ServiceProfileList
+	var serviceProfiles linkerdv1.ServiceProfileList
 	for _, hostRules := range *hosts {
 		sp := initServiceProfile(hostRules.host, hostRules.namespace)
 
@@ -223,8 +222,8 @@ func (t *translator) translateMesh(
 	return meshConfig, nil
 }
 
-func initServiceProfile(hostname, namespace string) *v1.ServiceProfile {
-	sp := &v1.ServiceProfile{}
+func initServiceProfile(hostname, namespace string) *linkerdv1.ServiceProfile {
+	sp := &linkerdv1.ServiceProfile{}
 	sp.SetMetadata(core.Metadata{
 		Name:      hostname,
 		Namespace: namespace,
@@ -283,7 +282,7 @@ func convertMatcher(match *gloov1.Matcher) *linkerdv1alpha1.RouteSpec {
 	}
 }
 
-func validateServiceProfile(sp *v1.ServiceProfile) error {
+func validateServiceProfile(sp *linkerdv1.ServiceProfile) error {
 	raw, err := yaml.Marshal(sp)
 	if err != nil {
 		return err

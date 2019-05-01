@@ -33,10 +33,18 @@ var _ = Describe("DiscoveryEventLoop", func() {
 		podClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewDiscoveryEmitter(podClient)
+		configMapClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		configMapClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMapClient(configMapClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewDiscoveryEmitter(podClient, configMapClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.ConfigMap().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewConfigMap(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockDiscoverySyncer{}
 		el := NewDiscoveryEventLoop(emitter, sync)

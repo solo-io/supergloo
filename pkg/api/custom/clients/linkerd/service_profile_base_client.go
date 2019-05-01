@@ -3,13 +3,14 @@ package linkerd
 import (
 	"sort"
 
+	"github.com/solo-io/supergloo/api/external/linkerd"
+
 	"github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
 	linkerdclient "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/supergloo/api/custom/linkerd"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"

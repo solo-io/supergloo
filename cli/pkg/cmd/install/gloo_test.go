@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -56,6 +57,22 @@ var _ = Describe("gloo install", func() {
 			installAndVerifyGloo("a1a", "ns", "latest")
 			installAndVerifyGloo("b1a", "ns", "v0.13.0")
 			installAndVerifyGloo("c1a", "ns", "badver")
+		})
+		It("should create installation namespace if it does not exist to begin with", func() {
+			name := "input"
+			namespace := "ns"
+			installNs := "gloo-system"
+
+			err := utils.Supergloo("install gloo " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", installNs) +
+				fmt.Sprintf("--namespace=%v ", namespace))
+			Expect(err).NotTo(HaveOccurred())
+
+			kube := clients.MustKubeClient()
+			ns, err := kube.CoreV1().Namespaces().Get(installNs, metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(ns.Name).To(Equal(installNs))
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"

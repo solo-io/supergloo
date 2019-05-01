@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/solo-io/go-utils/kubeutils"
+
 	appmeshApi "github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/pkg/errors"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -367,14 +370,16 @@ func createVirtualNode(ports []uint32, virtualNodeName, meshName, hostName strin
 
 func createVirtualRouter(meshName, hostname string, port uint32) *appmeshApi.VirtualRouterData {
 	portInt64 := int64(port)
+	vrName := kubeutils.SanitizeName(hostname)
 	return &appmeshApi.VirtualRouterData{
 		MeshName:          &meshName,
-		VirtualRouterName: &hostname,
+		VirtualRouterName: &vrName,
 		Spec: &appmeshApi.VirtualRouterSpec{
 			Listeners: []*appmeshApi.VirtualRouterListener{
 				{
 					PortMapping: &appmeshApi.PortMapping{
-						Port: &portInt64,
+						Port:     &portInt64,
+						Protocol: aws.String("http"),
 					},
 				},
 			},
@@ -412,7 +417,7 @@ func createVirtualServiceWithVirtualNodeProvider(meshName, hostname, virtualNode
 
 func createRoutes(meshName, hostname, virtualRouterName string, routes []*appmeshApi.HttpRoute) (out []*appmeshApi.RouteData) {
 	for i, route := range routes {
-		name := fmt.Sprintf("%s-%d", hostname, i)
+		name := fmt.Sprintf("%s-%d", kubeutils.SanitizeName(hostname), i)
 		out = append(out, createRoute(meshName, name, virtualRouterName, route))
 	}
 	return

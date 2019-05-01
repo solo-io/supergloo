@@ -5,18 +5,23 @@ import (
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+	"github.com/solo-io/supergloo/api/external/prometheus"
+	prometheusv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/go-utils/protoutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/configmap"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	kubev1 "k8s.io/api/core/v1"
 )
 
-const prometheusConfigmapKey = "prometheus.yml"
+const configKey1 = "prometheus.yml"
+const configKey2 = "prometheus.yaml"
+const alertsKey = "rules"
+const rulesKey = "rules"
+const keyUsedAnnotation = "cfg_key_name"
 
 type prometheusConfigmapConverter struct{}
 
@@ -25,65 +30,77 @@ func NewPrometheusConfigmapConverter() configmap.ConfigMapConverter {
 }
 
 func (c *prometheusConfigmapConverter) FromKubeConfigMap(ctx context.Context, rc *configmap.ResourceClient, configMap *kubev1.ConfigMap) (resources.Resource, error) {
-	resource := rc.NewResource()
-	// we only care about prometheus configs
-	if _, isPrometheusConfig := configMap.Data[prometheusConfigmapKey]; !isPrometheusConfig {
-		return nil, nil
+	keyUsed := configKey1
+	promYaml, ok := configMap.Data[configKey1]
+	if !ok {
+		keyUsed = configKey2
+		promYaml, ok = configMap.Data[configKey2]
+		if !ok {
+			// not our resource
+			return nil, nil
+		}
 	}
-	// only works for string fields
-	resourceMap := make(map[string]interface{})
-	for k, v := range configMap.Data {
-		resourceMap[k] = v
+	alerts := configMap.Data[alertsKey]
+	rules := configMap.Data[rulesKey]
+
+	var cfg prometheus.Config
+	if err := yaml.Unmarshal([]byte(promYaml), &cfg); err != nil {
+		return nil, err
 	}
 
-	protoResource, err := resources.ProtoCast(resource)
-	if err != nil {
-		return nil, errors.Wrapf(err, "converting resource to proto")
+	meta := kubeutils.FromKubeMeta(configMap.ObjectMeta)
+	if meta.Annotations == nil {
+		meta.Annotations = map[string]string{}
 	}
-	if err := protoutils.UnmarshalMap(resourceMap, protoResource); err != nil {
-		return nil, errors.Wrapf(err, "reading configmap data into %v", rc.Kind())
-	}
-	resource.SetMetadata(kubeutils.FromKubeMeta(configMap.ObjectMeta))
+	meta.Annotations[keyUsedAnnotation] = keyUsed
 
-	return resource, nil
+	return &prometheusv1.PrometheusConfig{PrometheusConfig: prometheus.PrometheusConfig{
+		Metadata: meta,
+		Config:   cfg,
+		Rules:    rules,
+		Alerts:   alerts,
+	}}, nil
 }
 
 func (c *prometheusConfigmapConverter) ToKubeConfigMap(ctx context.Context, rc *configmap.ResourceClient, resource resources.Resource) (*kubev1.ConfigMap, error) {
-	if _, isPrometheusConfig := resource.(*v1.PrometheusConfig); !isPrometheusConfig {
-		return nil, errors.Errorf("cannot convert %v to configmap", resources.Kind(resource))
+	promCfg, ok := resource.(*prometheusv1.PrometheusConfig)
+	if !ok {
+		return nil, errors.Errorf("%T not type %T cannot convert", resource, &prometheusv1.PrometheusConfig{})
 	}
-	protoResource, err := resources.ProtoCast(resource)
+	configYml, err := yaml.Marshal(promCfg.Config)
 	if err != nil {
-		return nil, errors.Wrapf(err, "converting resource to proto")
+		return nil, err
 	}
-	resourceMap, err := protoutils.MarshalMapEmitZeroValues(protoResource)
-	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling resource as map")
-	}
-	configMapData := make(map[string]string)
-	for k, v := range resourceMap {
-		// metadata comes from ToKubeMeta
-		// status not supported
-		if k == "metadata" {
-			continue
-		}
-		switch val := v.(type) {
-		case string:
-			configMapData[k] = val
+	// default to key prometheus.yml
+	keyUsed := configKey1
+	if promCfg.Metadata.Annotations != nil {
+		key, ok := promCfg.Metadata.Annotations[keyUsedAnnotation]
+		if ok {
+			keyUsed = key
 		}
 	}
+	data := map[string]string{
+		keyUsed: string(configYml),
+	}
+	if promCfg.Alerts != "" {
+		data[alertsKey] = promCfg.Alerts
+	}
+	if promCfg.Rules != "" {
+		data[rulesKey] = promCfg.Rules
+	}
+
 	meta := kubeutils.ToKubeMeta(resource.GetMetadata())
 	return &kubev1.ConfigMap{
 		ObjectMeta: meta,
-		Data:       configMapData,
+		Data:       data,
 	}, nil
 }
 
 func ResourceClientFactory(kube kubernetes.Interface, kubeCache cache.KubeCoreCache) factory.ResourceClientFactory {
 	return &factory.KubeConfigMapClientFactory{
-		Clientset:        kube,
-		Cache:            kubeCache,
-		PlainConfigmaps:  true,
-		CustomtConverter: NewPrometheusConfigmapConverter(),
+		Clientset:       kube,
+		Cache:           kubeCache,
+		PlainConfigmaps: true,
+		CustomConverter: NewPrometheusConfigmapConverter(),
 	}
 }

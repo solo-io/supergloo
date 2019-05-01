@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Adds options for installing Istio ingress and egress
+    issueLink: https://github.com/solo-io/supergloo/issues/403

@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/test/e2e/utils"
 )
 
 func createInstall(opts *options.Options, install *v1.Install) error {
@@ -39,6 +40,13 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		}
 
 	}
+	// create the installation namespace if it does not already exist
+	installNamespace := install.InstallationNamespace
+	err = utils.CreateNs(installNamespace)
+	if err != nil && !apierrs.IsExist(err) {
+		return err
+	}
+
 	install, err = clients.MustInstallClient().Write(install, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err

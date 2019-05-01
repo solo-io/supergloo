@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix citadel installation when no root ca provided
+    issueLink: https://github.com/solo-io/supergloo/issues/406

@@ -65,3 +65,18 @@ func (mr *MockWebhookResourceClientMockRecorder) GetConfigMap(namespace, name in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigMap", reflect.TypeOf((*MockWebhookResourceClient)(nil).GetConfigMap), namespace, name)
 }
+
+// GetSuperglooNamespace mocks base method
+func (m *MockWebhookResourceClient) GetSuperglooNamespace() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSuperglooNamespace")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSuperglooNamespace indicates an expected call of GetSuperglooNamespace
+func (mr *MockWebhookResourceClientMockRecorder) GetSuperglooNamespace() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSuperglooNamespace", reflect.TypeOf((*MockWebhookResourceClient)(nil).GetSuperglooNamespace))
+}

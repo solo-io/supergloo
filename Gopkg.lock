@@ -559,6 +559,14 @@
   revision = "ff9851476e985a4f27ed846d6babd7b24b763da5"
 
 [[projects]]
+  digest = "1:d5f97fc268267ec1b61c3453058c738246fc3e746f14b1ae25161513b7367b0c"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c5c6c98bc25355028a63748a498942a6398ccd22"
+  version = "v1.7.1"
+
+[[projects]]
   branch = "master"
   digest = "1:86c1210529e69d69860f2bb3ee9ccce0b595aa3f9165e7dd1388e5c612915888"
   name = "github.com/gregjones/httpcache"
@@ -1093,14 +1101,6 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
-  digest = "1:ccda8b9b5889f60d21ab3639f5074ea6865d89a42a6efc40e8aa65e659f84e9f"
-  name = "github.com/openshift/api"
-  packages = ["security/v1"]
-  pruneopts = "UT"
-  revision = "0d921e363e951d89f583292c60d013c318df64dc"
-  version = "v3.9.0"
-
-[[projects]]
   digest = "1:b2ee62e09bec113cf086d2ce0769efcc7bf79481aba8373fd8f7884e94df3462"
   name = "github.com/pelletier/go-buffruneio"
   packages = ["."]
@@ -1371,11 +1371,13 @@
   version = "v0.7.17"
 
 [[projects]]
-  digest = "1:de225ea8ecc7b8660fa708041ef6f7a3ebf4aed6a7ca4beb94f2a95877db9d42"
+  digest = "1:da48a7b42a263b4dc13c7b77417239ee2865df5b21fa310165505b6e4ddb67e4"
   name = "github.com/solo-io/solo-kit"
   packages = [
+    "api/external/kubernetes/configmap",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
+    "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/v1/clients",
@@ -1395,6 +1397,7 @@
     "pkg/api/v1/clients/kubesecret",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
+    "pkg/api/v1/clients/wrapper",
     "pkg/api/v1/eventloop",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
@@ -1425,8 +1428,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "6686c4f5f21002d80a7d98b137fe94e470ca5f58"
-  version = "v0.7.0"
+  revision = "dc5feeb21add5f0d9c3d858cadf05ec90451efca"
+  version = "v0.7.2"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2457,6 +2460,7 @@
     "github.com/golang/mock/gomock",
     "github.com/golang/protobuf/ptypes",
     "github.com/google/go-github/github",
+    "github.com/gorilla/mux",
     "github.com/hashicorp/go-multierror",
     "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
@@ -2473,7 +2477,6 @@
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
-    "github.com/openshift/api/security/v1",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
@@ -2513,6 +2516,7 @@
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -2556,7 +2560,6 @@
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
-    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",

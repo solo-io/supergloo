@@ -43,6 +43,18 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		true,
 		"enable auto-injection?")
 
+	set.BoolVar(&in.IstioInstall.EnableIngress,
+		"ingress",
+		false,
+		"enable ingress gateway?",
+	)
+
+	set.BoolVar(&in.IstioInstall.EnableEgress,
+		"egress",
+		false,
+		"enable egress gateway?",
+	)
+
 	set.BoolVar(&in.IstioInstall.InstallGrafana,
 		"grafana",
 		false,

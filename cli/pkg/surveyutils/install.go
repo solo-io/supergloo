@@ -25,6 +25,14 @@ func SurveyIstioInstall(in *options.Install) error {
 		return err
 	}
 
+	if err := cliutil.GetBoolInput("enable ingress gateway? ", &in.IstioInstall.EnableIngress); err != nil {
+		return err
+	}
+
+	if err := cliutil.GetBoolInput("enable egress gateway? ", &in.IstioInstall.EnableEgress); err != nil {
+		return err
+	}
+
 	if err := cliutil.GetBoolInput("add grafana to the install? ", &in.IstioInstall.InstallGrafana); err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package inputs
 import (
 	"github.com/prometheus/prometheus/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"github.com/solo-io/supergloo/api/external/prometheus"
 	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 	"gopkg.in/yaml.v2"
 	kubev1 "k8s.io/api/core/v1"
@@ -10,12 +11,22 @@ import (
 )
 
 func PrometheusConfig(name, namespace string) *v1.PrometheusConfig {
+	var cfg prometheus.Config
+	if err := yaml.Unmarshal([]byte(BasicPrometheusConfig), &cfg); err != nil {
+		panic(err)
+	}
+
 	return &v1.PrometheusConfig{
-		Metadata: core.Metadata{
-			Name:      name,
-			Namespace: namespace,
+		PrometheusConfig: prometheus.PrometheusConfig{
+			Metadata: core.Metadata{
+				Name:      name,
+				Namespace: namespace,
+				Annotations: map[string]string{
+					"cfg_key_name": "prometheus.yml",
+				},
+			},
+			Config: cfg,
 		},
-		Prometheus: BasicPrometheusConfig,
 	}
 }
 func PrometheusConfigMap(name, namespace string) *kubev1.ConfigMap {

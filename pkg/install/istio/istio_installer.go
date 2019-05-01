@@ -73,7 +73,7 @@ func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.Istio
 	// to be updated after install
 	selfSignedCert := istio.Config.MtlsConfig.RootCertificate == nil
 	if mesh != nil {
-		selfSignedCert = istio.Config.MtlsConfig != nil && istio.Config.MtlsConfig.RootCertificate == nil
+		selfSignedCert = mesh.MtlsConfig == nil || (mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil)
 	}
 	mtlsOptions := mtlsInstallOptions{
 		Enabled: istio.Config.MtlsConfig.MtlsEnabled,
@@ -88,6 +88,10 @@ func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.Istio
 		EnablePrometheus: istio.Install.Prometheus,
 		EnableJaeger:     istio.Install.Jaeger,
 	}
+	gatewayOptions := gatewayInstallOptions{
+		EnableEgress:  istio.EnableEgress,
+		EnableIngress: istio.EnableIngress,
+	}
 
 	installVersion, ok := supportedIstioVersions[istio.Install.Options.Version]
 	if !ok {
@@ -99,6 +103,7 @@ func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.Istio
 		Mtls:           mtlsOptions,
 		AutoInject:     autoInjectOptions,
 		Observability:  observabilityOptions,
+		Gateway:        gatewayOptions,
 	}
 
 	helmValues, err := chartParams.helmValues()

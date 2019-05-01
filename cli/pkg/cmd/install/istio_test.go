@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/istio"
@@ -36,6 +37,8 @@ var _ = Describe("Install", func() {
 				version string,
 				mtls,
 				autoInject,
+				ingress,
+				egress,
 				prometheus,
 				jaeger,
 				grafana bool) {
@@ -46,6 +49,8 @@ var _ = Describe("Install", func() {
 					fmt.Sprintf("--version=%v ", version) +
 					fmt.Sprintf("--mtls=%v ", mtls) +
 					fmt.Sprintf("--auto-inject=%v ", autoInject) +
+					fmt.Sprintf("--ingress=%v ", ingress) +
+					fmt.Sprintf("--egress=%v ", egress) +
 					fmt.Sprintf("--grafana=%v ", grafana) +
 					fmt.Sprintf("--prometheus=%v ", prometheus) +
 					fmt.Sprintf("--jaeger=%v", jaeger))
@@ -61,14 +66,32 @@ var _ = Describe("Install", func() {
 				Expect(istio.Istio.Version).To(Equal(version))
 				Expect(istio.Istio.EnableMtls).To(Equal(mtls))
 				Expect(istio.Istio.EnableAutoInject).To(Equal(autoInject))
+				Expect(istio.Istio.EnableIngress).To(Equal(ingress))
+				Expect(istio.Istio.EnableEgress).To(Equal(egress))
 				Expect(istio.Istio.InstallPrometheus).To(Equal(prometheus))
 				Expect(istio.Istio.InstallJaeger).To(Equal(jaeger))
 				Expect(istio.Istio.InstallGrafana).To(Equal(grafana))
 			}
 
-			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true)
-			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false)
-			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false)
+			installAndVerifyIstio("a1a", "ns", "1.0.3", true, true, true, true, true, true, true)
+			installAndVerifyIstio("b1a", "ns", "1.0.5", false, false, false, false, false, false, false)
+			installAndVerifyIstio("c1a", "ns", "badver", false, false, false, false, false, false, false)
+		})
+		It("should create installation namespace if it does not exist to begin with", func() {
+			name := "input"
+			namespace := "ns"
+			installNs := "istio-system"
+
+			err := utils.Supergloo("install istio " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", installNs) +
+				fmt.Sprintf("--namespace=%v ", namespace))
+			Expect(err).NotTo(HaveOccurred())
+
+			kube := clients.MustKubeClient()
+			ns, err := kube.CoreV1().Namespaces().Get(installNs, metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(ns.Name).To(Equal(installNs))
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"

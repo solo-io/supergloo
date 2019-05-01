@@ -22,7 +22,6 @@ var _ = Describe("PrometheusConfigClient", func() {
 		namespace string
 	)
 	for _, test := range []typed.ResourceClientTester{
-		&typed.KubeRcTester{Crd: PrometheusConfigCrd},
 		&typed.ConsulRcTester{},
 		&typed.FileRcTester{},
 		&typed.MemoryRcTester{},
@@ -72,9 +71,6 @@ func PrometheusConfigClientTest(namespace string, client PrometheusConfigClient,
 	Expect(r1.GetMetadata().Namespace).To(Equal(namespace))
 	Expect(r1.GetMetadata().ResourceVersion).NotTo(Equal(input.GetMetadata().ResourceVersion))
 	Expect(r1.GetMetadata().Ref()).To(Equal(input.GetMetadata().Ref()))
-	Expect(r1.Prometheus).To(Equal(input.Prometheus))
-	Expect(r1.Alerts).To(Equal(input.Alerts))
-	Expect(r1.Rules).To(Equal(input.Rules))
 
 	_, err = client.Write(input, clients.WriteOpts{
 		OverwriteExisting: true,

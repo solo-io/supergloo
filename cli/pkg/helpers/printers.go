@@ -99,6 +99,8 @@ func installDetails(in *v1.Install) []string {
 				fmt.Sprintf("grafana enabled: %v", meshType.Istio.InstallGrafana),
 				fmt.Sprintf("prometheus enabled: %v", meshType.Istio.InstallPrometheus),
 				fmt.Sprintf("jaeger enabled: %v", meshType.Istio.InstallJaeger),
+				fmt.Sprintf("ingress enabled: %v", meshType.Istio.EnableIngress),
+				fmt.Sprintf("egress enabled: %v", meshType.Istio.EnableEgress),
 			)
 		case *v1.MeshInstall_Linkerd:
 			add(

@@ -6,14 +6,6 @@
   "imports": [
     "github.com/solo-io/solo-kit/api/external/kubernetes"
   ],
-  "custom_resources": [
-    {
-      "package": "github.com/solo-io/supergloo/api/custom/linkerd",
-      "type": "ServiceProfile",
-      "plural_name": "serviceprofiles",
-      "short_name": "sp"
-    }
-  ],
   "resource_groups": {
     "config.supergloo.solo.io": [
       {
@@ -73,6 +65,10 @@
       {
         "name": "Pod",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "ConfigMap",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       }
     ],
     "istioDiscovery.supergloo.solo.io": [
@@ -94,6 +90,20 @@
       }
     ],
     "linkerdDiscovery.supergloo.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "supergloo.solo.io"
+      },
+      {
+        "name": "Pod",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "Upstream",
+        "package": "gloo.solo.io"
+      }
+    ],
+    "appmeshDiscovery.supergloo.solo.io": [
       {
         "name": "Mesh",
         "package": "supergloo.solo.io"

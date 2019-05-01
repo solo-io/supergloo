@@ -799,7 +799,7 @@ type MonitoringConfig struct {
 	// indicates to supergloo that metrics should be propagated to one or more instances of prometheus.
 	// add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each
 	// NAMESPACE.NAME of the configmap used to configure each prometheus instance.
-	// assumes that the configmap contains a key named `prometheus.yml` whose value
+	// assumes that the configmap contains a key named `prometheus.yml` or `prometheus.yaml` whose value
 	// is the prometheus yaml config as an inline string
 	PrometheusConfigmaps []core.ResourceRef `protobuf:"bytes,1,rep,name=prometheus_configmaps,json=prometheusConfigmaps,proto3" json:"prometheus_configmaps"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`

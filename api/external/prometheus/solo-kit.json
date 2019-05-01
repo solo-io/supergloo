@@ -1,0 +1,13 @@
+{
+  "name": "config.prometheus.io",
+  "version": "v1",
+  "go_package": "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1",
+  "custom_resources": [
+    {
+      "package": "github.com/solo-io/supergloo/api/external/prometheus",
+      "type": "PrometheusConfig",
+      "plural_name": "prometheusconfigs",
+      "short_name": "pc"
+    }
+  ]
+}

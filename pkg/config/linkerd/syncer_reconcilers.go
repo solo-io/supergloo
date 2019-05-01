@@ -3,7 +3,7 @@ package linkerd
 import (
 	"context"
 
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
@@ -20,11 +20,11 @@ type Reconcilers interface {
 type linkerdReconcilers struct {
 	ownerLabels map[string]string
 
-	serviceProfileReconciler v1.ServiceProfileReconciler
+	serviceProfileReconciler linkerdv1.ServiceProfileReconciler
 }
 
 func NewLinkerdReconcilers(ownerLabels map[string]string,
-	serviceProfileReconciler v1.ServiceProfileReconciler) Reconcilers {
+	serviceProfileReconciler linkerdv1.ServiceProfileReconciler) Reconcilers {
 	return &linkerdReconcilers{
 		ownerLabels:              ownerLabels,
 		serviceProfileReconciler: serviceProfileReconciler,

@@ -132,11 +132,5 @@ func validateFlags(opts *options.Options) error {
 		return errors.Errorf("you must provide a virtual node label if auto-injection is enabled")
 	}
 
-	// TODO(EItanya): make this more explicit, currently defaulting to nil which breaks the injection
-	if opts.RegisterAppMesh.ConfigMap.Name == "" || opts.RegisterAppMesh.ConfigMap.Namespace == "" {
-		opts.RegisterAppMesh.ConfigMap.Namespace = opts.Metadata.Namespace
-		opts.RegisterAppMesh.ConfigMap.Name = "sidecar-injector"
-	}
-
 	return nil
 }

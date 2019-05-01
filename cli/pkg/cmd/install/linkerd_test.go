@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/install/linkerd"
@@ -60,6 +61,22 @@ var _ = Describe("Install", func() {
 			installAndVerifyLinkerd("a1a", "ns", linkerd.Version_stable230, true, true)
 			installAndVerifyLinkerd("b1a", "ns", linkerd.Version_stable230, false, false)
 			installAndVerifyLinkerd("c1a", "ns", "badver", false, false)
+		})
+		It("should create installation namespace if it does not exist to begin with", func() {
+			name := "input"
+			namespace := "ns"
+			installNs := "linkerd-system"
+
+			err := utils.Supergloo("install linkerd " +
+				fmt.Sprintf("--name=%v ", name) +
+				fmt.Sprintf("--installation-namespace %s ", installNs) +
+				fmt.Sprintf("--namespace=%v ", namespace))
+			Expect(err).NotTo(HaveOccurred())
+
+			kube := clients.MustKubeClient()
+			ns, err := kube.CoreV1().Namespaces().Get(installNs, metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(ns.Name).To(Equal(installNs))
 		})
 		It("should enable an existing + disabled install", func() {
 			name := "input"

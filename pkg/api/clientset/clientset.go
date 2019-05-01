@@ -3,6 +3,8 @@ package clientset
 import (
 	"context"
 
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
+
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	kubernetes2 "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
@@ -225,7 +227,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	return newIstioClients(rbacConfig, serviceRole, serviceRoleBinding, meshPolicy, destinationRule, virtualService), nil
 }
 
-func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config) (v1.ServiceProfileClient, error) {
+func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config) (linkerdv1.ServiceProfileClient, error) {
 	linkerdClient, err := versioned.NewForConfig(restConfig)
 	if err != nil {
 		return nil, err
@@ -236,7 +238,7 @@ func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config
 	}
 	baseServiceProfileClient := linkerd.NewResourceClient(linkerdClient, cache)
 
-	return v1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
+	return linkerdv1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
 }
 
 func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
@@ -317,9 +319,9 @@ func newIstioClients(rbacConfig rbacv1alpha1.RbacConfigClient, serviceRole rbacv
 }
 
 type LinkerdClients struct {
-	ServiceProfile v1.ServiceProfileClient
+	ServiceProfile linkerdv1.ServiceProfileClient
 }
 
-func newLinkerdClients(serviceProfile v1.ServiceProfileClient) *LinkerdClients {
+func newLinkerdClients(serviceProfile linkerdv1.ServiceProfileClient) *LinkerdClients {
 	return &LinkerdClients{ServiceProfile: serviceProfile}
 }

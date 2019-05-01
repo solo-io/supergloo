@@ -39,7 +39,7 @@ func (c *clientBuilder) GetClientInstance(secretRef *core.ResourceRef, region st
 	}
 
 	awsSession, err := session.NewSession(aws.NewConfig().WithCredentials(
-		credentials.NewStaticCredentials(awsSecret.SecretKey, awsSecret.SecretKey, "")))
+		credentials.NewStaticCredentials(awsSecret.AccessKey, awsSecret.SecretKey, "")))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create aws session with provided credentials")
 	}
