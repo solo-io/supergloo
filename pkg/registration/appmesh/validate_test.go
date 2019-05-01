@@ -33,7 +33,6 @@ var _ = Describe("Validate App Mesh meshes", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
 
 		successMock := climocks.NewMockAppmesh(ctrl)
 		successMock.EXPECT().ListMeshes(nil).Return(&appmesh.ListMeshesOutput{}, nil).AnyTimes()
@@ -48,6 +47,10 @@ var _ = Describe("Validate App Mesh meshes", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		validator = NewAppMeshValidator(kube, secretClient)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("fails if mesh does not specify a region", func() {

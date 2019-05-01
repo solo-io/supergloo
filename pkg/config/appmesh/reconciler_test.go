@@ -43,7 +43,7 @@ var _ = Describe("Reconciler", func() {
 	})
 
 	AfterEach(func() {
-		defer ctrl.Finish()
+		ctrl.Finish()
 	})
 
 	JustBeforeEach(func() {

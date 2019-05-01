@@ -37,7 +37,6 @@ var _ = Describe("Syncer", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
 
 		kube = fake.NewSimpleClientset()
 
@@ -67,6 +66,7 @@ var _ = Describe("Syncer", func() {
 	})
 
 	AfterEach(func() {
+		ctrl.Finish()
 		Expect(kube.CoreV1().ConfigMaps(testNamespace).Delete(resourcesConfigMapName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 	})
 
