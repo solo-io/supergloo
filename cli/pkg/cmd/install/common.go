@@ -3,13 +3,14 @@ package install
 import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/kubeutils"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	apierrs "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/test/e2e/utils"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func createInstall(opts *options.Options, install *v1.Install) error {
@@ -42,8 +43,8 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 	}
 	// create the installation namespace if it does not already exist
 	installNamespace := install.InstallationNamespace
-	err = utils.CreateNs(installNamespace)
-	if err != nil && !apierrs.IsExist(err) {
+	err = kubeutils.CreateNamespacesInParallel(clients.MustKubeClient(), installNamespace)
+	if err != nil && !k8serrors.IsAlreadyExists(err) {
 		return err
 	}
 

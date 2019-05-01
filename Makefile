@@ -44,7 +44,7 @@ preview-computed-values: must
 
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
-SOURCES := $(shell find . -name "*.go" | grep -v test.go | grep -v mock)
+SOURCES := $(shell find . -name "*.go" | grep -v test | grep -v mock)
 LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 
 
@@ -167,13 +167,11 @@ $(OUTPUT_DIR)/supergloo-cli-darwin-amd64: $(SOURCES)
 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
 
-.PHONY: build-cli
-ifeq ($(RELEASE),TRUE)
+.PHONY: build-cli build-cli-local
 build-cli: must $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
-else
-build-cli:
+
+build-cli-local:
 	go build -ldflags=$(LDFLAGS) -o supergloo cli/cmd/main.go
-endif
 
 
 #----------------------------------------------------------------------------------
