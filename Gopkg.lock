@@ -1272,6 +1272,21 @@
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:d4f687e69c376ce0c1468622d513d6967621d90f3e8d7e557d950adedbabfc0a"
+  name = "github.com/solo-io/build"
+  packages = [
+    "pkg/api/v1",
+    "pkg/cli",
+    "pkg/constants",
+    "pkg/envutils",
+    "pkg/ingest",
+    "pkg/version",
+  ]
+  pruneopts = "UT"
+  revision = "dc4468118e98379714249d98d2933da24a6e0652"
+  version = "v0.0.3"
+
+[[projects]]
   digest = "1:25b2b21c711c898f0d16808697e86f703621dd096d587703a624cb8c113d582b"
   name = "github.com/solo-io/gloo"
   packages = [
@@ -1336,11 +1351,13 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:d1b2c14977096d5b57e352af181fd5fa5c8a2ce8ac1a7532798c39345131f661"
+  digest = "1:ca9a4114a7c2d7228fdfc1931a8fc0f063a609d922ae2b28bffdcafe676e84b6"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
+    "clicore",
     "clicore/constants",
+    "clicore/internal/clibufferpool",
     "clidoc",
     "cliutils",
     "contextutils",
@@ -2481,6 +2498,7 @@
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/sirupsen/logrus",
+    "github.com/solo-io/build/pkg/cli",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/install",

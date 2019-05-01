@@ -1,0 +1,6 @@
+changelog:
+  - type: NON_USER_FACING
+    descrition: |
+      Switch supergloo over to using the Solo Go build tool as part of the effort to standardize our builds and reduce
+      boilerplate `make` configuration. Container images and helm chart will be pushed to test repositories on each
+      non-release build.

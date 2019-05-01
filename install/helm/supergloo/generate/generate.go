@@ -30,20 +30,20 @@ var (
 	rootPrefix    string
 )
 
-func Run(version, pullPolicy, prefix string) error {
+func Run(version, imageTag, pullPolicy, prefix string) error {
 	glooVersion, err := getOsGlooVersion()
 	if err != nil {
 		return err
 	}
 
-	return RunWithGlooVersion(version, pullPolicy, prefix, glooVersion)
+	return RunWithGlooVersion(version, imageTag, pullPolicy, prefix, glooVersion)
 }
 
-func RunWithGlooVersion(version, pullPolicy, prefix, glooVersion string) error {
+func RunWithGlooVersion(version, imageTag, pullPolicy, prefix, glooVersion string) error {
 	rootPrefix = prefix
 	osGlooVersion = glooVersion
 
-	if err := generateValuesYaml(version, pullPolicy); err != nil {
+	if err := generateValuesYaml(imageTag, pullPolicy); err != nil {
 		return fmt.Errorf("generating values.yaml failed: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
@@ -116,18 +116,18 @@ func writeYaml(obj interface{}, path string) error {
 	return nil
 }
 
-func generateValuesYaml(version, pullPolicy string) error {
+func generateValuesYaml(imageTag, pullPolicy string) error {
 	config, err := readConfig(filepath.Join(rootPrefix, DefaultValues))
 	if err != nil {
 		return err
 	}
-	config.Supergloo.Deployment.Image.Tag = version
+	config.Supergloo.Deployment.Image.Tag = imageTag
 	config.Supergloo.Deployment.Image.PullPolicy = pullPolicy
 
 	config.Discovery.Deployment.Image.Tag = osGlooVersion
 	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
-	config.MeshDiscovery.Deployment.Image.Tag = version
+	config.MeshDiscovery.Deployment.Image.Tag = imageTag
 	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
 
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))

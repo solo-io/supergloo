@@ -14,18 +14,14 @@ const (
 )
 
 func main() {
-	var version string
-	if len(os.Args) < 2 {
+	var version, imageTag string
+	if len(os.Args) < 3 {
 		panic("Must provide version as argument")
 	} else {
-		version = os.Args[1]
+		version, imageTag = os.Args[1], os.Args[2]
 	}
-	log.Printf("Generating helm files.")
-	pullPolicy := alwaysPull
-	if version == "dev" {
-		pullPolicy = neverPull
-	}
-	if err := generate.Run(version, pullPolicy, ""); err != nil {
+	log.Printf("Generating helm files")
+	if err := generate.Run(version, imageTag, alwaysPull, ""); err != nil {
 		panic(err)
 	}
 }

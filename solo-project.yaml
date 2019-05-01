@@ -1,0 +1,15 @@
+config:
+  release_container_registry:
+    quay:
+      base_url: quay.io
+      organization: solo-io
+  test_container_registry:
+    gcr:
+      base_url: gcr.io
+      project_id: solo-public
+  release_helm_repository:
+    google_cloud_storage:
+      bucket_url: gs://supergloo-helm/
+  test_helm_repository:
+    google_cloud_storage:
+      bucket_url: gs://supergloo-helm-test/

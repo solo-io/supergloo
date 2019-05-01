@@ -26,7 +26,7 @@ var _ = Describe("E2e", func() {
 		// start discovery
 		var superglooErr error
 		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-		err := generate.RunWithGlooVersion("dev", "Always", projectRoot, "0.13.18")
+		err := generate.RunWithGlooVersion("dev", "dev", "Always", projectRoot, "0.13.18")
 		if err == nil {
 			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
 		} else {
