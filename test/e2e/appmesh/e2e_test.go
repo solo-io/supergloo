@@ -54,12 +54,12 @@ func testRegisterAppmesh(meshName, secretName string) {
 	region, vnLabel := "us-east-1", "app"
 	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
 		"--secret %s.%s --select-namespaces %s --virtual-node-label %s",
-		meshName, region, superglooNamespace, secretName, namespaceWithInject, vnLabel))
+		meshName, region, basicNamespace, secretName, namespaceWithInject, vnLabel))
 	Expect(err).NotTo(HaveOccurred())
 
 	meshClient := clients.MustMeshClient()
 	Eventually(func() error {
-		_, err := meshClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
+		_, err := meshClient.Read(basicNamespace, meshName, skclients.ReadOpts{})
 		return err
 	}).ShouldNot(HaveOccurred())
 
