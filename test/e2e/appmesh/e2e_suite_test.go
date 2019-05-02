@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
+	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
@@ -79,6 +80,18 @@ var _ = BeforeSuite(func() {
 			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
 		})
+		Expect(err).NotTo(HaveOccurred())
+	}()
+
+	// start mesh discovery
+	go func() {
+		defer GinkgoRecover()
+		err := mdsetup.Main(rootCtx, func(e error) {
+			defer GinkgoRecover()
+			return
+			// TODO: assert errors here
+			Expect(e).NotTo(HaveOccurred())
+		}, nil)
 		Expect(err).NotTo(HaveOccurred())
 	}()
 })

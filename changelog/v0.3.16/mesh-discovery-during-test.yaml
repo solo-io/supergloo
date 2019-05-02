@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    descrition: Run mesh discovery during app mehs tests.
