@@ -109,13 +109,17 @@ type appmeshDiscoveryData struct {
 	region     string
 }
 
+func (amd *appmeshDiscoveryData) eksExists() bool {
+	return len(amd.configMaps) > 0 && len(amd.pods) > 0
+}
+
 /*
 	This function attempts to discover appmesh meshes using a couple heuristics based out of
 	experience and the aws docs.
 
 	1) a config map located in the kube-system namespace named "aws-auth"
 		https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
-	2) at least one exists pod in the kube-system namespsace is named aws-pod.
+	2) at least one exists pod in the kube-system namespace is named aws-pod.
 	from what we can tell each one of these pods represent one of the worker
 	nodes for the cluster. Each node has a nodeAffinity for one of the worker
 	nodes. An example:
@@ -161,10 +165,6 @@ func newAppmeshDiscoveryData(ctx context.Context, configMaps skkube.ConfigMapLis
 	return amd
 }
 
-func (amd *appmeshDiscoveryData) eksExists() bool {
-	return len(amd.configMaps) > 0 && len(amd.pods) > 0
-}
-
 func getAwsRegionFromPod(pod *skkube.Pod) (string, error) {
 	for _, container := range pod.Spec.Containers {
 		if container.Name == awsNode {
@@ -200,7 +200,7 @@ func constructAwsMeshes(ctx context.Context, client appmesh.Client, region strin
 			Metadata: metadata,
 			MeshType: &v1.Mesh_AwsAppMesh{
 				AwsAppMesh: &v1.AwsAppMesh{
-					EnableAutoInject: true,
+					EnableAutoInject: false,
 					AwsSecret:        secret,
 					Region:           region,
 					VirtualNodeLabel: DefaultVirtualNodeLabel,

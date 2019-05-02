@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    descrition: Do not enable auto-injection on AWS App Mesh CRDs created by mesh discovery.
