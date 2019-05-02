@@ -37,7 +37,7 @@ message Mesh {
     }
 
     // object which represents the data mesh discovery finds about a given mesh
-    DiscoveryMetadata discovery = 6;
+    DiscoveryMetadata discovery_metadata = 6;
 }
 
 
@@ -53,6 +53,10 @@ message IstioInstall {
     InstallOptions options = 1;
     // enable auto injection of pods
     bool enable_auto_inject = 3;
+    // enable istio gateway ingress
+    bool enable_ingress = 4;
+    // enable istio gateway egress
+    bool enable_egress = 5;
     // install grafana with istio
     bool grafana = 6;
 

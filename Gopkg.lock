@@ -1336,7 +1336,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:d1b2c14977096d5b57e352af181fd5fa5c8a2ce8ac1a7532798c39345131f661"
+  digest = "1:8de1b14448fbfaca958381ca7b98a7dfccdf1c47dfb57ad9995e5483e5ddbc90"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1367,11 +1367,11 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "7689982a1f5578696be98cedde309559e29cbbca"
-  version = "v0.7.17"
+  revision = "c61e6bec813258be77277bacc1ee7738674bc1f6"
+  version = "v0.7.21"
 
 [[projects]]
-  digest = "1:da48a7b42a263b4dc13c7b77417239ee2865df5b21fa310165505b6e4ddb67e4"
+  digest = "1:71a99620e83f88e6634f4454eecb520b8eef6b9bf8309ff9846c09ab91fb9877"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1428,8 +1428,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "dc5feeb21add5f0d9c3d858cadf05ec90451efca"
-  version = "v0.7.2"
+  revision = "9b2f5ee87f4de276e3bf138faeb21f21d48698a1"
+  version = "v0.7.3"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"

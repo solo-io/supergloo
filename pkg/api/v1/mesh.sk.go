@@ -36,7 +36,7 @@ func (r *Mesh) Hash() uint64 {
 	metaCopy.ResourceVersion = ""
 	return hashutils.HashAll(
 		metaCopy,
-		r.Discovery,
+		r.DiscoveryMetadata,
 		r.MeshType,
 	)
 }

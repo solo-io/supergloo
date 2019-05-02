@@ -53,71 +53,6 @@ func tablePrintInstalls(list v1.InstallList, w io.Writer) {
 	table.Render()
 }
 
-func installType(in *v1.Install) string {
-	switch installType := in.InstallType.(type) {
-	case *v1.Install_Mesh:
-		switch installType.Mesh.MeshInstallType.(type) {
-		case *v1.MeshInstall_Istio:
-			return "Istio Mesh"
-		case *v1.MeshInstall_Linkerd:
-			return "Linkerd Mesh"
-		}
-	case *v1.Install_Ingress:
-		switch installType.Ingress.IngressInstallType.(type) {
-		case *v1.MeshIngressInstall_Gloo:
-			return "Gloo Ingress"
-		}
-	}
-	return "Unknown"
-}
-
-func installDetails(in *v1.Install) []string {
-	var details []string
-	add := func(s ...string) {
-		details = append(details, s...)
-	}
-	add(
-		fmt.Sprintf("enabled: %v", !in.Disabled),
-	)
-
-	switch installType := in.InstallType.(type) {
-	case *v1.Install_Mesh:
-		switch meshType := installType.Mesh.MeshInstallType.(type) {
-		case *v1.MeshInstall_Istio:
-			add(
-				fmt.Sprintf("version: %v", meshType.Istio.Version),
-				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
-				fmt.Sprintf("mtls enabled: %v", meshType.Istio.EnableMtls),
-				fmt.Sprintf("auto inject enabled: %v", meshType.Istio.EnableAutoInject),
-			)
-			if meshType.Istio.CustomRootCert != nil {
-				add(
-					fmt.Sprintf("mtls enabled: %v", meshType.Istio.CustomRootCert),
-				)
-			}
-			add(
-				fmt.Sprintf("grafana enabled: %v", meshType.Istio.InstallGrafana),
-				fmt.Sprintf("prometheus enabled: %v", meshType.Istio.InstallPrometheus),
-				fmt.Sprintf("jaeger enabled: %v", meshType.Istio.InstallJaeger),
-				fmt.Sprintf("ingress enabled: %v", meshType.Istio.EnableIngress),
-				fmt.Sprintf("egress enabled: %v", meshType.Istio.EnableEgress),
-			)
-		case *v1.MeshInstall_Linkerd:
-			add(
-				fmt.Sprintf("version: %v", meshType.Linkerd.Version),
-				fmt.Sprintf("namespace: %v", in.InstallationNamespace),
-				fmt.Sprintf("mtls enabled: %v", meshType.Linkerd.EnableMtls),
-				fmt.Sprintf("auto inject enabled: %v", meshType.Linkerd.EnableAutoInject),
-			)
-		}
-	case *v1.Install_Ingress:
-		switch installType.Ingress.IngressInstallType.(type) {
-		case *v1.MeshIngressInstall_Gloo:
-		}
-	}
-	return details
-}
-
 func PrintRoutingRules(list v1.RoutingRuleList, outputType string) {
 	_ = cliutils.PrintList(outputType, "", list,
 		func(data interface{}, w io.Writer) error {
@@ -235,24 +170,33 @@ func tablePrintMeshes(list v1.MeshList, w io.Writer) {
 
 	for _, mesh := range list {
 		name := mesh.GetMetadata().Name
-		meshType := func() string {
-			switch mesh.MeshType.(type) {
-			case *v1.Mesh_Istio:
-				return "Istio"
-			case *v1.Mesh_Linkerd:
-				return "Linkerd"
-			case *v1.Mesh_AwsAppMesh:
-				return "AppMesh"
-			}
-			return "unknown"
-		}()
-		mtls := fmt.Sprintf("%v", mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled)
-
-		table.Append([]string{name, meshType, mtls})
+		meshType, mtls := getMeshType(mesh)
+		mtlsString := fmt.Sprintf("%v", mtls)
+		table.Append([]string{name, meshType, mtlsString})
 	}
 
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.Render()
+}
+
+func getMeshType(mesh *v1.Mesh) (string, bool) {
+	var (
+		mtlsConfig *v1.MtlsConfig
+		meshName   string
+	)
+	switch meshType := mesh.MeshType.(type) {
+	case *v1.Mesh_Istio:
+		mtlsConfig = meshType.Istio.Config.MtlsConfig
+		meshName = "Istio"
+	case *v1.Mesh_Linkerd:
+		mtlsConfig = meshType.Linkerd.Config.MtlsConfig
+		meshName = "Linkerd"
+	case *v1.Mesh_AwsAppMesh:
+		meshName = "AppMesh"
+	default:
+		meshName = "unknown"
+	}
+	return meshName, mtlsConfig != nil && mtlsConfig.MtlsEnabled
 }
 
 func MustMarshal(v interface{}) string {

@@ -45,7 +45,7 @@ Meshes represent a currently registered service mesh.
 "istio": .supergloo.solo.io.IstioMesh
 "awsAppMesh": .supergloo.solo.io.AwsAppMesh
 "linkerd": .supergloo.solo.io.LinkerdMesh
-"discovery": .supergloo.solo.io.DiscoveryMetadata
+"discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
 
 ```
 
@@ -56,7 +56,7 @@ Meshes represent a currently registered service mesh.
 | `istio` | [.supergloo.solo.io.IstioMesh](../mesh.proto.sk#istiomesh) |  |  |
 | `awsAppMesh` | [.supergloo.solo.io.AwsAppMesh](../mesh.proto.sk#awsappmesh) |  |  |
 | `linkerd` | [.supergloo.solo.io.LinkerdMesh](../mesh.proto.sk#linkerdmesh) |  |  |
-| `discovery` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh |  |
+| `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh |  |
 
 
 
@@ -89,6 +89,8 @@ Mesh object representing an installed Istio control plane
 ```yaml
 "options": .supergloo.solo.io.InstallOptions
 "enableAutoInject": bool
+"enableIngress": bool
+"enableEgress": bool
 "grafana": bool
 "prometheus": bool
 "jaeger": bool
@@ -99,6 +101,8 @@ Mesh object representing an installed Istio control plane
 | ----- | ---- | ----------- |----------- | 
 | `options` | [.supergloo.solo.io.InstallOptions](../mesh.proto.sk#installoptions) | Generic installation options |  |
 | `enableAutoInject` | `bool` | enable auto injection of pods |  |
+| `enableIngress` | `bool` | enable istio gateway ingress |  |
+| `enableEgress` | `bool` | enable istio gateway egress |  |
 | `grafana` | `bool` | install grafana with istio |  |
 | `prometheus` | `bool` | install prometheus with istio |  |
 | `jaeger` | `bool` | install jaeger with istio |  |

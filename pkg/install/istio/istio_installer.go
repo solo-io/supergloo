@@ -73,7 +73,8 @@ func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.Istio
 	// to be updated after install
 	selfSignedCert := istio.Config.MtlsConfig.RootCertificate == nil
 	if mesh != nil {
-		selfSignedCert = mesh.MtlsConfig == nil || (mesh.MtlsConfig != nil && mesh.MtlsConfig.RootCertificate == nil)
+		mtlsConfig := istio.Config.MtlsConfig
+		selfSignedCert = mtlsConfig == nil || (mtlsConfig != nil && mtlsConfig.RootCertificate == nil)
 	}
 	mtlsOptions := mtlsInstallOptions{
 		Enabled: istio.Config.MtlsConfig.MtlsEnabled,
@@ -89,8 +90,8 @@ func makeManifestsForInstall(ctx context.Context, mesh *v1.Mesh, istio *v1.Istio
 		EnableJaeger:     istio.Install.Jaeger,
 	}
 	gatewayOptions := gatewayInstallOptions{
-		EnableEgress:  istio.EnableEgress,
-		EnableIngress: istio.EnableIngress,
+		EnableEgress:  istio.Install.EnableEgress,
+		EnableIngress: istio.Install.EnableIngress,
 	}
 
 	installVersion, ok := supportedIstioVersions[istio.Install.Options.Version]

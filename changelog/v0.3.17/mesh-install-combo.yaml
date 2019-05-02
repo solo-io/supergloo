@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    descrition: Combine mesh and install CRDs to improve user experience.
+    issueLink: https://github.com/solo-io/supergloo/issues/402

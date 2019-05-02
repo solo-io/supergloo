@@ -6,8 +6,8 @@ import (
 
 func GetMeshInstallatioNamespace(mesh *v1.Mesh) string {
 	var result string
-	if mesh.Discovery != nil {
-		result = mesh.Discovery.InstallationNamespace
+	if mesh.DiscoveryMetadata != nil {
+		result = mesh.DiscoveryMetadata.InstallationNamespace
 	}
 
 	var installOptions *v1.InstallOptions
