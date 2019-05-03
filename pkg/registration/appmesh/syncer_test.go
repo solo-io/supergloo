@@ -37,7 +37,6 @@ var _ = Describe("Syncer", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
 
 		kube = fake.NewSimpleClientset()
 
@@ -49,11 +48,11 @@ var _ = Describe("Syncer", func() {
 		ctx = context.Background()
 
 		// Create the config map containing the manifests for the auto-injection resources
-		configMap := &corev1.ConfigMap{}
+		autoInjectionResourcesConfigMap := &corev1.ConfigMap{}
 		cm, err := ioutil.ReadFile("test/test-sidecar-injector-configmap.yaml")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(yaml.Unmarshal(cm, configMap)).NotTo(HaveOccurred())
-		_, err = kube.CoreV1().ConfigMaps(testNamespace).Create(configMap)
+		Expect(yaml.Unmarshal(cm, autoInjectionResourcesConfigMap)).NotTo(HaveOccurred())
+		_, err = kube.CoreV1().ConfigMaps(testNamespace).Create(autoInjectionResourcesConfigMap)
 		Expect(err).NotTo(HaveOccurred())
 
 		// Mock AWS client
@@ -67,6 +66,7 @@ var _ = Describe("Syncer", func() {
 	})
 
 	AfterEach(func() {
+		ctrl.Finish()
 		Expect(kube.CoreV1().ConfigMaps(testNamespace).Delete(resourcesConfigMapName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 	})
 
@@ -346,10 +346,6 @@ var mesh = &v1.Mesh{
 				},
 			},
 			VirtualNodeLabel: "vn",
-			SidecarPatchConfigMap: &core.ResourceRef{
-				Namespace: testNamespace,
-				Name:      webhookName,
-			},
 		},
 	},
 }

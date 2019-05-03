@@ -3,6 +3,9 @@ package appmesh
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/aws/aws-sdk-go/service/appmesh"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -30,7 +33,6 @@ var _ = Describe("Validate App Mesh meshes", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
 
 		successMock := climocks.NewMockAppmesh(ctrl)
 		successMock.EXPECT().ListMeshes(nil).Return(&appmesh.ListMeshesOutput{}, nil).AnyTimes()
@@ -41,8 +43,14 @@ var _ = Describe("Validate App Mesh meshes", func() {
 		secretClient.EXPECT().Read(testNamespace, gomock.Not("aws-secret"), gomock.Any()).Return(nil, errors.New("error")).AnyTimes()
 
 		kube = fake.NewSimpleClientset()
+		_, err := kube.CoreV1().ConfigMaps(testNamespace).Create(&corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: testNamespace, Name: webhookName}})
+		Expect(err).NotTo(HaveOccurred())
 
 		validator = NewAppMeshValidator(kube, secretClient)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("fails if mesh does not specify a region", func() {

@@ -27,7 +27,6 @@ var _ = Describe("Reconciler", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(T)
-		defer ctrl.Finish()
 
 		kube = fake.NewSimpleClientset()
 
@@ -41,6 +40,7 @@ var _ = Describe("Reconciler", func() {
 	})
 
 	AfterEach(func() {
+		ctrl.Finish()
 		Expect(kube.CoreV1().ConfigMaps(testNamespace).Delete(resourcesConfigMapName, &metav1.DeleteOptions{})).NotTo(HaveOccurred())
 	})
 
@@ -69,7 +69,7 @@ var _ = Describe("Reconciler", func() {
 					Expect(deployment.Name).To(BeEquivalentTo(webhookName))
 					containers := deployment.Spec.Template.Spec.Containers
 					Expect(containers).To(HaveLen(1))
-					Expect(containers[0].Image).To(BeEquivalentTo(fmt.Sprintf("%s:%s", webhookImageName, version.Version)))
+					Expect(containers[0].Image).To(BeEquivalentTo(fmt.Sprintf("%s:%s", webhookImageName, version.GetWebhookImageTag())))
 					Expect(containers[0].ImagePullPolicy).To(BeEquivalentTo(webhookImagePullPolicy))
 					volumes := deployment.Spec.Template.Spec.Volumes
 					Expect(volumes).To(HaveLen(1))

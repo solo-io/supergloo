@@ -4,7 +4,9 @@ import (
 	"context"
 	"time"
 
+	amconfig "github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/appmesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/istio"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 
@@ -27,7 +29,7 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 		}
 	}
 
-	plugins := configurePlugins()
+	plugins := configurePlugins(cs)
 	meshDicoverySyncer := NewMeshDiscoverySyncer(cs.Discovery.Mesh, plugins...)
 
 	if err := startEventLoop(ctx, errHandler, cs, meshDicoverySyncer); err != nil {
@@ -37,17 +39,18 @@ func RunDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, customE
 	return nil
 }
 
-func configurePlugins() MeshDiscoveryPlugins {
+func configurePlugins(cs *clientset.Clientset) MeshDiscoveryPlugins {
 	plugins := MeshDiscoveryPlugins{
 		istio.NewIstioDiscoverySyncer(),
 		linkerd.NewLinkerdDiscoverySyncer(),
+		appmesh.NewAppmeshDiscoverySyncer(amconfig.NewAppMeshClientBuilder(cs.Input.Secret), cs.Input.Secret),
 	}
 	return plugins
 }
 
 // start the mesh discovery event loop
 func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Input.Install)
+	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Input.ConfigMap, c.Input.Install)
 	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
 
 	watchOpts := clients.WatchOpts{

@@ -30,13 +30,14 @@ steps:
   # Run some basic checks on the repo
   # 1) check formatting of go files
   # 2) ensure that make generated-code produces a clean diff
-
+  #
   # e2e-ginkgo is produced from https://github.com/solo-io/cloud-builders/e2e-ginkgo
   # Must set the GOPATH to tell the container the workspace has already been set up (by the dep step above)
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
+      - 'BUILD_ID=$BUILD_ID'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: make
     args: ['check-format']
@@ -49,30 +50,16 @@ steps:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'TAGGED_VERSION=$TAG_NAME'
+      - 'BUILD_ID=$BUILD_ID'
     dir: './gopath/src/github.com/solo-io/supergloo'
     waitFor: ['dep']
     id: 'check-code-and-docs-gen'
 
-  # Helm setup
-  # 1) Create directory to sync helm data
-  - name: gcr.io/cloud-builders/gsutil
-    entrypoint: mkdir
-    args: ['-p', './_output/helm']
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['dep']
-    id: 'make-helm-dir'
-  # 2) Fetch supergloo helm repo
-  - name: gcr.io/cloud-builders/gsutil
-    args:
-      - rsync
-      - -r
-      - gs://supergloo-helm/
-      - './_output/helm'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['make-helm-dir']
-    id: 'setup-helm'
-
+  ################################################################
+  # Unit tests
+  ################################################################
   # Compile all tests
+  # We have to compile and run the tests in separate step to not crash the CI container
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
@@ -86,7 +73,7 @@ steps:
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     args: ['build', '-r', 'cli/pkg', 'pkg', 'test/e2e']
-    waitFor: ['setup-helm', 'dep', 'download-untar-go-cache', 'check-code-and-docs-gen']
+    waitFor: ['dep', 'check-format', 'check-code-and-docs-gen']
     id: 'compile-tests'
 
   # Run unit tests
@@ -104,8 +91,60 @@ steps:
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast) ; done']
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['compile-tests']
-    id: 'test'
+    id: 'unit-tests'
+
+  ################################################################
+  # After unit tests and other checks have successfully passed
+  ################################################################
+  # After unit tests and other checks have successfully passed
+  # 1) build and push docker images
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
+    secretEnv: ['QUAY_IO_PASSWORD']
+    id: 'docker-login'
+    waitFor: ['unit-tests']
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+    args: ['preview-computed-values', 'docker-push']
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'TAGGED_VERSION=$TAG_NAME'
+      - 'BUILD_ID=$BUILD_ID'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    waitFor: ['docker-login']
+    id: 'docker'
+
+  # 2) generate and publish the helm chart
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+    args: ['manifest']
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'TAGGED_VERSION=$TAG_NAME'
+      - 'BUILD_ID=$BUILD_ID'
+      - 'HELM_HOME=/root/.helm' # tell helm where to find data
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    waitFor: ['unit-tests']
+    id: 'helm-chart'
+
+  # 3) build the CLI
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+    args: ['build-cli']
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'TAGGED_VERSION=$TAG_NAME'
+      - 'BUILD_ID=$BUILD_ID'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    waitFor: ['unit-tests']
+    id: 'cli'
+
+  ################################################################
+  # Set up e2e tests (all the steps are executed sequentially)
+  ################################################################
 
   # setup aws kubeconfig
   - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
@@ -115,7 +154,7 @@ steps:
       - update-kubeconfig
       - --name=supergloo-test
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
-    waitFor: ['test']
+    waitFor: ['docker', 'helm-chart', 'cli']
     id: 'aws-kubeconfig-setup'
 
   # copy aws config
@@ -124,19 +163,16 @@ steps:
     args:
       - /builder/home/.kube/config
       - /builder/home/.kube/aws-config
-    waitFor: ['aws-kubeconfig-setup']
     id: 'copy-aws-kubeconfig'
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
 
     # start setting up other kubeconfigs
   - name: gcr.io/cloud-builders/gcloud
     args: ['config', 'set', 'compute/zone', 'us-central1-b']
-    waitFor: ['copy-aws-kubeconfig']
     id: 'gcloud-compute-zone'
 
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-e2e']
-    waitFor: ['gcloud-compute-zone']
     id: 'gcloud-linkerd-kubeconfig'
 
   # copy linkerd kube config
@@ -145,12 +181,10 @@ steps:
     args:
       - /builder/home/.kube/config
       - /builder/home/.kube/linkerd-config
-    waitFor: ['gcloud-linkerd-kubeconfig']
     id: 'copy-linkerd-kubeconfig'
 
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-istio-v10x']
-    waitFor: ['copy-linkerd-kubeconfig']
     id: 'gcloud-istio-10x-kubeconfig'
 
   # copy istio-10x kube config
@@ -159,7 +193,6 @@ steps:
     args:
       - /builder/home/.kube/config
       - /builder/home/.kube/istio-10x-config
-    waitFor: ['gcloud-istio-10x-kubeconfig']
     id: 'copy-istio-10x-kubeconfig'
 
   # setup istio kubeconfig
@@ -167,7 +200,11 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-istio-v11x']
     id: 'gcloud-istio-kubeconfig'
-    waitFor: ['copy-istio-10x-kubeconfig']
+
+
+  ################################################################
+  # Run e2e tests
+  ################################################################
 
   # Run e2e appmesh tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
@@ -231,50 +268,21 @@ steps:
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'linkerd-test'
 
-  # Build everything
-  # 1) Compile all docker images
-  # 2) Run make targets to push docker images, compile manifests, produce release artifacts, deploy docs
-  # 3) Publish helm chart
-  - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
-    args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
-    secretEnv: ['QUAY_IO_PASSWORD']
-    id: 'docker-login'
-    waitFor: ['istio-11x-test', 'istio-10x-test', 'linkerd-test', 'appmesh-test']
 
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
-    args: ['docker', 'build-cli']
+  ################################################################
+  # Release
+  ################################################################
+  # Wait for all the previous steps to complete
+  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+    args: ['upload-github-release-assets', 'push-docs']
     env:
       - 'PROJECT_ROOT=github.com/solo-io/supergloo'
       - 'GOPATH=/workspace/gopath'
       - 'TAGGED_VERSION=$TAG_NAME'
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['docker-login']
-    id: 'compile'
-
-  - name: 'gcr.io/$PROJECT_ID/go-make:0.1.7'
-    args: ['docker-push', 'manifest', 'upload-github-release-assets', 'push-docs']
-    env:
-      - 'TAGGED_VERSION=$TAG_NAME'
-      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
-      - 'GOPATH=/workspace/gopath'
-      - 'HELM_HOME=/root/.helm' # tell helm where to find data
+      - 'BUILD_ID=$BUILD_ID'
     dir: './gopath/src/github.com/solo-io/supergloo'
     secretEnv: ['GITHUB_TOKEN', 'FIREBASE_TOKEN']
     id: 'release'
-    waitFor: ['compile']
-
-
-  # Sync helm chart data back to google storage bucket
-  - name: gcr.io/cloud-builders/gsutil
-    args:
-      - rsync
-      - -r
-      - './_output/helm'
-      - gs://supergloo-helm/
-    dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['release']
-    id: 'set-helm-chart'
 
 secrets:
   - kmsKeyName: projects/solo-public/locations/global/keyRings/build/cryptoKeys/build-key

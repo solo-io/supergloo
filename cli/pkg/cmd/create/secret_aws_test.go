@@ -23,11 +23,13 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 	const CredentialValidationFailedMessage = "you must provide either both the --access-key-id and " +
 		"--secret-access-key flags or a credentials file via the -f flag"
 
-	var successMock, failMock *mocks.MockAppmesh
+	var (
+		successMock, failMock *mocks.MockAppmesh
+		ctrl                  *gomock.Controller
+	)
 
 	BeforeEach(func() {
-		ctrl := gomock.NewController(T)
-		defer ctrl.Finish()
+		ctrl = gomock.NewController(T)
 
 		successMock = mocks.NewMockAppmesh(ctrl)
 		successMock.EXPECT().ListMeshes(nil).Return(&appmesh.ListMeshesOutput{}, nil).AnyTimes()
@@ -36,6 +38,10 @@ var _ = Describe("Create Secret Aws CLI Command", func() {
 		failMock.EXPECT().ListMeshes(nil).Return(nil, errors.Errorf("mock returns error")).AnyTimes()
 
 		clients.UseMemoryClients()
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	Describe("flag validation works as expected", func() {

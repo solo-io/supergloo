@@ -50,7 +50,7 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 
 	existingInstalls := utils.GetActiveInstalls(installs, utils.IstioInstallFilterFunc)
 
-	var newMeshes v1.MeshList
+	var discoveredMeshes v1.MeshList
 	for _, pod := range utils.SelectRunningPods(pods) {
 		if strings.Contains(pod.Name, istioPilot) {
 			mesh, err := constructDiscoveredMesh(ctx, pod, existingInstalls)
@@ -58,11 +58,11 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 				return nil, err
 			}
 			logger.Debugf("successfully discovered mesh data for %v", mesh)
-			newMeshes = append(newMeshes, mesh)
+			discoveredMeshes = append(discoveredMeshes, mesh)
 		}
 	}
 
-	return newMeshes, nil
+	return discoveredMeshes, nil
 }
 
 func constructDiscoveredMesh(ctx context.Context, istioPilotPod *kubernetes.Pod, existingInstalls v1.InstallList) (*v1.Mesh, error) {
@@ -74,7 +74,7 @@ func constructDiscoveredMesh(ctx context.Context, istioPilotPod *kubernetes.Pod,
 		return nil, err
 	}
 
-	mesh := utils.BasicMeshInfo(istioPilotPod, DiscoverySelector, istio)
+	mesh := utils.BasicMeshInfo(istioPilotPod.Namespace, DiscoverySelector, istio)
 	mesh.MeshType = &v1.Mesh_Istio{
 		Istio: &v1.IstioMesh{
 			InstallationNamespace: istioPilotPod.Namespace,

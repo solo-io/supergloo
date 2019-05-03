@@ -26,7 +26,7 @@ var _ = Describe("E2e", func() {
 		// start discovery
 		var superglooErr error
 		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-		err := generate.RunWithGlooVersion("dev", "Always", projectRoot, "0.13.18")
+		err := generate.RunWithGlooVersion("dev", "dev", "Always", projectRoot, "0.13.18")
 		if err == nil {
 			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
 		} else {
@@ -52,15 +52,14 @@ var _ = Describe("E2e", func() {
 */
 func testRegisterAppmesh(meshName, secretName string) {
 	region, vnLabel := "us-east-1", "app"
-	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --region %s "+
-		"--secret %s.%s --select-namespaces %s --virtual-node-label %s --configmap %s.%s",
-		meshName, region, superglooNamespace, secretName, namespaceWithInject, vnLabel,
-		superglooNamespace, "sidecar-injector"))
+	err := utils.Supergloo(fmt.Sprintf("register appmesh --name %s --namespace %s --region %s "+
+		"--secret %s.%s --select-namespaces %s --virtual-node-label %s",
+		meshName, basicNamespace, region, superglooNamespace, secretName, namespaceWithInject, vnLabel))
 	Expect(err).NotTo(HaveOccurred())
 
 	meshClient := clients.MustMeshClient()
 	Eventually(func() error {
-		_, err := meshClient.Read(superglooNamespace, meshName, skclients.ReadOpts{})
+		_, err := meshClient.Read(basicNamespace, meshName, skclients.ReadOpts{})
 		return err
 	}).ShouldNot(HaveOccurred())
 

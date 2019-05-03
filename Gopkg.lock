@@ -1101,14 +1101,6 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
-  digest = "1:ccda8b9b5889f60d21ab3639f5074ea6865d89a42a6efc40e8aa65e659f84e9f"
-  name = "github.com/openshift/api"
-  packages = ["security/v1"]
-  pruneopts = "UT"
-  revision = "0d921e363e951d89f583292c60d013c318df64dc"
-  version = "v3.9.0"
-
-[[projects]]
   digest = "1:b2ee62e09bec113cf086d2ce0769efcc7bf79481aba8373fd8f7884e94df3462"
   name = "github.com/pelletier/go-buffruneio"
   packages = ["."]
@@ -1280,6 +1272,21 @@
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:d4f687e69c376ce0c1468622d513d6967621d90f3e8d7e557d950adedbabfc0a"
+  name = "github.com/solo-io/build"
+  packages = [
+    "pkg/api/v1",
+    "pkg/cli",
+    "pkg/constants",
+    "pkg/envutils",
+    "pkg/ingest",
+    "pkg/version",
+  ]
+  pruneopts = "UT"
+  revision = "dc4468118e98379714249d98d2933da24a6e0652"
+  version = "v0.0.3"
+
+[[projects]]
   digest = "1:25b2b21c711c898f0d16808697e86f703621dd096d587703a624cb8c113d582b"
   name = "github.com/solo-io/gloo"
   packages = [
@@ -1344,11 +1351,13 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:d1b2c14977096d5b57e352af181fd5fa5c8a2ce8ac1a7532798c39345131f661"
+  digest = "1:c8dd70016ad9bbaceebf16ccf6dabc71d14edad4d86da567a3c099036bb83f82"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
+    "clicore",
     "clicore/constants",
+    "clicore/internal/clibufferpool",
     "clidoc",
     "cliutils",
     "contextutils",
@@ -1375,15 +1384,17 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "7689982a1f5578696be98cedde309559e29cbbca"
-  version = "v0.7.17"
+  revision = "a8a059dfc7f702f1a8136fd3f96f60958a15d8c0"
+  version = "v0.7.19"
 
 [[projects]]
-  digest = "1:de225ea8ecc7b8660fa708041ef6f7a3ebf4aed6a7ca4beb94f2a95877db9d42"
+  digest = "1:da48a7b42a263b4dc13c7b77417239ee2865df5b21fa310165505b6e4ddb67e4"
   name = "github.com/solo-io/solo-kit"
   packages = [
+    "api/external/kubernetes/configmap",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
+    "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/v1/clients",
@@ -1403,6 +1414,7 @@
     "pkg/api/v1/clients/kubesecret",
     "pkg/api/v1/clients/memory",
     "pkg/api/v1/clients/vault",
+    "pkg/api/v1/clients/wrapper",
     "pkg/api/v1/eventloop",
     "pkg/api/v1/reconcile",
     "pkg/api/v1/reporter",
@@ -1433,8 +1445,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "6686c4f5f21002d80a7d98b137fe94e470ca5f58"
-  version = "v0.7.0"
+  revision = "dc5feeb21add5f0d9c3d858cadf05ec90451efca"
+  version = "v0.7.2"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2482,11 +2494,11 @@
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
-    "github.com/openshift/api/security/v1",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/sirupsen/logrus",
+    "github.com/solo-io/build/pkg/cli",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/install",
@@ -2522,6 +2534,7 @@
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -2565,7 +2578,6 @@
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
-    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",

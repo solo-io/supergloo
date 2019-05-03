@@ -5,6 +5,7 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
+	skconfigmap "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap"
 	sknamespace "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace"
 	skpod "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
@@ -43,13 +44,17 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 type inputClients struct {
 	Pod         skkube.PodClient
 	Namespace   skkube.KubeNamespaceClient
+	ConfigMap   skkube.ConfigMapClient
 	Install     v1.InstallClient
 	MeshIngress v1.MeshIngressClient
 	Upstream    gloov1.UpstreamClient
+	Secret      gloov1.SecretClient
 }
 
-func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient) *inputClients {
-	return &inputClients{Pod: pod, Namespace: namespace, Install: install, MeshIngress: meshIngress, Upstream: upstream}
+func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, configMap skkube.ConfigMapClient,
+	install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient, secret gloov1.SecretClient) *inputClients {
+	return &inputClients{Pod: pod, Namespace: namespace, ConfigMap: configMap, Install: install, MeshIngress: meshIngress,
+		Upstream: upstream, Secret: secret}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -111,16 +116,27 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	secret, err := gloov1.NewSecretClient(&factory.KubeSecretClientFactory{
+		Clientset: kubeClient,
+		Cache:     kubeCoreCache,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := secret.Register(); err != nil {
+		return nil, err
+	}
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	pods := skpod.NewPodClient(kubeClient, kubeCoreCache)
-
 	namespace := sknamespace.NewNamespaceClient(kubeClient, kubeCoreCache)
+	configMap := skconfigmap.NewConfigMapClient(kubeClient, kubeCoreCache)
 
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods, namespace, install, meshIngress, upstream),
+		newInputClients(pods, namespace, configMap, install, meshIngress, upstream, secret),
 		newDiscoveryClients(mesh),
 	), nil
 }

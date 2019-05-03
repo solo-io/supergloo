@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -109,10 +111,17 @@ func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *corev1.P
 	}
 
 	// Get the config map containing the sidecar patch to be applied to the pod
+	// If nil, use the default config map: <supergloo_ns>.sidecar-injector
 	patchConfigMapRef := appMesh.SidecarPatchConfigMap
 	if patchConfigMapRef == nil {
-		return nil, errors.Errorf("auto-injection enabled but SidecarPatchConfigMap is nil for mesh %s.%s",
-			mesh.Metadata.Namespace, mesh.Metadata.Name)
+		namespace, err := clients.GetClientSet().GetSuperglooNamespace()
+		if err != nil {
+			return nil, err
+		}
+		patchConfigMapRef = &core.ResourceRef{
+			Namespace: namespace,
+			Name:      "sidecar-injector",
+		}
 	}
 	configMap, err := clients.GetClientSet().GetConfigMap(patchConfigMapRef.Namespace, patchConfigMapRef.Name)
 	if err != nil {
@@ -120,6 +129,7 @@ func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *corev1.P
 	}
 	logger.Debugf("found config map [%s]", patchConfigMapRef.String())
 
+	// Get data to use during template rendering from the candidate pod
 	templateData, err := getTemplateData(pod, mesh)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to retrieve data for patch template rendering")
