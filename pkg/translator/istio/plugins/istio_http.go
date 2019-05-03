@@ -130,9 +130,6 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, rule *v1.TrafficS
 		}
 
 		labels := utils.GetLabelsForUpstream(upstream)
-		if dest.Weight == 0 {
-			return errors.Errorf("weight cannot be 0")
-		}
 
 		weight := int32(dest.Weight * 100 / totalWeights)
 		totalIstioWeights += weight
