@@ -3,12 +3,10 @@ package appmesh_test
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	sgutils "github.com/solo-io/supergloo/test/e2e/utils"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,21 +19,16 @@ import (
 const superglooNamespace = "supergloo-system"
 
 var _ = Describe("E2e", func() {
+
 	It("registers and tests appmesh", func() {
-		// install discovery via cli
-		// start discovery
-		var superglooErr error
-		projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-		err := generate.RunWithGlooVersion("dev", "dev", "Always", projectRoot, "0.13.18")
-		if err == nil {
-			superglooErr = utils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
-		} else {
-			superglooErr = utils.Supergloo("init --release latest")
-		}
+
+		// Install supergloo using the helm chart specific to this test run
+		superglooErr := utils.Supergloo(fmt.Sprintf("init -f %s", chartUrl))
 		Expect(superglooErr).NotTo(HaveOccurred())
 
 		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
 		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
+
 		appmeshName := "appmesh"
 		secretName := "my-secret"
 
@@ -43,7 +36,8 @@ var _ = Describe("E2e", func() {
 
 		testRegisterAppmesh(appmeshName, secretName)
 
-		testUnregisterAppmesh(appmeshName)
+		// TODO: remove appmesh
+
 	})
 })
 
@@ -97,10 +91,6 @@ func checkSidecarInjection() {
 	for _, pod := range pods.Items {
 		Expect(len(pod.Spec.Containers)).To(BeNumerically(">=", 2))
 	}
-}
-
-func testUnregisterAppmesh(meshName string) {
-
 }
 
 func createAWSSecret(secretName string) {

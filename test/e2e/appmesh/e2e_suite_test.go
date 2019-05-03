@@ -6,11 +6,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/solo-io/supergloo/pkg/version"
+	"github.com/solo-io/supergloo/test/e2e/utils"
+
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
-	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/pkg/setup"
 	"github.com/solo-io/supergloo/test/testutils"
@@ -30,12 +32,23 @@ var (
 	rootCtx                             context.Context
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
+	chartUrl                            string
 )
 
 var _ = BeforeSuite(func() {
-	kube = testutils.MustKubeClient()
 	var err error
+	kube = testutils.MustKubeClient()
 
+	// Get build information
+	buildVersion, helmChartUrl, imageRepoPrefix, err := utils.GetBuildInformation()
+	Expect(err).NotTo(HaveOccurred())
+
+	// Set the supergloo version (will be equal to the BUILD_ID env)
+	version.Version = buildVersion
+	version.ImageRepoPrefix = imageRepoPrefix
+	chartUrl = helmChartUrl
+
+	// Acquire cluster lock
 	lock, err = clusterlock.NewTestClusterLocker(kube, clusterlock.Options{
 		IdPrefix: os.ExpandEnv("superglooe2e-{$BUILD_ID}-"),
 	})
@@ -44,11 +57,11 @@ var _ = BeforeSuite(func() {
 		log.Printf("waiting to acquire lock with err: %v", err)
 	}))).NotTo(HaveOccurred())
 
-	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
-
+	// If present, delete all namespaces used in this test
 	teardown()
 
-	kube = clients.MustKubeClient()
+	// Create namespaces
+	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: basicNamespace,
@@ -64,21 +77,19 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	rootCtx, cancel = context.WithCancel(context.TODO())
-	// create sg ns
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: superglooNamespace},
 	})
 	Expect(err).NotTo(HaveOccurred())
 
 	// start supergloo
+	rootCtx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		defer GinkgoRecover()
 		err := setup.Main(rootCtx, func(e error) {
 			defer GinkgoRecover()
-			return
-			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
+			return
 		})
 		Expect(err).NotTo(HaveOccurred())
 	}()
@@ -89,7 +100,6 @@ var _ = BeforeSuite(func() {
 		err := mdsetup.Main(rootCtx, func(e error) {
 			defer GinkgoRecover()
 			return
-			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
 		}, nil)
 		Expect(err).NotTo(HaveOccurred())
