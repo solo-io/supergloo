@@ -1,0 +1,61 @@
+# source: istio-1.0.3/samples/bookinfo/platform/kube/bookinfo.yaml
+# Copyright 2017 Istio Authors
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+#######################a###########################################################################
+# Productpage services
+##################################################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-productpage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage
+  labels:
+    app: productpage
+spec:
+  ports:
+    - port: 9080
+      name: http
+  selector:
+    app: productpage
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: productpage-v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: productpage
+        version: v1
+    spec:
+      serviceAccountName: bookinfo-productpage
+      containers:
+        - name: productpage
+          env:
+            - name: COMMENTS_HOSTNAME
+              value: comments.bookinfo.svc.cluster.local
+          image: docker.io/ilackarms/productpage-pro:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9080
+---
