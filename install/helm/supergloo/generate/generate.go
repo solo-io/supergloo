@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 	"github.com/solo-io/go-utils/versionutils"
@@ -30,20 +32,20 @@ var (
 	rootPrefix    string
 )
 
-func Run(version, imageTag, pullPolicy, prefix string) error {
+func Run(version, imageTag, imageRepoPrefix, pullPolicy, prefix string) error {
 	glooVersion, err := getOsGlooVersion()
 	if err != nil {
 		return err
 	}
 
-	return RunWithGlooVersion(version, imageTag, pullPolicy, prefix, glooVersion)
+	return RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, glooVersion)
 }
 
-func RunWithGlooVersion(version, imageTag, pullPolicy, prefix, glooVersion string) error {
+func RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, glooVersion string) error {
 	rootPrefix = prefix
 	osGlooVersion = glooVersion
 
-	if err := generateValuesYaml(imageTag, pullPolicy); err != nil {
+	if err := generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix); err != nil {
 		return fmt.Errorf("generating values.yaml failed: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
@@ -116,7 +118,7 @@ func writeYaml(obj interface{}, path string) error {
 	return nil
 }
 
-func generateValuesYaml(imageTag, pullPolicy string) error {
+func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
 	config, err := readConfig(filepath.Join(rootPrefix, DefaultValues))
 	if err != nil {
 		return err
@@ -130,6 +132,11 @@ func generateValuesYaml(imageTag, pullPolicy string) error {
 	config.MeshDiscovery.Deployment.Image.Tag = imageTag
 	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
 
+	if imageRepoPrefix != "" {
+		config.Supergloo.Deployment.Image.Repository = replaceRepositoryPrefix(config.Supergloo.Deployment.Image.Repository, imageRepoPrefix)
+		config.MeshDiscovery.Deployment.Image.Repository = replaceRepositoryPrefix(config.MeshDiscovery.Deployment.Image.Repository, imageRepoPrefix)
+	}
+
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
 }
 
@@ -142,4 +149,11 @@ func generateChartYaml(version string) error {
 	chart.Version = version
 
 	return writeYaml(&chart, filepath.Join(rootPrefix, ChartOutput))
+}
+
+// We want to turn "quay.io/solo-io/gloo" into "<newPrefix>/gloo".
+func replaceRepositoryPrefix(repository, newPrefix string) string {
+	// Remove trailing slash, if present
+	newPrefix = strings.TrimSuffix(newPrefix, "/")
+	return strings.Join([]string{newPrefix, path.Base(repository)}, "/")
 }

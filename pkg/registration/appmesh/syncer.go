@@ -14,7 +14,6 @@ import (
 
 const (
 	webhookName            = "sidecar-injector"
-	webhookImageName       = "quay.io/solo-io/sidecar-injector"
 	webhookImagePullPolicy = "Always"
 	resourcesConfigMapName = "sidecar-injection-resources"
 	secretKind             = "Secret"

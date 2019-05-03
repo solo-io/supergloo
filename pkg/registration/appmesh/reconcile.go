@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/solo-io/go-utils/installutils/helmchart"
@@ -23,6 +24,8 @@ import (
 	"k8s.io/client-go/util/cert"
 	"k8s.io/helm/pkg/manifest"
 )
+
+var webhookImageName = fmt.Sprintf("%s/%s", strings.TrimSuffix(version.ImageRepoPrefix, "/"), webhookName)
 
 type AutoInjectionReconciler interface {
 	Reconcile(autoInjectionEnabled bool) error
@@ -123,7 +126,7 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string)
 		CaBundle:      base64.StdEncoding.EncodeToString(certs.caCertificate),
 		Image: Image{
 			Name:       webhookImageName,
-			Tag:        version.GetWebhookImageTag(),
+			Tag:        version.Version,
 			PullPolicy: webhookImagePullPolicy,
 		},
 	}
