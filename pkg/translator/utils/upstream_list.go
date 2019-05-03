@@ -29,6 +29,7 @@ func UpstreamServicesByHost(upstreams gloov1.UpstreamList) (map[string]*Upstream
 		}
 		if service, ok := services[host]; ok {
 			service.Upstreams = append(service.Upstreams, us)
+			continue
 		}
 		service, err := ServiceFromHost(host, upstreams)
 		if err != nil {
