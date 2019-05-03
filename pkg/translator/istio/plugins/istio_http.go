@@ -20,7 +20,7 @@ func (p *istioHttpPlugin) Init(params InitParams) error {
 
 var notImplementedErr = errors.Errorf("rule type not implemented")
 
-func (*istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
+func (p *istioHttpPlugin) ProcessRoute(params Params, in v1.RoutingRuleSpec, out *v1alpha3.HTTPRoute) error {
 	switch rule := in.RuleType.(type) {
 	case *v1.RoutingRuleSpec_TrafficShifting:
 		if err := processTrafficShiftingRule(params.Upstreams, rule.TrafficShifting, out); err != nil {
@@ -130,9 +130,6 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, rule *v1.TrafficS
 		}
 
 		labels := utils.GetLabelsForUpstream(upstream)
-		if dest.Weight == 0 {
-			return errors.Errorf("weight cannot be 0")
-		}
 
 		weight := int32(dest.Weight * 100 / totalWeights)
 		totalIstioWeights += weight

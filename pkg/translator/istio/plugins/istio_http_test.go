@@ -44,22 +44,6 @@ var _ = Describe("IstioHttp", func() {
 				Expect(err.Error()).To(ContainSubstring("did not find upstream"))
 			})
 		})
-		Context("weight is 0", func() {
-			It("returns an error", func() {
-				params := Params{
-					Upstreams: inputs.BookInfoUpstreams("default"),
-				}
-				in := inputs.TrafficShiftingRuleSpec(core.ResourceRef{Name: "default-reviews-v1-9080", Namespace: "default"})
-				in.RuleType.(*v1.RoutingRuleSpec_TrafficShifting).TrafficShifting.Destinations.Destinations[0].Weight = 0
-				out := &v1alpha3.HTTPRoute{}
-
-				err := NewIstioHttpPlugin().ProcessRoute(
-					params, *in, out)
-
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("weight cannot be 0"))
-			})
-		})
 		Context("valid config", func() {
 			It("configures traffic shifting on the route", func() {
 

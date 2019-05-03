@@ -19,163 +19,190 @@ import (
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
+func routingRulesForHost(host string, routingRules v1.RoutingRuleList, upstreams gloov1.UpstreamList) (v1.RoutingRuleList, error) {
+
+	// routing rules for this vs
+	var myRoutingRules v1.RoutingRuleList
+	for _, rr := range routingRules {
+		ruleAppliesToHost, err := utils.HostnameSelected(host, rr.DestinationSelector, upstreams)
+		if err != nil {
+			return nil, err
+		}
+		if ruleAppliesToHost {
+
+			myRoutingRules = append(myRoutingRules, rr)
+		}
+	}
+
+	return myRoutingRules, nil
+}
+
+func matcherForRule(sources []map[string]string, upstreamsForService gloov1.UpstreamList, rule *v1.RoutingRule) ([]*v1alpha3.HTTPMatchRequest, error) {
+	// no sources == all sources
+	if len(sources) == 0 {
+		sources = []map[string]string{{}}
+	}
+	upstreamsForRule, err := utils.UpstreamsForSelector(rule.DestinationSelector, upstreamsForService)
+	if err != nil {
+		return nil, err
+	}
+
+	portsForMatcher, err := utils.PortsFromUpstreams(upstreamsForRule)
+	if err != nil {
+		return nil, err
+	}
+
+	// if no request matchers specified, create a catchall /
+	requestMatchers := rule.RequestMatchers
+	if len(requestMatchers) == 0 {
+		requestMatchers = []*gloov1.Matcher{{
+			PathSpecifier: &gloov1.Matcher_Prefix{
+				Prefix: "/",
+			},
+		}}
+	}
+
+	// create a separate match for
+	// each source label set
+	// each port
+	// each req matcher
+	var matches []*v1alpha3.HTTPMatchRequest
+	for _, port := range portsForMatcher {
+		for _, sourceLabels := range sources {
+			for _, sgMatcher := range requestMatchers {
+				istioMatch := convertMatcher(sourceLabels, port, sgMatcher)
+				matches = append(matches, istioMatch)
+			}
+		}
+	}
+
+	return matches, nil
+}
+
+// calculates the matcher overlap
+// returns the union between the two matchers
+// plus the unique from list1, list2
+func matchersUnion(matchers1, matchers2 []*v1alpha3.HTTPMatchRequest) ([]*v1alpha3.HTTPMatchRequest, []*v1alpha3.HTTPMatchRequest, []*v1alpha3.HTTPMatchRequest) {
+	var uniqueList1, uniqueList2, overlap []*v1alpha3.HTTPMatchRequest
+	for _, m1 := range matchers1 {
+		isUnique := true
+		for _, m2 := range matchers2 {
+			if m1.Equal(m2) {
+				overlap = append(overlap, m1)
+				isUnique = false
+				break
+			}
+		}
+		if isUnique {
+			uniqueList1 = append(uniqueList1, m1)
+		}
+	}
+	for _, m2 := range matchers2 {
+		isUnique := true
+		for _, m1 := range matchers1 {
+			if m1.Equal(m2) {
+				isUnique = false
+				break
+			}
+		}
+		if isUnique {
+			uniqueList2 = append(uniqueList2, m2)
+		}
+	}
+
+	return overlap, uniqueList1, uniqueList2
+}
+
 func (t *translator) makeVirtualServiceForHost(
 	ctx context.Context,
 	params plugins.Params,
 	writeNamespace string,
-	host string,
-	destinationPortAndLabelSets []utils.LabelsPortTuple,
-	routingRules v1.RoutingRuleList,
+	service *utils.UpstreamService,
+	allRoutingRules v1.RoutingRuleList,
 	upstreams gloov1.UpstreamList,
 	resourceErrs reporter.ResourceErrors,
-) *v1alpha3.VirtualService {
-
-	// group rules by their matcher
-	// we will then create a corresponding http rule
-	// on the virtual service that contains all the relevant rules
-	rulesPerMatcher := utils.NewRulesByMatcher(routingRules)
-
-	vs := initVirtualService(writeNamespace, host)
-
-	var destPorts []uint32
-addUniquePorts:
-	for _, set := range destinationPortAndLabelSets {
-		for _, port := range destPorts {
-			if set.Port == port {
-				continue addUniquePorts
-			}
-		}
-		destPorts = append(destPorts, set.Port)
+) (*v1alpha3.VirtualService, error) {
+	routingRules, err := routingRulesForHost(service.Host, allRoutingRules, upstreams)
+	if err != nil {
+		return nil, err
+	}
+	// no need to create a virtual service, no rules will be applied
+	if len(routingRules) == 0 {
+		return nil, nil
 	}
 
-	// add a rule for each dest port
-	for _, port := range destPorts {
-		t.applyRouteRules(
-			params,
-			host,
-			port,
-			rulesPerMatcher,
-			upstreams,
-			resourceErrs,
-			vs,
-		)
-	}
-
-	sortByMatcherSpecificity(vs.Http)
-
-	if len(vs.Http) == 0 {
-		// create a default route that sends all traffic to the destination host
-		vs.Http = []*v1alpha3.HTTPRoute{{
-			Route: []*v1alpha3.HTTPRouteDestination{{
-				Destination: &v1alpha3.Destination{Host: host}},
-			}},
-		}
-	}
-
-	return vs
-}
-
-func (t *translator) applyRouteRules(
-	params plugins.Params,
-	destinationHost string,
-	destinationPort uint32,
-	rulesPerMatcher utils.RulesByMatcher,
-	upstreams gloov1.UpstreamList,
-	resourceErrs reporter.ResourceErrors,
-	out *v1alpha3.VirtualService) {
-
-	var istioRoutes []*v1alpha3.HTTPRoute
-
-	// find rules for this host and apply them
-	// each unique matcher becomes an http rule in the virtual
-	// service for this host
-	for _, rules := range rulesPerMatcher.Sort() {
-		// initialize report func
-		report := func(err error, format string, args ...interface{}) {
-			for _, rr := range rules {
-				resourceErrs.AddError(rr, errors.Wrapf(err, format, args...))
-			}
-		}
-
-		// these should be identical for all the rules
-		matcher := rules[0].RequestMatchers
-		sourceSelector := rules[0].SourceSelector
-
-		// convert the sourceSelector object to source labels
-		sourceLabelSets, err := labelSetsFromSelector(sourceSelector, upstreams)
+	// make a route for each rule
+	// merge by matcher
+	var routes []*v1alpha3.HTTPRoute
+	for _, rule := range routingRules {
+		sourceUpstreams, err := utils.UpstreamsForSelector(rule.SourceSelector, upstreams)
 		if err != nil {
-			report(err, "invalid source selector")
+			return nil, err
+		}
+
+		// TODO(ilackarms): support filtering upstreams by
+		// the mesh they belong to. we should not be comparing
+		// source upstreams to all upstreams, but only upstreams
+		// in our mesh. we can use dicovery data for this
+		//
+		// if the user specified a subset of sources,
+		// we must add them to the matchers
+		// nil case is valid here (all upstreams)
+		var sourceLabelSets []map[string]string
+		if len(sourceUpstreams) < len(upstreams) {
+			sourceLabelSets, err = utils.LabelsFromUpstreams(sourceUpstreams)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		matcher, err := matcherForRule(sourceLabelSets, service.Upstreams, rule)
+		if err != nil {
+			resourceErrs.AddError(rule, err)
 			continue
 		}
+		// we should apply our feature to previously
+		// created routes that may have an overlapping matcher
+		// this way a feature does not get blocked by a
+		// matcher with higher order in the list
+		for _, route := range routes {
+			overlap, _, newMatcher := matchersUnion(route.Match, matcher)
+			// remove the matchers that overlapped with this route
+			matcher = newMatcher
 
-		istioMatcher := createIstioMatcher(sourceLabelSets, destinationPort, matcher)
-
-		route := t.createRoute(
-			params,
-			destinationHost,
-			rules,
-			istioMatcher,
-			upstreams,
-			resourceErrs,
-		)
-
-		istioRoutes = append(istioRoutes, route)
+			// apply the rule to the overlapping route
+			if len(overlap) > 0 {
+				t.applyRuleToRoute(params, route, rule, resourceErrs)
+			}
+		}
+		// make a new route for our with the remaining matchers
+		if len(matcher) > 0 {
+			route := &v1alpha3.HTTPRoute{
+				Match: matcher,
+				// default: single destination, original host, no subset
+				// traffic shifting may overwrite, so traffic shifting plugin should come first
+				Route: []*v1alpha3.HTTPRouteDestination{{
+					Destination: &v1alpha3.Destination{
+						Host: service.Host,
+					},
+				}},
+			}
+			t.applyRuleToRoute(params, route, rule, resourceErrs)
+			routes = append(routes, route)
+		}
 	}
 
-	out.Http = append(out.Http, istioRoutes...)
-}
+	sortByMatcherSpecificity(routes)
 
-func initVirtualService(writeNamespace, host string) *v1alpha3.VirtualService {
 	return &v1alpha3.VirtualService{
 		Metadata: core.Metadata{
 			Namespace: writeNamespace,
-			Name:      kubeutils.SanitizeName(host),
+			Name:      kubeutils.SanitizeName(service.Host),
 		},
-		Hosts:    []string{host},
+		Hosts:    []string{service.Host},
 		Gateways: []string{"mesh"},
-	}
-}
-
-func labelSetsFromSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList) ([]map[string]string, error) {
-	selectedUpstreams, err := utils.UpstreamsForSelector(selector, upstreams)
-	if err != nil {
-		return nil, errors.Wrapf(err, "selecting upstreams")
-	}
-
-	var labelSets []map[string]string
-	for _, us := range selectedUpstreams {
-		labelSets = append(labelSets, utils.GetLabelsForUpstream(us))
-	}
-
-	return labelSets, nil
-}
-
-func isCatchAllMatcher(istioMatcher *v1alpha3.HTTPMatchRequest) bool {
-	if istioMatcher.Uri == nil {
-		return true
-	}
-	switch path := istioMatcher.Uri.MatchType.(type) {
-	case *v1alpha3.StringMatch_Prefix:
-		return path.Prefix == "/"
-	case *v1alpha3.StringMatch_Regex:
-		return path.Regex == "/.*" || path.Regex == ".*"
-	}
-	return false
-}
-
-func shortestPathLength(istioMatchers []*v1alpha3.HTTPMatchRequest) int {
-	shortestPath := math.MaxInt64
-	for _, m := range istioMatchers {
-		switch path := m.Uri.MatchType.(type) {
-		case *v1alpha3.StringMatch_Prefix:
-			if pathLen := len(path.Prefix); pathLen < shortestPath {
-				shortestPath = pathLen
-			}
-		default:
-			continue
-		}
-	}
-	return shortestPath
+		Http:     routes,
+	}, nil
 }
 
 func sortByMatcherSpecificity(istioRoutes []*v1alpha3.HTTPRoute) {
@@ -195,6 +222,34 @@ func sortByMatcherSpecificity(istioRoutes []*v1alpha3.HTTPRoute) {
 		return shortestPathLength(route1.Match) > shortestPathLength(route2.Match)
 	}
 	sort.SliceStable(istioRoutes, less)
+}
+
+func shortestPathLength(istioMatchers []*v1alpha3.HTTPMatchRequest) int {
+	shortestPath := math.MaxInt64
+	for _, m := range istioMatchers {
+		switch path := m.Uri.MatchType.(type) {
+		case *v1alpha3.StringMatch_Prefix:
+			if pathLen := len(path.Prefix); pathLen < shortestPath {
+				shortestPath = pathLen
+			}
+		default:
+			continue
+		}
+	}
+	return shortestPath
+}
+
+func isCatchAllMatcher(istioMatcher *v1alpha3.HTTPMatchRequest) bool {
+	if istioMatcher.Uri == nil {
+		return true
+	}
+	switch path := istioMatcher.Uri.MatchType.(type) {
+	case *v1alpha3.StringMatch_Prefix:
+		return path.Prefix == "/"
+	case *v1alpha3.StringMatch_Regex:
+		return path.Regex == "/.*" || path.Regex == ".*"
+	}
+	return false
 }
 
 func (t *translator) createRoute(
@@ -243,6 +298,23 @@ func (t *translator) createRoute(
 		}
 	}
 	return out
+}
+
+func (t *translator) applyRuleToRoute(params plugins.Params, route *v1alpha3.HTTPRoute, rr *v1.RoutingRule, resourceErrs reporter.ResourceErrors) {
+
+	for _, plug := range t.plugins {
+		routingPlugin, ok := plug.(plugins.RoutingPlugin)
+		if !ok {
+			continue
+		}
+		if rr.Spec == nil {
+			resourceErrs.AddError(rr, errors.Errorf("spec cannot be empty"))
+			continue
+		}
+		if err := routingPlugin.ProcessRoute(params, *rr.Spec, route); err != nil {
+			resourceErrs.AddError(rr, errors.Wrapf(err, "applying route rule failed"))
+		}
+	}
 }
 
 func createIstioMatcher(sourceLabelSets []map[string]string, destPort uint32, matcher []*gloov1.Matcher) []*v1alpha3.HTTPMatchRequest {

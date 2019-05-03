@@ -1,70 +1,92 @@
 package utils
 
 import (
+	"reflect"
 	"sort"
 
 	"github.com/solo-io/go-utils/stringutils"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/go-utils/hashutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// we create a routing rule for each unique matcher
-type RulesByMatcher struct {
-	rules map[uint64]v1.RoutingRuleList
+// one (kube) service that maps to multiple upstreams
+type UpstreamService struct {
+	Host      string
+	LabelSets []map[string]string
+	Ports     []uint32
+	Upstreams gloov1.UpstreamList // the upstreams this service was created from
 }
 
-func NewRulesByMatcher(rules v1.RoutingRuleList) RulesByMatcher {
-	rbm := make(map[uint64]v1.RoutingRuleList)
-	for _, rule := range rules {
-		hash := hashutils.HashAll(
-			rule.SourceSelector,
-			rule.RequestMatchers,
-		)
-		rbm[hash] = append(rbm[hash], rule)
-	}
-
-	return RulesByMatcher{rules: rbm}
-}
-
-func (rbm RulesByMatcher) Sort() []v1.RoutingRuleList {
-	var (
-		hashes       []uint64
-		rulesForHash []v1.RoutingRuleList
-	)
-	for hash, rules := range rbm.rules {
-		hashes = append(hashes, hash)
-		rulesForHash = append(rulesForHash, rules)
-	}
-	sort.SliceStable(rulesForHash, func(i, j int) bool {
-		return hashes[i] < hashes[j]
-	})
-	return rulesForHash
-}
-
-type LabelsPortTuple struct {
-	Labels map[string]string
-	Port   uint32
-}
-
-func LabelsAndPortsByHost(upstreams gloov1.UpstreamList) (map[string][]LabelsPortTuple, error) {
-	labelsByHost := make(map[string][]LabelsPortTuple)
+func UpstreamServicesByHost(upstreams gloov1.UpstreamList) (map[string]*UpstreamService, error) {
+	services := make(map[string]*UpstreamService)
 	for _, us := range upstreams {
-		labels := GetLabelsForUpstream(us)
 		host, err := GetHostForUpstream(us)
 		if err != nil {
-			return nil, errors.Wrapf(err, "getting host for upstream")
+			return nil, err
 		}
-		port, err := GetPortForUpstream(us)
+		if service, ok := services[host]; ok {
+			service.Upstreams = append(service.Upstreams, us)
+		}
+		service, err := ServiceFromHost(host, upstreams)
 		if err != nil {
-			return nil, errors.Wrapf(err, "getting port for upstream")
+			return nil, err
 		}
-		labelsByHost[host] = append(labelsByHost[host], LabelsPortTuple{Labels: labels, Port: port})
+		services[host] = service
 	}
-	return labelsByHost, nil
+	return services, nil
+}
+
+func GetUpstreamHostPortsLabels(us *gloov1.Upstream) (string, uint32, map[string]string, error) {
+	labels := GetLabelsForUpstream(us)
+	host, err := GetHostForUpstream(us)
+	if err != nil {
+		return "", 0, nil, errors.Wrapf(err, "getting host for upstream")
+	}
+	port, err := GetPortForUpstream(us)
+	if err != nil {
+		return "", 0, nil, errors.Wrapf(err, "getting port for upstream")
+	}
+	return host, port, labels, nil
+}
+
+// only selects the first upstream in each list with a unique host, drop the others
+func ServiceFromHost(host string, upstreams gloov1.UpstreamList) (*UpstreamService, error) {
+	service := &UpstreamService{Host: host}
+
+	for _, us := range upstreams {
+		usHost, port, labels, err := GetUpstreamHostPortsLabels(us)
+		if err != nil {
+			return nil, err
+		}
+		if host != usHost {
+			continue
+		}
+		var duplicateLabels, duplicatePort bool
+		for _, foundLabels := range service.LabelSets {
+			if reflect.DeepEqual(labels, foundLabels) {
+				duplicateLabels = true
+				break
+			}
+		}
+		for _, foundPort := range service.Ports {
+			if port == foundPort {
+				duplicatePort = true
+				break
+			}
+		}
+		if !duplicatePort {
+			service.Ports = append(service.Ports, port)
+		}
+		if !duplicateLabels {
+			service.LabelSets = append(service.LabelSets, labels)
+		}
+		service.Upstreams = append(service.Upstreams, us)
+	}
+
+	return service, nil
 }
 
 func HostsForUpstreams(upstreams gloov1.UpstreamList) ([]string, error) {
@@ -151,4 +173,37 @@ func RuleAppliesToDestination(destinationHost string, destinationSelector *v1.Po
 		}
 	}
 	return false, nil
+}
+
+func PortsFromUpstreams(upstreams gloov1.UpstreamList) ([]uint32, error) {
+	var ports []uint32
+addPorts:
+	for _, us := range upstreams {
+		port, err := GetPortForUpstream(us)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range ports {
+			if p == port {
+				continue addPorts
+			}
+		}
+		ports = append(ports, port)
+	}
+	return ports, nil
+}
+
+func LabelsFromUpstreams(upstreams gloov1.UpstreamList) ([]map[string]string, error) {
+	var labels []map[string]string
+addLabels:
+	for _, us := range upstreams {
+		label := GetLabelsForUpstream(us)
+		for _, p := range labels {
+			if reflect.DeepEqual(p, label) {
+				continue addLabels
+			}
+		}
+		labels = append(labels, label)
+	}
+	return labels, nil
 }
