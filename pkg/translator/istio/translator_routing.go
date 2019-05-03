@@ -52,6 +52,16 @@ func matcherForRule(sources []map[string]string, upstreamsForService gloov1.Upst
 		return nil, err
 	}
 
+	// if no request matchers specified, create a catchall /
+	requestMatchers := rule.RequestMatchers
+	if len(requestMatchers) == 0 {
+		requestMatchers = []*gloov1.Matcher{{
+			PathSpecifier: &gloov1.Matcher_Prefix{
+				Prefix: "/",
+			},
+		}}
+	}
+
 	// create a separate match for
 	// each source label set
 	// each port
@@ -59,7 +69,7 @@ func matcherForRule(sources []map[string]string, upstreamsForService gloov1.Upst
 	var matches []*v1alpha3.HTTPMatchRequest
 	for _, port := range portsForMatcher {
 		for _, sourceLabels := range sources {
-			for _, sgMatcher := range rule.RequestMatchers {
+			for _, sgMatcher := range requestMatchers {
 				istioMatch := convertMatcher(sourceLabels, port, sgMatcher)
 				matches = append(matches, istioMatch)
 			}

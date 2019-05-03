@@ -64,10 +64,28 @@ func ServiceFromHost(host string, upstreams gloov1.UpstreamList) (*UpstreamServi
 		if host != usHost {
 			continue
 		}
-		service.Ports = append(service.Ports, port)
-		service.LabelSets = append(service.LabelSets, labels)
+		var duplicateLabels, duplicatePort bool
+		for _, foundLabels := range service.LabelSets {
+			if reflect.DeepEqual(labels, foundLabels) {
+				duplicateLabels = true
+				break
+			}
+		}
+		for _, foundPort := range service.Ports {
+			if port == foundPort {
+				duplicatePort = true
+				break
+			}
+		}
+		if !duplicatePort {
+			service.Ports = append(service.Ports, port)
+		}
+		if !duplicateLabels {
+			service.LabelSets = append(service.LabelSets, labels)
+		}
 		service.Upstreams = append(service.Upstreams, us)
 	}
+
 	return service, nil
 }
 
