@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 )
 

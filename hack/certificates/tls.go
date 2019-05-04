@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/go-utils/log"
 	"k8s.io/client-go/util/cert"
 )
 

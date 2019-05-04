@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/solo-io/go-utils/githubutils"
-	"github.com/solo-io/go-utils/logger"
+	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/go-utils/pkgmgmtutils"
 )
 
@@ -63,21 +63,21 @@ func main() {
 	status, err := pkgmgmtutils.UpdateFormulas(repoOwner, repoName, buildDir,
 		`supergloo-cli-(darwin|linux|windows).*\.sha256`, fOpts)
 	if err != nil {
-		logger.Fatalf("Error trying to update package manager formulas. Error was: %s", err.Error())
+		log.Fatalf("Error trying to update package manager formulas. Error was: %s", err.Error())
 	}
 	for _, s := range status {
 		if !s.Updated {
 			if s.Err != nil {
-				logger.Fatalf("Error while trying to update formula %s. Error was: %s", s.Name, s.Err.Error())
+				log.Fatalf("Error while trying to update formula %s. Error was: %s", s.Name, s.Err.Error())
 			} else {
-				logger.Fatalf("Error while trying to update formula %s. Error was nil", s.Name) // Shouldn't happen; really bad if it does
+				log.Fatalf("Error while trying to update formula %s. Error was nil", s.Name) // Shouldn't happen; really bad if it does
 			}
 		}
 		if s.Err != nil {
 			if s.Err == pkgmgmtutils.ErrAlreadyUpdated {
-				logger.Warnf("Formula %s was updated externally, so no updates applied during this release", s.Name)
+				log.Warnf("Formula %s was updated externally, so no updates applied during this release", s.Name)
 			} else {
-				logger.Fatalf("Error updating Formula %s. Error was: %s", s.Name, s.Err.Error())
+				log.Fatalf("Error updating Formula %s. Error was: %s", s.Name, s.Err.Error())
 			}
 		}
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/onsi/gomega"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/solo-kit/test/setup"
 )
 
