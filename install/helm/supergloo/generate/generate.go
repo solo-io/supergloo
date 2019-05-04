@@ -12,7 +12,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	glooGenerate "github.com/solo-io/gloo/install/helm/gloo/generate"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
+	"github.com/solo-io/go-utils/log"
 )
 
 const (

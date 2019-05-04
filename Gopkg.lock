@@ -1287,7 +1287,7 @@
   version = "v0.0.3"
 
 [[projects]]
-  digest = "1:25b2b21c711c898f0d16808697e86f703621dd096d587703a624cb8c113d582b"
+  digest = "1:16867d9b18e9e6794c136a5b2becb0252748d8386268b9263c5818496cfedf92"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1339,8 +1339,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "98407bab5c9d214d396f753cf28cb8af791db618"
-  version = "v0.13.19"
+  revision = "5e7f1ced7e9d89e054d46c7a3a65b8133c584483"
+  version = "v0.13.20"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1351,7 +1351,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:c8dd70016ad9bbaceebf16ccf6dabc71d14edad4d86da567a3c099036bb83f82"
+  digest = "1:9d3c9d712f7952b8a1dbd098249067a72143100403657f4adfc7ab42f2fb89b2"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1363,6 +1363,7 @@
     "contextutils",
     "docsutils",
     "errors",
+    "errutils",
     "githubutils",
     "hashutils",
     "installutils/helmchart",
@@ -1371,7 +1372,7 @@
     "installutils/kuberesource",
     "kubeinstallutils",
     "kubeutils",
-    "logger",
+    "log",
     "pkgmgmtutils",
     "protoutils",
     "stats",
@@ -1384,11 +1385,11 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "a8a059dfc7f702f1a8136fd3f96f60958a15d8c0"
-  version = "v0.7.19"
+  revision = "ca41a2fda35b9d676ac551dae6e5dfb60b7c1a5e"
+  version = "v0.8.4"
 
 [[projects]]
-  digest = "1:da48a7b42a263b4dc13c7b77417239ee2865df5b21fa310165505b6e4ddb67e4"
+  digest = "1:a903ba135632882ef50019fe0057956e9ba3f71e7fcb204ff7a484d6de5135e4"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1433,20 +1434,16 @@
     "pkg/code-generator/model",
     "pkg/code-generator/parser",
     "pkg/errors",
-    "pkg/utils/errutils",
     "pkg/utils/fileutils",
-    "pkg/utils/hashutils",
     "pkg/utils/kubeutils",
-    "pkg/utils/log",
     "pkg/utils/protoutils",
-    "pkg/utils/stringutils",
     "test/helpers",
     "test/setup",
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "dc5feeb21add5f0d9c3d858cadf05ec90451efca"
-  version = "v0.7.2"
+  revision = "384dbdaa27e3754a07a4cc65f9331e2f5a0d7d20"
+  version = "v0.8.0"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2517,6 +2514,7 @@
     "github.com/solo-io/go-utils/contextutils",
     "github.com/solo-io/go-utils/docsutils",
     "github.com/solo-io/go-utils/errors",
+    "github.com/solo-io/go-utils/errutils",
     "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/hashutils",
     "github.com/solo-io/go-utils/installutils/helmchart",
@@ -2524,7 +2522,7 @@
     "github.com/solo-io/go-utils/installutils/kubeinstall/mocks",
     "github.com/solo-io/go-utils/installutils/kuberesource",
     "github.com/solo-io/go-utils/kubeutils",
-    "github.com/solo-io/go-utils/logger",
+    "github.com/solo-io/go-utils/log",
     "github.com/solo-io/go-utils/pkgmgmtutils",
     "github.com/solo-io/go-utils/protoutils",
     "github.com/solo-io/go-utils/stats",
@@ -2555,10 +2553,7 @@
     "github.com/solo-io/solo-kit/pkg/code-generator/docgen/options",
     "github.com/solo-io/solo-kit/pkg/code-generator/model",
     "github.com/solo-io/solo-kit/pkg/errors",
-    "github.com/solo-io/solo-kit/pkg/utils/errutils",
-    "github.com/solo-io/solo-kit/pkg/utils/hashutils",
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
-    "github.com/solo-io/solo-kit/pkg/utils/log",
     "github.com/solo-io/solo-kit/test/helpers",
     "github.com/solo-io/solo-kit/test/setup",
     "github.com/solo-io/solo-kit/test/tests/typed",
