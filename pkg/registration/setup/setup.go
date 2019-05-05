@@ -48,10 +48,6 @@ func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registrat
 		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		linkerdstats.NewLinkerdPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
-			reporter.NewReporter("gloo-registration-reporter",
-				clientset.Supergloo.Mesh.BaseClient(),
-				clientset.Supergloo.MeshIngress.BaseClient(),
-			),
 			clientset,
 		),
 		appmesh.NewAppMeshRegistrationSyncer(

@@ -1,4 +1,4 @@
-package gloo
+package istio
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -10,7 +10,7 @@ import (
 
 var _ = Describe("volume info", func() {
 	var (
-		meshResource = &core.ResourceRef{
+		meshResource = core.ResourceRef{
 			Name:      "istio",
 			Namespace: "istio-system",
 		}
@@ -76,14 +76,14 @@ var _ = Describe("volume info", func() {
 			Expect(deploymentList[0].Volume.Name).To(Equal(certVolumeName(meshResource)))
 		})
 		It("cam create deployment info from meshes", func() {
-			deploymentList, err := makeSecretVolumesForMeshes([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			deploymentList, err := makeSecretVolumesForMeshes(v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deploymentList).To(HaveLen(1))
 			Expect(deploymentList[0].Volume.Name).To(Equal(certVolumeName(meshResource)))
 		})
 
 		It("can diff properly", func() {
-			newDeploymentList, err := makeSecretVolumesForMeshes([]*core.ResourceRef{meshResource}, v1.MeshList{istioMesh})
+			newDeploymentList, err := makeSecretVolumesForMeshes(v1.MeshList{istioMesh})
 			Expect(err).NotTo(HaveOccurred())
 			oldDeploymentList := volumesToDeploymentInfo(volumeList, mountList)
 			added, deleted := diff(newDeploymentList, oldDeploymentList)
