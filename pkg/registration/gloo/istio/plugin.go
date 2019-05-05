@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 
+	"go.uber.org/zap"
 	"k8s.io/api/extensions/v1beta1"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -21,7 +22,10 @@ func NewGlooIstioMtlsPlugin(cs *clientset.Clientset) *glooIstioMtlsPlugin {
 }
 
 func (pl *glooIstioMtlsPlugin) HandleMeshes(ctx context.Context, ingress *v1.MeshIngress, meshes v1.MeshList) error {
-	ctx = contextutils.WithLogger(ctx, "istio-gloo-mtls-plugin")
+	ctx = contextutils.WithLoggerValues(ctx,
+		zap.String("plugin", "istio-gloo-mtls"),
+		zap.String("mesh-ingress", ingress.Metadata.Ref().Key()),
+	)
 	logger := contextutils.LoggerFrom(ctx)
 
 	deployment, err := pl.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
