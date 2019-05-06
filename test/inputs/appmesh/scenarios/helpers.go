@@ -88,6 +88,7 @@ func createVirtualServiceWithVr(hostname, meshName, virtualRouterName string) *a
 
 func createRoute(meshName, routeName, virtualRouterName, prefix string, action *appmesh.HttpRouteAction) *appmesh.RouteData {
 	virtualRouterName = kubeutils.SanitizeName(virtualRouterName)
+	routeName = kubeutils.SanitizeName(routeName)
 	return &appmesh.RouteData{
 		VirtualRouterName: &virtualRouterName,
 		MeshName:          &meshName,
