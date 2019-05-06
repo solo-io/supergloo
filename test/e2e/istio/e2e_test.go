@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	glootestutils "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/install/istio"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"
@@ -43,7 +42,7 @@ var _ = Describe("istio e2e", func() {
 	})
 
 	It("it installs gloo", func() {
-		testGlooInstall(glooName, istioName)
+		sgutils.TestGlooInstall(glooName, superglooNamespace, glooNamespace, istioName)
 	})
 
 	It("it enforces policy", func() {
@@ -87,7 +86,7 @@ var _ = Describe("istio e2e", func() {
    tests
 */
 func testInstallIstio(meshName string) {
-	version := istio.IstioVersion113
+	version := istio.IstioVersion106
 	if istioVersion := os.Getenv("ISTIO_VERSION"); istioVersion != "" {
 		version = istioVersion
 	}
@@ -243,17 +242,7 @@ func testGlooMtls(istioName string) {
 		upstreamName, superglooNamespace, istioName))
 	Expect(err).NotTo(HaveOccurred())
 
-	err = glootestutils.Glooctl(fmt.Sprintf("add route --name detailspage"+
-		" --namespace %s --path-prefix / --dest-name %s "+
-		"--dest-namespace %s", glooNamespace, upstreamName, superglooNamespace))
-	Expect(err).NotTo(HaveOccurred())
-
-	// with mtls in strict mode, curl will succeed routing through gloo
-	sgutils.TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
-		Service: "gateway-proxy." + glooNamespace + ".svc.cluster.local",
-		Port:    80,
-		Path:    "/details/1",
-	}, `"author":"William Shakespeare"`, time.Minute*3)
+	sgutils.TestGlooIngress(rootCtx, namespaceWithInject, superglooNamespace, glooNamespace, basicNamespace)
 }
 
 func testPolicy(meshName string) {

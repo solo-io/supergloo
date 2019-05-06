@@ -1,4 +1,4 @@
-package gloo
+package linkerd_test
 
 import (
 	"testing"
@@ -7,12 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var (
-	T *testing.T
-)
-
-func TestGloo(t *testing.T) {
-	T = t
+func TestLinkerd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Gloo Suite")
+	RunSpecs(t, "Linkerd Suite")
 }

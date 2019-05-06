@@ -132,6 +132,14 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	settings, err := gloov1.NewSettingsClient(clientForCrd(gloov1.SettingsCrd, restConfig, crdCache))
+	if err != nil {
+		return nil, err
+	}
+	if err := settings.Register(); err != nil {
+		return nil, err
+	}
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	pods := pod.NewPodClient(kubeClient, kubeCoreCache)
@@ -140,7 +148,8 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		restConfig,
 		kubeClient,
 		promClient,
-		newSuperglooClients(install, mesh, meshIngress, meshGroup, upstream, routingRule, securityRule, tlsSecret, secret),
+		newSuperglooClients(install, mesh, meshGroup, meshIngress, upstream,
+			routingRule, securityRule, tlsSecret, secret, settings),
 		newDiscoveryClients(pods),
 	), nil
 }
@@ -155,12 +164,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		istio clients
 	*/
 
-	rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(&factory.KubeResourceClientFactory{
-		Crd:             rbacv1alpha1.RbacConfigCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -168,12 +172,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 
-	serviceRole, err := rbacv1alpha1.NewServiceRoleClient(&factory.KubeResourceClientFactory{
-		Crd:             rbacv1alpha1.ServiceRoleCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +180,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 
-	serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(&factory.KubeResourceClientFactory{
-		Crd:             rbacv1alpha1.ServiceRoleBindingCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -194,12 +188,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 
-	meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
-		Crd:             policyv1alpha1.MeshPolicyCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -207,12 +196,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 
-	destinationRule, err := v1alpha3.NewDestinationRuleClient(&factory.KubeResourceClientFactory{
-		Crd:             v1alpha3.DestinationRuleCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -220,12 +204,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 
-	virtualService, err := v1alpha3.NewVirtualServiceClient(&factory.KubeResourceClientFactory{
-		Crd:             v1alpha3.VirtualServiceCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
-	})
+	virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache))
 	if err != nil {
 		return nil, err
 	}
@@ -297,13 +276,14 @@ type SuperglooClients struct {
 	SecurityRule v1.SecurityRuleClient
 	TlsSecret    v1.TlsSecretClient
 	Secret       gloov1.SecretClient
+	Settings     gloov1.SettingsClient
 }
 
-func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshIngress v1.MeshIngressClient, meshGroup v1.MeshGroupClient,
-	upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient, securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient,
-	secret gloov1.SecretClient) *SuperglooClients {
-	return &SuperglooClients{Install: install, Mesh: mesh, MeshIngress: meshIngress, MeshGroup: meshGroup, Upstream: upstream,
-		RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret}
+func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup v1.MeshGroupClient,
+	meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient, routingRule v1.RoutingRuleClient,
+	securityRule v1.SecurityRuleClient, tlsSecret v1.TlsSecretClient, secret gloov1.SecretClient, settings gloov1.SettingsClient) *SuperglooClients {
+	return &SuperglooClients{Install: install, Mesh: mesh, MeshGroup: meshGroup, MeshIngress: meshIngress,
+		Upstream: upstream, RoutingRule: routingRule, SecurityRule: securityRule, TlsSecret: tlsSecret, Secret: secret, Settings: settings}
 }
 
 type discoveryClients struct {

@@ -316,6 +316,38 @@ func UpstreamClient() (gloov1.UpstreamClient, error) {
 	return upstreamClient, nil
 }
 
+func MustSettingsClient() gloov1.SettingsClient {
+	client, err := SettingsClient()
+	if err != nil {
+		log.Fatalf("failed to create settings client: %v", err)
+	}
+	return client
+}
+
+func SettingsClient() (gloov1.SettingsClient, error) {
+	if memoryResourceClient != nil {
+		return gloov1.NewSettingsClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	sharedCache := kube.NewKubeCache(context.TODO())
+	settingsClient, err := gloov1.NewSettingsClient(&factory.KubeResourceClientFactory{
+		Crd:         gloov1.SettingsCrd,
+		Cfg:         cfg,
+		SharedCache: sharedCache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating settings client")
+	}
+	if err := settingsClient.Register(); err != nil {
+		return nil, err
+	}
+	return settingsClient, nil
+}
+
 func MustSecretClient() gloov1.SecretClient {
 	client, err := SecretClient()
 	if err != nil {

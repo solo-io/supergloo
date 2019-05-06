@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add automated linkerd ingress with gloo.
+    issueLink: https://github.com/solo-io/supergloo/issues/422
