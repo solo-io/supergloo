@@ -388,6 +388,7 @@ func createVirtualRouter(meshName, hostname string, port uint32) *appmeshApi.Vir
 }
 
 func createVirtualServiceWithVirtualRouterProvider(meshName, hostname, virtualRouterName string) *appmeshApi.VirtualServiceData {
+	virtualRouterName = kubeutils.SanitizeName(virtualRouterName)
 	return &appmeshApi.VirtualServiceData{
 		MeshName:           &meshName,
 		VirtualServiceName: &hostname,

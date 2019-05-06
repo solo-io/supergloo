@@ -2,13 +2,15 @@ package scenarios
 
 import (
 	"github.com/aws/aws-sdk-go/service/appmesh"
+	"github.com/solo-io/go-utils/kubeutils"
 )
 
 func createVirtualRouter(meshName, hostname string, port uint32) *appmesh.VirtualRouterData {
+	virtualRouterName := kubeutils.SanitizeName(hostname)
 	portInt64 := int64(port)
 	return &appmesh.VirtualRouterData{
 		MeshName:          &meshName,
-		VirtualRouterName: &hostname,
+		VirtualRouterName: &virtualRouterName,
 		Spec: &appmesh.VirtualRouterSpec{
 			Listeners: []*appmesh.VirtualRouterListener{
 				{
@@ -68,6 +70,7 @@ func createVirtualServiceWithVn(hostname, meshName, virtualNodeName string) *app
 }
 
 func createVirtualServiceWithVr(hostname, meshName, virtualRouterName string) *appmesh.VirtualServiceData {
+	virtualRouterName = kubeutils.SanitizeName(virtualRouterName)
 	return &appmesh.VirtualServiceData{
 		MeshName:           &meshName,
 		VirtualServiceName: &hostname,
