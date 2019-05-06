@@ -12,12 +12,12 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -314,6 +314,38 @@ func UpstreamClient() (gloov1.UpstreamClient, error) {
 		return nil, err
 	}
 	return upstreamClient, nil
+}
+
+func MustSettingsClient() gloov1.SettingsClient {
+	client, err := SettingsClient()
+	if err != nil {
+		log.Fatalf("failed to create settings client: %v", err)
+	}
+	return client
+}
+
+func SettingsClient() (gloov1.SettingsClient, error) {
+	if memoryResourceClient != nil {
+		return gloov1.NewSettingsClient(memoryResourceClient)
+	}
+
+	cfg, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "getting kube config")
+	}
+	sharedCache := kube.NewKubeCache(context.TODO())
+	settingsClient, err := gloov1.NewSettingsClient(&factory.KubeResourceClientFactory{
+		Crd:         gloov1.SettingsCrd,
+		Cfg:         cfg,
+		SharedCache: sharedCache,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating settings client")
+	}
+	if err := settingsClient.Register(); err != nil {
+		return nil, err
+	}
+	return settingsClient, nil
 }
 
 func MustSecretClient() gloov1.SecretClient {

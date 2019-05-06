@@ -1,4 +1,4 @@
-package gloo
+package istio
 
 import (
 	"path/filepath"
@@ -40,8 +40,8 @@ type DeploymentVolumeInfo struct {
 	VolumeMount corev1.VolumeMount
 }
 
-func NewDeploymentVolumeInfo(resource *core.ResourceRef, tlsSecretName string) *DeploymentVolumeInfo {
-	certVolumeName := certVolumeName(resource)
+func NewDeploymentVolumeInfo(mesh *v1.Mesh, tlsSecretName string) *DeploymentVolumeInfo {
+	certVolumeName := certVolumeName(mesh.Metadata.Ref())
 	volume := corev1.Volume{
 		Name: certVolumeName,
 		VolumeSource: corev1.VolumeSource{
@@ -55,7 +55,7 @@ func NewDeploymentVolumeInfo(resource *core.ResourceRef, tlsSecretName string) *
 	volumeMount := corev1.VolumeMount{
 		Name:      certVolumeName,
 		ReadOnly:  true,
-		MountPath: certVolumePathName(resource),
+		MountPath: certVolumePathName(mesh.Metadata.Ref()),
 	}
 	return &DeploymentVolumeInfo{
 		VolumeMount: volumeMount,
@@ -116,22 +116,18 @@ func volumesToDeploymentInfo(volumes VolumeList, mounts VolumeMountList) Deploym
 	return result
 }
 
-func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
-	result := make(DeploymentVolumeInfoList, len(resources))
-	for i, resource := range resources {
-		mesh, err := meshes.Find(resource.Namespace, resource.Name)
-		if err != nil {
-			return nil, err
-		}
+func makeSecretVolumesForMeshes(meshes v1.MeshList) (DeploymentVolumeInfoList, error) {
+	result := make(DeploymentVolumeInfoList, len(meshes))
+	for i, mesh := range meshes {
 		var deploymentVolumeInfo *DeploymentVolumeInfo
 		switch mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
 			if mesh.MtlsConfig != nil && mesh.MtlsConfig.MtlsEnabled {
-				deploymentVolumeInfo = NewDeploymentVolumeInfo(resource, "istio.default")
+				deploymentVolumeInfo = NewDeploymentVolumeInfo(mesh, "istio.default")
 			}
 		default:
 			return nil, errors.Errorf("unsupported mesh type found for mesh ingress "+
-				"target mesh, %s.%s", resource.Namespace, resource.Name)
+				"target mesh, %s.%s", mesh.Metadata.Namespace, mesh.Metadata.Name)
 		}
 
 		if deploymentVolumeInfo != nil {
@@ -142,10 +138,10 @@ func makeSecretVolumesForMeshes(resources []*core.ResourceRef, meshes v1.MeshLis
 	return result, nil
 }
 
-func certVolumeName(mesh *core.ResourceRef) string {
+func certVolumeName(mesh core.ResourceRef) string {
 	return strings.Join([]string{mesh.Name, certSuffix}, "-")
 }
 
-func certVolumePathName(mesh *core.ResourceRef) string {
+func certVolumePathName(mesh core.ResourceRef) string {
 	return filepath.Join("/etc", "certs", mesh.Namespace, mesh.Name)
 }

@@ -7,10 +7,10 @@ import (
 
 	github_com_solo_io_supergloo_api_external_linkerd "github.com/solo-io/supergloo/api/external/linkerd"
 
+	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/errors"
-	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
 )
 
 func NewServiceProfile(namespace, name string) *ServiceProfile {

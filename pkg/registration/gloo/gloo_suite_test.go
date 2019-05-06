@@ -3,17 +3,16 @@ package gloo
 import (
 	"testing"
 
-	"k8s.io/client-go/kubernetes/fake"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
+var (
+	T *testing.T
+)
+
 func TestGloo(t *testing.T) {
+	T = t
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gloo Suite")
 }
-
-var _ = BeforeSuite(func() {
-	kubeClient = fake.NewSimpleClientset()
-})

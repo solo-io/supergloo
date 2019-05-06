@@ -9,7 +9,7 @@ import (
 	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	istio_authentication_v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
-	"github.com/solo-io/solo-kit/pkg/utils/hashutils"
+	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
 

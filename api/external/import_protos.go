@@ -18,8 +18,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/errors"
+	"github.com/solo-io/go-utils/log"
 	"github.com/solo-io/solo-kit/pkg/code-generator/model"
-	"github.com/solo-io/solo-kit/pkg/utils/log"
 )
 
 // all you should need to do is append to this!

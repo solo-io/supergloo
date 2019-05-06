@@ -17,8 +17,6 @@ import (
 	"github.com/solo-io/supergloo/test/inputs/appmesh/scenarios"
 )
 
-//go:generate mockgen -destination=./../../../api/v1/mocks/mesh_reconciler.go -source=./../../../api/v1/mesh_reconciler.sk.go -package mocks
-
 var _ = Describe("appmesh config syncer", func() {
 
 	var (
