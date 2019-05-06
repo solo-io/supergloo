@@ -8,6 +8,7 @@ import (
 func createVirtualRouter(meshName, hostname string, port uint32) *appmesh.VirtualRouterData {
 	virtualRouterName := kubeutils.SanitizeName(hostname)
 	portInt64 := int64(port)
+	protocol := "http"
 	return &appmesh.VirtualRouterData{
 		MeshName:          &meshName,
 		VirtualRouterName: &virtualRouterName,
@@ -15,7 +16,8 @@ func createVirtualRouter(meshName, hostname string, port uint32) *appmesh.Virtua
 			Listeners: []*appmesh.VirtualRouterListener{
 				{
 					PortMapping: &appmesh.PortMapping{
-						Port: &portInt64,
+						Port:     &portInt64,
+						Protocol: &protocol,
 					},
 				},
 			},
@@ -85,6 +87,7 @@ func createVirtualServiceWithVr(hostname, meshName, virtualRouterName string) *a
 }
 
 func createRoute(meshName, routeName, virtualRouterName, prefix string, action *appmesh.HttpRouteAction) *appmesh.RouteData {
+	virtualRouterName = kubeutils.SanitizeName(virtualRouterName)
 	return &appmesh.RouteData{
 		VirtualRouterName: &virtualRouterName,
 		MeshName:          &meshName,
