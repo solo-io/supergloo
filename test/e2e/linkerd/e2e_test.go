@@ -25,9 +25,14 @@ const superglooNamespace = "supergloo-system"
 
 var _ = Describe("linkerd e2e", func() {
 	meshName := "my-linkerd"
+	glooName := "gloo"
 
 	It("it installs linkerd", func() {
 		testInstallLinkerd(meshName)
+	})
+
+	It("it installs gloo", func() {
+		sgutils.TestGlooInstall(glooName, superglooNamespace, glooNamespace, meshName)
 	})
 
 	It("it configures prometheus", func() {
@@ -37,6 +42,11 @@ var _ = Describe("linkerd e2e", func() {
 	It("retries failed requests", func() {
 		testLinkerdRetries(meshName)
 	})
+
+	It("tests ingress with gloo", func() {
+		sgutils.TestGlooIngress(rootCtx, namespaceWithInject, superglooNamespace, glooNamespace, basicNamespace)
+	})
+
 	It("it uninstalls linkerd", func() {
 		testUninstallLinkerd(meshName)
 	})

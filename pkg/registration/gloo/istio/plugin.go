@@ -28,15 +28,20 @@ func (pl *glooIstioMtlsPlugin) HandleMeshes(ctx context.Context, ingress *v1.Mes
 	)
 	logger := contextutils.LoggerFrom(ctx)
 
-	deployment, err := pl.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
-	if err != nil {
-		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", ingress.InstallationNamespace)
-	}
 	var istioMeshes v1.MeshList
 	for _, mesh := range meshes {
 		if istioMesh := mesh.GetIstio(); istioMesh != nil {
 			istioMeshes = append(istioMeshes, mesh)
 		}
+	}
+
+	if len(istioMeshes) == 0 {
+		return nil
+	}
+
+	deployment, err := pl.cs.Kube.ExtensionsV1beta1().Deployments(ingress.InstallationNamespace).Get("gateway-proxy", kubev1.GetOptions{})
+	if err != nil {
+		return errors.Wrapf(err, "unable to find deployemt for gateway-proxy in %s", ingress.InstallationNamespace)
 	}
 
 	// This mutates the deployment

@@ -21,6 +21,9 @@ func NewGlooLinkerdMtlsPlugin(cs *clientset.Clientset) *glooLinkerdMtlsPlugin {
 }
 
 func (pl *glooLinkerdMtlsPlugin) HandleMeshes(ctx context.Context, ingress *v1.MeshIngress, meshes v1.MeshList) error {
+	if ingress == nil {
+		return nil
+	}
 	ctx = contextutils.WithLoggerValues(ctx,
 		zap.String("plugin", "linkerd-gloo-mtls"),
 		zap.String("mesh-ingress", ingress.Metadata.Ref().Key()),
@@ -34,10 +37,8 @@ func (pl *glooLinkerdMtlsPlugin) HandleMeshes(ctx context.Context, ingress *v1.M
 		}
 	}
 
-	if len(linkerdMeshes) == 0 {
-		logger.Debugf("0 target linkerd meshes found")
-		return nil
-	}
+	linkerdEnabled := len(linkerdMeshes) > 0
+	logger.Debugf("linkerd mtls enabled")
 
 	glooSettings, err := pl.cs.Supergloo.Settings.List(ingress.InstallationNamespace, clients.ListOpts{})
 	if err != nil {
@@ -45,7 +46,7 @@ func (pl *glooLinkerdMtlsPlugin) HandleMeshes(ctx context.Context, ingress *v1.M
 	}
 
 	for _, settings := range glooSettings {
-		settings.Linkerd = true
+		settings.Linkerd = linkerdEnabled
 	}
 
 	settingsReconciler := gloov1.NewSettingsReconciler(pl.cs.Supergloo.Settings)

@@ -12,6 +12,8 @@ import (
 	"github.com/solo-io/supergloo/pkg/registration"
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
 	"github.com/solo-io/supergloo/pkg/registration/gloo"
+	istio2 "github.com/solo-io/supergloo/pkg/registration/gloo/istio"
+	"github.com/solo-io/supergloo/pkg/registration/gloo/linkerd"
 	"github.com/solo-io/supergloo/pkg/registration/istio"
 	istiostats "github.com/solo-io/supergloo/pkg/stats/istio"
 	linkerdstats "github.com/solo-io/supergloo/pkg/stats/linkerd"
@@ -49,6 +51,8 @@ func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registrat
 		linkerdstats.NewLinkerdPrometheusSyncer(clientset.Prometheus, clientset.Kube),
 		gloo.NewGlooRegistrationSyncer(
 			clientset,
+			linkerd.NewGlooLinkerdMtlsPlugin(clientset),
+			istio2.NewGlooIstioMtlsPlugin(clientset),
 		),
 		appmesh.NewAppMeshRegistrationSyncer(
 			reporter.NewReporter("app-mesh-registration-reporter",
