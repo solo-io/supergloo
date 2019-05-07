@@ -2,7 +2,6 @@ package istio
 
 import (
 	"context"
-	"reflect"
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -149,42 +148,52 @@ func (t *translator) translateMesh(
 	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
 	rules := input.rules
 
-	destinationHostsPortsAndLabels, err := utils.LabelsAndPortsByHost(upstreams)
+	// group upstreams into their corresponding services
+	// each upstream has a different port and selector
+	// this collates them by the original service they were created from
+	services, err := utils.UpstreamServicesByHost(upstreams)
 	if err != nil {
-		return nil, errors.Wrapf(err, "internal error: getting ports and labels from upstreams")
+		return nil, err
 	}
-	var destinationRules v1alpha3.DestinationRuleList
-	var virtualServices v1alpha3.VirtualServiceList
-	for destinationHost, destinationPortAndLabelSets := range destinationHostsPortsAndLabels {
-		var labelSets []map[string]string
-		// must find unique label sets; they will be repeated for multiple ports
-	findUniqueSets:
-		for _, set := range destinationPortAndLabelSets {
-			for _, existing := range labelSets {
-				if reflect.DeepEqual(set.Labels, existing) {
-					continue findUniqueSets
-				}
-			}
-			labelSets = append(labelSets, set.Labels)
-		}
 
+	// make a destination rule for every service.
+	// currently only used by the traffic shifting plugin for subset routing
+	// however more use cases will be added in the future such as
+	// specifically enabling/disabling mtls for specific services
+	// eventually we should trim these down to only dr's that have a
+	// subset that's in use
+	var destinationRules v1alpha3.DestinationRuleList
+	for _, svc := range services {
 		dr := makeDestinationRule(ctx,
 			input.writeNamespace,
-			destinationHost,
-			labelSets,
+			svc.Host,
+			svc.LabelSets,
 			mtlsEnabled,
 		)
 		destinationRules = append(destinationRules, dr)
+	}
 
-		vs := t.makeVirtualServiceForHost(ctx,
+	// create a virtualservice for each upstream host
+	// if the vs is nil, it means there were no rules
+	// to apply to the host and it can be omitted
+	var virtualServices v1alpha3.VirtualServiceList
+	for _, service := range services {
+		vs, err := t.makeVirtualServiceForHost(ctx,
 			params,
 			input.writeNamespace,
-			destinationHost,
-			destinationPortAndLabelSets,
+			service,
 			rules.Routing,
 			upstreams,
 			resourceErrs,
 		)
+		if err != nil {
+			resourceErrs.AddError(input.mesh, err)
+			continue
+		}
+		// no routing rules were configured for this service
+		if vs == nil {
+			continue
+		}
 
 		virtualServices = append(virtualServices, vs)
 	}

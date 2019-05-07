@@ -69,54 +69,6 @@ var _ = Describe("appliesToDestination", func() {
 	})
 })
 
-var _ = Describe("labelSetsFromSelector", func() {
-	Context("PodSelector_UpstreamSelector", func() {
-		It("returns labels for each upstream found", func() {
-			labelSets, err := labelSetsFromSelector(&v1.PodSelector{
-				SelectorType: &v1.PodSelector_UpstreamSelector_{
-					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
-						Upstreams: []core.ResourceRef{
-							{Name: "default-details-v1-9080", Namespace: "default"},
-							{Name: "default-reviews-v2-9080", Namespace: "default"},
-							{Name: "default-reviews-9080", Namespace: "default"},
-						},
-					},
-				},
-			}, inputs.BookInfoUpstreams("default"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(labelSets).To(Equal([]map[string]string{
-				{"version": "v1", "app": "details"},
-				{"app": "reviews", "version": "v2"},
-				{"app": "reviews"},
-			}))
-		})
-	})
-	Context("PodSelector_NamespaceSelector", func() {
-		It("returns labels for each upstream in the namespace", func() {
-			labelSets, err := labelSetsFromSelector(&v1.PodSelector{
-				SelectorType: &v1.PodSelector_NamespaceSelector_{
-					NamespaceSelector: &v1.PodSelector_NamespaceSelector{
-						Namespaces: []string{"default"},
-					},
-				},
-			}, inputs.BookInfoUpstreams("default"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(labelSets).To(Equal([]map[string]string{
-				{"app": "details"},
-				{"version": "v1", "app": "details"},
-				{"app": "productpage"},
-				{"app": "productpage", "version": "v1"},
-				{"app": "ratings"},
-				{"app": "ratings", "version": "v1"},
-				{"app": "reviews"},
-				{"version": "v1", "app": "reviews"},
-				{"app": "reviews", "version": "v2"},
-				{"version": "v3", "app": "reviews"},
-			}))
-		})
-	})
-})
-
 var _ = Describe("makeDestinationRule", func() {
 	Context("input mesh has encryption enabled", func() {
 		It("creates a destination rule with tls setting ISTIO_MUTUAL", func() {

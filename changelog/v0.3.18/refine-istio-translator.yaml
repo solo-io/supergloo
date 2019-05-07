@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    descrition: Refactor the outputs of the istio translator to be more human readable

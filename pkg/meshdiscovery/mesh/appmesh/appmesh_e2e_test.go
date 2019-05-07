@@ -138,7 +138,7 @@ var _ = Describe("appmesh integration", func() {
 			appMesh := targetMesh.GetAwsAppMesh()
 			Expect(appMesh).NotTo(BeNil())
 			Expect(appMesh).To(BeEquivalentTo(&v1.AwsAppMesh{
-				EnableAutoInject: true,
+				VirtualNodeLabel: DefaultVirtualNodeLabel,
 				Region:           defaultRegion,
 				AwsSecret:        &secretRef,
 			}))

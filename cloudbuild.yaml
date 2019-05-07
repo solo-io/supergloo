@@ -89,8 +89,8 @@ steps:
       # tracking with https://github.com/solo-io/supergloo/issues/243
       - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: sh
-    args: ['-c', 'for i in $(find cli pkg | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast) ; done']
+    entrypoint: bash
+    args: ['./ci/run_compiled_tests.sh', 'cli', 'pkg']
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['compile-tests']
     id: 'unit-tests'
@@ -215,8 +215,8 @@ steps:
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
       - 'KUBECONFIG=/builder/home/.kube/aws-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/appmesh | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    entrypoint: bash
+    args: ['./ci/run_compiled_tests.sh', 'test/e2e/appmesh']
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'appmesh-test'
@@ -250,8 +250,8 @@ steps:
       - 'KUBECONFIG=/builder/home/.kube/istio-10x-config'
       - 'ISTIO_VERSION=1.0.6'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/istio | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    entrypoint: bash
+    args: ['./ci/run_compiled_tests.sh', 'test/e2e/istio']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'istio-10x-test'
 
@@ -263,8 +263,8 @@ steps:
       - 'BUILD_ID=$BUILD_ID'
       - 'KUBECONFIG=/builder/home/.kube/linkerd-config'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    entrypoint: sh
-    args: ['-c', 'for i in $(find test/e2e/linkerd | grep "\.test$"); do (cd $(dirname $i); ./$(basename $i) -ginkgo.failFast); done']
+    entrypoint: bash
+    args: ['./ci/run_compiled_tests.sh', 'test/e2e/linkerd']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'linkerd-test'
 

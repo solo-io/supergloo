@@ -141,9 +141,10 @@ var _ = Describe("appmesh", func() {
 			appMesh := mesh.GetAwsAppMesh()
 			Expect(appMesh).NotTo(BeNil())
 			Expect(appMesh).To(BeEquivalentTo(&v1.AwsAppMesh{
-				EnableAutoInject: true,
+				EnableAutoInject: false,
 				Region:           defaultRegion,
 				AwsSecret:        &secretRef,
+				VirtualNodeLabel: DefaultVirtualNodeLabel,
 			}))
 		})
 
@@ -236,7 +237,7 @@ var _ = Describe("appmesh", func() {
 			appMesh := mesh.GetAwsAppMesh()
 			Expect(appMesh).NotTo(BeNil())
 			Expect(appMesh).To(BeEquivalentTo(&v1.AwsAppMesh{
-				EnableAutoInject: true,
+				VirtualNodeLabel: DefaultVirtualNodeLabel,
 				Region:           defaultRegion,
 				AwsSecret:        &core.ResourceRef{},
 			}))
