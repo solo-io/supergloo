@@ -143,6 +143,7 @@ func teardown() {
 		log.Printf("failed to teardown prometheus: %v", err)
 	}
 	testutils.TeardownWithPrefix(kube, "linkerd")
+	testutils.TeardownWithPrefix(kube, "gloo")
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
