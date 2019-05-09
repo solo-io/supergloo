@@ -1287,7 +1287,7 @@
   version = "v0.0.3"
 
 [[projects]]
-  digest = "1:16867d9b18e9e6794c136a5b2becb0252748d8386268b9263c5818496cfedf92"
+  digest = "1:f2099c80c03b8b1b540dd2ef572e9ebc13efd87e6b1fb077445ee0bd3b14cfab"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1339,8 +1339,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "5e7f1ced7e9d89e054d46c7a3a65b8133c584483"
-  version = "v0.13.20"
+  revision = "6a8d3ee81801ac8391a75bd3cd8cc541f48ed222"
+  version = "v0.13.21"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1389,7 +1389,7 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:a903ba135632882ef50019fe0057956e9ba3f71e7fcb204ff7a484d6de5135e4"
+  digest = "1:2d62fd3a77bcc372ff91f3ecad94dde79fa46ba6363da5473d68cc601b020447"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1442,8 +1442,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "384dbdaa27e3754a07a4cc65f9331e2f5a0d7d20"
-  version = "v0.8.0"
+  revision = "c9b4cc6f229cdf7508b99609b87ca7074251ae8d"
+  version = "v0.9.0"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"

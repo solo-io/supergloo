@@ -107,12 +107,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectpods {
-						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Pods.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectpods {
-						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Pods.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -122,10 +122,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -167,12 +164,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectconfigmaps {
-						if _, err := snap.Configmaps.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Configmaps.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectconfigmaps {
-						if _, err := snap.Configmaps.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Configmaps.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -182,10 +179,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := configMapClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := configMapClient.List(namespace2, clients.ListOpts{})
-					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -227,12 +221,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectInstalls {
-						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Installs.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectInstalls {
-						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Installs.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -242,10 +236,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
-					combined := InstallsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -300,12 +291,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectpods {
-						if _, err := snap.Pods.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Pods.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectpods {
-						if _, err := snap.Pods.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Pods.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -315,10 +306,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := podClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := podClient.List(namespace2, clients.ListOpts{})
-					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -360,12 +348,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectconfigmaps {
-						if _, err := snap.Configmaps.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Configmaps.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectconfigmaps {
-						if _, err := snap.Configmaps.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Configmaps.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -375,10 +363,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := configMapClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := configMapClient.List(namespace2, clients.ListOpts{})
-					combined := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -420,12 +405,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectInstalls {
-						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Installs.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectInstalls {
-						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Installs.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -435,10 +420,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
-					combined := InstallsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}

@@ -12,6 +12,45 @@ import (
 	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 )
 
+// MockDestinationRuleWatcher is a mock of DestinationRuleWatcher interface
+type MockDestinationRuleWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockDestinationRuleWatcherMockRecorder
+}
+
+// MockDestinationRuleWatcherMockRecorder is the mock recorder for MockDestinationRuleWatcher
+type MockDestinationRuleWatcherMockRecorder struct {
+	mock *MockDestinationRuleWatcher
+}
+
+// NewMockDestinationRuleWatcher creates a new mock instance
+func NewMockDestinationRuleWatcher(ctrl *gomock.Controller) *MockDestinationRuleWatcher {
+	mock := &MockDestinationRuleWatcher{ctrl: ctrl}
+	mock.recorder = &MockDestinationRuleWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockDestinationRuleWatcher) EXPECT() *MockDestinationRuleWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockDestinationRuleWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1alpha3.DestinationRuleList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1alpha3.DestinationRuleList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockDestinationRuleWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockDestinationRuleWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockDestinationRuleClient is a mock of DestinationRuleClient interface
 type MockDestinationRuleClient struct {
 	ctrl     *gomock.Controller

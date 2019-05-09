@@ -32,8 +32,8 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	multierr := &multierror.Error{}
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("mesh-discovery-syncer-%v", snap.Hash()))
 	fields := []interface{}{
-		zap.Int("installs", len(snap.Installs.List())),
-		zap.Int("pods", len(snap.Pods.List())),
+		zap.Int("installs", len(snap.Installs)),
+		zap.Int("pods", len(snap.Pods)),
 	}
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infow("begin sync", fields...)

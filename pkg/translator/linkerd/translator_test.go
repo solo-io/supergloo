@@ -12,7 +12,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 	"github.com/solo-io/supergloo/test/inputs"
@@ -27,9 +26,9 @@ var _ = Describe("Translator", func() {
 		inputMesh := inputs.LinkerdMesh("linkerd-installed-here", nil)
 		inputMeshRef := inputMesh.Metadata.Ref()
 		meshConfig, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Meshes:       v1.MeshesByNamespace{"": v1.MeshList{inputMesh}},
-			Upstreams:    gloov1.UpstreamsByNamespace{"": inputs.BookInfoUpstreams(bookinfoNs)},
-			Routingrules: v1.RoutingrulesByNamespace{"": inputs.AdvancedBookInfoRoutingRules(bookinfoNs, &inputMeshRef)},
+			Meshes:       v1.MeshList{inputMesh},
+			Upstreams:    inputs.BookInfoUpstreams(bookinfoNs),
+			Routingrules: inputs.AdvancedBookInfoRoutingRules(bookinfoNs, &inputMeshRef),
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resourceErrs.Validate()).NotTo(HaveOccurred())

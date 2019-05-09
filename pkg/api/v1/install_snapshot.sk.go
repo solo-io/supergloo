@@ -10,9 +10,9 @@ import (
 )
 
 type InstallSnapshot struct {
-	Installs      InstallsByNamespace
-	Meshes        MeshesByNamespace
-	Meshingresses MeshingressesByNamespace
+	Installs      InstallList
+	Meshes        MeshList
+	Meshingresses MeshIngressList
 }
 
 func (s InstallSnapshot) Clone() InstallSnapshot {
@@ -32,15 +32,15 @@ func (s InstallSnapshot) Hash() uint64 {
 }
 
 func (s InstallSnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Installs.AsInterfaces()...)
 }
 
 func (s InstallSnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s InstallSnapshot) hashMeshingresses() uint64 {
-	return hashutils.HashAll(s.Meshingresses.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshingresses.AsInterfaces()...)
 }
 
 func (s InstallSnapshot) HashFields() []zap.Field {
@@ -83,8 +83,8 @@ func (ss InstallSnapshotStringer) String() string {
 func (s InstallSnapshot) Stringer() InstallSnapshotStringer {
 	return InstallSnapshotStringer{
 		Version:       s.Hash(),
-		Installs:      s.Installs.List().NamespacesDotNames(),
-		Meshes:        s.Meshes.List().NamespacesDotNames(),
-		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
+		Installs:      s.Installs.NamespacesDotNames(),
+		Meshes:        s.Meshes.NamespacesDotNames(),
+		Meshingresses: s.Meshingresses.NamespacesDotNames(),
 	}
 }

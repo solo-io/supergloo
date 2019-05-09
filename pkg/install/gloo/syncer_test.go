@@ -102,7 +102,7 @@ var _ = Describe("Syncer", func() {
 					inputs.GlooIstall("a", "b", "c", "versiondoesntmatter", false),
 					inputs.GlooIstall("b", "b", "c", "versiondoesntmatter", false),
 				}
-				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+				snap := &v1.InstallSnapshot{Installs: installList}
 				installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 				err := installeSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
@@ -135,7 +135,7 @@ var _ = Describe("Syncer", func() {
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Ingress{}))
 				mesh := install.InstallType.(*v1.Install_Ingress)
 				mesh.Ingress.InstalledIngress = &ref
-				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+				snap := &v1.InstallSnapshot{Installs: installList}
 				installSyncer := newTestInstallSyncer(installer, ingressClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
@@ -175,7 +175,7 @@ var _ = Describe("Syncer", func() {
 				inputs.GlooIstall("b", "b", "c", "versiondoesntmatter", false),
 			}
 
-			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+			snap := &v1.InstallSnapshot{Installs: installList}
 			installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
@@ -208,7 +208,7 @@ var _ = Describe("Syncer", func() {
 				inputs.GlooIstall("b", "b", "c", "versiondoesntmatter", false),
 			}
 
-			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+			snap := &v1.InstallSnapshot{Installs: installList}
 			installeSyncer := newTestInstallSyncer(installer, ingressClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())

@@ -72,7 +72,7 @@ var _ = Describe("PrometheusSyncer", func() {
 				inputs.IstioMeshWithInstallNsPrometheus(ns2, ns2, nil, bothCfgs),
 				inputs.IstioMeshWithInstallNsPrometheus(ns3, ns3, nil, onlyCfg1)
 			err = s.Sync(context.TODO(), &sgv1.RegistrationSnapshot{
-				Meshes: sgv1.MeshesByNamespace{"": {mesh1, mesh2, mesh3}},
+				Meshes: sgv1.MeshList{mesh1, mesh2, mesh3},
 			})
 			Expect(err).NotTo(HaveOccurred())
 

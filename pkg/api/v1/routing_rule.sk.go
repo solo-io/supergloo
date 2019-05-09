@@ -45,7 +45,6 @@ func (r *RoutingRule) Hash() uint64 {
 }
 
 type RoutingRuleList []*RoutingRule
-type RoutingrulesByNamespace map[string]RoutingRuleList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list RoutingRuleList) Find(namespace, name string) (*RoutingRule, error) {
@@ -112,38 +111,18 @@ func (list RoutingRuleList) Each(f func(element *RoutingRule)) {
 	}
 }
 
+func (list RoutingRuleList) EachResource(f func(element resources.Resource)) {
+	for _, routingRule := range list {
+		f(routingRule)
+	}
+}
+
 func (list RoutingRuleList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *RoutingRule) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace RoutingrulesByNamespace) Add(routingRule ...*RoutingRule) {
-	for _, item := range routingRule {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace RoutingrulesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace RoutingrulesByNamespace) List() RoutingRuleList {
-	var list RoutingRuleList
-	for _, routingRuleList := range byNamespace {
-		list = append(list, routingRuleList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace RoutingrulesByNamespace) Clone() RoutingrulesByNamespace {
-	cloned := make(RoutingrulesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &RoutingRule{}

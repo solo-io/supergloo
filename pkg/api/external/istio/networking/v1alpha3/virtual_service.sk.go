@@ -46,7 +46,6 @@ func (r *VirtualService) Hash() uint64 {
 }
 
 type VirtualServiceList []*VirtualService
-type VirtualservicesByNamespace map[string]VirtualServiceList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list VirtualServiceList) Find(namespace, name string) (*VirtualService, error) {
@@ -113,38 +112,18 @@ func (list VirtualServiceList) Each(f func(element *VirtualService)) {
 	}
 }
 
+func (list VirtualServiceList) EachResource(f func(element resources.Resource)) {
+	for _, virtualService := range list {
+		f(virtualService)
+	}
+}
+
 func (list VirtualServiceList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *VirtualService) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace VirtualservicesByNamespace) Add(virtualService ...*VirtualService) {
-	for _, item := range virtualService {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace VirtualservicesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace VirtualservicesByNamespace) List() VirtualServiceList {
-	var list VirtualServiceList
-	for _, virtualServiceList := range byNamespace {
-		list = append(list, virtualServiceList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace VirtualservicesByNamespace) Clone() VirtualservicesByNamespace {
-	cloned := make(VirtualservicesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &VirtualService{}

@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type InstallWatcher interface {
+	// watch namespace-scoped Installs
+	Watch(namespace string, opts clients.WatchOpts) (<-chan InstallList, <-chan error, error)
+}
+
 type InstallClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type InstallClient interface {
 	Write(resource *Install, opts clients.WriteOpts) (*Install, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (InstallList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan InstallList, <-chan error, error)
+	InstallWatcher
 }
 
 type installClient struct {

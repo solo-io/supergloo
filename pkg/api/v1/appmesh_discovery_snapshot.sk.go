@@ -13,9 +13,9 @@ import (
 )
 
 type AppmeshDiscoverySnapshot struct {
-	Meshes    MeshesByNamespace
-	Pods      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
-	Upstreams gloo_solo_io.UpstreamsByNamespace
+	Meshes    MeshList
+	Pods      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Upstreams gloo_solo_io.UpstreamList
 }
 
 func (s AppmeshDiscoverySnapshot) Clone() AppmeshDiscoverySnapshot {
@@ -35,15 +35,15 @@ func (s AppmeshDiscoverySnapshot) Hash() uint64 {
 }
 
 func (s AppmeshDiscoverySnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s AppmeshDiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
 func (s AppmeshDiscoverySnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
 }
 
 func (s AppmeshDiscoverySnapshot) HashFields() []zap.Field {
@@ -86,8 +86,8 @@ func (ss AppmeshDiscoverySnapshotStringer) String() string {
 func (s AppmeshDiscoverySnapshot) Stringer() AppmeshDiscoverySnapshotStringer {
 	return AppmeshDiscoverySnapshotStringer{
 		Version:   s.Hash(),
-		Meshes:    s.Meshes.List().NamespacesDotNames(),
-		Pods:      s.Pods.List().NamespacesDotNames(),
-		Upstreams: s.Upstreams.List().NamespacesDotNames(),
+		Meshes:    s.Meshes.NamespacesDotNames(),
+		Pods:      s.Pods.NamespacesDotNames(),
+		Upstreams: s.Upstreams.NamespacesDotNames(),
 	}
 }

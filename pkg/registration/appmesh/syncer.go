@@ -56,7 +56,7 @@ func (s *appMeshSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot)
 	)
 
 	// Validate the AWS App Mesh meshes
-	for _, mesh := range snap.Meshes.List() {
+	for _, mesh := range snap.Meshes {
 		appMesh := mesh.GetAwsAppMesh()
 
 		if appMesh == nil {

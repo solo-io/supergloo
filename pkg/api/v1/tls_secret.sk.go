@@ -40,7 +40,6 @@ func (r *TlsSecret) Hash() uint64 {
 }
 
 type TlsSecretList []*TlsSecret
-type TlssecretsByNamespace map[string]TlsSecretList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list TlsSecretList) Find(namespace, name string) (*TlsSecret, error) {
@@ -99,38 +98,18 @@ func (list TlsSecretList) Each(f func(element *TlsSecret)) {
 	}
 }
 
+func (list TlsSecretList) EachResource(f func(element resources.Resource)) {
+	for _, tlsSecret := range list {
+		f(tlsSecret)
+	}
+}
+
 func (list TlsSecretList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *TlsSecret) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace TlssecretsByNamespace) Add(tlsSecret ...*TlsSecret) {
-	for _, item := range tlsSecret {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace TlssecretsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace TlssecretsByNamespace) List() TlsSecretList {
-	var list TlsSecretList
-	for _, tlsSecretList := range byNamespace {
-		list = append(list, tlsSecretList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace TlssecretsByNamespace) Clone() TlssecretsByNamespace {
-	cloned := make(TlssecretsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &TlsSecret{}

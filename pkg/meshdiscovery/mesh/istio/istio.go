@@ -37,8 +37,8 @@ func (s *istioDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Disc
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
-	pods := snap.Pods.List()
-	installs := snap.Installs.List()
+	pods := snap.Pods
+	installs := snap.Installs
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),

@@ -19,7 +19,7 @@ func NewRegistrationSyncer(pubSub *PubSub) *RegistrationSyncer {
 
 func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot) error {
 	var enabledFeatures EnabledConfigLoops
-	for _, mesh := range snap.Meshes.List() {
+	for _, mesh := range snap.Meshes {
 		switch mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
 			enabledFeatures.Istio = true
@@ -33,7 +33,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		}
 	}
 
-	for _, meshIngress := range snap.Meshingresses.List() {
+	for _, meshIngress := range snap.Meshingresses {
 		_, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo)
 		if ok {
 			enabledFeatures.Gloo = true

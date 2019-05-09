@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type ServiceRoleBindingWatcher interface {
+	// watch namespace-scoped Servicerolebindings
+	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceRoleBindingList, <-chan error, error)
+}
+
 type ServiceRoleBindingClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type ServiceRoleBindingClient interface {
 	Write(resource *ServiceRoleBinding, opts clients.WriteOpts) (*ServiceRoleBinding, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (ServiceRoleBindingList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceRoleBindingList, <-chan error, error)
+	ServiceRoleBindingWatcher
 }
 
 type serviceRoleBindingClient struct {

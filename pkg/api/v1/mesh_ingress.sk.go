@@ -43,7 +43,6 @@ func (r *MeshIngress) Hash() uint64 {
 }
 
 type MeshIngressList []*MeshIngress
-type MeshingressesByNamespace map[string]MeshIngressList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshIngressList) Find(namespace, name string) (*MeshIngress, error) {
@@ -110,38 +109,18 @@ func (list MeshIngressList) Each(f func(element *MeshIngress)) {
 	}
 }
 
+func (list MeshIngressList) EachResource(f func(element resources.Resource)) {
+	for _, meshIngress := range list {
+		f(meshIngress)
+	}
+}
+
 func (list MeshIngressList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *MeshIngress) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace MeshingressesByNamespace) Add(meshIngress ...*MeshIngress) {
-	for _, item := range meshIngress {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace MeshingressesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace MeshingressesByNamespace) List() MeshIngressList {
-	var list MeshIngressList
-	for _, meshIngressList := range byNamespace {
-		list = append(list, meshIngressList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace MeshingressesByNamespace) Clone() MeshingressesByNamespace {
-	cloned := make(MeshingressesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &MeshIngress{}

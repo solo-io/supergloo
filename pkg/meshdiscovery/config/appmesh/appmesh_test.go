@@ -6,9 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/api/v1/mocks"
@@ -60,11 +58,9 @@ var _ = Describe("appmesh config syncer", func() {
 
 	It("will only pick up meshes with correct labels", func() {
 		snap := &v1.AppmeshDiscoverySnapshot{
-			Meshes: v1.MeshesByNamespace{
-				"": v1.MeshList{
-					createMesh("one", "one", appmesh2.DiscoverySelector),
-					createMesh("two", "one", nil),
-				},
+			Meshes: v1.MeshList{
+				createMesh("one", "one", appmesh2.DiscoverySelector),
+				createMesh("two", "one", nil),
 			},
 		}
 		reconciler.EXPECT().Reconcile(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).
@@ -83,17 +79,11 @@ var _ = Describe("appmesh config syncer", func() {
 
 	It("works with multiple meshes", func() {
 		snap := &v1.AppmeshDiscoverySnapshot{
-			Pods: kubernetes.PodsByNamespace{
-				"": input.MustGetPodList(),
-			},
-			Upstreams: gloov1.UpstreamsByNamespace{
-				"": input.MustGetUpstreamList(),
-			},
-			Meshes: v1.MeshesByNamespace{
-				"": v1.MeshList{
-					createMesh("one", "one", appmesh2.DiscoverySelector),
-					createMesh(scenarios.MeshName, "one", appmesh2.DiscoverySelector),
-				},
+			Pods:      input.MustGetPodList(),
+			Upstreams: input.MustGetUpstreamList(),
+			Meshes: v1.MeshList{
+				createMesh("one", "one", appmesh2.DiscoverySelector),
+				createMesh(scenarios.MeshName, "one", appmesh2.DiscoverySelector),
 			},
 		}
 		reconciler.EXPECT().Reconcile(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).

@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type MeshWatcher interface {
+	// watch namespace-scoped Meshes
+	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshList, <-chan error, error)
+}
+
 type MeshClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type MeshClient interface {
 	Write(resource *Mesh, opts clients.WriteOpts) (*Mesh, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (MeshList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshList, <-chan error, error)
+	MeshWatcher
 }
 
 type meshClient struct {

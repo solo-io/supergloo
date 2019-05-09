@@ -108,12 +108,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectInstalls {
-						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Installs.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectInstalls {
-						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Installs.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -123,10 +123,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
-					combined := InstallsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -168,12 +165,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Meshes.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Meshes.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -183,10 +180,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
-					combined := MeshesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -228,12 +222,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Meshingresses.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Meshingresses.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -243,10 +237,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := meshIngressClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := meshIngressClient.List(namespace2, clients.ListOpts{})
-					combined := MeshingressesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -301,12 +292,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectInstalls {
-						if _, err := snap.Installs.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Installs.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectInstalls {
-						if _, err := snap.Installs.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Installs.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -316,10 +307,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := installClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := installClient.List(namespace2, clients.ListOpts{})
-					combined := InstallsByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -361,12 +349,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshes {
-						if _, err := snap.Meshes.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Meshes.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshes {
-						if _, err := snap.Meshes.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Meshes.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -376,10 +364,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := meshClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := meshClient.List(namespace2, clients.ListOpts{})
-					combined := MeshesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}
@@ -421,12 +406,12 @@ var _ = Describe("V1Emitter", func() {
 				select {
 				case snap = <-snapshots:
 					for _, expected := range expectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(expected.GetMetadata().Ref().Strings()); err != nil {
+						if _, err := snap.Meshingresses.Find(expected.GetMetadata().Ref().Strings()); err != nil {
 							continue drain
 						}
 					}
 					for _, unexpected := range unexpectMeshingresses {
-						if _, err := snap.Meshingresses.List().Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
+						if _, err := snap.Meshingresses.Find(unexpected.GetMetadata().Ref().Strings()); err == nil {
 							continue drain
 						}
 					}
@@ -436,10 +421,7 @@ var _ = Describe("V1Emitter", func() {
 				case <-time.After(time.Second * 10):
 					nsList1, _ := meshIngressClient.List(namespace1, clients.ListOpts{})
 					nsList2, _ := meshIngressClient.List(namespace2, clients.ListOpts{})
-					combined := MeshingressesByNamespace{
-						namespace1: nsList1,
-						namespace2: nsList2,
-					}
+					combined := append(nsList1, nsList2...)
 					Fail("expected final snapshot before 10 seconds. expected " + log.Sprintf("%v", combined))
 				}
 			}

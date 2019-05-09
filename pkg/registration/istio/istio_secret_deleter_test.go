@@ -37,7 +37,7 @@ var _ = Describe("IstioSecretDeleter", func() {
 		})
 		It("deletes all secrets in the istio installnamespace with the prefix istio.", func() {
 			err := NewIstioSecretDeleter(kube).Sync(context.TODO(), &v1.RegistrationSnapshot{
-				Meshes: v1.MeshesByNamespace{"": v1.MeshList{inputs.IstioMeshWithInstallNs(ns, ns, &core.ResourceRef{"custom", "rootcert"})}},
+				Meshes: v1.MeshList{inputs.IstioMeshWithInstallNs(ns, ns, &core.ResourceRef{"custom", "rootcert"})},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			secrets, err := kube.CoreV1().Secrets(ns).List(metav1.ListOptions{})

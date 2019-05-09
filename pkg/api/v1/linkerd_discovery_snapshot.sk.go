@@ -13,10 +13,10 @@ import (
 )
 
 type LinkerdDiscoverySnapshot struct {
-	Meshes    MeshesByNamespace
-	Installs  InstallsByNamespace
-	Pods      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
-	Upstreams gloo_solo_io.UpstreamsByNamespace
+	Meshes    MeshList
+	Installs  InstallList
+	Pods      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Upstreams gloo_solo_io.UpstreamList
 }
 
 func (s LinkerdDiscoverySnapshot) Clone() LinkerdDiscoverySnapshot {
@@ -38,19 +38,19 @@ func (s LinkerdDiscoverySnapshot) Hash() uint64 {
 }
 
 func (s LinkerdDiscoverySnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s LinkerdDiscoverySnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Installs.AsInterfaces()...)
 }
 
 func (s LinkerdDiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
 func (s LinkerdDiscoverySnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
 }
 
 func (s LinkerdDiscoverySnapshot) HashFields() []zap.Field {
@@ -100,9 +100,9 @@ func (ss LinkerdDiscoverySnapshotStringer) String() string {
 func (s LinkerdDiscoverySnapshot) Stringer() LinkerdDiscoverySnapshotStringer {
 	return LinkerdDiscoverySnapshotStringer{
 		Version:   s.Hash(),
-		Meshes:    s.Meshes.List().NamespacesDotNames(),
-		Installs:  s.Installs.List().NamespacesDotNames(),
-		Pods:      s.Pods.List().NamespacesDotNames(),
-		Upstreams: s.Upstreams.List().NamespacesDotNames(),
+		Meshes:    s.Meshes.NamespacesDotNames(),
+		Installs:  s.Installs.NamespacesDotNames(),
+		Pods:      s.Pods.NamespacesDotNames(),
+		Upstreams: s.Upstreams.NamespacesDotNames(),
 	}
 }

@@ -259,9 +259,9 @@ var _ = Describe("Translator", func() {
 
 		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 		configPerMesh, resourceErrs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Meshes:       map[string]v1.MeshList{"": {istioMesh}},
-			Upstreams:    map[string]gloov1.UpstreamList{"": inputs.BookInfoUpstreams("default")},
-			Routingrules: map[string]v1.RoutingRuleList{"": inputRoutingRules},
+			Meshes:       v1.MeshList{istioMesh},
+			Upstreams:    inputs.BookInfoUpstreams("default"),
+			Routingrules: inputRoutingRules,
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(configPerMesh).To(HaveKey(istioMesh))
@@ -367,8 +367,8 @@ var _ = Describe("Translator", func() {
 
 		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 		configPerMesh, _, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Meshes:     map[string]v1.MeshList{"": {istioMesh}},
-			Tlssecrets: map[string]v1.TlsSecretList{"": {tlsSecret}},
+			Meshes:     v1.MeshList{istioMesh},
+			Tlssecrets: v1.TlsSecretList{tlsSecret},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(configPerMesh).To(HaveKey(istioMesh))
@@ -400,8 +400,8 @@ var _ = Describe("Translator", func() {
 
 		t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
 		_, errs, err := t.Translate(context.TODO(), &v1.ConfigSnapshot{
-			Meshes:     map[string]v1.MeshList{"": {istioMesh}},
-			Tlssecrets: map[string]v1.TlsSecretList{"": {}},
+			Meshes:     v1.MeshList{istioMesh},
+			Tlssecrets: v1.TlsSecretList{},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		err = errs.Validate()

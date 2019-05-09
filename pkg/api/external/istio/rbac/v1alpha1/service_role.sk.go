@@ -41,7 +41,6 @@ func (r *ServiceRole) Hash() uint64 {
 }
 
 type ServiceRoleList []*ServiceRole
-type ServicerolesByNamespace map[string]ServiceRoleList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list ServiceRoleList) Find(namespace, name string) (*ServiceRole, error) {
@@ -108,38 +107,18 @@ func (list ServiceRoleList) Each(f func(element *ServiceRole)) {
 	}
 }
 
+func (list ServiceRoleList) EachResource(f func(element resources.Resource)) {
+	for _, serviceRole := range list {
+		f(serviceRole)
+	}
+}
+
 func (list ServiceRoleList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *ServiceRole) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace ServicerolesByNamespace) Add(serviceRole ...*ServiceRole) {
-	for _, item := range serviceRole {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace ServicerolesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace ServicerolesByNamespace) List() ServiceRoleList {
-	var list ServiceRoleList
-	for _, serviceRoleList := range byNamespace {
-		list = append(list, serviceRoleList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace ServicerolesByNamespace) Clone() ServicerolesByNamespace {
-	cloned := make(ServicerolesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &ServiceRole{}

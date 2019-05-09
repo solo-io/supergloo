@@ -50,7 +50,6 @@ func (r *ServiceProfile) Hash() uint64 {
 }
 
 type ServiceProfileList []*ServiceProfile
-type ServiceprofilesByNamespace map[string]ServiceProfileList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list ServiceProfileList) Find(namespace, name string) (*ServiceProfile, error) {
@@ -109,36 +108,16 @@ func (list ServiceProfileList) Each(f func(element *ServiceProfile)) {
 	}
 }
 
+func (list ServiceProfileList) EachResource(f func(element resources.Resource)) {
+	for _, serviceProfile := range list {
+		f(serviceProfile)
+	}
+}
+
 func (list ServiceProfileList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *ServiceProfile) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace ServiceprofilesByNamespace) Add(serviceProfile ...*ServiceProfile) {
-	for _, item := range serviceProfile {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace ServiceprofilesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace ServiceprofilesByNamespace) List() ServiceProfileList {
-	var list ServiceProfileList
-	for _, serviceProfileList := range byNamespace {
-		list = append(list, serviceProfileList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace ServiceprofilesByNamespace) Clone() ServiceprofilesByNamespace {
-	cloned := make(ServiceprofilesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }

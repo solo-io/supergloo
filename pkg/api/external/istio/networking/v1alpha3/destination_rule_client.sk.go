@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type DestinationRuleWatcher interface {
+	// watch namespace-scoped Destinationrules
+	Watch(namespace string, opts clients.WatchOpts) (<-chan DestinationRuleList, <-chan error, error)
+}
+
 type DestinationRuleClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type DestinationRuleClient interface {
 	Write(resource *DestinationRule, opts clients.WriteOpts) (*DestinationRule, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (DestinationRuleList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan DestinationRuleList, <-chan error, error)
+	DestinationRuleWatcher
 }
 
 type destinationRuleClient struct {

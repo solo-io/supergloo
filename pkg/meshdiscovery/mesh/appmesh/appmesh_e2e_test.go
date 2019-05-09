@@ -42,33 +42,29 @@ var _ = Describe("appmesh integration", func() {
 	)
 
 	var (
-		pods = skkube.PodsByNamespace{
-			"": skkube.PodList{
-				pod.FromKubePod(&kubev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      awsNode,
-						Namespace: kubeSysyem,
-					},
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
-							{
-								Name:  awsNode,
-								Image: "602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.3.2",
-							},
+		pods = skkube.PodList{
+			pod.FromKubePod(&kubev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      awsNode,
+					Namespace: kubeSysyem,
+				},
+				Spec: kubev1.PodSpec{
+					Containers: []kubev1.Container{
+						{
+							Name:  awsNode,
+							Image: "602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.3.2",
 						},
 					},
-				}),
-			},
+				},
+			}),
 		}
-		configMaps = skkube.ConfigmapsByNamespace{
-			"": skkube.ConfigMapList{
-				kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      awsConfigMap,
-						Namespace: kubeSysyem,
-					},
-				}),
-			},
+		configMaps = skkube.ConfigMapList{
+			kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      awsConfigMap,
+					Namespace: kubeSysyem,
+				},
+			}),
 		}
 	)
 

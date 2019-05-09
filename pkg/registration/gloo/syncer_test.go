@@ -76,12 +76,8 @@ var _ = Describe("gloo registration syncers", func() {
 
 		newSnapshot = func(meshes v1.MeshList, ingresses v1.MeshIngressList) *v1.RegistrationSnapshot {
 			return &v1.RegistrationSnapshot{
-				Meshes: v1.MeshesByNamespace{
-					"": meshes,
-				},
-				Meshingresses: v1.MeshingressesByNamespace{
-					"": ingresses,
-				},
+				Meshes:        meshes,
+				Meshingresses: ingresses,
 			}
 		}
 	)

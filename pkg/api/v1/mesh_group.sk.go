@@ -41,7 +41,6 @@ func (r *MeshGroup) Hash() uint64 {
 }
 
 type MeshGroupList []*MeshGroup
-type MeshgroupsByNamespace map[string]MeshGroupList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshGroupList) Find(namespace, name string) (*MeshGroup, error) {
@@ -108,38 +107,18 @@ func (list MeshGroupList) Each(f func(element *MeshGroup)) {
 	}
 }
 
+func (list MeshGroupList) EachResource(f func(element resources.Resource)) {
+	for _, meshGroup := range list {
+		f(meshGroup)
+	}
+}
+
 func (list MeshGroupList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *MeshGroup) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace MeshgroupsByNamespace) Add(meshGroup ...*MeshGroup) {
-	for _, item := range meshGroup {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace MeshgroupsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace MeshgroupsByNamespace) List() MeshGroupList {
-	var list MeshGroupList
-	for _, meshGroupList := range byNamespace {
-		list = append(list, meshGroupList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace MeshgroupsByNamespace) Clone() MeshgroupsByNamespace {
-	cloned := make(MeshgroupsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &MeshGroup{}

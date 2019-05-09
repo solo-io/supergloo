@@ -12,6 +12,45 @@ import (
 	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 )
 
+// MockVirtualServiceWatcher is a mock of VirtualServiceWatcher interface
+type MockVirtualServiceWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualServiceWatcherMockRecorder
+}
+
+// MockVirtualServiceWatcherMockRecorder is the mock recorder for MockVirtualServiceWatcher
+type MockVirtualServiceWatcherMockRecorder struct {
+	mock *MockVirtualServiceWatcher
+}
+
+// NewMockVirtualServiceWatcher creates a new mock instance
+func NewMockVirtualServiceWatcher(ctrl *gomock.Controller) *MockVirtualServiceWatcher {
+	mock := &MockVirtualServiceWatcher{ctrl: ctrl}
+	mock.recorder = &MockVirtualServiceWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockVirtualServiceWatcher) EXPECT() *MockVirtualServiceWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockVirtualServiceWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1alpha3.VirtualServiceList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1alpha3.VirtualServiceList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockVirtualServiceWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockVirtualServiceWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockVirtualServiceClient is a mock of VirtualServiceClient interface
 type MockVirtualServiceClient struct {
 	ctrl     *gomock.Controller

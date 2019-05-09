@@ -14,10 +14,10 @@ import (
 )
 
 type IstioDiscoverySnapshot struct {
-	Meshes       MeshesByNamespace
-	Installs     InstallsByNamespace
-	Pods         github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
-	Upstreams    gloo_solo_io.UpstreamsByNamespace
+	Meshes       MeshList
+	Installs     InstallList
+	Pods         github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Upstreams    gloo_solo_io.UpstreamList
 	Meshpolicies istio_authentication_v1alpha1.MeshPolicyList
 }
 
@@ -42,19 +42,19 @@ func (s IstioDiscoverySnapshot) Hash() uint64 {
 }
 
 func (s IstioDiscoverySnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Installs.AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
 }
 
 func (s IstioDiscoverySnapshot) hashMeshpolicies() uint64 {
@@ -115,10 +115,10 @@ func (ss IstioDiscoverySnapshotStringer) String() string {
 func (s IstioDiscoverySnapshot) Stringer() IstioDiscoverySnapshotStringer {
 	return IstioDiscoverySnapshotStringer{
 		Version:      s.Hash(),
-		Meshes:       s.Meshes.List().NamespacesDotNames(),
-		Installs:     s.Installs.List().NamespacesDotNames(),
-		Pods:         s.Pods.List().NamespacesDotNames(),
-		Upstreams:    s.Upstreams.List().NamespacesDotNames(),
+		Meshes:       s.Meshes.NamespacesDotNames(),
+		Installs:     s.Installs.NamespacesDotNames(),
+		Pods:         s.Pods.NamespacesDotNames(),
+		Upstreams:    s.Upstreams.NamespacesDotNames(),
 		Meshpolicies: s.Meshpolicies.Names(),
 	}
 }

@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// MockTlsSecretWatcher is a mock of TlsSecretWatcher interface
+type MockTlsSecretWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockTlsSecretWatcherMockRecorder
+}
+
+// MockTlsSecretWatcherMockRecorder is the mock recorder for MockTlsSecretWatcher
+type MockTlsSecretWatcherMockRecorder struct {
+	mock *MockTlsSecretWatcher
+}
+
+// NewMockTlsSecretWatcher creates a new mock instance
+func NewMockTlsSecretWatcher(ctrl *gomock.Controller) *MockTlsSecretWatcher {
+	mock := &MockTlsSecretWatcher{ctrl: ctrl}
+	mock.recorder = &MockTlsSecretWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockTlsSecretWatcher) EXPECT() *MockTlsSecretWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockTlsSecretWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.TlsSecretList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.TlsSecretList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockTlsSecretWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockTlsSecretWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockTlsSecretClient is a mock of TlsSecretClient interface
 type MockTlsSecretClient struct {
 	ctrl     *gomock.Controller

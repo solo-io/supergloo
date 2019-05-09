@@ -173,6 +173,8 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
+		meshesByNamespace := make(map[string]MeshList)
+		meshingressesByNamespace := make(map[string]MeshIngressList)
 
 		for {
 			record := func() { stats.Record(ctx, mRegistrationSnapshotIn.M(1)) }
@@ -192,16 +194,26 @@ func (c *registrationEmitter) Snapshots(watchNamespaces []string, opts clients.W
 				record()
 
 				namespace := meshNamespacedList.namespace
-				meshList := meshNamespacedList.list
 
-				currentSnapshot.Meshes[namespace] = meshList
+				// merge lists by namespace
+				meshesByNamespace[namespace] = meshNamespacedList.list
+				var meshList MeshList
+				for _, meshes := range meshesByNamespace {
+					meshList = append(meshList, meshes...)
+				}
+				currentSnapshot.Meshes = meshList.Sort()
 			case meshIngressNamespacedList := <-meshIngressChan:
 				record()
 
 				namespace := meshIngressNamespacedList.namespace
-				meshIngressList := meshIngressNamespacedList.list
 
-				currentSnapshot.Meshingresses[namespace] = meshIngressList
+				// merge lists by namespace
+				meshingressesByNamespace[namespace] = meshIngressNamespacedList.list
+				var meshIngressList MeshIngressList
+				for _, meshingresses := range meshingressesByNamespace {
+					meshIngressList = append(meshIngressList, meshingresses...)
+				}
+				currentSnapshot.Meshingresses = meshIngressList.Sort()
 			}
 		}
 	}()

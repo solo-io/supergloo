@@ -130,12 +130,10 @@ var _ = Describe("registration helpers", func() {
 		It("can handle a single mesh", func() {
 			subscriber.Listen(ctx)
 			snap := &v1.RegistrationSnapshot{
-				Meshes: v1.MeshesByNamespace{
-					"": v1.MeshList{
-						{
-							MeshType: &v1.Mesh_Istio{
-								Istio: &v1.IstioMesh{},
-							},
+				Meshes: v1.MeshList{
+					{
+						MeshType: &v1.Mesh_Istio{
+							Istio: &v1.IstioMesh{},
 						},
 					},
 				},
@@ -154,12 +152,10 @@ var _ = Describe("registration helpers", func() {
 		It("can handle a single mesh ingress", func() {
 			subscriber.Listen(ctx)
 			snap := &v1.RegistrationSnapshot{
-				Meshingresses: v1.MeshingressesByNamespace{
-					"": v1.MeshIngressList{
-						{
-							MeshIngressType: &v1.MeshIngress_Gloo{
-								Gloo: &v1.GlooMeshIngress{},
-							},
+				Meshingresses: v1.MeshIngressList{
+					{
+						MeshIngressType: &v1.MeshIngress_Gloo{
+							Gloo: &v1.GlooMeshIngress{},
 						},
 					},
 				},
@@ -184,21 +180,17 @@ var _ = Describe("registration helpers", func() {
 			subscriber3.Listen(ctx)
 
 			snap := &v1.RegistrationSnapshot{
-				Meshingresses: v1.MeshingressesByNamespace{
-					"": v1.MeshIngressList{
-						{
-							MeshIngressType: &v1.MeshIngress_Gloo{
-								Gloo: &v1.GlooMeshIngress{},
-							},
+				Meshingresses: v1.MeshIngressList{
+					{
+						MeshIngressType: &v1.MeshIngress_Gloo{
+							Gloo: &v1.GlooMeshIngress{},
 						},
 					},
 				},
-				Meshes: v1.MeshesByNamespace{
-					"": v1.MeshList{
-						{
-							MeshType: &v1.Mesh_Istio{
-								Istio: &v1.IstioMesh{},
-							},
+				Meshes: v1.MeshList{
+					{
+						MeshType: &v1.Mesh_Istio{
+							Istio: &v1.IstioMesh{},
 						},
 					},
 				},

@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type TlsSecretWatcher interface {
+	// watch namespace-scoped Tlssecrets
+	Watch(namespace string, opts clients.WatchOpts) (<-chan TlsSecretList, <-chan error, error)
+}
+
 type TlsSecretClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type TlsSecretClient interface {
 	Write(resource *TlsSecret, opts clients.WriteOpts) (*TlsSecret, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (TlsSecretList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan TlsSecretList, <-chan error, error)
+	TlsSecretWatcher
 }
 
 type tlsSecretClient struct {

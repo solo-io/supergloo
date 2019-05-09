@@ -12,9 +12,9 @@ import (
 )
 
 type DiscoverySnapshot struct {
-	Pods       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
-	Configmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigmapsByNamespace
-	Installs   InstallsByNamespace
+	Pods       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Configmaps github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
+	Installs   InstallList
 }
 
 func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
@@ -34,15 +34,15 @@ func (s DiscoverySnapshot) Hash() uint64 {
 }
 
 func (s DiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) hashConfigmaps() uint64 {
-	return hashutils.HashAll(s.Configmaps.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Configmaps.AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) hashInstalls() uint64 {
-	return hashutils.HashAll(s.Installs.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Installs.AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) HashFields() []zap.Field {
@@ -85,8 +85,8 @@ func (ss DiscoverySnapshotStringer) String() string {
 func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
 	return DiscoverySnapshotStringer{
 		Version:    s.Hash(),
-		Pods:       s.Pods.List().NamespacesDotNames(),
-		Configmaps: s.Configmaps.List().NamespacesDotNames(),
-		Installs:   s.Installs.List().NamespacesDotNames(),
+		Pods:       s.Pods.NamespacesDotNames(),
+		Configmaps: s.Configmaps.NamespacesDotNames(),
+		Installs:   s.Installs.NamespacesDotNames(),
 	}
 }

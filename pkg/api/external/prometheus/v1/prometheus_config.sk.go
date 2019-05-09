@@ -50,7 +50,6 @@ func (r *PrometheusConfig) Hash() uint64 {
 }
 
 type PrometheusConfigList []*PrometheusConfig
-type PrometheusconfigsByNamespace map[string]PrometheusConfigList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PrometheusConfigList) Find(namespace, name string) (*PrometheusConfig, error) {
@@ -109,36 +108,16 @@ func (list PrometheusConfigList) Each(f func(element *PrometheusConfig)) {
 	}
 }
 
+func (list PrometheusConfigList) EachResource(f func(element resources.Resource)) {
+	for _, prometheusConfig := range list {
+		f(prometheusConfig)
+	}
+}
+
 func (list PrometheusConfigList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *PrometheusConfig) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace PrometheusconfigsByNamespace) Add(prometheusConfig ...*PrometheusConfig) {
-	for _, item := range prometheusConfig {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace PrometheusconfigsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace PrometheusconfigsByNamespace) List() PrometheusConfigList {
-	var list PrometheusConfigList
-	for _, prometheusConfigList := range byNamespace {
-		list = append(list, prometheusConfigList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace PrometheusconfigsByNamespace) Clone() PrometheusconfigsByNamespace {
-	cloned := make(PrometheusconfigsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }

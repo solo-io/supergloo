@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
 )
 
+// MockServiceProfileWatcher is a mock of ServiceProfileWatcher interface
+type MockServiceProfileWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceProfileWatcherMockRecorder
+}
+
+// MockServiceProfileWatcherMockRecorder is the mock recorder for MockServiceProfileWatcher
+type MockServiceProfileWatcherMockRecorder struct {
+	mock *MockServiceProfileWatcher
+}
+
+// NewMockServiceProfileWatcher creates a new mock instance
+func NewMockServiceProfileWatcher(ctrl *gomock.Controller) *MockServiceProfileWatcher {
+	mock := &MockServiceProfileWatcher{ctrl: ctrl}
+	mock.recorder = &MockServiceProfileWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceProfileWatcher) EXPECT() *MockServiceProfileWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockServiceProfileWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.ServiceProfileList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.ServiceProfileList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockServiceProfileWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockServiceProfileWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockServiceProfileClient is a mock of ServiceProfileClient interface
 type MockServiceProfileClient struct {
 	ctrl     *gomock.Controller

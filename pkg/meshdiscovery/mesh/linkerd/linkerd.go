@@ -38,8 +38,8 @@ func (s *linkerdDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
-	pods := snap.Pods.List()
-	installs := snap.Installs.List()
+	pods := snap.Pods
+	installs := snap.Installs
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),

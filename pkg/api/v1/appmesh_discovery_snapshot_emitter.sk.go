@@ -209,6 +209,9 @@ func (c *appmeshDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
+		meshesByNamespace := make(map[string]MeshList)
+		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
+		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
 
 		for {
 			record := func() { stats.Record(ctx, mAppmeshDiscoverySnapshotIn.M(1)) }
@@ -228,23 +231,38 @@ func (c *appmeshDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clien
 				record()
 
 				namespace := meshNamespacedList.namespace
-				meshList := meshNamespacedList.list
 
-				currentSnapshot.Meshes[namespace] = meshList
+				// merge lists by namespace
+				meshesByNamespace[namespace] = meshNamespacedList.list
+				var meshList MeshList
+				for _, meshes := range meshesByNamespace {
+					meshList = append(meshList, meshes...)
+				}
+				currentSnapshot.Meshes = meshList.Sort()
 			case podNamespacedList := <-podChan:
 				record()
 
 				namespace := podNamespacedList.namespace
-				podList := podNamespacedList.list
 
-				currentSnapshot.Pods[namespace] = podList
+				// merge lists by namespace
+				podsByNamespace[namespace] = podNamespacedList.list
+				var podList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+				for _, pods := range podsByNamespace {
+					podList = append(podList, pods...)
+				}
+				currentSnapshot.Pods = podList.Sort()
 			case upstreamNamespacedList := <-upstreamChan:
 				record()
 
 				namespace := upstreamNamespacedList.namespace
-				upstreamList := upstreamNamespacedList.list
 
-				currentSnapshot.Upstreams[namespace] = upstreamList
+				// merge lists by namespace
+				upstreamsByNamespace[namespace] = upstreamNamespacedList.list
+				var upstreamList gloo_solo_io.UpstreamList
+				for _, upstreams := range upstreamsByNamespace {
+					upstreamList = append(upstreamList, upstreams...)
+				}
+				currentSnapshot.Upstreams = upstreamList.Sort()
 			}
 		}
 	}()

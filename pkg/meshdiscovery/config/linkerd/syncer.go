@@ -65,25 +65,25 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("installs", len(snap.Installs.List())),
-		zap.Int("pods", len(snap.Pods.List())),
-		zap.Int("upstreams", len(snap.Upstreams.List())),
+		zap.Int("meshes", len(snap.Meshes)),
+		zap.Int("installs", len(snap.Installs)),
+		zap.Int("pods", len(snap.Pods)),
+		zap.Int("upstreams", len(snap.Upstreams)),
 	}
 
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	linkerdMeshes := utils.GetMeshes(snap.Meshes.List(), utils.LinkerdMeshFilterFunc, utils.FilterByLabels(linkerd.DiscoverySelector))
-	linkerdInstalls := utils.GetActiveInstalls(snap.Installs.List(), utils.LinkerdInstallFilterFunc)
-	injectedPods := utils.InjectedPodsByNamespace(snap.Pods.List(), proxyContainer)
+	linkerdMeshes := utils.GetMeshes(snap.Meshes, utils.LinkerdMeshFilterFunc, utils.FilterByLabels(linkerd.DiscoverySelector))
+	linkerdInstalls := utils.GetActiveInstalls(snap.Installs, utils.LinkerdInstallFilterFunc)
+	injectedPods := utils.InjectedPodsByNamespace(snap.Pods, proxyContainer)
 
 	meshResources := organizeMeshes(
 		linkerdMeshes,
 		linkerdInstalls,
 		injectedPods,
-		snap.Upstreams.List(),
+		snap.Upstreams,
 	)
 
 	var updatedMeshes v1.MeshList
@@ -100,7 +100,7 @@ func (lcds *linkerdConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.Link
 	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
 }
 
-func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods kubernetes.PodsByNamespace,
+func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods kubernetes.PodList,
 	upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
 
@@ -121,7 +121,7 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, injectedPods ku
 
 		// Currently injection is a constant so there's no way to distinguish between
 		// multiple istio deployments in a single cluster
-		fullMesh.Upstreams = utils.GetUpstreamsForInjectedPods(injectedPods.List(), upstreams)
+		fullMesh.Upstreams = utils.GetUpstreamsForInjectedPods(injectedPods, upstreams)
 
 		result[i] = fullMesh
 	}

@@ -12,6 +12,45 @@ import (
 	v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 )
 
+// MockRbacConfigWatcher is a mock of RbacConfigWatcher interface
+type MockRbacConfigWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockRbacConfigWatcherMockRecorder
+}
+
+// MockRbacConfigWatcherMockRecorder is the mock recorder for MockRbacConfigWatcher
+type MockRbacConfigWatcherMockRecorder struct {
+	mock *MockRbacConfigWatcher
+}
+
+// NewMockRbacConfigWatcher creates a new mock instance
+func NewMockRbacConfigWatcher(ctrl *gomock.Controller) *MockRbacConfigWatcher {
+	mock := &MockRbacConfigWatcher{ctrl: ctrl}
+	mock.recorder = &MockRbacConfigWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockRbacConfigWatcher) EXPECT() *MockRbacConfigWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockRbacConfigWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1alpha1.RbacConfigList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1alpha1.RbacConfigList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockRbacConfigWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockRbacConfigWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockRbacConfigClient is a mock of RbacConfigClient interface
 type MockRbacConfigClient struct {
 	ctrl     *gomock.Controller

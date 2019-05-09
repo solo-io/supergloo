@@ -44,7 +44,6 @@ func (r *RbacConfig) Hash() uint64 {
 }
 
 type RbacConfigList []*RbacConfig
-type RbacconfigsByNamespace map[string]RbacConfigList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list RbacConfigList) Find(namespace, name string) (*RbacConfig, error) {
@@ -111,38 +110,18 @@ func (list RbacConfigList) Each(f func(element *RbacConfig)) {
 	}
 }
 
+func (list RbacConfigList) EachResource(f func(element resources.Resource)) {
+	for _, rbacConfig := range list {
+		f(rbacConfig)
+	}
+}
+
 func (list RbacConfigList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *RbacConfig) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace RbacconfigsByNamespace) Add(rbacConfig ...*RbacConfig) {
-	for _, item := range rbacConfig {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace RbacconfigsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace RbacconfigsByNamespace) List() RbacConfigList {
-	var list RbacConfigList
-	for _, rbacConfigList := range byNamespace {
-		list = append(list, rbacConfigList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace RbacconfigsByNamespace) Clone() RbacconfigsByNamespace {
-	cloned := make(RbacconfigsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &RbacConfig{}

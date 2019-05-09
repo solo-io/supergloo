@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type PolicyWatcher interface {
+	// watch namespace-scoped Policies
+	Watch(namespace string, opts clients.WatchOpts) (<-chan PolicyList, <-chan error, error)
+}
+
 type PolicyClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type PolicyClient interface {
 	Write(resource *Policy, opts clients.WriteOpts) (*Policy, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (PolicyList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan PolicyList, <-chan error, error)
+	PolicyWatcher
 }
 
 type policyClient struct {

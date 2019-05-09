@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type RoutingRuleWatcher interface {
+	// watch namespace-scoped Routingrules
+	Watch(namespace string, opts clients.WatchOpts) (<-chan RoutingRuleList, <-chan error, error)
+}
+
 type RoutingRuleClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type RoutingRuleClient interface {
 	Write(resource *RoutingRule, opts clients.WriteOpts) (*RoutingRule, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (RoutingRuleList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan RoutingRuleList, <-chan error, error)
+	RoutingRuleWatcher
 }
 
 type routingRuleClient struct {

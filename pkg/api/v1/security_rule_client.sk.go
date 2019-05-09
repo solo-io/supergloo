@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type SecurityRuleWatcher interface {
+	// watch namespace-scoped Securityrules
+	Watch(namespace string, opts clients.WatchOpts) (<-chan SecurityRuleList, <-chan error, error)
+}
+
 type SecurityRuleClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type SecurityRuleClient interface {
 	Write(resource *SecurityRule, opts clients.WriteOpts) (*SecurityRule, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (SecurityRuleList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan SecurityRuleList, <-chan error, error)
+	SecurityRuleWatcher
 }
 
 type securityRuleClient struct {

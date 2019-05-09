@@ -72,9 +72,7 @@ var _ = Describe("Syncer", func() {
 
 	It("remove auto-injection resources if snapshot does not contain App Mesh meshes", func() {
 		err := syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{istio},
-			},
+			Meshes: v1.MeshList{istio},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installer.Created).To(HaveLen(0))
@@ -88,11 +86,9 @@ var _ = Describe("Syncer", func() {
 
 	It("remove auto-injection resources if auto-injection is disabled for all meshes", func() {
 		err := syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{
-					istio,
-					appMeshNoAutoInjection,
-				},
+			Meshes: v1.MeshList{
+				istio,
+				appMeshNoAutoInjection,
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -107,9 +103,7 @@ var _ = Describe("Syncer", func() {
 
 	It("creates auto-injection resources if snapshot contains App Mesh mesh", func() {
 		err := syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{mesh},
-			},
+			Meshes: v1.MeshList{mesh},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installer.Created).To(HaveLen(5))
@@ -134,9 +128,7 @@ var _ = Describe("Syncer", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		err = syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{mesh},
-			},
+			Meshes: v1.MeshList{mesh},
 		})
 
 		Expect(err).NotTo(HaveOccurred())
@@ -159,9 +151,7 @@ var _ = Describe("Syncer", func() {
 		installer.Add(deploymentKind, testNamespace, webhookName)
 
 		err = syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{mesh},
-			},
+			Meshes: v1.MeshList{mesh},
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(installer.Created).To(HaveLen(5))
@@ -191,9 +181,7 @@ var _ = Describe("Syncer", func() {
 		installer.Add(configMapKind, testNamespace, webhookName)
 
 		err = syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{mesh},
-			},
+			Meshes: v1.MeshList{mesh},
 		})
 
 		Expect(err).NotTo(HaveOccurred())
@@ -220,9 +208,7 @@ var _ = Describe("Syncer", func() {
 		installer.Add(deploymentKind, testNamespace, webhookName)
 
 		err = syncer.Sync(ctx, &v1.RegistrationSnapshot{
-			Meshes: v1.MeshesByNamespace{
-				testNamespace: v1.MeshList{mesh},
-			},
+			Meshes: v1.MeshList{mesh},
 		})
 
 		Expect(err).NotTo(HaveOccurred())
