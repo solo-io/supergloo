@@ -1,5 +1,5 @@
 changelog:
   - type: FIX
-    descrition: Don't create a role binding if rbac.create is false
+    description: Don't create a role binding if rbac.create is false
     issueLink: https://github.com/solo-io/supergloo/pull/433
     resolvesIssue: false
