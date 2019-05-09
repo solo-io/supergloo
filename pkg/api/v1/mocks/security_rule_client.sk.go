@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// MockSecurityRuleWatcher is a mock of SecurityRuleWatcher interface
+type MockSecurityRuleWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockSecurityRuleWatcherMockRecorder
+}
+
+// MockSecurityRuleWatcherMockRecorder is the mock recorder for MockSecurityRuleWatcher
+type MockSecurityRuleWatcherMockRecorder struct {
+	mock *MockSecurityRuleWatcher
+}
+
+// NewMockSecurityRuleWatcher creates a new mock instance
+func NewMockSecurityRuleWatcher(ctrl *gomock.Controller) *MockSecurityRuleWatcher {
+	mock := &MockSecurityRuleWatcher{ctrl: ctrl}
+	mock.recorder = &MockSecurityRuleWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockSecurityRuleWatcher) EXPECT() *MockSecurityRuleWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockSecurityRuleWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.SecurityRuleList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.SecurityRuleList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockSecurityRuleWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockSecurityRuleWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockSecurityRuleClient is a mock of SecurityRuleClient interface
 type MockSecurityRuleClient struct {
 	ctrl     *gomock.Controller

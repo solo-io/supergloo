@@ -60,10 +60,10 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		}
 	}
 
-	meshes := snapshot.Meshes.List()
-	meshGroups := snapshot.Meshgroups.List()
-	upstreams := snapshot.Upstreams.List()
-	routingRules := snapshot.Routingrules.List()
+	meshes := snapshot.Meshes
+	meshGroups := snapshot.Meshgroups
+	upstreams := snapshot.Upstreams
+	routingRules := snapshot.Routingrules
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)

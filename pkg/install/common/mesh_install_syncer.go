@@ -30,16 +30,16 @@ func (s *MeshInstallSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) 
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-install-syncer-%v", s.name, snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("ingresses", len(snap.Meshingresses.List())),
-		zap.Int("installs", len(snap.Installs.List())),
+		zap.Int("meshes", len(snap.Meshes)),
+		zap.Int("ingresses", len(snap.Meshingresses)),
+		zap.Int("installs", len(snap.Installs)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 	resourceErrs := make(reporter.ResourceErrors)
 
-	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
+	installs := snap.Installs
+	meshes := snap.Meshes
 
 	// split installs by which are active, inactive
 	// if more than 1 active install of a single mesh type, they get errored

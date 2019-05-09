@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// MockRoutingRuleWatcher is a mock of RoutingRuleWatcher interface
+type MockRoutingRuleWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockRoutingRuleWatcherMockRecorder
+}
+
+// MockRoutingRuleWatcherMockRecorder is the mock recorder for MockRoutingRuleWatcher
+type MockRoutingRuleWatcherMockRecorder struct {
+	mock *MockRoutingRuleWatcher
+}
+
+// NewMockRoutingRuleWatcher creates a new mock instance
+func NewMockRoutingRuleWatcher(ctrl *gomock.Controller) *MockRoutingRuleWatcher {
+	mock := &MockRoutingRuleWatcher{ctrl: ctrl}
+	mock.recorder = &MockRoutingRuleWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockRoutingRuleWatcher) EXPECT() *MockRoutingRuleWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockRoutingRuleWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.RoutingRuleList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.RoutingRuleList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockRoutingRuleWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockRoutingRuleWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockRoutingRuleClient is a mock of RoutingRuleClient interface
 type MockRoutingRuleClient struct {
 	ctrl     *gomock.Controller

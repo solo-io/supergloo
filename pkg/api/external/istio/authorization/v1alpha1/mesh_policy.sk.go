@@ -46,7 +46,6 @@ func (r *MeshPolicy) Hash() uint64 {
 }
 
 type MeshPolicyList []*MeshPolicy
-type MeshpoliciesByNamespace map[string]MeshPolicyList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshPolicyList) Find(namespace, name string) (*MeshPolicy, error) {
@@ -113,38 +112,18 @@ func (list MeshPolicyList) Each(f func(element *MeshPolicy)) {
 	}
 }
 
+func (list MeshPolicyList) EachResource(f func(element resources.Resource)) {
+	for _, meshPolicy := range list {
+		f(meshPolicy)
+	}
+}
+
 func (list MeshPolicyList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *MeshPolicy) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace MeshpoliciesByNamespace) Add(meshPolicy ...*MeshPolicy) {
-	for _, item := range meshPolicy {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace MeshpoliciesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace MeshpoliciesByNamespace) List() MeshPolicyList {
-	var list MeshPolicyList
-	for _, meshPolicyList := range byNamespace {
-		list = append(list, meshPolicyList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace MeshpoliciesByNamespace) Clone() MeshpoliciesByNamespace {
-	cloned := make(MeshpoliciesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &MeshPolicy{}

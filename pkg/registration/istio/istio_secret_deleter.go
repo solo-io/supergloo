@@ -31,7 +31,7 @@ func (d *IstioSecretDeleter) Sync(ctx context.Context, snap *v1.RegistrationSnap
 	var managedNamespaces []string
 
 	// delete citadel certs for any istio mesh which specifies a root cert
-	for _, mesh := range snap.Meshes.List() {
+	for _, mesh := range snap.Meshes {
 		_, ok := mesh.MeshType.(*v1.Mesh_Istio)
 		if !ok {
 			continue

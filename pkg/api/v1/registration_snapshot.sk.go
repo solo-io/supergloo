@@ -10,8 +10,8 @@ import (
 )
 
 type RegistrationSnapshot struct {
-	Meshes        MeshesByNamespace
-	Meshingresses MeshingressesByNamespace
+	Meshes        MeshList
+	Meshingresses MeshIngressList
 }
 
 func (s RegistrationSnapshot) Clone() RegistrationSnapshot {
@@ -29,11 +29,11 @@ func (s RegistrationSnapshot) Hash() uint64 {
 }
 
 func (s RegistrationSnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s RegistrationSnapshot) hashMeshingresses() uint64 {
-	return hashutils.HashAll(s.Meshingresses.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshingresses.AsInterfaces()...)
 }
 
 func (s RegistrationSnapshot) HashFields() []zap.Field {
@@ -69,7 +69,7 @@ func (ss RegistrationSnapshotStringer) String() string {
 func (s RegistrationSnapshot) Stringer() RegistrationSnapshotStringer {
 	return RegistrationSnapshotStringer{
 		Version:       s.Hash(),
-		Meshes:        s.Meshes.List().NamespacesDotNames(),
-		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
+		Meshes:        s.Meshes.NamespacesDotNames(),
+		Meshingresses: s.Meshingresses.NamespacesDotNames(),
 	}
 }

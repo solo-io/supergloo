@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type MeshPolicyWatcher interface {
+	// watch cluster-scoped Meshpolicies
+	Watch(opts clients.WatchOpts) (<-chan MeshPolicyList, <-chan error, error)
+}
+
 type MeshPolicyClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type MeshPolicyClient interface {
 	Write(resource *MeshPolicy, opts clients.WriteOpts) (*MeshPolicy, error)
 	Delete(name string, opts clients.DeleteOpts) error
 	List(opts clients.ListOpts) (MeshPolicyList, error)
-	Watch(opts clients.WatchOpts) (<-chan MeshPolicyList, <-chan error, error)
+	MeshPolicyWatcher
 }
 
 type meshPolicyClient struct {

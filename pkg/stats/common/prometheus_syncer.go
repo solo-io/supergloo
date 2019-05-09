@@ -44,7 +44,7 @@ func (s *prometheusSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapsh
 	defer logger.Infof("end sync %v", snap.Stringer())
 
 	// a map of the prometheus configmap to the meshes it should scrape
-	promConfigsWithMeshes := s.getPromCfgsWithMeshes(snap.Meshes.List())
+	promConfigsWithMeshes := s.getPromCfgsWithMeshes(snap.Meshes)
 
 	logger.Infof("syncing %v prometheus configs", len(promConfigsWithMeshes))
 

@@ -45,7 +45,6 @@ func (r *SecurityRule) Hash() uint64 {
 }
 
 type SecurityRuleList []*SecurityRule
-type SecurityrulesByNamespace map[string]SecurityRuleList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list SecurityRuleList) Find(namespace, name string) (*SecurityRule, error) {
@@ -112,38 +111,18 @@ func (list SecurityRuleList) Each(f func(element *SecurityRule)) {
 	}
 }
 
+func (list SecurityRuleList) EachResource(f func(element resources.Resource)) {
+	for _, securityRule := range list {
+		f(securityRule)
+	}
+}
+
 func (list SecurityRuleList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *SecurityRule) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace SecurityrulesByNamespace) Add(securityRule ...*SecurityRule) {
-	for _, item := range securityRule {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace SecurityrulesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace SecurityrulesByNamespace) List() SecurityRuleList {
-	var list SecurityRuleList
-	for _, securityRuleList := range byNamespace {
-		list = append(list, securityRuleList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace SecurityrulesByNamespace) Clone() SecurityrulesByNamespace {
-	cloned := make(SecurityrulesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &SecurityRule{}

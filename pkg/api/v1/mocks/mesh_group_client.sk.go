@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// MockMeshGroupWatcher is a mock of MeshGroupWatcher interface
+type MockMeshGroupWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshGroupWatcherMockRecorder
+}
+
+// MockMeshGroupWatcherMockRecorder is the mock recorder for MockMeshGroupWatcher
+type MockMeshGroupWatcherMockRecorder struct {
+	mock *MockMeshGroupWatcher
+}
+
+// NewMockMeshGroupWatcher creates a new mock instance
+func NewMockMeshGroupWatcher(ctrl *gomock.Controller) *MockMeshGroupWatcher {
+	mock := &MockMeshGroupWatcher{ctrl: ctrl}
+	mock.recorder = &MockMeshGroupWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshGroupWatcher) EXPECT() *MockMeshGroupWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockMeshGroupWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.MeshGroupList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.MeshGroupList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockMeshGroupWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockMeshGroupWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockMeshGroupClient is a mock of MeshGroupClient interface
 type MockMeshGroupClient struct {
 	ctrl     *gomock.Controller

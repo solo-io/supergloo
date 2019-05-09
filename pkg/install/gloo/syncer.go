@@ -36,9 +36,9 @@ func (s *installSyncer) Sync(ctx context.Context, snap *v1.InstallSnapshot) erro
 	defer logger.Infof("end sync %v", snap.Stringer())
 	resourceErrs := make(reporter.ResourceErrors)
 
-	installs := snap.Installs.List()
-	meshes := snap.Meshes.List()
-	meshIngresses := snap.Meshingresses.List()
+	installs := snap.Installs
+	meshes := snap.Meshes
+	meshIngresses := snap.Meshingresses
 
 	// split installs by which are active, inactive (istio only)
 	// if more than 1 active install, they get errored

@@ -12,6 +12,45 @@ import (
 	v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 )
 
+// MockServiceRoleBindingWatcher is a mock of ServiceRoleBindingWatcher interface
+type MockServiceRoleBindingWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceRoleBindingWatcherMockRecorder
+}
+
+// MockServiceRoleBindingWatcherMockRecorder is the mock recorder for MockServiceRoleBindingWatcher
+type MockServiceRoleBindingWatcherMockRecorder struct {
+	mock *MockServiceRoleBindingWatcher
+}
+
+// NewMockServiceRoleBindingWatcher creates a new mock instance
+func NewMockServiceRoleBindingWatcher(ctrl *gomock.Controller) *MockServiceRoleBindingWatcher {
+	mock := &MockServiceRoleBindingWatcher{ctrl: ctrl}
+	mock.recorder = &MockServiceRoleBindingWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceRoleBindingWatcher) EXPECT() *MockServiceRoleBindingWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockServiceRoleBindingWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1alpha1.ServiceRoleBindingList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1alpha1.ServiceRoleBindingList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockServiceRoleBindingWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockServiceRoleBindingWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockServiceRoleBindingClient is a mock of ServiceRoleBindingClient interface
 type MockServiceRoleBindingClient struct {
 	ctrl     *gomock.Controller

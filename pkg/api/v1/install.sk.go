@@ -43,7 +43,6 @@ func (r *Install) Hash() uint64 {
 }
 
 type InstallList []*Install
-type InstallsByNamespace map[string]InstallList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list InstallList) Find(namespace, name string) (*Install, error) {
@@ -110,38 +109,18 @@ func (list InstallList) Each(f func(element *Install)) {
 	}
 }
 
+func (list InstallList) EachResource(f func(element resources.Resource)) {
+	for _, install := range list {
+		f(install)
+	}
+}
+
 func (list InstallList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *Install) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace InstallsByNamespace) Add(install ...*Install) {
-	for _, item := range install {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace InstallsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace InstallsByNamespace) List() InstallList {
-	var list InstallList
-	for _, installList := range byNamespace {
-		list = append(list, installList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace InstallsByNamespace) Clone() InstallsByNamespace {
-	cloned := make(InstallsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &Install{}

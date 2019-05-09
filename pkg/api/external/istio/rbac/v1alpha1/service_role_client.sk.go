@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type ServiceRoleWatcher interface {
+	// watch namespace-scoped Serviceroles
+	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceRoleList, <-chan error, error)
+}
+
 type ServiceRoleClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type ServiceRoleClient interface {
 	Write(resource *ServiceRole, opts clients.WriteOpts) (*ServiceRole, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (ServiceRoleList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceRoleList, <-chan error, error)
+	ServiceRoleWatcher
 }
 
 type serviceRoleClient struct {

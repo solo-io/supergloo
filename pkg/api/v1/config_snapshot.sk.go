@@ -13,14 +13,14 @@ import (
 )
 
 type ConfigSnapshot struct {
-	Meshes        MeshesByNamespace
-	Meshingresses MeshingressesByNamespace
-	Meshgroups    MeshgroupsByNamespace
-	Routingrules  RoutingrulesByNamespace
-	Securityrules SecurityrulesByNamespace
-	Tlssecrets    TlssecretsByNamespace
-	Upstreams     gloo_solo_io.UpstreamsByNamespace
-	Pods          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodsByNamespace
+	Meshes        MeshList
+	Meshingresses MeshIngressList
+	Meshgroups    MeshGroupList
+	Routingrules  RoutingRuleList
+	Securityrules SecurityRuleList
+	Tlssecrets    TlsSecretList
+	Upstreams     gloo_solo_io.UpstreamList
+	Pods          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 }
 
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
@@ -50,35 +50,35 @@ func (s ConfigSnapshot) Hash() uint64 {
 }
 
 func (s ConfigSnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashMeshingresses() uint64 {
-	return hashutils.HashAll(s.Meshingresses.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshingresses.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashMeshgroups() uint64 {
-	return hashutils.HashAll(s.Meshgroups.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Meshgroups.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashRoutingrules() uint64 {
-	return hashutils.HashAll(s.Routingrules.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Routingrules.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashSecurityrules() uint64 {
-	return hashutils.HashAll(s.Securityrules.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Securityrules.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashTlssecrets() uint64 {
-	return hashutils.HashAll(s.Tlssecrets.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Tlssecrets.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.List().AsInterfaces()...)
+	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
 func (s ConfigSnapshot) HashFields() []zap.Field {
@@ -156,13 +156,13 @@ func (ss ConfigSnapshotStringer) String() string {
 func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
 	return ConfigSnapshotStringer{
 		Version:       s.Hash(),
-		Meshes:        s.Meshes.List().NamespacesDotNames(),
-		Meshingresses: s.Meshingresses.List().NamespacesDotNames(),
-		Meshgroups:    s.Meshgroups.List().NamespacesDotNames(),
-		Routingrules:  s.Routingrules.List().NamespacesDotNames(),
-		Securityrules: s.Securityrules.List().NamespacesDotNames(),
-		Tlssecrets:    s.Tlssecrets.List().NamespacesDotNames(),
-		Upstreams:     s.Upstreams.List().NamespacesDotNames(),
-		Pods:          s.Pods.List().NamespacesDotNames(),
+		Meshes:        s.Meshes.NamespacesDotNames(),
+		Meshingresses: s.Meshingresses.NamespacesDotNames(),
+		Meshgroups:    s.Meshgroups.NamespacesDotNames(),
+		Routingrules:  s.Routingrules.NamespacesDotNames(),
+		Securityrules: s.Securityrules.NamespacesDotNames(),
+		Tlssecrets:    s.Tlssecrets.NamespacesDotNames(),
+		Upstreams:     s.Upstreams.NamespacesDotNames(),
+		Pods:          s.Pods.NamespacesDotNames(),
 	}
 }

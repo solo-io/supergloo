@@ -78,12 +78,12 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		}
 	}
 
-	meshes := snapshot.Meshes.List()
-	meshGroups := snapshot.Meshgroups.List()
-	upstreams := snapshot.Upstreams.List()
-	pods := snapshot.Pods.List()
-	routingRules := snapshot.Routingrules.List()
-	securityRules := snapshot.Securityrules.List()
+	meshes := snapshot.Meshes
+	meshGroups := snapshot.Meshgroups
+	upstreams := snapshot.Upstreams
+	pods := snapshot.Pods
+	routingRules := snapshot.Routingrules
+	securityRules := snapshot.Securityrules
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)
@@ -101,7 +101,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		Upstreams: upstreams,
 	}
 
-	tlsSecrets := snapshot.Tlssecrets.List()
+	tlsSecrets := snapshot.Tlssecrets
 
 	for _, mesh := range meshes {
 		istio := mesh.GetIstio()

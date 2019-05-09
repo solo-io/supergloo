@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type RbacConfigWatcher interface {
+	// watch namespace-scoped Rbacconfigs
+	Watch(namespace string, opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error)
+}
+
 type RbacConfigClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type RbacConfigClient interface {
 	Write(resource *RbacConfig, opts clients.WriteOpts) (*RbacConfig, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (RbacConfigList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan RbacConfigList, <-chan error, error)
+	RbacConfigWatcher
 }
 
 type rbacConfigClient struct {

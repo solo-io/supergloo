@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type ServiceProfileWatcher interface {
+	// watch namespace-scoped serviceprofiles
+	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceProfileList, <-chan error, error)
+}
+
 type ServiceProfileClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type ServiceProfileClient interface {
 	Write(resource *ServiceProfile, opts clients.WriteOpts) (*ServiceProfile, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (ServiceProfileList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan ServiceProfileList, <-chan error, error)
+	ServiceProfileWatcher
 }
 
 type serviceProfileClient struct {

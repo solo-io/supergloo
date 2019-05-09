@@ -208,6 +208,9 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
+		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
+		configmapsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList)
+		installsByNamespace := make(map[string]InstallList)
 
 		for {
 			record := func() { stats.Record(ctx, mDiscoverySnapshotIn.M(1)) }
@@ -227,23 +230,38 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 				record()
 
 				namespace := podNamespacedList.namespace
-				podList := podNamespacedList.list
 
-				currentSnapshot.Pods[namespace] = podList
+				// merge lists by namespace
+				podsByNamespace[namespace] = podNamespacedList.list
+				var podList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+				for _, pods := range podsByNamespace {
+					podList = append(podList, pods...)
+				}
+				currentSnapshot.Pods = podList.Sort()
 			case configMapNamespacedList := <-configMapChan:
 				record()
 
 				namespace := configMapNamespacedList.namespace
-				configMapList := configMapNamespacedList.list
 
-				currentSnapshot.Configmaps[namespace] = configMapList
+				// merge lists by namespace
+				configmapsByNamespace[namespace] = configMapNamespacedList.list
+				var configMapList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
+				for _, configmaps := range configmapsByNamespace {
+					configMapList = append(configMapList, configmaps...)
+				}
+				currentSnapshot.Configmaps = configMapList.Sort()
 			case installNamespacedList := <-installChan:
 				record()
 
 				namespace := installNamespacedList.namespace
-				installList := installNamespacedList.list
 
-				currentSnapshot.Installs[namespace] = installList
+				// merge lists by namespace
+				installsByNamespace[namespace] = installNamespacedList.list
+				var installList InstallList
+				for _, installs := range installsByNamespace {
+					installList = append(installList, installs...)
+				}
+				currentSnapshot.Installs = installList.Sort()
 			}
 		}
 	}()

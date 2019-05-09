@@ -38,33 +38,29 @@ var _ = Describe("appmesh", func() {
 	)
 
 	var (
-		pods = skkube.PodsByNamespace{
-			"": skkube.PodList{
-				pod.FromKubePod(&kubev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      awsNode,
-						Namespace: kubeSysyem,
-					},
-					Spec: kubev1.PodSpec{
-						Containers: []kubev1.Container{
-							{
-								Name:  awsNode,
-								Image: "602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.3.2",
-							},
+		pods = skkube.PodList{
+			pod.FromKubePod(&kubev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      awsNode,
+					Namespace: kubeSysyem,
+				},
+				Spec: kubev1.PodSpec{
+					Containers: []kubev1.Container{
+						{
+							Name:  awsNode,
+							Image: "602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.3.2",
 						},
 					},
-				}),
-			},
+				},
+			}),
 		}
-		configMaps = skkube.ConfigmapsByNamespace{
-			"": skkube.ConfigMapList{
-				kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      awsConfigMap,
-						Namespace: kubeSysyem,
-					},
-				}),
-			},
+		configMaps = skkube.ConfigMapList{
+			kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      awsConfigMap,
+					Namespace: kubeSysyem,
+				},
+			}),
 		}
 	)
 
@@ -186,7 +182,7 @@ var _ = Describe("appmesh", func() {
 			Expect(amd).To(BeEquivalentTo(&appmeshDiscoveryData{}))
 		})
 		It("all correct objects when valid", func() {
-			amd := newAppmeshDiscoveryData(ctx, configMaps.List(), pods.List())
+			amd := newAppmeshDiscoveryData(ctx, configMaps, pods)
 			Expect(amd.configMaps).To(HaveLen(1))
 			Expect(amd.pods).To(HaveLen(1))
 			Expect(amd.region).To(Equal(defaultRegion))

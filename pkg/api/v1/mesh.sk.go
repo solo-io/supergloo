@@ -44,7 +44,6 @@ func (r *Mesh) Hash() uint64 {
 }
 
 type MeshList []*Mesh
-type MeshesByNamespace map[string]MeshList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list MeshList) Find(namespace, name string) (*Mesh, error) {
@@ -111,38 +110,18 @@ func (list MeshList) Each(f func(element *Mesh)) {
 	}
 }
 
+func (list MeshList) EachResource(f func(element resources.Resource)) {
+	for _, mesh := range list {
+		f(mesh)
+	}
+}
+
 func (list MeshList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *Mesh) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace MeshesByNamespace) Add(mesh ...*Mesh) {
-	for _, item := range mesh {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace MeshesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace MeshesByNamespace) List() MeshList {
-	var list MeshList
-	for _, meshList := range byNamespace {
-		list = append(list, meshList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace MeshesByNamespace) Clone() MeshesByNamespace {
-	cloned := make(MeshesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &Mesh{}

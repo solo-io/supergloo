@@ -12,6 +12,45 @@ import (
 	v1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 )
 
+// MockMeshPolicyWatcher is a mock of MeshPolicyWatcher interface
+type MockMeshPolicyWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshPolicyWatcherMockRecorder
+}
+
+// MockMeshPolicyWatcherMockRecorder is the mock recorder for MockMeshPolicyWatcher
+type MockMeshPolicyWatcherMockRecorder struct {
+	mock *MockMeshPolicyWatcher
+}
+
+// NewMockMeshPolicyWatcher creates a new mock instance
+func NewMockMeshPolicyWatcher(ctrl *gomock.Controller) *MockMeshPolicyWatcher {
+	mock := &MockMeshPolicyWatcher{ctrl: ctrl}
+	mock.recorder = &MockMeshPolicyWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshPolicyWatcher) EXPECT() *MockMeshPolicyWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockMeshPolicyWatcher) Watch(opts clients.WatchOpts) (<-chan v1alpha1.MeshPolicyList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", opts)
+	ret0, _ := ret[0].(<-chan v1alpha1.MeshPolicyList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockMeshPolicyWatcherMockRecorder) Watch(opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockMeshPolicyWatcher)(nil).Watch), opts)
+}
+
 // MockMeshPolicyClient is a mock of MeshPolicyClient interface
 type MockMeshPolicyClient struct {
 	ctrl     *gomock.Controller

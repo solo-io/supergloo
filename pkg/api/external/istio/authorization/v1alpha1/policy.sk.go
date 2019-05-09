@@ -46,7 +46,6 @@ func (r *Policy) Hash() uint64 {
 }
 
 type PolicyList []*Policy
-type PoliciesByNamespace map[string]PolicyList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list PolicyList) Find(namespace, name string) (*Policy, error) {
@@ -113,38 +112,18 @@ func (list PolicyList) Each(f func(element *Policy)) {
 	}
 }
 
+func (list PolicyList) EachResource(f func(element resources.Resource)) {
+	for _, policy := range list {
+		f(policy)
+	}
+}
+
 func (list PolicyList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *Policy) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace PoliciesByNamespace) Add(policy ...*Policy) {
-	for _, item := range policy {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace PoliciesByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace PoliciesByNamespace) List() PolicyList {
-	var list PolicyList
-	for _, policyList := range byNamespace {
-		list = append(list, policyList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace PoliciesByNamespace) Clone() PoliciesByNamespace {
-	cloned := make(PoliciesByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &Policy{}

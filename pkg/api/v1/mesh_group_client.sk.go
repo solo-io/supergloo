@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type MeshGroupWatcher interface {
+	// watch namespace-scoped Meshgroups
+	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshGroupList, <-chan error, error)
+}
+
 type MeshGroupClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type MeshGroupClient interface {
 	Write(resource *MeshGroup, opts clients.WriteOpts) (*MeshGroup, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (MeshGroupList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshGroupList, <-chan error, error)
+	MeshGroupWatcher
 }
 
 type meshGroupClient struct {

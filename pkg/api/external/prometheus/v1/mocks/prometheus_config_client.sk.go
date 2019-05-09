@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
 )
 
+// MockPrometheusConfigWatcher is a mock of PrometheusConfigWatcher interface
+type MockPrometheusConfigWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockPrometheusConfigWatcherMockRecorder
+}
+
+// MockPrometheusConfigWatcherMockRecorder is the mock recorder for MockPrometheusConfigWatcher
+type MockPrometheusConfigWatcherMockRecorder struct {
+	mock *MockPrometheusConfigWatcher
+}
+
+// NewMockPrometheusConfigWatcher creates a new mock instance
+func NewMockPrometheusConfigWatcher(ctrl *gomock.Controller) *MockPrometheusConfigWatcher {
+	mock := &MockPrometheusConfigWatcher{ctrl: ctrl}
+	mock.recorder = &MockPrometheusConfigWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPrometheusConfigWatcher) EXPECT() *MockPrometheusConfigWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockPrometheusConfigWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.PrometheusConfigList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.PrometheusConfigList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockPrometheusConfigWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockPrometheusConfigWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockPrometheusConfigClient is a mock of PrometheusConfigClient interface
 type MockPrometheusConfigClient struct {
 	ctrl     *gomock.Controller

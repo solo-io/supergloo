@@ -28,11 +28,11 @@ func NewAppMeshTranslator() Translator {
 }
 
 func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*ResourceSnapshot, reporter.ResourceErrors, error) {
-	meshes := snapshot.Meshes.List()
-	meshGroups := snapshot.Meshgroups.List()
-	upstreams := snapshot.Upstreams.List()
-	pods := snapshot.Pods.List()
-	routingRules := snapshot.Routingrules.List()
+	meshes := snapshot.Meshes
+	meshGroups := snapshot.Meshgroups
+	upstreams := snapshot.Upstreams
+	pods := snapshot.Pods
+	routingRules := snapshot.Routingrules
 
 	resourceErrs := make(reporter.ResourceErrors)
 	resourceErrs.Accept(meshes.AsInputResources()...)

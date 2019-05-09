@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type PrometheusConfigWatcher interface {
+	// watch namespace-scoped prometheusconfigs
+	Watch(namespace string, opts clients.WatchOpts) (<-chan PrometheusConfigList, <-chan error, error)
+}
+
 type PrometheusConfigClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type PrometheusConfigClient interface {
 	Write(resource *PrometheusConfig, opts clients.WriteOpts) (*PrometheusConfig, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (PrometheusConfigList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan PrometheusConfigList, <-chan error, error)
+	PrometheusConfigWatcher
 }
 
 type prometheusConfigClient struct {

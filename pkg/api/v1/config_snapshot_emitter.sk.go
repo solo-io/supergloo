@@ -374,6 +374,14 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			sentSnapshot := currentSnapshot.Clone()
 			snapshots <- &sentSnapshot
 		}
+		meshesByNamespace := make(map[string]MeshList)
+		meshingressesByNamespace := make(map[string]MeshIngressList)
+		meshgroupsByNamespace := make(map[string]MeshGroupList)
+		routingrulesByNamespace := make(map[string]RoutingRuleList)
+		securityrulesByNamespace := make(map[string]SecurityRuleList)
+		tlssecretsByNamespace := make(map[string]TlsSecretList)
+		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
+		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
 
 		for {
 			record := func() { stats.Record(ctx, mConfigSnapshotIn.M(1)) }
@@ -393,58 +401,98 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 				record()
 
 				namespace := meshNamespacedList.namespace
-				meshList := meshNamespacedList.list
 
-				currentSnapshot.Meshes[namespace] = meshList
+				// merge lists by namespace
+				meshesByNamespace[namespace] = meshNamespacedList.list
+				var meshList MeshList
+				for _, meshes := range meshesByNamespace {
+					meshList = append(meshList, meshes...)
+				}
+				currentSnapshot.Meshes = meshList.Sort()
 			case meshIngressNamespacedList := <-meshIngressChan:
 				record()
 
 				namespace := meshIngressNamespacedList.namespace
-				meshIngressList := meshIngressNamespacedList.list
 
-				currentSnapshot.Meshingresses[namespace] = meshIngressList
+				// merge lists by namespace
+				meshingressesByNamespace[namespace] = meshIngressNamespacedList.list
+				var meshIngressList MeshIngressList
+				for _, meshingresses := range meshingressesByNamespace {
+					meshIngressList = append(meshIngressList, meshingresses...)
+				}
+				currentSnapshot.Meshingresses = meshIngressList.Sort()
 			case meshGroupNamespacedList := <-meshGroupChan:
 				record()
 
 				namespace := meshGroupNamespacedList.namespace
-				meshGroupList := meshGroupNamespacedList.list
 
-				currentSnapshot.Meshgroups[namespace] = meshGroupList
+				// merge lists by namespace
+				meshgroupsByNamespace[namespace] = meshGroupNamespacedList.list
+				var meshGroupList MeshGroupList
+				for _, meshgroups := range meshgroupsByNamespace {
+					meshGroupList = append(meshGroupList, meshgroups...)
+				}
+				currentSnapshot.Meshgroups = meshGroupList.Sort()
 			case routingRuleNamespacedList := <-routingRuleChan:
 				record()
 
 				namespace := routingRuleNamespacedList.namespace
-				routingRuleList := routingRuleNamespacedList.list
 
-				currentSnapshot.Routingrules[namespace] = routingRuleList
+				// merge lists by namespace
+				routingrulesByNamespace[namespace] = routingRuleNamespacedList.list
+				var routingRuleList RoutingRuleList
+				for _, routingrules := range routingrulesByNamespace {
+					routingRuleList = append(routingRuleList, routingrules...)
+				}
+				currentSnapshot.Routingrules = routingRuleList.Sort()
 			case securityRuleNamespacedList := <-securityRuleChan:
 				record()
 
 				namespace := securityRuleNamespacedList.namespace
-				securityRuleList := securityRuleNamespacedList.list
 
-				currentSnapshot.Securityrules[namespace] = securityRuleList
+				// merge lists by namespace
+				securityrulesByNamespace[namespace] = securityRuleNamespacedList.list
+				var securityRuleList SecurityRuleList
+				for _, securityrules := range securityrulesByNamespace {
+					securityRuleList = append(securityRuleList, securityrules...)
+				}
+				currentSnapshot.Securityrules = securityRuleList.Sort()
 			case tlsSecretNamespacedList := <-tlsSecretChan:
 				record()
 
 				namespace := tlsSecretNamespacedList.namespace
-				tlsSecretList := tlsSecretNamespacedList.list
 
-				currentSnapshot.Tlssecrets[namespace] = tlsSecretList
+				// merge lists by namespace
+				tlssecretsByNamespace[namespace] = tlsSecretNamespacedList.list
+				var tlsSecretList TlsSecretList
+				for _, tlssecrets := range tlssecretsByNamespace {
+					tlsSecretList = append(tlsSecretList, tlssecrets...)
+				}
+				currentSnapshot.Tlssecrets = tlsSecretList.Sort()
 			case upstreamNamespacedList := <-upstreamChan:
 				record()
 
 				namespace := upstreamNamespacedList.namespace
-				upstreamList := upstreamNamespacedList.list
 
-				currentSnapshot.Upstreams[namespace] = upstreamList
+				// merge lists by namespace
+				upstreamsByNamespace[namespace] = upstreamNamespacedList.list
+				var upstreamList gloo_solo_io.UpstreamList
+				for _, upstreams := range upstreamsByNamespace {
+					upstreamList = append(upstreamList, upstreams...)
+				}
+				currentSnapshot.Upstreams = upstreamList.Sort()
 			case podNamespacedList := <-podChan:
 				record()
 
 				namespace := podNamespacedList.namespace
-				podList := podNamespacedList.list
 
-				currentSnapshot.Pods[namespace] = podList
+				// merge lists by namespace
+				podsByNamespace[namespace] = podNamespacedList.list
+				var podList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+				for _, pods := range podsByNamespace {
+					podList = append(podList, pods...)
+				}
+				currentSnapshot.Pods = podList.Sort()
 			}
 		}
 	}()

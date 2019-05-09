@@ -46,7 +46,7 @@ var _ = Describe("Syncer", func() {
 				}
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+				snap := &v1.InstallSnapshot{Installs: installList}
 				installSyncer := NewInstallSyncer(kubeInstaller, fake.NewSimpleClientset(), meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())

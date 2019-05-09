@@ -60,7 +60,7 @@ type appmeshDiscoveryConfigSyncer struct {
 func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.AppmeshDiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-config-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
-	pods, meshes, upstreams := snap.Pods.List(), snap.Meshes.List(), snap.Upstreams.List()
+	pods, meshes, upstreams := snap.Pods, snap.Meshes, snap.Upstreams
 	fields := []interface{}{
 		zap.Int("meshes", len(meshes)),
 		zap.Int("pods", len(pods)),
@@ -71,7 +71,7 @@ func (s *appmeshDiscoveryConfigSyncer) Sync(ctx context.Context, snap *v1.Appmes
 	defer logger.Infow("end sync", fields...)
 	logger.Debugf("full snapshot: %v", snap)
 
-	appmeshMeshes := utils.GetMeshes(snap.Meshes.List(), utils.AppmeshFilterFunc, utils.FilterByLabels(appmesh.DiscoverySelector))
+	appmeshMeshes := utils.GetMeshes(snap.Meshes, utils.AppmeshFilterFunc, utils.FilterByLabels(appmesh.DiscoverySelector))
 
 	var updatedMeshes v1.MeshList
 	for _, mesh := range appmeshMeshes {

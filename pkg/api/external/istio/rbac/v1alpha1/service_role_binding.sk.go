@@ -43,7 +43,6 @@ func (r *ServiceRoleBinding) Hash() uint64 {
 }
 
 type ServiceRoleBindingList []*ServiceRoleBinding
-type ServicerolebindingsByNamespace map[string]ServiceRoleBindingList
 
 // namespace is optional, if left empty, names can collide if the list contains more than one with the same name
 func (list ServiceRoleBindingList) Find(namespace, name string) (*ServiceRoleBinding, error) {
@@ -110,38 +109,18 @@ func (list ServiceRoleBindingList) Each(f func(element *ServiceRoleBinding)) {
 	}
 }
 
+func (list ServiceRoleBindingList) EachResource(f func(element resources.Resource)) {
+	for _, serviceRoleBinding := range list {
+		f(serviceRoleBinding)
+	}
+}
+
 func (list ServiceRoleBindingList) AsInterfaces() []interface{} {
 	var asInterfaces []interface{}
 	list.Each(func(element *ServiceRoleBinding) {
 		asInterfaces = append(asInterfaces, element)
 	})
 	return asInterfaces
-}
-
-func (byNamespace ServicerolebindingsByNamespace) Add(serviceRoleBinding ...*ServiceRoleBinding) {
-	for _, item := range serviceRoleBinding {
-		byNamespace[item.GetMetadata().Namespace] = append(byNamespace[item.GetMetadata().Namespace], item)
-	}
-}
-
-func (byNamespace ServicerolebindingsByNamespace) Clear(namespace string) {
-	delete(byNamespace, namespace)
-}
-
-func (byNamespace ServicerolebindingsByNamespace) List() ServiceRoleBindingList {
-	var list ServiceRoleBindingList
-	for _, serviceRoleBindingList := range byNamespace {
-		list = append(list, serviceRoleBindingList...)
-	}
-	return list.Sort()
-}
-
-func (byNamespace ServicerolebindingsByNamespace) Clone() ServicerolebindingsByNamespace {
-	cloned := make(ServicerolebindingsByNamespace)
-	for ns, list := range byNamespace {
-		cloned[ns] = list.Clone()
-	}
-	return cloned
 }
 
 var _ resources.Resource = &ServiceRoleBinding{}

@@ -12,6 +12,45 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// MockMeshIngressWatcher is a mock of MeshIngressWatcher interface
+type MockMeshIngressWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshIngressWatcherMockRecorder
+}
+
+// MockMeshIngressWatcherMockRecorder is the mock recorder for MockMeshIngressWatcher
+type MockMeshIngressWatcherMockRecorder struct {
+	mock *MockMeshIngressWatcher
+}
+
+// NewMockMeshIngressWatcher creates a new mock instance
+func NewMockMeshIngressWatcher(ctrl *gomock.Controller) *MockMeshIngressWatcher {
+	mock := &MockMeshIngressWatcher{ctrl: ctrl}
+	mock.recorder = &MockMeshIngressWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshIngressWatcher) EXPECT() *MockMeshIngressWatcherMockRecorder {
+	return m.recorder
+}
+
+// Watch mocks base method
+func (m *MockMeshIngressWatcher) Watch(namespace string, opts clients.WatchOpts) (<-chan v1.MeshIngressList, <-chan error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Watch", namespace, opts)
+	ret0, _ := ret[0].(<-chan v1.MeshIngressList)
+	ret1, _ := ret[1].(<-chan error)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Watch indicates an expected call of Watch
+func (mr *MockMeshIngressWatcherMockRecorder) Watch(namespace, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockMeshIngressWatcher)(nil).Watch), namespace, opts)
+}
+
 // MockMeshIngressClient is a mock of MeshIngressClient interface
 type MockMeshIngressClient struct {
 	ctrl     *gomock.Controller

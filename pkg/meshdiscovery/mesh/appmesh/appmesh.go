@@ -53,9 +53,9 @@ func (s *appmeshDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-mesh-discovery-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 
-	pods := snap.Pods.List()
-	installs := snap.Installs.List()
-	configMaps := snap.Configmaps.List()
+	pods := snap.Pods
+	installs := snap.Installs
+	configMaps := snap.Configmaps
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),

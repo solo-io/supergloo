@@ -57,11 +57,11 @@ func BasicMeshInfo(meshNamespace string, discoverySelector map[string]string, me
 	return mesh
 }
 
-func InjectedPodsByNamespace(pods kubernetes.PodList, proxyContainerName string) kubernetes.PodsByNamespace {
-	result := make(kubernetes.PodsByNamespace)
+func InjectedPodsByNamespace(pods kubernetes.PodList, proxyContainerName string) kubernetes.PodList {
+	var result kubernetes.PodList
 	for _, pod := range pods {
 		if isInjectedPodRunning(pod, proxyContainerName) {
-			result.Add(pod)
+			result = append(result, pod)
 		}
 	}
 	return result

@@ -100,7 +100,7 @@ var _ = Describe("Syncer", func() {
 					inputs.IstioInstall("a", "b", "c", "versiondoesntmatter", false),
 					inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
 				}
-				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+				snap := &v1.InstallSnapshot{Installs: installList}
 				installeSyncer := newTestInstallSyncer(installer, meshClient, report)
 				err := installeSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
@@ -127,7 +127,7 @@ var _ = Describe("Syncer", func() {
 				}
 				install := installList[0]
 				Expect(install.InstallType).To(BeAssignableToTypeOf(&v1.Install_Mesh{}))
-				snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+				snap := &v1.InstallSnapshot{Installs: installList}
 				installSyncer := newTestInstallSyncer(installer, meshClient, report)
 				err := installSyncer.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
@@ -162,7 +162,7 @@ var _ = Describe("Syncer", func() {
 				inputs.IstioInstall("b", "b", "c", "versiondoesntmatter", false),
 			}
 
-			snap := &v1.InstallSnapshot{Installs: map[string]v1.InstallList{"": installList}}
+			snap := &v1.InstallSnapshot{Installs: installList}
 			installeSyncer := newTestInstallSyncer(installer, meshClient, report)
 			err := installeSyncer.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())

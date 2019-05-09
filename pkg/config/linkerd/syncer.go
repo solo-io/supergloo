@@ -29,8 +29,8 @@ func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot)
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("routing_rules", len(snap.Routingrules.List())),
+		zap.Int("meshes", len(snap.Meshes)),
+		zap.Int("routing_rules", len(snap.Routingrules)),
 	}
 
 	logger.Infow("begin sync", fields...)

@@ -9,6 +9,11 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
+type MeshIngressWatcher interface {
+	// watch namespace-scoped Meshingresses
+	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshIngressList, <-chan error, error)
+}
+
 type MeshIngressClient interface {
 	BaseClient() clients.ResourceClient
 	Register() error
@@ -16,7 +21,7 @@ type MeshIngressClient interface {
 	Write(resource *MeshIngress, opts clients.WriteOpts) (*MeshIngress, error)
 	Delete(namespace, name string, opts clients.DeleteOpts) error
 	List(namespace string, opts clients.ListOpts) (MeshIngressList, error)
-	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshIngressList, <-chan error, error)
+	MeshIngressWatcher
 }
 
 type meshIngressClient struct {

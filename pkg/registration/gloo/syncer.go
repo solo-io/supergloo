@@ -30,14 +30,14 @@ func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("gloo-registration-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
-		zap.Int("meshes", len(snap.Meshes.List())),
-		zap.Int("mesh-ingresses", len(snap.Meshingresses.List())),
+		zap.Int("meshes", len(snap.Meshes)),
+		zap.Int("mesh-ingresses", len(snap.Meshingresses)),
 	}
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 
 	var glooMeshIngresses v1.MeshIngressList
-	for _, meshIngress := range snap.Meshingresses.List() {
+	for _, meshIngress := range snap.Meshingresses {
 		if _, ok := meshIngress.MeshIngressType.(*v1.MeshIngress_Gloo); ok {
 			glooMeshIngresses = append(glooMeshIngresses, meshIngress)
 		}
@@ -45,7 +45,7 @@ func (s *glooMtlsSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnapshot
 
 	errs := reporter.ResourceErrors{}
 	for _, glooIngress := range glooMeshIngresses {
-		if err := s.handleGlooMeshIngress(ctx, glooIngress, snap.Meshes.List()); err != nil {
+		if err := s.handleGlooMeshIngress(ctx, glooIngress, snap.Meshes); err != nil {
 			errs.AddError(glooIngress, err)
 			logger.Errorf("unable to update gloo ingress %v, %s", glooIngress.Metadata, err)
 		}
