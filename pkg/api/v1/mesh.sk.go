@@ -38,7 +38,6 @@ func (r *Mesh) Hash() uint64 {
 		metaCopy,
 		r.MtlsConfig,
 		r.MonitoringConfig,
-		r.DiscoveryMetadata,
 		r.MeshType,
 	)
 }
