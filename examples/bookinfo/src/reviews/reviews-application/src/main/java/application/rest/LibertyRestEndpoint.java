@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 @Path("/")
 public class LibertyRestEndpoint extends Application {
 
+    private final static Boolean propagate_failure = Boolean.valueOf(System.getenv("PROPAGATE_FAILURE"));
     private final static Boolean ratings_enabled = Boolean.valueOf(System.getenv("ENABLE_RATINGS"));
     private final static String star_color = System.getenv("STAR_COLOR") == null ? "black" : System.getenv("STAR_COLOR");
     private final static String services_domain = System.getenv("SERVICES_DOMAIN") == null ? "" : ("." + System.getenv("SERVICES_DOMAIN"));
@@ -166,6 +167,10 @@ public class LibertyRestEndpoint extends Application {
               starsReviewer2 = ratings.getInt("Reviewer2");
             }
           }
+        } else {
+            if (propagate_failure) {
+                return Response.serverError().build();
+            }
         }
       } 
 
