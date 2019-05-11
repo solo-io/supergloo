@@ -28,4 +28,55 @@ Changes are summarized below.
     - result: error is propagated to route `a`
     - preferred behavior: the `reviews` service should be able to provide a valid response even if it encounters errors from the `ratings` service
 
-empty response from
+
+### Initial setup
+- note that the reviews and ratings are shown
+```bash
+supergloo init
+kubectl label namespace default istio-injection=enabled
+supergloo install istio --name istio --installation-namespace istio-system --mtls=true --auto-inject=true
+kubectl apply -f bookinfo.yaml
+supergloo apply routingrule trafficshifting \
+    --name reviews-v4 \
+    --dest-upstreams supergloo-system.default-reviews-9080 \
+    --target-mesh supergloo-system.istio \
+    --destination supergloo-system.default-reviews-v4-9080:1
+kubectl port-forward -n default deployment/productpage-v1 9080
+## OPEN localhost:9080 in your browser - see the "baseline" app
+```
+
+### What does it look like when `reviews` fail
+- note that neither reviews nor ratings are shown
+```bash
+supergloo apply routingrule faultinjection abort http \
+    --target-mesh supergloo-system.istio \
+     -p 100 -s 500  --name fault-product-to-reviews \
+    --dest-upstreams supergloo-system.default-reviews-9080
+## RELOAD PAGE - Expect error from reviews
+# cleanup:
+kubectl delete routingrule -n supergloo-system fault-product-to-reviews
+## RELOAD PAGE - Expect errors to have gone away
+```
+
+### Trigger the weakness
+- note, again, that neither reviews nor ratings are shown
+```bash
+supergloo apply routingrule faultinjection abort http \
+    --target-mesh supergloo-system.istio \
+     -p 100 -s 500  --name fault-reviews-to-ratings \
+    --dest-upstreams supergloo-system.default-ratings-9080
+## RELOAD PAGE - Expect reviews to fail in the same manner
+```
+
+### Replace the weak service with a more robust version
+- note that reviews show without ratings
+```bash
+kubectl delete routingrule -n supergloo-system reviews-v4
+supergloo apply routingrule trafficshifting \
+    --name reviews-v3 \
+    --dest-upstreams supergloo-system.default-reviews-9080 \
+    --target-mesh supergloo-system.istio \
+    --destination supergloo-system.default-reviews-v3-9080:1
+## RELOAD PAGE - Expect failure to be more graceful, reviews information is shown without the ratings
+```
+
