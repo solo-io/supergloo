@@ -24,7 +24,7 @@ fi
 
 VERSION=$1
 SCRIPTDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-REPO_SPEC="docker.io/soloio"
+REPO_SPEC="docker.io/mitchdraft"
 
 
 pushd "$SCRIPTDIR/reviews"
