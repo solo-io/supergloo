@@ -191,7 +191,7 @@ spec:
       serviceAccountName: bookinfo-reviews
       containers:
         - name: reviews
-          image: mitchdraft/examples-bookinfo-reviews-v4:dev
+          image: mitchdraft/examples-bookinfo-reviews-v4:dev5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9080

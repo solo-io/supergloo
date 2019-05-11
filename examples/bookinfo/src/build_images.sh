@@ -40,7 +40,7 @@ pushd "$SCRIPTDIR/reviews"
 #    docker build -t "${REPO_SPEC}/examples-bookinfo-reviews-v3:${VERSION}" -t istio/examples-bookinfo-reviews-v3:latest --build-arg service_version=v3 \
 #	   --build-arg enable_ratings=true --build-arg star_color=red .
     #with ratings red stars, with cascading failure
-    docker build -t "${REPO_SPEC}/examples-bookinfo-reviews-v4:${VERSION}" -t istio/examples-bookinfo-reviews-v4:latest --build-arg service_version=v4 \
+    docker build -t "${REPO_SPEC}/examples-bookinfo-reviews-v4:${VERSION}" -t "${REPO_SPEC}/examples-bookinfo-reviews-v4:latest" --build-arg service_version=v4 \
 	   --build-arg enable_ratings=true --build-arg star_color=red --build-arg propagate_failure=true .
   popd
 popd

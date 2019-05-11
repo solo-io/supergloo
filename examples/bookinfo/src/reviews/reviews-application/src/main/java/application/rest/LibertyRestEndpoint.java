@@ -152,12 +152,23 @@ public class LibertyRestEndpoint extends Application {
                                     @HeaderParam("x-b3-sampled") String xsampled,
                                     @HeaderParam("x-b3-flags") String xflags,
                                     @HeaderParam("x-ot-span-context") String xotspan) {
+
+      // FOR DEBUGGING
+      System.out.println( "propagate_failure, ratings_enabled, star_color, services_domain, ratings_hostname, ratings_service");
+      System.out.println( propagate_failure);
+      System.out.println(ratings_enabled);
+      System.out.println(star_color);
+      System.out.println(services_domain);
+      System.out.println(ratings_hostname);
+      System.out.println(ratings_service);
+
       int starsReviewer1 = -1;
       int starsReviewer2 = -1;
 
       if (ratings_enabled) {
         JsonObject ratingsResponse = getRatings(Integer.toString(productId), user, useragent, xreq, xtraceid, xspanid, xparentspanid, xsampled, xflags, xotspan);
         if (ratingsResponse != null) {
+            System.out.println("received ratings response");
           if (ratingsResponse.containsKey("ratings")) {
             JsonObject ratings = ratingsResponse.getJsonObject("ratings");
             if (ratings.containsKey("Reviewer1")){
@@ -168,7 +179,9 @@ public class LibertyRestEndpoint extends Application {
             }
           }
         } else {
+            System.out.println("Did not receive ratings response");
             if (propagate_failure) {
+                System.out.println("Propagating failure");
                 return Response.serverError().build();
             }
         }
