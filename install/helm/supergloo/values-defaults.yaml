@@ -23,6 +23,7 @@ discovery:
       repository: quay.io/solo-io/discovery
       pullPolicy: Always
     stats: true
+    disablePrometheusBouncer: false
 
 meshDiscovery:
   deployment:

@@ -20,7 +20,11 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
+type RegistrationOptions struct {
+	DisablePrometheusBouncer bool
+}
+
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub, opts RegistrationOptions) error {
 	ctx = contextutils.WithLogger(ctx, "registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -34,7 +38,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
-	registrationSyncers := createRegistrationSyncers(cs, pubsub)
+	registrationSyncers := createRegistrationSyncers(cs, pubsub, opts)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
@@ -44,11 +48,12 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub) v1.RegistrationSyncer {
+func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub, opts RegistrationOptions) v1.RegistrationSyncer {
+	skipPrometheusBounce := opts.DisablePrometheusBouncer
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
-		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube),
-		linkerdstats.NewLinkerdPrometheusSyncer(clientset.Prometheus, clientset.Kube),
+		istiostats.NewIstioPrometheusSyncer(clientset.Prometheus, clientset.Kube, skipPrometheusBounce),
+		linkerdstats.NewLinkerdPrometheusSyncer(clientset.Prometheus, clientset.Kube, skipPrometheusBounce),
 		gloo.NewGlooRegistrationSyncer(
 			clientset,
 			linkerd.NewGlooLinkerdMtlsPlugin(clientset),
