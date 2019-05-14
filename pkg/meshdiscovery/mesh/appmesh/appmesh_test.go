@@ -42,7 +42,7 @@ var _ = Describe("appmesh", func() {
 			pod.FromKubePod(&kubev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      awsNode,
-					Namespace: kubeSysyem,
+					Namespace: AwsConfigMapNamespace,
 				},
 				Spec: kubev1.PodSpec{
 					Containers: []kubev1.Container{
@@ -57,8 +57,8 @@ var _ = Describe("appmesh", func() {
 		configMaps = skkube.ConfigMapList{
 			kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      awsConfigMap,
-					Namespace: kubeSysyem,
+					Name:      AwsConfigMapName,
+					Namespace: AwsConfigMapNamespace,
 				},
 			}),
 		}
@@ -77,7 +77,7 @@ var _ = Describe("appmesh", func() {
 	var createSecret = func(aws bool) *gloov1.Secret {
 		secret := &gloov1.Secret{
 			Metadata: core.Metadata{
-				Name: awsConfigMap,
+				Name: AwsConfigMapName,
 			},
 			Kind: &gloov1.Secret_Aws{
 				Aws: &gloov1.AwsSecret{},
@@ -123,13 +123,13 @@ var _ = Describe("appmesh", func() {
 			}
 			newCtx := contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-mesh-discovery-sync-%v", snap.Hash()))
 			clientBuilder.EXPECT().GetClientInstance(&secretRef, defaultRegion).Times(1).Return(awsClient, nil)
-			awsClient.EXPECT().ListMeshes(newCtx).Times(1).Return([]string{awsConfigMap}, nil)
+			awsClient.EXPECT().ListMeshes(newCtx).Times(1).Return([]string{AwsConfigMapName}, nil)
 			meshes, err := meshDiscovery.DiscoverMeshes(ctx, snap)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(meshes).To(HaveLen(1))
 			mesh := meshes[0]
 			Expect(mesh.Metadata).To(BeEquivalentTo(core.Metadata{
-				Name:      awsConfigMap,
+				Name:      AwsConfigMapName,
 				Labels:    DiscoverySelector,
 				Namespace: "supergloo-system",
 			}))
@@ -172,7 +172,7 @@ var _ = Describe("appmesh", func() {
 			}
 			secret, err := ads.getAwsSecret()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(secret.Metadata.Name).To(Equal(awsConfigMap))
+			Expect(secret.Metadata.Name).To(Equal(AwsConfigMapName))
 		})
 	})
 
