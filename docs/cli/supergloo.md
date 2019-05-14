@@ -28,4 +28,5 @@ supergloo configures resources watched by the Supergloo Controller.
 * [supergloo register](../supergloo_register)	 - commands for registering meshes with SuperGloo
 * [supergloo set](../supergloo_set)	 - update an existing resource with one or more config options
 * [supergloo uninstall](../supergloo_uninstall)	 - uninstall a service mesh using Supergloo
+* [supergloo upgrade](../supergloo_upgrade)	 - upgrade your supergloo cli binary to the latest version
 
