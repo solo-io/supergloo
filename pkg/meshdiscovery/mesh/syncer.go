@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/stringutils"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/utils"
 	"go.uber.org/zap"
+
+	skkube "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 )
 
 type meshDiscoverySyncer struct {
@@ -39,10 +43,11 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 
-	var discoveredMeshes v1.MeshList
+	filteredSnap := FilterOutNamespacesWithInstalls(snap)
 
+	var discoveredMeshes v1.MeshList
 	for _, meshDiscoveryPlugin := range s.plugins {
-		meshes, err := meshDiscoveryPlugin.DiscoverMeshes(ctx, snap)
+		meshes, err := meshDiscoveryPlugin.DiscoverMeshes(ctx, filteredSnap)
 		if err != nil {
 			multierr = multierror.Append(multierr, err)
 			logger.Errorf(err.Error())
@@ -62,4 +67,33 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	}
 
 	return multierr.ErrorOrNil()
+}
+
+func FilterOutNamespacesWithInstalls(snap *v1.DiscoverySnapshot) *v1.DiscoverySnapshot {
+	var disabledNamespaces []string
+	for _, install := range snap.Installs {
+		if install.Disabled && !stringutils.ContainsString(install.InstallationNamespace, disabledNamespaces) {
+			disabledNamespaces = append(disabledNamespaces, install.Metadata.Namespace)
+		}
+	}
+
+	var newPodList skkube.PodList
+	snap.Pods.Each(func(pod *skkube.Pod) {
+		if !stringutils.ContainsString(pod.Namespace, disabledNamespaces) {
+			newPodList = append(newPodList, pod)
+		}
+	})
+
+	var newConfigMapList skkube.ConfigMapList
+	snap.Configmaps.Each(func(configMap *skkube.ConfigMap) {
+		if !stringutils.ContainsString(configMap.Namespace, disabledNamespaces) {
+			newConfigMapList = append(newConfigMapList, configMap)
+		}
+	})
+	return &v1.DiscoverySnapshot{
+		Pods:       newPodList,
+		Configmaps: newConfigMapList,
+		Installs:   snap.Installs,
+	}
+
 }
