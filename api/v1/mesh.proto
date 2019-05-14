@@ -44,7 +44,7 @@ message Mesh {
     MonitoringConfig monitoring_config = 3;
 
     // object which represents the data mesh discovery finds about a given mesh
-    DiscoveryMetadata discovery_metadata = 6;
+    DiscoveryMetadata discovery_metadata = 6 [(core.solo.io.skip_hashing) = true];
 }
 
 
