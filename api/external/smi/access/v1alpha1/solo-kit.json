@@ -1,0 +1,5 @@
+{
+    "name": "smi.access.v1alpha1",
+    "version": "v1alpha1",
+    "crd_group_override": "access.smi-spec.io"
+}

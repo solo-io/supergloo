@@ -1,0 +1,5 @@
+{
+    "name": "smi.split.v1alpha1",
+    "version": "v1alpha1",
+    "crd_group_override": "split.smi-spec.io"
+}

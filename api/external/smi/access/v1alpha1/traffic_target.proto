@@ -1,0 +1,73 @@
+// Copyright 2018 Istio Authors
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+
+syntax = "proto3";
+
+// $title: Authentication Policy
+// $description: Authentication policy for Istio services.
+// $location: https://istio.io/docs/reference/config/istio.authentication.v1alpha1.html
+
+// This package defines user-facing authentication policy.
+package smi.access.v1alpha1;
+
+option go_package = "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1";
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+// TrafficTarget associates a set of traffic definitions (rules) with a service identity which is allocated to a group of pods.
+// Access is controlled via referenced TrafficSpecs and by a list of source service identities.
+// * If a pod which holds the referenced service identity makes a call to the destination on one of the defined routes then access
+//   will be allowed
+// * Any pod which attempts to connect and is not in the defined list of sources will be denied
+// * Any pod which is in the defined list, but attempts to connect on a route which is not in the list of the
+//   TrafficSpecs will be denied
+message TrafficTarget {
+    option (core.solo.io.resource).short_name = "tt";
+    option (core.solo.io.resource).plural_name = "traffictargets";
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // Selector is the pod or group of pods to allow ingress traffic
+    IdentityBindingSubject destination = 1;
+
+    // Sources are the pod or group of pods to allow ingress traffic
+    repeated IdentityBindingSubject sources = 2;
+
+    // Rules are the traffic rules to allow (HTTPRoutes | TCPRoute),
+    repeated TrafficTargetSpec specs = 3;
+}
+
+message IdentityBindingSubject {
+    // Kind is the type of Subject to allow ingress (ServiceAccount | Group)
+    string kind = 1;
+    // Name of the Subject, i.e. ServiceAccountName
+    string name = 2;
+    // Namespace where the Subject is deployed
+    string namespace = 3;
+    // Port defines a TCP port to apply the TrafficTarget to
+    string port = 4;
+}
+
+message TrafficTargetSpec {
+    // Kind is the kind of TrafficSpec to allow
+    string kind = 1;
+    // Name of the TrafficSpec to use
+    string name = 2;
+    // Matches is a list of TrafficSpec routes to allow traffic for
+    repeated string matches = 3;
+}
