@@ -46,6 +46,7 @@ var _ = Describe("PrometheusSyncer", func() {
 				func(mesh *sgv1.Mesh) (configs []*config.ScrapeConfig, e error) {
 					return inputs.InputIstioPrometheusScrapeConfigs(), nil
 				},
+				false,
 			)
 
 			cfg1 := inputs.PrometheusConfig("cfg1", "observability-ns-1")
