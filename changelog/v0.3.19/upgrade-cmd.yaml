@@ -1,3 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    descrition: add upgrade command to cli
