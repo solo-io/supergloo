@@ -13,8 +13,8 @@ import (
 
 // registration-level syncer
 
-func NewLinkerdPrometheusSyncer(client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface) v1.RegistrationSyncer {
-	return common.NewPrometheusSyncer("linkerd", client, kube, chooseMesh, getScrapeConfigs)
+func NewLinkerdPrometheusSyncer(client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface, skipBouncingPrometheusPods bool) v1.RegistrationSyncer {
+	return common.NewPrometheusSyncer("linkerd", client, kube, chooseMesh, getScrapeConfigs, skipBouncingPrometheusPods)
 }
 
 func chooseMesh(mesh *v1.Mesh) bool {

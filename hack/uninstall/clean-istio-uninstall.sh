@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
-kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io istio-sidecar-injector
-kubectl delete ns istio-system
-kubectl delete $(kubectl get crd -o name|grep istio)
-kubectl delete $(kubectl get clusterroles.rbac.authorization.k8s.io -o name|grep istio)
-kubectl delete $(kubectl get clusterrolebindings.rbac.authorization.k8s.io -o name|grep istio)
-
-supergloo init --dryrun | kubectl delete -f -
+supergloo init --dry-run | kubectl delete -f -
 kubectl delete ns supergloo-system
+APPS="istio linkerd supergloo gloo bookinfo monitoring"
+RESOURCES="clusterrole clusterrolebinding crd mutatingwebhookconfigurations.admissionregistration.k8s.io"
+for app in ${APPS}; do for resource in ${RESOURCES}; do echo deleting $resource $app; kubectl delete $(kubectl get $resource -oname | grep $app)& done; done

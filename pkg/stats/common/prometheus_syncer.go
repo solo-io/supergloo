@@ -22,15 +22,16 @@ import (
 // registration-level syncer
 
 type prometheusSyncer struct {
-	syncerName    string
-	client        prometheusv1.PrometheusConfigClient
-	kube          kubernetes.Interface
-	chooseMesh    func(mesh *v1.Mesh) bool
-	scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)
+	syncerName                 string
+	client                     prometheusv1.PrometheusConfigClient
+	kube                       kubernetes.Interface
+	chooseMesh                 func(mesh *v1.Mesh) bool
+	scrapeConfigs              func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)
+	skipBouncingPrometheusPods bool
 }
 
-func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface, chooseMesh func(mesh *v1.Mesh) bool, scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error)) *prometheusSyncer {
-	return &prometheusSyncer{syncerName: syncerName, client: client, kube: kube, chooseMesh: chooseMesh, scrapeConfigs: scrapeConfigs}
+func NewPrometheusSyncer(syncerName string, client prometheusv1.PrometheusConfigClient, kube kubernetes.Interface, chooseMesh func(mesh *v1.Mesh) bool, scrapeConfigs func(mesh *v1.Mesh) ([]*config.ScrapeConfig, error), skipBouncingPrometheusPods bool) *prometheusSyncer {
+	return &prometheusSyncer{syncerName: syncerName, client: client, kube: kube, chooseMesh: chooseMesh, scrapeConfigs: scrapeConfigs, skipBouncingPrometheusPods: skipBouncingPrometheusPods}
 }
 
 // Ensure all prometheus configs contain scrape configs for the meshes which target them
@@ -143,6 +144,10 @@ func (s *prometheusSyncer) syncPrometheusConfigsWithMeshes(ctx context.Context, 
 		}
 
 		updatedPromConfigs = append(updatedPromConfigs, promCfg.Metadata.Ref())
+	}
+
+	if s.skipBouncingPrometheusPods {
+		return nil
 	}
 
 	return s.bouncePodsWithConfigs(ctx, updatedPromConfigs)
