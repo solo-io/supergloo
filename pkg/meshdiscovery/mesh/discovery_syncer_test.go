@@ -32,7 +32,14 @@ var _ = Describe("discovery syncer", func() {
 	})
 
 	It("filters out namespaces correctly", func() {
-		install := &v1.Install{
+		install1 := &v1.Install{
+			Metadata: core.Metadata{
+				Namespace: "foo",
+			},
+			InstallationNamespace: "foo",
+			Disabled:              true,
+		}
+		install2 := &v1.Install{
 			Metadata: core.Metadata{
 				Namespace: "bar",
 			},
@@ -43,12 +50,12 @@ var _ = Describe("discovery syncer", func() {
 		configMap1 := kubernetes.NewConfigMap("foo", "test1")
 		configMap2 := kubernetes.NewConfigMap("bar", "test2")
 		input := &v1.DiscoverySnapshot{
-			Installs:   v1.InstallList{install},
+			Installs:   v1.InstallList{install1, install2},
 			Pods:       kubernetes.PodList{pod1, pod2},
 			Configmaps: kubernetes.ConfigMapList{configMap1, configMap2},
 		}
 		expected := &v1.DiscoverySnapshot{
-			Installs:   v1.InstallList{install},
+			Installs:   v1.InstallList{install1, install2},
 			Pods:       kubernetes.PodList{pod2},
 			Configmaps: kubernetes.ConfigMapList{configMap2},
 		}

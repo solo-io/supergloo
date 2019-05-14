@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/go-utils/cliutils"
+	"github.com/solo-io/go-utils/stringutils"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
@@ -70,23 +70,23 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 }
 
 func FilterOutNamespacesWithInstalls(snap *v1.DiscoverySnapshot) *v1.DiscoverySnapshot {
-	var namespaces []string
+	var disabledNamespaces []string
 	for _, install := range snap.Installs {
-		if !cliutils.Contains(namespaces, install.Metadata.Namespace) {
-			namespaces = append(namespaces, install.Metadata.Namespace)
+		if install.Disabled && !stringutils.ContainsString(install.InstallationNamespace, disabledNamespaces) {
+			disabledNamespaces = append(disabledNamespaces, install.Metadata.Namespace)
 		}
 	}
 
 	var newPodList skkube.PodList
 	snap.Pods.Each(func(pod *skkube.Pod) {
-		if !cliutils.Contains(namespaces, pod.Namespace) {
+		if !stringutils.ContainsString(pod.Namespace, disabledNamespaces) {
 			newPodList = append(newPodList, pod)
 		}
 	})
 
 	var newConfigMapList skkube.ConfigMapList
 	snap.Configmaps.Each(func(configMap *skkube.ConfigMap) {
-		if !cliutils.Contains(namespaces, configMap.Namespace) {
+		if !stringutils.ContainsString(configMap.Namespace, disabledNamespaces) {
 			newConfigMapList = append(newConfigMapList, configMap)
 		}
 	})
