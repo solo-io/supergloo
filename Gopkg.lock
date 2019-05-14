@@ -2476,6 +2476,7 @@
     "github.com/google/go-github/github",
     "github.com/gorilla/mux",
     "github.com/hashicorp/go-multierror",
+    "github.com/inconshreveable/go-update",
     "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
     "github.com/linkerd/linkerd2/controller/gen/client/informers/externalversions",
