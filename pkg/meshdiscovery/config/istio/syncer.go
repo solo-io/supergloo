@@ -21,20 +21,8 @@ import (
 
 const (
 	namespaceInjectionLabel = "istio-injection"
-	enabled                 = "enabled"
-	disabled                = "disabled"
-
-	podInjectionAnnotation = "sidecar.istio.io/inject"
-	podAnnotationEnabled   = "true"
-	podAnnotationDisabled  = "false"
 
 	proxyContainer = "istio-proxy"
-)
-
-var (
-	injectedSelector = map[string]string{
-		namespaceInjectionLabel: enabled,
-	}
 )
 
 func StartIstioDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, pubSub *registration.PubSub) {
