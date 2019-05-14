@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: enable skipping bouncing of prometheus pods with a flag for supergloo
+    issueLink: https://github.com/solo-io/supergloo/issues/438

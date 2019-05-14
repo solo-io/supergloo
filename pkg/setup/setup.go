@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"flag"
 	"os"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -12,6 +13,10 @@ import (
 	"github.com/solo-io/supergloo/pkg/registration"
 	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
 )
+
+type Options struct {
+	Registration registrationsetup.RegistrationOptions
+}
 
 // customCtx and customErrHandler are expected to be passed by tests
 func Main(customCtx context.Context, customErrHandler func(error)) error {
@@ -32,7 +37,9 @@ func Main(customCtx context.Context, customErrHandler func(error)) error {
 
 	pubsub := registration.NewPubsub()
 
-	if err := registrationsetup.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler, pubsub); err != nil {
+	opts := optsFromFlags()
+
+	if err := registrationsetup.RunRegistrationEventLoop(rootCtx, clientSet, customErrHandler, pubsub, opts.Registration); err != nil {
 		return err
 	}
 
@@ -49,4 +56,14 @@ func createRootContext(customCtx context.Context) context.Context {
 	}
 	rootCtx = contextutils.WithLogger(rootCtx, "supergloo")
 	return rootCtx
+}
+
+func optsFromFlags() Options {
+	var opts Options
+
+	flag.BoolVar(&opts.Registration.DisablePrometheusBouncer, "disable-prometheus-bouncer", false, "disable automatic "+
+		"bouncing of prometheus pods on config reload. enable tihs option if using the prometheus configmap reload")
+	flag.Parse()
+
+	return opts
 }
