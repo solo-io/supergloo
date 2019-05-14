@@ -73,7 +73,7 @@ func FilterOutNamespacesWithInstalls(snap *v1.DiscoverySnapshot) *v1.DiscoverySn
 	var disabledNamespaces []string
 	for _, install := range snap.Installs {
 		if install.Disabled && !stringutils.ContainsString(install.InstallationNamespace, disabledNamespaces) {
-			disabledNamespaces = append(disabledNamespaces, install.Metadata.Namespace)
+			disabledNamespaces = append(disabledNamespaces, install.InstallationNamespace)
 		}
 	}
 

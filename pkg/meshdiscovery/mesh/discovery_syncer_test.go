@@ -34,14 +34,14 @@ var _ = Describe("discovery syncer", func() {
 	It("filters out namespaces correctly", func() {
 		install1 := &v1.Install{
 			Metadata: core.Metadata{
-				Namespace: "foo",
+				Namespace: "doesn't matter",
 			},
 			InstallationNamespace: "foo",
 			Disabled:              true,
 		}
 		install2 := &v1.Install{
 			Metadata: core.Metadata{
-				Namespace: "bar",
+				Namespace: "doesn't matter",
 			},
 			InstallationNamespace: "bar",
 		}
