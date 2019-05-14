@@ -43,7 +43,7 @@ var _ = Describe("discovery syncer", func() {
 			Metadata: core.Metadata{
 				Namespace: "bar",
 			},
-			InstallationNamespace: "foo",
+			InstallationNamespace: "bar",
 		}
 		pod1 := kubernetes.NewPod("foo", "test1")
 		pod2 := kubernetes.NewPod("bar", "test2")
