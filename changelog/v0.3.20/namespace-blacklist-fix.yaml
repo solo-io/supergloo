@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Fix namespace blacklist to filter by installation namespace.
+  issueLink: https://github.com/solo-io/supergloo/issues/446
