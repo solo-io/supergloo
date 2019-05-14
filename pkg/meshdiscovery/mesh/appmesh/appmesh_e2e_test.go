@@ -46,7 +46,7 @@ var _ = Describe("appmesh integration", func() {
 			pod.FromKubePod(&kubev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      awsNode,
-					Namespace: kubeSysyem,
+					Namespace: AwsConfigMapNamespace,
 				},
 				Spec: kubev1.PodSpec{
 					Containers: []kubev1.Container{
@@ -61,8 +61,8 @@ var _ = Describe("appmesh integration", func() {
 		configMaps = skkube.ConfigMapList{
 			kubernetes.FromKubeConfigMap(&kubev1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      awsConfigMap,
-					Namespace: kubeSysyem,
+					Name:      AwsConfigMapName,
+					Namespace: AwsConfigMapNamespace,
 				},
 			}),
 		}
@@ -72,7 +72,7 @@ var _ = Describe("appmesh integration", func() {
 		accessKeyId, secretAccessKey := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY")
 		secret := &gloov1.Secret{
 			Metadata: core.Metadata{
-				Name: awsConfigMap,
+				Name: AwsConfigMapName,
 			},
 			Kind: &gloov1.Secret_Aws{
 				Aws: &gloov1.AwsSecret{

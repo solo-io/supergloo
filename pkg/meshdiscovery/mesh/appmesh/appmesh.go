@@ -19,12 +19,12 @@ import (
 )
 
 const (
-	aws          = "aws"
-	auth         = "auth"
-	node         = "node"
-	awsConfigMap = aws + "-" + auth
-	awsNode      = aws + "-" + node
-	kubeSysyem   = "kube-system"
+	aws                   = "aws"
+	auth                  = "auth"
+	node                  = "node"
+	AwsConfigMapName      = aws + "-" + auth
+	awsNode               = aws + "-" + node
+	AwsConfigMapNamespace = "kube-system"
 
 	appmeshSelector = "appmesh-mesh-discovery"
 
@@ -145,14 +145,14 @@ func newAppmeshDiscoveryData(ctx context.Context, configMaps skkube.ConfigMapLis
 
 	amd := &appmeshDiscoveryData{}
 	for _, cm := range configMaps {
-		if cm.Namespace == kubeSysyem && cm.Name == awsConfigMap {
+		if cm.Namespace == AwsConfigMapNamespace && cm.Name == AwsConfigMapName {
 			logger.Debugw("found possible aws config map", zap.Any("configmap", cm))
 			amd.configMaps = append(amd.configMaps, cm)
 		}
 	}
 
 	for _, pod := range pods {
-		if pod.Namespace == kubeSysyem && utils.StringContainsAll(awsPod, pod.Name) {
+		if pod.Namespace == AwsConfigMapNamespace && utils.StringContainsAll(awsPod, pod.Name) {
 			logger.Debugw("found possible aws node pod", zap.Any("pod", pod))
 			region, err := getAwsRegionFromPod(pod)
 			if err != nil {
