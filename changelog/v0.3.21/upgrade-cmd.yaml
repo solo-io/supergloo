@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: add upgrade command to cli
+    issueLink: https://github.com/solo-io/supergloo/issues/444

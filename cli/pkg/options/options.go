@@ -18,6 +18,7 @@ type Options struct {
 	PrintKubeYaml bool
 
 	Init               Init
+	Upgrade            Upgrade
 	Install            Install
 	Uninstall          Uninstall
 	CreateRoutingRule  CreateRoutingRule
@@ -37,6 +38,11 @@ type Init struct {
 	InstallNamespace  string
 	ReleaseVersion    string
 	DryRun            bool
+}
+
+type Upgrade struct {
+	ReleaseTag   string
+	DownloadPath string
 }
 
 type InstallationNamespace struct {
