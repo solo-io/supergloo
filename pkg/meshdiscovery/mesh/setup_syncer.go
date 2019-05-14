@@ -2,8 +2,8 @@ package mesh
 
 import (
 	"context"
-	"time"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	amconfig "github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/appmesh"
@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/mesh/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
@@ -49,16 +48,25 @@ func configurePlugins(cs *clientset.Clientset) MeshDiscoveryPlugins {
 }
 
 // start the mesh discovery event loop
-func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncers v1.DiscoverySyncer) error {
-	meshDiscoveryEmitter := v1.NewDiscoveryEmitter(c.Input.Pod, c.Input.ConfigMap, c.Input.Install)
-	meshDiscoveryEventLoop := v1.NewDiscoveryEventLoop(meshDiscoveryEmitter, syncers)
+func startEventLoop(ctx context.Context, errHandler func(err error), c *clientset.Clientset, syncer v1.DiscoverySyncer) error {
+	meshDiscoveryEmitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
+		wrapper.ClientWatchOpts{
+			BaseClient: c.Input.Pod.BaseClient(),
+		},
+		wrapper.ClientWatchOpts{
+			BaseClient: c.Input.Install.BaseClient(),
+		},
+		// only need to watch for the appmesh configmap
+		wrapper.ClientWatchOpts{
+			BaseClient:   c.Input.ConfigMap.BaseClient(),
+			Namespace:    appmesh.AwsConfigMapNamespace,
+			ResourceName: appmesh.AwsConfigMapName,
+		},
+	))
 
-	watchOpts := clients.WatchOpts{
-		Ctx:         ctx,
-		RefreshRate: time.Second * 1,
-	}
+	meshDiscoveryEventLoop := v1.NewDiscoverySimpleEventLoop(meshDiscoveryEmitter, syncer)
 
-	meshDiscoveryErrs, err := meshDiscoveryEventLoop.Run(nil, watchOpts)
+	meshDiscoveryErrs, err := meshDiscoveryEventLoop.Run(ctx)
 	if err != nil {
 		return err
 	}
