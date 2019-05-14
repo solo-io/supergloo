@@ -43,7 +43,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	logger.Infow("begin sync", fields...)
 	defer logger.Infow("end sync", fields...)
 
-	filteredSnap := s.filterOutNamespacesWithInstalls(snap)
+	filteredSnap := FilterOutNamespacesWithInstalls(snap)
 
 	var discoveredMeshes v1.MeshList
 	for _, meshDiscoveryPlugin := range s.plugins {
@@ -69,7 +69,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	return multierr.ErrorOrNil()
 }
 
-func (s *meshDiscoverySyncer) filterOutNamespacesWithInstalls(snap *v1.DiscoverySnapshot) *v1.DiscoverySnapshot {
+func FilterOutNamespacesWithInstalls(snap *v1.DiscoverySnapshot) *v1.DiscoverySnapshot {
 	var namespaces []string
 	for _, install := range snap.Installs {
 		if !cliutils.Contains(namespaces, install.Metadata.Namespace) {

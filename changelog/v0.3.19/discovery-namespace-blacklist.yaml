@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Discovery no longer considers resources that are in resources referenced in install CRDs.
+    issueLink: https://github.com/solo-io/supergloo/pull/440
