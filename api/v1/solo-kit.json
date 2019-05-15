@@ -39,6 +39,10 @@
       {
         "name": "Pod",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "Service",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       }
     ],
     "install.supergloo.solo.io": [

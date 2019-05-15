@@ -76,7 +76,13 @@ var _ = Describe("ConfigEventLoop", func() {
 		podClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPodClient(podClientFactory)
 		Expect(err).NotTo(HaveOccurred())
 
-		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient)
+		serviceClientFactory := &factory.MemoryResourceClientFactory{
+			Cache: memory.NewInMemoryResourceCache(),
+		}
+		serviceClient, err := github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewServiceClient(serviceClientFactory)
+		Expect(err).NotTo(HaveOccurred())
+
+		emitter = NewConfigEmitter(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, serviceClient)
 	})
 	It("runs sync function on a new snapshot", func() {
 		_, err = emitter.Mesh().Write(NewMesh(namespace, "jerry"), clients.WriteOpts{})
@@ -94,6 +100,8 @@ var _ = Describe("ConfigEventLoop", func() {
 		_, err = emitter.Upstream().Write(gloo_solo_io.NewUpstream(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		_, err = emitter.Pod().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewPod(namespace, "jerry"), clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+		_, err = emitter.Service().Write(github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.NewService(namespace, "jerry"), clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 		sync := &mockConfigSyncer{}
 		el := NewConfigEventLoop(emitter, sync)

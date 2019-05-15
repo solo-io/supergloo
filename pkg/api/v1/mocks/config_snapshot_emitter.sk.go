@@ -163,6 +163,20 @@ func (mr *MockConfigEmitterMockRecorder) Pod() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pod", reflect.TypeOf((*MockConfigEmitter)(nil).Pod))
 }
 
+// Service mocks base method
+func (m *MockConfigEmitter) Service() kubernetes.ServiceClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Service")
+	ret0, _ := ret[0].(kubernetes.ServiceClient)
+	return ret0
+}
+
+// Service indicates an expected call of Service
+func (mr *MockConfigEmitterMockRecorder) Service() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Service", reflect.TypeOf((*MockConfigEmitter)(nil).Service))
+}
+
 // Snapshots mocks base method
 func (m *MockConfigEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *v10.ConfigSnapshot, <-chan error, error) {
 	m.ctrl.T.Helper()

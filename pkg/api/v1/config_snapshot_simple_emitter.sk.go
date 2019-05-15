@@ -100,6 +100,8 @@ func (c *configSimpleEmitter) Snapshots(ctx context.Context) (<-chan *ConfigSnap
 						currentSnapshot.Upstreams = append(currentSnapshot.Upstreams, typed)
 					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.Pod:
 						currentSnapshot.Pods = append(currentSnapshot.Pods, typed)
+					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.Service:
+						currentSnapshot.Services = append(currentSnapshot.Services, typed)
 					default:
 						select {
 						case errs <- fmt.Errorf("ConfigSnapshotEmitter "+
