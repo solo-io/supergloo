@@ -152,6 +152,8 @@ func match(pod *corev1.Pod, selector *v1.PodSelector) (bool, error) {
 
 	case *v1.PodSelector_UpstreamSelector_:
 		return false, fmt.Errorf("upstream selectors are currently unsupported by pod auto-injection")
+	case *v1.PodSelector_ServiceSelector_:
+		return false, fmt.Errorf("service selectors are currently unsupported by pod auto-injection")
 
 	case *v1.PodSelector_NamespaceSelector_:
 		for _, ns := range s.NamespaceSelector.Namespaces {

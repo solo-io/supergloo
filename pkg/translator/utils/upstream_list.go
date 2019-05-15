@@ -145,6 +145,12 @@ func RuleAppliesToDestination(destinationHost string, destinationSelector *v1.Po
 				return true, nil
 			}
 		}
+	case *v1.PodSelector_ServiceSelector_:
+		for _, ref := range selector.ServiceSelector.Services {
+			if ServiceHost(ref.Name, ref.Namespace) == destinationHost {
+				return true, nil
+			}
+		}
 	case *v1.PodSelector_NamespaceSelector_:
 		for _, us := range upstreams {
 			hostForUpstream, err := GetHostForUpstream(us)
