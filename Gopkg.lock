@@ -1389,12 +1389,13 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:ccc7d5094c2df66bc068fa9dabb57ed0e2a6003d3575e1c935289889b6a5f853"
+  digest = "1:94cd7df16e0dc657e6c32e817f6ffb47b3a134eaad99f565af5d14283bdc686f"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
+    "api/external/kubernetes/service",
     "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
@@ -1442,8 +1443,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "997efe99e1726e3c6e92f8ad25736b10941bb2a6"
-  version = "v0.9.3"
+  revision = "8379e5a1a8e7efb7c5ade613f4af9c52070178a1"
+  version = "v0.9.4"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2504,10 +2505,7 @@
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
     "github.com/solo-io/gloo/projects/gloo/pkg/mocks",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/clidoc",
@@ -2533,6 +2531,7 @@
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
