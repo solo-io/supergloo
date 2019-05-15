@@ -186,3 +186,29 @@ func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods kubernetes.PodList)
 	}
 	return selectedPods
 }
+
+func ServicesForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allServices kubernetes.ServiceList) (kubernetes.ServiceList, error) {
+	upstreamsForSelector, err := UpstreamsForSelector(selector, upstreams)
+	if err != nil {
+		return nil, err
+	}
+	return ServicesForUpstreams(upstreamsForSelector, allServices), nil
+}
+
+func ServicesForUpstreams(upstreams gloov1.UpstreamList, allServices kubernetes.ServiceList) kubernetes.ServiceList {
+	var selectedServices kubernetes.ServiceList
+selectService:
+	for _, svc := range allServices {
+		for _, us := range upstreams {
+			kubeSpec, err := GetUpstreamKubeSpec(us)
+			if err != nil {
+				continue
+			}
+			if svc.Namespace == kubeSpec.ServiceNamespace && svc.Name == kubeSpec.ServiceName {
+				selectedServices = append(selectedServices, svc)
+				continue selectService
+			}
+		}
+	}
+	return selectedServices
+}
