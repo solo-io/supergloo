@@ -10,10 +10,8 @@ import (
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
-	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
-	"github.com/solo-io/supergloo/pkg/translator/utils"
-
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -24,50 +22,6 @@ import (
 
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
-
-var _ = Describe("appliesToDestination", func() {
-	Context("upstream selector match", func() {
-		It("returns true", func() {
-			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
-				SelectorType: &v1.PodSelector_UpstreamSelector_{
-					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
-						Upstreams: []core.ResourceRef{
-							{Name: "default-details-v1-9080", Namespace: "default"},
-						},
-					},
-				},
-			}, inputs.BookInfoUpstreams("default"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(applies).To(BeTrue())
-		})
-	})
-	Context("namespace selector match", func() {
-		It("returns true", func() {
-			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
-				SelectorType: &v1.PodSelector_NamespaceSelector_{
-					NamespaceSelector: &v1.PodSelector_NamespaceSelector{
-						Namespaces: []string{"default"},
-					},
-				},
-			}, inputs.BookInfoUpstreams("default"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(applies).To(BeTrue())
-		})
-	})
-	Context("label selector match", func() {
-		It("returns true", func() {
-			applies, err := utils.RuleAppliesToDestination("details.default.svc.cluster.local", &v1.PodSelector{
-				SelectorType: &v1.PodSelector_LabelSelector_{
-					LabelSelector: &v1.PodSelector_LabelSelector{
-						LabelsToMatch: map[string]string{"version": "v1", "app": "details"},
-					},
-				},
-			}, inputs.BookInfoUpstreams("default"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(applies).To(BeTrue())
-		})
-	})
-})
 
 var _ = Describe("makeDestinationRule", func() {
 	Context("input mesh has encryption enabled", func() {
@@ -188,44 +142,6 @@ func (t *testRoutingPlugin) ProcessRoute(params plugins.Params, in v1.RoutingRul
 	t.collectedRoutes = append(t.collectedRoutes, out)
 	return nil
 }
-
-var _ = Describe("createRoute", func() {
-	Context("with a route plugin", func() {
-		It("creates an http route with the corresponding destination, and calls the plugin for each route", func() {
-			resourceErrs := make(reporter.ResourceErrors)
-			plug := testRoutingPlugin{}
-			t := NewTranslator([]plugins.Plugin{&plug}).(*translator)
-			upstreams := inputs.BookInfoUpstreams("default")
-			route := t.createRoute(
-				plugins.Params{Ctx: context.TODO(), Upstreams: upstreams},
-				"details.default.svc.cluster.local",
-				inputs.BookInfoRoutingRules("namespace-where-rules-crds-live", nil),
-				createIstioMatcher(
-					[]map[string]string{
-						{"app": "details"},
-						{"app": "reviews"},
-					}, 1234, []*gloov1.Matcher{
-						{
-							PathSpecifier: &gloov1.Matcher_Exact{
-								Exact: "hi",
-							},
-						},
-						{
-							PathSpecifier: &gloov1.Matcher_Exact{
-								Exact: "bye",
-							},
-						},
-					}),
-				upstreams,
-				resourceErrs,
-			)
-			Expect(route.Route).To(HaveLen(1))
-			Expect(route.Route[0].Destination.Host).To(Equal("details.default.svc.cluster.local"))
-			Expect(plug.collectedRoutes).To(HaveLen(1))
-			Expect(plug.collectedRoutes[0]).To(Equal(route))
-		})
-	})
-})
 
 type destinationRule struct {
 	host    string
