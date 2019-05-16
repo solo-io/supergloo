@@ -66,11 +66,16 @@ func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShif
 	}
 
 	var backends []*v1alpha1.TrafficSplitBackend
-	for _, dest := range spec.Destinations.Destinations {
-
+	remainingWeight := uint32(1000)
+	for i, dest := range spec.Destinations.Destinations {
+		weightMilli := dest.Weight * 1000 / totalWeights
+		remainingWeight -= weightMilli
+		if i == len(spec.Destinations.Destinations)-1 {
+			weightMilli += remainingWeight // ensure we always get 1000 total
+		}
 		backends = append(backends, &v1alpha1.TrafficSplitBackend{
 			Service: utils.ServiceHost(dest.Destination.Upstream.Name, dest.Destination.Upstream.Namespace),
-			Weight:  fmt.Sprintf("%vm", dest.Weight*100/totalWeights),
+			Weight:  fmt.Sprintf("%vm", weightMilli),
 		})
 	}
 	return &v1alpha1.TrafficSplitSpec{
