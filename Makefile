@@ -100,7 +100,7 @@ $(OUTPUT_DIR)/.generated-code:
 clean:
 	rm -rf _output
 	rm -fr site
-
+	git clean -xdf install
 
 #----------------------------------------------------------------------------------
 # SuperGloo
