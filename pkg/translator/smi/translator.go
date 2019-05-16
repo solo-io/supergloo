@@ -2,8 +2,10 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
+	"fmt"
 	"sort"
+
+	"github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
@@ -139,7 +141,7 @@ func (t *translator) translateMesh(
 	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 
-		routingConfig := 
+	routingConfig := createRoutingConfig()
 
 	securityConfig := createSecurityConfig(
 		input.rules.Security,
@@ -150,9 +152,45 @@ func (t *translator) translateMesh(
 	)
 
 	meshConfig := &MeshConfig{
+		RoutingConfig:  &routingConfig,
 		SecurityConfig: &securityConfig,
 	}
 	meshConfig.Sort()
 
 	return meshConfig, nil
+}
+
+func createRoutingConfig(rules v1.RoutingRuleList) RoutingConfig {
+	for _, rule := range rules {
+		if rule.Spec == nil {
+			continue
+		}
+		switch ruleType := rule.Spec.RuleType.(type) {
+		case *v1.RoutingRuleSpec_TrafficShifting:
+			if ruleType.TrafficShifting == nil || ruleType.TrafficShifting.Destinations == nil {
+
+			}
+			ruleType.TrafficShifting
+		}
+	}
+}
+
+func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShifting) (*v1alpha1.TrafficSplitSpec, error) {
+	var totalWeights uint32
+	for _, dest := range spec.Destinations.Destinations {
+		totalWeights += dest.Weight
+	}
+
+	var backends []*v1alpha1.TrafficSplitBackend
+	for _, dest := range spec.Destinations.Destinations {
+
+		backends = append(backends, &v1alpha1.TrafficSplitBackend{
+			Service: utils.ServiceHost(dest.Destination.Upstream.Name, dest.Destination.Upstream.Namespace),
+			Weight:  fmt.Sprintf("%vm", dest.Weight*100/totalWeights),
+		})
+	}
+	return &v1alpha1.TrafficSplitSpec{
+		Service:  originalDestination,
+		Backends: backends,
+	}
 }
