@@ -2,9 +2,6 @@ package smi
 
 import (
 	"context"
-	"sort"
-
-	"github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
@@ -28,28 +25,9 @@ type MeshConfig struct {
 	SecurityConfig *SecurityConfig
 }
 
-type RoutingConfig struct {
-	TrafficSplits v1alpha1.TrafficSplitList
-}
-
 func (c *MeshConfig) Sort() {
 	c.RoutingConfig.Sort()
 	c.SecurityConfig.Sort()
-}
-
-func (c *RoutingConfig) Sort() {
-	sort.SliceStable(c.TrafficSplits, func(i, j int) bool {
-		return c.TrafficSplits[i].Metadata.Less(c.TrafficSplits[j].Metadata)
-	})
-}
-
-func (c *SecurityConfig) Sort() {
-	sort.SliceStable(c.TrafficTargets, func(i, j int) bool {
-		return c.TrafficTargets[i].Metadata.Less(c.TrafficTargets[j].Metadata)
-	})
-	sort.SliceStable(c.HTTPRouteGroups, func(i, j int) bool {
-		return c.HTTPRouteGroups[i].Metadata.Less(c.HTTPRouteGroups[j].Metadata)
-	})
 }
 
 // first create all destination rules for all subsets of each upstream

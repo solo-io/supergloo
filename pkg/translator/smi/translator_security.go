@@ -1,6 +1,8 @@
 package smi
 
 import (
+	"sort"
+
 	specv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -17,6 +19,14 @@ type SecurityConfig struct {
 	HTTPRouteGroups specv1alpha1.HTTPRouteGroupList
 }
 
+func (c *SecurityConfig) Sort() {
+	sort.SliceStable(c.TrafficTargets, func(i, j int) bool {
+		return c.TrafficTargets[i].Metadata.Less(c.TrafficTargets[j].Metadata)
+	})
+	sort.SliceStable(c.HTTPRouteGroups, func(i, j int) bool {
+		return c.HTTPRouteGroups[i].Metadata.Less(c.HTTPRouteGroups[j].Metadata)
+	})
+}
 func createSecurityConfig(rules v1.SecurityRuleList,
 	upstreams gloov1.UpstreamList,
 	pods kubernetes.PodList,

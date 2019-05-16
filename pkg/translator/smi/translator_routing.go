@@ -2,6 +2,7 @@ package smi
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
@@ -15,6 +16,16 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
+
+type RoutingConfig struct {
+	TrafficSplits v1alpha1.TrafficSplitList
+}
+
+func (c *RoutingConfig) Sort() {
+	sort.SliceStable(c.TrafficSplits, func(i, j int) bool {
+		return c.TrafficSplits[i].Metadata.Less(c.TrafficSplits[j].Metadata)
+	})
+}
 
 func createRoutingConfig(rules v1.RoutingRuleList, upstreams gloov1.UpstreamList, services kubernetes.ServiceList, resourceErrs reporter.ResourceErrors) RoutingConfig {
 	var trafficSplits v1alpha1.TrafficSplitList
