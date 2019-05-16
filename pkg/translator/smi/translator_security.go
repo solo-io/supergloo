@@ -1,4 +1,4 @@
-package istio
+package smi
 
 import (
 	specv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
