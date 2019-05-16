@@ -55,5 +55,8 @@ var _ = Describe("createRoutingConfig", func() {
 				},
 			},
 		}))
+		s, err := poo(v1alpha1.TrafficSplitCrd, rc.TrafficSplits[0])
+		Expect(err).NotTo(HaveOccurred())
+		Expect(s).To(Equal(""))
 	})
 })

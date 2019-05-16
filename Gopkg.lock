@@ -243,6 +243,21 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:3fb3d1ff4d58d987c0e197263be1f87be34472d3cbdb6dbd0dad2e54763224d8"
+  name = "github.com/deislabs/smi-sdk-go"
+  packages = [
+    "pkg/apis/access",
+    "pkg/apis/access/v1alpha1",
+    "pkg/apis/specs",
+    "pkg/apis/specs/v1alpha1",
+    "pkg/apis/split",
+    "pkg/apis/split/v1alpha1",
+  ]
+  pruneopts = "UT"
+  revision = "8267b94f055287602a8c978b975c4d9e31c115e6"
+
+[[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
@@ -2467,6 +2482,9 @@
     "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/appmesh",
+    "github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1",
+    "github.com/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1",
+    "github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1",
     "github.com/evanphx/json-patch",
     "github.com/ghodss/yaml",
     "github.com/gogo/protobuf/gogoproto",

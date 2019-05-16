@@ -1,5 +1,13 @@
 {
-    "name": "smi.specs.v1alpha1",
+    "name": "specs.smi-spec.io",
     "version": "v1alpha1",
-    "crd_group_override": "specs.smi-spec.io"
+    "go_package": "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1",
+    "custom_resources": [
+        {
+            "package": "github.com/solo-io/supergloo/api/external/smi/specs/v1alpha1",
+            "type": "HTTPRouteGroup",
+            "plural_name": "httproutegroups",
+            "short_name": "hrg"
+        }
+    ]
 }
