@@ -5,20 +5,30 @@ import (
 	"sync"
 	"time"
 
-	linkerdclient "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
-	linkerdinformers "github.com/linkerd/linkerd2/controller/gen/client/informers/externalversions"
-	"github.com/linkerd/linkerd2/controller/gen/client/listers/serviceprofile/v1alpha1"
+	accessclient "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned"
+	accessinformer "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/informers/externalversions"
+	accessv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/listers/access/v1alpha1"
+	specsclient "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/clientset/versioned"
+	specsinformer "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/informers/externalversions"
+	specsv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/listers/specs/v1alpha1"
+	splitclient "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
+	splitinformer "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/informers/externalversions"
+	splitv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/listers/split/v1alpha1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller"
 )
 
 type Cache interface {
-	ServiceProfileLister() v1alpha1.ServiceProfileLister
+	TrafficTargetLister() accessv1alpha1.TrafficTargetLister
+	HTTPRouteGroupLister() specsv1alpha1.HTTPRouteGroupLister
+	TrafficSplitLister() splitv1alpha1.TrafficSplitLister
 	Subscribe() <-chan struct{}
 	Unsubscribe(<-chan struct{})
 }
 
 type linkerdCache struct {
-	serviceProfiles v1alpha1.ServiceProfileLister
+	TrafficTargets  accessv1alpha1.TrafficTargetLister
+	HTTPRouteGroups specsv1alpha1.HTTPRouteGroupLister
+	TrafficSplits   splitv1alpha1.TrafficSplitLister
 
 	cacheUpdatedWatchers      []chan struct{}
 	cacheUpdatedWatchersMutex sync.Mutex
@@ -26,19 +36,32 @@ type linkerdCache struct {
 
 // This context should live as long as the cache is desired. i.e. if the cache is shared
 // across clients, it should get a context that has a longer lifetime than the clients themselves
-func NewLinkerdCache(ctx context.Context, linkerdClient linkerdclient.Interface) (*linkerdCache, error) {
+func NewSMICache(ctx context.Context,
+	accessClient accessclient.Interface,
+	specsClient specsclient.Interface,
+	splitClient splitclient.Interface) (*linkerdCache, error) {
 	resyncDuration := 12 * time.Hour
-	sharedInformerFactory := linkerdinformers.NewSharedInformerFactory(linkerdClient, resyncDuration)
 
-	serviceProfiles := sharedInformerFactory.Linkerd().V1alpha1().ServiceProfiles()
+	accessInformerFactory := accessinformer.NewSharedInformerFactory(accessClient, resyncDuration)
+	specsInformerFactory := specsinformer.NewSharedInformerFactory(specsClient, resyncDuration)
+	splitInformerFactory := splitinformer.NewSharedInformerFactory(splitClient, resyncDuration)
+
+	trafficTargets := accessInformerFactory.Access().V1alpha1().TrafficTargets()
+	httpRouteGroups := specsInformerFactory.Specs().V1alpha1().HTTPRouteGroups()
+	trafficSplits := splitInformerFactory.Smispec().V1alpha1().TrafficSplits()
 
 	k := &linkerdCache{
-		serviceProfiles: serviceProfiles.Lister(),
+		TrafficTargets:  trafficTargets.Lister(),
+		HTTPRouteGroups: httpRouteGroups.Lister(),
+		TrafficSplits:   trafficSplits.Lister(),
 	}
 
 	kubeController := controller.NewController("linkerd-resources-cache",
 		controller.NewLockingSyncHandler(k.updatedOccured),
-		serviceProfiles.Informer())
+		trafficTargets.Informer(),
+		httpRouteGroups.Informer(),
+		trafficSplits.Informer(),
+	)
 
 	stop := ctx.Done()
 	err := kubeController.Run(2, stop)
@@ -49,8 +72,16 @@ func NewLinkerdCache(ctx context.Context, linkerdClient linkerdclient.Interface)
 	return k, nil
 }
 
-func (k *linkerdCache) ServiceProfileLister() v1alpha1.ServiceProfileLister {
-	return k.serviceProfiles
+func (k *linkerdCache) TrafficTargetLister() accessv1alpha1.TrafficTargetLister {
+	return k.TrafficTargets
+}
+
+func (k *linkerdCache) HTTPRouteGroupLister() specsv1alpha1.HTTPRouteGroupLister {
+	return k.HTTPRouteGroups
+}
+
+func (k *linkerdCache) TrafficSplitLister() splitv1alpha1.TrafficSplitLister {
+	return k.TrafficSplits
 }
 
 func (k *linkerdCache) Subscribe() <-chan struct{} {

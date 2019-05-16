@@ -1,4 +1,4 @@
-package linkerd
+package access
 
 import (
 	"reflect"

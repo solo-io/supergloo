@@ -4,7 +4,7 @@
     "go_package": "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1",
     "custom_resources": [
         {
-            "package": "github.com/solo-io/supergloo/api/external/smi/access/v1alpha1",
+            "package": "github.com/solo-io/supergloo/api/external/smi/access",
             "type": "TrafficTarget",
             "plural_name": "traffictargets",
             "short_name": "tt"

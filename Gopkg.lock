@@ -244,7 +244,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3fb3d1ff4d58d987c0e197263be1f87be34472d3cbdb6dbd0dad2e54763224d8"
+  digest = "1:dca32217cf3bcc2026154b73cc74dd0923bd05ed5c823e97fea103879cdcbe3e"
   name = "github.com/deislabs/smi-sdk-go"
   packages = [
     "pkg/apis/access",
@@ -253,6 +253,30 @@
     "pkg/apis/specs/v1alpha1",
     "pkg/apis/split",
     "pkg/apis/split/v1alpha1",
+    "pkg/gen/client/access/clientset/versioned",
+    "pkg/gen/client/access/clientset/versioned/scheme",
+    "pkg/gen/client/access/clientset/versioned/typed/access/v1alpha1",
+    "pkg/gen/client/access/informers/externalversions",
+    "pkg/gen/client/access/informers/externalversions/access",
+    "pkg/gen/client/access/informers/externalversions/access/v1alpha1",
+    "pkg/gen/client/access/informers/externalversions/internalinterfaces",
+    "pkg/gen/client/access/listers/access/v1alpha1",
+    "pkg/gen/client/specs/clientset/versioned",
+    "pkg/gen/client/specs/clientset/versioned/scheme",
+    "pkg/gen/client/specs/clientset/versioned/typed/specs/v1alpha1",
+    "pkg/gen/client/specs/informers/externalversions",
+    "pkg/gen/client/specs/informers/externalversions/internalinterfaces",
+    "pkg/gen/client/specs/informers/externalversions/specs",
+    "pkg/gen/client/specs/informers/externalversions/specs/v1alpha1",
+    "pkg/gen/client/specs/listers/specs/v1alpha1",
+    "pkg/gen/client/split/clientset/versioned",
+    "pkg/gen/client/split/clientset/versioned/scheme",
+    "pkg/gen/client/split/clientset/versioned/typed/split/v1alpha1",
+    "pkg/gen/client/split/informers/externalversions",
+    "pkg/gen/client/split/informers/externalversions/internalinterfaces",
+    "pkg/gen/client/split/informers/externalversions/split",
+    "pkg/gen/client/split/informers/externalversions/split/v1alpha1",
+    "pkg/gen/client/split/listers/split/v1alpha1",
   ]
   pruneopts = "UT"
   revision = "8267b94f055287602a8c978b975c4d9e31c115e6"
@@ -2485,6 +2509,15 @@
     "github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1",
     "github.com/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1",
     "github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/informers/externalversions",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/access/listers/access/v1alpha1",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/clientset/versioned",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/informers/externalversions",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/specs/listers/specs/v1alpha1",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/informers/externalversions",
+    "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/listers/split/v1alpha1",
     "github.com/evanphx/json-patch",
     "github.com/ghodss/yaml",
     "github.com/gogo/protobuf/gogoproto",

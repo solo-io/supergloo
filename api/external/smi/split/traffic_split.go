@@ -1,4 +1,4 @@
-package linkerd
+package split
 
 import (
 	"reflect"
