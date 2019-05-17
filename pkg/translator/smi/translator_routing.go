@@ -1,12 +1,14 @@
 package smi
 
 import (
-	"fmt"
 	"sort"
 
+	splitv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-
+	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
+	"github.com/solo-io/supergloo/api/external/smi/split"
 	"github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
@@ -23,7 +25,7 @@ type RoutingConfig struct {
 
 func (c *RoutingConfig) Sort() {
 	sort.SliceStable(c.TrafficSplits, func(i, j int) bool {
-		return c.TrafficSplits[i].Metadata.Less(c.TrafficSplits[j].Metadata)
+		return c.TrafficSplits[i].GetMetadata().Less(c.TrafficSplits[j].GetMetadata())
 	})
 }
 
@@ -63,24 +65,26 @@ func trafficSplitsForRule(rule *v1.RoutingRule, upstreams gloov1.UpstreamList, s
 				return nil, err
 			}
 			trafficSplits = append(trafficSplits, &v1alpha1.TrafficSplit{
-				Metadata: core.Metadata{
-					Name:      rule.Metadata.Name + "-" + destinationHost,
-					Namespace: rule.Metadata.Namespace,
+				TrafficSplit: split.TrafficSplit{
+					ObjectMeta: kubeutils.ToKubeMeta(core.Metadata{
+						Name:      rule.Metadata.Name + "-" + destinationHost,
+						Namespace: rule.Metadata.Namespace,
+					}),
+					Spec: *spec,
 				},
-				Spec: spec,
 			})
 		}
 	}
 	return trafficSplits, nil
 }
 
-func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShifting, upstreams gloov1.UpstreamList) (*v1alpha1.TrafficSplitSpec, error) {
+func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShifting, upstreams gloov1.UpstreamList) (*splitv1alpha1.TrafficSplitSpec, error) {
 	var totalWeights uint32
 	for _, dest := range spec.Destinations.Destinations {
 		totalWeights += dest.Weight
 	}
 
-	var backends []*v1alpha1.TrafficSplitBackend
+	var backends []splitv1alpha1.TrafficSplitBackend
 	remainingWeight := uint32(1000)
 	for i, dest := range spec.Destinations.Destinations {
 		weightMilli := dest.Weight * 1000 / totalWeights
@@ -96,12 +100,12 @@ func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShif
 		if err != nil {
 			return nil, err
 		}
-		backends = append(backends, &v1alpha1.TrafficSplitBackend{
+		backends = append(backends, splitv1alpha1.TrafficSplitBackend{
 			Service: utils.ServiceHost(kubeSpec.ServiceName, kubeSpec.ServiceNamespace),
-			Weight:  fmt.Sprintf("%vm", weightMilli),
+			Weight:  *resource.NewMilliQuantity(int64(weightMilli), resource.DecimalSI),
 		})
 	}
-	return &v1alpha1.TrafficSplitSpec{
+	return &splitv1alpha1.TrafficSplitSpec{
 		Service:  originalDestination,
 		Backends: backends,
 	}, nil

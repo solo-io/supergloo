@@ -3,28 +3,32 @@ package smi
 import (
 	"sort"
 
-	specv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
-
+	"github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
+	specv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
+	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
+	"github.com/solo-io/supergloo/api/external/smi/access"
+	"github.com/solo-io/supergloo/api/external/smi/specs"
+	sgaccess "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
+	sgspec "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
 type SecurityConfig struct {
-	TrafficTargets  v1alpha1.TrafficTargetList
-	HTTPRouteGroups specv1alpha1.HTTPRouteGroupList
+	TrafficTargets  sgaccess.TrafficTargetList
+	HTTPRouteGroups sgspec.HTTPRouteGroupList
 }
 
 func (c *SecurityConfig) Sort() {
 	sort.SliceStable(c.TrafficTargets, func(i, j int) bool {
-		return c.TrafficTargets[i].Metadata.Less(c.TrafficTargets[j].Metadata)
+		return c.TrafficTargets[i].GetMetadata().Less(c.TrafficTargets[j].GetMetadata())
 	})
 	sort.SliceStable(c.HTTPRouteGroups, func(i, j int) bool {
-		return c.HTTPRouteGroups[i].Metadata.Less(c.HTTPRouteGroups[j].Metadata)
+		return c.HTTPRouteGroups[i].GetMetadata().Less(c.HTTPRouteGroups[j].GetMetadata())
 	})
 }
 func createSecurityConfig(rules v1.SecurityRuleList,
@@ -53,12 +57,12 @@ func createSecurityConfig(rules v1.SecurityRuleList,
 const serviceAccountKind = "ServiceAccount"
 const httpRouteGroupKind = "HTTPRouteGroup"
 
-func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.UpstreamList, services kubernetes.ServiceList, pods kubernetes.PodList) (v1alpha1.TrafficTargetList, *specv1alpha1.HTTPRouteGroup, error) {
+func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.UpstreamList, services kubernetes.ServiceList, pods kubernetes.PodList) (sgaccess.TrafficTargetList, *sgspec.HTTPRouteGroup, error) {
 	sourcePods, err := utils.PodsForSelector(rule.SourceSelector, upstreams, pods)
 	if err != nil {
 		return nil, nil, err
 	}
-	var sourceIdentites []*v1alpha1.IdentityBindingSubject
+	var sourceIdentites []v1alpha1.IdentityBindingSubject
 	for _, sourcePod := range sourcePods {
 		serviceAcct := sourcePod.Spec.ServiceAccountName
 
@@ -72,7 +76,7 @@ func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.Upstre
 		if alreadyAdded {
 			continue
 		}
-		sourceIdentites = append(sourceIdentites, &v1alpha1.IdentityBindingSubject{
+		sourceIdentites = append(sourceIdentites, v1alpha1.IdentityBindingSubject{
 			Kind:      serviceAccountKind,
 			Name:      serviceAcct,
 			Namespace: sourcePod.Namespace,
@@ -87,7 +91,7 @@ func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.Upstre
 	if err != nil {
 		return nil, nil, err
 	}
-	var destIdentites []*v1alpha1.IdentityBindingSubject
+	var destIdentites []v1alpha1.IdentityBindingSubject
 	for _, destPod := range destPods {
 		serviceAcct := destPod.Spec.ServiceAccountName
 		for _, destSvc := range destServices {
@@ -104,7 +108,7 @@ func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.Upstre
 				if alreadyAdded {
 					continue
 				}
-				destIdentites = append(destIdentites, &v1alpha1.IdentityBindingSubject{
+				destIdentites = append(destIdentites, v1alpha1.IdentityBindingSubject{
 					Kind:      serviceAccountKind,
 					Name:      serviceAcct,
 					Namespace: destPod.Namespace,
@@ -114,10 +118,10 @@ func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.Upstre
 		}
 	}
 
-	var allowedMatches []*specv1alpha1.HTTPMatch
+	var allowedMatches []specv1alpha1.HTTPMatch
 	var matchNames []string
 	for _, path := range rule.AllowedPaths {
-		allowedMatches = append(allowedMatches, &specv1alpha1.HTTPMatch{
+		allowedMatches = append(allowedMatches, specv1alpha1.HTTPMatch{
 			Name:      path,
 			Methods:   rule.AllowedMethods,
 			PathRegex: path,
@@ -126,31 +130,35 @@ func createTrafficTargetsFromRule(rule *v1.SecurityRule, upstreams gloov1.Upstre
 	}
 
 	routeGroupName := rule.Metadata.Name
-	targetSpec := []*v1alpha1.TrafficTargetSpec{{
+	targetSpec := []v1alpha1.TrafficTargetSpec{{
 		Name:    routeGroupName,
 		Kind:    httpRouteGroupKind,
 		Matches: matchNames,
 	}}
 
-	var trafficTargets v1alpha1.TrafficTargetList
+	var trafficTargets sgaccess.TrafficTargetList
 	for _, destIdentiy := range destIdentites {
-		trafficTargets = append(trafficTargets, &v1alpha1.TrafficTarget{
-			Metadata: core.Metadata{
-				Namespace: rule.Metadata.Namespace,
-				Name:      destIdentiy.Name,
+		trafficTargets = append(trafficTargets, &sgaccess.TrafficTarget{
+			TrafficTarget: access.TrafficTarget{
+				ObjectMeta: kubeutils.ToKubeMeta(core.Metadata{
+					Namespace: rule.Metadata.Namespace,
+					Name:      destIdentiy.Name,
+				}),
+				Destination: destIdentiy,
+				Sources:     sourceIdentites,
+				Specs:       targetSpec,
 			},
-			Destination: destIdentiy,
-			Sources:     sourceIdentites,
-			Specs:       targetSpec,
 		})
 	}
 
-	routeGroup := &specv1alpha1.HTTPRouteGroup{
-		Metadata: core.Metadata{
-			Namespace: rule.Metadata.Namespace,
-			Name:      routeGroupName,
+	routeGroup := &sgspec.HTTPRouteGroup{
+		HTTPRouteGroup: specs.HTTPRouteGroup{
+			ObjectMeta: kubeutils.ToKubeMeta(core.Metadata{
+				Namespace: rule.Metadata.Namespace,
+				Name:      routeGroupName,
+			}),
+			Matches: allowedMatches,
 		},
-		Matches: allowedMatches,
 	}
 
 	return trafficTargets, routeGroup, nil
