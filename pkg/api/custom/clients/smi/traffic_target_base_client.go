@@ -1,4 +1,4 @@
-package linkerd
+package smi
 
 import (
 	"sort"

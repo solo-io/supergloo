@@ -1,4 +1,4 @@
-package linkerd
+package smi
 
 import (
 	"context"
@@ -25,7 +25,7 @@ type Cache interface {
 	Unsubscribe(<-chan struct{})
 }
 
-type linkerdCache struct {
+type smiCache struct {
 	TrafficTargets  accessv1alpha1.TrafficTargetLister
 	HTTPRouteGroups specsv1alpha1.HTTPRouteGroupLister
 	TrafficSplits   splitv1alpha1.TrafficSplitLister
@@ -39,7 +39,7 @@ type linkerdCache struct {
 func NewSMICache(ctx context.Context,
 	accessClient accessclient.Interface,
 	specsClient specsclient.Interface,
-	splitClient splitclient.Interface) (*linkerdCache, error) {
+	splitClient splitclient.Interface) (*smiCache, error) {
 	resyncDuration := 12 * time.Hour
 
 	accessInformerFactory := accessinformer.NewSharedInformerFactory(accessClient, resyncDuration)
@@ -50,7 +50,7 @@ func NewSMICache(ctx context.Context,
 	httpRouteGroups := specsInformerFactory.Specs().V1alpha1().HTTPRouteGroups()
 	trafficSplits := splitInformerFactory.Smispec().V1alpha1().TrafficSplits()
 
-	k := &linkerdCache{
+	k := &smiCache{
 		TrafficTargets:  trafficTargets.Lister(),
 		HTTPRouteGroups: httpRouteGroups.Lister(),
 		TrafficSplits:   trafficSplits.Lister(),
@@ -72,19 +72,19 @@ func NewSMICache(ctx context.Context,
 	return k, nil
 }
 
-func (k *linkerdCache) TrafficTargetLister() accessv1alpha1.TrafficTargetLister {
+func (k *smiCache) TrafficTargetLister() accessv1alpha1.TrafficTargetLister {
 	return k.TrafficTargets
 }
 
-func (k *linkerdCache) HTTPRouteGroupLister() specsv1alpha1.HTTPRouteGroupLister {
+func (k *smiCache) HTTPRouteGroupLister() specsv1alpha1.HTTPRouteGroupLister {
 	return k.HTTPRouteGroups
 }
 
-func (k *linkerdCache) TrafficSplitLister() splitv1alpha1.TrafficSplitLister {
+func (k *smiCache) TrafficSplitLister() splitv1alpha1.TrafficSplitLister {
 	return k.TrafficSplits
 }
 
-func (k *linkerdCache) Subscribe() <-chan struct{} {
+func (k *smiCache) Subscribe() <-chan struct{} {
 	k.cacheUpdatedWatchersMutex.Lock()
 	defer k.cacheUpdatedWatchersMutex.Unlock()
 	c := make(chan struct{}, 10)
@@ -92,7 +92,7 @@ func (k *linkerdCache) Subscribe() <-chan struct{} {
 	return c
 }
 
-func (k *linkerdCache) Unsubscribe(c <-chan struct{}) {
+func (k *smiCache) Unsubscribe(c <-chan struct{}) {
 	k.cacheUpdatedWatchersMutex.Lock()
 	defer k.cacheUpdatedWatchersMutex.Unlock()
 	for i, cacheUpdated := range k.cacheUpdatedWatchers {
@@ -103,7 +103,7 @@ func (k *linkerdCache) Unsubscribe(c <-chan struct{}) {
 	}
 }
 
-func (k *linkerdCache) updatedOccured() {
+func (k *smiCache) updatedOccured() {
 	k.cacheUpdatedWatchersMutex.Lock()
 	defer k.cacheUpdatedWatchersMutex.Unlock()
 	for _, cacheUpdated := range k.cacheUpdatedWatchers {
