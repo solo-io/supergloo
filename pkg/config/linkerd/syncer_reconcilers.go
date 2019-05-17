@@ -3,13 +3,13 @@ package linkerd
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/config/utils"
+
 	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/translator/linkerd"
 )
 
@@ -35,7 +35,7 @@ func (s *linkerdReconcilers) ReconcileAll(ctx context.Context, config *linkerd.M
 	logger := contextutils.LoggerFrom(ctx)
 
 	logger.Infof("ServiceProfiles: %v", config.ServiceProfiles.Names())
-	s.setLabels(config.ServiceProfiles.AsResources()...)
+	utils.SetLabels(s.ownerLabels, config.ServiceProfiles.AsResources()...)
 	if err := s.serviceProfileReconciler.Reconcile(
 		"",
 		config.ServiceProfiles,
@@ -49,18 +49,4 @@ func (s *linkerdReconcilers) ReconcileAll(ctx context.Context, config *linkerd.M
 	}
 
 	return nil
-}
-
-// set labels on all resources, required for our reconciler
-func (s *linkerdReconcilers) setLabels(rcs ...resources.Resource) {
-	for _, res := range rcs {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			if meta.Labels == nil {
-				meta.Labels = make(map[string]string)
-			}
-			for k, v := range s.ownerLabels {
-				meta.Labels[k] = v
-			}
-		})
-	}
 }
