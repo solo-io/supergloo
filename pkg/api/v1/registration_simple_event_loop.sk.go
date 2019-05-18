@@ -98,8 +98,10 @@ func (el *registrationSimpleEventLoop) Run(ctx context.Context) (<-chan error, e
 					}
 
 					syncerCancels[syncer] = canc
-					previousSnapshot = snapshot
 				}
+
+				previousSnapshot = snapshot
+
 			case <-ctx.Done():
 				return
 			}

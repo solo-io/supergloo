@@ -20,6 +20,10 @@ spec:
         - image: "{{ .Values.supergloo.deployment.image.repository }}:{{ .Values.supergloo.deployment.image.tag }}"
           imagePullPolicy:  {{ .Values.supergloo.deployment.image.pullPolicy }}
           name: supergloo
+          {{- if .Values.supergloo.deployment.disablePrometheusBouncer }}
+          args:
+            - 'disable-prometheus-bouncer=true'
+          {{- end}}
           env:
             - name: POD_NAMESPACE
               valueFrom:

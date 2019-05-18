@@ -18,7 +18,8 @@ type Rbac struct {
 // Supergloo
 
 type Supergloo struct {
-	Deployment *StandardDeployment `json:"deployment,omitempty"`
+	Deployment               *StandardDeployment `json:"deployment,omitempty"`
+	DisablePrometheusBouncer bool                `json:"disablePrometheusBouncer,omitempty"`
 }
 
 type Discovery struct {

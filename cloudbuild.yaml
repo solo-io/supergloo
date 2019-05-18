@@ -152,7 +152,7 @@ steps:
       - eks
       - --region=us-east-1
       - update-kubeconfig
-      - --name=supergloo-test
+      - --name=supergloo-test-1
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['docker', 'helm-chart', 'cli']
     id: 'aws-kubeconfig-setup'

@@ -21,20 +21,8 @@ import (
 
 const (
 	namespaceInjectionLabel = "istio-injection"
-	enabled                 = "enabled"
-	disabled                = "disabled"
-
-	podInjectionAnnotation = "sidecar.istio.io/inject"
-	podAnnotationEnabled   = "true"
-	podAnnotationDisabled  = "false"
 
 	proxyContainer = "istio-proxy"
-)
-
-var (
-	injectedSelector = map[string]string{
-		namespaceInjectionLabel: enabled,
-	}
 )
 
 func StartIstioDiscoveryConfigLoop(ctx context.Context, cs *clientset.Clientset, pubSub *registration.PubSub) {
@@ -115,7 +103,17 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 		Ctx:      ctx,
 		Selector: istio.DiscoverySelector,
 	}
-	return meshReconciler.Reconcile("", updatedMeshes, nil, listOpts)
+	return meshReconciler.Reconcile("", updatedMeshes, updateMesh, listOpts)
+}
+
+func updateMesh(original, desired *v1.Mesh) (b bool, e error) {
+	if original.DiscoveryMetadata.Equal(desired.DiscoveryMetadata) {
+		return false, nil
+	}
+	desired.MtlsConfig = original.MtlsConfig
+	desired.MeshType = original.MeshType
+	desired.MonitoringConfig = original.MonitoringConfig
+	return true, nil
 }
 
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList,

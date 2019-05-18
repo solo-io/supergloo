@@ -1389,7 +1389,7 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:2d62fd3a77bcc372ff91f3ecad94dde79fa46ba6363da5473d68cc601b020447"
+  digest = "1:ccc7d5094c2df66bc068fa9dabb57ed0e2a6003d3575e1c935289889b6a5f853"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1442,8 +1442,8 @@
     "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "c9b4cc6f229cdf7508b99609b87ca7074251ae8d"
-  version = "v0.9.0"
+  revision = "997efe99e1726e3c6e92f8ad25736b10941bb2a6"
+  version = "v0.9.3"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2476,6 +2476,7 @@
     "github.com/google/go-github/github",
     "github.com/gorilla/mux",
     "github.com/hashicorp/go-multierror",
+    "github.com/inconshreveable/go-update",
     "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1",
     "github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned",
     "github.com/linkerd/linkerd2/controller/gen/client/informers/externalversions",
@@ -2543,6 +2544,7 @@
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/memory",
+    "github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper",
     "github.com/solo-io/solo-kit/pkg/api/v1/eventloop",
     "github.com/solo-io/solo-kit/pkg/api/v1/reconcile",
     "github.com/solo-io/solo-kit/pkg/api/v1/reporter",

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix meshdiscovery reconcile
+    issueLink: https://github.com/solo-io/supergloo/issues/448
