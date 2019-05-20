@@ -1,10 +1,14 @@
 package install
 
 import (
+	"context"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/kubeutils"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	apierrs "github.com/solo-io/solo-kit/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
@@ -13,7 +17,11 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
-func createInstall(opts *options.Options, install *v1.Install) error {
+type postInstallAction func(opts *options.Options, install *v1.Install) error
+
+var TimeoutError = errors.Errorf("timed out while waiting for install to transition to 'accepted' status")
+
+func createInstall(opts *options.Options, install *v1.Install, postInstallActions ...postInstallAction) error {
 
 	// check for existing install
 	// if upgrade is set, upgrade it
@@ -53,6 +61,20 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 		return err
 	}
 
+	// If any post install actions are present, wait for install to be accepted and then perform them in order
+	if len(postInstallActions) > 0 {
+		timeout := 30 * time.Second
+		if err := waitUtilInstallAccepted(opts.Ctx, install, timeout); err != nil {
+			return err
+		}
+
+		for _, action := range postInstallActions {
+			if err := action(opts, install); err != nil {
+				return err
+			}
+		}
+	}
+
 	helpers.PrintInstalls(v1.InstallList{install}, opts.OutputType)
 
 	return nil
@@ -71,4 +93,39 @@ func getExistingInstall(opts *options.Options) (*v1.Install, error) {
 		return nil, err
 	}
 	return existingInstall, nil
+}
+
+// Blocks until install is accepted, times out, or any error occurs
+func waitUtilInstallAccepted(ctx context.Context, ourInstall *v1.Install, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	contextutils.LoggerFrom(ctx).Infof("Waiting for installation to complete...")
+
+	installListChan, errorChan, err := clients.MustInstallClient().Watch(ourInstall.Metadata.Namespace, skclients.WatchOpts{Ctx: ctx})
+	if err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return TimeoutError
+		case err, ok := <-errorChan:
+			if ok && err != nil {
+				return errors.Wrapf(err, "unexpected error while watching installs")
+			}
+		case installList := <-installListChan:
+			for _, install := range installList {
+				if this, ours := install.Metadata.Ref(), ourInstall.Metadata.Ref(); !(&this).Equal(&ours) {
+					continue
+				}
+
+				if install.Status.State == core.Status_Accepted {
+					contextutils.LoggerFrom(ctx).Infof("Installation completed")
+					return nil
+				}
+			}
+		}
+	}
 }
