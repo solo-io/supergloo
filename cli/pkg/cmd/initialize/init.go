@@ -87,7 +87,7 @@ func installSuperGloo(opts *options.Options) error {
 
 	fmt.Printf("installing supergloo version %v\nusing chart uri %v\n", releaseVersion, chartUri)
 
-	if err := helpers.KubectlApply(manifest); err != nil {
+	if err := helpers.NewKubectl().ApplyManifest(manifest); err != nil {
 		return errors.Wrapf(err, "executing kubectl failed")
 	}
 
