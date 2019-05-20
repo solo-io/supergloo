@@ -33,7 +33,7 @@ preview-computed-values: must
 		version: $(VERSION), \
 		container-prefix: $(CONTAINER_REPO_PREFIX), \
 		image-tag: $(IMAGE_TAG), \
-		HELM-REPOSITORY: $(HELM_REPO)
+		helm-repository: $(HELM_REPO)
 
 #### END OF MANAGED PORTION
 
