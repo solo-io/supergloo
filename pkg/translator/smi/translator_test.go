@@ -1,9 +1,9 @@
 package smi
 
 import (
-	accessv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
-	specsv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1"
-	splitv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
+	accessv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
+	specsv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1"
+	splitv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"

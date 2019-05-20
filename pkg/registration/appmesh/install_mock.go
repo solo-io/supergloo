@@ -5,10 +5,9 @@
 package appmesh
 
 import (
+	gomock "github.com/golang/mock/gomock"
 	io "io"
 	reflect "reflect"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 // MockInstaller is a mock of Installer interface

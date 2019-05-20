@@ -3,7 +3,7 @@ package smi
 import (
 	"sort"
 
-	splitv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
+	splitv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 	"github.com/solo-io/supergloo/api/external/smi/split"

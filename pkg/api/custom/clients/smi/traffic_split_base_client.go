@@ -3,8 +3,8 @@ package smi
 import (
 	"sort"
 
-	"github.com/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
-	splitclient "github.com/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
+	"github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/split/v1alpha1"
+	splitclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/errors"

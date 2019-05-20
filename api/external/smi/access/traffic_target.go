@@ -3,7 +3,7 @@ package access
 import (
 	"reflect"
 
-	"github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
+	"github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/solo-kit/pkg/utils/kubeutils"
 )

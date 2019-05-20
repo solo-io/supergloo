@@ -5,12 +5,11 @@
 package clients
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	v10 "k8s.io/api/core/v1"
+	reflect "reflect"
 )
 
 // MockWebhookResourceClient is a mock of WebhookResourceClient interface

@@ -3,8 +3,8 @@ package smi
 import (
 	"sort"
 
-	"github.com/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
-	specv1alpha1 "github.com/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1"
+	"github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/access/v1alpha1"
+	specv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/apis/specs/v1alpha1"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"

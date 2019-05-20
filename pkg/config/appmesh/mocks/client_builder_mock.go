@@ -5,11 +5,10 @@
 package appmesh
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	appmesh "github.com/solo-io/supergloo/pkg/config/appmesh"
+	reflect "reflect"
 )
 
 // MockClientBuilder is a mock of ClientBuilder interface
