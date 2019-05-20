@@ -240,14 +240,11 @@ func completeInstall(ctx context.Context, installRef core.ResourceRef) {
 	err := helpers.WaitForInstallStatus(ctx, installRef, core.Status_Pending, 5*time.Second)
 	Expect(err).NotTo(HaveOccurred())
 
-LOOP:
-	for {
-		select {
-		case <-time.After(500 * time.Millisecond):
-			break LOOP
-		case <-ctx.Done():
-			return
-		}
+	select {
+	case <-time.After(500 * time.Millisecond):
+		break
+	case <-ctx.Done():
+		return
 	}
 
 	utils.CompleteInstall(ctx, clients.MustInstallClient(), installRef, 0)

@@ -12,14 +12,11 @@ import (
 
 func CompleteInstall(ctx context.Context, client v1.InstallClient, installRef core.ResourceRef, delay time.Duration) {
 
-LOOP:
-	for {
-		select {
-		case <-time.After(delay):
-			break LOOP
-		case <-ctx.Done():
-			return
-		}
+	select {
+	case <-time.After(delay):
+		break
+	case <-ctx.Done():
+		return
 	}
 
 	install, err := client.Read(installRef.Namespace, installRef.Name, skclients.ReadOpts{Ctx: ctx})
