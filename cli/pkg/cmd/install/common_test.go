@@ -1,8 +1,11 @@
-package install
+package install_test
 
 import (
 	"context"
 	"time"
+
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
+	"github.com/solo-io/supergloo/cli/test/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,7 +26,7 @@ var _ = Describe("Common install functions", func() {
 	BeforeEach(func() {
 		clients.UseMemoryClients()
 
-		ctx, cancel = context.WithCancel(context.TODO())
+		ctx, cancel = context.WithCancel(context.Background())
 		installClient = clients.MustInstallClient()
 	})
 
@@ -45,17 +48,6 @@ var _ = Describe("Common install functions", func() {
 					State: core.Status_Pending,
 				},
 			}
-			completeInstall = func(delay time.Duration) {
-				defer GinkgoRecover()
-
-				time.Sleep(delay)
-
-				install, err := installClient.Read(install.Metadata.Namespace, install.Metadata.Name, skclients.ReadOpts{Ctx: ctx})
-				Expect(err).ToNot(HaveOccurred())
-				install.Status.State = core.Status_Accepted
-				_, err = installClient.Write(install, skclients.WriteOpts{Ctx: ctx, OverwriteExisting: true})
-				Expect(err).ToNot(HaveOccurred())
-			}
 		)
 
 		BeforeEach(func() {
@@ -69,17 +61,23 @@ var _ = Describe("Common install functions", func() {
 		})
 
 		It("returns an error if install times out", func() {
-			go completeInstall(1500 * time.Millisecond)
+			go func() {
+				defer GinkgoRecover()
+				utils.CompleteInstall(ctx, installClient, install.Metadata.Ref(), 1500*time.Millisecond)
+			}()
 
-			err = waitUtilInstallAccepted(ctx, install, time.Second)
+			err = helpers.WaitForInstallStatus(ctx, install.Metadata.Ref(), core.Status_Accepted, time.Second)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal(TimeoutError.Error()))
+			Expect(err.Error()).To(Equal(helpers.TimeoutError.Error()))
 		})
 
 		It("returns without error if install completes in time", func() {
-			go completeInstall(50 * time.Millisecond)
+			go func() {
+				defer GinkgoRecover()
+				utils.CompleteInstall(ctx, installClient, install.Metadata.Ref(), 50*time.Millisecond)
+			}()
 
-			err = waitUtilInstallAccepted(ctx, install, 2*time.Second)
+			err = helpers.WaitForInstallStatus(ctx, install.Metadata.Ref(), core.Status_Accepted, time.Second)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

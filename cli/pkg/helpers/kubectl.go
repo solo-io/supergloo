@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+
+	"github.com/solo-io/supergloo/cli/pkg/helpers/mocks"
 )
 
 //go:generate mockgen -destination=./mocks/kubectl.go -source kubectl.go -package mocks
@@ -15,8 +17,18 @@ type Kubectl interface {
 
 type kubectl struct{}
 
+var kubectlInst Kubectl
+
 func NewKubectl() Kubectl {
+	// For testing
+	if kubectlInst != nil {
+		return kubectlInst
+	}
 	return &kubectl{}
+}
+
+func SetKubectlMock(mockKubectl *mocks.MockKubectl) {
+	kubectlInst = mockKubectl
 }
 
 func (k *kubectl) ApplyManifest(manifest string) error {

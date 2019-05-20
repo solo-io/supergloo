@@ -13,7 +13,7 @@ import (
 	. "github.com/solo-io/supergloo/cli/pkg/surveyutils"
 )
 
-var _ = FDescribe("Retries", func() {
+var _ = Describe("Retries", func() {
 	It("sets values for MaxRetries", func() {
 		testutil.ExpectInteractive(func(c *testutil.Console) {
 			c.ExpectString(flagutils.Description_MaxRetries_Attempts)

@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/solo-io/supergloo/cli/pkg/constants"
 	"github.com/solo-io/supergloo/cli/pkg/flagutils"
+	"github.com/solo-io/supergloo/cli/pkg/helpers"
 	"github.com/solo-io/supergloo/cli/pkg/options"
 	"github.com/solo-io/supergloo/cli/pkg/surveyutils"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -38,6 +39,11 @@ func createIstioInstall(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
+
+	if opts.Install.IstioInstall.InstallSmiAdapter {
+		return createInstall(opts, install, installSmiAdapter)
+	}
+
 	return createInstall(opts, install)
 }
 
@@ -51,7 +57,7 @@ func installIstioFromOpts(opts *options.Options) (*v1.Install, error) {
 		InstallType: &v1.Install_Mesh{
 			Mesh: &v1.MeshInstall{
 				MeshInstallType: &v1.MeshInstall_Istio{
-					Istio: &opts.Install.IstioInstall,
+					Istio: &opts.Install.IstioInstall.IstioInstall,
 				},
 			},
 		},
@@ -71,6 +77,19 @@ func validateIstioInstall(in options.Install) error {
 	if !validVersion {
 		return errors.Errorf("%v is not a supported "+
 			"istio version", in.IstioInstall.Version)
+	}
+
+	return nil
+}
+
+func installSmiAdapter(opts *options.Options) error {
+	smiManifest, err := renderSmiAdapterManifest(opts.Install.InstallationNamespace.Istio)
+	if err != nil {
+		return err
+	}
+
+	if err := helpers.NewKubectl().ApplyManifest(smiManifest); err != nil {
+		return err
 	}
 
 	return nil
