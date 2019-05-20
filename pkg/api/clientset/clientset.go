@@ -10,6 +10,7 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
+	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
@@ -146,6 +147,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	pods := pod.NewPodClient(kubeClient, kubeCoreCache)
+	services := service.NewServiceClient(kubeClient, kubeCoreCache)
 
 	return newClientset(
 		restConfig,
@@ -153,7 +155,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		promClient,
 		newSuperglooClients(install, mesh, meshGroup, meshIngress, upstream,
 			routingRule, securityRule, tlsSecret, secret, settings),
-		newDiscoveryClients(pods),
+		newDiscoveryClients(pods, services),
 	), nil
 }
 
@@ -322,11 +324,12 @@ func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup
 }
 
 type discoveryClients struct {
-	Pod kubernetes2.PodClient
+	Pod     kubernetes2.PodClient
+	Service kubernetes2.ServiceClient
 }
 
-func newDiscoveryClients(pod kubernetes2.PodClient) *discoveryClients {
-	return &discoveryClients{Pod: pod}
+func newDiscoveryClients(pod kubernetes2.PodClient, service kubernetes2.ServiceClient) *discoveryClients {
+	return &discoveryClients{Pod: pod, Service: service}
 }
 
 type IstioClients struct {

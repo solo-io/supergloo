@@ -10,7 +10,6 @@ import (
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/translator/istio/plugins"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 )
 
@@ -35,11 +34,10 @@ func (c *MeshConfig) Sort() {
 // whether mtls is enabled
 
 type translator struct {
-	plugins []plugins.Plugin
 }
 
-func NewTranslator(plugins []plugins.Plugin) Translator {
-	return &translator{plugins: plugins}
+func NewTranslator() Translator {
+	return &translator{}
 }
 
 /*
@@ -47,16 +45,6 @@ Translate a snapshot into a set of MeshConfigs for each mesh
 Currently only active istio mesh is expected.
 */
 func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot) (map[*v1.Mesh]*MeshConfig, reporter.ResourceErrors, error) {
-
-	// initialize plugins
-	initParams := plugins.InitParams{
-		Ctx: ctx,
-	}
-	for _, plug := range t.plugins {
-		if err := plug.Init(initParams); err != nil {
-			return nil, nil, err
-		}
-	}
 
 	meshes := snapshot.Meshes
 	meshGroups := snapshot.Meshgroups

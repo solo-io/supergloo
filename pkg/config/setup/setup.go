@@ -4,6 +4,11 @@ import (
 	"context"
 
 	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
+	accessv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
+	specsv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1"
+	splitv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
+	"github.com/solo-io/supergloo/pkg/config/smi"
+	smitranslator "github.com/solo-io/supergloo/pkg/translator/smi"
 
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
@@ -68,6 +73,25 @@ func createLinkerdConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1
 	newReporter := makeReporter("linkerd-config-reporter", cs.Supergloo)
 
 	return linkerd.NewLinkerdConfigSyncer(translator, reconcilers, newReporter), nil
+}
+
+func createSmiConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.ConfigSyncer, error) {
+	clients, err := clientset.SMIFromContext(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "initializing smi clients")
+	}
+
+	translator := smitranslator.NewTranslator()
+
+	reconcilers := smi.NewSMIReconcilers(map[string]string{"created_by": "smi-config-syncer"},
+		accessv1alpha1.NewTrafficTargetReconciler(clients.TrafficTarget),
+		specsv1alpha1.NewHTTPRouteGroupReconciler(clients.HTTPRouteGroup),
+		splitv1alpha1.NewTrafficSplitReconciler(clients.TrafficSplit),
+	)
+
+	newReporter := makeReporter("smi-config-reporter", cs.Supergloo)
+
+	return smi.NewSmiConfigSyncer(translator, reconcilers, newReporter), nil
 }
 
 func makeReporter(name string, cs *clientset.SuperglooClients) reporter.Reporter {

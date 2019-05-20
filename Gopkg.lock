@@ -1428,7 +1428,7 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:8d431cc01f25935458fcc6047232325ee3cb226d06e52b77fc52d13bbd4e5bc3"
+  digest = "1:46dc84fbd9403789534cee9a2743e31c2146efcf114c01cba8c4834c0f39a824"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1438,6 +1438,7 @@
     "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
+    "pkg/api/external/kubernetes/service",
     "pkg/api/v1/clients",
     "pkg/api/v1/clients/common",
     "pkg/api/v1/clients/configmap",
@@ -2586,6 +2587,7 @@
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/configmap",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",

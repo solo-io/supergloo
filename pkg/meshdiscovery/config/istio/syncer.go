@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
@@ -83,13 +84,12 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 
 	istioMeshes := utils.GetMeshes(snap.Meshes, utils.IstioMeshFilterFunc, utils.FilterByLabels(istio.DiscoverySelector))
 	istioInstalls := utils.GetActiveInstalls(snap.Installs, utils.IstioInstallFilterFunc)
-	injectedPods := utils.InjectedPodsByNamespace(snap.Pods, proxyContainer)
 
 	meshResources := organizeMeshes(
 		istioMeshes,
 		istioInstalls,
 		snap.Meshpolicies,
-		injectedPods,
+		snap.Pods,
 		snap.Upstreams,
 	)
 
@@ -107,8 +107,10 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 }
 
 func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1alpha1.MeshPolicyList,
-	injectedPods kubernetes.PodList, upstreams gloov1.UpstreamList) meshResourceList {
+	pods kubernetes.PodList, upstreams gloov1.UpstreamList) meshResourceList {
 	result := make(meshResourceList, len(meshes))
+
+	injectedPods := utils.InjectedPodsByNamespace(pods, proxyContainer)
 
 	for i, mesh := range meshes {
 		istioMesh := mesh.GetIstio()
@@ -133,6 +135,10 @@ func organizeMeshes(meshes v1.MeshList, installs v1.InstallList, meshPolicies v1
 		// Currently injection is a constant so there's no way to distinguish between
 		// multiple istio deployments in a single cluster
 		fullMesh.Upstreams = utils.GetUpstreamsForInjectedPods(injectedPods, upstreams)
+
+		// determine if the smi adapter is running for istio
+		// if so, enable istio smi
+		fullMesh.Mesh.SmiEnabled = detectSmiAdapter(pods, istioMesh.InstallationNamespace)
 
 		result[i] = fullMesh
 	}
@@ -195,4 +201,15 @@ func (fm *meshResources) merge() *v1.Mesh {
 	}
 	result.DiscoveryMetadata.MtlsConfig = mtlsConfig
 	return result
+}
+
+const smiAdapterPodPrefix = "smi-adapter-istio"
+
+func detectSmiAdapter(pods kubernetes.PodList, meshNamespace string) bool {
+	for _, pod := range pods {
+		if pod.Namespace == meshNamespace && strings.HasPrefix(pod.Name, smiAdapterPodPrefix) {
+			return true
+		}
+	}
+	return false
 }

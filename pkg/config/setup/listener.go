@@ -21,18 +21,26 @@ type superglooConfigLoop struct {
 }
 
 func (scl *superglooConfigLoop) Enabled(enabled registration.EnabledConfigLoops) bool {
-	return enabled.Linkerd || enabled.Istio || enabled.AppMesh
+	return enabled.IstioSmi || enabled.Linkerd || enabled.Istio || enabled.AppMesh
 }
 
 func (scl *superglooConfigLoop) Start(ctx context.Context, enabled registration.EnabledConfigLoops) (eventloop.EventLoop, error) {
 	var syncers v1.ConfigSyncers
 
 	if enabled.Istio {
-		istioSyncer, err := createIstioConfigSyncer(ctx, scl.cs)
-		if err != nil {
-			return nil, err
+		if enabled.IstioSmi {
+			istioSyncer, err := createSmiConfigSyncer(ctx, scl.cs)
+			if err != nil {
+				return nil, err
+			}
+			syncers = append(syncers, istioSyncer)
+		} else {
+			istioSyncer, err := createIstioConfigSyncer(ctx, scl.cs)
+			if err != nil {
+				return nil, err
+			}
+			syncers = append(syncers, istioSyncer)
 		}
-		syncers = append(syncers, istioSyncer)
 	}
 
 	if enabled.Linkerd {
@@ -58,6 +66,7 @@ func (scl *superglooConfigLoop) Start(ctx context.Context, enabled registration.
 		scl.cs.Supergloo.TlsSecret,
 		scl.cs.Supergloo.Upstream,
 		scl.cs.Discovery.Pod,
+		scl.cs.Discovery.Service,
 	)
 	configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
 
