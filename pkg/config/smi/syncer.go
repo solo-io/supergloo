@@ -50,7 +50,7 @@ func (s *smiConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) err
 	// added to the meshConfigs. all meshConfigs are considered to be valid
 
 	for mesh, config := range meshConfigs {
-		if mesh.DiscoveryMetadata == nil || !mesh.DiscoveryMetadata.SmiEnabled {
+		if mesh.DiscoveryMetadata == nil || !mesh.SmiEnabled {
 			return errors.Errorf("internal error: a non smi-mesh appeared in the mesh config snapshot")
 		}
 
