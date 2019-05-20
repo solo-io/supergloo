@@ -54,10 +54,15 @@ type InstallationNamespace struct {
 type Install struct {
 	Update                bool // if install exists and is enabled, update with new opts
 	InstallationNamespace InstallationNamespace
-	IstioInstall          v1.IstioInstall
+	IstioInstall          IstioInstall
 	LinkerdInstall        v1.LinkerdInstall
 	GlooIngressInstall    v1.GlooInstall
 	MeshIngress           MeshIngressInstall
+}
+
+type IstioInstall struct {
+	v1.IstioInstall
+	InstallSmiAdapter bool
 }
 
 type MeshIngressInstall struct {
