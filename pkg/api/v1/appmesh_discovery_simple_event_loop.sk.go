@@ -98,10 +98,8 @@ func (el *appmeshDiscoverySimpleEventLoop) Run(ctx context.Context) (<-chan erro
 					}
 
 					syncerCancels[syncer] = canc
+					previousSnapshot = snapshot
 				}
-
-				previousSnapshot = snapshot
-
 			case <-ctx.Done():
 				return
 			}
