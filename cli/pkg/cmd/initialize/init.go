@@ -1,12 +1,8 @@
 package initialize
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
-	"os/exec"
 
 	"github.com/solo-io/go-utils/installutils/helmchart"
 
@@ -91,7 +87,7 @@ func installSuperGloo(opts *options.Options) error {
 
 	fmt.Printf("installing supergloo version %v\nusing chart uri %v\n", releaseVersion, chartUri)
 
-	if err := kubectlApply(manifest); err != nil {
+	if err := helpers.KubectlApply(manifest); err != nil {
 		return errors.Wrapf(err, "executing kubectl failed")
 	}
 
@@ -126,18 +122,4 @@ func readValues(path string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
-}
-
-func kubectlApply(manifest string) error {
-	return kubectl(bytes.NewBufferString(manifest), "apply", "-f", "-")
-}
-
-func kubectl(stdin io.Reader, args ...string) error {
-	kubectl := exec.Command("kubectl", args...)
-	if stdin != nil {
-		kubectl.Stdin = stdin
-	}
-	kubectl.Stdout = os.Stdout
-	kubectl.Stderr = os.Stderr
-	return kubectl.Run()
 }
