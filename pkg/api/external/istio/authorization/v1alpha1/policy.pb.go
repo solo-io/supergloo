@@ -8,11 +8,10 @@ package v1alpha1
 import (
 	bytes "bytes"
 	fmt "fmt"
-	math "math"
-
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
