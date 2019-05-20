@@ -3,9 +3,6 @@ package clientset
 import (
 	"context"
 
-	accessclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned"
-	specsclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/specs/clientset/versioned"
-	splitclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
@@ -16,6 +13,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	kubernetes2 "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+	accessclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned"
+	specsclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/specs/clientset/versioned"
+	splitclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
 	"github.com/solo-io/supergloo/pkg/api/custom/clients/smi"

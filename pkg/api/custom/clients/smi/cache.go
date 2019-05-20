@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller"
 	accessclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned"
 	accessinformer "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/informers/externalversions"
 	accessv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/listers/access/v1alpha1"
@@ -14,7 +15,6 @@ import (
 	splitclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
 	splitinformer "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/informers/externalversions"
 	splitv1alpha1 "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/listers/split/v1alpha1"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/controller"
 )
 
 type Cache interface {
