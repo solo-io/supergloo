@@ -31,7 +31,6 @@ spec:
     kind: TrafficSplit
     listKind: TrafficSplitList
     plural: trafficsplits
-    singular: trafficsplit
   scope: Namespaced
   subresources:
     status: {}
@@ -54,14 +53,13 @@ spec:
     shortNames:
     - tt
     plural: traffictargets
-singular: traffictarget
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: httproutegroups.spec.smi-spec.io
+  name: httproutegroups.specs.smi-spec.io
 spec:
-  group: spec.smi-spec.io
+  group: specs.smi-spec.io
   version: v1alpha1
   scope: Namespaced
   names:
@@ -69,15 +67,13 @@ spec:
     shortNames:
     - htr
     plural: httproutegroups
-    singular: httproutegroup
-
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: tcproutes.spec.smi-spec.io
+  name: tcproutes.specs.smi-spec.io
 spec:
-  group: spec.smi-spec.io
+  group: specs.smi-spec.io
   version: v1alpha1
   scope: Namespaced
   names:
@@ -85,9 +81,7 @@ spec:
     shortNames:
     - tr
     plural: tcproutes
-singular: tcproute
 ---
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
