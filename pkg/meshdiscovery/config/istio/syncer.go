@@ -113,6 +113,7 @@ func updateMesh(original, desired *v1.Mesh) (b bool, e error) {
 	desired.MtlsConfig = original.MtlsConfig
 	desired.MeshType = original.MeshType
 	desired.MonitoringConfig = original.MonitoringConfig
+	desired.SmiEnabled = original.SmiEnabled
 	return true, nil
 }
 
