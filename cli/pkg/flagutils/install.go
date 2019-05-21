@@ -2,6 +2,7 @@ package flagutils
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/solo-io/supergloo/pkg/install/linkerd"
 
@@ -19,6 +20,11 @@ func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"update",
 		false,
 		"update an existing install?")
+
+	set.DurationVar(&in.InstallTimeout,
+		"timeout",
+		time.Minute*5,
+		"maximum time to wait for a mesh installation to complete")
 
 }
 

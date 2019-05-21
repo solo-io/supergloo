@@ -30,6 +30,7 @@ supergloo install gloo [flags]
       --name string        name for the resource
       --namespace string   namespace for the resource (default "supergloo-system")
   -o, --output string      output format: (yaml, json, table)
+      --timeout duration   maximum time to wait for a mesh installation to complete (default 5m0s)
       --update             update an existing install?
 ```
 
