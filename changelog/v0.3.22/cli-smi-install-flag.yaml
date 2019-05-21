@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Add a new `smi-install` option to the `supergloo install istio` command to deploy the SMI Istio adapter together with Istio.
+  issueLink: https://github.com/solo-io/supergloo/issues/458

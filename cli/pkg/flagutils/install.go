@@ -70,6 +70,11 @@ func AddIstioInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		false,
 		"add jaeger to the install?")
 
+	set.BoolVar(&in.IstioInstall.InstallSmiAdapter,
+		"smi-install",
+		false,
+		"add the SMI adapter to the install?")
+
 }
 
 func AddLinkerdInstallFlags(set *pflag.FlagSet, in *options.Install) {

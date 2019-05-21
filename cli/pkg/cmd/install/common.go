@@ -1,6 +1,10 @@
 package install
 
 import (
+	"time"
+
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/kubeutils"
@@ -13,7 +17,9 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
-func createInstall(opts *options.Options, install *v1.Install) error {
+type postInstallAction func(opts *options.Options) error
+
+func createInstall(opts *options.Options, install *v1.Install, postInstallActions ...postInstallAction) error {
 
 	// check for existing install
 	// if upgrade is set, upgrade it
@@ -51,6 +57,20 @@ func createInstall(opts *options.Options, install *v1.Install) error {
 	install, err = clients.MustInstallClient().Write(install, skclients.WriteOpts{Ctx: opts.Ctx, OverwriteExisting: true})
 	if err != nil {
 		return err
+	}
+
+	// If any post install actions are present, wait for install to be accepted and then perform them in order
+	if len(postInstallActions) > 0 {
+		timeout := 30 * time.Second
+		if err := helpers.WaitForInstallStatus(opts.Ctx, install.Metadata.Ref(), core.Status_Accepted, timeout); err != nil {
+			return err
+		}
+
+		for _, action := range postInstallActions {
+			if err := action(opts); err != nil {
+				return err
+			}
+		}
 	}
 
 	helpers.PrintInstalls(v1.InstallList{install}, opts.OutputType)

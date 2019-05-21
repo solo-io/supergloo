@@ -26,6 +26,7 @@ supergloo install istio [flags]
       --jaeger                          add jaeger to the install?
       --mtls                            enable mtls? (default true)
       --prometheus                      add prometheus to the install?
+      --smi-install                     add the SMI adapter to the install?
       --version string                  version of istio to install? available: [1.0.3 1.0.5 1.0.6] (default "1.0.6")
 ```
 

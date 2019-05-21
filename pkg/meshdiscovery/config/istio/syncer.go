@@ -107,7 +107,7 @@ func (s *istioConfigDiscoverSyncer) Sync(ctx context.Context, snap *v1.IstioDisc
 }
 
 func updateMesh(original, desired *v1.Mesh) (b bool, e error) {
-	if original.DiscoveryMetadata.Equal(desired.DiscoveryMetadata) {
+	if original.DiscoveryMetadata.Equal(desired.DiscoveryMetadata) && desired.SmiEnabled == original.SmiEnabled {
 		return false, nil
 	}
 	desired.MtlsConfig = original.MtlsConfig
