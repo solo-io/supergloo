@@ -22,7 +22,7 @@ func AddInstallFlags(set *pflag.FlagSet, in *options.Install) {
 		"update an existing install?")
 
 	set.DurationVar(&in.InstallTimeout,
-		"update",
+		"timeout",
 		time.Minute*5,
 		"maximum time to wait for a mesh installation to complete")
 
