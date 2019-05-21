@@ -41,6 +41,23 @@ var _ = Describe("istio e2e", func() {
 		testInstallIstio(istioName)
 	})
 
+	It("discovers and configures smi adapter", func() {
+		err := sgutils.KubectlApplyFile(smiIstioAdapterFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		// give pod a short time to start with Pending
+		time.Sleep(time.Millisecond * 100)
+
+		err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, "istio-system",
+			"smi-adapter-istio",
+		)
+		Expect(err).NotTo(HaveOccurred())
+
+		testTrafficShifting()
+		err = sgutils.KubectlDeleteFile(smiIstioAdapterFile)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	It("it installs gloo", func() {
 		sgutils.TestGlooInstall(glooName, superglooNamespace, glooNamespace, istioName)
 	})

@@ -280,6 +280,8 @@ func selector(in *v1.PodSelector) string {
 		return fmt.Sprintf("labels: %v", MustMarshal(t.LabelSelector.LabelsToMatch))
 	case *v1.PodSelector_UpstreamSelector_:
 		return fmt.Sprintf("upstreams: %v", MustMarshal(t.UpstreamSelector.Upstreams))
+	case *v1.PodSelector_ServiceSelector_:
+		return fmt.Sprintf("services: %v", MustMarshal(t.ServiceSelector.Services))
 	case *v1.PodSelector_NamespaceSelector_:
 		return fmt.Sprintf("namespaces: %v", MustMarshal(t.NamespaceSelector.Namespaces))
 	}

@@ -54,6 +54,24 @@ func UpstreamsForSelector(selector *v1.PodSelector, allUpstreams gloov1.Upstream
 			}
 			selectedUpstreams = append(selectedUpstreams, us)
 		}
+	case *v1.PodSelector_ServiceSelector_:
+		for _, us := range allUpstreams {
+			kubeSpec, err := GetUpstreamKubeSpec(us)
+			if err != nil {
+				continue
+			}
+			var serviceIsReferenced bool
+			for _, ref := range selector.ServiceSelector.Services {
+				if ref.Namespace == kubeSpec.ServiceNamespace && ref.Name == kubeSpec.ServiceName {
+					serviceIsReferenced = true
+					break
+				}
+			}
+			if !serviceIsReferenced {
+				continue
+			}
+			selectedUpstreams = append(selectedUpstreams, us)
+		}
 	case *v1.PodSelector_NamespaceSelector_:
 		for _, us := range allUpstreams {
 			namespaceForUpstream := GetNamespaceForUpstream(us)
@@ -96,6 +114,13 @@ func PodsForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, al
 		}
 
 	case *v1.PodSelector_UpstreamSelector_:
+		selectedUpstreams, err := UpstreamsForSelector(selector, upstreams)
+		if err != nil {
+			return nil, errors.Wrap(err, "getting upstreams for pods")
+		}
+		return PodsForUpstreams(selectedUpstreams, allPods), nil
+
+	case *v1.PodSelector_ServiceSelector_:
 		selectedUpstreams, err := UpstreamsForSelector(selector, upstreams)
 		if err != nil {
 			return nil, errors.Wrap(err, "getting upstreams for pods")
@@ -160,4 +185,30 @@ func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods kubernetes.PodList)
 		}
 	}
 	return selectedPods
+}
+
+func ServicesForSelector(selector *v1.PodSelector, upstreams gloov1.UpstreamList, allServices kubernetes.ServiceList) (kubernetes.ServiceList, error) {
+	upstreamsForSelector, err := UpstreamsForSelector(selector, upstreams)
+	if err != nil {
+		return nil, err
+	}
+	return ServicesForUpstreams(upstreamsForSelector, allServices), nil
+}
+
+func ServicesForUpstreams(upstreams gloov1.UpstreamList, allServices kubernetes.ServiceList) kubernetes.ServiceList {
+	var selectedServices kubernetes.ServiceList
+selectService:
+	for _, svc := range allServices {
+		for _, us := range upstreams {
+			kubeSpec, err := GetUpstreamKubeSpec(us)
+			if err != nil {
+				continue
+			}
+			if svc.Namespace == kubeSpec.ServiceNamespace && svc.Name == kubeSpec.ServiceName {
+				selectedServices = append(selectedServices, svc)
+				continue selectService
+			}
+		}
+	}
+	return selectedServices
 }

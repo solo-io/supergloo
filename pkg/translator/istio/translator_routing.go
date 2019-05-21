@@ -252,54 +252,6 @@ func isCatchAllMatcher(istioMatcher *v1alpha3.HTTPMatchRequest) bool {
 	return false
 }
 
-func (t *translator) createRoute(
-	params plugins.Params,
-	destinationHost string,
-	rules v1.RoutingRuleList,
-	istioMatcher []*v1alpha3.HTTPMatchRequest,
-	upstreams gloov1.UpstreamList,
-	resourceErrs reporter.ResourceErrors) *v1alpha3.HTTPRoute {
-
-	out := &v1alpha3.HTTPRoute{
-		Match: istioMatcher,
-
-		// default: single destination, original host, no subset
-		// traffic shifting may overwrite, so traffic shifting plugin should come first
-		Route: []*v1alpha3.HTTPRouteDestination{{
-			Destination: &v1alpha3.Destination{
-				Host: destinationHost,
-			},
-		}},
-	}
-	for _, rr := range rules {
-		// if rr does not apply to this host (destination), skip
-		useRule, err := utils.RuleAppliesToDestination(destinationHost, rr.DestinationSelector, upstreams)
-		if err != nil {
-			resourceErrs.AddError(rr, errors.Wrapf(err, "invalid destination selector"))
-			continue
-		}
-
-		if !useRule {
-			continue
-		}
-
-		for _, plug := range t.plugins {
-			routingPlugin, ok := plug.(plugins.RoutingPlugin)
-			if !ok {
-				continue
-			}
-			if rr.Spec == nil {
-				resourceErrs.AddError(rr, errors.Errorf("spec cannot be empty"))
-				continue
-			}
-			if err := routingPlugin.ProcessRoute(params, *rr.Spec, out); err != nil {
-				resourceErrs.AddError(rr, errors.Wrapf(err, "applying route rule failed"))
-			}
-		}
-	}
-	return out
-}
-
 func (t *translator) applyRuleToRoute(params plugins.Params, route *v1alpha3.HTTPRoute, rr *v1.RoutingRule, resourceErrs reporter.ResourceErrors) {
 
 	for _, plug := range t.plugins {

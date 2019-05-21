@@ -51,6 +51,7 @@ var _ = Describe("Setup", func() {
 			cs.Supergloo.TlsSecret,
 			cs.Supergloo.Upstream,
 			cs.Discovery.Pod,
+			cs.Discovery.Service,
 		)
 
 		el := v1.NewConfigEventLoop(configEmitter, mockSyncer)

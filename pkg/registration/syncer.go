@@ -23,6 +23,7 @@ func (s *RegistrationSyncer) Sync(ctx context.Context, snap *v1.RegistrationSnap
 		switch mesh.MeshType.(type) {
 		case *v1.Mesh_Istio:
 			enabledFeatures.Istio = true
+			enabledFeatures.IstioSmi = mesh.GetSmiEnabled()
 			contextutils.LoggerFrom(ctx).Infof("detected istio mesh %v", mesh.GetMetadata().Ref())
 		case *v1.Mesh_Linkerd:
 			enabledFeatures.Linkerd = true

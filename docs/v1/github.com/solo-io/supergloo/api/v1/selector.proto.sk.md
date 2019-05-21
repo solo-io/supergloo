@@ -14,6 +14,7 @@ weight: 5
 - [PodSelector](#podselector)
 - [LabelSelector](#labelselector)
 - [UpstreamSelector](#upstreamselector)
+- [ServiceSelector](#serviceselector)
 - [NamespaceSelector](#namespaceselector)
   
 
@@ -35,6 +36,7 @@ with in a mesh for the application of rules and policies
 ```yaml
 "labelSelector": .supergloo.solo.io.PodSelector.LabelSelector
 "upstreamSelector": .supergloo.solo.io.PodSelector.UpstreamSelector
+"serviceSelector": .supergloo.solo.io.PodSelector.ServiceSelector
 "namespaceSelector": .supergloo.solo.io.PodSelector.NamespaceSelector
 
 ```
@@ -43,6 +45,7 @@ with in a mesh for the application of rules and policies
 | ----- | ---- | ----------- |----------- | 
 | `labelSelector` | [.supergloo.solo.io.PodSelector.LabelSelector](../selector.proto.sk#labelselector) | select pods by their labels |  |
 | `upstreamSelector` | [.supergloo.solo.io.PodSelector.UpstreamSelector](../selector.proto.sk#upstreamselector) | select pods by their corresponding upstreams |  |
+| `serviceSelector` | [.supergloo.solo.io.PodSelector.ServiceSelector](../selector.proto.sk#serviceselector) | select pods by their corresponding services |  |
 | `namespaceSelector` | [.supergloo.solo.io.PodSelector.NamespaceSelector](../selector.proto.sk#namespaceselector) | select all pods within one or more namespaces |  |
 
 
@@ -82,6 +85,24 @@ kubernetes services and the available subsets of those services
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | apply the selector to one or more of their upstreams by adding their refs here |  |
+
+
+
+
+---
+### ServiceSelector
+
+ 
+select pods based on the services they back
+
+```yaml
+"services": []core.solo.io.ResourceRef
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `services` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk#resourceref) | apply the selector to one or more services by adding their refs here |  |
 
 
 

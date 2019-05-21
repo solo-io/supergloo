@@ -18,7 +18,14 @@ func main() {
 	docsOpts := &cmd.DocsOptions{
 		Output: options.Hugo,
 	}
-	if err := cmd.Run(".", true, docsOpts, []string{"../gloo"}, []string{"pkg2", "api2"}); err != nil {
+	if err := cmd.Generate(cmd.GenerateOptions{
+		RelativeRoot:       ".",
+		CompileProtos:      true,
+		GenDocs:            docsOpts,
+		CustomImports:      []string{"../gloo"},
+		SkipGenMocks:       false,
+		SkipGeneratedTests: true,
+	}); err != nil {
 		log.Fatalf("generate failed!: %v", err)
 	}
 }

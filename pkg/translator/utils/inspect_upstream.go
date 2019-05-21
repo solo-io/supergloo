@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
@@ -25,6 +27,14 @@ func GetNamespaceForUpstream(us *gloov1.Upstream) string {
 	return us.Metadata.Namespace
 }
 
+func GetUpstreamKubeSpec(us *gloov1.Upstream) (*kubernetes.UpstreamSpec, error) {
+	switch specType := us.UpstreamSpec.UpstreamType.(type) {
+	case *gloov1.UpstreamSpec_Kube:
+		return specType.Kube, nil
+	}
+	return nil, errors.Errorf("not a kube upstream")
+}
+
 func GetHostForUpstream(us *gloov1.Upstream) (string, error) {
 	hosts, err := GetHostsForUpstream(us)
 	if err != nil {
@@ -36,6 +46,11 @@ func GetHostForUpstream(us *gloov1.Upstream) (string, error) {
 	return hosts[0], nil
 }
 
+// TODO (ilackarms): consider multi-cluster here
+func ServiceHost(serviceName, serviceNamespace string) string {
+	return fmt.Sprintf("%v.%v.svc.cluster.local", serviceName, serviceNamespace)
+}
+
 func GetHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
 	switch specType := us.UpstreamSpec.UpstreamType.(type) {
 	case *gloov1.UpstreamSpec_Aws:
@@ -44,7 +59,7 @@ func GetHostsForUpstream(us *gloov1.Upstream) ([]string, error) {
 		return nil, errors.Errorf("azure not implemented")
 	case *gloov1.UpstreamSpec_Kube:
 		return []string{
-			fmt.Sprintf("%v.%v.svc.cluster.local", specType.Kube.ServiceName, specType.Kube.ServiceNamespace),
+			ServiceHost(specType.Kube.ServiceName, specType.Kube.ServiceNamespace),
 			specType.Kube.ServiceName,
 		}, nil
 	case *gloov1.UpstreamSpec_Static:

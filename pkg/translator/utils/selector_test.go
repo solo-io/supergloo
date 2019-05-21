@@ -148,6 +148,33 @@ var _ = Describe("PodsForSelector", func() {
 			}
 		})
 	})
+	Context("PodSelector_ServiceSelector", func() {
+		It("returns the pod for specified service refs", func() {
+			refs := []core.ResourceRef{
+				{Name: "reviews", Namespace: "default"},
+				{Name: "details", Namespace: "default"},
+			}
+			svcs := inputs.BookInfoServices("default")
+			selectedPods, err := ServicesForSelector(&v1.PodSelector{
+				SelectorType: &v1.PodSelector_ServiceSelector_{
+					ServiceSelector: &v1.PodSelector_ServiceSelector{
+						Services: refs,
+					},
+				},
+			}, inputs.BookInfoUpstreams("default"),
+				svcs)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(selectedPods).To(HaveLen(2))
+			for _, ref := range []core.ResourceRef{
+				{Namespace: "default", Name: "reviews"},
+				{Namespace: "default", Name: "details"},
+			} {
+				pod, err := svcs.Find(ref.Strings())
+				Expect(err).NotTo(HaveOccurred())
+				Expect(pod).NotTo(BeNil())
+			}
+		})
+	})
 	Context("PodSelector_LabelSelector", func() {
 		It("returns each pod with matching labels", func() {
 			pods := inputs.BookInfoPods("default")
