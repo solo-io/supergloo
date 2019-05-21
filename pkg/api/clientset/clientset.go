@@ -3,29 +3,33 @@ package clientset
 import (
 	"context"
 
-	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
-
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
-	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
-	kubernetes2 "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
-
-	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
-	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
-
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-
+	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
+	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
+	kubernetes2 "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+	accessclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/access/clientset/versioned"
+	specsclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/specs/clientset/versioned"
+	splitclient "github.com/solo-io/supergloo/imported/deislabs/smi-sdk-go/pkg/gen/client/split/clientset/versioned"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/linkerd"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/prometheus"
+	"github.com/solo-io/supergloo/pkg/api/custom/clients/smi"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
+	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
+	promv1 "github.com/solo-io/supergloo/pkg/api/external/prometheus/v1"
+	accessv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
+	specsv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1"
+	splitv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // initialize all resource clients here that will share a cache
@@ -143,6 +147,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	pods := pod.NewPodClient(kubeClient, kubeCoreCache)
+	services := service.NewServiceClient(kubeClient, kubeCoreCache)
 
 	return newClientset(
 		restConfig,
@@ -150,7 +155,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		promClient,
 		newSuperglooClients(install, mesh, meshGroup, meshIngress, upstream,
 			routingRule, securityRule, tlsSecret, secret, settings),
-		newDiscoveryClients(pods),
+		newDiscoveryClients(pods, services),
 	), nil
 }
 
@@ -234,7 +239,7 @@ func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 		return nil, err
 	}
 	/*
-		istio clients
+		linkerd clients
 	*/
 	serviceProfile, err := serviceProfileClientFromConfig(ctx, restConfig)
 	if err != nil {
@@ -242,6 +247,38 @@ func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 	}
 
 	return newLinkerdClients(serviceProfile), nil
+}
+
+func SMIFromContext(ctx context.Context) (*SMIClients, error) {
+	restConfig, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, err
+	}
+	/*
+		smi clients
+	*/
+	accessClient, err := accessclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	specsClient, err := specsclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	splitClient, err := splitclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	smiCache, err := smi.NewSMICache(ctx, accessClient, specsClient, splitClient)
+	if err != nil {
+		return nil, err
+	}
+
+	trafficTargetClient := smi.NewTrafficTargetClient(accessClient, smiCache)
+	httpRouteGroupClient := smi.NewHTTPRouteGroupClient(specsClient, smiCache)
+	trafficSplitClient := smi.NewTrafficSplitClient(splitClient, smiCache)
+
+	return newSMIClients(trafficTargetClient, httpRouteGroupClient, trafficSplitClient), nil
 }
 
 type Clientset struct {
@@ -287,11 +324,12 @@ func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup
 }
 
 type discoveryClients struct {
-	Pod kubernetes2.PodClient
+	Pod     kubernetes2.PodClient
+	Service kubernetes2.ServiceClient
 }
 
-func newDiscoveryClients(pod kubernetes2.PodClient) *discoveryClients {
-	return &discoveryClients{Pod: pod}
+func newDiscoveryClients(pod kubernetes2.PodClient, service kubernetes2.ServiceClient) *discoveryClients {
+	return &discoveryClients{Pod: pod, Service: service}
 }
 
 type IstioClients struct {
@@ -313,4 +351,14 @@ type LinkerdClients struct {
 
 func newLinkerdClients(serviceProfile linkerdv1.ServiceProfileClient) *LinkerdClients {
 	return &LinkerdClients{ServiceProfile: serviceProfile}
+}
+
+type SMIClients struct {
+	TrafficTarget  accessv1alpha1.TrafficTargetClient
+	HTTPRouteGroup specsv1alpha1.HTTPRouteGroupClient
+	TrafficSplit   splitv1alpha1.TrafficSplitClient
+}
+
+func newSMIClients(trafficTarget accessv1alpha1.TrafficTargetClient, HTTPRouteGroup specsv1alpha1.HTTPRouteGroupClient, trafficSplit splitv1alpha1.TrafficSplitClient) *SMIClients {
+	return &SMIClients{TrafficTarget: trafficTarget, HTTPRouteGroup: HTTPRouteGroup, TrafficSplit: trafficSplit}
 }

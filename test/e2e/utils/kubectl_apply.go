@@ -40,6 +40,14 @@ func LinkerdInject(input string) (string, error) {
 	return output.String(), nil
 }
 
+func KubectlApplyFile(path string) error {
+	return Kubectl(nil, "apply", "-f", path)
+}
+
+func KubectlDeleteFile(path string) error {
+	return Kubectl(nil, "delete", "-f", path)
+}
+
 func KubectlApply(namespace, yamlStr string) error {
 	return Kubectl(bytes.NewBuffer([]byte(yamlStr)), "apply", "-n", namespace, "-f", "-")
 }

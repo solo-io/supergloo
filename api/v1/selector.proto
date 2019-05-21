@@ -23,6 +23,12 @@ message PodSelector {
         repeated core.solo.io.ResourceRef upstreams = 1 [(gogoproto.nullable) = false];
     }
 
+    // select pods based on the services they back
+    message ServiceSelector {
+        // apply the selector to one or more services by adding their refs here
+        repeated core.solo.io.ResourceRef services = 1 [(gogoproto.nullable) = false];
+    }
+
     // select all pods in these namespaces
     message NamespaceSelector {
         repeated string namespaces = 1;
@@ -35,6 +41,9 @@ message PodSelector {
 
         // select pods by their corresponding upstreams
         UpstreamSelector upstream_selector = 2;
+
+        // select pods by their corresponding services
+        ServiceSelector service_selector = 4;
 
         // select all pods within one or more namespaces
         NamespaceSelector namespace_selector = 3;

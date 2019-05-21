@@ -12,10 +12,11 @@ type ConfigLoop interface {
 }
 
 type EnabledConfigLoops struct {
-	Istio   bool
-	Gloo    bool
-	AppMesh bool
-	Linkerd bool
+	Istio    bool
+	IstioSmi bool
+	Gloo     bool
+	AppMesh  bool
+	Linkerd  bool
 }
 
 type ConfigLoopStarter func(ctx context.Context, enabled EnabledConfigLoops) (eventloop.EventLoop, error)

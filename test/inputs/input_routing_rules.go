@@ -90,6 +90,27 @@ func AdvancedBookInfoRoutingRules(namespace string, targetMesh *core.ResourceRef
 			Spec: TrafficShiftingRuleSpec(core.ResourceRef{Namespace: namespace, Name: namespace + "-reviews-v1-9080"}),
 		},
 		{
+			// added for smi tests
+			Metadata: core.Metadata{
+				Namespace: namespace,
+				Name:      "trafficshifting-reviews-50-50",
+			},
+			TargetMesh: targetMesh,
+			DestinationSelector: &v1.PodSelector{
+				SelectorType: &v1.PodSelector_LabelSelector_{
+					LabelSelector: &v1.PodSelector_LabelSelector{
+						LabelsToMatch: map[string]string{
+							"app": "reviews",
+						},
+					},
+				},
+			},
+			Spec: TrafficShiftingRuleSpec(
+				core.ResourceRef{Namespace: namespace, Name: namespace + "-reviews-v1-9080"},
+				core.ResourceRef{Namespace: namespace, Name: namespace + "-reviews-v2-9080"},
+			),
+		},
+		{
 			Metadata: core.Metadata{
 				Namespace: namespace,
 				Name:      "faultinjection-productpage",

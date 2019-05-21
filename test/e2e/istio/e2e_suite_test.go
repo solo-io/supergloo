@@ -38,6 +38,7 @@ var (
 	cancel                              func()
 	basicNamespace, namespaceWithInject string
 	promNamespace                       = "prometheus-test"
+	smiIstioAdapterFile                 = utils.MustTestFile("istio-smi-adapter.yaml")
 )
 
 const (
@@ -133,6 +134,7 @@ func teardown() {
 	if cancel != nil {
 		cancel()
 	}
+	utils.KubectlDeleteFile(smiIstioAdapterFile)
 	testutils.TeardownSuperGloo(testutils.MustKubeClient())
 	kube.CoreV1().Namespaces().Delete(istioNamesapce, nil)
 	kube.CoreV1().Namespaces().Delete(glooNamespace, nil)

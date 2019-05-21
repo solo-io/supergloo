@@ -52,14 +52,15 @@ type ConfigEmitter interface {
 	TlsSecret() TlsSecretClient
 	Upstream() gloo_solo_io.UpstreamClient
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	Service() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, serviceClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
 		mesh:         meshClient,
 		meshIngress:  meshIngressClient,
@@ -69,6 +70,7 @@ func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngre
 		tlsSecret:    tlsSecretClient,
 		upstream:     upstreamClient,
 		pod:          podClient,
+		service:      serviceClient,
 		forceEmit:    emit,
 	}
 }
@@ -83,6 +85,7 @@ type configEmitter struct {
 	tlsSecret    TlsSecretClient
 	upstream     gloo_solo_io.UpstreamClient
 	pod          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	service      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient
 }
 
 func (c *configEmitter) Register() error {
@@ -108,6 +111,9 @@ func (c *configEmitter) Register() error {
 		return err
 	}
 	if err := c.pod.Register(); err != nil {
+		return err
+	}
+	if err := c.service.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -143,6 +149,10 @@ func (c *configEmitter) Upstream() gloo_solo_io.UpstreamClient {
 
 func (c *configEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient {
 	return c.pod
+}
+
+func (c *configEmitter) Service() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient {
+	return c.service
 }
 
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
@@ -209,6 +219,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)
+	/* Create channel for Service */
+	type serviceListWithNamespace struct {
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList
+		namespace string
+	}
+	serviceChan := make(chan serviceListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -299,6 +315,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
 		}(namespace)
+		/* Setup namespaced watch for Service */
+		serviceNamespacesChan, serviceErrs, err := c.service.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Service watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, serviceErrs, namespace+"-services")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -354,6 +381,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
 					}
+				case serviceList := <-serviceNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case serviceChan <- serviceListWithNamespace{list: serviceList, namespace: namespace}:
+					}
 				}
 			}
 		}(namespace)
@@ -382,6 +415,7 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		tlssecretsByNamespace := make(map[string]TlsSecretList)
 		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
 		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
+		servicesByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList)
 
 		for {
 			record := func() { stats.Record(ctx, mConfigSnapshotIn.M(1)) }
@@ -493,6 +527,18 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 					podList = append(podList, pods...)
 				}
 				currentSnapshot.Pods = podList.Sort()
+			case serviceNamespacedList := <-serviceChan:
+				record()
+
+				namespace := serviceNamespacedList.namespace
+
+				// merge lists by namespace
+				servicesByNamespace[namespace] = serviceNamespacedList.list
+				var serviceList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList
+				for _, services := range servicesByNamespace {
+					serviceList = append(serviceList, services...)
+				}
+				currentSnapshot.Services = serviceList.Sort()
 			}
 		}
 	}()

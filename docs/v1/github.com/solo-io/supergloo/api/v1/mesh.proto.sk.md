@@ -44,6 +44,7 @@ Meshes represent a currently registered service mesh.
 "mtlsConfig": .supergloo.solo.io.MtlsConfig
 "monitoringConfig": .supergloo.solo.io.MonitoringConfig
 "discoveryMetadata": .supergloo.solo.io.DiscoveryMetadata
+"smiEnabled": bool
 
 ```
 
@@ -57,6 +58,7 @@ Meshes represent a currently registered service mesh.
 | `mtlsConfig` | [.supergloo.solo.io.MtlsConfig](../mesh.proto.sk#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh |  |
 | `monitoringConfig` | [.supergloo.solo.io.MonitoringConfig](../mesh.proto.sk#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus |  |
 | `discoveryMetadata` | [.supergloo.solo.io.DiscoveryMetadata](../mesh.proto.sk#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh |  |
+| `smiEnabled` | `bool` | whether or not to use SMI to configure this mesh |  |
 
 
 

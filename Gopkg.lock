@@ -1141,6 +1141,14 @@
   version = "v0.8.1"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "UT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:4594833620d039a1c1e889d445988edfc2cdcc95b7e5f40fd63a9d17e2f2ed3f"
   name = "github.com/prometheus/client_golang"
   packages = [
@@ -1389,15 +1397,17 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:ccc7d5094c2df66bc068fa9dabb57ed0e2a6003d3575e1c935289889b6a5f853"
+  digest = "1:8a82cb31919c7897dfb8e76f3a551c9c787286fd9ca7fb5ac0228c41d216dae0"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
+    "api/external/kubernetes/service",
     "pkg/api/external/kubernetes/configmap",
     "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
+    "pkg/api/external/kubernetes/service",
     "pkg/api/v1/clients",
     "pkg/api/v1/clients/common",
     "pkg/api/v1/clients/configmap",
@@ -1439,11 +1449,10 @@
     "pkg/utils/protoutils",
     "test/helpers",
     "test/setup",
-    "test/tests/typed",
   ]
   pruneopts = "UT"
-  revision = "997efe99e1726e3c6e92f8ad25736b10941bb2a6"
-  version = "v0.9.3"
+  revision = "f40d30112db04fbd2cc4ba85f9df66af3607f344"
+  version = "v0.9.6"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -1487,6 +1496,14 @@
   pruneopts = "UT"
   revision = "1ac3a1ac202429a54835fe8408a92880156b489d"
   version = "v1.4.0"
+
+[[projects]]
+  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "UT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:9deeaaf623bd5bff1aff7317417ffcd960557afa3b1a1dc27ca800a416a4b6a3"
@@ -2504,10 +2521,7 @@
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/cmd/options",
     "github.com/solo-io/gloo/projects/gloo/cli/pkg/testutils",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/rest",
-    "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/transformation",
     "github.com/solo-io/gloo/projects/gloo/pkg/mocks",
     "github.com/solo-io/go-checkpoint",
     "github.com/solo-io/go-utils/clidoc",
@@ -2533,9 +2547,11 @@
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/configmap",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
@@ -2558,9 +2574,9 @@
     "github.com/solo-io/solo-kit/pkg/utils/kubeutils",
     "github.com/solo-io/solo-kit/test/helpers",
     "github.com/solo-io/solo-kit/test/setup",
-    "github.com/solo-io/solo-kit/test/tests/typed",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
+    "github.com/stretchr/testify/assert",
     "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
@@ -2584,16 +2600,23 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/rand",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/validation",
     "k8s.io/apimachinery/pkg/util/yaml",
+    "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/util/cert",
+    "k8s.io/client-go/util/flowcontrol",
     "k8s.io/helm/pkg/kube",
     "k8s.io/helm/pkg/manifest",
     "sigs.k8s.io/yaml",

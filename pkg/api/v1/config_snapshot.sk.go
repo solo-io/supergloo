@@ -21,6 +21,7 @@ type ConfigSnapshot struct {
 	Tlssecrets    TlsSecretList
 	Upstreams     gloo_solo_io.UpstreamList
 	Pods          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Services      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList
 }
 
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
@@ -33,6 +34,7 @@ func (s ConfigSnapshot) Clone() ConfigSnapshot {
 		Tlssecrets:    s.Tlssecrets.Clone(),
 		Upstreams:     s.Upstreams.Clone(),
 		Pods:          s.Pods.Clone(),
+		Services:      s.Services.Clone(),
 	}
 }
 
@@ -46,6 +48,7 @@ func (s ConfigSnapshot) Hash() uint64 {
 		s.hashTlssecrets(),
 		s.hashUpstreams(),
 		s.hashPods(),
+		s.hashServices(),
 	)
 }
 
@@ -81,6 +84,10 @@ func (s ConfigSnapshot) hashPods() uint64 {
 	return hashutils.HashAll(s.Pods.AsInterfaces()...)
 }
 
+func (s ConfigSnapshot) hashServices() uint64 {
+	return hashutils.HashAll(s.Services.AsInterfaces()...)
+}
+
 func (s ConfigSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
@@ -91,6 +98,7 @@ func (s ConfigSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("tlssecrets", s.hashTlssecrets()))
 	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
+	fields = append(fields, zap.Uint64("services", s.hashServices()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
@@ -105,6 +113,7 @@ type ConfigSnapshotStringer struct {
 	Tlssecrets    []string
 	Upstreams     []string
 	Pods          []string
+	Services      []string
 }
 
 func (ss ConfigSnapshotStringer) String() string {
@@ -150,6 +159,11 @@ func (ss ConfigSnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Services %v\n", len(ss.Services))
+	for _, name := range ss.Services {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
@@ -164,5 +178,6 @@ func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
 		Tlssecrets:    s.Tlssecrets.NamespacesDotNames(),
 		Upstreams:     s.Upstreams.NamespacesDotNames(),
 		Pods:          s.Pods.NamespacesDotNames(),
+		Services:      s.Services.NamespacesDotNames(),
 	}
 }

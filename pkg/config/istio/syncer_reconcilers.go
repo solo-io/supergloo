@@ -3,13 +3,13 @@ package istio
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/config/utils"
+
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	networkingv1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
@@ -59,7 +59,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	var meshPoliciesToReconcile policyv1alpha1.MeshPolicyList
 	if config.MeshPolicy != nil {
 		logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
-		s.setLabels(config.MeshPolicy)
+		utils.SetLabels(s.ownerLabels, config.MeshPolicy)
 		meshPoliciesToReconcile = append(meshPoliciesToReconcile, config.MeshPolicy)
 	}
 	if err := s.meshPolicyReconciler.Reconcile(
@@ -78,7 +78,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	var rbacConfigsToReconcile rbacv1alpha1.RbacConfigList
 	if config.RbacConfig != nil {
 		logger.Infof("RbacConfig: %v", config.RbacConfig.Metadata.Name)
-		s.setLabels(config.RbacConfig)
+		utils.SetLabels(s.ownerLabels, config.RbacConfig)
 		rbacConfigsToReconcile = append(rbacConfigsToReconcile, config.RbacConfig)
 	}
 	if err := s.rbacConfigReconciler.Reconcile(
@@ -97,7 +97,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	var tlsSecretsToReconcile v1.TlsSecretList
 	if config.RootCert != nil {
 		logger.Infof("RootCert: %v", config.RootCert.Metadata.Name)
-		s.setLabels(config.RootCert)
+		utils.SetLabels(s.ownerLabels, config.RootCert)
 		tlsSecretsToReconcile = append(tlsSecretsToReconcile, config.RootCert)
 	}
 	if err := s.tlsSecretReconciler.Reconcile(
@@ -113,7 +113,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	}
 
 	logger.Infof("DestinationRules: %v", config.DestinationRules.Names())
-	s.setLabels(config.DestinationRules.AsResources()...)
+	utils.SetLabels(s.ownerLabels, config.DestinationRules.AsResources()...)
 	if err := s.destinationRuleReconciler.Reconcile(
 		"",
 		config.DestinationRules,
@@ -127,7 +127,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	}
 
 	logger.Infof("VirtualServices: %v", config.VirtualServices.Names())
-	s.setLabels(config.VirtualServices.AsResources()...)
+	utils.SetLabels(s.ownerLabels, config.VirtualServices.AsResources()...)
 	if err := s.virtualServiceReconciler.Reconcile(
 		"",
 		config.VirtualServices,
@@ -141,7 +141,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	}
 
 	logger.Infof("ServiceRoles: %v", config.ServiceRoles.Names())
-	s.setLabels(config.ServiceRoles.AsResources()...)
+	utils.SetLabels(s.ownerLabels, config.ServiceRoles.AsResources()...)
 	if err := s.serviceRoleReconciler.Reconcile(
 		"",
 		config.ServiceRoles,
@@ -155,7 +155,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	}
 
 	logger.Infof("ServiceRoleBindings: %v", config.ServiceRoleBindings.Names())
-	s.setLabels(config.ServiceRoleBindings.AsResources()...)
+	utils.SetLabels(s.ownerLabels, config.ServiceRoleBindings.AsResources()...)
 	if err := s.serviceRoleBindingReconciler.Reconcile(
 		"",
 		config.ServiceRoleBindings,
@@ -169,18 +169,4 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 	}
 
 	return nil
-}
-
-// set labels on all resources, required for our reconciler
-func (s *istioReconcilers) setLabels(rcs ...resources.Resource) {
-	for _, res := range rcs {
-		resources.UpdateMetadata(res, func(meta *core.Metadata) {
-			if meta.Labels == nil {
-				meta.Labels = make(map[string]string)
-			}
-			for k, v := range s.ownerLabels {
-				meta.Labels[k] = v
-			}
-		})
-	}
 }
