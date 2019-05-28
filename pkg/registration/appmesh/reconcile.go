@@ -25,8 +25,6 @@ import (
 	"k8s.io/helm/pkg/manifest"
 )
 
-var webhookImageName = fmt.Sprintf("%s/%s", strings.TrimSuffix(version.ImageRepoPrefix, "/"), webhookName)
-
 type AutoInjectionReconciler interface {
 	Reconcile(autoInjectionEnabled bool) error
 }
@@ -117,6 +115,8 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate certificate for webhook server")
 	}
+
+	webhookImageName := fmt.Sprintf("%s/%s", strings.TrimSuffix(version.ImageRepoPrefix, "/"), webhookName)
 
 	values := Values{
 		Name:          webhookName,

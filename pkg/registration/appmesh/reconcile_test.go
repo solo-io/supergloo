@@ -3,6 +3,7 @@ package appmesh
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
@@ -69,6 +70,7 @@ var _ = Describe("Reconciler", func() {
 					Expect(deployment.Name).To(BeEquivalentTo(webhookName))
 					containers := deployment.Spec.Template.Spec.Containers
 					Expect(containers).To(HaveLen(1))
+					webhookImageName := fmt.Sprintf("%s/%s", strings.TrimSuffix(version.ImageRepoPrefix, "/"), webhookName)
 					Expect(containers[0].Image).To(BeEquivalentTo(fmt.Sprintf("%s:%s", webhookImageName, version.Version)))
 					Expect(containers[0].ImagePullPolicy).To(BeEquivalentTo(webhookImagePullPolicy))
 					volumes := deployment.Spec.Template.Spec.Volumes
