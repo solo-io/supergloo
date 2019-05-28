@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/solo-io/supergloo/pkg/version"
+
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
@@ -113,7 +115,7 @@ var _ = BeforeSuite(func() {
 	// start discovery
 	var superglooErr error
 	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-	err = generate.RunWithGlooVersion("dev", "dev", "Always", projectRoot, "0.13.18")
+	err = generate.RunWithGlooVersion("dev", "dev", version.ImageRepoPrefix, "Always", projectRoot, "0.13.18")
 	if err == nil {
 		superglooErr = sgutils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
 	} else {
