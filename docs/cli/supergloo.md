@@ -23,7 +23,7 @@ supergloo configures resources watched by the Supergloo Controller.
 * [supergloo completion](../supergloo_completion)	 - generate auto completion for your shell
 * [supergloo create](../supergloo_create)	 - commands for creating resources used by SuperGloo
 * [supergloo get](../supergloo_get)	 - get information about supergloo objects
-* [supergloo init](../supergloo_init)	 - install SuperGloo to a Kubernetes cluster
+* [supergloo init](../supergloo_init)	 - Installs SuperGloo to a Kubernetes cluster
 * [supergloo install](../supergloo_install)	 - install a service mesh using Supergloo
 * [supergloo register](../supergloo_register)	 - commands for registering meshes with SuperGloo
 * [supergloo set](../supergloo_set)	 - update an existing resource with one or more config options
