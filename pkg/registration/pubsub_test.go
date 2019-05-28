@@ -2,6 +2,8 @@ package registration
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -21,6 +23,10 @@ var _ = Describe("registration helpers", func() {
 		ctx, cancel = context.WithCancel(context.TODO())
 	})
 
+	AfterEach(func() {
+		cancel()
+	})
+
 	Context("pubsub", func() {
 
 		It("Allows for multiple subscribers to be added and removed", func() {
@@ -36,21 +42,21 @@ var _ = Describe("registration helpers", func() {
 			}
 		})
 
-		It("send updates to all available recievers", func() {
+		It("send updates to all available receivers", func() {
 			watches := make([]Receiver, 3)
-			recievedUpdates := 0
+			receivedUpdates := int32(0)
 			for i := 0; i < 4; i++ {
-				reciever := pubSub.subscribe()
-				watches = append(watches, reciever)
+				receiver := pubSub.subscribe()
+				watches = append(watches, receiver)
 				go func() {
-					<-reciever
-					recievedUpdates++
+					<-receiver
+					atomic.AddInt32(&receivedUpdates, 1)
 				}()
 			}
 			pubSub.publish(ctx, EnabledConfigLoops{})
-			Eventually(func() int {
-				return recievedUpdates
-			}, time.Second*15, time.Second/2).Should(Equal(4))
+			Eventually(func() int32 {
+				return receivedUpdates
+			}, time.Second*15, time.Second/2).Should(Equal(int32(4)))
 
 		})
 
@@ -142,7 +148,7 @@ var _ = Describe("registration helpers", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
-				if len(cl.allLoops) == 0 {
+				if len(cl.allLoops) < 2 {
 					return false
 				}
 				// use second as first is initial all false obj
@@ -164,7 +170,7 @@ var _ = Describe("registration helpers", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() bool {
-				if len(cl.allLoops) == 0 {
+				if len(cl.allLoops) < 2 {
 					return false
 				}
 				// use second as first is initial all false obj
@@ -219,17 +225,28 @@ type mockConfigLoop struct {
 	startCalled      int
 	contextCancelled int
 	allLoops         []EnabledConfigLoops
+	mutex            sync.Mutex
 }
 
 func (mcl *mockConfigLoop) Enabled(enabled EnabledConfigLoops) bool {
+	mcl.mutex.Lock()
+	defer mcl.mutex.Unlock()
+
 	mcl.allLoops = append(mcl.allLoops, enabled)
 	return enabled.Istio
 }
 
 func (mcl *mockConfigLoop) Start(ctx context.Context, enabled EnabledConfigLoops) (eventloop.EventLoop, error) {
+	mcl.mutex.Lock()
+	defer mcl.mutex.Unlock()
+
 	mcl.startCalled++
 	go func() {
 		<-ctx.Done()
+
+		mcl.mutex.Lock()
+		defer mcl.mutex.Unlock()
+
 		mcl.contextCancelled++
 	}()
 	return nil, nil
