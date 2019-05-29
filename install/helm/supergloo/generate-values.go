@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	neverPull    = "Never"
 	alwaysPull   = "Always"
 	ifNotPresent = "IfNotPresent"
 )

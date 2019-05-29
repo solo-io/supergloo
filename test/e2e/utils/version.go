@@ -38,5 +38,7 @@ func GetBuildInformation() (string, string, string, error) {
 
 	imageRepoPrefix := buildRun.Config.ComputedBuildVars.ContainerPrefix
 
+	fmt.Println(fmt.Sprintf("Build info - Version: %s, HelmRepo: %s, ImagePrefix: %s", version, chartUrl, imageRepoPrefix))
+
 	return version, chartUrl, imageRepoPrefix, nil
 }

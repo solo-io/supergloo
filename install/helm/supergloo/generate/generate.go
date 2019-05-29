@@ -126,6 +126,9 @@ func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
 	config.Supergloo.Deployment.Image.Tag = imageTag
 	config.Supergloo.Deployment.Image.PullPolicy = pullPolicy
 
+	// Sidecar injector image gets pushed with the same tag as supergloo
+	config.Supergloo.SidecarInjectorImage.Tag = imageTag
+
 	config.Discovery.Deployment.Image.Tag = osGlooVersion
 	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
@@ -134,6 +137,7 @@ func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
 
 	if imageRepoPrefix != "" {
 		config.Supergloo.Deployment.Image.Repository = replaceRepositoryPrefix(config.Supergloo.Deployment.Image.Repository, imageRepoPrefix)
+		config.Supergloo.SidecarInjectorImage.Repository = replaceRepositoryPrefix(config.Supergloo.SidecarInjectorImage.Repository, imageRepoPrefix)
 		config.MeshDiscovery.Deployment.Image.Repository = replaceRepositoryPrefix(config.MeshDiscovery.Deployment.Image.Repository, imageRepoPrefix)
 	}
 

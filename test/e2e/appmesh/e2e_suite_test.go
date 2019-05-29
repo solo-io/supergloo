@@ -2,9 +2,12 @@ package appmesh_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
+
+	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
 
 	"github.com/solo-io/supergloo/pkg/version"
 	"github.com/solo-io/supergloo/test/e2e/utils"
@@ -26,6 +29,8 @@ func TestE2e(t *testing.T) {
 	RunSpecs(t, "E2e Suite")
 }
 
+const superglooNamespace = "supergloo-system"
+
 var (
 	kube                                kubernetes.Interface
 	lock                                *clusterlock.TestClusterLocker
@@ -45,7 +50,6 @@ var _ = BeforeSuite(func() {
 
 	// Set the supergloo version (will be equal to the BUILD_ID env)
 	version.Version = buildVersion
-	version.ImageRepoPrefix = imageRepoPrefix
 	chartUrl = helmChartUrl
 
 	// Acquire cluster lock
@@ -82,7 +86,11 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	// start supergloo
+	// start supergloo (requires setting the two envs if running locally)
+	Expect(os.Setenv(registrationsetup.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
+	image := fmt.Sprintf("%s/sidecar-injector:%s", imageRepoPrefix, buildVersion)
+	Expect(os.Setenv(registrationsetup.SidecarInjectorImageEnvName, image)).NotTo(HaveOccurred())
+
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		defer GinkgoRecover()

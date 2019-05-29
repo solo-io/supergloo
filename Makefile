@@ -47,8 +47,7 @@ preview-computed-values: must
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
 SOURCES := $(shell find . -name "*.go" | grep -v test | grep -v mock)
-LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION) \
--X github.com/solo-io/supergloo/pkg/version.ImageRepoPrefix=$(IMAGE_REPO_PREFIX)"
+LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 
 
 #----------------------------------------------------------------------------------
@@ -190,7 +189,7 @@ manifest: must fetch-helm-repo helm-generate render-manifest helm-package-chart 
 
 ### Generates Chart.yaml, values.yaml, and requirements.yaml
 .PHONY: helm-generate
-helm-generate:
+helm-generate: must
 	go run $(HELM_CHART_DIR)/generate-values.go $(VERSION) $(IMAGE_TAG) $(IMAGE_REPO_PREFIX)
 
 ### Packages the chart and regenerates the repo index file

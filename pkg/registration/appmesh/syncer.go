@@ -14,7 +14,6 @@ import (
 
 const (
 	webhookName            = "sidecar-injector"
-	webhookImagePullPolicy = "Always"
 	resourcesConfigMapName = "sidecar-injection-resources"
 	secretKind             = "Secret"
 	webhookConfigKind      = "MutatingWebhookConfiguration"
@@ -33,10 +32,11 @@ func NewAppMeshRegistrationSyncer(
 	reporter reporter.Reporter,
 	kube kubernetes.Interface,
 	secretClient gloov1.SecretClient,
-	installer Installer) v1.RegistrationSyncer {
+	installer Installer,
+	sgNamespace, sidecarInjectorImage string) v1.RegistrationSyncer {
 	return &appMeshSyncer{
 		reporter:   reporter,
-		reconciler: NewAutoInjectionReconciler(kube, installer),
+		reconciler: NewAutoInjectionReconciler(kube, installer, sgNamespace, sidecarInjectorImage),
 		validator:  NewAppMeshValidator(kube, secretClient),
 	}
 }

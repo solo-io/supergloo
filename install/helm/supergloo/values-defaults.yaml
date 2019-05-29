@@ -16,6 +16,9 @@ supergloo:
       repository: quay.io/solo-io/supergloo
       pullPolicy: Always
     stats: true
+  sidecarInjectorImage:
+    repository: quay.io/solo-io/sidecar-injector
+    pullPolicy: IfNotPresent
 
 discovery:
   deployment:

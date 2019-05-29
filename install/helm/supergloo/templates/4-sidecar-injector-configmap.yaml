@@ -41,8 +41,8 @@ data:
           serviceAccountName: supergloo
           containers:
             - name: sidecar-injector
-              image: {{ .Image.Name }}:{{ .Image.Tag }}
-              imagePullPolicy: {{ .Image.PullPolicy }}
+              image: {{ .Image }}
+              imagePullPolicy: IfNotPresent
               env:
                 - name: TLS_CERT_PATH
                   value: "/etc/webhook/cert.pem"

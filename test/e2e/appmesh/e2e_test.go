@@ -16,8 +16,6 @@ import (
 	"github.com/solo-io/supergloo/cli/test/utils"
 )
 
-const superglooNamespace = "supergloo-system"
-
 var _ = Describe("E2e", func() {
 
 	It("registers and tests appmesh", func() {
@@ -57,9 +55,7 @@ func testRegisterAppmesh(meshName, secretName string) {
 		return err
 	}).ShouldNot(HaveOccurred())
 
-	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, superglooNamespace,
-		"sidecar-injector",
-	)
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*4, superglooNamespace, "sidecar-injector")
 	Expect(err).NotTo(HaveOccurred())
 
 	err = sgutils.DeployTestRunner(basicNamespace)

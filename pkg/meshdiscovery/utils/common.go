@@ -24,6 +24,7 @@ func MeshWriteNamespace() string {
 	if writeNamespace := os.Getenv("POD_NAMESPACE"); writeNamespace != "" {
 		return writeNamespace
 	}
+	// TODO: remove hardcoded namespace
 	return "supergloo-system"
 }
 
