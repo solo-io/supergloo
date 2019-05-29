@@ -11,6 +11,7 @@ import (
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
+	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/test/e2e/utils"
@@ -85,7 +86,9 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	// start supergloo
+	// start supergloo (requires setting the two envs if running locally)
+	Expect(os.Setenv(registrationsetup.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
+	Expect(os.Setenv(registrationsetup.SidecarInjectorImageEnvName, "dummy-value-currently-not-used")).NotTo(HaveOccurred())
 	go func() {
 		defer GinkgoRecover()
 		err := setup.Main(rootCtx, func(e error) {
