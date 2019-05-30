@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"testing"
+
+	"github.com/solo-io/supergloo/pkg/version"
 
 	"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
-	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/test/e2e/utils"
 
@@ -40,6 +40,7 @@ var (
 	basicNamespace, namespaceWithInject string
 	promNamespace                       = "prometheus-test"
 	smiIstioAdapterFile                 = utils.MustTestFile("istio-smi-adapter.yaml")
+	chartUrl                            string
 )
 
 const (
@@ -50,6 +51,14 @@ const (
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
 	var err error
+
+	// Get build information
+	buildVersion, helmChartUrl, imageRepoPrefix, err := utils.GetBuildInformation()
+	Expect(err).NotTo(HaveOccurred())
+
+	// Set the supergloo version (will be equal to the BUILD_ID env)
+	version.Version = buildVersion
+	chartUrl = helmChartUrl
 
 	lock, err = clusterlock.NewTestClusterLocker(kube, clusterlock.Options{
 		IdPrefix: os.ExpandEnv("superglooe2e-{$BUILD_ID}-"),
@@ -79,17 +88,18 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	rootCtx, cancel = context.WithCancel(context.TODO())
-	// create sg ns
 	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
+		// create sg ns
 		ObjectMeta: metav1.ObjectMeta{Name: "supergloo-system"},
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	// start supergloo (requires setting the two envs if running locally)
 	Expect(os.Setenv(constants.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
-	Expect(os.Setenv(constants.SidecarInjectorImageNameEnvName, "dummy-value-currently-not-used")).NotTo(HaveOccurred())
+	image := fmt.Sprintf("%s/%s:%s", imageRepoPrefix, constants.SidecarInjectorImageName, buildVersion)
+	Expect(os.Setenv(constants.SidecarInjectorImageNameEnvName, image)).NotTo(HaveOccurred())
 	Expect(os.Setenv(constants.SidecarInjectorImagePullPolicyEnvName, "Always")).NotTo(HaveOccurred())
+	// start supergloo (requires setting the two envs if running locally)
+	rootCtx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		defer GinkgoRecover()
 		err := setup.Main(rootCtx, func(e error) {
@@ -113,16 +123,8 @@ var _ = BeforeSuite(func() {
 		Expect(err).NotTo(HaveOccurred())
 	}()
 
-	// install discovery via cli
-	// start discovery
-	var superglooErr error
-	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
-	err = generate.RunWithGlooVersion("dev", "dev", "", "Always", projectRoot, "0.13.18")
-	if err == nil {
-		superglooErr = sgutils.Supergloo(fmt.Sprintf("init --release latest --values %s", filepath.Join(projectRoot, generate.ValuesOutput)))
-	} else {
-		superglooErr = sgutils.Supergloo("init --release latest")
-	}
+	// Install supergloo using the helm chart specific to this test run
+	superglooErr := sgutils.Supergloo(fmt.Sprintf("init -f %s", chartUrl))
 	Expect(superglooErr).NotTo(HaveOccurred())
 
 	// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli

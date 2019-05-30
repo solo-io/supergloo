@@ -9,15 +9,15 @@ import (
 
 	"github.com/solo-io/supergloo/pkg/constants"
 
-	"github.com/solo-io/supergloo/pkg/version"
-	"github.com/solo-io/supergloo/test/e2e/utils"
-
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
+	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
 	"github.com/solo-io/supergloo/pkg/setup"
+	"github.com/solo-io/supergloo/pkg/version"
+	"github.com/solo-io/supergloo/test/e2e/utils"
 	"github.com/solo-io/supergloo/test/testutils"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -86,12 +86,12 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	// start supergloo (requires setting the envs if running locally)
 	Expect(os.Setenv(constants.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
 	image := fmt.Sprintf("%s/%s:%s", imageRepoPrefix, constants.SidecarInjectorImageName, buildVersion)
 	Expect(os.Setenv(constants.SidecarInjectorImageNameEnvName, image)).NotTo(HaveOccurred())
 	Expect(os.Setenv(constants.SidecarInjectorImagePullPolicyEnvName, "Always")).NotTo(HaveOccurred())
 
+	// start supergloo (requires setting the envs if running locally)
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		defer GinkgoRecover()
@@ -113,6 +113,14 @@ var _ = BeforeSuite(func() {
 		}, nil)
 		Expect(err).NotTo(HaveOccurred())
 	}()
+
+	// Install supergloo using the helm chart specific to this test run
+	superglooErr := sgutils.Supergloo(fmt.Sprintf("init -f %s", chartUrl))
+	Expect(superglooErr).NotTo(HaveOccurred())
+
+	// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
+	testutils.DeleteSuperglooPods(kube, superglooNamespace)
+
 })
 
 var _ = AfterSuite(func() {

@@ -19,14 +19,6 @@ import (
 var _ = Describe("E2e", func() {
 
 	It("registers and tests appmesh", func() {
-
-		// Install supergloo using the helm chart specific to this test run
-		superglooErr := utils.Supergloo(fmt.Sprintf("init -f %s", chartUrl))
-		Expect(superglooErr).NotTo(HaveOccurred())
-
-		// TODO (ilackarms): add a flag to switch between starting supergloo locally and deploying via cli
-		sgtestutils.DeleteSuperglooPods(kube, superglooNamespace)
-
 		appmeshName := "appmesh"
 		secretName := "my-secret"
 
@@ -35,7 +27,6 @@ var _ = Describe("E2e", func() {
 		testRegisterAppmesh(appmeshName, secretName)
 
 		// TODO: remove appmesh
-
 	})
 })
 
