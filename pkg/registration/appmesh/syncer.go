@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/hashicorp/go-multierror"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
@@ -13,7 +15,7 @@ import (
 )
 
 const (
-	webhookName            = "sidecar-injector"
+	webhookName            = constants.SidecarInjectorImageName
 	resourcesConfigMapName = "sidecar-injection-resources"
 	secretKind             = "Secret"
 	webhookConfigKind      = "MutatingWebhookConfiguration"
@@ -33,10 +35,10 @@ func NewAppMeshRegistrationSyncer(
 	kube kubernetes.Interface,
 	secretClient gloov1.SecretClient,
 	installer Installer,
-	sgNamespace, sidecarInjectorImage string) v1.RegistrationSyncer {
+	sgNamespace, sidecarInjectorImage, sidecarInjectorImagePullPolicy string) v1.RegistrationSyncer {
 	return &appMeshSyncer{
 		reporter:   reporter,
-		reconciler: NewAutoInjectionReconciler(kube, installer, sgNamespace, sidecarInjectorImage),
+		reconciler: NewAutoInjectionReconciler(kube, installer, sgNamespace, sidecarInjectorImage, sidecarInjectorImagePullPolicy),
 		validator:  NewAppMeshValidator(kube, secretClient),
 	}
 }

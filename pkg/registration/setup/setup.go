@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/solo-io/go-utils/errors"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -24,15 +26,11 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
-const (
-	PodNamespaceEnvName         = "POD_NAMESPACE"
-	SidecarInjectorImageEnvName = "SIDECAR_INJECTOR_IMAGE"
-)
-
 type Options struct {
-	SuperglooNamespace       string
-	SidecarInjectorImageName string
-	DisablePrometheusBouncer bool
+	SuperglooNamespace             string
+	SidecarInjectorImageName       string
+	SidecarInjectorImagePullPolicy string
+	DisablePrometheusBouncer       bool
 }
 
 func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
@@ -82,6 +80,7 @@ func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registrat
 			kube.New(nil),
 			opts.SuperglooNamespace,
 			opts.SidecarInjectorImageName,
+			opts.SidecarInjectorImagePullPolicy,
 		),
 		registration.NewRegistrationSyncer(pubSub),
 	}
@@ -121,12 +120,16 @@ func getOptions() (Options, error) {
 		"bouncing of prometheus pods on config reload. enable this option if using the prometheus configmap reload")
 	flag.Parse()
 
-	if opts.SuperglooNamespace = os.Getenv(PodNamespaceEnvName); opts.SuperglooNamespace == "" {
-		return Options{}, errors.Errorf("%s env must be set", PodNamespaceEnvName)
+	if opts.SuperglooNamespace = os.Getenv(constants.PodNamespaceEnvName); opts.SuperglooNamespace == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.PodNamespaceEnvName)
 	}
 
-	if opts.SidecarInjectorImageName = os.Getenv(SidecarInjectorImageEnvName); opts.SidecarInjectorImageName == "" {
-		return Options{}, errors.Errorf("%s env must be set", SidecarInjectorImageEnvName)
+	if opts.SidecarInjectorImageName = os.Getenv(constants.SidecarInjectorImageNameEnvName); opts.SidecarInjectorImageName == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.SidecarInjectorImageNameEnvName)
+	}
+
+	if opts.SidecarInjectorImagePullPolicy = os.Getenv(constants.SidecarInjectorImagePullPolicyEnvName); opts.SidecarInjectorImagePullPolicy == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.SidecarInjectorImagePullPolicyEnvName)
 	}
 
 	return opts, nil

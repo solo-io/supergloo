@@ -14,23 +14,26 @@ supergloo:
   deployment:
     image:
       repository: quay.io/solo-io/supergloo
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     stats: true
-  sidecarInjectorImage:
-    repository: quay.io/solo-io/sidecar-injector
-    pullPolicy: IfNotPresent
+  disablePrometheusBouncer: false
 
 discovery:
   deployment:
     image:
       repository: quay.io/solo-io/discovery
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     stats: true
-    disablePrometheusBouncer: false
 
 meshDiscovery:
   deployment:
     image:
       repository: quay.io/solo-io/mesh-discovery
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
     stats: true
+
+
+sidecarInjector:
+  image:
+    repository: quay.io/solo-io/sidecar-injector
+    pullPolicy: IfNotPresent

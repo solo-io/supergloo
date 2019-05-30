@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
+	"github.com/solo-io/supergloo/pkg/constants"
 
 	"github.com/solo-io/supergloo/pkg/version"
 	"github.com/solo-io/supergloo/test/e2e/utils"
@@ -26,7 +26,7 @@ import (
 
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2e Suite")
+	RunSpecs(t, "AWS App Mesh e2e Suite")
 }
 
 const superglooNamespace = "supergloo-system"
@@ -86,10 +86,11 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	// start supergloo (requires setting the two envs if running locally)
-	Expect(os.Setenv(registrationsetup.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
-	image := fmt.Sprintf("%s/sidecar-injector:%s", imageRepoPrefix, buildVersion)
-	Expect(os.Setenv(registrationsetup.SidecarInjectorImageEnvName, image)).NotTo(HaveOccurred())
+	// start supergloo (requires setting the envs if running locally)
+	Expect(os.Setenv(constants.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
+	image := fmt.Sprintf("%s/%s:%s", imageRepoPrefix, constants.SidecarInjectorImageName, buildVersion)
+	Expect(os.Setenv(constants.SidecarInjectorImageNameEnvName, image)).NotTo(HaveOccurred())
+	Expect(os.Setenv(constants.SidecarInjectorImagePullPolicyEnvName, "Always")).NotTo(HaveOccurred())
 
 	rootCtx, cancel = context.WithCancel(context.TODO())
 	go func() {

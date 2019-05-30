@@ -7,10 +7,7 @@ import (
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 )
 
-const (
-	alwaysPull   = "Always"
-	ifNotPresent = "IfNotPresent"
-)
+const ifNotPresent = "IfNotPresent"
 
 func main() {
 	var version, imageTag, imageRepoPrefix string
@@ -20,7 +17,7 @@ func main() {
 		version, imageTag, imageRepoPrefix = os.Args[1], os.Args[2], os.Args[3]
 	}
 	log.Printf("Generating helm files. Version: %s, ImageTag: %s, ImageRepoPrefix: %s", version, imageTag, imageRepoPrefix)
-	if err := generate.Run(version, imageTag, imageRepoPrefix, alwaysPull, ""); err != nil {
+	if err := generate.Run(version, imageTag, imageRepoPrefix, ifNotPresent); err != nil {
 		panic(err)
 	}
 }

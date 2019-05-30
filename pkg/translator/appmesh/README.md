@@ -1,7 +1,7 @@
 # AWS App Mesh translator
 This package contains the logic for translating a set of Supergloo Routing Rules to a set of AWS App Mesh resources.
 
-Following is a high-level description of the steps that are executed during translation for each mesh. The 
+The following is a high-level description of the steps that are executed during translation for each mesh. The 
 translation can be divided into three stages:
 
 ## Initialization

@@ -6,15 +6,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
-
-	"github.com/pelletier/go-toml"
-	"github.com/solo-io/go-utils/versionutils"
 
 	"github.com/ghodss/yaml"
+	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 	glooGenerate "github.com/solo-io/gloo/install/helm/gloo/generate"
 	"github.com/solo-io/go-utils/log"
+	"github.com/solo-io/go-utils/versionutils"
+	"github.com/solo-io/supergloo/pkg/constants"
 )
 
 const (
@@ -32,13 +31,12 @@ var (
 	rootPrefix    string
 )
 
-func Run(version, imageTag, imageRepoPrefix, pullPolicy, prefix string) error {
+func Run(version, imageTag, imageRepoPrefix, pullPolicy string) error {
 	glooVersion, err := getOsGlooVersion()
 	if err != nil {
 		return err
 	}
-
-	return RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, glooVersion)
+	return RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, "", glooVersion)
 }
 
 func RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, glooVersion string) error {
@@ -123,23 +121,21 @@ func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
 	if err != nil {
 		return err
 	}
+
+	config.Supergloo.Deployment.Image.Repository = path.Join(imageRepoPrefix, constants.SuperglooImageName)
 	config.Supergloo.Deployment.Image.Tag = imageTag
 	config.Supergloo.Deployment.Image.PullPolicy = pullPolicy
 
-	// Sidecar injector image gets pushed with the same tag as supergloo
-	config.Supergloo.SidecarInjectorImage.Tag = imageTag
+	config.SidecarInjector.Image.Repository = path.Join(imageRepoPrefix, constants.SidecarInjectorImageName)
+	config.SidecarInjector.Image.Tag = imageTag
+	config.SidecarInjector.Image.PullPolicy = pullPolicy
 
-	config.Discovery.Deployment.Image.Tag = osGlooVersion
-	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
-
+	config.MeshDiscovery.Deployment.Image.Repository = path.Join(imageRepoPrefix, constants.MeshDiscoveryImageName)
 	config.MeshDiscovery.Deployment.Image.Tag = imageTag
 	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
 
-	if imageRepoPrefix != "" {
-		config.Supergloo.Deployment.Image.Repository = replaceRepositoryPrefix(config.Supergloo.Deployment.Image.Repository, imageRepoPrefix)
-		config.Supergloo.SidecarInjectorImage.Repository = replaceRepositoryPrefix(config.Supergloo.SidecarInjectorImage.Repository, imageRepoPrefix)
-		config.MeshDiscovery.Deployment.Image.Repository = replaceRepositoryPrefix(config.MeshDiscovery.Deployment.Image.Repository, imageRepoPrefix)
-	}
+	config.Discovery.Deployment.Image.Tag = osGlooVersion
+	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
 }
@@ -153,11 +149,4 @@ func generateChartYaml(version string) error {
 	chart.Version = version
 
 	return writeYaml(&chart, filepath.Join(rootPrefix, ChartOutput))
-}
-
-// We want to turn "quay.io/solo-io/gloo" into "<newPrefix>/gloo".
-func replaceRepositoryPrefix(repository, newPrefix string) string {
-	// Remove trailing slash, if present
-	newPrefix = strings.TrimSuffix(newPrefix, "/")
-	return strings.Join([]string{newPrefix, path.Base(repository)}, "/")
 }

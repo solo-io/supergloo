@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/solo-io/supergloo/pkg/constants"
+
+	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	sgutils "github.com/solo-io/supergloo/cli/test/utils"
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
-	registrationsetup "github.com/solo-io/supergloo/pkg/registration/setup"
-
-	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/test/e2e/utils"
 
 	"github.com/avast/retry-go"
@@ -29,7 +29,7 @@ import (
 
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2e Suite")
+	RunSpecs(t, "Istio e2e Suite")
 }
 
 var (
@@ -87,8 +87,9 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	// start supergloo (requires setting the two envs if running locally)
-	Expect(os.Setenv(registrationsetup.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
-	Expect(os.Setenv(registrationsetup.SidecarInjectorImageEnvName, "dummy-value-currently-not-used")).NotTo(HaveOccurred())
+	Expect(os.Setenv(constants.PodNamespaceEnvName, superglooNamespace)).NotTo(HaveOccurred())
+	Expect(os.Setenv(constants.SidecarInjectorImageNameEnvName, "dummy-value-currently-not-used")).NotTo(HaveOccurred())
+	Expect(os.Setenv(constants.SidecarInjectorImagePullPolicyEnvName, "Always")).NotTo(HaveOccurred())
 	go func() {
 		defer GinkgoRecover()
 		err := setup.Main(rootCtx, func(e error) {

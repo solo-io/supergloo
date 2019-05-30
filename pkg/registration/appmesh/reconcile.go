@@ -27,18 +27,20 @@ type AutoInjectionReconciler interface {
 }
 
 type autoInjectionReconciler struct {
-	kube                     kubernetes.Interface
-	installer                Installer
-	superglooNamespace       string
-	sidecarInjectorImageName string
+	kube                           kubernetes.Interface
+	installer                      Installer
+	superglooNamespace             string
+	sidecarInjectorImageName       string
+	sidecarInjectorImagePullPolicy string
 }
 
-func NewAutoInjectionReconciler(kube kubernetes.Interface, installer Installer, sgNamespace, sidecarInjectorImage string) AutoInjectionReconciler {
+func NewAutoInjectionReconciler(kube kubernetes.Interface, installer Installer, sgNamespace, sidecarInjectorImage, sidecarInjectorImagePullPolicy string) AutoInjectionReconciler {
 	return &autoInjectionReconciler{
-		kube:                     kube,
-		installer:                installer,
-		superglooNamespace:       sgNamespace,
-		sidecarInjectorImageName: sidecarInjectorImage,
+		kube:                           kube,
+		installer:                      installer,
+		superglooNamespace:             sgNamespace,
+		sidecarInjectorImageName:       sidecarInjectorImage,
+		sidecarInjectorImagePullPolicy: sidecarInjectorImagePullPolicy,
 	}
 }
 
@@ -104,16 +106,18 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests() (helmchart.Mani
 		ServerCert,
 		ServerCertKey,
 		CaBundle string
-		Image string
+		ImageName       string
+		ImagePullPolicy string
 	}
 
 	values := Values{
-		Name:          webhookName,
-		Namespace:     r.superglooNamespace,
-		Image:         r.sidecarInjectorImageName,
-		ServerCert:    base64.StdEncoding.EncodeToString(certs.serverCertificate),
-		ServerCertKey: base64.StdEncoding.EncodeToString(certs.serverCertKey),
-		CaBundle:      base64.StdEncoding.EncodeToString(certs.caCertificate),
+		Name:            webhookName,
+		Namespace:       r.superglooNamespace,
+		ImageName:       r.sidecarInjectorImageName,
+		ImagePullPolicy: r.sidecarInjectorImagePullPolicy,
+		ServerCert:      base64.StdEncoding.EncodeToString(certs.serverCertificate),
+		ServerCertKey:   base64.StdEncoding.EncodeToString(certs.serverCertKey),
+		CaBundle:        base64.StdEncoding.EncodeToString(certs.caCertificate),
 	}
 
 	// Each key/value pair in configMap.Data is a manifest

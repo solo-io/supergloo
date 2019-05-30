@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	testNamespace            = "supergloo-system"
-	sidecarInjectorImageName = "quay.io/solo-io/sidecar-injector:0.1.2"
+	testNamespace           = "supergloo-system"
+	injectorImageName       = "quay.io/solo-io/sidecar-injector:0.1.2"
+	injectorImagePullPolicy = "Always"
 )
 
 var T *testing.T
