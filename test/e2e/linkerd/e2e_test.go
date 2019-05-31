@@ -71,7 +71,7 @@ func testInstallLinkerd(meshName string) {
 	}, time.Minute*5).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
-		_, err := kube.CoreV1().Services(linkerdNamesapce).Get("linkerd-controller-api", metav1.GetOptions{})
+		_, err := kube.CoreV1().Services(linkerdNamespace).Get("linkerd-controller-api", metav1.GetOptions{})
 		return err
 	}).ShouldNot(HaveOccurred())
 
@@ -81,7 +81,7 @@ func testInstallLinkerd(meshName string) {
 		return err
 	}).ShouldNot(HaveOccurred())
 
-	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, linkerdNamesapce,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, linkerdNamespace,
 		"linkerd-controller",
 		"linkerd-web",
 		"linkerd-prometheus",
@@ -124,7 +124,7 @@ func testUninstallLinkerd(meshName string) {
 
 	err = nil
 	Eventually(func() error {
-		_, err = kube.CoreV1().Services(linkerdNamesapce).Get("linkerd-controller-api", metav1.GetOptions{})
+		_, err = kube.CoreV1().Services(linkerdNamespace).Get("linkerd-controller-api", metav1.GetOptions{})
 		return err
 	}, time.Minute*2).Should(HaveOccurred())
 	Expect(kubeerrs.IsNotFound(err)).To(BeTrue())

@@ -11,13 +11,19 @@ import (
 	"github.com/solo-io/build/pkg/ingest"
 )
 
+const defaultSuperglooPath = "github.com/solo-io/supergloo"
+
 // Returns:
 // 1. the current BUILD_ID
 // 2. the URL where the helm chart for this build is located
 // 3. prefix of the repository where the images for this build are located (e.g. quay.io/solo-io)
 func GetBuildInformation() (string, string, string, error) {
+	sgPath := defaultSuperglooPath
+	if customRoot := os.Getenv("PROJECT_ROOT"); customRoot != "" {
+		sgPath = customRoot
+	}
 
-	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", os.Getenv("PROJECT_ROOT"))
+	projectRoot := filepath.Join(os.Getenv("GOPATH"), "src", sgPath)
 	buildConfigFilePath := filepath.Join(projectRoot, constants.DefaultConfigFileName)
 
 	// Get build configuration from build tool

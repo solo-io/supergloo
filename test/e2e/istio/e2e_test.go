@@ -123,7 +123,7 @@ func testInstallIstio(meshName string) {
 	}, time.Minute*5).Should(Equal(core.Status_Accepted))
 
 	Eventually(func() error {
-		_, err := kube.CoreV1().Services(istioNamesapce).Get("istio-pilot", metav1.GetOptions{})
+		_, err := kube.CoreV1().Services(istioNamespace).Get("istio-pilot", metav1.GetOptions{})
 		return err
 	}).ShouldNot(HaveOccurred())
 
@@ -133,7 +133,7 @@ func testInstallIstio(meshName string) {
 		return err
 	}, time.Second*30, time.Second).ShouldNot(HaveOccurred())
 
-	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, istioNamesapce,
+	err = sgtestutils.WaitUntilPodsRunning(time.Minute*2, istioNamespace,
 		"istio-citadel",
 		"istio-galley",
 		"istio-pilot",
@@ -356,7 +356,7 @@ func testUninstallIstio(meshName string) {
 
 	err = nil
 	Eventually(func() error {
-		_, err = kube.CoreV1().Services(istioNamesapce).Get("istio-pilot", metav1.GetOptions{})
+		_, err = kube.CoreV1().Services(istioNamespace).Get("istio-pilot", metav1.GetOptions{})
 		return err
 	}, time.Minute*2).Should(HaveOccurred())
 	Expect(kubeerrs.IsNotFound(err)).To(BeTrue())

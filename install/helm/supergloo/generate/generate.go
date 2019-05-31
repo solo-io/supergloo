@@ -26,24 +26,15 @@ const (
 	constraint = "constraint"
 )
 
-var (
-	osGlooVersion string
-	rootPrefix    string
-)
+var rootPrefix = ""
 
 func Run(version, imageTag, imageRepoPrefix, pullPolicy string) error {
-	glooVersion, err := getOsGlooVersion()
+	glooVersion, err := getOsGlooVersion(rootPrefix)
 	if err != nil {
 		return err
 	}
-	return RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, "", glooVersion)
-}
 
-func RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, glooVersion string) error {
-	rootPrefix = prefix
-	osGlooVersion = glooVersion
-
-	if err := generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix); err != nil {
+	if err := generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix, glooVersion); err != nil {
 		return fmt.Errorf("generating values.yaml failed: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
@@ -52,8 +43,8 @@ func RunWithGlooVersion(version, imageTag, imageRepoPrefix, pullPolicy, prefix, 
 	return nil
 }
 
-func getOsGlooVersion() (string, error) {
-	tomlTree, err := parseToml(rootPrefix)
+func getOsGlooVersion(prefix string) (string, error) {
+	tomlTree, err := parseToml(prefix)
 	if err != nil {
 		return "", err
 	}
@@ -66,8 +57,8 @@ func getOsGlooVersion() (string, error) {
 }
 
 func parseToml(prefix string) ([]*toml.Tree, error) {
-	path := filepath.Join(prefix, gopkgToml)
-	config, err := toml.LoadFile(path)
+	tomlPath := filepath.Join(prefix, gopkgToml)
+	config, err := toml.LoadFile(tomlPath)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +107,7 @@ func writeYaml(obj interface{}, path string) error {
 	return nil
 }
 
-func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
+func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix, glooVersion string) error {
 	config, err := readConfig(filepath.Join(rootPrefix, DefaultValues))
 	if err != nil {
 		return err
@@ -134,7 +125,7 @@ func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix string) error {
 	config.MeshDiscovery.Deployment.Image.Tag = imageTag
 	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
 
-	config.Discovery.Deployment.Image.Tag = osGlooVersion
+	config.Discovery.Deployment.Image.Tag = glooVersion
 	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
