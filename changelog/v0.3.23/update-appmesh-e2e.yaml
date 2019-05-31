@@ -1,3 +1,0 @@
-changelog:
-- type: NON_USER_FACING
-  description: Update AWS App Mesh tests to use containers and chart built during CI build instead of previous releases.
