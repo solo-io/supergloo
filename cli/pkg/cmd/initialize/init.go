@@ -27,8 +27,8 @@ const (
 func Cmd(opts *options.Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "install SuperGloo to a Kubernetes cluster",
-		Long: `Installs SuperGloo using default values based on the official helm chart located in install/helm/supergloo
+		Short: "Installs SuperGloo to a Kubernetes cluster",
+		Long: `Installs SuperGloo using the official helm chart with default values.
 
 The basic SuperGloo installation is composed of single-instance deployments for the supergloo-controller and discovery pods. 
 `,

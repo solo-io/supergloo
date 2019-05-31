@@ -58,7 +58,7 @@ func SurveyAppmeshRegistration(ctx context.Context, opts *options.Options) error
 
 	var choice string
 	if err := cliutil.GetStringInput("Select the key of the pod label that SuperGloo will use to assign your pods "+
-		"to a VirtualNode", &choice); err != nil {
+		"to a VirtualNode:", &choice); err != nil {
 		return err
 	}
 	opts.RegisterAppMesh.VirtualNodeLabel = choice

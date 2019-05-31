@@ -62,7 +62,7 @@ var _ = Describe("Syncer", func() {
 
 		installer = mockInstaller{}
 
-		syncer = NewAppMeshRegistrationSyncer(mockReporter{}, kube, secretClient, &installer)
+		syncer = NewAppMeshRegistrationSyncer(mockReporter{}, kube, secretClient, &installer, testNamespace, injectorImageName, injectorImagePullPolicy)
 	})
 
 	AfterEach(func() {

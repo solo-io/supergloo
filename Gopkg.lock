@@ -1280,7 +1280,7 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:d4f687e69c376ce0c1468622d513d6967621d90f3e8d7e557d950adedbabfc0a"
+  digest = "1:2b8e271bb87ca65fda510cb6abf7e81958e8f286fa2e8adeb6521cfc28994f3a"
   name = "github.com/solo-io/build"
   packages = [
     "pkg/api/v1",
@@ -1291,8 +1291,8 @@
     "pkg/version",
   ]
   pruneopts = "UT"
-  revision = "dc4468118e98379714249d98d2933da24a6e0652"
-  version = "v0.0.3"
+  revision = "38e8b99fc8a263491017049fe42dfe60bf5f96a5"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:f2099c80c03b8b1b540dd2ef572e9ebc13efd87e6b1fb077445ee0bd3b14cfab"
@@ -2513,7 +2513,10 @@
     "github.com/pkg/errors",
     "github.com/prometheus/prometheus/config",
     "github.com/sirupsen/logrus",
+    "github.com/solo-io/build/pkg/api/v1",
     "github.com/solo-io/build/pkg/cli",
+    "github.com/solo-io/build/pkg/constants",
+    "github.com/solo-io/build/pkg/ingest",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/pkg/cliutil",
     "github.com/solo-io/gloo/pkg/cliutil/install",

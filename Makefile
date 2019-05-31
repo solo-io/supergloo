@@ -9,9 +9,11 @@ must: validate-computed-values
 # Read computed values into variables that can be used by make
 # Since both stdout and stderr are passed, our make targets validate the variables
 RELEASE := $(shell go run build/main.go parse-env release)
+# If this is a release build, VERSION and IMAGE_TAG will be a semver version (e.g. 0.1.2)
+# Else they will be the value of the BUILD_ID env
 VERSION := $(shell go run build/main.go parse-env version)
 IMAGE_TAG := $(shell go run build/main.go parse-env image-tag)
-CONTAINER_REPO_PREFIX := $(shell go run build/main.go parse-env container-prefix)
+IMAGE_REPO_PREFIX := $(shell go run build/main.go parse-env container-prefix)
 HELM_REPO := $(shell go run build/main.go parse-env helm-repo)
 
 # use this, or the shorter alias "must", as a dependency for any target that uses
@@ -21,7 +23,7 @@ validate-computed-values:
 	go run build/main.go validate-operating-parameters \
 		$(RELEASE) \
 		$(VERSION) \
-		$(CONTAINER_REPO_PREFIX) \
+		$(IMAGE_REPO_PREFIX) \
 		$(IMAGE_TAG) \
 		$(HELM_REPO)
 
@@ -31,7 +33,7 @@ preview-computed-values: must
 	echo summary of computed values - \
 		release: $(RELEASE), \
 		version: $(VERSION), \
-		container-prefix: $(CONTAINER_REPO_PREFIX), \
+		container-prefix: $(IMAGE_REPO_PREFIX), \
 		image-tag: $(IMAGE_TAG), \
 		helm-repository: $(HELM_REPO)
 
@@ -114,7 +116,7 @@ $(OUTPUT_DIR)/Dockerfile.supergloo: cmd/supergloo/Dockerfile
 	cp $< $@
 
 $(OUTPUT_DIR)/.supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DIR)/Dockerfile.supergloo
-	docker build -t $(CONTAINER_REPO_PREFIX)/supergloo:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
+	docker build -t $(IMAGE_REPO_PREFIX)/supergloo:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.supergloo
 
 
 #----------------------------------------------------------------------------------
@@ -129,7 +131,7 @@ $(OUTPUT_DIR)/Dockerfile.webhook: cmd/admissionwebhook/Dockerfile
 	cp $< $@
 
 $(OUTPUT_DIR)/.webhook-docker: $(OUTPUT_DIR)/sidecar-injector-linux-amd64 $(OUTPUT_DIR)/Dockerfile.webhook
-	docker build -t $(CONTAINER_REPO_PREFIX)/sidecar-injector:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.webhook
+	docker build -t $(IMAGE_REPO_PREFIX)/sidecar-injector:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.webhook
 	touch $@
 
 
@@ -145,7 +147,7 @@ $(OUTPUT_DIR)/Dockerfile.mesh-discovery: cmd/meshdiscovery/Dockerfile
 	cp $< $@
 
 $(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-discovery
-	docker build -t $(CONTAINER_REPO_PREFIX)/mesh-discovery:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
+	docker build -t $(IMAGE_REPO_PREFIX)/mesh-discovery:$(IMAGE_TAG) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
 
 
 #----------------------------------------------------------------------------------
@@ -183,12 +185,12 @@ HELM_CHART_DIR := install/helm/supergloo
 MANIFEST_DIR := install/manifest
 
 .PHONY: manifest
-manifest: fetch-helm-repo helm-generate render-manifest helm-package-chart push-helm-repo
+manifest: must fetch-helm-repo helm-generate render-manifest helm-package-chart push-helm-repo
 
 ### Generates Chart.yaml, values.yaml, and requirements.yaml
 .PHONY: helm-generate
-helm-generate:
-	go run $(HELM_CHART_DIR)/generate-values.go $(VERSION) $(IMAGE_TAG)
+helm-generate: must
+	go run $(HELM_CHART_DIR)/generate-values.go $(VERSION) $(IMAGE_TAG) $(IMAGE_REPO_PREFIX)
 
 ### Packages the chart and regenerates the repo index file
 helm-package-chart: helm-dirs helm-generate
@@ -243,8 +245,8 @@ docker: must $(OUTPUT_DIR)/.supergloo-docker $(OUTPUT_DIR)/.webhook-docker $(OUT
 
 .PHONY: docker-push
 docker-push: must docker
-	docker push $(CONTAINER_REPO_PREFIX)/supergloo:$(IMAGE_TAG)
-	docker push $(CONTAINER_REPO_PREFIX)/sidecar-injector:$(IMAGE_TAG)
-	docker push $(CONTAINER_REPO_PREFIX)/mesh-discovery:$(IMAGE_TAG)
+	docker push $(IMAGE_REPO_PREFIX)/supergloo:$(IMAGE_TAG)
+	docker push $(IMAGE_REPO_PREFIX)/sidecar-injector:$(IMAGE_TAG)
+	docker push $(IMAGE_REPO_PREFIX)/mesh-discovery:$(IMAGE_TAG)
 
 
