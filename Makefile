@@ -161,22 +161,22 @@ SOURCES=$(shell find . -name "*.go" | grep -v test | grep -v mock)
 
 .PHONY: install-cli
 install-cli:
-	cd cli/cmd && go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $(GOPATH)/bin/supergloo
+	cd cli/cmd && go build -ldflags=$(LDFLAGS) -o $(GOPATH)/bin/supergloo
 
 $(OUTPUT_DIR)/supergloo-cli-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cli/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
 
 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cli/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
 
 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cli/cmd/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags=$(LDFLAGS) -o $@ cli/cmd/main.go
 
 .PHONY: build-cli build-cli-local
 build-cli: must $(OUTPUT_DIR)/supergloo-cli-linux-amd64 $(OUTPUT_DIR)/supergloo-cli-darwin-amd64 $(OUTPUT_DIR)/supergloo-cli-windows-amd64.exe
 
 build-cli-local:
-	go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o supergloo cli/cmd/main.go
+	go build -ldflags=$(LDFLAGS) -o supergloo cli/cmd/main.go
 
 
 #----------------------------------------------------------------------------------
