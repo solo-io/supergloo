@@ -49,6 +49,9 @@ OUTPUT_DIR ?= $(ROOTDIR)/_output
 SOURCES := $(shell find . -name "*.go" | grep -v test | grep -v mock)
 LDFLAGS := "-X github.com/solo-io/supergloo/pkg/version.Version=$(VERSION)"
 
+# If this is not a release, add flags to disable compiler optimizations and inlining to improve debugging
+GC_FLAGS := $(if $(filter FALSE,$(RELEASE)),-gcflags "all=-N -l",)
+
 
 #----------------------------------------------------------------------------------
 # Repo setup
@@ -109,7 +112,7 @@ clean:
 #----------------------------------------------------------------------------------
 
 $(OUTPUT_DIR)/supergloo-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/supergloo/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cmd/supergloo/main.go
 	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/Dockerfile.supergloo: cmd/supergloo/Dockerfile
@@ -124,7 +127,7 @@ $(OUTPUT_DIR)/.supergloo-docker: $(OUTPUT_DIR)/supergloo-linux-amd64 $(OUTPUT_DI
 #----------------------------------------------------------------------------------
 
 $(OUTPUT_DIR)/sidecar-injector-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/admissionwebhook/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cmd/admissionwebhook/main.go
 	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/Dockerfile.webhook: cmd/admissionwebhook/Dockerfile
@@ -140,7 +143,7 @@ $(OUTPUT_DIR)/.webhook-docker: $(OUTPUT_DIR)/sidecar-injector-linux-amd64 $(OUTP
 #----------------------------------------------------------------------------------
 
 $(OUTPUT_DIR)/mesh-discovery-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -o $@ cmd/meshdiscovery/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) $(GC_FLAGS) -o $@ cmd/meshdiscovery/main.go
 	shasum -a 256 $@ > $@.sha256
 
 $(OUTPUT_DIR)/Dockerfile.mesh-discovery: cmd/meshdiscovery/Dockerfile
