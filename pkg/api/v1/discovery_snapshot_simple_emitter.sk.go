@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	"go.opencensus.io/stats"
@@ -85,10 +86,10 @@ func (c *discoverySimpleEmitter) Snapshots(ctx context.Context) (<-chan *Discove
 					switch typed := res.(type) {
 					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.Pod:
 						currentSnapshot.Pods = append(currentSnapshot.Pods, typed)
+					case *gloo_solo_io.Upstream:
+						currentSnapshot.Upstreams = append(currentSnapshot.Upstreams, typed)
 					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMap:
 						currentSnapshot.Configmaps = append(currentSnapshot.Configmaps, typed)
-					case *Install:
-						currentSnapshot.Installs = append(currentSnapshot.Installs, typed)
 					default:
 						select {
 						case errs <- fmt.Errorf("DiscoverySnapshotEmitter "+

@@ -8,9 +8,10 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	v10 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
 // MockDiscoveryEmitter is a mock of DiscoveryEmitter interface
@@ -64,6 +65,20 @@ func (mr *MockDiscoveryEmitterMockRecorder) Pod() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pod", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Pod))
 }
 
+// Upstream mocks base method
+func (m *MockDiscoveryEmitter) Upstream() v1.UpstreamClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Upstream")
+	ret0, _ := ret[0].(v1.UpstreamClient)
+	return ret0
+}
+
+// Upstream indicates an expected call of Upstream
+func (mr *MockDiscoveryEmitterMockRecorder) Upstream() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upstream", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Upstream))
+}
+
 // ConfigMap mocks base method
 func (m *MockDiscoveryEmitter) ConfigMap() kubernetes.ConfigMapClient {
 	m.ctrl.T.Helper()
@@ -78,25 +93,11 @@ func (mr *MockDiscoveryEmitterMockRecorder) ConfigMap() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMap", reflect.TypeOf((*MockDiscoveryEmitter)(nil).ConfigMap))
 }
 
-// Install mocks base method
-func (m *MockDiscoveryEmitter) Install() v1.InstallClient {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Install")
-	ret0, _ := ret[0].(v1.InstallClient)
-	return ret0
-}
-
-// Install indicates an expected call of Install
-func (mr *MockDiscoveryEmitterMockRecorder) Install() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Install))
-}
-
 // Snapshots mocks base method
-func (m *MockDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *v1.DiscoverySnapshot, <-chan error, error) {
+func (m *MockDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *v10.DiscoverySnapshot, <-chan error, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Snapshots", watchNamespaces, opts)
-	ret0, _ := ret[0].(<-chan *v1.DiscoverySnapshot)
+	ret0, _ := ret[0].(<-chan *v10.DiscoverySnapshot)
 	ret1, _ := ret[1].(<-chan error)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
