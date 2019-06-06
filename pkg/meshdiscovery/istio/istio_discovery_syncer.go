@@ -2,7 +2,7 @@ package istio
 
 import (
 	"context"
-	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/translator/utils"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -29,8 +29,25 @@ func NewIstioDiscoverySyncer(meshReconciler v1.MeshReconciler) v1.DiscoverySynce
 	return &istioDiscoverySyncer{meshReconciler: meshReconciler}
 }
 
+var discoveryLabels = map[string]string{
+	"discovered_by": "istio-mesh-discovery"
+}
+
 func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "istio-mesh-discovery")
+
+	istioMeshes, err := i.desiredMeshes(ctx, snap)
+	if err != nil {
+		return err
+	}
+
+	istioMeshes.Each(func(element *v1.Mesh) {
+		element.Metadata.Labels = discoveryLabels
+	})
+
+	i.meshReconciler.Reconcile("", istioMeshes, updateMesh, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels})
+
+	return nil
 }
 
 type pilotDeployment struct {
@@ -67,6 +84,11 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 		return false
 	}()
 
+	injectedPods, err := detectInjectedIstioPods(snap.Pods)
+	if err != nil {
+		return nil, err
+	}
+
 	var istioMeshes v1.MeshList
 	for _, pilot := range pilots {
 		var autoInjectionEnabled bool
@@ -89,16 +111,20 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 			rootCa = &root
 		}
 
-
 		mtlsConfig := &v1.MtlsConfig{
 			MtlsEnabled:     globalMtlsEnabled,
 			RootCertificate: rootCa,
 		}
 
-		meshUpstreams, err := detectMeshUpstreams(pilot.namespace, snap.Pods, snap.Upstreams)
-		if err != nil {
-			return nil, err
-		}
+		meshUpstreams := func() []*core.ResourceRef {
+			injectedUpstreams := utils.UpstreamsForPods(injectedPods[pilot.namespace], snap.Upstreams)
+			var usRefs []*core.ResourceRef
+			for _, us := range injectedUpstreams {
+				ref := us.Metadata.Ref()
+				usRefs = append(usRefs, &ref)
+			}
+			return usRefs
+		}()
 
 		istioMesh := &v1.Mesh{
 			Metadata: core.Metadata{
@@ -119,8 +145,10 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 				Upstreams:        meshUpstreams,
 			},
 		}
+		istioMeshes = append(istioMeshes, istioMesh)
 	}
 
+	return istioMeshes, nil
 }
 
 func detectPilotDeployments(deployments kubernetes.DeploymentList) ([]pilotDeployment, error) {
@@ -150,6 +178,26 @@ func detectMeshPolicyCrd(apiexts apiexts.Interface) (bool, error) {
 	return false, err
 }
 
-func detectMeshUpstreams(pilotNamespace string, pods kubernetes.PodList, upstreams gloov1.UpstreamList) ([]*core.ResourceRef, error) {
-
+func detectInjectedIstioPods(pods kubernetes.PodList) (map[string]kubernetes.PodList, error) {
+	injectedPods := make(map[string]kubernetes.PodList)
+findInjectedPods:
+	for _, pod := range pods {
+		for _, container := range pod.Spec.Containers {
+			if container.Name == "istio-proxy" {
+				for i, arg := range container.Args {
+					if arg == "--discoveryAddress" {
+						if i == len(container.Args) {
+							return nil, errors.Errorf("invalid args for istio-proxy sidecar for pod %v.%v", pod.Namespace, pod.Name)
+						}
+						discoveryAddress := container.Args[i+1]
+						discoveryService := strings.Split(discoveryAddress, ":")[0]
+						discoveryNamespace := strings.TrimPrefix(discoveryService, "istio-pilot.")
+						injectedPods[discoveryNamespace] = append(injectedPods[discoveryNamespace], pod)
+						continue findInjectedPods
+					}
+				}
+			}
+		}
+	}
+	return injectedPods, nil
 }
