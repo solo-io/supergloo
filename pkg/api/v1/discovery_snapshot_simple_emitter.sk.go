@@ -90,6 +90,10 @@ func (c *discoverySimpleEmitter) Snapshots(ctx context.Context) (<-chan *Discove
 						currentSnapshot.Upstreams = append(currentSnapshot.Upstreams, typed)
 					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMap:
 						currentSnapshot.Configmaps = append(currentSnapshot.Configmaps, typed)
+					case *TlsSecret:
+						currentSnapshot.Tlssecrets = append(currentSnapshot.Tlssecrets, typed)
+					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.Deployment:
+						currentSnapshot.Deployments = append(currentSnapshot.Deployments, typed)
 					default:
 						select {
 						case errs <- fmt.Errorf("DiscoverySnapshotEmitter "+

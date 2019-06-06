@@ -93,6 +93,34 @@ func (mr *MockDiscoveryEmitterMockRecorder) ConfigMap() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMap", reflect.TypeOf((*MockDiscoveryEmitter)(nil).ConfigMap))
 }
 
+// TlsSecret mocks base method
+func (m *MockDiscoveryEmitter) TlsSecret() v10.TlsSecretClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TlsSecret")
+	ret0, _ := ret[0].(v10.TlsSecretClient)
+	return ret0
+}
+
+// TlsSecret indicates an expected call of TlsSecret
+func (mr *MockDiscoveryEmitterMockRecorder) TlsSecret() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TlsSecret", reflect.TypeOf((*MockDiscoveryEmitter)(nil).TlsSecret))
+}
+
+// Deployment mocks base method
+func (m *MockDiscoveryEmitter) Deployment() kubernetes.DeploymentClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Deployment")
+	ret0, _ := ret[0].(kubernetes.DeploymentClient)
+	return ret0
+}
+
+// Deployment indicates an expected call of Deployment
+func (mr *MockDiscoveryEmitterMockRecorder) Deployment() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deployment", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Deployment))
+}
+
 // Snapshots mocks base method
 func (m *MockDiscoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *v10.DiscoverySnapshot, <-chan error, error) {
 	m.ctrl.T.Helper()

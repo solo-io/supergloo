@@ -53,18 +53,8 @@ message Mesh {
 
 // Generic discovery data shared between different meshes
 message DiscoveryMetadata {
-
-    // list of namespaces which we know are being injected by a given mesh
-    string injected_namespace_label = 1;
-
     // Whether or not auto-injection is enabled for a given mesh
     bool enable_auto_inject = 2;
-
-    // version of the mesh which is installed
-    string mesh_version = 3;
-
-    // namespace which the mesh is installed into
-    string installation_namespace = 4;
 
     // upstreams which point to injected pods in the mesh
     repeated core.solo.io.ResourceRef upstreams = 5;

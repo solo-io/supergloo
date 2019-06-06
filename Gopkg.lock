@@ -1397,15 +1397,15 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:8a82cb31919c7897dfb8e76f3a551c9c787286fd9ca7fb5ac0228c41d216dae0"
+  digest = "1:06e44ab0e77ac857e5a846f38e4e569cc72e1fdf348b550566129794a52e6bdb"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
+    "api/external/kubernetes/deployment",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
     "api/external/kubernetes/service",
     "pkg/api/external/kubernetes/configmap",
-    "pkg/api/external/kubernetes/namespace",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/external/kubernetes/service",
     "pkg/api/v1/clients",
@@ -1451,8 +1451,8 @@
     "test/setup",
   ]
   pruneopts = "UT"
-  revision = "f40d30112db04fbd2cc4ba85f9df66af3607f344"
-  version = "v0.9.6"
+  revision = "afd31df61d88ac19ba5b8939681852162e7df675"
+  version = "v0.9.7"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2549,7 +2549,6 @@
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
-    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
