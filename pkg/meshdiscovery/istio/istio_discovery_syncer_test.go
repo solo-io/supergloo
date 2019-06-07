@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"context"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
@@ -11,8 +12,9 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	"github.com/solo-io/supergloo/pkg/api/v1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	. "github.com/solo-io/supergloo/pkg/meshdiscovery/istio"
+	"github.com/solo-io/supergloo/test/inputs"
 	appsv1 "k8s.io/api/apps/v1"
 	kubev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -53,7 +55,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 	Context("pilot present, istio crds not registered", func() {
 		It("reconciles nil", func() {
 			snap := &v1.DiscoverySnapshot{
-				Deployments: []*kubernetes.Deployment{istioDeployment("ns1", "1234")},
+				Deployments: []*kubernetes.Deployment{istioDeployment("istio-system", "1234")},
 			}
 			err := istioDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
@@ -66,7 +68,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		BeforeEach(func() {
 			crdGetter.shouldSucceed = true
 			snap = &v1.DiscoverySnapshot{
-				Deployments: []*kubernetes.Deployment{istioDeployment("ns1", "1234")},
+				Deployments: []*kubernetes.Deployment{istioDeployment("istio-system", "1234")},
 			}
 		})
 		Context("no meshpolicy, no adapter, no smi, no root cert, no injected pods", func() {
@@ -77,13 +79,13 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
 				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
 					Metadata: core.Metadata{
-						Name:      "ns1-istio",
+						Name:      "istio-system-istio",
 						Namespace: writeNs,
 						Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
 					},
 					MeshType: &v1.Mesh_Istio{
 						Istio: &v1.IstioMesh{
-							InstallationNamespace: "ns1",
+							InstallationNamespace: "istio-system",
 							Version:               "1234",
 						},
 					},
@@ -121,13 +123,13 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 					Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
 					Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
 						Metadata: core.Metadata{
-							Name:      "ns1-istio",
+							Name:      "istio-system-istio",
 							Namespace: writeNs,
 							Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
 						},
 						MeshType: &v1.Mesh_Istio{
 							Istio: &v1.IstioMesh{
-								InstallationNamespace: "ns1",
+								InstallationNamespace: "istio-system",
 								Version:               "1234",
 							},
 						},
@@ -146,7 +148,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			})
 			Context("cacerts present", func() {
 				BeforeEach(func() {
-					snap.Tlssecrets = v1.TlsSecretList{{Metadata: core.Metadata{Name: "cacerts", Namespace: "ns1"}}}
+					snap.Tlssecrets = v1.TlsSecretList{{Metadata: core.Metadata{Name: "cacerts", Namespace: "istio-system"}}}
 				})
 				It("sets mtls enabled true", func() {
 					err := istioDiscovery.Sync(context.TODO(), snap)
@@ -155,25 +157,25 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 					Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
 					Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
 						Metadata: core.Metadata{
-							Name:      "ns1-istio",
+							Name:      "istio-system-istio",
 							Namespace: writeNs,
 							Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
 						},
 						MeshType: &v1.Mesh_Istio{
 							Istio: &v1.IstioMesh{
-								InstallationNamespace: "ns1",
+								InstallationNamespace: "istio-system",
 								Version:               "1234",
 							},
 						},
 						MtlsConfig: &v1.MtlsConfig{
 							MtlsEnabled:     true,
-							RootCertificate: &core.ResourceRef{Name: "cacerts", Namespace: "ns1"},
+							RootCertificate: &core.ResourceRef{Name: "cacerts", Namespace: "istio-system"},
 						},
 						DiscoveryMetadata: &v1.DiscoveryMetadata{
 							EnableAutoInject: false,
 							MtlsConfig: &v1.MtlsConfig{
 								MtlsEnabled:     true,
-								RootCertificate: &core.ResourceRef{Name: "cacerts", Namespace: "ns1"},
+								RootCertificate: &core.ResourceRef{Name: "cacerts", Namespace: "istio-system"},
 							},
 						},
 						SmiEnabled: false,
@@ -182,8 +184,154 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			})
 
 		})
-		Context("sidecar injector deployed", func() {})
-		Context("smi adapter deployed", func() {})
+		Context("sidecar injector deployed", func() {
+			BeforeEach(func() {
+				snap.Deployments = append(snap.Deployments, kubernetes.NewDeployment("istio-system", "istio-sidecar-injector"))
+			})
+			It("sets enable auto inject true", func() {
+				err := istioDiscovery.Sync(context.TODO(), snap)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
+					Metadata: core.Metadata{
+						Name:      "istio-system-istio",
+						Namespace: writeNs,
+						Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
+					},
+					MeshType: &v1.Mesh_Istio{
+						Istio: &v1.IstioMesh{
+							InstallationNamespace: "istio-system",
+							Version:               "1234",
+						},
+					},
+					MtlsConfig: &v1.MtlsConfig{
+						MtlsEnabled: false,
+					},
+					DiscoveryMetadata: &v1.DiscoveryMetadata{
+						EnableAutoInject: true,
+						MtlsConfig: &v1.MtlsConfig{
+							MtlsEnabled: false,
+						},
+					},
+					SmiEnabled: false,
+				}))
+			})
+		})
+		Context("smi adapter deployed", func() {
+			BeforeEach(func() {
+				snap.Deployments = append(snap.Deployments, kubernetes.NewDeployment("istio-system", "smi-adapter-istio"))
+			})
+			It("sets smienabled true", func() {
+				err := istioDiscovery.Sync(context.TODO(), snap)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
+					Metadata: core.Metadata{
+						Name:      "istio-system-istio",
+						Namespace: writeNs,
+						Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
+					},
+					MeshType: &v1.Mesh_Istio{
+						Istio: &v1.IstioMesh{
+							InstallationNamespace: "istio-system",
+							Version:               "1234",
+						},
+					},
+					MtlsConfig: &v1.MtlsConfig{
+						MtlsEnabled: false,
+					},
+					DiscoveryMetadata: &v1.DiscoveryMetadata{
+						EnableAutoInject: false,
+						MtlsConfig: &v1.MtlsConfig{
+							MtlsEnabled: false,
+						},
+					},
+					SmiEnabled: true,
+				}))
+			})
+		})
+		Context("with injected pods", func() {
+			BeforeEach(func() {
+				// if you look at the bookinfopods list, not all the pods
+				// are "finished" with their init container, so they don't all get
+				// recognized as injected (which is fine)
+				snap.Pods = inputs.BookInfoPods("default")
+				snap.Upstreams = inputs.BookInfoUpstreams("default")
+			})
+			It("adds upstreams for the injected pods", func() {
+				err := istioDiscovery.Sync(context.TODO(), snap)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(&v1.Mesh{
+					Metadata: core.Metadata{
+						Name:      "istio-system-istio",
+						Namespace: writeNs,
+						Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
+					},
+					MeshType: &v1.Mesh_Istio{
+						Istio: &v1.IstioMesh{
+							InstallationNamespace: "istio-system",
+							Version:               "1234",
+						},
+					},
+					MtlsConfig: &v1.MtlsConfig{
+						MtlsEnabled: false,
+					},
+					DiscoveryMetadata: &v1.DiscoveryMetadata{
+						EnableAutoInject: false,
+						MtlsConfig: &v1.MtlsConfig{
+							MtlsEnabled: false,
+						},
+						Upstreams: []*core.ResourceRef{
+							{
+								Name:      "default-details-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-details-v1-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-productpage-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-productpage-v1-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-ratings-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-ratings-v1-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-reviews-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-reviews-v1-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-reviews-v2-9080",
+								Namespace: "default",
+							},
+							{
+								Name:      "default-reviews-v3-9080",
+								Namespace: "default",
+							},
+						},
+					},
+					SmiEnabled: false,
+				}))
+			})
+		})
 	})
 })
 

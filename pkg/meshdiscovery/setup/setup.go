@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/istio"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
@@ -18,6 +20,11 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 		stats.StartStatsServer()
 	}
 
+	writeNamespace := os.Getenv("POD_NAMESPACE")
+	if writeNamespace == "" {
+		writeNamespace = "supergloo-system"
+	}
+
 	rootCtx := createRootContext(customCtx)
 
 	clientSet, err := clientset.ClientsetFromContext(rootCtx)
@@ -25,7 +32,12 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 		return err
 	}
 
-	if err := runDiscoveryEventLoop(rootCtx, clientSet, errHandler); err != nil {
+	istioClients, err := clientset.IstioClientsetFromContext(rootCtx)
+	if err != nil {
+		return err
+	}
+
+	if err := runDiscoveryEventLoop(rootCtx, writeNamespace, clientSet, istioClients, errHandler); err != nil {
 		return err
 	}
 
@@ -42,14 +54,21 @@ func createRootContext(customCtx context.Context) context.Context {
 	return rootCtx
 }
 
-func runDiscoveryEventLoop(ctx context.Context, cs *clientset.Clientset, errHandler func(error)) error {
+func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clientset.Clientset, istioClients *clientset.IstioClientset, errHandler func(error)) error {
+
+	istioDiscovery := istio.NewIstioDiscoverySyncer(
+		writeNamespace,
+		v1.NewMeshReconciler(cs.Discovery.Mesh),
+		istioClients.MeshPolicies,
+		cs.ApiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions(),
+	)
 
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Pod.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.ConfigMap.BaseClient()},
 	))
-	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter)
+	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, istioDiscovery)
 
 	errs, err := eventLoop.Run(ctx)
 	if err != nil {

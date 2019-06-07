@@ -3,6 +3,8 @@ package clientset
 import (
 	"context"
 
+	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
 	skconfigmap "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap"
@@ -21,15 +23,16 @@ import (
 type Clientset struct {
 	RestConfig *rest.Config
 
-	Kube kubernetes.Interface
+	Kube          kubernetes.Interface
+	ApiExtensions clientset.Interface
 
 	Input *inputClients
 
 	Discovery *discoveryClients
 }
 
-func newClientset(restConfig *rest.Config, kube kubernetes.Interface, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{RestConfig: restConfig, Kube: kube, Input: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, apiExtensions clientset.Interface, input *inputClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, ApiExtensions: apiExtensions, Input: input, Discovery: discovery}
 }
 
 type discoveryClients struct {
@@ -62,6 +65,10 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 	kubeClient, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	apiExtsClient, err := clientset.NewForConfig(restConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -129,6 +136,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	return newClientset(
 		restConfig,
 		kubeClient,
+		apiExtsClient,
 		newInputClients(pods, configMap, upstream, secret),
 		newDiscoveryClients(mesh),
 	), nil

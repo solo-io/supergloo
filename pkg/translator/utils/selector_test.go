@@ -216,7 +216,7 @@ var _ = Describe("PodsForSelector", func() {
 	})
 })
 
-var _ = Describe("UpstreamsForPods", func(){
+var _ = Describe("UpstreamsForPods", func() {
 	It("selects all the upstreams that cover the given pods", func() {
 		pods := inputs.BookInfoPods("default1")
 		upstreams1 := inputs.BookInfoUpstreams("default1")

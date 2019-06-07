@@ -2,9 +2,11 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/supergloo/pkg/translator/utils"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"strings"
+
+	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"go.uber.org/zap"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
@@ -40,6 +42,16 @@ var discoveryLabels = map[string]string{
 
 func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
 	ctx = contextutils.WithLogger(ctx, "istio-mesh-discovery")
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infow("begin sync",
+		zap.Int("Upstreams", len(snap.Upstreams)),
+		zap.Int("Deployments", len(snap.Deployments)),
+		zap.Int("Tlssecrets", len(snap.Tlssecrets)),
+		zap.Int("Configmaps", len(snap.Configmaps)),
+		zap.Int("Pods", len(snap.Pods)),
+	)
+	defer logger.Infow("end sync")
+	logger.Debugf("full snapshot: %v", snap)
 
 	istioMeshes, err := i.desiredMeshes(ctx, snap)
 	if err != nil {
@@ -50,7 +62,7 @@ func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnaps
 		element.Metadata.Labels = discoveryLabels
 	})
 
-	if err := i.meshReconciler.Reconcile("", istioMeshes, onlyUpdateDiscoveryMetadata, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels}); err != nil {
+	if err := i.meshReconciler.Reconcile(i.writeNamespace, istioMeshes, onlyUpdateDiscoveryMetadata, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels}); err != nil {
 		return err
 	}
 
