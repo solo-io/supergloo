@@ -3,6 +3,7 @@ package istio
 import (
 	"context"
 	"github.com/solo-io/supergloo/pkg/translator/utils"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -10,7 +11,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -18,19 +18,24 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
+// the subset of the api extensions client that we need
+type CrdGetter interface {
+	Get(name string, options metav1.GetOptions) (*v1beta1.CustomResourceDefinition, error)
+}
+
 type istioDiscoverySyncer struct {
 	writeNamespace   string
 	meshReconciler   v1.MeshReconciler
 	meshPolicyClient v1alpha1.MeshPolicyClient
-	apiexts          apiexts.Interface
+	crdGetter        CrdGetter
 }
 
-func NewIstioDiscoverySyncer(meshReconciler v1.MeshReconciler) v1.DiscoverySyncer {
-	return &istioDiscoverySyncer{meshReconciler: meshReconciler}
+func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient, crdGetter CrdGetter) v1.DiscoverySyncer {
+	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClient: meshPolicyClient, crdGetter: crdGetter}
 }
 
 var discoveryLabels = map[string]string{
-	"discovered_by": "istio-mesh-discovery"
+	"discovered_by": "istio-mesh-discovery",
 }
 
 func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
@@ -45,7 +50,9 @@ func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnaps
 		element.Metadata.Labels = discoveryLabels
 	})
 
-	i.meshReconciler.Reconcile("", istioMeshes, updateMesh, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels})
+	if err := i.meshReconciler.Reconcile("", istioMeshes, onlyUpdateDiscoveryMetadata, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels}); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -55,7 +62,7 @@ type pilotDeployment struct {
 }
 
 func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	meshPolicyCrdRegistered, err := detectMeshPolicyCrd(i.apiexts)
+	meshPolicyCrdRegistered, err := detectMeshPolicyCrd(i.crdGetter)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +78,12 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 		return nil, nil
 	}
 
-	// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
-	defaultMeshPolicy, err := i.meshPolicyClient.Read("default", clients.ReadOpts{Ctx: ctx})
-	if err != nil {
-		return nil, err
-	}
-
 	globalMtlsEnabled := func() bool {
+		// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
+		defaultMeshPolicy, err := i.meshPolicyClient.Read("default", clients.ReadOpts{Ctx: ctx})
+		if err != nil {
+			return false
+		}
 		for _, peer := range defaultMeshPolicy.GetPeers() {
 			return peer.GetMtls() != nil
 		}
@@ -167,8 +173,8 @@ func detectPilotDeployments(deployments kubernetes.DeploymentList) ([]pilotDeplo
 	return pilots, nil
 }
 
-func detectMeshPolicyCrd(apiexts apiexts.Interface) (bool, error) {
-	_, err := apiexts.ApiextensionsV1beta1().CustomResourceDefinitions().Get(v1alpha1.MeshPolicyCrd.FullName(), metav1.GetOptions{})
+func detectMeshPolicyCrd(crdGetter CrdGetter) (bool, error) {
+	_, err := crdGetter.Get(v1alpha1.MeshPolicyCrd.FullName(), metav1.GetOptions{})
 	if err == nil {
 		return true, nil
 	}
@@ -200,4 +206,18 @@ findInjectedPods:
 		}
 	}
 	return injectedPods, nil
+}
+
+// after the first write, i.e. on any update
+// we are only interested in updating discovery metadata at this point
+// do not want to overwrite user-modified config settings
+// smi is also included here as it's not intended to be user-writeable
+func onlyUpdateDiscoveryMetadata(original, desired *v1.Mesh) (b bool, e error) {
+	if desired.DiscoveryMetadata.Equal(original.DiscoveryMetadata) && desired.SmiEnabled == original.SmiEnabled {
+		return false, nil
+	}
+	original.DiscoveryMetadata = desired.DiscoveryMetadata
+	original.SmiEnabled = desired.SmiEnabled
+	*desired = *original
+	return true, nil
 }
