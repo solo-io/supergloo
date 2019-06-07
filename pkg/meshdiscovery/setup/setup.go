@@ -64,9 +64,11 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clien
 	)
 
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
+		wrapper.ClientWatchOpts{BaseClient: cs.Input.Deployment.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Pod.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.ConfigMap.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Input.TlsSecret.BaseClient()},
 	))
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, istioDiscovery)
 

@@ -105,7 +105,7 @@ var _ = BeforeSuite(func() {
 			return
 			// TODO: assert errors here
 			Expect(e).NotTo(HaveOccurred())
-		}, nil)
+		})
 		Expect(err).NotTo(HaveOccurred())
 	}()
 
