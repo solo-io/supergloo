@@ -13,8 +13,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/solo-io/go-utils/errors"
-	"github.com/solo-io/supergloo/pkg/util"
-	"github.com/solo-io/supergloo/pkg/version"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -29,34 +27,34 @@ type AutoInjectionReconciler interface {
 }
 
 type autoInjectionReconciler struct {
-	kube      kubernetes.Interface
-	installer Installer
+	kube                           kubernetes.Interface
+	installer                      Installer
+	superglooNamespace             string
+	sidecarInjectorImageName       string
+	sidecarInjectorImagePullPolicy string
 }
 
-func NewAutoInjectionReconciler(kube kubernetes.Interface, installer Installer) AutoInjectionReconciler {
+func NewAutoInjectionReconciler(kube kubernetes.Interface, installer Installer, sgNamespace, sidecarInjectorImage, sidecarInjectorImagePullPolicy string) AutoInjectionReconciler {
 	return &autoInjectionReconciler{
-		kube:      kube,
-		installer: installer,
+		kube:                           kube,
+		installer:                      installer,
+		superglooNamespace:             sgNamespace,
+		sidecarInjectorImageName:       sidecarInjectorImage,
+		sidecarInjectorImagePullPolicy: sidecarInjectorImagePullPolicy,
 	}
 }
 
 func (r *autoInjectionReconciler) Reconcile(autoInjectionEnabled bool) error {
 
-	// Get the namespace in which supergloo is running
-	namespace, err := util.GetSuperglooNamespace(r.kube)
-	if err != nil {
-		return err
-	}
-
 	// Retrieve and render manifests for auto-injection resources
-	autoInjectionManifests, err := r.renderAutoInjectionManifests(namespace)
+	autoInjectionManifests, err := r.renderAutoInjectionManifests()
 	if err != nil {
 		return errors.Wrapf(err, "failed to generate manifests for auto-injection resources")
 	}
 
 	// Remove the auto-injection resources if not needed
 	if !autoInjectionEnabled {
-		if err := r.installer.Delete(namespace, bytes.NewBufferString(autoInjectionManifests.CombinedString())); err != nil {
+		if err := r.installer.Delete(r.superglooNamespace, bytes.NewBufferString(autoInjectionManifests.CombinedString())); err != nil {
 			return errors.Wrapf(err, "failed to delete auto-injection resources [%s]", autoInjectionManifests.Names())
 		}
 	} else {
@@ -64,12 +62,12 @@ func (r *autoInjectionReconciler) Reconcile(autoInjectionEnabled bool) error {
 		secretRelatedManifests, otherManifests := separateSecretManifests(autoInjectionManifests)
 
 		// Ensure secret resources separately. This is necessary in cases
-		if err := r.ensureSecrets(namespace, secretRelatedManifests); err != nil {
+		if err := r.ensureSecrets(r.superglooNamespace, secretRelatedManifests); err != nil {
 			return errors.Wrapf(err, "failed reconcile auto-injection secret resources [%s]", secretRelatedManifests.Names())
 		}
 
 		// TODO(marco): this currently naively checks if the auto-injection resources all exist: if not, it recreates all of them. Swap in the new installer here when it's ready.
-		if err := r.ensureDeployment(namespace, otherManifests); err != nil {
+		if err := r.ensureDeployment(r.superglooNamespace, otherManifests); err != nil {
 			return errors.Wrapf(err, "failed to reconcile auto-injection resources [%s]", otherManifests.Names())
 		}
 	}
@@ -77,36 +75,23 @@ func (r *autoInjectionReconciler) Reconcile(autoInjectionEnabled bool) error {
 	return nil
 }
 
-func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string) (helmchart.Manifests, error) {
-
-	type Image struct {
-		Name, Tag, PullPolicy string
-	}
-
-	type Values struct {
-		Name,
-		Namespace,
-		ServerCert,
-		ServerCertKey,
-		CaBundle string
-		Image Image
-	}
+func (r *autoInjectionReconciler) renderAutoInjectionManifests() (helmchart.Manifests, error) {
 
 	// Retrieve the config map that contains the manifests for all the auto-injection resources
-	cm, err := r.kube.CoreV1().ConfigMaps(namespace).Get(resourcesConfigMapName, metav1.GetOptions{})
+	cm, err := r.kube.CoreV1().ConfigMaps(r.superglooNamespace).Get(resourcesConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to retrieve %s config map", resourcesConfigMapName)
 	}
 
 	certs, err := generateSelfSignedCertificate(cert.Config{
-		CommonName:   fmt.Sprintf("%s.%s", webhookName, namespace),
+		CommonName:   fmt.Sprintf("%s.%s", webhookName, r.superglooNamespace),
 		Organization: []string{"solo.io"},
 		AltNames: cert.AltNames{
 			DNSNames: []string{
 				webhookName,
-				fmt.Sprintf("%s.%s", webhookName, namespace),
-				fmt.Sprintf("%s.%s.svc", webhookName, namespace),
-				fmt.Sprintf("%s.%s.svc.cluster.local", webhookName, namespace),
+				fmt.Sprintf("%s.%s", webhookName, r.superglooNamespace),
+				fmt.Sprintf("%s.%s.svc", webhookName, r.superglooNamespace),
+				fmt.Sprintf("%s.%s.svc.cluster.local", webhookName, r.superglooNamespace),
 			},
 		},
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
@@ -115,17 +100,24 @@ func (r *autoInjectionReconciler) renderAutoInjectionManifests(namespace string)
 		return nil, errors.Wrapf(err, "failed to generate certificate for webhook server")
 	}
 
+	type Values struct {
+		Name,
+		Namespace,
+		ServerCert,
+		ServerCertKey,
+		CaBundle string
+		ImageName       string
+		ImagePullPolicy string
+	}
+
 	values := Values{
-		Name:          webhookName,
-		Namespace:     namespace,
-		ServerCert:    base64.StdEncoding.EncodeToString(certs.serverCertificate),
-		ServerCertKey: base64.StdEncoding.EncodeToString(certs.serverCertKey),
-		CaBundle:      base64.StdEncoding.EncodeToString(certs.caCertificate),
-		Image: Image{
-			Name:       webhookImageName,
-			Tag:        version.GetWebhookImageTag(),
-			PullPolicy: webhookImagePullPolicy,
-		},
+		Name:            webhookName,
+		Namespace:       r.superglooNamespace,
+		ImageName:       r.sidecarInjectorImageName,
+		ImagePullPolicy: r.sidecarInjectorImagePullPolicy,
+		ServerCert:      base64.StdEncoding.EncodeToString(certs.serverCertificate),
+		ServerCertKey:   base64.StdEncoding.EncodeToString(certs.serverCertKey),
+		CaBundle:        base64.StdEncoding.EncodeToString(certs.caCertificate),
 	}
 
 	// Each key/value pair in configMap.Data is a manifest

@@ -104,8 +104,14 @@ steps:
     entrypoint: 'bash'
     args: ['-c', 'docker login quay.io --username "solo-io+solobot" --password $$QUAY_IO_PASSWORD']
     secretEnv: ['QUAY_IO_PASSWORD']
-    id: 'docker-login'
+    id: 'docker-login-quay'
     waitFor: ['unit-tests']
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker login --username soloiobot --password $$DOCKER_HUB_PASSWORD']
+    secretEnv: ['DOCKER_HUB_PASSWORD']
+    id: 'docker-login-docker-hub'
+    waitFor: ['docker-login-quay']
   - name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
     args: ['preview-computed-values', 'docker-push']
     env:
@@ -114,7 +120,7 @@ steps:
       - 'TAGGED_VERSION=$TAG_NAME'
       - 'BUILD_ID=$BUILD_ID'
     dir: './gopath/src/github.com/solo-io/supergloo'
-    waitFor: ['docker-login']
+    waitFor: ['docker-login-docker-hub']
     id: 'docker'
 
   # 2) generate and publish the helm chart
@@ -214,6 +220,7 @@ steps:
       - 'BUILD_ID=$BUILD_ID'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
       - 'KUBECONFIG=/builder/home/.kube/aws-config'
+      - 'E2E_RUN_PODS_LOCALLY=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: bash
     args: ['./ci/run_compiled_tests.sh', 'test/e2e/appmesh']
@@ -228,9 +235,6 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'BUILD_ID=$BUILD_ID'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
-      # we DISABLE interactive tests as they appear to fail our current ci environment
-      # tracking with https://github.com/solo-io/supergloo/issues/243
-      - 'SKIP_INTERACTIVE_TESTS=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: sh
     args: ['-c', 'echo "This test is currently disabled until Istio 1.1.x support is finished in SuperGloo"']
@@ -244,11 +248,9 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'BUILD_ID=$BUILD_ID'
       - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
-      # we DISABLE interactive tests as they appear to fail our current ci environment
-      # tracking with https://github.com/solo-io/supergloo/issues/243
-      - 'SKIP_INTERACTIVE_TESTS=1'
       - 'KUBECONFIG=/builder/home/.kube/istio-10x-config'
       - 'ISTIO_VERSION=1.0.6'
+      - 'E2E_RUN_PODS_LOCALLY=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: bash
     args: ['./ci/run_compiled_tests.sh', 'test/e2e/istio']
@@ -262,6 +264,7 @@ steps:
       - 'GOPATH=/workspace/gopath'
       - 'BUILD_ID=$BUILD_ID'
       - 'KUBECONFIG=/builder/home/.kube/linkerd-config'
+      - 'E2E_RUN_PODS_LOCALLY=1'
     dir: './gopath/src/github.com/solo-io/supergloo'
     entrypoint: bash
     args: ['./ci/run_compiled_tests.sh', 'test/e2e/linkerd']
@@ -289,6 +292,7 @@ secrets:
     secretEnv:
       GITHUB_TOKEN: CiQABlzmSYYiveU0gTxGH2139eaBUedjV3vNCxQmJU+nRPlfQ/YSUQCCPGSGzbGp49fwDYuefAx9V94b8mivdp9AqB7zQAa07VtGJmrGdg9ZuhKGFrrgqxwABE0LLVNHyngCSHYSYMH8Vn/mRtT7wQuEHBlKVGtqPw==
       QUAY_IO_PASSWORD: CiQABlzmSRx5TcOqbldXa/d/+bkmAfpNAWa3PTS06WvuloZL+vASaQCCPGSGCogonVZVEUNx4G3YJtWi18gSuNx4PvLe08q8xAflTMFkjsyQirAOK3Y2oCvgYwiw/ITcuydjkpMjxDygFyENXS9FKFJoAXHlPQE5qidKr8xxmxF5ezhmjGB0gjyjXIIkbSEnBg==
+      DOCKER_HUB_PASSWORD: CiQABlzmSW0u+qhXDvTCxLnbi09Zm88eCU0wSdvFn1W+6WOpTgQSTgCCPGSGTAlMndrEkYOynPhDzTXrW1q1eAsQYjKOWOwZKodcQZ2WIzdvpOOjv+WrGTssWWg1uPFV4CnajT7DzeNAb7USkla1epatm6OnuQ==
       FIREBASE_TOKEN: CiQABlzmSc0BWpPfrGRtDscrxOfp9ZBkZO9fkO79tjEmA14c8ZESVwCCPGSG8uZtLSmFucmEEJGJ0080ON7Zw5TjLe2YdwuxnSOA5YzZryVwLFAMzRmfb6OBxyThTZKvGZzgfXyv6CeLwYX0exk20u7k2bnrWbFHO0Aa4TiQqw==
       AWS_ACCESS_KEY_ID: CiQABlzmSWJ3Nn0crZLTXx4MzXs0uZTHHvXvqzOo2VKBTZOd0JgSPQCCPGSGAf04xCAWsqw2b1hiHLGivKrf2bJgTO9f07JMwKRVIrAclIH07yiDoFuAxlOj+hVy/JPo1CoIjLc=
       AWS_SECRET_ACCESS_KEY: CiQABlzmSWU7vdjGClZYuj687FSEaNQrxElR5iz+LaDujtTpH7MSUQCCPGSGO3vlFcd+Qul/2A0bKQn7+Io+RHact0C8OgZarEOPTkk9LHL6a3CiU2m2vfNceetSopjR3DBM6jpwwuclxnCJMKE2V3R1YsHtkT/AEA==

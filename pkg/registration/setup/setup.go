@@ -2,7 +2,13 @@ package setup
 
 import (
 	"context"
+	"flag"
+	"os"
 	"time"
+
+	"github.com/solo-io/supergloo/pkg/constants"
+
+	"github.com/solo-io/go-utils/errors"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -20,11 +26,14 @@ import (
 	"k8s.io/helm/pkg/kube"
 )
 
-type RegistrationOptions struct {
-	DisablePrometheusBouncer bool
+type Options struct {
+	SuperglooNamespace             string
+	SidecarInjectorImageName       string
+	SidecarInjectorImagePullPolicy string
+	DisablePrometheusBouncer       bool
 }
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub, opts RegistrationOptions) error {
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
 	ctx = contextutils.WithLogger(ctx, "registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -38,6 +47,11 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		}
 	}
 
+	opts, err := getOptions()
+	if err != nil {
+		return err
+	}
+
 	registrationSyncers := createRegistrationSyncers(cs, pubsub, opts)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
@@ -48,7 +62,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub, opts RegistrationOptions) v1.RegistrationSyncer {
+func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub, opts Options) v1.RegistrationSyncer {
 	skipPrometheusBounce := opts.DisablePrometheusBouncer
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
@@ -60,12 +74,13 @@ func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registrat
 			istio2.NewGlooIstioMtlsPlugin(clientset),
 		),
 		appmesh.NewAppMeshRegistrationSyncer(
-			reporter.NewReporter("app-mesh-registration-reporter",
-				clientset.Supergloo.Mesh.BaseClient(),
-			),
+			reporter.NewReporter("app-mesh-registration-reporter", clientset.Supergloo.Mesh.BaseClient()),
 			clientset.Kube,
 			clientset.Supergloo.Secret,
 			kube.New(nil),
+			opts.SuperglooNamespace,
+			opts.SidecarInjectorImageName,
+			opts.SidecarInjectorImagePullPolicy,
 		),
 		registration.NewRegistrationSyncer(pubSub),
 	}
@@ -96,4 +111,26 @@ func runRegistrationEventLoop(ctx context.Context, errHandler func(err error), c
 		}
 	}()
 	return nil
+}
+
+func getOptions() (Options, error) {
+	var opts Options
+
+	flag.BoolVar(&opts.DisablePrometheusBouncer, "disable-prometheus-bouncer", false, "disable automatic "+
+		"bouncing of prometheus pods on config reload. enable this option if using the prometheus configmap reload")
+	flag.Parse()
+
+	if opts.SuperglooNamespace = os.Getenv(constants.PodNamespaceEnvName); opts.SuperglooNamespace == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.PodNamespaceEnvName)
+	}
+
+	if opts.SidecarInjectorImageName = os.Getenv(constants.SidecarInjectorImageNameEnvName); opts.SidecarInjectorImageName == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.SidecarInjectorImageNameEnvName)
+	}
+
+	if opts.SidecarInjectorImagePullPolicy = os.Getenv(constants.SidecarInjectorImagePullPolicyEnvName); opts.SidecarInjectorImagePullPolicy == "" {
+		return Options{}, errors.Errorf("%s env must be set", constants.SidecarInjectorImagePullPolicyEnvName)
+	}
+
+	return opts, nil
 }

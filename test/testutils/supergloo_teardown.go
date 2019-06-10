@@ -81,7 +81,6 @@ func TeardownSuperGloo(kube kubernetes.Interface) {
 func DeleteSuperglooPods(kube kubernetes.Interface, superglooNamespace string) {
 	podsToDelete := []string{
 		"supergloo",
-		// TODO(EItanya): add this back in once it's part of the helm chart
 		"mesh-discovery",
 	}
 	for _, pod := range podsToDelete {

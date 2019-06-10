@@ -1,7 +1,7 @@
 # AWS App Mesh translator
 This package contains the logic for translating a set of Supergloo Routing Rules to a set of AWS App Mesh resources.
 
-Following are is a high-level description of the steps that are executed during translation for each mesh. The 
+The following is a high-level description of the steps that are executed during translation for each mesh. The 
 translation can be divided into three stages:
 
 ## Initialization
@@ -15,7 +15,7 @@ Here we parse the API snapshot for App Mesh related resources and initialize a s
         - check if it has an initContainer with the APPMESH_APP_PORTS env:
             - if yes and it's not empty, keep track of the ports
             - else fail
-2. Group all the pods that belong to the mesh by the Virtual Node names they specify to
+2. Group all the pods that belong to the mesh by the Virtual Node names they specify
 3. For each of the Virtual Node names:
     1. collect:
         - all the upstreams that match the pods that belong to the Virtual Node

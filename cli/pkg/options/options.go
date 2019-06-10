@@ -58,6 +58,7 @@ type Install struct {
 	LinkerdInstall        v1.LinkerdInstall
 	GlooIngressInstall    v1.GlooInstall
 	MeshIngress           MeshIngressInstall
+	InstallTimeout        time.Duration // time to wait for successful install
 }
 
 type IstioInstall struct {

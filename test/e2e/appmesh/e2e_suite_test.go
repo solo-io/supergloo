@@ -2,40 +2,52 @@ package appmesh_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
+
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/avast/retry-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils/clusterlock"
-	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
-	mdsetup "github.com/solo-io/supergloo/pkg/meshdiscovery/setup"
-	"github.com/solo-io/supergloo/pkg/setup"
+	sgutils "github.com/solo-io/supergloo/cli/test/utils"
+	"github.com/solo-io/supergloo/pkg/version"
+	"github.com/solo-io/supergloo/test/e2e/utils"
 	"github.com/solo-io/supergloo/test/testutils"
-	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "E2e Suite")
+	RunSpecs(t, "AWS App Mesh e2e Suite")
 }
 
+const (
+	superglooNamespace  = "supergloo-system"
+	basicNamespace      = "basic-namespace"
+	namespaceWithInject = "namespace-with-inject"
+)
+
 var (
-	kube                                kubernetes.Interface
-	lock                                *clusterlock.TestClusterLocker
-	rootCtx                             context.Context
-	cancel                              func()
-	basicNamespace, namespaceWithInject string
+	kube            kubernetes.Interface
+	lock            *clusterlock.TestClusterLocker
+	rootCtx, cancel = context.WithCancel(context.Background())
 )
 
 var _ = BeforeSuite(func() {
 	kube = testutils.MustKubeClient()
-	var err error
 
+	// Get build information
+	buildVersion, helmChartUrl, imageRepoPrefix, err := utils.GetBuildInformation()
+	Expect(err).NotTo(HaveOccurred())
+
+	// Set the supergloo version (will be equal to the BUILD_ID env)
+	version.Version = buildVersion
+
+	// Acquire cluster lock
 	lock, err = clusterlock.NewTestClusterLocker(kube, clusterlock.Options{
 		IdPrefix: os.ExpandEnv("superglooe2e-{$BUILD_ID}-"),
 	})
@@ -44,68 +56,36 @@ var _ = BeforeSuite(func() {
 		log.Printf("waiting to acquire lock with err: %v", err)
 	}))).NotTo(HaveOccurred())
 
-	basicNamespace, namespaceWithInject = "basic-namespace", "namespace-with-inject"
-
+	// If present, delete all namespaces used in this test
 	teardown()
 
-	kube = clients.MustKubeClient()
-	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: basicNamespace,
-		},
-	})
+	err = testutils.CreateNamespaces(kube,
+		metav1.ObjectMeta{Name: superglooNamespace},
+		metav1.ObjectMeta{Name: basicNamespace},
+		metav1.ObjectMeta{Name: namespaceWithInject, Labels: map[string]string{"app-mesh-injection": "enabled"}},
+	)
 	Expect(err).NotTo(HaveOccurred())
 
-	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   namespaceWithInject,
-			Labels: map[string]string{"app-mesh-injection": "enabled"},
-		},
-	})
+	// Install supergloo using the helm chart specific to this test run
+	err = sgutils.Supergloo(fmt.Sprintf("init -f %s", helmChartUrl))
 	Expect(err).NotTo(HaveOccurred())
 
-	rootCtx, cancel = context.WithCancel(context.TODO())
-	// create sg ns
-	_, err = kube.CoreV1().Namespaces().Create(&kubev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: superglooNamespace},
-	})
-	Expect(err).NotTo(HaveOccurred())
-
-	// start supergloo
-	go func() {
-		defer GinkgoRecover()
-		err := setup.Main(rootCtx, func(e error) {
-			defer GinkgoRecover()
-			return
-			// TODO: assert errors here
-			Expect(e).NotTo(HaveOccurred())
-		})
+	// If env is set, run supergloo locally and delete remote pods
+	if os.Getenv("E2E_RUN_PODS_LOCALLY") != "" {
+		log.Println("Running supergloo locally")
+		err = testutils.RunSuperglooLocally(rootCtx, kube, superglooNamespace, buildVersion, imageRepoPrefix)
 		Expect(err).NotTo(HaveOccurred())
-	}()
-
-	// start mesh discovery
-	go func() {
-		defer GinkgoRecover()
-		err := mdsetup.Main(rootCtx, func(e error) {
-			defer GinkgoRecover()
-			return
-			// TODO: assert errors here
-			Expect(e).NotTo(HaveOccurred())
-		}, nil)
-		Expect(err).NotTo(HaveOccurred())
-	}()
+	}
 })
 
 var _ = AfterSuite(func() {
 	defer lock.ReleaseLock()
+	cancel()
 	teardown()
 })
 
 func teardown() {
-	if cancel != nil {
-		cancel()
-	}
-	testutils.TeardownSuperGloo(testutils.MustKubeClient())
+	testutils.TeardownSuperGloo(kube)
 	kube.CoreV1().Namespaces().Delete(superglooNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(basicNamespace, nil)
 	kube.CoreV1().Namespaces().Delete(namespaceWithInject, nil)

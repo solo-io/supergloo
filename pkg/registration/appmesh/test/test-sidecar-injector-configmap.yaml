@@ -36,8 +36,8 @@ data:
         spec:
           containers:
             - name: sidecar-injector
-              image: {{ .Image.Name }}:{{ .Image.Tag }}
-              imagePullPolicy: {{ .Image.PullPolicy }}
+              image: {{ .ImageName }}
+              imagePullPolicy: {{ .ImagePullPolicy }}
               env:
                 - name: TLS_CERT_PATH
                   value: "/etc/webhook/cert.pem"

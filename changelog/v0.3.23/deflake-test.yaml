@@ -1,0 +1,4 @@
+changelog:
+- type: NON_USER_FACING
+  description: Deflake PubSub test.
+  issueLink: https://github.com/solo-io/supergloo/issues/464

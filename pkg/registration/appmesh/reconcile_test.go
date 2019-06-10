@@ -8,7 +8,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/supergloo/pkg/version"
 	"k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -47,8 +46,12 @@ var _ = Describe("Reconciler", func() {
 	Describe("render auto-injection resources config map", func() {
 
 		It("correctly renders the manifest templates contained in the config map", func() {
-			reconciler := autoInjectionReconciler{kube: kube}
-			autoInjectionManifests, err := reconciler.renderAutoInjectionManifests(testNamespace)
+			reconciler := autoInjectionReconciler{
+				kube:                     kube,
+				superglooNamespace:       testNamespace,
+				sidecarInjectorImageName: injectorImageName,
+			}
+			autoInjectionManifests, err := reconciler.renderAutoInjectionManifests()
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(autoInjectionManifests).To(HaveLen(5))
@@ -69,8 +72,7 @@ var _ = Describe("Reconciler", func() {
 					Expect(deployment.Name).To(BeEquivalentTo(webhookName))
 					containers := deployment.Spec.Template.Spec.Containers
 					Expect(containers).To(HaveLen(1))
-					Expect(containers[0].Image).To(BeEquivalentTo(fmt.Sprintf("%s:%s", webhookImageName, version.GetWebhookImageTag())))
-					Expect(containers[0].ImagePullPolicy).To(BeEquivalentTo(webhookImagePullPolicy))
+					Expect(containers[0].Image).To(Equal(injectorImageName))
 					volumes := deployment.Spec.Template.Spec.Volumes
 					Expect(volumes).To(HaveLen(1))
 					Expect(volumes[0].Secret.SecretName).To(BeEquivalentTo(webhookName))
@@ -104,8 +106,12 @@ var _ = Describe("Reconciler", func() {
 		})
 
 		It("fails if it cannot find the config map", func() {
-			reconciler := autoInjectionReconciler{kube: kube}
-			_, err := reconciler.renderAutoInjectionManifests("some-ns")
+			reconciler := autoInjectionReconciler{
+				kube:                     kube,
+				superglooNamespace:       "some-unexpected-ns",
+				sidecarInjectorImageName: injectorImageName,
+			}
+			_, err := reconciler.renderAutoInjectionManifests()
 			Expect(err).To(HaveOccurred())
 		})
 	})
@@ -117,7 +123,7 @@ var _ = Describe("Reconciler", func() {
 				mockInstaller := NewMockInstaller(ctrl)
 				mockInstaller.EXPECT().Delete(testNamespace, gomock.Any()).Return(nil).Times(1)
 
-				err := NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(false)
+				err := NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(false)
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -131,7 +137,7 @@ var _ = Describe("Reconciler", func() {
 					// One call to Create for secret resources and one for the non-secret ones
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 
-					err := NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err := NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -148,7 +154,7 @@ var _ = Describe("Reconciler", func() {
 					// One call to Create for non-secret resources
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-					err = NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err = NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -164,7 +170,7 @@ var _ = Describe("Reconciler", func() {
 					// Create both
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 
-					err = NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err = NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -186,7 +192,7 @@ var _ = Describe("Reconciler", func() {
 					mockInstaller.EXPECT().Delete(testNamespace, gomock.Any()).Return(nil).Times(0)
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(0)
 
-					err = NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err = NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -206,7 +212,7 @@ var _ = Describe("Reconciler", func() {
 					// Recreate non-secret resources
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-					err = NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err = NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})
@@ -224,7 +230,7 @@ var _ = Describe("Reconciler", func() {
 					// Recreate both
 					mockInstaller.EXPECT().Create(testNamespace, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 
-					err = NewAutoInjectionReconciler(kube, mockInstaller).Reconcile(true)
+					err = NewAutoInjectionReconciler(kube, mockInstaller, testNamespace, injectorImageName, injectorImagePullPolicy).Reconcile(true)
 					Expect(err).NotTo(HaveOccurred())
 				})
 			})

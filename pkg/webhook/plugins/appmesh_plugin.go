@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/constants"
+
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
@@ -120,7 +122,7 @@ func (AppMeshInjectionPlugin) GetSidecarPatch(ctx context.Context, pod *corev1.P
 		}
 		patchConfigMapRef = &core.ResourceRef{
 			Namespace: namespace,
-			Name:      "sidecar-injector",
+			Name:      constants.SidecarInjectorImageName,
 		}
 	}
 	configMap, err := clients.GetClientSet().GetConfigMap(patchConfigMapRef.Namespace, patchConfigMapRef.Name)

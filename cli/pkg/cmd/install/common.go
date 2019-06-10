@@ -1,8 +1,6 @@
 package install
 
 import (
-	"time"
-
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	"github.com/pkg/errors"
@@ -61,7 +59,7 @@ func createInstall(opts *options.Options, install *v1.Install, postInstallAction
 
 	// If any post install actions are present, wait for install to be accepted and then perform them in order
 	if len(postInstallActions) > 0 {
-		timeout := 30 * time.Second
+		timeout := opts.Install.InstallTimeout
 		if err := helpers.WaitForInstallStatus(opts.Ctx, install.Metadata.Ref(), core.Status_Accepted, timeout); err != nil {
 			return err
 		}
