@@ -4,6 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/go-utils/hashutils"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
+
 	"github.com/solo-io/supergloo/pkg/translator/utils"
 	"go.uber.org/zap"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -25,18 +28,30 @@ type CrdGetter interface {
 }
 
 type istioDiscoverySyncer struct {
-	writeNamespace   string
-	meshReconciler   v1.MeshReconciler
-	meshPolicyClient v1alpha1.MeshPolicyClient
-	crdGetter        CrdGetter
+	writeNamespace         string
+	meshReconciler         v1.MeshReconciler
+	meshPolicyClientLoader clientset.MeshPolicyClientLoader
+	crdGetter              CrdGetter
 }
 
-func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient, crdGetter CrdGetter) v1.DiscoverySyncer {
-	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClient: meshPolicyClient, crdGetter: crdGetter}
+func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient clientset.MeshPolicyClientLoader, crdGetter CrdGetter) v1.DiscoverySyncer {
+	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClientLoader: meshPolicyClient, crdGetter: crdGetter}
 }
 
 var discoveryLabels = map[string]string{
 	"discovered_by": "istio-mesh-discovery",
+}
+
+func (i *istioDiscoverySyncer) ShouldSync(old, new *v1.DiscoverySnapshot) bool {
+	if old == nil {
+		return true
+	}
+	desired1, err1 := i.desiredMeshes(context.TODO(), old)
+	desired2, err2 := i.desiredMeshes(context.TODO(), new)
+	if err1 != nil || err2 != nil {
+		return true
+	}
+	return hashutils.HashAll(desired1) != hashutils.HashAll(desired2)
 }
 
 func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
@@ -84,8 +99,13 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 	}
 
 	globalMtlsEnabled := func() bool {
+		meshPolicyClient, err := i.meshPolicyClientLoader()
+		if err != nil {
+			return false
+		}
+
 		// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
-		defaultMeshPolicy, err := i.meshPolicyClient.Read("default", clients.ReadOpts{Ctx: ctx})
+		defaultMeshPolicy, err := meshPolicyClient.Read("default", clients.ReadOpts{Ctx: ctx})
 		if err != nil {
 			return false
 		}
@@ -136,7 +156,7 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 
 		istioMesh := &v1.Mesh{
 			Metadata: core.Metadata{
-				Name:      pilot.namespace + "-istio",
+				Name:      "istio-" + pilot.namespace,
 				Namespace: i.writeNamespace,
 				Labels:    discoveryLabels,
 			},

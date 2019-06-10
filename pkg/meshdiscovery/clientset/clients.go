@@ -162,11 +162,13 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	), nil
 }
 
+type MeshPolicyClientLoader func() (v1alpha1.MeshPolicyClient, error)
+
 type IstioClientset struct {
-	MeshPolicies v1alpha1.MeshPolicyClient
+	MeshPolicies MeshPolicyClientLoader
 }
 
-func newIstioClientset(meshpolicies v1alpha1.MeshPolicyClient) *IstioClientset {
+func newIstioClientset(meshpolicies MeshPolicyClientLoader) *IstioClientset {
 	return &IstioClientset{MeshPolicies: meshpolicies}
 }
 
@@ -180,18 +182,21 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 		istio clients
 	*/
 
-	meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
-		Crd:             v1alpha1.MeshPolicyCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
+	meshPolicyClientLoader := MeshPolicyClientLoader(func() (v1alpha1.MeshPolicyClient, error) {
+		meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
+			Crd:             v1alpha1.MeshPolicyCrd,
+			Cfg:             restConfig,
+			SharedCache:     crdCache,
+			SkipCrdCreation: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if err := meshPolicyConfig.Register(); err != nil {
+			return nil, err
+		}
+		return meshPolicyConfig, nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	if err := meshPolicyConfig.Register(); err != nil {
-		return nil, err
-	}
-	return newIstioClientset(meshPolicyConfig), nil
+	return newIstioClientset(meshPolicyClientLoader), nil
 
 }

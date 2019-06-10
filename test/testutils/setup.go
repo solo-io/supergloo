@@ -58,7 +58,7 @@ func RunSuperglooLocally(ctx context.Context, kube kubernetes.Interface, supergl
 
 			// TODO: we should assert errors here, but see TODO above
 			//Expect(e).NotTo(HaveOccurred())
-		}, nil)
+		})
 		Expect(err).NotTo(HaveOccurred())
 	}()
 

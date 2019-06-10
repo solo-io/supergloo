@@ -40,7 +40,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		istioDiscovery = NewIstioDiscoverySyncer(
 			writeNs,
 			reconciler,
-			meshPolicyClient,
+			func() (client v1alpha1.MeshPolicyClient, e error) {
+				return meshPolicyClient, nil
+			},
 			crdGetter,
 		)
 	})
@@ -71,7 +73,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			istioDiscovery = NewIstioDiscoverySyncer(
 				writeNs,
 				reconciler,
-				meshPolicyClient,
+				func() (client v1alpha1.MeshPolicyClient, e error) {
+					return meshPolicyClient, nil
+				},
 				crdGetter,
 			)
 		})
@@ -88,7 +92,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		expectedMesh := func(mtlsEnabled, enableAutoInject, smiEnabled bool, rootCert *core.ResourceRef) *v1.Mesh {
 			return &v1.Mesh{
 				Metadata: core.Metadata{
-					Name:      "istio-system-istio",
+					Name:      "istio-istio-system",
 					Namespace: writeNs,
 					Labels:    map[string]string{"discovered_by": "istio-mesh-discovery"},
 				},
