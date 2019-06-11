@@ -61,6 +61,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clien
 		v1.NewMeshReconciler(cs.Discovery.Mesh),
 		istioClients.MeshPolicies,
 		cs.ApiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions(),
+		cs.Kube.BatchV1(),
 	)
 
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(

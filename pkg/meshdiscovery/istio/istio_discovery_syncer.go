@@ -4,6 +4,10 @@ import (
 	"context"
 	"strings"
 
+	batchv1 "k8s.io/api/batch/v1"
+	kubev1 "k8s.io/api/core/v1"
+	batchv1client "k8s.io/client-go/kubernetes/typed/batch/v1"
+
 	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 
@@ -22,7 +26,7 @@ import (
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 )
 
-// the subset of the api extensions client that we need
+// the subsets of the kube api that we need
 type CrdGetter interface {
 	Get(name string, options metav1.GetOptions) (*v1beta1.CustomResourceDefinition, error)
 }
@@ -32,10 +36,11 @@ type istioDiscoverySyncer struct {
 	meshReconciler         v1.MeshReconciler
 	meshPolicyClientLoader clientset.MeshPolicyClientLoader
 	crdGetter              CrdGetter
+	jobGetter              batchv1client.JobsGetter
 }
 
-func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient clientset.MeshPolicyClientLoader, crdGetter CrdGetter) v1.DiscoverySyncer {
-	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClientLoader: meshPolicyClient, crdGetter: crdGetter}
+func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient clientset.MeshPolicyClientLoader, crdGetter CrdGetter, jobGetter batchv1client.JobsGetter) v1.DiscoverySyncer {
+	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClientLoader: meshPolicyClient, crdGetter: crdGetter, jobGetter: jobGetter}
 }
 
 var discoveryLabels = map[string]string{
@@ -119,6 +124,19 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 
 	var istioMeshes v1.MeshList
 	for _, pilot := range pilots {
+
+		// ensure that the post-install jobs have run for this pilot,
+		// if not, we're not ready to detect it
+		postInstallComplete, err := detectPostInstallJobComplete(i.jobGetter, pilot.namespace)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to detect if post-install jobs have finished: %v", err)
+			continue
+		}
+
+		if !postInstallComplete {
+			continue
+		}
+
 		var autoInjectionEnabled bool
 		sidecarInjector, err := snap.Deployments.Find(pilot.namespace, "istio-sidecar-injector")
 		if err == nil && (sidecarInjector.Spec.Replicas == nil || *sidecarInjector.Spec.Replicas > 0) {
@@ -139,9 +157,12 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 			rootCa = &root
 		}
 
-		mtlsConfig := &v1.MtlsConfig{
-			MtlsEnabled:     globalMtlsEnabled,
-			RootCertificate: rootCa,
+		var mtlsConfig *v1.MtlsConfig
+		if globalMtlsEnabled {
+			mtlsConfig = &v1.MtlsConfig{
+				MtlsEnabled:     true,
+				RootCertificate: rootCa,
+			}
 		}
 
 		meshUpstreams := func() []*core.ResourceRef {
@@ -206,6 +227,33 @@ func detectMeshPolicyCrd(crdGetter CrdGetter) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+var PostInstallJobs = []string{
+	"istio-security-post-install",
+}
+
+func detectPostInstallJobComplete(jobGetter batchv1client.JobsGetter, pilotNamespace string) (bool, error) {
+	for _, jobName := range PostInstallJobs {
+		job, err := jobGetter.Jobs(pilotNamespace).Get(jobName, metav1.GetOptions{})
+		if err != nil {
+			if kubeerrs.IsNotFound(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		var jobComplete bool
+		for _, condition := range job.Status.Conditions {
+			if condition.Type == batchv1.JobComplete && condition.Status == kubev1.ConditionTrue {
+				jobComplete = true
+				break
+			}
+		}
+		if !jobComplete {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 func detectInjectedIstioPods(ctx context.Context, pods kubernetes.PodList) map[string]kubernetes.PodList {

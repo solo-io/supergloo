@@ -2,6 +2,7 @@ package clientset
 
 import (
 	"context"
+	"sync"
 
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 
@@ -178,9 +179,9 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 		return nil, err
 	}
 	crdCache := kube.NewKubeCache(ctx)
-	/*
-		istio clients
-	*/
+
+	// the cache should only be registered once
+	registerOnce := &sync.Once{}
 
 	meshPolicyClientLoader := MeshPolicyClientLoader(func() (v1alpha1.MeshPolicyClient, error) {
 		meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
@@ -192,9 +193,14 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := meshPolicyConfig.Register(); err != nil {
-			return nil, err
+		var registrationErr error
+		registerOnce.Do(func() {
+			registrationErr = meshPolicyConfig.Register()
+		})
+		if registrationErr != nil {
+			return nil, registrationErr
 		}
+
 		return meshPolicyConfig, nil
 	})
 	return newIstioClientset(meshPolicyClientLoader), nil

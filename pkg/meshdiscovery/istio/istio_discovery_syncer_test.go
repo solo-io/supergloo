@@ -4,6 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	v13 "k8s.io/api/batch/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
+	v12 "k8s.io/client-go/kubernetes/typed/batch/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
@@ -30,6 +35,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		reconciler       *mockMeshReconciler
 		meshPolicyClient v1alpha1.MeshPolicyClient
 		crdGetter        *mockCrdGetter
+		jobGetter        *mockJobGetter
 		writeNs          = "write-objects-here"
 	)
 	BeforeEach(func() {
@@ -37,6 +43,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		meshPolicyClient, _ = v1alpha1.NewMeshPolicyClient(
 			&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 		crdGetter = &mockCrdGetter{}
+		jobGetter = newCompletedJobGetter()
 		istioDiscovery = NewIstioDiscoverySyncer(
 			writeNs,
 			reconciler,
@@ -44,6 +51,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				return meshPolicyClient, nil
 			},
 			crdGetter,
+			jobGetter,
 		)
 	})
 	Context("pilot not present", func() {
@@ -66,6 +74,30 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
+	Context("pilot present, istio crds registered, job not complete", func() {
+		var snap *v1.DiscoverySnapshot
+		BeforeEach(func() {
+			crdGetter.shouldSucceed = true
+			snap = &v1.DiscoverySnapshot{
+				Deployments: []*kubernetes.Deployment{istioDeployment("istio-system", "1234")},
+			}
+			istioDiscovery = NewIstioDiscoverySyncer(
+				writeNs,
+				reconciler,
+				func() (client v1alpha1.MeshPolicyClient, e error) {
+					return meshPolicyClient, nil
+				},
+				crdGetter,
+				newIncompleteJobGetter(),
+			)
+		})
+		It("reconciles nil", func() {
+			err := istioDiscovery.Sync(context.TODO(), snap)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+		})
+	})
 	Context("pilot present, meshpolicy client failing", func() {
 		BeforeEach(func() {
 			// use a meshpolicy client we know will always fail
@@ -77,6 +109,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 					return meshPolicyClient, nil
 				},
 				crdGetter,
+				jobGetter,
 			)
 		})
 		It("returns a DetectingMeshPolicy error", func() {
@@ -90,6 +123,13 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 	})
 	Context("pilot present, istio crds registered", func() {
 		expectedMesh := func(mtlsEnabled, enableAutoInject, smiEnabled bool, rootCert *core.ResourceRef) *v1.Mesh {
+			var mtlsConfig *v1.MtlsConfig
+			if mtlsEnabled {
+				mtlsConfig = &v1.MtlsConfig{
+					MtlsEnabled:     mtlsEnabled,
+					RootCertificate: rootCert,
+				}
+			}
 			return &v1.Mesh{
 				Metadata: core.Metadata{
 					Name:      "istio-istio-system",
@@ -102,16 +142,10 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 						Version:               "1234",
 					},
 				},
-				MtlsConfig: &v1.MtlsConfig{
-					MtlsEnabled:     mtlsEnabled,
-					RootCertificate: rootCert,
-				},
+				MtlsConfig: mtlsConfig,
 				DiscoveryMetadata: &v1.DiscoveryMetadata{
 					EnableAutoInject: enableAutoInject,
-					MtlsConfig: &v1.MtlsConfig{
-						MtlsEnabled:     mtlsEnabled,
-						RootCertificate: rootCert,
-					},
+					MtlsConfig:       mtlsConfig,
 				},
 				SmiEnabled: smiEnabled,
 			}
@@ -298,4 +332,70 @@ func istioDeployment(namespace, version string) *kubernetes.Deployment {
 			},
 		},
 	}
+}
+
+type mockJobGetter struct {
+	jobToReturn   *v13.Job
+	errorToReturn error
+}
+
+func newCompletedJobGetter() *mockJobGetter {
+	return &mockJobGetter{
+		jobToReturn: &v13.Job{
+			Status: v13.JobStatus{
+				Conditions: []v13.JobCondition{{
+					Type:   v13.JobComplete,
+					Status: kubev1.ConditionTrue,
+				}},
+			},
+		},
+	}
+}
+
+func newIncompleteJobGetter() *mockJobGetter {
+	return &mockJobGetter{
+		jobToReturn: &v13.Job{
+			Status: v13.JobStatus{},
+		},
+	}
+}
+
+func (g *mockJobGetter) Get(name string, options metav1.GetOptions) (*v13.Job, error) {
+	return g.jobToReturn, g.errorToReturn
+}
+
+func (*mockJobGetter) Create(*v13.Job) (*v13.Job, error) {
+	panic("implement me")
+}
+
+func (*mockJobGetter) Update(*v13.Job) (*v13.Job, error) {
+	panic("implement me")
+}
+
+func (*mockJobGetter) UpdateStatus(*v13.Job) (*v13.Job, error) {
+	panic("implement me")
+}
+
+func (*mockJobGetter) Delete(name string, options *metav1.DeleteOptions) error {
+	panic("implement me")
+}
+
+func (*mockJobGetter) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+	panic("implement me")
+}
+
+func (*mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
+	panic("implement me")
+}
+
+func (*mockJobGetter) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	panic("implement me")
+}
+
+func (*mockJobGetter) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v13.Job, err error) {
+	panic("implement me")
+}
+
+func (g *mockJobGetter) Jobs(namespace string) v12.JobInterface {
+	return g
 }
