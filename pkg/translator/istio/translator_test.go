@@ -381,7 +381,7 @@ var _ = Describe("createServiceRolesFromRule", func() {
 		serviceRoles, serviceRoleBindings, err := createServiceRolesFromRule(
 			rule,
 			inputs.BookInfoUpstreams("default"),
-			inputs.BookInfoPodsIstioInject("default"))
+			inputs.BookInfoPods("default"))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(serviceRoles).To(HaveLen(1))
 		Expect(serviceRoleBindings).To(HaveLen(1))
@@ -412,7 +412,7 @@ var _ = Describe("getSubjectsForSelector", func() {
 				},
 			},
 			inputs.BookInfoUpstreams("default"),
-			inputs.BookInfoPodsIstioInject("default"),
+			inputs.BookInfoPods("default"),
 		)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(subjects).To(Equal([]*istiorbac.Subject{
@@ -438,7 +438,7 @@ var _ = Describe("createServiceRoleBinding", func() {
 				},
 			},
 			inputs.BookInfoUpstreams("default"),
-			inputs.BookInfoPodsIstioInject("default"))
+			inputs.BookInfoPods("default"))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(serviceRoleBinding.Metadata.Name).To(Equal("somename"))
 		Expect(serviceRoleBinding.RoleRef.Kind).To(Equal("ServiceRole"))
@@ -518,7 +518,7 @@ var _ = Describe("createSecurityConfig", func() {
 			"somenamespace",
 			rules,
 			inputs.BookInfoUpstreams("default"),
-			inputs.BookInfoPodsIstioInject("default"),
+			inputs.BookInfoPods("default"),
 			resourceErrs,
 		)
 		Expect(securityConfig.RbacConfig).NotTo(BeNil())

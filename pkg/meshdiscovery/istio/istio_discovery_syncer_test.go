@@ -236,7 +236,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				// if you look at the bookinfopods list, not all the pods
 				// are "finished" with their init container, so they don't all get
 				// recognized as injected (which is fine)
-				snap.Pods = inputs.BookInfoPodsIstioInject("default")
+				snap.Pods = inputs.BookInfoPods("default")
 				snap.Upstreams = inputs.BookInfoUpstreams("default")
 			})
 			It("adds upstreams for the injected pods", func() {
