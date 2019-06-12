@@ -30,8 +30,12 @@ func (s *meshDiscoverySyncer) ShouldSync(old, new *v1.DiscoverySnapshot) bool {
 	if old == nil {
 		return true
 	}
-	desired1, err1 := s.plugin.DesiredMeshes(context.TODO(), old)
-	desired2, err2 := s.plugin.DesiredMeshes(context.TODO(), new)
+
+	// silence any logs ShouldSync might produce
+	silentCtx := contextutils.SilenceLogger(context.TODO())
+
+	desired1, err1 := s.plugin.DesiredMeshes(silentCtx, old)
+	desired2, err2 := s.plugin.DesiredMeshes(silentCtx, new)
 	if err1 != nil || err2 != nil {
 		return true
 	}
