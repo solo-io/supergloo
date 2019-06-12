@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/appmesh"
+
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/istio"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
@@ -68,7 +70,8 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clien
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Deployment.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Pod.BaseClient()},
-		wrapper.ClientWatchOpts{BaseClient: cs.Input.ConfigMap.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Input.ConfigMap.BaseClient(),
+			ResourceName: appmesh.AwsConfigMapName, Namespace: appmesh.AwsConfigMapNamespace},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.TlsSecret.BaseClient()},
 	))
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, istioDiscovery)
