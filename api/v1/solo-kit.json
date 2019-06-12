@@ -79,10 +79,6 @@
         "package": "gloo.solo.io"
       },
       {
-        "name": "ConfigMap",
-        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
         "name": "TlsSecret",
         "package": "supergloo.solo.io"
       },
