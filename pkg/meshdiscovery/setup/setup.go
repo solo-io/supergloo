@@ -32,6 +32,15 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 
 	rootCtx := createRootContext(customCtx)
 
+	if errHandler == nil {
+		errHandler = func(err error) {
+			if err == nil {
+				return
+			}
+			contextutils.LoggerFrom(rootCtx).Errorf("error: %v", err)
+		}
+	}
+
 	clientSet, err := clientset.ClientsetFromContext(rootCtx)
 	if err != nil {
 		return err
