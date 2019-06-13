@@ -2,6 +2,8 @@ package setup
 
 import (
 	"context"
+	appmeshconfig "github.com/solo-io/supergloo/pkg/config/appmesh"
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/appmesh"
 	"os"
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/linkerd"
@@ -73,6 +75,13 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clien
 		meshReconciler,
 	)
 
+	appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(
+		writeNamespace,
+		meshReconciler,
+		appmeshconfig.NewAppMeshClientBuilder(cs.Input.Secret),
+		cs.Input.Secret,
+	)
+
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Deployment.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
@@ -82,6 +91,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, cs *clien
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter,
 		istioDiscovery,
 		linkerdDiscovery,
+		appmeshDiscovery,
 	)
 
 	errs, err := eventLoop.Run(ctx)

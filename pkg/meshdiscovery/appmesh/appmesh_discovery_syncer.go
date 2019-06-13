@@ -20,15 +20,18 @@ import (
 )
 
 type appmeshDiscoveryPlugin struct {
-	cb      appmesh.ClientBuilder
-	secrets gloov1.SecretClient
+	clientBuilder appmesh.ClientBuilder
+	secrets       gloov1.SecretClient
 }
 
-func NewAppmeshDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler) v1.DiscoverySyncer {
+func NewAppmeshDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, clientBuilder appmesh.ClientBuilder, secrets gloov1.SecretClient) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
-		&appmeshDiscoveryPlugin{},
+		&appmeshDiscoveryPlugin{
+			clientBuilder: clientBuilder,
+			secrets:       secrets,
+		},
 	)
 }
 
@@ -67,7 +70,7 @@ func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Dis
 
 	uniqueMeshes := make(map[string]*core.ResourceRef)
 	for _, secret := range awsSecrets {
-		awsClient, err := p.cb.GetClientInstance(secret, awsRegion)
+		awsClient, err := p.clientBuilder.GetClientInstance(secret, awsRegion)
 		if err != nil {
 			logger.Errorf("failed getting aws client instance: %v", err)
 			continue
@@ -149,7 +152,7 @@ const (
 
 func detectEksCluster(pods kubernetes.PodList) (bool, string) {
 	for _, pod := range pods {
-		if pod.Namespace != awsPodNamespace || !strings.HasPrefix(pod.Namespace, awsPodPrefix) {
+		if pod.Namespace != awsPodNamespace || !strings.HasPrefix(pod.Name, awsPodPrefix) {
 			continue
 		}
 		for _, container := range pod.Spec.Containers {
