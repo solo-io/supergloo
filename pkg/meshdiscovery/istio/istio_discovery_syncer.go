@@ -178,7 +178,7 @@ func detectPilotDeployments(ctx context.Context, deployments kubernetes.Deployme
 	var pilots []pilotDeployment
 	for _, deployment := range deployments {
 		for _, container := range deployment.Spec.Template.Spec.Containers {
-			if strings.Contains(container.Image, "istio/pilot") {
+			if strings.Contains(container.Image, "istio") && strings.Contains(container.Image, "pilot") {
 				split := strings.Split(container.Image, ":")
 				if len(split) != 2 {
 					contextutils.LoggerFrom(ctx).Errorf("invalid or unexpected image format for pilot: %v", container.Image)
