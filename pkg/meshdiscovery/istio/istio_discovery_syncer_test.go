@@ -342,6 +342,7 @@ type mockJobGetter struct {
 func newCompletedJobGetter() *mockJobGetter {
 	return &mockJobGetter{
 		jobToReturn: &v13.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: "istio-security-post-install"},
 			Status: v13.JobStatus{
 				Conditions: []v13.JobCondition{{
 					Type:   v13.JobComplete,
@@ -355,13 +356,14 @@ func newCompletedJobGetter() *mockJobGetter {
 func newIncompleteJobGetter() *mockJobGetter {
 	return &mockJobGetter{
 		jobToReturn: &v13.Job{
-			Status: v13.JobStatus{},
+			ObjectMeta: metav1.ObjectMeta{Name: "istio-security-post-install"},
+			Status:     v13.JobStatus{},
 		},
 	}
 }
 
-func (g *mockJobGetter) Get(name string, options metav1.GetOptions) (*v13.Job, error) {
-	return g.jobToReturn, g.errorToReturn
+func (*mockJobGetter) Get(name string, options metav1.GetOptions) (*v13.Job, error) {
+	panic("implement me")
 }
 
 func (*mockJobGetter) Create(*v13.Job) (*v13.Job, error) {
@@ -384,8 +386,8 @@ func (*mockJobGetter) DeleteCollection(options *metav1.DeleteOptions, listOption
 	panic("implement me")
 }
 
-func (*mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
-	panic("implement me")
+func (g *mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
+	return &v13.JobList{Items: []v13.Job{*g.jobToReturn}}, g.errorToReturn
 }
 
 func (*mockJobGetter) Watch(opts metav1.ListOptions) (watch.Interface, error) {

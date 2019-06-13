@@ -209,28 +209,33 @@ var PostInstallJobs = []string{
 func detectPostInstallJobComplete(jobGetter batchv1client.JobsGetter, pilotNamespace string) (bool, error) {
 	jobsList, err := jobGetter.Jobs(pilotNamespace).List(metav1.ListOptions{})
 	if err != nil {
-		if kubeerrs.IsNotFound(err) {
-			return false, nil
-		}
 		return false, err
 	}
 
-	for _, jobNamePrefix := range PostInstallJobs {
+	getJobFromPrefix := func(prefix string) *batchv1.Job {
 		for _, job := range jobsList.Items {
-			if !strings.HasPrefix(job.Name, jobNamePrefix) {
-				continue
+			if strings.HasPrefix(job.Name, prefix) {
+				return &job
 			}
+		}
+		return nil
+	}
 
-			var jobComplete bool
-			for _, condition := range job.Status.Conditions {
-				if condition.Type == batchv1.JobComplete && condition.Status == kubev1.ConditionTrue {
-					jobComplete = true
-					break
-				}
+	for _, jobName := range PostInstallJobs {
+		job := getJobFromPrefix(jobName)
+		if job == nil {
+			return false, nil
+		}
+
+		var jobComplete bool
+		for _, condition := range job.Status.Conditions {
+			if condition.Type == batchv1.JobComplete && condition.Status == kubev1.ConditionTrue {
+				jobComplete = true
+				break
 			}
-			if !jobComplete {
-				return false, nil
-			}
+		}
+		if !jobComplete {
+			return false, nil
 		}
 	}
 	return true, nil
