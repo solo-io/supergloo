@@ -88,8 +88,6 @@ func (c *discoverySimpleEmitter) Snapshots(ctx context.Context) (<-chan *Discove
 						currentSnapshot.Pods = append(currentSnapshot.Pods, typed)
 					case *gloo_solo_io.Upstream:
 						currentSnapshot.Upstreams = append(currentSnapshot.Upstreams, typed)
-					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMap:
-						currentSnapshot.Configmaps = append(currentSnapshot.Configmaps, typed)
 					case *TlsSecret:
 						currentSnapshot.Tlssecrets = append(currentSnapshot.Tlssecrets, typed)
 					case *github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.Deployment:

@@ -8,7 +8,6 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
-	skconfigmap "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap"
 	skdeployment "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment"
 	skpod "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
@@ -47,15 +46,14 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 
 type inputClients struct {
 	Pod        skkube.PodClient
-	ConfigMap  skkube.ConfigMapClient
 	Deployment skkube.DeploymentClient
 	Upstream   gloov1.UpstreamClient
 	Secret     gloov1.SecretClient
 	TlsSecret  v1.TlsSecretClient
 }
 
-func newInputClients(pod skkube.PodClient, configMap skkube.ConfigMapClient, deployment skkube.DeploymentClient, upstream gloov1.UpstreamClient, secret gloov1.SecretClient, tlsSecret v1.TlsSecretClient) *inputClients {
-	return &inputClients{Pod: pod, ConfigMap: configMap, Deployment: deployment, Upstream: upstream, Secret: secret, TlsSecret: tlsSecret}
+func newInputClients(pod skkube.PodClient, deployment skkube.DeploymentClient, upstream gloov1.UpstreamClient, secret gloov1.SecretClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	return &inputClients{Pod: pod, Deployment: deployment, Upstream: upstream, Secret: secret, TlsSecret: tlsSecret}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -152,13 +150,12 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	// used by the istio policy syncer to watch pods for service account info
 	pods := skpod.NewPodClient(kubeClient, kubeCoreCache)
 	deployments := skdeployment.NewDeploymentClient(kubeClient, deploymentCache)
-	configMap := skconfigmap.NewConfigMapClient(kubeClient, kubeCoreCache)
 
 	return newClientset(
 		restConfig,
 		kubeClient,
 		apiExtsClient,
-		newInputClients(pods, configMap, deployments, upstream, secret, tlsSecret),
+		newInputClients(pods, deployments, upstream, secret, tlsSecret),
 		newDiscoveryClients(mesh),
 	), nil
 }

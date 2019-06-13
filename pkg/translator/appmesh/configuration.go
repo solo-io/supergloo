@@ -49,6 +49,8 @@ type AwsAppMeshConfiguration interface {
 	ProcessRoutingRules(rules v1.RoutingRuleList) error
 	// Return the set of App Mesh resources
 	ResourceSnapshot() *ResourceSnapshot
+	// Return all injected Upstreams
+	InjectedUpstreams() gloov1.UpstreamList
 }
 
 // Represents the output of the App Mesh translator
@@ -432,4 +434,8 @@ func createRoute(meshName, routeName, virtualRouterName string, routeSpec *appme
 			HttpRoute: routeSpec,
 		},
 	}
+}
+
+func (c *AwsAppMeshConfigurationImpl) InjectedUpstreams() gloov1.UpstreamList {
+	return c.UpstreamList
 }
