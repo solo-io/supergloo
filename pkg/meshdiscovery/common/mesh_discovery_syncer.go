@@ -21,7 +21,7 @@ type meshDiscoverySyncer struct {
 	meshReconciler v1.MeshReconciler
 	plugin         MeshDiscoveryPlugin
 
-	previousSnapshot *v1.DiscoverySnapshot
+	lastDesired v1.MeshList
 }
 
 func NewDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, plugin MeshDiscoveryPlugin) v1.DiscoverySyncer {
@@ -29,19 +29,14 @@ func NewDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler,
 }
 
 func (s *meshDiscoverySyncer) ShouldSync(_, new *v1.DiscoverySnapshot) bool {
-	if s.previousSnapshot == nil {
-		return true
-	}
-
 	// silence any logs ShouldSync might produce
 	silentCtx := contextutils.SilenceLogger(context.TODO())
 
-	desired1, err1 := s.plugin.DesiredMeshes(silentCtx, s.previousSnapshot)
-	desired2, err2 := s.plugin.DesiredMeshes(silentCtx, new)
-	if err1 != nil || err2 != nil {
+	desired, err := s.plugin.DesiredMeshes(silentCtx, new)
+	if err != nil {
 		return true
 	}
-	return hashutils.HashAll(desired1) != hashutils.HashAll(desired2)
+	return hashutils.HashAll(desired) != hashutils.HashAll(s.lastDesired)
 }
 
 func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
@@ -75,7 +70,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 		return err
 	}
 
-	s.previousSnapshot = snap
+	s.lastDesired = desiredMeshes
 
 	return nil
 }
