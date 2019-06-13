@@ -38,6 +38,7 @@ var _ = Describe("Setup", func() {
 		cs, err := clientset.ClientsetFromContext(ctx)
 		Expect(err).NotTo(HaveOccurred())
 		errHandler := func(err error) {
+			defer GinkgoRecover()
 			Expect(err).NotTo(HaveOccurred())
 		}
 

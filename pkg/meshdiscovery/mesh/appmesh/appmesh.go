@@ -54,12 +54,10 @@ func (s *appmeshDiscoverySyncer) DiscoverMeshes(ctx context.Context, snap *v1.Di
 	logger := contextutils.LoggerFrom(ctx)
 
 	pods := snap.Pods
-	installs := snap.Installs
 	configMaps := snap.Configmaps
 
 	fields := []interface{}{
 		zap.Int("pods", len(pods)),
-		zap.Int("installs", len(installs)),
 		zap.Int("configmaps", len(configMaps)),
 	}
 	logger.Infow("begin sync", fields...)

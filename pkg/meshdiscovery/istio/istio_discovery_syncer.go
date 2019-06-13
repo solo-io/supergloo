@@ -4,15 +4,15 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/supergloo/pkg/meshdiscovery/common"
+
 	batchv1 "k8s.io/api/batch/v1"
 	kubev1 "k8s.io/api/core/v1"
 	batchv1client "k8s.io/client-go/kubernetes/typed/batch/v1"
 
-	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/clientset"
 
 	"github.com/solo-io/supergloo/pkg/translator/utils"
-	"go.uber.org/zap"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -31,8 +31,7 @@ type CrdGetter interface {
 	Get(name string, options metav1.GetOptions) (*v1beta1.CustomResourceDefinition, error)
 }
 
-type istioDiscoverySyncer struct {
-	writeNamespace         string
+type istioDiscoveryPlugin struct {
 	meshReconciler         v1.MeshReconciler
 	meshPolicyClientLoader clientset.MeshPolicyClientLoader
 	crdGetter              CrdGetter
@@ -40,56 +39,27 @@ type istioDiscoverySyncer struct {
 }
 
 func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient clientset.MeshPolicyClientLoader, crdGetter CrdGetter, jobGetter batchv1client.JobsGetter) v1.DiscoverySyncer {
-	return &istioDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, meshPolicyClientLoader: meshPolicyClient, crdGetter: crdGetter, jobGetter: jobGetter}
+	return common.NewDiscoverySyncer(
+		writeNamespace,
+		meshReconciler,
+		&istioDiscoveryPlugin{meshReconciler: meshReconciler, meshPolicyClientLoader: meshPolicyClient, crdGetter: crdGetter, jobGetter: jobGetter},
+	)
+}
+
+func (p *istioDiscoveryPlugin) MeshType() string {
+	return "istio"
 }
 
 var discoveryLabels = map[string]string{
 	"discovered_by": "istio-mesh-discovery",
 }
 
-func (i *istioDiscoverySyncer) ShouldSync(old, new *v1.DiscoverySnapshot) bool {
-	if old == nil {
-		return true
-	}
-	desired1, err1 := i.desiredMeshes(context.TODO(), old)
-	desired2, err2 := i.desiredMeshes(context.TODO(), new)
-	if err1 != nil || err2 != nil {
-		return true
-	}
-	return hashutils.HashAll(desired1) != hashutils.HashAll(desired2)
+func (p *istioDiscoveryPlugin) DiscoveryLabels() map[string]string {
+	return discoveryLabels
 }
 
-func (i *istioDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
-	ctx = contextutils.WithLogger(ctx, "istio-mesh-discovery")
-	logger := contextutils.LoggerFrom(ctx)
-	logger.Infow("begin sync",
-		zap.Int("Upstreams", len(snap.Upstreams)),
-		zap.Int("Deployments", len(snap.Deployments)),
-		zap.Int("Tlssecrets", len(snap.Tlssecrets)),
-		zap.Int("Configmaps", len(snap.Configmaps)),
-		zap.Int("Pods", len(snap.Pods)),
-	)
-	defer logger.Infow("end sync")
-	logger.Debugf("full snapshot: %v", snap)
-
-	istioMeshes, err := i.desiredMeshes(ctx, snap)
-	if err != nil {
-		return err
-	}
-
-	if err := i.meshReconciler.Reconcile(i.writeNamespace, istioMeshes, reconcileMeshDiscoveryMetadata, clients.ListOpts{Ctx: ctx, Selector: discoveryLabels}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type pilotDeployment struct {
-	version, namespace string
-}
-
-func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	meshPolicyCrdRegistered, err := detectMeshPolicyCrd(i.crdGetter)
+func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+	meshPolicyCrdRegistered, err := detectMeshPolicyCrd(p.crdGetter)
 	if err != nil {
 		return nil, newErrorDetectingMeshPolicy(err)
 	}
@@ -104,7 +74,7 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 	}
 
 	globalMtlsEnabled := func() bool {
-		meshPolicyClient, err := i.meshPolicyClientLoader()
+		meshPolicyClient, err := p.meshPolicyClientLoader()
 		if err != nil {
 			return false
 		}
@@ -127,7 +97,7 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 
 		// ensure that the post-install jobs have run for this pilot,
 		// if not, we're not ready to detect it
-		postInstallComplete, err := detectPostInstallJobComplete(i.jobGetter, pilot.namespace)
+		postInstallComplete, err := detectPostInstallJobComplete(p.jobGetter, pilot.namespace)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Errorf("failed to detect if post-install jobs have finished: %v", err)
 			continue
@@ -177,9 +147,8 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 
 		istioMesh := &v1.Mesh{
 			Metadata: core.Metadata{
-				Name:      "istio-" + pilot.namespace,
-				Namespace: i.writeNamespace,
-				Labels:    discoveryLabels,
+				Name:   "istio-" + pilot.namespace,
+				Labels: discoveryLabels,
 			},
 			MeshType: &v1.Mesh_Istio{
 				Istio: &v1.IstioMesh{
@@ -199,6 +168,10 @@ func (i *istioDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.Disco
 	}
 
 	return istioMeshes, nil
+}
+
+type pilotDeployment struct {
+	version, namespace string
 }
 
 func detectPilotDeployments(ctx context.Context, deployments kubernetes.DeploymentList) []pilotDeployment {
@@ -288,20 +261,4 @@ func detectInjectedIstioPod(ctx context.Context, pod *kubernetes.Pod) (string, b
 		}
 	}
 	return "", false
-}
-
-// after the first write, i.e. on any update
-// we are only interested in updating discovery metadata at this point
-// do not want to overwrite user-modified config settings
-// smi is also included here as it's not intended to be user-writeable
-// a return value of false indicates that, for the purposes of this syncer,
-// the resource in storage matches the desired resource
-func reconcileMeshDiscoveryMetadata(original, desired *v1.Mesh) (b bool, e error) {
-	if desired.DiscoveryMetadata.Equal(original.DiscoveryMetadata) && desired.SmiEnabled == original.SmiEnabled {
-		return false, nil
-	}
-	original.DiscoveryMetadata = desired.DiscoveryMetadata
-	original.SmiEnabled = desired.SmiEnabled
-	*desired = *original
-	return true, nil
 }
