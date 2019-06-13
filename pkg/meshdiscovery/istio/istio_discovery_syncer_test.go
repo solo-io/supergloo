@@ -335,30 +335,42 @@ func istioDeployment(namespace, version string) *kubernetes.Deployment {
 }
 
 type mockJobGetter struct {
-	jobToReturn   *v13.Job
-	errorToReturn error
+	jobListToReturn *v13.JobList
+	errorToReturn   error
 }
 
 func newCompletedJobGetter() *mockJobGetter {
-	return &mockJobGetter{
-		jobToReturn: &v13.Job{
-			ObjectMeta: metav1.ObjectMeta{Name: "istio-security-post-install"},
+	jobList := &v13.JobList{}
+	for _, jobName := range PostInstallJobs {
+		job := v13.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: jobName},
 			Status: v13.JobStatus{
 				Conditions: []v13.JobCondition{{
 					Type:   v13.JobComplete,
 					Status: kubev1.ConditionTrue,
 				}},
 			},
-		},
+		}
+		jobList.Items = append(jobList.Items, job)
+	}
+
+	return &mockJobGetter{
+		jobListToReturn: jobList,
 	}
 }
 
 func newIncompleteJobGetter() *mockJobGetter {
-	return &mockJobGetter{
-		jobToReturn: &v13.Job{
-			ObjectMeta: metav1.ObjectMeta{Name: "istio-security-post-install"},
+	jobList := &v13.JobList{}
+	for _, jobName := range PostInstallJobs {
+		job := v13.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: jobName},
 			Status:     v13.JobStatus{},
-		},
+		}
+		jobList.Items = append(jobList.Items, job)
+	}
+
+	return &mockJobGetter{
+		jobListToReturn: jobList,
 	}
 }
 
@@ -387,7 +399,7 @@ func (*mockJobGetter) DeleteCollection(options *metav1.DeleteOptions, listOption
 }
 
 func (g *mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
-	return &v13.JobList{Items: []v13.Job{*g.jobToReturn}}, g.errorToReturn
+	return g.jobListToReturn, g.errorToReturn
 }
 
 func (*mockJobGetter) Watch(opts metav1.ListOptions) (watch.Interface, error) {
