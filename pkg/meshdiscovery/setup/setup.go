@@ -2,9 +2,10 @@ package setup
 
 import (
 	"context"
+	"os"
+
 	appmeshconfig "github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/appmesh"
-	"os"
 
 	"github.com/solo-io/supergloo/pkg/meshdiscovery/linkerd"
 

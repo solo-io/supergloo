@@ -15,7 +15,6 @@ import (
 type DiscoverySnapshot struct {
 	Pods        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 	Upstreams   gloo_solo_io.UpstreamList
-	Configmaps  github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
 	Tlssecrets  TlsSecretList
 	Deployments github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList
 }
@@ -24,7 +23,6 @@ func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 	return DiscoverySnapshot{
 		Pods:        s.Pods.Clone(),
 		Upstreams:   s.Upstreams.Clone(),
-		Configmaps:  s.Configmaps.Clone(),
 		Tlssecrets:  s.Tlssecrets.Clone(),
 		Deployments: s.Deployments.Clone(),
 	}
@@ -34,7 +32,6 @@ func (s DiscoverySnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashPods(),
 		s.hashUpstreams(),
-		s.hashConfigmaps(),
 		s.hashTlssecrets(),
 		s.hashDeployments(),
 	)
@@ -46,10 +43,6 @@ func (s DiscoverySnapshot) hashPods() uint64 {
 
 func (s DiscoverySnapshot) hashUpstreams() uint64 {
 	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
-}
-
-func (s DiscoverySnapshot) hashConfigmaps() uint64 {
-	return hashutils.HashAll(s.Configmaps.AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) hashTlssecrets() uint64 {
@@ -64,7 +57,6 @@ func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
-	fields = append(fields, zap.Uint64("configmaps", s.hashConfigmaps()))
 	fields = append(fields, zap.Uint64("tlssecrets", s.hashTlssecrets()))
 	fields = append(fields, zap.Uint64("deployments", s.hashDeployments()))
 
@@ -75,7 +67,6 @@ type DiscoverySnapshotStringer struct {
 	Version     uint64
 	Pods        []string
 	Upstreams   []string
-	Configmaps  []string
 	Tlssecrets  []string
 	Deployments []string
 }
@@ -90,11 +81,6 @@ func (ss DiscoverySnapshotStringer) String() string {
 
 	s += fmt.Sprintf("  Upstreams %v\n", len(ss.Upstreams))
 	for _, name := range ss.Upstreams {
-		s += fmt.Sprintf("    %v\n", name)
-	}
-
-	s += fmt.Sprintf("  Configmaps %v\n", len(ss.Configmaps))
-	for _, name := range ss.Configmaps {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
@@ -116,7 +102,6 @@ func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
 		Version:     s.Hash(),
 		Pods:        s.Pods.NamespacesDotNames(),
 		Upstreams:   s.Upstreams.NamespacesDotNames(),
-		Configmaps:  s.Configmaps.NamespacesDotNames(),
 		Tlssecrets:  s.Tlssecrets.NamespacesDotNames(),
 		Deployments: s.Deployments.NamespacesDotNames(),
 	}

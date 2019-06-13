@@ -2,9 +2,10 @@ package appmesh
 
 import (
 	"context"
-	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 	"regexp"
 	"strings"
+
+	appmeshtranslator "github.com/solo-io/supergloo/pkg/translator/appmesh"
 
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 

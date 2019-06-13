@@ -79,20 +79,6 @@ func (mr *MockDiscoveryEmitterMockRecorder) Upstream() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upstream", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Upstream))
 }
 
-// ConfigMap mocks base method
-func (m *MockDiscoveryEmitter) ConfigMap() kubernetes.ConfigMapClient {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigMap")
-	ret0, _ := ret[0].(kubernetes.ConfigMapClient)
-	return ret0
-}
-
-// ConfigMap indicates an expected call of ConfigMap
-func (mr *MockDiscoveryEmitterMockRecorder) ConfigMap() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMap", reflect.TypeOf((*MockDiscoveryEmitter)(nil).ConfigMap))
-}
-
 // TlsSecret mocks base method
 func (m *MockDiscoveryEmitter) TlsSecret() v10.TlsSecretClient {
 	m.ctrl.T.Helper()
