@@ -178,7 +178,7 @@ func detectPilotDeployments(ctx context.Context, deployments kubernetes.Deployme
 	var pilots []pilotDeployment
 	for _, deployment := range deployments {
 		for _, container := range deployment.Spec.Template.Spec.Containers {
-			if strings.Contains(container.Image, "istio/pilot") {
+			if strings.Contains(container.Image, "istio") && strings.Contains(container.Image, "pilot") {
 				split := strings.Split(container.Image, ":")
 				if len(split) != 2 {
 					contextutils.LoggerFrom(ctx).Errorf("invalid or unexpected image format for pilot: %v", container.Image)
@@ -207,14 +207,26 @@ var PostInstallJobs = []string{
 }
 
 func detectPostInstallJobComplete(jobGetter batchv1client.JobsGetter, pilotNamespace string) (bool, error) {
-	for _, jobName := range PostInstallJobs {
-		job, err := jobGetter.Jobs(pilotNamespace).Get(jobName, metav1.GetOptions{})
-		if err != nil {
-			if kubeerrs.IsNotFound(err) {
-				return false, nil
+	jobsList, err := jobGetter.Jobs(pilotNamespace).List(metav1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	getJobFromPrefix := func(prefix string) *batchv1.Job {
+		for _, job := range jobsList.Items {
+			if strings.HasPrefix(job.Name, prefix) {
+				return &job
 			}
-			return false, err
 		}
+		return nil
+	}
+
+	for _, jobName := range PostInstallJobs {
+		job := getJobFromPrefix(jobName)
+		if job == nil {
+			return false, nil
+		}
+
 		var jobComplete bool
 		for _, condition := range job.Status.Conditions {
 			if condition.Type == batchv1.JobComplete && condition.Status == kubev1.ConditionTrue {

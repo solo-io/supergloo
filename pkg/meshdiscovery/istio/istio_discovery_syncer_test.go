@@ -335,33 +335,47 @@ func istioDeployment(namespace, version string) *kubernetes.Deployment {
 }
 
 type mockJobGetter struct {
-	jobToReturn   *v13.Job
-	errorToReturn error
+	jobListToReturn *v13.JobList
+	errorToReturn   error
 }
 
 func newCompletedJobGetter() *mockJobGetter {
-	return &mockJobGetter{
-		jobToReturn: &v13.Job{
+	jobList := &v13.JobList{}
+	for _, jobName := range PostInstallJobs {
+		job := v13.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: jobName},
 			Status: v13.JobStatus{
 				Conditions: []v13.JobCondition{{
 					Type:   v13.JobComplete,
 					Status: kubev1.ConditionTrue,
 				}},
 			},
-		},
+		}
+		jobList.Items = append(jobList.Items, job)
+	}
+
+	return &mockJobGetter{
+		jobListToReturn: jobList,
 	}
 }
 
 func newIncompleteJobGetter() *mockJobGetter {
+	jobList := &v13.JobList{}
+	for _, jobName := range PostInstallJobs {
+		job := v13.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: jobName},
+			Status:     v13.JobStatus{},
+		}
+		jobList.Items = append(jobList.Items, job)
+	}
+
 	return &mockJobGetter{
-		jobToReturn: &v13.Job{
-			Status: v13.JobStatus{},
-		},
+		jobListToReturn: jobList,
 	}
 }
 
-func (g *mockJobGetter) Get(name string, options metav1.GetOptions) (*v13.Job, error) {
-	return g.jobToReturn, g.errorToReturn
+func (*mockJobGetter) Get(name string, options metav1.GetOptions) (*v13.Job, error) {
+	panic("implement me")
 }
 
 func (*mockJobGetter) Create(*v13.Job) (*v13.Job, error) {
@@ -384,8 +398,8 @@ func (*mockJobGetter) DeleteCollection(options *metav1.DeleteOptions, listOption
 	panic("implement me")
 }
 
-func (*mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
-	panic("implement me")
+func (g *mockJobGetter) List(opts metav1.ListOptions) (*v13.JobList, error) {
+	return g.jobListToReturn, g.errorToReturn
 }
 
 func (*mockJobGetter) Watch(opts metav1.ListOptions) (watch.Interface, error) {
