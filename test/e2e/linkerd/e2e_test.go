@@ -24,7 +24,7 @@ import (
 const superglooNamespace = "supergloo-system"
 
 var _ = Describe("linkerd e2e", func() {
-	meshName := "my-linkerd"
+	meshName := "linkerd-linkerd"
 	glooName := "gloo"
 
 	It("it installs linkerd", func() {

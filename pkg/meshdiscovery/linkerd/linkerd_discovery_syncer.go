@@ -71,7 +71,7 @@ func (p *linkerdDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Dis
 
 		linkerdMesh := &v1.Mesh{
 			Metadata: core.Metadata{
-				Name:   linkerdController.namespace + "-linkerd",
+				Name:   "linkerd-" + linkerdController.namespace,
 				Labels: discoveryLabels,
 			},
 			MeshType: &v1.Mesh_Linkerd{
@@ -130,6 +130,11 @@ func detectInjectedLinkerdPod(pod *kubernetes.Pod) (string, bool) {
 					controlPlaneService := strings.Split(controlPlaneAddress, ":")[0]
 					controlPlaneNamespace := strings.TrimPrefix(controlPlaneService, "linkerd-destination.")
 					controlPlaneNamespace = strings.TrimSuffix(controlPlaneNamespace, ".svc.cluster.local")
+
+					// special case for the controller itself
+					if controlPlaneNamespace == "localhost." {
+						controlPlaneNamespace = pod.Namespace
+					}
 
 					return controlPlaneNamespace, true
 				}
