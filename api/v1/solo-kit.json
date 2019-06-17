@@ -75,66 +75,16 @@
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       },
       {
-        "name": "ConfigMap",
-        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
-        "name": "Install",
-        "package": "supergloo.solo.io"
-      }
-    ],
-    "istioDiscovery.supergloo.solo.io": [
-      {
-        "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Install",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Pod",
-        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
         "name": "Upstream",
         "package": "gloo.solo.io"
       },
       {
-        "name": "MeshPolicy",
-        "package": "istio.authentication.v1alpha1"
-      }
-    ],
-    "linkerdDiscovery.supergloo.solo.io": [
-      {
-        "name": "Mesh",
+        "name": "TlsSecret",
         "package": "supergloo.solo.io"
       },
       {
-        "name": "Install",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Pod",
+        "name": "Deployment",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
-        "name": "Upstream",
-        "package": "gloo.solo.io"
-      }
-    ],
-    "appmeshDiscovery.supergloo.solo.io": [
-      {
-        "name": "Mesh",
-        "package": "supergloo.solo.io"
-      },
-      {
-        "name": "Pod",
-        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
-      },
-      {
-        "name": "Upstream",
-        "package": "gloo.solo.io"
       }
     ]
   }

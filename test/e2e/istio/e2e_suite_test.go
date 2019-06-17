@@ -79,6 +79,7 @@ var _ = BeforeSuite(func() {
 		log.Println("Running supergloo locally")
 		err = testutils.RunSuperglooLocally(rootCtx, kube, superglooNamespace, buildVersion, imageRepoPrefix)
 		Expect(err).NotTo(HaveOccurred())
+
 	}
 })
 

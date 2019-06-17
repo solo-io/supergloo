@@ -1397,15 +1397,15 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:8a82cb31919c7897dfb8e76f3a551c9c787286fd9ca7fb5ac0228c41d216dae0"
+  digest = "1:aa9674fd19bb50868140e2559b917ac5baceeceb9876d0026e4eb016779f0ccc"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
+    "api/external/kubernetes/deployment",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
     "api/external/kubernetes/service",
-    "pkg/api/external/kubernetes/configmap",
-    "pkg/api/external/kubernetes/namespace",
+    "pkg/api/external/kubernetes/deployment",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/external/kubernetes/service",
     "pkg/api/v1/clients",
@@ -1451,8 +1451,8 @@
     "test/setup",
   ]
   pruneopts = "UT"
-  revision = "f40d30112db04fbd2cc4ba85f9df66af3607f344"
-  version = "v0.9.6"
+  revision = "1edf3f38af4cf7569fc66e53d115032d3385706d"
+  version = "v0.9.9"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -2549,10 +2549,10 @@
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
+    "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/api/external/kubernetes/service",
-    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap",
-    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
@@ -2592,8 +2592,10 @@
     "k8s.io/api/admission/v1beta1",
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
+    "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
+    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
@@ -2614,6 +2616,7 @@
     "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
+    "k8s.io/client-go/kubernetes/typed/batch/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",

@@ -126,7 +126,7 @@ var _ = Describe("PodsForSelector", func() {
 			refs := []core.ResourceRef{
 				{Name: "default-reviews-9080", Namespace: "default"},
 			}
-			pods := inputs.BookInfoPods("default")
+			pods := inputs.BookInfoPodsIstioInject("default")
 			selectedPods, err := PodsForSelector(&v1.PodSelector{
 				SelectorType: &v1.PodSelector_UpstreamSelector_{
 					UpstreamSelector: &v1.PodSelector_UpstreamSelector{
@@ -177,7 +177,7 @@ var _ = Describe("PodsForSelector", func() {
 	})
 	Context("PodSelector_LabelSelector", func() {
 		It("returns each pod with matching labels", func() {
-			pods := inputs.BookInfoPods("default")
+			pods := inputs.BookInfoPodsIstioInject("default")
 			selectedPods, err := PodsForSelector(&v1.PodSelector{
 				SelectorType: &v1.PodSelector_LabelSelector_{
 					LabelSelector: &v1.PodSelector_LabelSelector{
@@ -201,8 +201,8 @@ var _ = Describe("PodsForSelector", func() {
 	})
 	Context("PodSelector_NamespaceSelector_", func() {
 		It("returns each pod in the namespaces", func() {
-			pods := inputs.BookInfoPods("default1")
-			pods = append(pods, inputs.BookInfoPods("default2")...)
+			pods := inputs.BookInfoPodsIstioInject("default1")
+			pods = append(pods, inputs.BookInfoPodsIstioInject("default2")...)
 			selectedPods, err := PodsForSelector(&v1.PodSelector{
 				SelectorType: &v1.PodSelector_NamespaceSelector_{
 					NamespaceSelector: &v1.PodSelector_NamespaceSelector{
@@ -213,5 +213,16 @@ var _ = Describe("PodsForSelector", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(selectedPods).To(HaveLen(len(pods)))
 		})
+	})
+})
+
+var _ = Describe("UpstreamsForPods", func() {
+	It("selects all the upstreams that cover the given pods", func() {
+		pods := inputs.BookInfoPodsIstioInject("default1")
+		upstreams1 := inputs.BookInfoUpstreams("default1")
+		upstreams2 := inputs.BookInfoUpstreams("default2")
+
+		selectedUpstreams := UpstreamsForPods(pods, append(upstreams1, upstreams2...))
+		Expect(selectedUpstreams).To(Equal(upstreams1))
 	})
 })

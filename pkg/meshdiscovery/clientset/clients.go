@@ -2,11 +2,13 @@ package clientset
 
 import (
 	"context"
+	"sync"
+
+	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
-	skconfigmap "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/configmap"
-	sknamespace "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/namespace"
+	skdeployment "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment"
 	skpod "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -22,15 +24,16 @@ import (
 type Clientset struct {
 	RestConfig *rest.Config
 
-	Kube kubernetes.Interface
+	Kube          kubernetes.Interface
+	ApiExtensions clientset.Interface
 
 	Input *inputClients
 
 	Discovery *discoveryClients
 }
 
-func newClientset(restConfig *rest.Config, kube kubernetes.Interface, input *inputClients, discovery *discoveryClients) *Clientset {
-	return &Clientset{RestConfig: restConfig, Kube: kube, Input: input, Discovery: discovery}
+func newClientset(restConfig *rest.Config, kube kubernetes.Interface, apiExtensions clientset.Interface, input *inputClients, discovery *discoveryClients) *Clientset {
+	return &Clientset{RestConfig: restConfig, Kube: kube, ApiExtensions: apiExtensions, Input: input, Discovery: discovery}
 }
 
 type discoveryClients struct {
@@ -42,19 +45,15 @@ func newDiscoveryClients(mesh v1.MeshClient) *discoveryClients {
 }
 
 type inputClients struct {
-	Pod         skkube.PodClient
-	Namespace   skkube.KubeNamespaceClient
-	ConfigMap   skkube.ConfigMapClient
-	Install     v1.InstallClient
-	MeshIngress v1.MeshIngressClient
-	Upstream    gloov1.UpstreamClient
-	Secret      gloov1.SecretClient
+	Pod        skkube.PodClient
+	Deployment skkube.DeploymentClient
+	Upstream   gloov1.UpstreamClient
+	Secret     gloov1.SecretClient
+	TlsSecret  v1.TlsSecretClient
 }
 
-func newInputClients(pod skkube.PodClient, namespace skkube.KubeNamespaceClient, configMap skkube.ConfigMapClient,
-	install v1.InstallClient, meshIngress v1.MeshIngressClient, upstream gloov1.UpstreamClient, secret gloov1.SecretClient) *inputClients {
-	return &inputClients{Pod: pod, Namespace: namespace, ConfigMap: configMap, Install: install, MeshIngress: meshIngress,
-		Upstream: upstream, Secret: secret}
+func newInputClients(pod skkube.PodClient, deployment skkube.DeploymentClient, upstream gloov1.UpstreamClient, secret gloov1.SecretClient, tlsSecret v1.TlsSecretClient) *inputClients {
+	return &inputClients{Pod: pod, Deployment: deployment, Upstream: upstream, Secret: secret, TlsSecret: tlsSecret}
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
@@ -71,8 +70,16 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	apiExtsClient, err := clientset.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
 	crdCache := kube.NewKubeCache(ctx)
 	kubeCoreCache, err := cache.NewKubeCoreCache(ctx, kubeClient)
+	if err != nil {
+		return nil, err
+	}
+	deploymentCache, err := cache.NewKubeDeploymentCache(ctx, kubeClient)
 	if err != nil {
 		return nil, err
 	}
@@ -127,25 +134,39 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
+	tlsSecret, err := v1.NewTlsSecretClient(&factory.KubeSecretClientFactory{
+		Clientset:    kubeClient,
+		PlainSecrets: true,
+		Cache:        kubeCoreCache,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := tlsSecret.Register(); err != nil {
+		return nil, err
+	}
+
 	// special resource client wired up to kubernetes pods
 	// used by the istio policy syncer to watch pods for service account info
 	pods := skpod.NewPodClient(kubeClient, kubeCoreCache)
-	namespace := sknamespace.NewNamespaceClient(kubeClient, kubeCoreCache)
-	configMap := skconfigmap.NewConfigMapClient(kubeClient, kubeCoreCache)
+	deployments := skdeployment.NewDeploymentClient(kubeClient, deploymentCache)
 
 	return newClientset(
 		restConfig,
 		kubeClient,
-		newInputClients(pods, namespace, configMap, install, meshIngress, upstream, secret),
+		apiExtsClient,
+		newInputClients(pods, deployments, upstream, secret, tlsSecret),
 		newDiscoveryClients(mesh),
 	), nil
 }
 
+type MeshPolicyClientLoader func() (v1alpha1.MeshPolicyClient, error)
+
 type IstioClientset struct {
-	MeshPolicies v1alpha1.MeshPolicyClient
+	MeshPolicies MeshPolicyClientLoader
 }
 
-func newIstioClientset(meshpolicies v1alpha1.MeshPolicyClient) *IstioClientset {
+func newIstioClientset(meshpolicies MeshPolicyClientLoader) *IstioClientset {
 	return &IstioClientset{MeshPolicies: meshpolicies}
 }
 
@@ -155,22 +176,30 @@ func IstioClientsetFromContext(ctx context.Context) (*IstioClientset, error) {
 		return nil, err
 	}
 	crdCache := kube.NewKubeCache(ctx)
-	/*
-		istio clients
-	*/
 
-	meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
-		Crd:             v1alpha1.MeshPolicyCrd,
-		Cfg:             restConfig,
-		SharedCache:     crdCache,
-		SkipCrdCreation: true,
+	// the cache should only be registered once
+	registerOnce := &sync.Once{}
+
+	meshPolicyClientLoader := MeshPolicyClientLoader(func() (v1alpha1.MeshPolicyClient, error) {
+		meshPolicyConfig, err := v1alpha1.NewMeshPolicyClient(&factory.KubeResourceClientFactory{
+			Crd:             v1alpha1.MeshPolicyCrd,
+			Cfg:             restConfig,
+			SharedCache:     crdCache,
+			SkipCrdCreation: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+		var registrationErr error
+		registerOnce.Do(func() {
+			registrationErr = meshPolicyConfig.Register()
+		})
+		if registrationErr != nil {
+			return nil, registrationErr
+		}
+
+		return meshPolicyConfig, nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	if err := meshPolicyConfig.Register(); err != nil {
-		return nil, err
-	}
-	return newIstioClientset(meshPolicyConfig), nil
+	return newIstioClientset(meshPolicyClientLoader), nil
 
 }

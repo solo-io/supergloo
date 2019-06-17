@@ -34,7 +34,7 @@ import (
 const superglooNamespace = "supergloo-system"
 
 var _ = Describe("istio e2e", func() {
-	istioName := "my-istio"
+	istioName := "istio-istio-system"
 	glooName := "gloo"
 
 	It("it installs istio", func() {
@@ -53,7 +53,7 @@ var _ = Describe("istio e2e", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 
-		testTrafficShifting()
+		testTrafficShifting(istioName)
 		err = sgutils.KubectlDeleteFile(smiIstioAdapterFile)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -83,11 +83,11 @@ var _ = Describe("istio e2e", func() {
 	})
 
 	It("it shifts traffic with routing rules", func() {
-		testTrafficShifting()
+		testTrafficShifting(istioName)
 	})
 
 	It("it injects faults with routing rules", func() {
-		testFaultInjection()
+		testFaultInjection(istioName)
 	})
 
 	It("it uninstalls gloo", func() {
@@ -301,10 +301,10 @@ func testPolicy(meshName string) {
 	}, `"reviewer": "Reviewer1",`, time.Minute*5)
 }
 
-func testTrafficShifting() {
+func testTrafficShifting(meshName string) {
 	// apply a traffic shifting rule, divert traffic to reviews
-	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.my-istio --name hi "+
-		"--destination %v.%v-reviews-9080:%v", superglooNamespace, superglooNamespace, namespaceWithInject, 1))
+	err := utils.Supergloo(fmt.Sprintf("apply routingrule trafficshifting --target-mesh %v.%v --name hi "+
+		"--destination %v.%v-reviews-9080:%v", superglooNamespace, meshName, superglooNamespace, namespaceWithInject, 1))
 
 	Expect(err).NotTo(HaveOccurred())
 
@@ -327,12 +327,12 @@ func testTrafficShifting() {
 	}, `{"id":1,"author":"William Shakespeare","year":1595,"type":"paperback","pages":200,"publisher":"PublisherA","language":"English","ISBN-10":"1234567890","ISBN-13":"123-1234567890"}`, time.Minute*5)
 }
 
-func testFaultInjection() {
+func testFaultInjection(meshName string) {
 	httpError, percent := 404, 50
 
 	// apply a traffic shifting rule, divert traffic to reviews
-	err := utils.Supergloo(fmt.Sprintf("apply rr fi a http --name one --target-mesh %v.my-istio "+
-		"-p %d -s %d ", superglooNamespace, percent, httpError))
+	err := utils.Supergloo(fmt.Sprintf("apply rr fi a http --name one --target-mesh %v.%v "+
+		"-p %d -s %d ", superglooNamespace, meshName, percent, httpError))
 
 	Expect(err).NotTo(HaveOccurred())
 

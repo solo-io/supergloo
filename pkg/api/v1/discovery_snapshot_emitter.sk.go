@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
 	"go.opencensus.io/stats"
@@ -44,39 +45,45 @@ func init() {
 type DiscoveryEmitter interface {
 	Register() error
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	ConfigMap() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient
-	Install() InstallClient
+	Upstream() gloo_solo_io.UpstreamClient
+	TlsSecret() TlsSecretClient
+	Deployment() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error)
 }
 
-func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient, installClient InstallClient) DiscoveryEmitter {
-	return NewDiscoveryEmitterWithEmit(podClient, configMapClient, installClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, tlsSecretClient TlsSecretClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, upstreamClient, tlsSecretClient, deploymentClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, configMapClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient, installClient InstallClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, tlsSecretClient TlsSecretClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
-		pod:       podClient,
-		configMap: configMapClient,
-		install:   installClient,
-		forceEmit: emit,
+		pod:        podClient,
+		upstream:   upstreamClient,
+		tlsSecret:  tlsSecretClient,
+		deployment: deploymentClient,
+		forceEmit:  emit,
 	}
 }
 
 type discoveryEmitter struct {
-	forceEmit <-chan struct{}
-	pod       github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	configMap github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient
-	install   InstallClient
+	forceEmit  <-chan struct{}
+	pod        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	upstream   gloo_solo_io.UpstreamClient
+	tlsSecret  TlsSecretClient
+	deployment github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient
 }
 
 func (c *discoveryEmitter) Register() error {
 	if err := c.pod.Register(); err != nil {
 		return err
 	}
-	if err := c.configMap.Register(); err != nil {
+	if err := c.upstream.Register(); err != nil {
 		return err
 	}
-	if err := c.install.Register(); err != nil {
+	if err := c.tlsSecret.Register(); err != nil {
+		return err
+	}
+	if err := c.deployment.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -86,12 +93,16 @@ func (c *discoveryEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resource
 	return c.pod
 }
 
-func (c *discoveryEmitter) ConfigMap() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapClient {
-	return c.configMap
+func (c *discoveryEmitter) Upstream() gloo_solo_io.UpstreamClient {
+	return c.upstream
 }
 
-func (c *discoveryEmitter) Install() InstallClient {
-	return c.install
+func (c *discoveryEmitter) TlsSecret() TlsSecretClient {
+	return c.tlsSecret
+}
+
+func (c *discoveryEmitter) Deployment() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient {
+	return c.deployment
 }
 
 func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
@@ -116,18 +127,24 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		namespace string
 	}
 	podChan := make(chan podListWithNamespace)
-	/* Create channel for ConfigMap */
-	type configMapListWithNamespace struct {
-		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
+	/* Create channel for Upstream */
+	type upstreamListWithNamespace struct {
+		list      gloo_solo_io.UpstreamList
 		namespace string
 	}
-	configMapChan := make(chan configMapListWithNamespace)
-	/* Create channel for Install */
-	type installListWithNamespace struct {
-		list      InstallList
+	upstreamChan := make(chan upstreamListWithNamespace)
+	/* Create channel for TlsSecret */
+	type tlsSecretListWithNamespace struct {
+		list      TlsSecretList
 		namespace string
 	}
-	installChan := make(chan installListWithNamespace)
+	tlsSecretChan := make(chan tlsSecretListWithNamespace)
+	/* Create channel for Deployment */
+	type deploymentListWithNamespace struct {
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList
+		namespace string
+	}
+	deploymentChan := make(chan deploymentListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Pod */
@@ -141,27 +158,38 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, podErrs, namespace+"-pods")
 		}(namespace)
-		/* Setup namespaced watch for ConfigMap */
-		configMapNamespacesChan, configMapErrs, err := c.configMap.Watch(namespace, opts)
+		/* Setup namespaced watch for Upstream */
+		upstreamNamespacesChan, upstreamErrs, err := c.upstream.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting ConfigMap watch")
+			return nil, nil, errors.Wrapf(err, "starting Upstream watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, configMapErrs, namespace+"-configmaps")
+			errutils.AggregateErrs(ctx, errs, upstreamErrs, namespace+"-upstreams")
 		}(namespace)
-		/* Setup namespaced watch for Install */
-		installNamespacesChan, installErrs, err := c.install.Watch(namespace, opts)
+		/* Setup namespaced watch for TlsSecret */
+		tlsSecretNamespacesChan, tlsSecretErrs, err := c.tlsSecret.Watch(namespace, opts)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting Install watch")
+			return nil, nil, errors.Wrapf(err, "starting TlsSecret watch")
 		}
 
 		done.Add(1)
 		go func(namespace string) {
 			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, installErrs, namespace+"-installs")
+			errutils.AggregateErrs(ctx, errs, tlsSecretErrs, namespace+"-tlssecrets")
+		}(namespace)
+		/* Setup namespaced watch for Deployment */
+		deploymentNamespacesChan, deploymentErrs, err := c.deployment.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Deployment watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, deploymentErrs, namespace+"-deployments")
 		}(namespace)
 
 		/* Watch for changes and update snapshot */
@@ -176,17 +204,23 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 						return
 					case podChan <- podListWithNamespace{list: podList, namespace: namespace}:
 					}
-				case configMapList := <-configMapNamespacesChan:
+				case upstreamList := <-upstreamNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case configMapChan <- configMapListWithNamespace{list: configMapList, namespace: namespace}:
+					case upstreamChan <- upstreamListWithNamespace{list: upstreamList, namespace: namespace}:
 					}
-				case installList := <-installNamespacesChan:
+				case tlsSecretList := <-tlsSecretNamespacesChan:
 					select {
 					case <-ctx.Done():
 						return
-					case installChan <- installListWithNamespace{list: installList, namespace: namespace}:
+					case tlsSecretChan <- tlsSecretListWithNamespace{list: tlsSecretList, namespace: namespace}:
+					}
+				case deploymentList := <-deploymentNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case deploymentChan <- deploymentListWithNamespace{list: deploymentList, namespace: namespace}:
 					}
 				}
 			}
@@ -209,8 +243,9 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			snapshots <- &sentSnapshot
 		}
 		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
-		configmapsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList)
-		installsByNamespace := make(map[string]InstallList)
+		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
+		tlssecretsByNamespace := make(map[string]TlsSecretList)
+		deploymentsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList)
 
 		for {
 			record := func() { stats.Record(ctx, mDiscoverySnapshotIn.M(1)) }
@@ -238,30 +273,42 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 					podList = append(podList, pods...)
 				}
 				currentSnapshot.Pods = podList.Sort()
-			case configMapNamespacedList := <-configMapChan:
+			case upstreamNamespacedList := <-upstreamChan:
 				record()
 
-				namespace := configMapNamespacedList.namespace
+				namespace := upstreamNamespacedList.namespace
 
 				// merge lists by namespace
-				configmapsByNamespace[namespace] = configMapNamespacedList.list
-				var configMapList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ConfigMapList
-				for _, configmaps := range configmapsByNamespace {
-					configMapList = append(configMapList, configmaps...)
+				upstreamsByNamespace[namespace] = upstreamNamespacedList.list
+				var upstreamList gloo_solo_io.UpstreamList
+				for _, upstreams := range upstreamsByNamespace {
+					upstreamList = append(upstreamList, upstreams...)
 				}
-				currentSnapshot.Configmaps = configMapList.Sort()
-			case installNamespacedList := <-installChan:
+				currentSnapshot.Upstreams = upstreamList.Sort()
+			case tlsSecretNamespacedList := <-tlsSecretChan:
 				record()
 
-				namespace := installNamespacedList.namespace
+				namespace := tlsSecretNamespacedList.namespace
 
 				// merge lists by namespace
-				installsByNamespace[namespace] = installNamespacedList.list
-				var installList InstallList
-				for _, installs := range installsByNamespace {
-					installList = append(installList, installs...)
+				tlssecretsByNamespace[namespace] = tlsSecretNamespacedList.list
+				var tlsSecretList TlsSecretList
+				for _, tlssecrets := range tlssecretsByNamespace {
+					tlsSecretList = append(tlsSecretList, tlssecrets...)
 				}
-				currentSnapshot.Installs = installList.Sort()
+				currentSnapshot.Tlssecrets = tlsSecretList.Sort()
+			case deploymentNamespacedList := <-deploymentChan:
+				record()
+
+				namespace := deploymentNamespacedList.namespace
+
+				// merge lists by namespace
+				deploymentsByNamespace[namespace] = deploymentNamespacedList.list
+				var deploymentList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList
+				for _, deployments := range deploymentsByNamespace {
+					deploymentList = append(deploymentList, deployments...)
+				}
+				currentSnapshot.Deployments = deploymentList.Sort()
 			}
 		}
 	}()

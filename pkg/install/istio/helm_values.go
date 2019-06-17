@@ -99,6 +99,7 @@ security:
   image: citadel
   selfSigned: {{ .Mtls.SelfSignedCert }} # indicate if self-signed CA is used.
   enabled: true
+  createMeshPolicy: true
 
 #
 # ingress configuration
