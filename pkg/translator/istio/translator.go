@@ -105,7 +105,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	for _, mesh := range meshes {
 		istio := mesh.GetIstio()
-		if istio == nil {
+		if istio == nil || mesh.GetSmiEnabled() {
 			continue
 		}
 		writeNamespace := istio.InstallationNamespace

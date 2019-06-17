@@ -2,6 +2,10 @@ package setup
 
 import (
 	"context"
+	"time"
+
+	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 
 	"github.com/solo-io/supergloo/pkg/config/smi"
 	smitranslator "github.com/solo-io/supergloo/pkg/translator/smi"
@@ -19,6 +23,80 @@ import (
 	linkerdtranslator "github.com/solo-io/supergloo/pkg/translator/linkerd"
 	linkerdplugins "github.com/solo-io/supergloo/pkg/translator/linkerd/plugins"
 )
+
+func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
+	ctx = contextutils.WithLogger(ctx, "config-event-loop")
+
+	logger := contextutils.LoggerFrom(ctx)
+
+	errHandler := func(err error) {
+		if err == nil {
+			return
+		}
+		logger.Errorf("registration error: %v", err)
+		if customErrHandler != nil {
+			customErrHandler(err)
+		}
+	}
+
+	appmeshConfigSyncer := createAppmeshConfigSyncer(cs)
+	istioConfigSyncer, err := createIstioConfigSyncer(ctx, cs)
+	if err != nil {
+		return err
+	}
+	linkerdConfigSyncer, err := createLinkerdConfigSyncer(ctx, cs)
+	if err != nil {
+		return err
+	}
+	smiConfigSyncer, err := createSmiConfigSyncer(ctx, cs)
+	if err != nil {
+		return err
+	}
+
+	return runConfigEventLoop(ctx, errHandler, cs, v1.ConfigSyncers{
+		appmeshConfigSyncer,
+		istioConfigSyncer,
+		linkerdConfigSyncer,
+		smiConfigSyncer,
+	})
+}
+
+func runConfigEventLoop(ctx context.Context, errHandler func(error), cs *clientset.Clientset, syncers v1.ConfigSyncer) error {
+
+	configEmitter := v1.NewConfigEmitter(
+		cs.Supergloo.Mesh,
+		cs.Supergloo.MeshIngress,
+		cs.Supergloo.MeshGroup,
+		cs.Supergloo.RoutingRule,
+		cs.Supergloo.SecurityRule,
+		cs.Supergloo.TlsSecret,
+		cs.Supergloo.Upstream,
+		cs.Discovery.Pod,
+		cs.Discovery.Service,
+	)
+	configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
+
+	watchOpts := clients.WatchOpts{
+		Ctx:         ctx,
+		RefreshRate: time.Second * 1,
+	}
+	eventLoopErrs, err := configEventLoop.Run(nil, watchOpts)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			select {
+			case err := <-eventLoopErrs:
+				errHandler(err)
+			case <-ctx.Done():
+			}
+		}
+	}()
+
+	return nil
+}
 
 func createAppmeshConfigSyncer(cs *clientset.Clientset) v1.ConfigSyncer {
 	translator := appmeshtranslator.NewAppMeshTranslator()
