@@ -39,6 +39,10 @@ func (mt *mockTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSnap
 
 type mockReconcilers struct{ called bool }
 
+func (mr *mockReconcilers) CanReconcile() bool {
+	return true
+}
+
 func (mr *mockReconcilers) ReconcileAll(ctx context.Context, config *linkerd.MeshConfig) error {
 	mr.called = true
 	return nil

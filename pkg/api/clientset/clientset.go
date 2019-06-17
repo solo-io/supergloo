@@ -2,6 +2,8 @@ package clientset
 
 import (
 	"context"
+	"fmt"
+	"sync"
 
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
@@ -28,9 +30,23 @@ import (
 	specsv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1"
 	splitv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	apiexts "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
+
+type CrdNotRegisteredErr struct {
+	CrdName       string
+	OriginalError error
+}
+
+func NewCrdNotRegisteredErr(crdName string, originalError error) *CrdNotRegisteredErr {
+	return &CrdNotRegisteredErr{CrdName: crdName, OriginalError: originalError}
+}
+
+func (e *CrdNotRegisteredErr) Error() string {
+	return fmt.Sprintf("cannot create client for %v: crd not registered (err: %v)", e.CrdName, e.OriginalError)
+}
 
 // initialize all resource clients here that will share a cache
 func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
@@ -165,89 +181,164 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		return nil, err
 	}
 	crdCache := kube.NewKubeCache(ctx)
-	/*
-		istio clients
-	*/
 
-	rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := rbacConfig.Register(); err != nil {
-		return nil, err
-	}
+	// each resource should only be registered with the cache once
+	registerRbacConfigOnce := &sync.Once{}
 
-	serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := serviceRole.Register(); err != nil {
-		return nil, err
+	rbacConfigClientLoader := func() (rbacv1alpha1.RbacConfigClient, error) {
+		rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		registerRbacConfigOnce.Do(func() {
+			err = rbacConfig.Register()
+		})
+		if err != nil {
+			return nil, err
+		}
+		return rbacConfig, nil
 	}
 
-	serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := serviceRoleBinding.Register(); err != nil {
-		return nil, err
+	registerServiceRoleOnce := &sync.Once{}
+	serviceRoleClientLoader := func() (rbacv1alpha1.ServiceRoleClient, error) {
+		serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		registerServiceRoleOnce.Do(func() {
+			err = serviceRole.Register()
+
+		})
+		if err != nil {
+			return nil, err
+		}
+		return serviceRole, nil
 	}
 
-	meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := meshPolicy.Register(); err != nil {
-		return nil, err
+	registerServiceRoleBindingOnce := &sync.Once{}
+	serviceRoleBindingClientLoader := func() (rbacv1alpha1.ServiceRoleBindingClient, error) {
+		serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		registerServiceRoleBindingOnce.Do(func() {
+			err = serviceRoleBinding.Register()
+
+		})
+		if err != nil {
+			return nil, err
+		}
+		return serviceRoleBinding, nil
 	}
 
-	destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
-	}
-	if err := destinationRule.Register(); err != nil {
-		return nil, err
+	registerMeshPolicyOnce := &sync.Once{}
+	meshPolicyClientLoader := func() (policyv1alpha1.MeshPolicyClient, error) {
+		meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		registerMeshPolicyOnce.Do(func() {
+			err = meshPolicy.Register()
+
+		})
+		if err != nil {
+			return nil, err
+		}
+		return meshPolicy, nil
 	}
 
-	virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache))
-	if err != nil {
-		return nil, err
+	registerDestinationRuleOnce := &sync.Once{}
+	destinationRuleClientLoader := func() (v1alpha3.DestinationRuleClient, error) {
+		destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		var registrationErr error
+		registerDestinationRuleOnce.Do(func() {
+			registrationErr = destinationRule.Register()
+
+		})
+		if registrationErr != nil {
+			return nil, registrationErr
+		}
+		return destinationRule, nil
 	}
-	if err := virtualService.Register(); err != nil {
-		return nil, err
+
+	registerVirtualServiceOnce := &sync.Once{}
+	virtualServiceClientLoader := func() (v1alpha3.VirtualServiceClient, error) {
+		virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache))
+		if err != nil {
+			return nil, err
+		}
+		var registrationErr error
+		registerVirtualServiceOnce.Do(func() {
+			registrationErr = virtualService.Register()
+
+		})
+		if registrationErr != nil {
+			return nil, registrationErr
+		}
+		return virtualService, nil
 	}
-	return newIstioClients(rbacConfig, serviceRole, serviceRoleBinding, meshPolicy, destinationRule, virtualService), nil
+
+	return newIstioClients(
+		rbacConfigClientLoader,
+		serviceRoleClientLoader,
+		serviceRoleBindingClientLoader,
+		meshPolicyClientLoader,
+		destinationRuleClientLoader,
+		virtualServiceClientLoader,
+	), nil
 }
 
-func serviceProfileClientFromConfig(ctx context.Context, restConfig *rest.Config) (linkerdv1.ServiceProfileClient, error) {
-	linkerdClient, err := versioned.NewForConfig(restConfig)
-	if err != nil {
-		return nil, err
-	}
-	cache, err := linkerd.NewLinkerdCache(ctx, linkerdClient)
-	if err != nil {
-		return nil, err
-	}
-	baseServiceProfileClient := linkerd.NewResourceClient(linkerdClient, cache)
-
-	return linkerdv1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
-}
+const serviceProfileCrdName = "serviceprofiles.linkerd.io"
 
 func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 	restConfig, err := kubeutils.GetConfig("", "")
 	if err != nil {
 		return nil, err
 	}
-	/*
-		linkerd clients
-	*/
-	serviceProfile, err := serviceProfileClientFromConfig(ctx, restConfig)
+
+	apiExts, err := apiexts.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	linkerdClient, err := versioned.NewForConfig(restConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return newLinkerdClients(serviceProfile), nil
+	var linkerdCache linkerd.Cache
+	startCacheOnce := &sync.Once{}
+
+	serviceProfileClientLoader := func() (linkerdv1.ServiceProfileClient, error) {
+		if linkerdCache == nil {
+			// check that crd is registered before starting cache
+			if err := kubeutils.WaitForCrdActive(apiExts, serviceProfileCrdName); err != nil {
+				return nil, NewCrdNotRegisteredErr(serviceProfileCrdName, err)
+			}
+
+			var cacheInitErr error
+			startCacheOnce.Do(func() {
+				linkerdCache, cacheInitErr = linkerd.NewLinkerdCache(ctx, linkerdClient)
+			})
+			if cacheInitErr != nil {
+				return nil, cacheInitErr
+			}
+		}
+		baseServiceProfileClient := linkerd.NewResourceClient(linkerdClient, linkerdCache)
+
+		return linkerdv1.NewServiceProfileClientWithBase(baseServiceProfileClient), nil
+	}
+
+	return newLinkerdClients(serviceProfileClientLoader), nil
 }
+
+const (
+	trafficTargetCrdName  = "traffictargets.access.smi-spec.io"
+	httpRouteGroupCrdName = "httproutegroups.specs.smi-spec.io"
+	trafficSplitCrdName   = "split.smi-spec.io"
+)
 
 func SMIFromContext(ctx context.Context) (*SMIClients, error) {
 	restConfig, err := kubeutils.GetConfig("", "")
@@ -269,16 +360,61 @@ func SMIFromContext(ctx context.Context) (*SMIClients, error) {
 	if err != nil {
 		return nil, err
 	}
-	smiCache, err := smi.NewSMICache(ctx, accessClient, specsClient, splitClient)
+
+	apiExts, err := apiexts.NewForConfig(restConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	trafficTargetClient := smi.NewTrafficTargetClient(accessClient, smiCache)
-	httpRouteGroupClient := smi.NewHTTPRouteGroupClient(specsClient, smiCache)
-	trafficSplitClient := smi.NewTrafficSplitClient(splitClient, smiCache)
+	var smiCache smi.Cache
+	startCacheOnce := &sync.Once{}
+	initCache := func() error {
+		if smiCache == nil {
+			// check that smi crds are registered before starting cache
+			if err := kubeutils.WaitForCrdActive(apiExts, trafficTargetCrdName); err != nil {
+				return NewCrdNotRegisteredErr(trafficTargetCrdName, err)
+			}
+			if err := kubeutils.WaitForCrdActive(apiExts, httpRouteGroupCrdName); err != nil {
+				return NewCrdNotRegisteredErr(httpRouteGroupCrdName, err)
+			}
+			if err := kubeutils.WaitForCrdActive(apiExts, trafficSplitCrdName); err != nil {
+				return NewCrdNotRegisteredErr(trafficSplitCrdName, err)
+			}
+			startCacheOnce.Do(func() {
+				smiCache, err = smi.NewSMICache(ctx, accessClient, specsClient, splitClient)
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 
-	return newSMIClients(trafficTargetClient, httpRouteGroupClient, trafficSplitClient), nil
+	trafficTargetClientLoader := func() (accessv1alpha1.TrafficTargetClient, error) {
+		if err := initCache(); err != nil {
+			return nil, err
+		}
+
+		return smi.NewTrafficTargetClient(accessClient, smiCache), nil
+
+	}
+	httpRouteGroupClientLoader := func() (specsv1alpha1.HTTPRouteGroupClient, error) {
+		if err := initCache(); err != nil {
+			return nil, err
+		}
+
+		return smi.NewHTTPRouteGroupClient(specsClient, smiCache), nil
+	}
+
+	trafficSplitClientLoader := func() (splitv1alpha1.TrafficSplitClient, error) {
+		if err := initCache(); err != nil {
+			return nil, err
+		}
+
+		return smi.NewTrafficSplitClient(splitClient, smiCache), nil
+	}
+
+	return newSMIClients(trafficTargetClientLoader, httpRouteGroupClientLoader, trafficSplitClientLoader), nil
 }
 
 type Clientset struct {
@@ -300,7 +436,7 @@ func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus
 }
 
 func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
-	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache}
+	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache, SkipCrdCreation: true}
 }
 
 type SuperglooClients struct {
@@ -332,33 +468,46 @@ func newDiscoveryClients(pod kubernetes2.PodClient, service kubernetes2.ServiceC
 	return &discoveryClients{Pod: pod, Service: service}
 }
 
+type RbacConfigClientLoader func() (rbacv1alpha1.RbacConfigClient, error)
+type ServiceRoleClientLoader func() (rbacv1alpha1.ServiceRoleClient, error)
+type ServiceRoleBindingClientLoader func() (rbacv1alpha1.ServiceRoleBindingClient, error)
+type MeshPolicyClientLoader func() (policyv1alpha1.MeshPolicyClient, error)
+type DestinationRuleClientLoader func() (v1alpha3.DestinationRuleClient, error)
+type VirtualServiceClientLoader func() (v1alpha3.VirtualServiceClient, error)
+
 type IstioClients struct {
-	RbacConfig         rbacv1alpha1.RbacConfigClient
-	ServiceRole        rbacv1alpha1.ServiceRoleClient
-	ServiceRoleBinding rbacv1alpha1.ServiceRoleBindingClient
-	MeshPolicy         policyv1alpha1.MeshPolicyClient
-	DestinationRule    v1alpha3.DestinationRuleClient
-	VirtualService     v1alpha3.VirtualServiceClient
+	RbacConfig         RbacConfigClientLoader
+	ServiceRole        ServiceRoleClientLoader
+	ServiceRoleBinding ServiceRoleBindingClientLoader
+	MeshPolicy         MeshPolicyClientLoader
+	DestinationRule    DestinationRuleClientLoader
+	VirtualService     VirtualServiceClientLoader
 }
 
-func newIstioClients(rbacConfig rbacv1alpha1.RbacConfigClient, serviceRole rbacv1alpha1.ServiceRoleClient, serviceRoleBinding rbacv1alpha1.ServiceRoleBindingClient, meshPolicy policyv1alpha1.MeshPolicyClient, destinationRule v1alpha3.DestinationRuleClient, virtualService v1alpha3.VirtualServiceClient) *IstioClients {
+func newIstioClients(rbacConfig RbacConfigClientLoader, serviceRole ServiceRoleClientLoader, serviceRoleBinding ServiceRoleBindingClientLoader, meshPolicy MeshPolicyClientLoader, destinationRule DestinationRuleClientLoader, virtualService VirtualServiceClientLoader) *IstioClients {
 	return &IstioClients{RbacConfig: rbacConfig, ServiceRole: serviceRole, ServiceRoleBinding: serviceRoleBinding, MeshPolicy: meshPolicy, DestinationRule: destinationRule, VirtualService: virtualService}
 }
 
+type ServiceProfileClientLoader func() (linkerdv1.ServiceProfileClient, error)
+
 type LinkerdClients struct {
-	ServiceProfile linkerdv1.ServiceProfileClient
+	ServiceProfile ServiceProfileClientLoader
 }
 
-func newLinkerdClients(serviceProfile linkerdv1.ServiceProfileClient) *LinkerdClients {
+func newLinkerdClients(serviceProfile ServiceProfileClientLoader) *LinkerdClients {
 	return &LinkerdClients{ServiceProfile: serviceProfile}
 }
 
+type TrafficTargetClientLoader func() (accessv1alpha1.TrafficTargetClient, error)
+type HTTPRouteGroupClientLoader func() (specsv1alpha1.HTTPRouteGroupClient, error)
+type TrafficSplitClientLoader func() (splitv1alpha1.TrafficSplitClient, error)
+
 type SMIClients struct {
-	TrafficTarget  accessv1alpha1.TrafficTargetClient
-	HTTPRouteGroup specsv1alpha1.HTTPRouteGroupClient
-	TrafficSplit   splitv1alpha1.TrafficSplitClient
+	TrafficTarget  TrafficTargetClientLoader
+	HTTPRouteGroup HTTPRouteGroupClientLoader
+	TrafficSplit   TrafficSplitClientLoader
 }
 
-func newSMIClients(trafficTarget accessv1alpha1.TrafficTargetClient, HTTPRouteGroup specsv1alpha1.HTTPRouteGroupClient, trafficSplit splitv1alpha1.TrafficSplitClient) *SMIClients {
+func newSMIClients(trafficTarget TrafficTargetClientLoader, HTTPRouteGroup HTTPRouteGroupClientLoader, trafficSplit TrafficSplitClientLoader) *SMIClients {
 	return &SMIClients{TrafficTarget: trafficTarget, HTTPRouteGroup: HTTPRouteGroup, TrafficSplit: trafficSplit}
 }

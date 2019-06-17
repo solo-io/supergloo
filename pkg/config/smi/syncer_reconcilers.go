@@ -3,6 +3,8 @@ package smi
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/clientset"
+
 	"github.com/solo-io/supergloo/pkg/config/utils"
 
 	accessv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
@@ -16,18 +18,35 @@ import (
 )
 
 type Reconcilers interface {
+	CanReconcile() bool
 	ReconcileAll(ctx context.Context, config *smi.MeshConfig) error
 }
 
 type smiReconcilers struct {
-	ownerLabels              map[string]string
-	trafficTargetReconciler  accessv1alpha1.TrafficTargetReconciler
-	httpRouteGroupReconciler specsv1alpha1.HTTPRouteGroupReconciler
-	trafficSplitReconciler   splitv1alpha1.TrafficSplitReconciler
+	ownerLabels                map[string]string
+	trafficTargetClientLoader  clientset.TrafficTargetClientLoader
+	httpRouteGroupClientLoader clientset.HTTPRouteGroupClientLoader
+	trafficSplitClientLoader   clientset.TrafficSplitClientLoader
 }
 
-func NewSMIReconcilers(ownerLabels map[string]string, trafficTargetReconciler accessv1alpha1.TrafficTargetReconciler, httpRouteGroupReconciler specsv1alpha1.HTTPRouteGroupReconciler, trafficSplitReconciler splitv1alpha1.TrafficSplitReconciler) Reconcilers {
-	return &smiReconcilers{ownerLabels: ownerLabels, trafficTargetReconciler: trafficTargetReconciler, httpRouteGroupReconciler: httpRouteGroupReconciler, trafficSplitReconciler: trafficSplitReconciler}
+func NewSMIReconcilers(ownerLabels map[string]string, trafficTargetClientLoader clientset.TrafficTargetClientLoader, httpRouteGroupClientLoader clientset.HTTPRouteGroupClientLoader, trafficSplitClientLoader clientset.TrafficSplitClientLoader) Reconcilers {
+	return &smiReconcilers{ownerLabels: ownerLabels, trafficTargetClientLoader: trafficTargetClientLoader, httpRouteGroupClientLoader: httpRouteGroupClientLoader, trafficSplitClientLoader: trafficSplitClientLoader}
+}
+
+func (s *smiReconcilers) CanReconcile() bool {
+	_, err := s.trafficTargetClientLoader()
+	if err != nil {
+		return false
+	}
+	_, err = s.httpRouteGroupClientLoader()
+	if err != nil {
+		return false
+	}
+	_, err = s.trafficSplitClientLoader()
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func (s *smiReconcilers) ReconcileAll(ctx context.Context, config *smi.MeshConfig) error {
@@ -44,7 +63,20 @@ func (s *smiReconcilers) ReconcileAll(ctx context.Context, config *smi.MeshConfi
 	utils.SetLabels(s.ownerLabels, config.SecurityConfig.HTTPRouteGroups.AsResources()...)
 	utils.SetLabels(s.ownerLabels, config.RoutingConfig.TrafficSplits.AsResources()...)
 
-	if err := s.trafficTargetReconciler.Reconcile(
+	trafficTargetClient, err := s.trafficTargetClientLoader()
+	if err != nil {
+		return err
+	}
+	httpRouteGroupClient, err := s.httpRouteGroupClientLoader()
+	if err != nil {
+		return err
+	}
+	trafficSplitClient, err := s.trafficSplitClientLoader()
+	if err != nil {
+		return err
+	}
+
+	if err := accessv1alpha1.NewTrafficTargetReconciler(trafficTargetClient).Reconcile(
 		"",
 		config.SecurityConfig.TrafficTargets,
 		nil,
@@ -56,7 +88,7 @@ func (s *smiReconcilers) ReconcileAll(ctx context.Context, config *smi.MeshConfi
 		return errors.Wrapf(err, "reconciling trafficTargets")
 	}
 
-	if err := s.httpRouteGroupReconciler.Reconcile(
+	if err := specsv1alpha1.NewHTTPRouteGroupReconciler(httpRouteGroupClient).Reconcile(
 		"",
 		config.SecurityConfig.HTTPRouteGroups,
 		nil,
@@ -68,7 +100,7 @@ func (s *smiReconcilers) ReconcileAll(ctx context.Context, config *smi.MeshConfi
 		return errors.Wrapf(err, "reconciling trafficTargets")
 	}
 
-	if err := s.trafficSplitReconciler.Reconcile(
+	if err := splitv1alpha1.NewTrafficSplitReconciler(trafficSplitClient).Reconcile(
 		"",
 		config.RoutingConfig.TrafficSplits,
 		nil,

@@ -39,3 +39,17 @@ var _ = Describe("IstioClientsFromContext", func() {
 		Expect(istio.VirtualService).NotTo(BeNil())
 	})
 })
+
+var _ = Describe("LinkerdClientsFromContext", func() {
+	Context("crd not registered", func() {
+		It("returns an error on the client loader", func() {
+			linkerd, err := LinkerdFromContext(context.TODO())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(linkerd).NotTo(BeNil())
+			Expect(linkerd.ServiceProfile).NotTo(BeNil())
+			_, err = linkerd.ServiceProfile()
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(BeAssignableToTypeOf(&CrdNotRegisteredErr{}))
+		})
+	})
+})

@@ -36,45 +36,52 @@ var _ = Describe("SyncerReconcilers", func() {
 	BeforeEach(func() {
 		mem := &factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()}
 
+		rbacConfigClientLoader := func() (rbacv1alpha1.RbacConfigClient, error) {
+			return rbacv1alpha1.NewRbacConfigClient(mem)
+		}
+
+		serviceRoleClientLoader := func() (rbacv1alpha1.ServiceRoleClient, error) {
+			return rbacv1alpha1.NewServiceRoleClient(mem)
+		}
+
+		serviceRoleBindingClientLoader := func() (rbacv1alpha1.ServiceRoleBindingClient, error) {
+			return rbacv1alpha1.NewServiceRoleBindingClient(mem)
+		}
+
+		meshPolicyClientLoader := func() (policyv1alpha1.MeshPolicyClient, error) {
+			return policyv1alpha1.NewMeshPolicyClient(mem)
+		}
+
+		destinationRuleClientLoader := func() (v1alpha3.DestinationRuleClient, error) {
+			return v1alpha3.NewDestinationRuleClient(mem)
+		}
+
+		virtualServiceClientLoader := func() (v1alpha3.VirtualServiceClient, error) {
+			return v1alpha3.NewVirtualServiceClient(mem)
+		}
+
 		var err error
-		rbacConfigClient, err = rbacv1alpha1.NewRbacConfigClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		rbacConfigReconciler := rbacv1alpha1.NewRbacConfigReconciler(rbacConfigClient)
-
-		serviceRoleClient, err = rbacv1alpha1.NewServiceRoleClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		serviceRoleReconciler := rbacv1alpha1.NewServiceRoleReconciler(serviceRoleClient)
-
-		serviceRoleBindingClient, err = rbacv1alpha1.NewServiceRoleBindingClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		serviceRoleBindingReconciler := rbacv1alpha1.NewServiceRoleBindingReconciler(serviceRoleBindingClient)
-
-		meshPolicyClient, err = policyv1alpha1.NewMeshPolicyClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		meshPolicyReconciler := policyv1alpha1.NewMeshPolicyReconciler(meshPolicyClient)
-
-		destinationRuleClient, err = v1alpha3.NewDestinationRuleClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		destinationRuleReconciler := v1alpha3.NewDestinationRuleReconciler(destinationRuleClient)
-
-		virtualServiceClient, err = v1alpha3.NewVirtualServiceClient(mem)
-		Expect(err).NotTo(HaveOccurred())
-		virtualServiceReconciler := v1alpha3.NewVirtualServiceReconciler(virtualServiceClient)
-
 		tlsSecretClient, err = v1.NewTlsSecretClient(mem)
 		Expect(err).NotTo(HaveOccurred())
 		tlsSecretClientReconciler := v1.NewTlsSecretReconciler(tlsSecretClient)
 
 		labels := map[string]string{"test": "labels"}
 		rec = istio.NewIstioReconcilers(labels,
-			rbacConfigReconciler,
-			serviceRoleReconciler,
-			serviceRoleBindingReconciler,
-			meshPolicyReconciler,
-			destinationRuleReconciler,
-			virtualServiceReconciler,
+			rbacConfigClientLoader,
+			serviceRoleClientLoader,
+			serviceRoleBindingClientLoader,
+			meshPolicyClientLoader,
+			destinationRuleClientLoader,
+			virtualServiceClientLoader,
 			tlsSecretClientReconciler,
 		)
+
+		rbacConfigClient, _ = rbacConfigClientLoader()
+		serviceRoleClient, _ = serviceRoleClientLoader()
+		serviceRoleBindingClient, _ = serviceRoleBindingClientLoader()
+		meshPolicyClient, _ = meshPolicyClientLoader()
+		destinationRuleClient, _ = destinationRuleClientLoader()
+		virtualServiceClient, _ = virtualServiceClientLoader()
 	})
 
 	It("reconciles from a set of MeshConfig", func() {

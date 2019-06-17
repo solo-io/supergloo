@@ -25,6 +25,9 @@ func NewLinkerdConfigSyncer(translator linkerd.Translator, reconcilers Reconcile
 }
 
 func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
+	if !s.reconcilers.CanReconcile() {
+		return nil
+	}
 
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)

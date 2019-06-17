@@ -25,6 +25,9 @@ func NewSmiConfigSyncer(translator smi.Translator, reconcilers Reconcilers, repo
 }
 
 func (s *smiConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
+	if !s.reconcilers.CanReconcile() {
+		return nil
+	}
 
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("smi-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)

@@ -3,19 +3,12 @@ package setup
 import (
 	"context"
 
-	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
-	accessv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/access/v1alpha1"
-	specsv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/specs/v1alpha1"
-	splitv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/smi/split/v1alpha1"
 	"github.com/solo-io/supergloo/pkg/config/smi"
 	smitranslator "github.com/solo-io/supergloo/pkg/translator/smi"
 
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
-	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
-	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"github.com/solo-io/supergloo/pkg/config/appmesh"
 	"github.com/solo-io/supergloo/pkg/config/istio"
@@ -44,12 +37,12 @@ func createIstioConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.C
 	translator := istiotranslator.NewTranslator(istioplugins.Plugins(cs.Kube))
 
 	reconcilers := istio.NewIstioReconcilers(map[string]string{"created_by": "istio-config-syncer"},
-		rbacv1alpha1.NewRbacConfigReconciler(istioClients.RbacConfig),
-		rbacv1alpha1.NewServiceRoleReconciler(istioClients.ServiceRole),
-		rbacv1alpha1.NewServiceRoleBindingReconciler(istioClients.ServiceRoleBinding),
-		policyv1alpha1.NewMeshPolicyReconciler(istioClients.MeshPolicy),
-		v1alpha3.NewDestinationRuleReconciler(istioClients.DestinationRule),
-		v1alpha3.NewVirtualServiceReconciler(istioClients.VirtualService),
+		istioClients.RbacConfig,
+		istioClients.ServiceRole,
+		istioClients.ServiceRoleBinding,
+		istioClients.MeshPolicy,
+		istioClients.DestinationRule,
+		istioClients.VirtualService,
 		v1.NewTlsSecretReconciler(cs.Supergloo.TlsSecret),
 	)
 
@@ -67,7 +60,7 @@ func createLinkerdConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1
 	translator := linkerdtranslator.NewTranslator(linkerdplugins.Plugins(cs.Kube))
 
 	reconcilers := linkerd.NewLinkerdReconcilers(map[string]string{"created_by": "linkerd-config-syncer"},
-		linkerdv1.NewServiceProfileReconciler(clients.ServiceProfile),
+		clients.ServiceProfile,
 	)
 
 	newReporter := makeReporter("linkerd-config-reporter", cs.Supergloo)
@@ -84,9 +77,9 @@ func createSmiConfigSyncer(ctx context.Context, cs *clientset.Clientset) (v1.Con
 	translator := smitranslator.NewTranslator()
 
 	reconcilers := smi.NewSMIReconcilers(map[string]string{"created_by": "smi-config-syncer"},
-		accessv1alpha1.NewTrafficTargetReconciler(clients.TrafficTarget),
-		specsv1alpha1.NewHTTPRouteGroupReconciler(clients.HTTPRouteGroup),
-		splitv1alpha1.NewTrafficSplitReconciler(clients.TrafficSplit),
+		clients.TrafficTarget,
+		clients.HTTPRouteGroup,
+		clients.TrafficSplit,
 	)
 
 	newReporter := makeReporter("smi-config-reporter", cs.Supergloo)
