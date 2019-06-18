@@ -8,6 +8,7 @@ import (
 	"github.com/linkerd/linkerd2/controller/gen/client/clientset/versioned"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
@@ -165,32 +166,35 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	pods := pod.NewPodClient(kubeClient, kubeCoreCache)
 	services := service.NewServiceClient(kubeClient, kubeCoreCache)
 
+	apiExts, err := apiexts.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	kubeCrdCache, err := customresourcedefinition.NewKubeCustomResourceDefinitionCache(ctx, apiExts)
+	if err != nil {
+		return nil, err
+	}
+	customResourceDefinitions := customresourcedefinition.NewCustomResourceDefinitionClient(apiExts, kubeCrdCache)
+
 	return newClientset(
 		restConfig,
 		kubeClient,
 		promClient,
 		newSuperglooClients(install, mesh, meshGroup, meshIngress, upstream,
 			routingRule, securityRule, tlsSecret, secret, settings),
-		newDiscoveryClients(pods, services),
+		newDiscoveryClients(pods, services, customResourceDefinitions),
 	), nil
 }
 
-func IstioFromContext(ctx context.Context) (*IstioClients, error) {
-	restConfig, err := kubeutils.GetConfig("", "")
-	if err != nil {
-		return nil, err
-	}
+func makeRbacConfigClientLoader(ctx context.Context, restConfig *rest.Config) RbacConfigClientLoader {
 	crdCache := kube.NewKubeCache(ctx)
-
-	// each resource should only be registered with the cache once
-	registerRbacConfigOnce := &sync.Once{}
-
-	rbacConfigClientLoader := func() (rbacv1alpha1.RbacConfigClient, error) {
+	registerOnce := &sync.Once{}
+	return func() (rbacv1alpha1.RbacConfigClient, error) {
 		rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
-		registerRbacConfigOnce.Do(func() {
+		registerOnce.Do(func() {
 			err = rbacConfig.Register()
 		})
 		if err != nil {
@@ -198,100 +202,115 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 		}
 		return rbacConfig, nil
 	}
+}
 
-	registerServiceRoleOnce := &sync.Once{}
-	serviceRoleClientLoader := func() (rbacv1alpha1.ServiceRoleClient, error) {
+func makeServiceRoleClientLoader(ctx context.Context, restConfig *rest.Config) ServiceRoleClientLoader {
+	crdCache := kube.NewKubeCache(ctx)
+	registerOnce := &sync.Once{}
+	return func() (rbacv1alpha1.ServiceRoleClient, error) {
 		serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
-		registerServiceRoleOnce.Do(func() {
+		registerOnce.Do(func() {
 			err = serviceRole.Register()
-
 		})
 		if err != nil {
 			return nil, err
 		}
 		return serviceRole, nil
 	}
+}
 
-	registerServiceRoleBindingOnce := &sync.Once{}
-	serviceRoleBindingClientLoader := func() (rbacv1alpha1.ServiceRoleBindingClient, error) {
+func makeServiceRoleBindingClientLoader(ctx context.Context, restConfig *rest.Config) ServiceRoleBindingClientLoader {
+	crdCache := kube.NewKubeCache(ctx)
+	registerOnce := &sync.Once{}
+	return func() (rbacv1alpha1.ServiceRoleBindingClient, error) {
 		serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
-		registerServiceRoleBindingOnce.Do(func() {
+		registerOnce.Do(func() {
 			err = serviceRoleBinding.Register()
-
 		})
 		if err != nil {
 			return nil, err
 		}
 		return serviceRoleBinding, nil
 	}
+}
 
-	registerMeshPolicyOnce := &sync.Once{}
-	meshPolicyClientLoader := func() (policyv1alpha1.MeshPolicyClient, error) {
+func makeDestinationRuleClientLoader(ctx context.Context, restConfig *rest.Config) DestinationRuleClientLoader {
+	crdCache := kube.NewKubeCache(ctx)
+	registerOnce := &sync.Once{}
+	return func() (v1alpha3.DestinationRuleClient, error) {
+		destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache, true))
+		if err != nil {
+			return nil, err
+		}
+		registerOnce.Do(func() {
+			err = destinationRule.Register()
+		})
+		if err != nil {
+			return nil, err
+		}
+		return destinationRule, nil
+	}
+}
+
+func makeVirtualServiceClientLoader(ctx context.Context, restConfig *rest.Config) VirtualServiceClientLoader {
+	crdCache := kube.NewKubeCache(ctx)
+	registerOnce := &sync.Once{}
+	return func() (v1alpha3.VirtualServiceClient, error) {
+		virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache, true))
+		if err != nil {
+			return nil, err
+		}
+		registerOnce.Do(func() {
+			err = virtualService.Register()
+		})
+		if err != nil {
+			return nil, err
+		}
+		return virtualService, nil
+	}
+}
+
+func makeMeshPolicyClientLoader(ctx context.Context, restConfig *rest.Config) MeshPolicyClientLoader {
+	crdCache := kube.NewKubeCache(ctx)
+	registerOnce := &sync.Once{}
+	return func() (policyv1alpha1.MeshPolicyClient, error) {
 		meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
-		registerMeshPolicyOnce.Do(func() {
+		registerOnce.Do(func() {
 			err = meshPolicy.Register()
-
 		})
 		if err != nil {
 			return nil, err
 		}
 		return meshPolicy, nil
 	}
+}
 
-	registerDestinationRuleOnce := &sync.Once{}
-	destinationRuleClientLoader := func() (v1alpha3.DestinationRuleClient, error) {
-		destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache, true))
-		if err != nil {
-			return nil, err
-		}
-		var registrationErr error
-		registerDestinationRuleOnce.Do(func() {
-			registrationErr = destinationRule.Register()
-
-		})
-		if registrationErr != nil {
-			return nil, registrationErr
-		}
-		return destinationRule, nil
-	}
-
-	registerVirtualServiceOnce := &sync.Once{}
-	virtualServiceClientLoader := func() (v1alpha3.VirtualServiceClient, error) {
-		virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache, true))
-		if err != nil {
-			return nil, err
-		}
-		var registrationErr error
-		registerVirtualServiceOnce.Do(func() {
-			registrationErr = virtualService.Register()
-
-		})
-		if registrationErr != nil {
-			return nil, registrationErr
-		}
-		return virtualService, nil
+func IstioFromContext(ctx context.Context) (*IstioClients, error) {
+	restConfig, err := kubeutils.GetConfig("", "")
+	if err != nil {
+		return nil, err
 	}
 
 	return newIstioClients(
-		rbacConfigClientLoader,
-		serviceRoleClientLoader,
-		serviceRoleBindingClientLoader,
-		meshPolicyClientLoader,
-		destinationRuleClientLoader,
-		virtualServiceClientLoader,
+		makeRbacConfigClientLoader(ctx, restConfig),
+		makeServiceRoleClientLoader(ctx, restConfig),
+		makeServiceRoleBindingClientLoader(ctx, restConfig),
+		makeMeshPolicyClientLoader(ctx, restConfig),
+		makeDestinationRuleClientLoader(ctx, restConfig),
+		makeVirtualServiceClientLoader(ctx, restConfig),
 	), nil
 }
 
-const serviceProfileCrdName = "serviceprofiles.linkerd.io"
+const ServiceProfileCrdName = "serviceprofiles.linkerd.io"
 
 func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 	restConfig, err := kubeutils.GetConfig("", "")
@@ -314,8 +333,8 @@ func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 	serviceProfileClientLoader := func() (linkerdv1.ServiceProfileClient, error) {
 		if linkerdCache == nil {
 			// check that crd is registered before starting cache
-			if err := kubeutils.WaitForCrdActive(apiExts, serviceProfileCrdName); err != nil {
-				return nil, NewCrdNotRegisteredErr(serviceProfileCrdName, err)
+			if err := kubeutils.WaitForCrdActive(apiExts, ServiceProfileCrdName); err != nil {
+				return nil, NewCrdNotRegisteredErr(ServiceProfileCrdName, err)
 			}
 
 			var cacheInitErr error
@@ -335,9 +354,9 @@ func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 }
 
 const (
-	trafficTargetCrdName  = "traffictargets.access.smi-spec.io"
-	httpRouteGroupCrdName = "httproutegroups.specs.smi-spec.io"
-	trafficSplitCrdName   = "trafficsplits.split.smi-spec.io"
+	TrafficTargetCrdName  = "traffictargets.access.smi-spec.io"
+	HttpRouteGroupCrdName = "httproutegroups.specs.smi-spec.io"
+	TrafficSplitCrdName   = "trafficsplits.split.smi-spec.io"
 )
 
 func SMIFromContext(ctx context.Context) (*SMIClients, error) {
@@ -371,14 +390,14 @@ func SMIFromContext(ctx context.Context) (*SMIClients, error) {
 	initCache := func() error {
 		if smiCache == nil {
 			// check that smi crds are registered before starting cache
-			if err := kubeutils.WaitForCrdActive(apiExts, trafficTargetCrdName); err != nil {
-				return NewCrdNotRegisteredErr(trafficTargetCrdName, err)
+			if err := kubeutils.WaitForCrdActive(apiExts, TrafficTargetCrdName); err != nil {
+				return NewCrdNotRegisteredErr(TrafficTargetCrdName, err)
 			}
-			if err := kubeutils.WaitForCrdActive(apiExts, httpRouteGroupCrdName); err != nil {
-				return NewCrdNotRegisteredErr(httpRouteGroupCrdName, err)
+			if err := kubeutils.WaitForCrdActive(apiExts, HttpRouteGroupCrdName); err != nil {
+				return NewCrdNotRegisteredErr(HttpRouteGroupCrdName, err)
 			}
-			if err := kubeutils.WaitForCrdActive(apiExts, trafficSplitCrdName); err != nil {
-				return NewCrdNotRegisteredErr(trafficSplitCrdName, err)
+			if err := kubeutils.WaitForCrdActive(apiExts, TrafficSplitCrdName); err != nil {
+				return NewCrdNotRegisteredErr(TrafficSplitCrdName, err)
 			}
 			startCacheOnce.Do(func() {
 				smiCache, err = smi.NewSMICache(ctx, accessClient, specsClient, splitClient)
@@ -460,12 +479,13 @@ func newSuperglooClients(install v1.InstallClient, mesh v1.MeshClient, meshGroup
 }
 
 type discoveryClients struct {
-	Pod     kubernetes2.PodClient
-	Service kubernetes2.ServiceClient
+	Pod                      kubernetes2.PodClient
+	Service                  kubernetes2.ServiceClient
+	CustomResourceDefinition kubernetes2.CustomResourceDefinitionClient
 }
 
-func newDiscoveryClients(pod kubernetes2.PodClient, service kubernetes2.ServiceClient) *discoveryClients {
-	return &discoveryClients{Pod: pod, Service: service}
+func newDiscoveryClients(pod kubernetes2.PodClient, service kubernetes2.ServiceClient, customResourceDefinition kubernetes2.CustomResourceDefinitionClient) *discoveryClients {
+	return &discoveryClients{Pod: pod, Service: service, CustomResourceDefinition: customResourceDefinition}
 }
 
 type RbacConfigClientLoader func() (rbacv1alpha1.RbacConfigClient, error)

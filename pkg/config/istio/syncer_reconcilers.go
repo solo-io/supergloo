@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
-	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
@@ -16,7 +15,6 @@ import (
 )
 
 type Reconcilers interface {
-	CanReconcile() bool
 	ReconcileAll(ctx context.Context, config *istio.MeshConfig) error
 }
 
@@ -52,43 +50,11 @@ func NewIstioReconcilers(ownerLabels map[string]string,
 	}
 }
 
-func (s *istioReconcilers) CanReconcile() bool {
-	_, err := s.meshPolicyClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.rbacConfigClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.destinationRuleClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.virtualServiceClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.serviceRoleClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.serviceRoleBindingClientLoader()
-	if err != nil {
-		return false
-	}
-	return true
-}
-
 func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshConfig) error {
 	logger := contextutils.LoggerFrom(ctx)
 
 	// lazy loading of clients
 	// checks that the crd is registered if backed by a crd-based client
-	meshPolicyClient, err := s.meshPolicyClientLoader()
-	if err != nil {
-		return err
-	}
 	rbacConfigClient, err := s.rbacConfigClientLoader()
 	if err != nil {
 		return err
@@ -110,23 +76,27 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 		return err
 	}
 
-	// this list should always either be empty or contain the global mesh policy
-	var meshPoliciesToReconcile policyv1alpha1.MeshPolicyList
-	if config.MeshPolicy != nil {
-		logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
-		utils.SetLabels(s.ownerLabels, config.MeshPolicy)
-		meshPoliciesToReconcile = append(meshPoliciesToReconcile, config.MeshPolicy)
-	}
-	if err := policyv1alpha1.NewMeshPolicyReconciler(meshPolicyClient).Reconcile(
-		"",
-		meshPoliciesToReconcile, // mesh policy is a singleton
-		nil,
-		clients.ListOpts{
-			Ctx:      ctx,
-			Selector: nil, // allows overwriting a user-created mesh policy
-		},
-	); err != nil {
-		return errors.Wrapf(err, "reconciling default mesh policy")
+	// special case for MeshPolicy, only update existing if necessary
+	defaultMeshPolicy := config.MeshPolicy
+	if defaultMeshPolicy != nil {
+		logger.Infof("MeshPolicy: %v", defaultMeshPolicy.Metadata.Name)
+		utils.SetLabels(s.ownerLabels, defaultMeshPolicy)
+
+		meshPolicyClient, err := s.meshPolicyClientLoader()
+		if err != nil {
+			return err
+		}
+		original, err := meshPolicyClient.Read(defaultMeshPolicy.Metadata.Name, clients.ReadOpts{Ctx: ctx})
+		if err != nil {
+			return err
+		}
+		if original.Hash() != defaultMeshPolicy.Hash() {
+			defaultMeshPolicy.Metadata.ResourceVersion = original.Metadata.ResourceVersion
+
+			if _, err := meshPolicyClient.Write(defaultMeshPolicy, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
+				return err
+			}
+		}
 	}
 
 	// this list should always either be empty or contain the global rbac config

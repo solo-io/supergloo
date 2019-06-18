@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/api/clientset"
 	"go.uber.org/zap"
 
 	"github.com/solo-io/supergloo/pkg/translator/linkerd"
@@ -24,11 +25,21 @@ func NewLinkerdConfigSyncer(translator linkerd.Translator, reconcilers Reconcile
 	return &linkerdConfigSyncer{translator: translator, reconcilers: reconcilers, reporter: reporter}
 }
 
-func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
-	if !s.reconcilers.CanReconcile() {
-		return nil
-	}
+// crds required for to sync Istio
+var RequiredCrds = []string{
+	clientset.ServiceProfileCrdName,
+}
 
+func (s *linkerdConfigSyncer) ShouldSync(_, snap *v1.ConfigSnapshot) bool {
+	for _, crdName := range RequiredCrds {
+		if _, err := snap.Customresourcedefinition.Find("", crdName); err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("linkerd-config-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)
 	fields := []interface{}{
@@ -47,6 +58,11 @@ func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot)
 
 	if err := resourceErrs.Validate(); err != nil {
 		logger.Errorf("invalid user config or internal error: %v", err)
+	}
+
+	// ensure that all resources that may have been created by this syncer are removed
+	if len(meshConfigs) == 0 {
+		return s.reconcilers.ReconcileAll(ctx, &linkerd.MeshConfig{})
 	}
 
 	// we don't need to return here; if the error was related to the mesh, it shouldn't have been

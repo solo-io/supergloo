@@ -51,15 +51,15 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 		return err
 	}
 
-	return runConfigEventLoop(ctx, errHandler, cs, v1.ConfigSyncers{
+	return runConfigEventLoop(ctx, errHandler, cs,
 		appmeshConfigSyncer,
 		istioConfigSyncer,
 		linkerdConfigSyncer,
 		smiConfigSyncer,
-	})
+	)
 }
 
-func runConfigEventLoop(ctx context.Context, errHandler func(error), cs *clientset.Clientset, syncers v1.ConfigSyncer) error {
+func runConfigEventLoop(ctx context.Context, errHandler func(error), cs *clientset.Clientset, syncers ...v1.ConfigSyncer) error {
 
 	configEmitter := v1.NewConfigSimpleEmitter(wrapper.AggregatedWatchFromClients(
 		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.Mesh.BaseClient()},
@@ -71,8 +71,9 @@ func runConfigEventLoop(ctx context.Context, errHandler func(error), cs *clients
 		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.Upstream.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Discovery.Pod.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Discovery.Service.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Discovery.CustomResourceDefinition.BaseClient()},
 	))
-	configEventLoop := v1.NewConfigSimpleEventLoop(configEmitter, syncers)
+	configEventLoop := v1.NewConfigSimpleEventLoop(configEmitter, syncers...)
 
 	eventLoopErrs, err := configEventLoop.Run(ctx)
 	if err != nil {

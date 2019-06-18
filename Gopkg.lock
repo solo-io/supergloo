@@ -1397,7 +1397,7 @@
   version = "v0.8.4"
 
 [[projects]]
-  digest = "1:26fd2d5d65c116f721c89788c3d24111b0249cf0b8c39283768a1e455874c0ca"
+  digest = "1:94606599bc77a735d0dcd37238ae421f0ddc76efe7414391469d65ee52fa4fc0"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1406,6 +1406,7 @@
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
     "api/external/kubernetes/service",
+    "pkg/api/external/kubernetes/customresourcedefinition",
     "pkg/api/external/kubernetes/deployment",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/external/kubernetes/service",
@@ -1978,7 +1979,7 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:ace21b4261a9bc8d06b188f03ce48d1bed92ccba4890fad616cf283939f723c6"
+  digest = "1:f225b10cac2658741a32d90f3e52a9f75413185121b4b2891263d298dd50acac"
   name = "k8s.io/apiextensions-apiserver"
   packages = [
     "pkg/apis/apiextensions",
@@ -1986,6 +1987,11 @@
     "pkg/client/clientset/clientset",
     "pkg/client/clientset/clientset/scheme",
     "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+    "pkg/client/informers/externalversions",
+    "pkg/client/informers/externalversions/apiextensions",
+    "pkg/client/informers/externalversions/apiextensions/v1beta1",
+    "pkg/client/informers/externalversions/internalinterfaces",
+    "pkg/client/listers/apiextensions/v1beta1",
     "pkg/features",
   ]
   pruneopts = "UT"
@@ -2512,6 +2518,7 @@
     "github.com/onsi/gomega",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
+    "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/prometheus/config",
     "github.com/sirupsen/logrus",
     "github.com/solo-io/build/pkg/api/v1",
@@ -2553,6 +2560,7 @@
     "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/api/external/kubernetes/service",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",

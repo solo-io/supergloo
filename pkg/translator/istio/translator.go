@@ -105,9 +105,17 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	for _, mesh := range meshes {
 		istio := mesh.GetIstio()
-		if istio == nil || mesh.GetSmiEnabled() {
+		if istio == nil {
 			continue
 		}
+
+		// make sure we remove resources for this mesh that may have been created
+		// smi will manage it
+		if mesh.GetSmiEnabled() {
+			perMeshConfig[mesh] = &MeshConfig{}
+			continue
+		}
+
 		writeNamespace := istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{

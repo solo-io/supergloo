@@ -16,7 +16,6 @@ import (
 )
 
 type Reconcilers interface {
-	CanReconcile() bool
 	ReconcileAll(ctx context.Context, config *linkerd.MeshConfig) error
 }
 
@@ -32,11 +31,6 @@ func NewLinkerdReconcilers(ownerLabels map[string]string,
 		ownerLabels:                ownerLabels,
 		serviceProfileClientLoader: serviceProfileClientLoader,
 	}
-}
-
-func (s *linkerdReconcilers) CanReconcile() bool {
-	_, err := s.serviceProfileClientLoader()
-	return err == nil
 }
 
 func (s *linkerdReconcilers) ReconcileAll(ctx context.Context, config *linkerd.MeshConfig) error {

@@ -18,7 +18,6 @@ import (
 )
 
 type Reconcilers interface {
-	CanReconcile() bool
 	ReconcileAll(ctx context.Context, config *smi.MeshConfig) error
 }
 
@@ -31,22 +30,6 @@ type smiReconcilers struct {
 
 func NewSMIReconcilers(ownerLabels map[string]string, trafficTargetClientLoader clientset.TrafficTargetClientLoader, httpRouteGroupClientLoader clientset.HTTPRouteGroupClientLoader, trafficSplitClientLoader clientset.TrafficSplitClientLoader) Reconcilers {
 	return &smiReconcilers{ownerLabels: ownerLabels, trafficTargetClientLoader: trafficTargetClientLoader, httpRouteGroupClientLoader: httpRouteGroupClientLoader, trafficSplitClientLoader: trafficSplitClientLoader}
-}
-
-func (s *smiReconcilers) CanReconcile() bool {
-	_, err := s.trafficTargetClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.httpRouteGroupClientLoader()
-	if err != nil {
-		return false
-	}
-	_, err = s.trafficSplitClientLoader()
-	if err != nil {
-		return false
-	}
-	return true
 }
 
 func (s *smiReconcilers) ReconcileAll(ctx context.Context, config *smi.MeshConfig) error {
