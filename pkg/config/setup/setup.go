@@ -2,11 +2,9 @@ package setup
 
 import (
 	"context"
-	"time"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	"github.com/solo-io/supergloo/pkg/config/smi"
 	smitranslator "github.com/solo-io/supergloo/pkg/translator/smi"
 
@@ -63,24 +61,20 @@ func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrH
 
 func runConfigEventLoop(ctx context.Context, errHandler func(error), cs *clientset.Clientset, syncers v1.ConfigSyncer) error {
 
-	configEmitter := v1.NewConfigEmitter(
-		cs.Supergloo.Mesh,
-		cs.Supergloo.MeshIngress,
-		cs.Supergloo.MeshGroup,
-		cs.Supergloo.RoutingRule,
-		cs.Supergloo.SecurityRule,
-		cs.Supergloo.TlsSecret,
-		cs.Supergloo.Upstream,
-		cs.Discovery.Pod,
-		cs.Discovery.Service,
-	)
-	configEventLoop := v1.NewConfigEventLoop(configEmitter, syncers)
+	configEmitter := v1.NewConfigSimpleEmitter(wrapper.AggregatedWatchFromClients(
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.Mesh.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.MeshIngress.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.MeshGroup.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.RoutingRule.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.SecurityRule.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.TlsSecret.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Supergloo.Upstream.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Discovery.Pod.BaseClient()},
+		wrapper.ClientWatchOpts{BaseClient: cs.Discovery.Service.BaseClient()},
+	))
+	configEventLoop := v1.NewConfigSimpleEventLoop(configEmitter, syncers)
 
-	watchOpts := clients.WatchOpts{
-		Ctx:         ctx,
-		RefreshRate: time.Second * 1,
-	}
-	eventLoopErrs, err := configEventLoop.Run(nil, watchOpts)
+	eventLoopErrs, err := configEventLoop.Run(ctx)
 	if err != nil {
 		return err
 	}

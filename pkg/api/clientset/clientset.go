@@ -72,7 +72,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 	/*
 		supergloo config clients
 	*/
-	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache))
+	install, err := v1.NewInstallClient(clientForCrd(v1.InstallCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	mesh, err := v1.NewMeshClient(clientForCrd(v1.MeshCrd, restConfig, crdCache))
+	mesh, err := v1.NewMeshClient(clientForCrd(v1.MeshCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache))
+	meshIngress, err := v1.NewMeshIngressClient(clientForCrd(v1.MeshIngressCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache))
+	meshGroup, err := v1.NewMeshGroupClient(clientForCrd(v1.MeshGroupCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	upstream, err := gloov1.NewUpstreamClient(clientForCrd(gloov1.UpstreamCrd, restConfig, crdCache))
+	upstream, err := gloov1.NewUpstreamClient(clientForCrd(gloov1.UpstreamCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	routingRule, err := v1.NewRoutingRuleClient(clientForCrd(v1.RoutingRuleCrd, restConfig, crdCache))
+	routingRule, err := v1.NewRoutingRuleClient(clientForCrd(v1.RoutingRuleCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	securityRule, err := v1.NewSecurityRuleClient(clientForCrd(v1.SecurityRuleCrd, restConfig, crdCache))
+	securityRule, err := v1.NewSecurityRuleClient(clientForCrd(v1.SecurityRuleCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func ClientsetFromContext(ctx context.Context) (*Clientset, error) {
 		return nil, err
 	}
 
-	settings, err := gloov1.NewSettingsClient(clientForCrd(gloov1.SettingsCrd, restConfig, crdCache))
+	settings, err := gloov1.NewSettingsClient(clientForCrd(gloov1.SettingsCrd, restConfig, crdCache, false))
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 	registerRbacConfigOnce := &sync.Once{}
 
 	rbacConfigClientLoader := func() (rbacv1alpha1.RbacConfigClient, error) {
-		rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache))
+		rbacConfig, err := rbacv1alpha1.NewRbacConfigClient(clientForCrd(rbacv1alpha1.RbacConfigCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -201,7 +201,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 
 	registerServiceRoleOnce := &sync.Once{}
 	serviceRoleClientLoader := func() (rbacv1alpha1.ServiceRoleClient, error) {
-		serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache))
+		serviceRole, err := rbacv1alpha1.NewServiceRoleClient(clientForCrd(rbacv1alpha1.ServiceRoleCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -217,7 +217,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 
 	registerServiceRoleBindingOnce := &sync.Once{}
 	serviceRoleBindingClientLoader := func() (rbacv1alpha1.ServiceRoleBindingClient, error) {
-		serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache))
+		serviceRoleBinding, err := rbacv1alpha1.NewServiceRoleBindingClient(clientForCrd(rbacv1alpha1.ServiceRoleBindingCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -233,7 +233,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 
 	registerMeshPolicyOnce := &sync.Once{}
 	meshPolicyClientLoader := func() (policyv1alpha1.MeshPolicyClient, error) {
-		meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache))
+		meshPolicy, err := policyv1alpha1.NewMeshPolicyClient(clientForCrd(policyv1alpha1.MeshPolicyCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -249,7 +249,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 
 	registerDestinationRuleOnce := &sync.Once{}
 	destinationRuleClientLoader := func() (v1alpha3.DestinationRuleClient, error) {
-		destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache))
+		destinationRule, err := v1alpha3.NewDestinationRuleClient(clientForCrd(v1alpha3.DestinationRuleCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -266,7 +266,7 @@ func IstioFromContext(ctx context.Context) (*IstioClients, error) {
 
 	registerVirtualServiceOnce := &sync.Once{}
 	virtualServiceClientLoader := func() (v1alpha3.VirtualServiceClient, error) {
-		virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache))
+		virtualService, err := v1alpha3.NewVirtualServiceClient(clientForCrd(v1alpha3.VirtualServiceCrd, restConfig, crdCache, true))
 		if err != nil {
 			return nil, err
 		}
@@ -337,7 +337,7 @@ func LinkerdFromContext(ctx context.Context) (*LinkerdClients, error) {
 const (
 	trafficTargetCrdName  = "traffictargets.access.smi-spec.io"
 	httpRouteGroupCrdName = "httproutegroups.specs.smi-spec.io"
-	trafficSplitCrdName   = "split.smi-spec.io"
+	trafficSplitCrdName   = "trafficsplits.split.smi-spec.io"
 )
 
 func SMIFromContext(ctx context.Context) (*SMIClients, error) {
@@ -435,8 +435,8 @@ func newClientset(restConfig *rest.Config, kube kubernetes.Interface, prometheus
 	return &Clientset{RestConfig: restConfig, Kube: kube, Prometheus: prometheus, Supergloo: input, Discovery: discovery}
 }
 
-func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache) factory.ResourceClientFactory {
-	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache, SkipCrdCreation: true}
+func clientForCrd(crd crd.Crd, restConfig *rest.Config, kubeCache kube.SharedCache, skipCrdCreation bool) factory.ResourceClientFactory {
+	return &factory.KubeResourceClientFactory{Crd: crd, Cfg: restConfig, SharedCache: kubeCache, SkipCrdCreation: skipCrdCreation}
 }
 
 type SuperglooClients struct {

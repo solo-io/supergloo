@@ -43,6 +43,10 @@
       {
         "name": "Service",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "CustomResourceDefinition",
+        "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       }
     ],
     "install.supergloo.solo.io": [

@@ -22,6 +22,10 @@ func NewIstioConfigSyncer(translator istio.Translator, reconcilers Reconcilers, 
 	return &istioConfigSyncer{translator: translator, reconcilers: reconcilers, reporter: reporter}
 }
 
+func (s *istioConfigSyncer) ShouldSync(_, snap *v1.ConfigSnapshot) bool {
+
+}
+
 func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
 	if !s.reconcilers.CanReconcile() {
 		return nil

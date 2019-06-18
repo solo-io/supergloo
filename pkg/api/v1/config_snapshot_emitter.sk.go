@@ -53,39 +53,42 @@ type ConfigEmitter interface {
 	Upstream() gloo_solo_io.UpstreamClient
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Service() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient
+	CustomResourceDefinition() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionClient
 	Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error)
 }
 
-func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient) ConfigEmitter {
-	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, serviceClient, make(chan struct{}))
+func NewConfigEmitter(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient, customResourceDefinitionClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionClient) ConfigEmitter {
+	return NewConfigEmitterWithEmit(meshClient, meshIngressClient, meshGroupClient, routingRuleClient, securityRuleClient, tlsSecretClient, upstreamClient, podClient, serviceClient, customResourceDefinitionClient, make(chan struct{}))
 }
 
-func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient, emit <-chan struct{}) ConfigEmitter {
+func NewConfigEmitterWithEmit(meshClient MeshClient, meshIngressClient MeshIngressClient, meshGroupClient MeshGroupClient, routingRuleClient RoutingRuleClient, securityRuleClient SecurityRuleClient, tlsSecretClient TlsSecretClient, upstreamClient gloo_solo_io.UpstreamClient, podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, serviceClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient, customResourceDefinitionClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionClient, emit <-chan struct{}) ConfigEmitter {
 	return &configEmitter{
-		mesh:         meshClient,
-		meshIngress:  meshIngressClient,
-		meshGroup:    meshGroupClient,
-		routingRule:  routingRuleClient,
-		securityRule: securityRuleClient,
-		tlsSecret:    tlsSecretClient,
-		upstream:     upstreamClient,
-		pod:          podClient,
-		service:      serviceClient,
-		forceEmit:    emit,
+		mesh:                     meshClient,
+		meshIngress:              meshIngressClient,
+		meshGroup:                meshGroupClient,
+		routingRule:              routingRuleClient,
+		securityRule:             securityRuleClient,
+		tlsSecret:                tlsSecretClient,
+		upstream:                 upstreamClient,
+		pod:                      podClient,
+		service:                  serviceClient,
+		customResourceDefinition: customResourceDefinitionClient,
+		forceEmit:                emit,
 	}
 }
 
 type configEmitter struct {
-	forceEmit    <-chan struct{}
-	mesh         MeshClient
-	meshIngress  MeshIngressClient
-	meshGroup    MeshGroupClient
-	routingRule  RoutingRuleClient
-	securityRule SecurityRuleClient
-	tlsSecret    TlsSecretClient
-	upstream     gloo_solo_io.UpstreamClient
-	pod          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
-	service      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient
+	forceEmit                <-chan struct{}
+	mesh                     MeshClient
+	meshIngress              MeshIngressClient
+	meshGroup                MeshGroupClient
+	routingRule              RoutingRuleClient
+	securityRule             SecurityRuleClient
+	tlsSecret                TlsSecretClient
+	upstream                 gloo_solo_io.UpstreamClient
+	pod                      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
+	service                  github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient
+	customResourceDefinition github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionClient
 }
 
 func (c *configEmitter) Register() error {
@@ -114,6 +117,9 @@ func (c *configEmitter) Register() error {
 		return err
 	}
 	if err := c.service.Register(); err != nil {
+		return err
+	}
+	if err := c.customResourceDefinition.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -153,6 +159,10 @@ func (c *configEmitter) Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_c
 
 func (c *configEmitter) Service() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceClient {
 	return c.service
+}
+
+func (c *configEmitter) CustomResourceDefinition() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionClient {
+	return c.customResourceDefinition
 }
 
 func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *ConfigSnapshot, <-chan error, error) {
@@ -225,6 +235,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		namespace string
 	}
 	serviceChan := make(chan serviceListWithNamespace)
+	/* Create channel for CustomResourceDefinition */
+	type customResourceDefinitionListWithNamespace struct {
+		list      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionList
+		namespace string
+	}
+	customResourceDefinitionChan := make(chan customResourceDefinitionListWithNamespace)
 
 	for _, namespace := range watchNamespaces {
 		/* Setup namespaced watch for Mesh */
@@ -326,6 +342,17 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, serviceErrs, namespace+"-services")
 		}(namespace)
+		/* Setup namespaced watch for CustomResourceDefinition */
+		customResourceDefinitionNamespacesChan, customResourceDefinitionErrs, err := c.customResourceDefinition.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting CustomResourceDefinition watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, customResourceDefinitionErrs, namespace+"-customresourcedefinition")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -387,6 +414,12 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 						return
 					case serviceChan <- serviceListWithNamespace{list: serviceList, namespace: namespace}:
 					}
+				case customResourceDefinitionList := <-customResourceDefinitionNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case customResourceDefinitionChan <- customResourceDefinitionListWithNamespace{list: customResourceDefinitionList, namespace: namespace}:
+					}
 				}
 			}
 		}(namespace)
@@ -416,6 +449,7 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
 		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
 		servicesByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList)
+		customresourcedefinitionByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionList)
 
 		for {
 			record := func() { stats.Record(ctx, mConfigSnapshotIn.M(1)) }
@@ -539,6 +573,18 @@ func (c *configEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOp
 					serviceList = append(serviceList, services...)
 				}
 				currentSnapshot.Services = serviceList.Sort()
+			case customResourceDefinitionNamespacedList := <-customResourceDefinitionChan:
+				record()
+
+				namespace := customResourceDefinitionNamespacedList.namespace
+
+				// merge lists by namespace
+				customresourcedefinitionByNamespace[namespace] = customResourceDefinitionNamespacedList.list
+				var customResourceDefinitionList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionList
+				for _, customresourcedefinition := range customresourcedefinitionByNamespace {
+					customResourceDefinitionList = append(customResourceDefinitionList, customresourcedefinition...)
+				}
+				currentSnapshot.Customresourcedefinition = customResourceDefinitionList.Sort()
 			}
 		}
 	}()
