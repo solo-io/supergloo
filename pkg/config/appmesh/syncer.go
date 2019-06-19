@@ -25,6 +25,19 @@ func NewAppMeshConfigSyncer(translator appmesh.Translator, reconciler Reconciler
 	}
 }
 
+func (s *appMeshConfigSyncer) ShouldSync(ctx context.Context, old, new *v1.ConfigSnapshot) bool {
+	meshes := new.Meshes
+	if old != nil {
+		meshes = append(meshes, old.Meshes...)
+	}
+	for _, mesh := range meshes {
+		if mesh.GetAwsAppMesh() != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *appMeshConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("app-mesh-translation-sync-%v", snap.Hash()))
 	logger := contextutils.LoggerFrom(ctx)

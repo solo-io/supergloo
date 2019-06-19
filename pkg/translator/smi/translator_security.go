@@ -47,6 +47,9 @@ func createSecurityConfig(rules v1.SecurityRuleList,
 			resourceErrs.AddError(r, err)
 			continue
 		}
+
+		resourceErrs.Accept(r)
+
 		sc.HTTPRouteGroups = append(sc.HTTPRouteGroups, routeGroup)
 		sc.TrafficTargets = append(sc.TrafficTargets, trafficTargets...)
 	}

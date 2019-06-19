@@ -13,28 +13,30 @@ import (
 )
 
 type ConfigSnapshot struct {
-	Meshes        MeshList
-	Meshingresses MeshIngressList
-	Meshgroups    MeshGroupList
-	Routingrules  RoutingRuleList
-	Securityrules SecurityRuleList
-	Tlssecrets    TlsSecretList
-	Upstreams     gloo_solo_io.UpstreamList
-	Pods          github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
-	Services      github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList
+	Meshes                   MeshList
+	Meshingresses            MeshIngressList
+	Meshgroups               MeshGroupList
+	Routingrules             RoutingRuleList
+	Securityrules            SecurityRuleList
+	Tlssecrets               TlsSecretList
+	Upstreams                gloo_solo_io.UpstreamList
+	Pods                     github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
+	Services                 github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.ServiceList
+	Customresourcedefinition github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.CustomResourceDefinitionList
 }
 
 func (s ConfigSnapshot) Clone() ConfigSnapshot {
 	return ConfigSnapshot{
-		Meshes:        s.Meshes.Clone(),
-		Meshingresses: s.Meshingresses.Clone(),
-		Meshgroups:    s.Meshgroups.Clone(),
-		Routingrules:  s.Routingrules.Clone(),
-		Securityrules: s.Securityrules.Clone(),
-		Tlssecrets:    s.Tlssecrets.Clone(),
-		Upstreams:     s.Upstreams.Clone(),
-		Pods:          s.Pods.Clone(),
-		Services:      s.Services.Clone(),
+		Meshes:                   s.Meshes.Clone(),
+		Meshingresses:            s.Meshingresses.Clone(),
+		Meshgroups:               s.Meshgroups.Clone(),
+		Routingrules:             s.Routingrules.Clone(),
+		Securityrules:            s.Securityrules.Clone(),
+		Tlssecrets:               s.Tlssecrets.Clone(),
+		Upstreams:                s.Upstreams.Clone(),
+		Pods:                     s.Pods.Clone(),
+		Services:                 s.Services.Clone(),
+		Customresourcedefinition: s.Customresourcedefinition.Clone(),
 	}
 }
 
@@ -49,6 +51,7 @@ func (s ConfigSnapshot) Hash() uint64 {
 		s.hashUpstreams(),
 		s.hashPods(),
 		s.hashServices(),
+		s.hashCustomresourcedefinition(),
 	)
 }
 
@@ -88,6 +91,10 @@ func (s ConfigSnapshot) hashServices() uint64 {
 	return hashutils.HashAll(s.Services.AsInterfaces()...)
 }
 
+func (s ConfigSnapshot) hashCustomresourcedefinition() uint64 {
+	return hashutils.HashAll(s.Customresourcedefinition.AsInterfaces()...)
+}
+
 func (s ConfigSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
@@ -99,21 +106,23 @@ func (s ConfigSnapshot) HashFields() []zap.Field {
 	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("services", s.hashServices()))
+	fields = append(fields, zap.Uint64("customresourcedefinition", s.hashCustomresourcedefinition()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type ConfigSnapshotStringer struct {
-	Version       uint64
-	Meshes        []string
-	Meshingresses []string
-	Meshgroups    []string
-	Routingrules  []string
-	Securityrules []string
-	Tlssecrets    []string
-	Upstreams     []string
-	Pods          []string
-	Services      []string
+	Version                  uint64
+	Meshes                   []string
+	Meshingresses            []string
+	Meshgroups               []string
+	Routingrules             []string
+	Securityrules            []string
+	Tlssecrets               []string
+	Upstreams                []string
+	Pods                     []string
+	Services                 []string
+	Customresourcedefinition []string
 }
 
 func (ss ConfigSnapshotStringer) String() string {
@@ -164,20 +173,26 @@ func (ss ConfigSnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Customresourcedefinition %v\n", len(ss.Customresourcedefinition))
+	for _, name := range ss.Customresourcedefinition {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
 func (s ConfigSnapshot) Stringer() ConfigSnapshotStringer {
 	return ConfigSnapshotStringer{
-		Version:       s.Hash(),
-		Meshes:        s.Meshes.NamespacesDotNames(),
-		Meshingresses: s.Meshingresses.NamespacesDotNames(),
-		Meshgroups:    s.Meshgroups.NamespacesDotNames(),
-		Routingrules:  s.Routingrules.NamespacesDotNames(),
-		Securityrules: s.Securityrules.NamespacesDotNames(),
-		Tlssecrets:    s.Tlssecrets.NamespacesDotNames(),
-		Upstreams:     s.Upstreams.NamespacesDotNames(),
-		Pods:          s.Pods.NamespacesDotNames(),
-		Services:      s.Services.NamespacesDotNames(),
+		Version:                  s.Hash(),
+		Meshes:                   s.Meshes.NamespacesDotNames(),
+		Meshingresses:            s.Meshingresses.NamespacesDotNames(),
+		Meshgroups:               s.Meshgroups.NamespacesDotNames(),
+		Routingrules:             s.Routingrules.NamespacesDotNames(),
+		Securityrules:            s.Securityrules.NamespacesDotNames(),
+		Tlssecrets:               s.Tlssecrets.NamespacesDotNames(),
+		Upstreams:                s.Upstreams.NamespacesDotNames(),
+		Pods:                     s.Pods.NamespacesDotNames(),
+		Services:                 s.Services.NamespacesDotNames(),
+		Customresourcedefinition: s.Customresourcedefinition.NamespacesDotNames(),
 	}
 }

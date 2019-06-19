@@ -20,8 +20,8 @@ type Translator interface {
 
 // A container for the entire set of config for a single istio mesh
 type MeshConfig struct {
-	RoutingConfig  *RoutingConfig
-	SecurityConfig *SecurityConfig
+	RoutingConfig  RoutingConfig
+	SecurityConfig SecurityConfig
 }
 
 func (c *MeshConfig) Sort() {
@@ -55,9 +55,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	securityRules := snapshot.Securityrules
 
 	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -67,9 +64,11 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	for _, mesh := range meshes {
 		istio := mesh.GetIstio()
-		if istio == nil {
+		if istio == nil || !mesh.GetSmiEnabled() {
 			continue
 		}
+		resourceErrs.Accept(mesh)
+
 		writeNamespace := istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
@@ -122,8 +121,8 @@ func (t *translator) translateMesh(
 	)
 
 	meshConfig := &MeshConfig{
-		RoutingConfig:  &routingConfig,
-		SecurityConfig: &securityConfig,
+		RoutingConfig:  routingConfig,
+		SecurityConfig: securityConfig,
 	}
 	meshConfig.Sort()
 

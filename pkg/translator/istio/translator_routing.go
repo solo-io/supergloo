@@ -135,6 +135,9 @@ func (t *translator) makeVirtualServiceForHost(
 	// merge by matcher
 	var routes []*v1alpha3.HTTPRoute
 	for _, rule := range routingRules {
+
+		resourceErrs.Accept(rule)
+
 		sourceUpstreams, err := utils.UpstreamsForSelector(rule.SourceSelector, upstreams)
 		if err != nil {
 			return nil, err

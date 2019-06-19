@@ -3,6 +3,8 @@ package linkerd
 import (
 	"context"
 
+	"github.com/solo-io/supergloo/pkg/api/clientset"
+
 	"github.com/solo-io/supergloo/pkg/config/utils"
 
 	linkerdv1 "github.com/solo-io/supergloo/pkg/api/external/linkerd/v1"
@@ -20,14 +22,14 @@ type Reconcilers interface {
 type linkerdReconcilers struct {
 	ownerLabels map[string]string
 
-	serviceProfileReconciler linkerdv1.ServiceProfileReconciler
+	serviceProfileClientLoader clientset.ServiceProfileClientLoader
 }
 
 func NewLinkerdReconcilers(ownerLabels map[string]string,
-	serviceProfileReconciler linkerdv1.ServiceProfileReconciler) Reconcilers {
+	serviceProfileClientLoader clientset.ServiceProfileClientLoader) Reconcilers {
 	return &linkerdReconcilers{
-		ownerLabels:              ownerLabels,
-		serviceProfileReconciler: serviceProfileReconciler,
+		ownerLabels:                ownerLabels,
+		serviceProfileClientLoader: serviceProfileClientLoader,
 	}
 }
 
@@ -36,7 +38,12 @@ func (s *linkerdReconcilers) ReconcileAll(ctx context.Context, config *linkerd.M
 
 	logger.Infof("ServiceProfiles: %v", config.ServiceProfiles.Names())
 	utils.SetLabels(s.ownerLabels, config.ServiceProfiles.AsResources()...)
-	if err := s.serviceProfileReconciler.Reconcile(
+	serviceProfileClient, err := s.serviceProfileClientLoader()
+	if err != nil {
+		return err
+	}
+
+	if err := linkerdv1.NewServiceProfileReconciler(serviceProfileClient).Reconcile(
 		"",
 		config.ServiceProfiles,
 		nil,

@@ -35,9 +35,6 @@ func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSn
 	routingRules := snapshot.Routingrules
 
 	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -50,6 +47,7 @@ func (t *appMeshTranslator) Translate(ctx context.Context, snapshot *v1.ConfigSn
 			// Skip if not of type AppMesh
 			continue
 		}
+		resourceErrs.Accept(mesh)
 
 		appMeshConfig, err := t.translateMesh(ctx, mesh, routingRulesByMesh[mesh].Routing, upstreams, pods, resourceErrs)
 		if err != nil {

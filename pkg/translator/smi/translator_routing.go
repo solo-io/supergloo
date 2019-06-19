@@ -37,6 +37,7 @@ func createRoutingConfig(rules v1.RoutingRuleList, upstreams gloov1.UpstreamList
 			resourceErrs.AddError(rule, err)
 			continue
 		}
+		resourceErrs.Accept(rule)
 		trafficSplits = append(trafficSplits, splitsForRule...)
 	}
 	return RoutingConfig{

@@ -33,7 +33,7 @@ func (s *meshDiscoverySyncer) ShouldSync(_, new *v1.DiscoverySnapshot) bool {
 	// silence any logs ShouldSync might produce
 	silentCtx := contextutils.SilenceLogger(context.TODO())
 
-	desired, err := s.plugin.DesiredMeshes(silentCtx, new)
+	desired, err := s.desiredMeshes(silentCtx, new)
 	if err != nil {
 		return true
 	}
@@ -52,7 +52,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	defer logger.Infow("end sync")
 	logger.Debugf("full snapshot: %v", snap)
 
-	desiredMeshes, err := s.plugin.DesiredMeshes(ctx, snap)
+	desiredMeshes, err := s.desiredMeshes(ctx, snap)
 	if err != nil {
 		return err
 	}
@@ -73,6 +73,14 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	s.lastDesired = desiredMeshes
 
 	return nil
+}
+
+func (s *meshDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+	meshes, err := s.plugin.DesiredMeshes(ctx, snap)
+	if err != nil {
+		return nil, err
+	}
+	return meshes.Sort(), nil
 }
 
 // after the first write, i.e. on any update

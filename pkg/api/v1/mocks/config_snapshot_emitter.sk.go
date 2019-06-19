@@ -177,6 +177,20 @@ func (mr *MockConfigEmitterMockRecorder) Service() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Service", reflect.TypeOf((*MockConfigEmitter)(nil).Service))
 }
 
+// CustomResourceDefinition mocks base method
+func (m *MockConfigEmitter) CustomResourceDefinition() kubernetes.CustomResourceDefinitionClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomResourceDefinition")
+	ret0, _ := ret[0].(kubernetes.CustomResourceDefinitionClient)
+	return ret0
+}
+
+// CustomResourceDefinition indicates an expected call of CustomResourceDefinition
+func (mr *MockConfigEmitterMockRecorder) CustomResourceDefinition() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomResourceDefinition", reflect.TypeOf((*MockConfigEmitter)(nil).CustomResourceDefinition))
+}
+
 // Snapshots mocks base method
 func (m *MockConfigEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *v10.ConfigSnapshot, <-chan error, error) {
 	m.ctrl.T.Helper()

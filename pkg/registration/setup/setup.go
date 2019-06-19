@@ -6,16 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/solo-io/supergloo/pkg/constants"
-
-	"github.com/solo-io/go-utils/errors"
-
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/solo-io/supergloo/pkg/registration"
+	"github.com/solo-io/supergloo/pkg/constants"
 	"github.com/solo-io/supergloo/pkg/registration/appmesh"
 	"github.com/solo-io/supergloo/pkg/registration/gloo"
 	istio2 "github.com/solo-io/supergloo/pkg/registration/gloo/istio"
@@ -33,7 +30,7 @@ type Options struct {
 	DisablePrometheusBouncer       bool
 }
 
-func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error), pubsub *registration.PubSub) error {
+func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
 	ctx = contextutils.WithLogger(ctx, "registration-event-loop")
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -52,7 +49,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 		return err
 	}
 
-	registrationSyncers := createRegistrationSyncers(cs, pubsub, opts)
+	registrationSyncers := createRegistrationSyncers(cs, opts)
 
 	if err := runRegistrationEventLoop(ctx, errHandler, cs, registrationSyncers); err != nil {
 		return err
@@ -62,7 +59,7 @@ func RunRegistrationEventLoop(ctx context.Context, cs *clientset.Clientset, cust
 }
 
 // Add registration syncers here
-func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registration.PubSub, opts Options) v1.RegistrationSyncer {
+func createRegistrationSyncers(clientset *clientset.Clientset, opts Options) v1.RegistrationSyncer {
 	skipPrometheusBounce := opts.DisablePrometheusBouncer
 	return v1.RegistrationSyncers{
 		istio.NewIstioSecretDeleter(clientset.Kube),
@@ -82,7 +79,6 @@ func createRegistrationSyncers(clientset *clientset.Clientset, pubSub *registrat
 			opts.SidecarInjectorImageName,
 			opts.SidecarInjectorImagePullPolicy,
 		),
-		registration.NewRegistrationSyncer(pubSub),
 	}
 }
 

@@ -3,16 +3,14 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/supergloo/pkg/config/utils"
-
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	policyv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
-	networkingv1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/supergloo/pkg/api/clientset"
+	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
+	"github.com/solo-io/supergloo/pkg/config/utils"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 )
 
@@ -23,55 +21,85 @@ type Reconcilers interface {
 type istioReconcilers struct {
 	ownerLabels map[string]string
 
-	rbacConfigReconciler         rbacv1alpha1.RbacConfigReconciler
-	serviceRoleReconciler        rbacv1alpha1.ServiceRoleReconciler
-	serviceRoleBindingReconciler rbacv1alpha1.ServiceRoleBindingReconciler
-	meshPolicyReconciler         policyv1alpha1.MeshPolicyReconciler
-	destinationRuleReconciler    networkingv1alpha3.DestinationRuleReconciler
-	virtualServiceReconciler     networkingv1alpha3.VirtualServiceReconciler
-	tlsSecretReconciler          v1.TlsSecretReconciler
+	rbacConfigClientLoader         clientset.RbacConfigClientLoader
+	serviceRoleClientLoader        clientset.ServiceRoleClientLoader
+	serviceRoleBindingClientLoader clientset.ServiceRoleBindingClientLoader
+	meshPolicyClientLoader         clientset.MeshPolicyClientLoader
+	destinationRuleClientLoader    clientset.DestinationRuleClientLoader
+	virtualServiceClientLoader     clientset.VirtualServiceClientLoader
+	tlsSecretReconciler            v1.TlsSecretReconciler
 }
 
 func NewIstioReconcilers(ownerLabels map[string]string,
-	rbacConfigReconciler rbacv1alpha1.RbacConfigReconciler,
-	serviceRoleReconciler rbacv1alpha1.ServiceRoleReconciler,
-	serviceRoleBindingReconciler rbacv1alpha1.ServiceRoleBindingReconciler,
-	meshPolicyReconciler policyv1alpha1.MeshPolicyReconciler,
-	destinationRuleReconciler networkingv1alpha3.DestinationRuleReconciler,
-	virtualServiceReconciler networkingv1alpha3.VirtualServiceReconciler,
+	rbacConfigClientLoader clientset.RbacConfigClientLoader,
+	serviceRoleClientLoader clientset.ServiceRoleClientLoader,
+	serviceRoleBindingClientLoader clientset.ServiceRoleBindingClientLoader,
+	meshPolicyClientLoader clientset.MeshPolicyClientLoader,
+	destinationRuleClientLoader clientset.DestinationRuleClientLoader,
+	virtualServiceClientLoader clientset.VirtualServiceClientLoader,
 	tlsSecretReconciler v1.TlsSecretReconciler) Reconcilers {
 	return &istioReconcilers{
-		ownerLabels:                  ownerLabels,
-		rbacConfigReconciler:         rbacConfigReconciler,
-		serviceRoleReconciler:        serviceRoleReconciler,
-		serviceRoleBindingReconciler: serviceRoleBindingReconciler,
-		meshPolicyReconciler:         meshPolicyReconciler,
-		destinationRuleReconciler:    destinationRuleReconciler,
-		virtualServiceReconciler:     virtualServiceReconciler,
-		tlsSecretReconciler:          tlsSecretReconciler,
+		ownerLabels:                    ownerLabels,
+		rbacConfigClientLoader:         rbacConfigClientLoader,
+		serviceRoleClientLoader:        serviceRoleClientLoader,
+		serviceRoleBindingClientLoader: serviceRoleBindingClientLoader,
+		meshPolicyClientLoader:         meshPolicyClientLoader,
+		destinationRuleClientLoader:    destinationRuleClientLoader,
+		virtualServiceClientLoader:     virtualServiceClientLoader,
+		tlsSecretReconciler:            tlsSecretReconciler,
 	}
 }
 
 func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshConfig) error {
 	logger := contextutils.LoggerFrom(ctx)
 
-	// this list should always either be empty or contain the global mesh policy
-	var meshPoliciesToReconcile policyv1alpha1.MeshPolicyList
-	if config.MeshPolicy != nil {
-		logger.Infof("MeshPolicy: %v", config.MeshPolicy.Metadata.Name)
-		utils.SetLabels(s.ownerLabels, config.MeshPolicy)
-		meshPoliciesToReconcile = append(meshPoliciesToReconcile, config.MeshPolicy)
+	// lazy loading of clients
+	// checks that the crd is registered if backed by a crd-based client
+	rbacConfigClient, err := s.rbacConfigClientLoader()
+	if err != nil {
+		return err
 	}
-	if err := s.meshPolicyReconciler.Reconcile(
-		"",
-		meshPoliciesToReconcile, // mesh policy is a singleton
-		nil,
-		clients.ListOpts{
-			Ctx:      ctx,
-			Selector: nil, // allows overwriting a user-created mesh policy
-		},
-	); err != nil {
-		return errors.Wrapf(err, "reconciling default mesh policy")
+	destinationRuleClient, err := s.destinationRuleClientLoader()
+	if err != nil {
+		return err
+	}
+	virtualServiceClient, err := s.virtualServiceClientLoader()
+	if err != nil {
+		return err
+	}
+	serviceRoleClient, err := s.serviceRoleClientLoader()
+	if err != nil {
+		return err
+	}
+	serviceRoleBindingClient, err := s.serviceRoleBindingClientLoader()
+	if err != nil {
+		return err
+	}
+
+	// special case for MeshPolicy, only update existing if necessary
+	defaultMeshPolicy := config.MeshPolicy
+	if defaultMeshPolicy != nil {
+		logger.Infof("MeshPolicy: %v", defaultMeshPolicy.Metadata.Name)
+		utils.SetLabels(s.ownerLabels, defaultMeshPolicy)
+
+		meshPolicyClient, err := s.meshPolicyClientLoader()
+		if err != nil {
+			return err
+		}
+		var skipWriting bool
+		original, err := meshPolicyClient.Read(defaultMeshPolicy.Metadata.Name, clients.ReadOpts{Ctx: ctx})
+		if err == nil {
+			if original.Hash() != defaultMeshPolicy.Hash() {
+				defaultMeshPolicy.Metadata.ResourceVersion = original.Metadata.ResourceVersion
+			} else {
+				skipWriting = true
+			}
+		}
+		if !skipWriting {
+			if _, err := meshPolicyClient.Write(defaultMeshPolicy, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
+				return err
+			}
+		}
 	}
 
 	// this list should always either be empty or contain the global rbac config
@@ -81,7 +109,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 		utils.SetLabels(s.ownerLabels, config.RbacConfig)
 		rbacConfigsToReconcile = append(rbacConfigsToReconcile, config.RbacConfig)
 	}
-	if err := s.rbacConfigReconciler.Reconcile(
+	if err := rbacv1alpha1.NewRbacConfigReconciler(rbacConfigClient).Reconcile(
 		"",
 		rbacConfigsToReconcile, // rbac config is a singleton
 		nil,
@@ -114,7 +142,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 
 	logger.Infof("DestinationRules: %v", config.DestinationRules.Names())
 	utils.SetLabels(s.ownerLabels, config.DestinationRules.AsResources()...)
-	if err := s.destinationRuleReconciler.Reconcile(
+	if err := v1alpha3.NewDestinationRuleReconciler(destinationRuleClient).Reconcile(
 		"",
 		config.DestinationRules,
 		nil,
@@ -128,7 +156,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 
 	logger.Infof("VirtualServices: %v", config.VirtualServices.Names())
 	utils.SetLabels(s.ownerLabels, config.VirtualServices.AsResources()...)
-	if err := s.virtualServiceReconciler.Reconcile(
+	if err := v1alpha3.NewVirtualServiceReconciler(virtualServiceClient).Reconcile(
 		"",
 		config.VirtualServices,
 		nil,
@@ -142,7 +170,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 
 	logger.Infof("ServiceRoles: %v", config.ServiceRoles.Names())
 	utils.SetLabels(s.ownerLabels, config.ServiceRoles.AsResources()...)
-	if err := s.serviceRoleReconciler.Reconcile(
+	if err := rbacv1alpha1.NewServiceRoleReconciler(serviceRoleClient).Reconcile(
 		"",
 		config.ServiceRoles,
 		nil,
@@ -156,7 +184,7 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 
 	logger.Infof("ServiceRoleBindings: %v", config.ServiceRoleBindings.Names())
 	utils.SetLabels(s.ownerLabels, config.ServiceRoleBindings.AsResources()...)
-	if err := s.serviceRoleBindingReconciler.Reconcile(
+	if err := rbacv1alpha1.NewServiceRoleBindingReconciler(serviceRoleBindingClient).Reconcile(
 		"",
 		config.ServiceRoleBindings,
 		nil,
