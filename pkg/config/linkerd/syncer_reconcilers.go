@@ -38,12 +38,12 @@ func (s *linkerdReconcilers) ReconcileAll(ctx context.Context, config *linkerd.M
 
 	logger.Infof("ServiceProfiles: %v", config.ServiceProfiles.Names())
 	utils.SetLabels(s.ownerLabels, config.ServiceProfiles.AsResources()...)
-	serviceProfilClient, err := s.serviceProfileClientLoader()
+	serviceProfileClient, err := s.serviceProfileClientLoader()
 	if err != nil {
 		return err
 	}
 
-	if err := linkerdv1.NewServiceProfileReconciler(serviceProfilClient).Reconcile(
+	if err := linkerdv1.NewServiceProfileReconciler(serviceProfileClient).Reconcile(
 		"",
 		config.ServiceProfiles,
 		nil,

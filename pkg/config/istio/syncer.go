@@ -71,7 +71,7 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) e
 				return errors.Errorf("internal error: a non istio-mesh appeared in the mesh config snapshot")
 			}
 
-			logger.Infof("reconciling config for mesh %v: ", mesh.Metadata.Ref())
+			logger.Infof("reconciling config for mesh: %v", mesh.Metadata.Ref())
 			if err := s.reconcilers.ReconcileAll(ctx, config); err != nil {
 				logger.Errorf("failed to reconcile config for mesh %s: %v", mesh.Metadata.Ref().Key(), err)
 				resourceErrs.AddError(mesh, errors.Wrapf(err, "reconciling configuration"))

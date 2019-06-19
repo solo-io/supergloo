@@ -3,6 +3,8 @@ package setup
 import (
 	"context"
 
+	"go.uber.org/zap"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	"github.com/solo-io/supergloo/pkg/config/smi"
@@ -25,13 +27,11 @@ import (
 func RunConfigEventLoop(ctx context.Context, cs *clientset.Clientset, customErrHandler func(error)) error {
 	ctx = contextutils.WithLogger(ctx, "config-event-loop")
 
-	logger := contextutils.LoggerFrom(ctx)
-
 	errHandler := func(err error) {
 		if err == nil {
 			return
 		}
-		logger.Errorf("registration error: %v", err)
+		contextutils.LoggerFrom(ctx).Errorw("registration error", zap.Error(err))
 		if customErrHandler != nil {
 			customErrHandler(err)
 		}
