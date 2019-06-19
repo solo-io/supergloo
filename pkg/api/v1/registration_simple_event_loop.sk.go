@@ -14,13 +14,20 @@ import (
 	"github.com/solo-io/solo-kit/pkg/errors"
 )
 
-// a Syncer which implements this interface
+// SyncDeciders Syncer which implements this interface
 // can make smarter decisions over whether
 // it should be restarted (including having its context cancelled)
 // based on a diff of the previous and current snapshot
+
+// Deprecated: use RegistrationSyncDeciderWithContext
 type RegistrationSyncDecider interface {
 	RegistrationSyncer
 	ShouldSync(old, new *RegistrationSnapshot) bool
+}
+
+type RegistrationSyncDeciderWithContext interface {
+	RegistrationSyncer
+	ShouldSync(ctx context.Context, old, new *RegistrationSnapshot) bool
 }
 
 type registrationSimpleEventLoop struct {
@@ -74,6 +81,10 @@ func (el *registrationSimpleEventLoop) Run(ctx context.Context) (<-chan error, e
 					// allow the syncer to decide if we should sync it + cancel its previous context
 					if syncDecider, isDecider := syncer.(RegistrationSyncDecider); isDecider {
 						if shouldSync := syncDecider.ShouldSync(previousSnapshot, snapshot); !shouldSync {
+							continue // skip syncing this syncer
+						}
+					} else if syncDeciderWithContext, isDecider := syncer.(RegistrationSyncDeciderWithContext); isDecider {
+						if shouldSync := syncDeciderWithContext.ShouldSync(ctx, previousSnapshot, snapshot); !shouldSync {
 							continue // skip syncing this syncer
 						}
 					}
