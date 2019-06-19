@@ -20,8 +20,8 @@ type Translator interface {
 
 // A container for the entire set of config for a single istio mesh
 type MeshConfig struct {
-	RoutingConfig  *RoutingConfig
-	SecurityConfig *SecurityConfig
+	RoutingConfig  RoutingConfig
+	SecurityConfig SecurityConfig
 }
 
 func (c *MeshConfig) Sort() {
@@ -121,8 +121,8 @@ func (t *translator) translateMesh(
 	)
 
 	meshConfig := &MeshConfig{
-		RoutingConfig:  &routingConfig,
-		SecurityConfig: &securityConfig,
+		RoutingConfig:  routingConfig,
+		SecurityConfig: securityConfig,
 	}
 	meshConfig.Sort()
 
