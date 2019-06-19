@@ -123,7 +123,7 @@ func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Dis
 		appmeshMeshes = append(appmeshMeshes, appmeshMesh)
 	}
 
-	return appmeshMeshes, nil
+	return appmeshMeshes.Sort(), nil
 }
 
 func detectAwsSecrets(ctx context.Context, client gloov1.SecretClient) ([]*core.ResourceRef, error) {

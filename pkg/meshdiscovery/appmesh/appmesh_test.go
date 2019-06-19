@@ -159,7 +159,7 @@ var _ = Describe("Appmesh", func() {
 		})
 	})
 	Context("eks pods present, 2 aws secrets that return the same mesh", func() {
-		It("reconciles only one mesh", func() {
+		It("reconciles only one mesh, with the last 	 secret found", func() {
 			secret1 := createSecret("secret1", true)
 			secret2 := createSecret("secret2", true)
 			secretRef1 := secret1.Metadata.Ref()
@@ -196,8 +196,8 @@ var _ = Describe("Appmesh", func() {
 			clientBuilder.EXPECT().GetClientInstance(&secretRef1, region).Times(1).Return(awsClient1, nil)
 			clientBuilder.EXPECT().GetClientInstance(&secretRef2, region).Times(1).Return(awsClient2, nil)
 
-			meshName1 := "test-mesh"
-			meshName2 := "another-mesh"
+			meshName1 := "mesh1"
+			meshName2 := "mesh2"
 
 			awsClient1.EXPECT().ListMeshes(gomock.Any()).Times(2).Return([]string{meshName1}, nil)
 			awsClient2.EXPECT().ListMeshes(gomock.Any()).Times(2).Return([]string{meshName2}, nil)
