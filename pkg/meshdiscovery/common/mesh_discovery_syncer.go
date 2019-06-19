@@ -75,7 +75,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	return nil
 }
 
-func(s *meshDiscoverySyncer)  desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error){
+func (s *meshDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	meshes, err := s.plugin.DesiredMeshes(ctx, snap)
 	if err != nil {
 		return nil, err
