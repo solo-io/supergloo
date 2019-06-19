@@ -66,9 +66,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	routingRules := snapshot.Routingrules
 
 	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -87,6 +84,9 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 			// we only want linkerd meshes
 			continue
 		}
+
+		resourceErrs.Accept(mesh)
+
 		writeNamespace := linkerd.Linkerd.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{
@@ -181,6 +181,8 @@ func (t *translator) translateMesh(
 				resourceErrs.AddError(rr, errors.Errorf("spec cannot be empty"))
 				continue
 			}
+
+			resourceErrs.Accept(rr)
 
 			routes := convertMatchers(rr.RequestMatchers)
 			sp.Spec.Routes = append(sp.Spec.Routes, routes...)

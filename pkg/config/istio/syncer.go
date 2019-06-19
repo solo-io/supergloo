@@ -4,22 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/solo-io/supergloo/pkg/api/external/istio/authorization/v1alpha1"
 	"github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
 	rbacv1alpha1 "github.com/solo-io/supergloo/pkg/api/external/istio/rbac/v1alpha1"
-
+	"github.com/solo-io/supergloo/pkg/config/utils"
 	"github.com/solo-io/supergloo/pkg/translator/istio"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/solo-kit/pkg/api/v1/reporter"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-)
-
-var (
-	istioConfigSyncerActive = prometheus.NewGauge(prometheus.GaugeOpts{})
 )
 
 type istioConfigSyncer struct {
@@ -42,13 +36,8 @@ var RequiredCrds = []string{
 	rbacv1alpha1.ServiceRoleBindingCrd.FullName(),
 }
 
-func (s *istioConfigSyncer) ShouldSync(_, snap *v1.ConfigSnapshot) bool {
-	for _, crdName := range RequiredCrds {
-		if _, err := snap.Customresourcedefinition.Find("", crdName); err != nil {
-			return false
-		}
-	}
-	return true
+func (s *istioConfigSyncer) ShouldSync(ctx context.Context, _, snap *v1.ConfigSnapshot) bool {
+	return utils.ShouldSync(ctx, "istio", RequiredCrds, snap.Customresourcedefinition)
 }
 
 func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {

@@ -55,9 +55,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	securityRules := snapshot.Securityrules
 
 	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -67,9 +64,11 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 
 	for _, mesh := range meshes {
 		istio := mesh.GetIstio()
-		if istio == nil {
+		if istio == nil || !mesh.GetSmiEnabled() {
 			continue
 		}
+		resourceErrs.Accept(mesh)
+
 		writeNamespace := istio.InstallationNamespace
 		rules := routingRulesByMesh[mesh]
 		in := inputMeshConfig{

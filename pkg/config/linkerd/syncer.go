@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/supergloo/pkg/config/utils"
+
 	"github.com/solo-io/supergloo/pkg/api/clientset"
 	"go.uber.org/zap"
 
@@ -30,13 +32,8 @@ var RequiredCrds = []string{
 	clientset.ServiceProfileCrdName,
 }
 
-func (s *linkerdConfigSyncer) ShouldSync(_, snap *v1.ConfigSnapshot) bool {
-	for _, crdName := range RequiredCrds {
-		if _, err := snap.Customresourcedefinition.Find("", crdName); err != nil {
-			return false
-		}
-	}
-	return true
+func (s *linkerdConfigSyncer) ShouldSync(ctx context.Context, _, snap *v1.ConfigSnapshot) bool {
+	return utils.ShouldSync(ctx, "linkerd", RequiredCrds, snap.Customresourcedefinition)
 }
 
 func (s *linkerdConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) error {

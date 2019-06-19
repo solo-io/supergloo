@@ -86,9 +86,6 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 	securityRules := snapshot.Securityrules
 
 	resourceErrs := make(reporter.ResourceErrors)
-	resourceErrs.Accept(meshes.AsInputResources()...)
-	resourceErrs.Accept(meshGroups.AsInputResources()...)
-	resourceErrs.Accept(routingRules.AsInputResources()...)
 
 	utils.ValidateMeshGroups(meshes, meshGroups, resourceErrs)
 
@@ -108,6 +105,7 @@ func (t *translator) Translate(ctx context.Context, snapshot *v1.ConfigSnapshot)
 		if istio == nil {
 			continue
 		}
+		resourceErrs.Accept(mesh)
 
 		// make sure we remove resources for this mesh that may have been created
 		// smi will manage it

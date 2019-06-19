@@ -86,13 +86,16 @@ func (s *istioReconcilers) ReconcileAll(ctx context.Context, config *istio.MeshC
 		if err != nil {
 			return err
 		}
+		var skipWriting bool
 		original, err := meshPolicyClient.Read(defaultMeshPolicy.Metadata.Name, clients.ReadOpts{Ctx: ctx})
-		if err != nil {
-			return err
+		if err == nil {
+			if original.Hash() != defaultMeshPolicy.Hash() {
+				defaultMeshPolicy.Metadata.ResourceVersion = original.Metadata.ResourceVersion
+			} else {
+				skipWriting = true
+			}
 		}
-		if original.Hash() != defaultMeshPolicy.Hash() {
-			defaultMeshPolicy.Metadata.ResourceVersion = original.Metadata.ResourceVersion
-
+		if !skipWriting {
 			if _, err := meshPolicyClient.Write(defaultMeshPolicy, clients.WriteOpts{Ctx: ctx, OverwriteExisting: true}); err != nil {
 				return err
 			}
