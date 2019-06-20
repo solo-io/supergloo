@@ -190,18 +190,7 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4aa085bf1b0a3ad59c3cf7b5abc0d011859e574c05744b27811089a953425796"
-  name = "github.com/bxcodec/faker"
-  packages = [
-    ".",
-    "support/slice",
-  ]
-  pruneopts = "UT"
-  revision = "886f57703256b3d02e9198410de4a83864f976d1"
-
-[[projects]]
-  digest = "1:35d3aa863699701bb3ec707902ee16f741166d032128bd2a6d7d6d27dc846339"
+  digest = "1:fdb4ed936abeecb46a8c27dcac83f75c05c87a46d9ec7711411eb785c213fa02"
   name = "github.com/census-instrumentation/opencensus-proto"
   packages = [
     "gen-go/agent/common/v1",
@@ -212,8 +201,8 @@
     "gen-go/trace/v1",
   ]
   pruneopts = "UT"
-  revision = "7f2434bc10da710debe5c4315ed6d4df454b4024"
-  version = "v0.1.0"
+  revision = "a105b96453fe85139acc07b68de48f2cbdd71249"
+  version = "v0.2.0"
 
 [[projects]]
   digest = "1:998cf998358a303ac2430c386ba3fd3398477d6013153d3c6e11432765cc9ae6"
@@ -469,12 +458,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:aec0b39bb78bac437a8cd6b5c70af39bc83dfd1a2022412e6557e48178850b7e"
+  digest = "1:420701248ee765a9945373092ec9b57a3a21099ce975063dbac100d228ec0bfe"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
     "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
@@ -484,7 +475,7 @@
     "ptypes/wrappers",
   ]
   pruneopts = "UT"
-  revision = "93b26e6a70e37abb14f2f88194949312b0592a84"
+  revision = "b285ee9cfc6c881bb20c0d8dc73370ea9b9ec90f"
 
 [[projects]]
   branch = "master"
@@ -601,6 +592,18 @@
   pruneopts = "UT"
   revision = "c225b8c3b01faf2899099b768856a9e916e5087b"
   version = "v1.2.0"
+
+[[projects]]
+  digest = "1:c20c9a82345346a19916a0086e61ea97425172036a32b8a8975490da6a129fda"
+  name = "github.com/grpc-ecosystem/grpc-gateway"
+  packages = [
+    "internal",
+    "runtime",
+    "utilities",
+  ]
+  pruneopts = "UT"
+  revision = "cd0c8ef3533e9c04e6520cac37a81fe262fb0b34"
+  version = "v1.9.2"
 
 [[projects]]
   digest = "1:bfc483a051d3c7185ebeaa41b5bb67a4f76e742217bcaeab5661cc4b1320f392"
@@ -1406,7 +1409,7 @@
   version = "v0.8.22"
 
 [[projects]]
-  digest = "1:447bf616b6432f71ea314c92affc946553e7292637ba2a144393efc6ad0d3f5f"
+  digest = "1:6fe6ffb3ee3b6fb1fc695ff4712549b15263bba4a1febb520fd455ad237b8d08"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1462,8 +1465,8 @@
     "test/setup",
   ]
   pruneopts = "UT"
-  revision = "85dc6ae0c4026967716ccaf28144d90987215aa6"
-  version = "v0.9.11"
+  revision = "3f75b093e8d67d665d2955ab863c014eb685fa50"
+  version = "v0.9.12"
 
 [[projects]]
   digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
@@ -1525,14 +1528,6 @@
   version = "0.2.0"
 
 [[projects]]
-  digest = "1:af5da7360297524f3baebc12f5ce708d48af08938ff6f1b0e0371b3191398022"
-  name = "github.com/vektah/gqlgen"
-  packages = ["neelance/errors"]
-  pruneopts = "UT"
-  revision = "381b34691fd93829e50ba8821412dc3467ec4821"
-  version = "0.3.0"
-
-[[projects]]
   digest = "1:172f94a6b3644a8f9e6b5e5b7fc9fe1e42d424f52a0300b2e7ab1e57db73f85d"
   name = "github.com/xanzy/ssh-agent"
   packages = ["."]
@@ -1541,7 +1536,7 @@
   version = "v0.2.1"
 
 [[projects]]
-  digest = "1:338d4ed9d409a59d09d0922f0f287454009c60c7c3556b2eb142abac91a3a22f"
+  digest = "1:7708e6b74e9f420b9fad67a03d2d55353e3ed29aecc03027ff2bf32eb63e1c09"
   name = "go.opencensus.io"
   packages = [
     ".",
@@ -1567,8 +1562,8 @@
     "zpages/internal",
   ]
   pruneopts = "UT"
-  revision = "43463a80402d8447b7fce0d2c58edf1687ff0b58"
-  version = "v0.19.3"
+  revision = "9c377598961b706d1542bd2d84d538b5094d596e"
+  version = "v0.22.0"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -1780,9 +1775,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:56b0bca90b7e5d1facf5fbdacba23e4e0ce069d25381b8e2f70ef1e7ebfb9c1a"
+  digest = "1:a3816144db11bad6c198b2d70025a42b30ebc0ee8cf14b5cdcc631e1900f82bb"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
+  packages = [
+    "googleapis/api/httpbody",
+    "googleapis/rpc/status",
+    "protobuf/field_mask",
+  ]
   pruneopts = "UT"
   revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
@@ -2612,7 +2611,6 @@
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/assert",
-    "github.com/vektah/gqlgen/neelance/errors",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
     "go.opencensus.io/tag",

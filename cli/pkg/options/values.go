@@ -106,7 +106,7 @@ func (v *TrafficShiftingValue) String() string {
 	}
 	var strs []string
 	for _, r := range v.Destinations.Destinations {
-		strs = append(strs, fmt.Sprintf("%v: %v", r.Destination.Upstream, r.Weight))
+		strs = append(strs, fmt.Sprintf("%v: %v", r.Destination.GetUpstream(), r.Weight))
 	}
 	return "[" + strings.Join(strs, ", ") + "]"
 }
@@ -131,9 +131,11 @@ func (v *TrafficShiftingValue) Set(s string) error {
 	}
 	v.Destinations.Destinations = append(v.Destinations.Destinations, &gloov1.WeightedDestination{
 		Destination: &gloov1.Destination{
-			Upstream: core.ResourceRef{
-				Namespace: namespace,
-				Name:      name,
+			DestinationType: &gloov1.Destination_Upstream{
+				Upstream: &core.ResourceRef{
+					Namespace: namespace,
+					Name:      name,
+				},
 			},
 		},
 		Weight: uint32(weight),

@@ -3,10 +3,11 @@ package multimesh_test
 import (
 	"context"
 	"fmt"
-	"github.com/onsi/ginkgo/config"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/onsi/ginkgo/config"
 
 	"github.com/solo-io/supergloo/pkg/version"
 
@@ -80,7 +81,6 @@ var _ = BeforeSuite(func() {
 		metav1.ObjectMeta{Name: namespaceWithIstioInject, Labels: map[string]string{"istio-injection": "enabled"}},
 		metav1.ObjectMeta{Name: namespaceWithLinkerdInject, Annotations: map[string]string{"linkerd.io/inject": "enabled"}},
 		metav1.ObjectMeta{Name: namespaceWithAppmeshInject, Labels: map[string]string{"app-mesh-injection": "enabled"}},
-
 	)
 	Expect(err).NotTo(HaveOccurred())
 

@@ -3,10 +3,11 @@ package testfuncs
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"strings"
 	"sync"
 	"time"
+
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	sgtestutils "github.com/solo-io/supergloo/test/testutils"

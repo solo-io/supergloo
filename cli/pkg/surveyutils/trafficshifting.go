@@ -29,7 +29,9 @@ func SurveyTrafficShiftingSpec(ctx context.Context, in *options.CreateRoutingRul
 
 		ts.Destinations.Destinations = append(ts.Destinations.Destinations, &gloov1.WeightedDestination{
 			Destination: &gloov1.Destination{
-				Upstream: us,
+				DestinationType: &gloov1.Destination_Upstream{
+					Upstream: &us,
+				},
 			},
 			Weight: weight,
 		})

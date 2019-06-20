@@ -3,14 +3,15 @@ package testfuncs
 import (
 	"context"
 	"fmt"
-	"github.com/onsi/ginkgo/config"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/onsi/ginkgo/config"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/solo-io/supergloo/cli/pkg/helpers/clients"
 	"github.com/solo-io/supergloo/pkg/install/istio"
@@ -47,7 +48,7 @@ type IstioE2eTestParams struct {
 	NamespaceWithInject string
 	IstioNamespace      string
 	RootCtx             context.Context
-	SharedLock *sync.Mutex
+	SharedLock          *sync.Mutex
 }
 
 func RunIstioE2eTests(params IstioE2eTestParams) {

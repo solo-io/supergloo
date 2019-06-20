@@ -30,10 +30,10 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, virtualNodes virt
 			return nil, 0, errors.Errorf("weighted destination for routing rule is nil")
 		}
 
-		upstream, err := upstreams.Find(dest.Destination.Upstream.Strings())
+		upstream, err := upstreams.Find(dest.Destination.GetUpstream().Strings())
 		if err != nil {
 			return nil, 0, errors.Wrapf(err, "cannot route traffic to upstream %s. It either does not exist or it "+
-				"does not match any pods injected with the appmesh sidecar", dest.Destination.Upstream.Key())
+				"does not match any pods injected with the appmesh sidecar", dest.Destination.GetUpstream().Key())
 		}
 
 		host, err := utils.GetHostForUpstream(upstream)

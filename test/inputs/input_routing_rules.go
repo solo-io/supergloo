@@ -188,7 +188,9 @@ func TrafficShiftingRuleSpec(destinations ...core.ResourceRef) *v1.RoutingRuleSp
 	for i, d := range destinations {
 		dests = append(dests, &gloov1.WeightedDestination{
 			Destination: &gloov1.Destination{
-				Upstream: d,
+				DestinationType: &gloov1.Destination_Upstream{
+					Upstream: &d,
+				},
 			},
 			Weight: uint32(i + 1),
 		})

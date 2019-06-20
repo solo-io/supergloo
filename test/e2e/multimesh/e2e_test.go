@@ -1,10 +1,11 @@
 package multimesh_test
 
 import (
+	"sync"
+
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/solo-kit/test/helpers"
 	"github.com/solo-io/supergloo/test/e2e/testfuncs"
-	"sync"
 )
 
 var _ = Describe("all e2e", func() {

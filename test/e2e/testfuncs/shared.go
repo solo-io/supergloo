@@ -3,8 +3,9 @@ package testfuncs
 import (
 	"context"
 	"fmt"
-	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 	"time"
+
+	v1 "github.com/solo-io/supergloo/pkg/api/v1"
 
 	. "github.com/onsi/gomega"
 	skclients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
