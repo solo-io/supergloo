@@ -50,11 +50,11 @@
 
 [[override]]
   name = "github.com/solo-io/go-utils"
-  version = "0.8.4"
+  version = "0.8.22"
 
 [[constraint]]
   name = "github.com/solo-io/gloo"
-  version = "0.13.21"
+  version = "0.13.34"
 
 [[constraint]]
   name = "github.com/prometheus/prometheus"
@@ -84,11 +84,6 @@
 [[override]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "23.2.0"
-
-# this override is required to make prometheus work
-[[override]]
-  name = "github.com/census-instrumentation/opencensus-proto"
-  version = "=0.1.0"
 
 # this override is required to make prometheus work
 [[override]]

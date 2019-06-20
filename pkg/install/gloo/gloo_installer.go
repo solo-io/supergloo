@@ -104,7 +104,7 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 
-	meshIngress = createOrUpdateMeshIngress(meshIngress, install, glooInstall, meshRefs)
+	meshIngress = createOrUpdateMeshIngress(meshIngress, install, meshRefs)
 
 	// caller should expect the install to have been modified
 	ref := meshIngress.Metadata.Ref()
@@ -113,7 +113,7 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 	return meshIngress, nil
 }
 
-func createOrUpdateMeshIngress(meshIngress *v1.MeshIngress, install *v1.Install, glooInstall *v1.GlooInstall, meshRefs []*core.ResourceRef) *v1.MeshIngress {
+func createOrUpdateMeshIngress(meshIngress *v1.MeshIngress, install *v1.Install, meshRefs []*core.ResourceRef) *v1.MeshIngress {
 
 	if meshIngress != nil {
 		meshIngress.Meshes = meshRefs

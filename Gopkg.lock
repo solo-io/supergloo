@@ -10,12 +10,20 @@
   version = "v0.33.1"
 
 [[projects]]
-  digest = "1:b92928b73320648b38c93cacb9082c0fe3f8ac3383ad9bd537eef62c380e0e7a"
+  digest = "1:6b1426cad7057b717351eacf5b6fe70f053f11aac1ce254bbf2fd72c031719eb"
   name = "contrib.go.opencensus.io/exporter/ocagent"
   packages = ["."]
   pruneopts = "UT"
-  revision = "00af367e65149ff1f2f4b93bbfbb84fd9297170d"
-  version = "v0.2.0"
+  revision = "dcb33c7f3b7cfe67e8a2cea10207ede1b7c40764"
+  version = "v0.4.12"
+
+[[projects]]
+  digest = "1:a0f79124a2fba5112d3d1466b917daf508e548c6c2da106399df92a79e06628b"
+  name = "contrib.go.opencensus.io/exporter/prometheus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f4a2c1e53ec45636355d35fb9022b64e4bdd4a91"
+  version = "v0.1.0"
 
 [[projects]]
   digest = "1:891e3e84cb2fb5caf0e92c21d00ceba89c3b3152b8401d9019e6a9701d8ac539"
@@ -41,7 +49,7 @@
   revision = "d6e3b3328b783f23731bc4d058875b0371ff8109"
 
 [[projects]]
-  digest = "1:5d519587540a82794170ec8144188d5293eea0ed45b4c8c9956aabb1a934ba42"
+  digest = "1:c1e04f3b97fbb6e25891c10d3d2d906dcd5807774a3a68d0e32e2b7bda9b5c7f"
   name = "github.com/Azure/go-autorest"
   packages = [
     "autorest",
@@ -54,8 +62,8 @@
     "tracing",
   ]
   pruneopts = "UT"
-  revision = "808755da8cf643e4b6b44e0117be7e092de0923c"
-  version = "v11.5.2"
+  revision = "562d3769ef2f0f56bc52749babd3e88367e28588"
+  version = "v11.9.0"
 
 [[projects]]
   digest = "1:9f3b30d9f8e0d7040f729b82dcbc8f0dead820a133b3147ce355fc451f32d761"
@@ -193,11 +201,13 @@
   revision = "886f57703256b3d02e9198410de4a83864f976d1"
 
 [[projects]]
-  digest = "1:65b0d980b428a6ad4425f2df4cd5410edd81f044cf527bd1c345368444649e58"
+  digest = "1:35d3aa863699701bb3ec707902ee16f741166d032128bd2a6d7d6d27dc846339"
   name = "github.com/census-instrumentation/opencensus-proto"
   packages = [
     "gen-go/agent/common/v1",
+    "gen-go/agent/metrics/v1",
     "gen-go/agent/trace/v1",
+    "gen-go/metrics/v1",
     "gen-go/resource/v1",
     "gen-go/trace/v1",
   ]
@@ -305,7 +315,7 @@
   version = "v1.12.0"
 
 [[projects]]
-  digest = "1:653fbbd8dacb870f864f0d593c24b6537d13c0ebb45f97d713371d7c8f2fb4e1"
+  digest = "1:119ff1200d2088eb4df8b864e513820023805063cdffd3ebadc84868b7f88423"
   name = "github.com/envoyproxy/go-control-plane"
   packages = [
     "envoy/api/v2/auth",
@@ -314,9 +324,16 @@
     "envoy/type",
   ]
   pruneopts = "UT"
-  revision = "5ac1f5e0a972ec8168f315554c53a054a5286b23"
-  source = "github.com/yuval-k/go-control-plane"
-  version = "v0.6.11"
+  revision = "094d054b10176dd84506e4f0f65e7f65d8499241"
+  version = "v0.8.0"
+
+[[projects]]
+  digest = "1:743f8008a7fed04ef0d52261aef346766bbd5b3e360b90296d85289f8ef5c2e2"
+  name = "github.com/envoyproxy/protoc-gen-validate"
+  packages = ["validate"]
+  pruneopts = "UT"
+  revision = "9eff07ddfcb4001aa1aab280648153f46e1a8ddc"
+  version = "v0.1.0"
 
 [[projects]]
   digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
@@ -913,14 +930,6 @@
   version = "v0.1.7"
 
 [[projects]]
-  digest = "1:2e4fcf2595948ff177e421bf0b722bf6e729d0be9521c986891ed773225aeebb"
-  name = "github.com/lyft/protoc-gen-validate"
-  packages = ["validate"]
-  pruneopts = "UT"
-  revision = "e143189bf6f37b3957fb31743df6a1bcf4a8c685"
-  version = "v0.0.10"
-
-[[projects]]
   branch = "master"
   digest = "1:84a5a2b67486d5d67060ac393aa255d05d24ed5ee41daecd5635ec22657b6492"
   name = "github.com/mailru/easyjson"
@@ -1295,7 +1304,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:f2099c80c03b8b1b540dd2ef572e9ebc13efd87e6b1fb077445ee0bd3b14cfab"
+  digest = "1:fa3e2e12287dd2a1a87b2458a5538a541226cc03c7532bc749a8c09d500a794d"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
@@ -1347,8 +1356,8 @@
     "projects/gloo/pkg/utils",
   ]
   pruneopts = "UT"
-  revision = "6a8d3ee81801ac8391a75bd3cd8cc541f48ed222"
-  version = "v0.13.21"
+  revision = "029b63f640ee24dd9eb596d4a2877dc4baa594af"
+  version = "v0.13.34"
 
 [[projects]]
   digest = "1:699918466a9758902a14923851a7fbd230500f93da6982dae7c79959afb0a664"
@@ -1359,7 +1368,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:9d3c9d712f7952b8a1dbd098249067a72143100403657f4adfc7ab42f2fb89b2"
+  digest = "1:84a0e45ee33cf48034b3d185adf1f0b2183bdad0bcb6906c4da4d25e0194a2eb"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1393,8 +1402,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "ca41a2fda35b9d676ac551dae6e5dfb60b7c1a5e"
-  version = "v0.8.4"
+  revision = "e4b060b3ae2d1192d45ede3ae403501b46935c7b"
+  version = "v0.8.22"
 
 [[projects]]
   digest = "1:447bf616b6432f71ea314c92affc946553e7292637ba2a144393efc6ad0d3f5f"
@@ -1532,18 +1541,20 @@
   version = "v0.2.1"
 
 [[projects]]
-  digest = "1:1fa437571ae216a3f5acc6a257cfba4b2290df94e842e03e47297ebedfed1dc8"
+  digest = "1:338d4ed9d409a59d09d0922f0f287454009c60c7c3556b2eb142abac91a3a22f"
   name = "go.opencensus.io"
   packages = [
     ".",
-    "exemplar",
-    "exporter/prometheus",
     "internal",
     "internal/tagencoding",
+    "metric/metricdata",
+    "metric/metricexport",
+    "metric/metricproducer",
     "plugin/ocgrpc",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
     "plugin/ochttp/propagation/tracecontext",
+    "resource",
     "stats",
     "stats/internal",
     "stats/view",
@@ -1556,8 +1567,8 @@
     "zpages/internal",
   ]
   pruneopts = "UT"
-  revision = "b7bf3cdb64150a8c8c53b769fdeb2ba581bd4d4b"
-  version = "v0.18.0"
+  revision = "43463a80402d8447b7fce0d2c58edf1687ff0b58"
+  version = "v0.19.3"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -1722,6 +1733,17 @@
   packages = ["rate"]
   pruneopts = "UT"
   revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c44a77760372a998be8d4656e8d3c865f68735ec4cad1743a245903a58f64249"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "3ee3066db522c6628d440a3a91c4abdd7f5ef22f"
 
 [[projects]]
   digest = "1:8fd0e7afab021660b97788bca46601682a1a18d13d4df3674ae362e2fecdebb1"
@@ -2515,10 +2537,10 @@
     "github.com/mitchellh/go-homedir",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
+    "github.com/onsi/ginkgo/config",
     "github.com/onsi/gomega",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
-    "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/prometheus/config",
     "github.com/sirupsen/logrus",
     "github.com/solo-io/build/pkg/api/v1",
@@ -2557,6 +2579,7 @@
     "github.com/solo-io/go-utils/testutils",
     "github.com/solo-io/go-utils/testutils/clusterlock",
     "github.com/solo-io/go-utils/versionutils",
+    "github.com/solo-io/solo-kit/api/external/kubernetes/customresourcedefinition",
     "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/api/external/kubernetes/service",
