@@ -69,6 +69,9 @@ var _ = BeforeSuite(func() {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = utils.DeployPrometheus(kube, promNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
 	// Install supergloo using the helm chart specific to this test run
 	superglooErr := sgutils.Supergloo(fmt.Sprintf("init -f %s", helmChartUrl))
 	Expect(superglooErr).NotTo(HaveOccurred())
