@@ -2,8 +2,8 @@ package plugins
 
 import (
 	"github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha1"
+	"github.com/solo-io/go-utils/errors"
 	v1 "github.com/solo-io/supergloo/pkg/api/v1"
-	"github.com/vektah/gqlgen/neelance/errors"
 )
 
 type retriesPlugin struct{}
