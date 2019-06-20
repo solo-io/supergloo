@@ -12,6 +12,7 @@ var _ = Describe("all e2e", func() {
 	wg := sync.WaitGroup{}
 	wg.Add(3)
 	It("runs", func() {
+		lock := &sync.Mutex{}
 		go func() {
 			defer GinkgoRecover()
 			defer wg.Done()
@@ -26,6 +27,7 @@ var _ = Describe("all e2e", func() {
 				NamespaceWithInject: namespaceWithIstioInject,
 				IstioNamespace:      istioNamespace,
 				RootCtx:             rootCtx,
+				SharedLock:          lock,
 			})
 		}()
 
@@ -42,6 +44,7 @@ var _ = Describe("all e2e", func() {
 				NamespaceWithInject: namespaceWithLinkerdInject,
 				LinkerdNamespace:    linkerdNamespace,
 				RootCtx:             rootCtx,
+				SharedLock:          lock,
 			})
 		}()
 
