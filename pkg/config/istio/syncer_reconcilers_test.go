@@ -125,9 +125,9 @@ var _ = Describe("SyncerReconcilers", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 	It("does not delete an existing meshpolicy if none is passed", func() {
-		name :=  "default"
+		name := "default"
 		_, err := meshPolicyClient.Write(&policyv1alpha1.MeshPolicy{Metadata: core.Metadata{
-			Name:name,
+			Name: name,
 		}}, clients.WriteOpts{})
 		config := &MeshConfig{}
 		Expect(err).NotTo(HaveOccurred())
@@ -139,9 +139,9 @@ var _ = Describe("SyncerReconcilers", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 	It("creates and updates meshpolicy", func() {
-		name :=  "default"
+		name := "default"
 		meshPolicy, err := meshPolicyClient.Write(&policyv1alpha1.MeshPolicy{Metadata: core.Metadata{
-			Name:name,
+			Name: name,
 		}}, clients.WriteOpts{})
 		Expect(err).NotTo(HaveOccurred())
 
