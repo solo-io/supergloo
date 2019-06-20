@@ -52,12 +52,11 @@ func (s *istioConfigSyncer) Sync(ctx context.Context, snap *v1.ConfigSnapshot) e
 		return errors.Wrapf(err, "translation failed")
 	}
 
+	// we don't need to return here; if the error was related to the mesh, it shouldn't have been
+	// added to the meshConfigs. all meshConfigs are considered to be valid
 	if err := resourceErrs.Validate(); err != nil {
 		logger.Errorf("invalid user config or internal error: %v", err)
 	}
-
-	// we don't need to return here; if the error was related to the mesh, it shouldn't have been
-	// added to the meshConfigs. all meshConfigs are considered to be valid
 
 	// ensure that all resources that may have been created by this syncer are removed
 	if len(meshConfigs) == 0 {
