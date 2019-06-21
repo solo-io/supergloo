@@ -51,18 +51,22 @@ var _ = Describe("Trafficshifting", func() {
 						Destinations: []*gloov1.WeightedDestination{
 							{
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Name:      "default-details-9080",
-										Namespace: "hi",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Name:      "default-details-9080",
+											Namespace: "hi",
+										},
 									},
 								},
 								Weight: 5,
 							},
 							{
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Name:      "default-details-v1-9080",
-										Namespace: "hi",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Name:      "default-details-v1-9080",
+											Namespace: "hi",
+										},
 									},
 								},
 								Weight: 10,
