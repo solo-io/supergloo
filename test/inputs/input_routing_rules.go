@@ -186,6 +186,7 @@ func AdvancedBookInfoRoutingRules(namespace string, targetMesh *core.ResourceRef
 func TrafficShiftingRuleSpec(destinations ...core.ResourceRef) *v1.RoutingRuleSpec {
 	var dests []*gloov1.WeightedDestination
 	for i, d := range destinations {
+		d := d
 		dests = append(dests, &gloov1.WeightedDestination{
 			Destination: &gloov1.Destination{
 				DestinationType: &gloov1.Destination_Upstream{
