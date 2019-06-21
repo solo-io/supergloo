@@ -175,6 +175,25 @@ steps:
     id: 'copy-aws-kubeconfig'
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
 
+  # setup multimesh kubeconfig
+  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
+    args:
+      - eks
+      - --region=us-west-2
+      - update-kubeconfig
+      - --name=supergloo-multimesh-test
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+    id: 'multimesh-kubeconfig-setup'
+
+  # copy multimesh config
+  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
+    entrypoint: cp
+    args:
+      - /builder/home/.kube/config
+      - /builder/home/.kube/multimesh-config
+    id: 'copy-multimesh-kubeconfig'
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+
     # start setting up other kubeconfigs
   - name: gcr.io/cloud-builders/gcloud
     args: ['config', 'set', 'compute/zone', 'us-central1-b']
@@ -209,28 +228,6 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     args: ['container', 'clusters', 'get-credentials', 'supergloo-istio-v11x']
     id: 'gcloud-istio-kubeconfig'
-
-
-  # setup aws kubeconfig
-  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
-    args:
-      - eks
-      - --region=us-west-2
-      - update-kubeconfig
-      - --name=supergloo-multimesh-test
-    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
-    waitFor: ['docker', 'helm-chart', 'cli']
-    id: 'multimesh-kubeconfig-setup'
-
-  # copy aws config
-  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
-    entrypoint: cp
-    args:
-      - /builder/home/.kube/config
-      - /builder/home/.kube/multimesh-config
-    waitFor: ['multimesh-kubeconfig-setup']
-    id: 'copy-multimesh-kubeconfig'
-    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
 
   ################################################################
   # Run e2e tests
@@ -267,7 +264,7 @@ steps:
     entrypoint: bash
     args: ['./ci/run_compiled_tests.sh', 'test/e2e/multimesh']
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
-    waitFor: ['copy-multimesh-kubeconfig']
+    waitFor: ['gcloud-istio-kubeconfig']
     id: 'multimesh-test'
 
   # Run e2e istio-latest tests
