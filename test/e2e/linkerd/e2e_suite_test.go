@@ -107,5 +107,6 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	testutils.WaitForNamespaceTeardown(linkerdNamespace)
 	testutils.WaitForNamespaceTeardown(glooNamespace)
+	testutils.WaitForNamespaceTeardown(promNamespace)
 	log.Printf("done!")
 }
