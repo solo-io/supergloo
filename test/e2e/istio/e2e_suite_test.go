@@ -110,6 +110,7 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	testutils.WaitForNamespaceTeardown(istioNamespace)
+	testutils.WaitForNamespaceTeardown(promNamespace)
 	testutils.WaitForNamespaceTeardown(glooNamespace)
 	log.Printf("done!")
 }
