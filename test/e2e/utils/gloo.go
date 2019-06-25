@@ -16,8 +16,8 @@ import (
 )
 
 func TestGlooInstall(glooName, superglooNamespace, glooNamespace, meshName string) {
-	err := utils.Supergloo(fmt.Sprintf("install gloo --name=%s --target-meshes %s.%s ",
-		glooName, superglooNamespace, meshName))
+	err := utils.Supergloo(fmt.Sprintf("install gloo --name=%s --target-meshes %s.%s --installation-namespace %v ",
+		glooName, superglooNamespace, meshName, glooNamespace))
 	Expect(err).NotTo(HaveOccurred())
 
 	installClient := clients.MustInstallClient()

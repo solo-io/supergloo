@@ -93,7 +93,7 @@ func convertTrafficShiftingSpec(originalDestination string, spec *v1.TrafficShif
 		if i == len(spec.Destinations.Destinations)-1 {
 			weightMilli += remainingWeight // ensure we always get 1000 total
 		}
-		us, err := upstreams.Find(dest.Destination.Upstream.Strings())
+		us, err := upstreams.Find(dest.Destination.GetUpstream().Strings())
 		if err != nil {
 			return nil, err
 		}

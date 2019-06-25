@@ -312,7 +312,7 @@ func routingRuleDetails(in *v1.RoutingRule) []string {
 		)
 		for _, dest := range t.TrafficShifting.Destinations.Destinations {
 			add(
-				fmt.Sprintf("- %v", dest.Destination.Upstream),
+				fmt.Sprintf("- %v", dest.Destination.GetUpstream()),
 				fmt.Sprintf("  weight: %v", dest.Weight),
 			)
 		}

@@ -111,7 +111,7 @@ func processTrafficShiftingRule(upstreams gloov1.UpstreamList, rule *v1.TrafficS
 			return errors.Errorf("destination %v invalid must provide target upstream", i)
 		}
 
-		upstream, err := upstreams.Find(dest.Destination.Upstream.Strings())
+		upstream, err := upstreams.Find(dest.Destination.GetUpstream().Strings())
 		if err != nil {
 			return errors.Wrapf(err, "invalid upstream destination")
 		}

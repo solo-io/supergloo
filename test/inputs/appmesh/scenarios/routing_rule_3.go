@@ -139,27 +139,33 @@ func (s *routingRuleScenario3) getRoutingRule() *v1.RoutingRule {
 							{
 								Weight: 80,
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-9080",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Namespace: "gloo-system",
+											Name:      "default-reviews-9080",
+										},
 									},
 								},
 							},
 							{
 								Weight: 10,
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-v2-9080",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Namespace: "gloo-system",
+											Name:      "default-reviews-v2-9080",
+										},
 									},
 								},
 							},
 							{
 								Weight: 10,
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-v3-9080",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Namespace: "gloo-system",
+											Name:      "default-reviews-v3-9080",
+										},
 									},
 								},
 							},

@@ -246,7 +246,7 @@ var _ = Describe("RoutingRule", func() {
 			Expect(ts.TrafficShifting.Destinations.Destinations).To(HaveLen(len(dests)))
 			for i, dest := range dests {
 				Expect(ts.TrafficShifting.Destinations.Destinations[i].Weight).To(Equal(dest.weight))
-				Expect(ts.TrafficShifting.Destinations.Destinations[i].Destination.Upstream).To(Equal(core.ResourceRef{
+				Expect(ts.TrafficShifting.Destinations.Destinations[i].Destination.GetUpstream()).To(Equal(&core.ResourceRef{
 					Namespace: dest.Namespace,
 					Name:      dest.Name,
 				}))
@@ -271,7 +271,7 @@ var _ = Describe("RoutingRule", func() {
 				Expect(ts.TrafficShifting.Destinations.Destinations).To(HaveLen(len(dests)))
 				for i, dest := range dests {
 					Expect(ts.TrafficShifting.Destinations.Destinations[i].Weight).To(Equal(dest.weight))
-					Expect(ts.TrafficShifting.Destinations.Destinations[i].Destination.Upstream).To(Equal(core.ResourceRef{
+					Expect(ts.TrafficShifting.Destinations.Destinations[i].Destination.GetUpstream()).To(Equal(&core.ResourceRef{
 						Namespace: dest.Namespace,
 						Name:      dest.Name,
 					}))

@@ -70,6 +70,9 @@ var _ = BeforeSuite(func() {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = utils.DeployPrometheus(kube, promNamespace)
+	Expect(err).NotTo(HaveOccurred())
+
 	// Install supergloo using the helm chart specific to this test run
 	superglooErr := sgutils.Supergloo(fmt.Sprintf("init -f %s", helmChartUrl))
 	Expect(superglooErr).NotTo(HaveOccurred())
@@ -107,6 +110,7 @@ func teardown() {
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
 	testutils.WaitForNamespaceTeardown(istioNamespace)
+	testutils.WaitForNamespaceTeardown(promNamespace)
 	testutils.WaitForNamespaceTeardown(glooNamespace)
 	log.Printf("done!")
 }

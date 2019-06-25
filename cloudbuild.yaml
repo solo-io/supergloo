@@ -175,6 +175,25 @@ steps:
     id: 'copy-aws-kubeconfig'
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
 
+  # setup multimesh kubeconfig
+  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
+    args:
+      - eks
+      - --region=us-west-2
+      - update-kubeconfig
+      - --name=supergloo-multimesh-test
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+    id: 'multimesh-kubeconfig-setup'
+
+  # copy multimesh config
+  - name: 'gcr.io/$PROJECT_ID/awscli:0.1.6'
+    entrypoint: cp
+    args:
+      - /builder/home/.kube/config
+      - /builder/home/.kube/multimesh-config
+    id: 'copy-multimesh-kubeconfig'
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+
     # start setting up other kubeconfigs
   - name: gcr.io/cloud-builders/gcloud
     args: ['config', 'set', 'compute/zone', 'us-central1-b']
@@ -210,7 +229,6 @@ steps:
     args: ['container', 'clusters', 'get-credentials', 'supergloo-istio-v11x']
     id: 'gcloud-istio-kubeconfig'
 
-
   ################################################################
   # Run e2e tests
   ################################################################
@@ -231,6 +249,23 @@ steps:
     secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     waitFor: ['gcloud-istio-kubeconfig']
     id: 'appmesh-test'
+
+  # Run e2e multimesh tests
+  - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'
+    env:
+      - 'PROJECT_ROOT=github.com/solo-io/supergloo'
+      - 'GOPATH=/workspace/gopath'
+      - 'TAGGED_VERSION=$TAG_NAME'
+      - 'BUILD_ID=$BUILD_ID'
+      - 'AWS_SHARED_CREDENTIALS_FILE=/workspace/aws_credentials'
+      - 'KUBECONFIG=/builder/home/.kube/multimesh-config'
+      - 'E2E_RUN_PODS_LOCALLY=1'
+    dir: './gopath/src/github.com/solo-io/supergloo'
+    entrypoint: bash
+    args: ['./ci/run_compiled_tests.sh', 'test/e2e/multimesh']
+    secretEnv: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+    waitFor: ['gcloud-istio-kubeconfig']
+    id: 'multimesh-test'
 
   # Run e2e istio-latest tests
   - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.6'

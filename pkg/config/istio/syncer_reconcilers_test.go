@@ -124,6 +124,38 @@ var _ = Describe("SyncerReconcilers", func() {
 		_, err = tlsSecretClient.Read(tlsMeta.Namespace, tlsMeta.Name, clients.ReadOpts{})
 		Expect(err).NotTo(HaveOccurred())
 	})
+	It("does not delete an existing meshpolicy if none is passed", func() {
+		name := "default"
+		_, err := meshPolicyClient.Write(&policyv1alpha1.MeshPolicy{Metadata: core.Metadata{
+			Name: name,
+		}}, clients.WriteOpts{})
+		config := &MeshConfig{}
+		Expect(err).NotTo(HaveOccurred())
+
+		err = rec.ReconcileAll(context.TODO(), config)
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = meshPolicyClient.Read(name, clients.ReadOpts{})
+		Expect(err).NotTo(HaveOccurred())
+	})
+	It("creates and updates meshpolicy", func() {
+		name := "default"
+		meshPolicy, err := meshPolicyClient.Write(&policyv1alpha1.MeshPolicy{Metadata: core.Metadata{
+			Name: name,
+		}}, clients.WriteOpts{})
+		Expect(err).NotTo(HaveOccurred())
+
+		meshPolicy.OriginIsOptional = true
+		config := &MeshConfig{MeshPolicy: meshPolicy}
+
+		err = rec.ReconcileAll(context.TODO(), config)
+		Expect(err).NotTo(HaveOccurred())
+
+		reconciledMeshPolicy, err := meshPolicyClient.Read(name, clients.ReadOpts{})
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(reconciledMeshPolicy.OriginIsOptional).To(BeTrue())
+	})
 })
 
 func randomMeta(writeNamespace string) core.Metadata {

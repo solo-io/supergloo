@@ -139,9 +139,11 @@ func (s *routingRuleScenario4) getRoutingRule() *v1.RoutingRule {
 							{
 								Weight: 100,
 								Destination: &gloov1.Destination{
-									Upstream: core.ResourceRef{
-										Namespace: "gloo-system",
-										Name:      "default-reviews-v3-9080",
+									DestinationType: &gloov1.Destination_Upstream{
+										Upstream: &core.ResourceRef{
+											Namespace: "gloo-system",
+											Name:      "default-reviews-v3-9080",
+										},
 									},
 								},
 							},
