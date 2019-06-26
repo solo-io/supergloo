@@ -204,20 +204,19 @@ func (t *translator) translateMesh(
 		virtualServices = append(virtualServices, vs)
 	}
 
-	var meshPolicy *v1alpha1.MeshPolicy
+	meshPolicy := &v1alpha1.MeshPolicy{
+		Metadata: core.Metadata{
+			// the required name for istio MeshPolicy
+			// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
+			Name: "default",
+		},
+	}
 	if mtlsEnabled {
-		meshPolicy = &v1alpha1.MeshPolicy{
-			Metadata: core.Metadata{
-				// the required name for istio MeshPolicy
-				// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
-				Name: "default",
-			},
-			Peers: []*v1alpha1.PeerAuthenticationMethod{{
-				Params: &v1alpha1.PeerAuthenticationMethod_Mtls{Mtls: &v1alpha1.MutualTls{
-					Mode: v1alpha1.MutualTls_STRICT,
-				}},
+		meshPolicy.Peers = []*v1alpha1.PeerAuthenticationMethod{{
+			Params: &v1alpha1.PeerAuthenticationMethod_Mtls{Mtls: &v1alpha1.MutualTls{
+				Mode: v1alpha1.MutualTls_STRICT,
 			}},
-		}
+		}}
 	}
 
 	var rootCert *v1.TlsSecret
