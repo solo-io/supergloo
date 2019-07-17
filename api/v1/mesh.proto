@@ -117,6 +117,10 @@ message MtlsConfig {
     // whether or not mutual TLS should be enabled between pods in this mesh
     bool mtls_enabled = 1;
 
+    // Connection can be either plaintext or TLS, and client cert can be omitted
+    // this is true by default for Linkerd
+    bool mtls_permissive = 2;
+
     // if set, rootCertificate will override the root certificate used by the mesh
     // to encrypt mtls connections.
     //

@@ -73,21 +73,23 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 		return nil, nil
 	}
 
-	globalMtlsEnabled := func() bool {
+	globalMtlsEnabled, mtlsPermissive := func() (bool, bool) {
 		meshPolicyClient, err := p.meshPolicyClientLoader()
 		if err != nil {
-			return false
+			return false, false
 		}
 
 		// https://istio.io/docs/tasks/security/authn-policy/#globally-enabling-istio-mutual-tls
 		defaultMeshPolicy, err := meshPolicyClient.Read("default", clients.ReadOpts{Ctx: ctx})
 		if err != nil {
-			return false
+			return false, false
 		}
 		for _, peer := range defaultMeshPolicy.GetPeers() {
-			return peer.GetMtls() != nil
+			if peer.GetMtls() != nil {
+				return true, peer.GetMtls().GetMode() == v1alpha1.MutualTls_PERMISSIVE
+			}
 		}
-		return false
+		return false, false
 	}()
 
 	injectedPods := detectInjectedIstioPods(ctx, snap.Pods)
@@ -131,6 +133,7 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 		if globalMtlsEnabled {
 			mtlsConfig = &v1.MtlsConfig{
 				MtlsEnabled:     true,
+				MtlsPermissive:  mtlsPermissive,
 				RootCertificate: rootCa,
 			}
 		}

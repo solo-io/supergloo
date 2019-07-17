@@ -14,7 +14,7 @@ supergloo:
   deployment:
     image:
       repository: quay.io/solo-io/supergloo
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     stats: true
   disablePrometheusBouncer: false
 
@@ -22,18 +22,18 @@ discovery:
   deployment:
     image:
       repository: quay.io/solo-io/discovery
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     stats: true
 
 meshDiscovery:
   deployment:
     image:
       repository: quay.io/solo-io/mesh-discovery
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     stats: true
 
 
 sidecarInjector:
   image:
     repository: quay.io/solo-io/sidecar-injector
-    pullPolicy: IfNotPresent
+    pullPolicy: Always

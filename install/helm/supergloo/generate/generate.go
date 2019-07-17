@@ -28,13 +28,13 @@ const (
 
 var rootPrefix = ""
 
-func Run(version, imageTag, imageRepoPrefix, pullPolicy string) error {
+func Run(version, imageTag, imageRepoPrefix string) error {
 	glooVersion, err := getOsGlooVersion(rootPrefix)
 	if err != nil {
 		return err
 	}
 
-	if err := generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix, glooVersion); err != nil {
+	if err := generateValuesYaml(imageTag, imageRepoPrefix, glooVersion); err != nil {
 		return fmt.Errorf("generating values.yaml failed: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
@@ -107,7 +107,7 @@ func writeYaml(obj interface{}, path string) error {
 	return nil
 }
 
-func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix, glooVersion string) error {
+func generateValuesYaml(imageTag, imageRepoPrefix, glooVersion string) error {
 	config, err := readConfig(filepath.Join(rootPrefix, DefaultValues))
 	if err != nil {
 		return err
@@ -115,18 +115,14 @@ func generateValuesYaml(imageTag, pullPolicy, imageRepoPrefix, glooVersion strin
 
 	config.Supergloo.Deployment.Image.Repository = path.Join(imageRepoPrefix, constants.SuperglooImageName)
 	config.Supergloo.Deployment.Image.Tag = imageTag
-	config.Supergloo.Deployment.Image.PullPolicy = pullPolicy
 
 	config.SidecarInjector.Image.Repository = path.Join(imageRepoPrefix, constants.SidecarInjectorImageName)
 	config.SidecarInjector.Image.Tag = imageTag
-	config.SidecarInjector.Image.PullPolicy = pullPolicy
 
 	config.MeshDiscovery.Deployment.Image.Repository = path.Join(imageRepoPrefix, constants.MeshDiscoveryImageName)
 	config.MeshDiscovery.Deployment.Image.Tag = imageTag
-	config.MeshDiscovery.Deployment.Image.PullPolicy = pullPolicy
 
 	config.Discovery.Deployment.Image.Tag = glooVersion
-	config.Discovery.Deployment.Image.PullPolicy = pullPolicy
 
 	return writeYaml(&config, filepath.Join(rootPrefix, ValuesOutput))
 }
