@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: 'fix discovery and config for permissive mode'
+  issueLink: https://github.com/solo-io/supergloo/issues/484

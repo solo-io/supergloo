@@ -151,7 +151,20 @@ func (t *translator) translateMesh(
 	pods kubernetes.PodList,
 	resourceErrs reporter.ResourceErrors) (*MeshConfig, error) {
 	ctx := params.Ctx
-	mtlsEnabled := input.mesh.MtlsConfig != nil && input.mesh.MtlsConfig.MtlsEnabled
+
+	var (
+		mtlsEnabled bool
+		mtlsMode    v1alpha1.MutualTls_Mode
+	)
+	if input.mesh.GetMtlsConfig() != nil {
+		mtlsEnabled = input.mesh.GetMtlsConfig().GetMtlsEnabled()
+		if input.mesh.GetMtlsConfig().GetMtlsPermissive() {
+			mtlsMode = v1alpha1.MutualTls_PERMISSIVE
+		} else {
+			mtlsMode = v1alpha1.MutualTls_STRICT
+		}
+	}
+
 	rules := input.rules
 
 	// group upstreams into their corresponding services
@@ -214,7 +227,7 @@ func (t *translator) translateMesh(
 			},
 			Peers: []*v1alpha1.PeerAuthenticationMethod{{
 				Params: &v1alpha1.PeerAuthenticationMethod_Mtls{Mtls: &v1alpha1.MutualTls{
-					Mode: v1alpha1.MutualTls_STRICT,
+					Mode: mtlsMode,
 				}},
 			}},
 		}

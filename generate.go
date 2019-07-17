@@ -23,7 +23,7 @@ func main() {
 		CompileProtos:      true,
 		GenDocs:            docsOpts,
 		CustomImports:      []string{"../gloo"},
-		SkipGenMocks:       false,
+		SkipGenMocks:       true,
 		SkipGeneratedTests: true,
 	}); err != nil {
 		log.Fatalf("generate failed!: %v", err)
