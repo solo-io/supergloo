@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/supergloo/install/helm/supergloo/generate"
 )
 
-
 func main() {
 	var version, imageTag, imageRepoPrefix string
 	if len(os.Args) < 4 {

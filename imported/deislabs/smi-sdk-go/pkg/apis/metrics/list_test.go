@@ -11,9 +11,9 @@ func TestNewList(t *testing.T) {
 	assert := assertLib.New(t)
 
 	testCases := []struct {
-		obj  *v1.ObjectReference
+		obj   *v1.ObjectReference
 		edges bool
-		link string
+		link  string
 	}{
 		{
 			&v1.ObjectReference{
