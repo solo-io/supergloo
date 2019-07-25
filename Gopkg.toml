@@ -72,3 +72,7 @@
 [[override]]
  name = "go.opencensus.io"
  version = "0.22.0"
+
+[[override]]
+ name = "github.com/Masterminds/sprig"
+ version = "2.17.0"
