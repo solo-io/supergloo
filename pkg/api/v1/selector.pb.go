@@ -22,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // specifies a method by which to select pods
 // with in a mesh for the application of rules and policies
@@ -70,16 +70,16 @@ type isPodSelector_SelectorType interface {
 }
 
 type PodSelector_LabelSelector_ struct {
-	LabelSelector *PodSelector_LabelSelector `protobuf:"bytes,1,opt,name=label_selector,json=labelSelector,proto3,oneof"`
+	LabelSelector *PodSelector_LabelSelector `protobuf:"bytes,1,opt,name=label_selector,json=labelSelector,proto3,oneof" json:"label_selector,omitempty"`
 }
 type PodSelector_UpstreamSelector_ struct {
-	UpstreamSelector *PodSelector_UpstreamSelector `protobuf:"bytes,2,opt,name=upstream_selector,json=upstreamSelector,proto3,oneof"`
+	UpstreamSelector *PodSelector_UpstreamSelector `protobuf:"bytes,2,opt,name=upstream_selector,json=upstreamSelector,proto3,oneof" json:"upstream_selector,omitempty"`
 }
 type PodSelector_ServiceSelector_ struct {
-	ServiceSelector *PodSelector_ServiceSelector `protobuf:"bytes,4,opt,name=service_selector,json=serviceSelector,proto3,oneof"`
+	ServiceSelector *PodSelector_ServiceSelector `protobuf:"bytes,4,opt,name=service_selector,json=serviceSelector,proto3,oneof" json:"service_selector,omitempty"`
 }
 type PodSelector_NamespaceSelector_ struct {
-	NamespaceSelector *PodSelector_NamespaceSelector `protobuf:"bytes,3,opt,name=namespace_selector,json=namespaceSelector,proto3,oneof"`
+	NamespaceSelector *PodSelector_NamespaceSelector `protobuf:"bytes,3,opt,name=namespace_selector,json=namespaceSelector,proto3,oneof" json:"namespace_selector,omitempty"`
 }
 
 func (*PodSelector_LabelSelector_) isPodSelector_SelectorType()     {}
@@ -122,116 +122,14 @@ func (m *PodSelector) GetNamespaceSelector() *PodSelector_NamespaceSelector {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PodSelector) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PodSelector_OneofMarshaler, _PodSelector_OneofUnmarshaler, _PodSelector_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PodSelector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PodSelector_LabelSelector_)(nil),
 		(*PodSelector_UpstreamSelector_)(nil),
 		(*PodSelector_ServiceSelector_)(nil),
 		(*PodSelector_NamespaceSelector_)(nil),
 	}
-}
-
-func _PodSelector_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PodSelector)
-	// selector_type
-	switch x := m.SelectorType.(type) {
-	case *PodSelector_LabelSelector_:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.LabelSelector); err != nil {
-			return err
-		}
-	case *PodSelector_UpstreamSelector_:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.UpstreamSelector); err != nil {
-			return err
-		}
-	case *PodSelector_ServiceSelector_:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ServiceSelector); err != nil {
-			return err
-		}
-	case *PodSelector_NamespaceSelector_:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.NamespaceSelector); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("PodSelector.SelectorType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PodSelector_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PodSelector)
-	switch tag {
-	case 1: // selector_type.label_selector
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PodSelector_LabelSelector)
-		err := b.DecodeMessage(msg)
-		m.SelectorType = &PodSelector_LabelSelector_{msg}
-		return true, err
-	case 2: // selector_type.upstream_selector
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PodSelector_UpstreamSelector)
-		err := b.DecodeMessage(msg)
-		m.SelectorType = &PodSelector_UpstreamSelector_{msg}
-		return true, err
-	case 4: // selector_type.service_selector
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PodSelector_ServiceSelector)
-		err := b.DecodeMessage(msg)
-		m.SelectorType = &PodSelector_ServiceSelector_{msg}
-		return true, err
-	case 3: // selector_type.namespace_selector
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PodSelector_NamespaceSelector)
-		err := b.DecodeMessage(msg)
-		m.SelectorType = &PodSelector_NamespaceSelector_{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PodSelector_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PodSelector)
-	// selector_type
-	switch x := m.SelectorType.(type) {
-	case *PodSelector_LabelSelector_:
-		s := proto.Size(x.LabelSelector)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PodSelector_UpstreamSelector_:
-		s := proto.Size(x.UpstreamSelector)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PodSelector_ServiceSelector_:
-		s := proto.Size(x.ServiceSelector)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PodSelector_NamespaceSelector_:
-		s := proto.Size(x.NamespaceSelector)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // select pods by their labels

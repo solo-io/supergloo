@@ -22,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
 //MeshIngress represents a managed ingress (edge router) which can proxy connections
@@ -79,7 +79,7 @@ type isMeshIngress_MeshIngressType interface {
 }
 
 type MeshIngress_Gloo struct {
-	Gloo *GlooMeshIngress `protobuf:"bytes,1,opt,name=gloo,proto3,oneof"`
+	Gloo *GlooMeshIngress `protobuf:"bytes,1,opt,name=gloo,proto3,oneof" json:"gloo,omitempty"`
 }
 
 func (*MeshIngress_Gloo) isMeshIngress_MeshIngressType() {}
@@ -126,59 +126,11 @@ func (m *MeshIngress) GetMeshes() []*core.ResourceRef {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*MeshIngress) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _MeshIngress_OneofMarshaler, _MeshIngress_OneofUnmarshaler, _MeshIngress_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*MeshIngress) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*MeshIngress_Gloo)(nil),
 	}
-}
-
-func _MeshIngress_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*MeshIngress)
-	// mesh_ingress_type
-	switch x := m.MeshIngressType.(type) {
-	case *MeshIngress_Gloo:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Gloo); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("MeshIngress.MeshIngressType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _MeshIngress_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*MeshIngress)
-	switch tag {
-	case 1: // mesh_ingress_type.gloo
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(GlooMeshIngress)
-		err := b.DecodeMessage(msg)
-		m.MeshIngressType = &MeshIngress_Gloo{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _MeshIngress_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*MeshIngress)
-	// mesh_ingress_type
-	switch x := m.MeshIngressType.(type) {
-	case *MeshIngress_Gloo:
-		s := proto.Size(x.Gloo)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Mesh ingress object for gloo

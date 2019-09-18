@@ -12,7 +12,6 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
-	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1alpha3 "github.com/solo-io/supergloo/pkg/api/external/istio/networking/v1alpha3"
@@ -28,7 +27,7 @@ var _ = time.Kitchen
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // types of delays available, currently only fixed is supported
 type FaultInjection_Delay_Type int32
@@ -213,25 +212,25 @@ type isRoutingRuleSpec_RuleType interface {
 }
 
 type RoutingRuleSpec_TrafficShifting struct {
-	TrafficShifting *TrafficShifting `protobuf:"bytes,1,opt,name=traffic_shifting,json=trafficShifting,proto3,oneof"`
+	TrafficShifting *TrafficShifting `protobuf:"bytes,1,opt,name=traffic_shifting,json=trafficShifting,proto3,oneof" json:"traffic_shifting,omitempty"`
 }
 type RoutingRuleSpec_FaultInjection struct {
-	FaultInjection *FaultInjection `protobuf:"bytes,2,opt,name=fault_injection,json=faultInjection,proto3,oneof"`
+	FaultInjection *FaultInjection `protobuf:"bytes,2,opt,name=fault_injection,json=faultInjection,proto3,oneof" json:"fault_injection,omitempty"`
 }
 type RoutingRuleSpec_RequestTimeout struct {
-	RequestTimeout *time.Duration `protobuf:"bytes,7,opt,name=request_timeout,json=requestTimeout,proto3,oneof,stdduration"`
+	RequestTimeout *time.Duration `protobuf:"bytes,7,opt,name=request_timeout,json=requestTimeout,proto3,oneof,stdduration" json:"request_timeout,omitempty"`
 }
 type RoutingRuleSpec_Retries struct {
-	Retries *RetryPolicy `protobuf:"bytes,8,opt,name=retries,proto3,oneof"`
+	Retries *RetryPolicy `protobuf:"bytes,8,opt,name=retries,proto3,oneof" json:"retries,omitempty"`
 }
 type RoutingRuleSpec_CorsPolicy struct {
-	CorsPolicy *v1alpha3.CorsPolicy `protobuf:"bytes,10,opt,name=cors_policy,json=corsPolicy,proto3,oneof"`
+	CorsPolicy *v1alpha3.CorsPolicy `protobuf:"bytes,10,opt,name=cors_policy,json=corsPolicy,proto3,oneof" json:"cors_policy,omitempty"`
 }
 type RoutingRuleSpec_Mirror struct {
-	Mirror *v1.Destination `protobuf:"bytes,9,opt,name=mirror,proto3,oneof"`
+	Mirror *v1.Destination `protobuf:"bytes,9,opt,name=mirror,proto3,oneof" json:"mirror,omitempty"`
 }
 type RoutingRuleSpec_HeaderManipulation struct {
-	HeaderManipulation *HeaderManipulation `protobuf:"bytes,12,opt,name=header_manipulation,json=headerManipulation,proto3,oneof"`
+	HeaderManipulation *HeaderManipulation `protobuf:"bytes,12,opt,name=header_manipulation,json=headerManipulation,proto3,oneof" json:"header_manipulation,omitempty"`
 }
 
 func (*RoutingRuleSpec_TrafficShifting) isRoutingRuleSpec_RuleType()    {}
@@ -298,9 +297,9 @@ func (m *RoutingRuleSpec) GetHeaderManipulation() *HeaderManipulation {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*RoutingRuleSpec) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _RoutingRuleSpec_OneofMarshaler, _RoutingRuleSpec_OneofUnmarshaler, _RoutingRuleSpec_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*RoutingRuleSpec) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*RoutingRuleSpec_TrafficShifting)(nil),
 		(*RoutingRuleSpec_FaultInjection)(nil),
 		(*RoutingRuleSpec_RequestTimeout)(nil),
@@ -309,172 +308,6 @@ func (*RoutingRuleSpec) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffe
 		(*RoutingRuleSpec_Mirror)(nil),
 		(*RoutingRuleSpec_HeaderManipulation)(nil),
 	}
-}
-
-func _RoutingRuleSpec_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*RoutingRuleSpec)
-	// rule_type
-	switch x := m.RuleType.(type) {
-	case *RoutingRuleSpec_TrafficShifting:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.TrafficShifting); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_FaultInjection:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.FaultInjection); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_RequestTimeout:
-		_ = b.EncodeVarint(7<<3 | proto.WireBytes)
-		dAtA, err := github_com_gogo_protobuf_types.StdDurationMarshal(*x.RequestTimeout)
-		if err != nil {
-			return err
-		}
-		if err := b.EncodeRawBytes(dAtA); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_Retries:
-		_ = b.EncodeVarint(8<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Retries); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_CorsPolicy:
-		_ = b.EncodeVarint(10<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.CorsPolicy); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_Mirror:
-		_ = b.EncodeVarint(9<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Mirror); err != nil {
-			return err
-		}
-	case *RoutingRuleSpec_HeaderManipulation:
-		_ = b.EncodeVarint(12<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.HeaderManipulation); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("RoutingRuleSpec.RuleType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _RoutingRuleSpec_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*RoutingRuleSpec)
-	switch tag {
-	case 1: // rule_type.traffic_shifting
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(TrafficShifting)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_TrafficShifting{msg}
-		return true, err
-	case 2: // rule_type.fault_injection
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(FaultInjection)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_FaultInjection{msg}
-		return true, err
-	case 7: // rule_type.request_timeout
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeRawBytes(true)
-		if err != nil {
-			return true, err
-		}
-		c := new(time.Duration)
-		if err2 := github_com_gogo_protobuf_types.StdDurationUnmarshal(c, x); err2 != nil {
-			return true, err
-		}
-		m.RuleType = &RoutingRuleSpec_RequestTimeout{c}
-		return true, err
-	case 8: // rule_type.retries
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(RetryPolicy)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_Retries{msg}
-		return true, err
-	case 10: // rule_type.cors_policy
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(v1alpha3.CorsPolicy)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_CorsPolicy{msg}
-		return true, err
-	case 9: // rule_type.mirror
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(v1.Destination)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_Mirror{msg}
-		return true, err
-	case 12: // rule_type.header_manipulation
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(HeaderManipulation)
-		err := b.DecodeMessage(msg)
-		m.RuleType = &RoutingRuleSpec_HeaderManipulation{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _RoutingRuleSpec_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*RoutingRuleSpec)
-	// rule_type
-	switch x := m.RuleType.(type) {
-	case *RoutingRuleSpec_TrafficShifting:
-		s := proto.Size(x.TrafficShifting)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_FaultInjection:
-		s := proto.Size(x.FaultInjection)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_RequestTimeout:
-		s := github_com_gogo_protobuf_types.SizeOfStdDuration(*x.RequestTimeout)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_Retries:
-		s := proto.Size(x.Retries)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_CorsPolicy:
-		s := proto.Size(x.CorsPolicy)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_Mirror:
-		s := proto.Size(x.Mirror)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RoutingRuleSpec_HeaderManipulation:
-		s := proto.Size(x.HeaderManipulation)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // RetryPolicy contains mesh-specific retry configuration
@@ -692,10 +525,10 @@ type isFaultInjection_FaultInjectionType interface {
 }
 
 type FaultInjection_Delay_ struct {
-	Delay *FaultInjection_Delay `protobuf:"bytes,1,opt,name=delay,proto3,oneof"`
+	Delay *FaultInjection_Delay `protobuf:"bytes,1,opt,name=delay,proto3,oneof" json:"delay,omitempty"`
 }
 type FaultInjection_Abort_ struct {
-	Abort *FaultInjection_Abort `protobuf:"bytes,2,opt,name=abort,proto3,oneof"`
+	Abort *FaultInjection_Abort `protobuf:"bytes,2,opt,name=abort,proto3,oneof" json:"abort,omitempty"`
 }
 
 func (*FaultInjection_Delay_) isFaultInjection_FaultInjectionType() {}
@@ -729,78 +562,12 @@ func (m *FaultInjection) GetPercentage() float64 {
 	return 0
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*FaultInjection) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _FaultInjection_OneofMarshaler, _FaultInjection_OneofUnmarshaler, _FaultInjection_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*FaultInjection) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*FaultInjection_Delay_)(nil),
 		(*FaultInjection_Abort_)(nil),
 	}
-}
-
-func _FaultInjection_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*FaultInjection)
-	// fault_injection_type
-	switch x := m.FaultInjectionType.(type) {
-	case *FaultInjection_Delay_:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Delay); err != nil {
-			return err
-		}
-	case *FaultInjection_Abort_:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Abort); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("FaultInjection.FaultInjectionType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _FaultInjection_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*FaultInjection)
-	switch tag {
-	case 1: // fault_injection_type.delay
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(FaultInjection_Delay)
-		err := b.DecodeMessage(msg)
-		m.FaultInjectionType = &FaultInjection_Delay_{msg}
-		return true, err
-	case 2: // fault_injection_type.abort
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(FaultInjection_Abort)
-		err := b.DecodeMessage(msg)
-		m.FaultInjectionType = &FaultInjection_Abort_{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _FaultInjection_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*FaultInjection)
-	// fault_injection_type
-	switch x := m.FaultInjectionType.(type) {
-	case *FaultInjection_Delay_:
-		s := proto.Size(x.Delay)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FaultInjection_Abort_:
-		s := proto.Size(x.Abort)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
@@ -897,7 +664,7 @@ type isFaultInjection_Abort_ErrorType interface {
 }
 
 type FaultInjection_Abort_HttpStatus struct {
-	HttpStatus int32 `protobuf:"varint,4,opt,name=http_status,json=httpStatus,proto3,oneof"`
+	HttpStatus int32 `protobuf:"varint,4,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
 }
 
 func (*FaultInjection_Abort_HttpStatus) isFaultInjection_Abort_ErrorType() {}
@@ -916,54 +683,11 @@ func (m *FaultInjection_Abort) GetHttpStatus() int32 {
 	return 0
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*FaultInjection_Abort) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _FaultInjection_Abort_OneofMarshaler, _FaultInjection_Abort_OneofUnmarshaler, _FaultInjection_Abort_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*FaultInjection_Abort) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*FaultInjection_Abort_HttpStatus)(nil),
 	}
-}
-
-func _FaultInjection_Abort_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*FaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *FaultInjection_Abort_HttpStatus:
-		_ = b.EncodeVarint(4<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.HttpStatus))
-	case nil:
-	default:
-		return fmt.Errorf("FaultInjection_Abort.ErrorType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _FaultInjection_Abort_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*FaultInjection_Abort)
-	switch tag {
-	case 4: // error_type.http_status
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.ErrorType = &FaultInjection_Abort_HttpStatus{int32(x)}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _FaultInjection_Abort_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*FaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *FaultInjection_Abort_HttpStatus:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.HttpStatus))
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // manipulate request and response headers

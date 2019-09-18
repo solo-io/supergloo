@@ -22,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
 //Installs represent a desired installation of a supported mesh.
@@ -85,10 +85,10 @@ type isInstall_InstallType interface {
 }
 
 type Install_Mesh struct {
-	Mesh *MeshInstall `protobuf:"bytes,2,opt,name=mesh,proto3,oneof"`
+	Mesh *MeshInstall `protobuf:"bytes,2,opt,name=mesh,proto3,oneof" json:"mesh,omitempty"`
 }
 type Install_Ingress struct {
-	Ingress *MeshIngressInstall `protobuf:"bytes,3,opt,name=ingress,proto3,oneof"`
+	Ingress *MeshIngressInstall `protobuf:"bytes,3,opt,name=ingress,proto3,oneof" json:"ingress,omitempty"`
 }
 
 func (*Install_Mesh) isInstall_InstallType()    {}
@@ -143,78 +143,12 @@ func (m *Install) GetInstallationNamespace() string {
 	return ""
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*Install) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _Install_OneofMarshaler, _Install_OneofUnmarshaler, _Install_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Install) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*Install_Mesh)(nil),
 		(*Install_Ingress)(nil),
 	}
-}
-
-func _Install_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*Install)
-	// install_type
-	switch x := m.InstallType.(type) {
-	case *Install_Mesh:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Mesh); err != nil {
-			return err
-		}
-	case *Install_Ingress:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Ingress); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("Install.InstallType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _Install_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*Install)
-	switch tag {
-	case 2: // install_type.mesh
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(MeshInstall)
-		err := b.DecodeMessage(msg)
-		m.InstallType = &Install_Mesh{msg}
-		return true, err
-	case 3: // install_type.ingress
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(MeshIngressInstall)
-		err := b.DecodeMessage(msg)
-		m.InstallType = &Install_Ingress{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _Install_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*Install)
-	// install_type
-	switch x := m.InstallType.(type) {
-	case *Install_Mesh:
-		s := proto.Size(x.Mesh)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *Install_Ingress:
-		s := proto.Size(x.Ingress)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 //
@@ -264,10 +198,10 @@ type isMeshInstall_MeshInstallType interface {
 }
 
 type MeshInstall_Istio struct {
-	Istio *IstioInstall `protobuf:"bytes,2,opt,name=istio,proto3,oneof"`
+	Istio *IstioInstall `protobuf:"bytes,2,opt,name=istio,proto3,oneof" json:"istio,omitempty"`
 }
 type MeshInstall_Linkerd struct {
-	Linkerd *LinkerdInstall `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof"`
+	Linkerd *LinkerdInstall `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof" json:"linkerd,omitempty"`
 }
 
 func (*MeshInstall_Istio) isMeshInstall_MeshInstallType()   {}
@@ -294,78 +228,12 @@ func (m *MeshInstall) GetLinkerd() *LinkerdInstall {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*MeshInstall) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _MeshInstall_OneofMarshaler, _MeshInstall_OneofUnmarshaler, _MeshInstall_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*MeshInstall) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*MeshInstall_Istio)(nil),
 		(*MeshInstall_Linkerd)(nil),
 	}
-}
-
-func _MeshInstall_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*MeshInstall)
-	// mesh_install_type
-	switch x := m.MeshInstallType.(type) {
-	case *MeshInstall_Istio:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Istio); err != nil {
-			return err
-		}
-	case *MeshInstall_Linkerd:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Linkerd); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("MeshInstall.MeshInstallType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _MeshInstall_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*MeshInstall)
-	switch tag {
-	case 2: // mesh_install_type.istio
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(IstioInstall)
-		err := b.DecodeMessage(msg)
-		m.MeshInstallType = &MeshInstall_Istio{msg}
-		return true, err
-	case 3: // mesh_install_type.linkerd
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(LinkerdInstall)
-		err := b.DecodeMessage(msg)
-		m.MeshInstallType = &MeshInstall_Linkerd{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _MeshInstall_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*MeshInstall)
-	// mesh_install_type
-	switch x := m.MeshInstallType.(type) {
-	case *MeshInstall_Istio:
-		s := proto.Size(x.Istio)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *MeshInstall_Linkerd:
-		s := proto.Size(x.Linkerd)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Installation options for Istio
@@ -589,7 +457,7 @@ type isMeshIngressInstall_IngressInstallType interface {
 }
 
 type MeshIngressInstall_Gloo struct {
-	Gloo *GlooInstall `protobuf:"bytes,1,opt,name=gloo,proto3,oneof"`
+	Gloo *GlooInstall `protobuf:"bytes,1,opt,name=gloo,proto3,oneof" json:"gloo,omitempty"`
 }
 
 func (*MeshIngressInstall_Gloo) isMeshIngressInstall_IngressInstallType() {}
@@ -615,59 +483,11 @@ func (m *MeshIngressInstall) GetInstalledIngress() *core.ResourceRef {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*MeshIngressInstall) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _MeshIngressInstall_OneofMarshaler, _MeshIngressInstall_OneofUnmarshaler, _MeshIngressInstall_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*MeshIngressInstall) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*MeshIngressInstall_Gloo)(nil),
 	}
-}
-
-func _MeshIngressInstall_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*MeshIngressInstall)
-	// ingress_install_type
-	switch x := m.IngressInstallType.(type) {
-	case *MeshIngressInstall_Gloo:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Gloo); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("MeshIngressInstall.IngressInstallType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _MeshIngressInstall_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*MeshIngressInstall)
-	switch tag {
-	case 1: // ingress_install_type.gloo
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(GlooInstall)
-		err := b.DecodeMessage(msg)
-		m.IngressInstallType = &MeshIngressInstall_Gloo{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _MeshIngressInstall_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*MeshIngressInstall)
-	// ingress_install_type
-	switch x := m.IngressInstallType.(type) {
-	case *MeshIngressInstall_Gloo:
-		s := proto.Size(x.Gloo)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Installation options for Gloo Ingress

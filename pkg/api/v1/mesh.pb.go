@@ -23,7 +23,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
 //Meshes represent a currently registered service mesh.
@@ -84,13 +84,13 @@ type isMesh_MeshType interface {
 }
 
 type Mesh_Istio struct {
-	Istio *IstioMesh `protobuf:"bytes,1,opt,name=istio,proto3,oneof"`
+	Istio *IstioMesh `protobuf:"bytes,1,opt,name=istio,proto3,oneof" json:"istio,omitempty"`
 }
 type Mesh_AwsAppMesh struct {
-	AwsAppMesh *AwsAppMesh `protobuf:"bytes,4,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof"`
+	AwsAppMesh *AwsAppMesh `protobuf:"bytes,4,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof" json:"aws_app_mesh,omitempty"`
 }
 type Mesh_Linkerd struct {
-	Linkerd *LinkerdMesh `protobuf:"bytes,5,opt,name=linkerd,proto3,oneof"`
+	Linkerd *LinkerdMesh `protobuf:"bytes,5,opt,name=linkerd,proto3,oneof" json:"linkerd,omitempty"`
 }
 
 func (*Mesh_Istio) isMesh_MeshType()      {}
@@ -167,97 +167,13 @@ func (m *Mesh) GetSmiEnabled() bool {
 	return false
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*Mesh) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _Mesh_OneofMarshaler, _Mesh_OneofUnmarshaler, _Mesh_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Mesh) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*Mesh_Istio)(nil),
 		(*Mesh_AwsAppMesh)(nil),
 		(*Mesh_Linkerd)(nil),
 	}
-}
-
-func _Mesh_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*Mesh)
-	// mesh_type
-	switch x := m.MeshType.(type) {
-	case *Mesh_Istio:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Istio); err != nil {
-			return err
-		}
-	case *Mesh_AwsAppMesh:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.AwsAppMesh); err != nil {
-			return err
-		}
-	case *Mesh_Linkerd:
-		_ = b.EncodeVarint(5<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Linkerd); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("Mesh.MeshType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _Mesh_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*Mesh)
-	switch tag {
-	case 1: // mesh_type.istio
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(IstioMesh)
-		err := b.DecodeMessage(msg)
-		m.MeshType = &Mesh_Istio{msg}
-		return true, err
-	case 4: // mesh_type.aws_app_mesh
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(AwsAppMesh)
-		err := b.DecodeMessage(msg)
-		m.MeshType = &Mesh_AwsAppMesh{msg}
-		return true, err
-	case 5: // mesh_type.linkerd
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(LinkerdMesh)
-		err := b.DecodeMessage(msg)
-		m.MeshType = &Mesh_Linkerd{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _Mesh_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*Mesh)
-	// mesh_type
-	switch x := m.MeshType.(type) {
-	case *Mesh_Istio:
-		s := proto.Size(x.Istio)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *Mesh_AwsAppMesh:
-		s := proto.Size(x.AwsAppMesh)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *Mesh_Linkerd:
-		s := proto.Size(x.Linkerd)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Generic discovery data shared between different meshes
