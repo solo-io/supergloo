@@ -55,13 +55,17 @@ var _ = Describe("Istio Resource Detector", func() {
 				},
 				{
 					description: "with an OpenShift Service Mesh pilot deployment",
-					deployments: kubernetes.DeploymentList{istioDeployment(testNamespace, "registry.redhat.io/openshift-istio-tech-preview/pilot-rhel8", "1.0.0")},
+					deployments: kubernetes.DeploymentList{istioDeployment(testNamespace, "registry.redhat.io/openshift-service-mesh/pilot-rhel8", "1.0.0")},
 					expected:    []istio.PilotDeployment{{Namespace: testNamespace, Version: "1.0.0"}},
 				},
 				{
 					description: "when no pilot containers are found",
-					deployments: kubernetes.DeploymentList{istioDeployment(testNamespace, "quay.io/solo-io/supergloo", "0.3.26")},
-					expected:    nil,
+					deployments: kubernetes.DeploymentList{
+						istioDeployment(testNamespace, "docker.io/foo/pilot", "1.3.0"),
+						istioDeployment(testNamespace, "registry.redhat.io/foo-service-mesh/pilot-rhel8", "1.0.0"),
+						istioDeployment(testNamespace, "registry.redhat.io/foo-service-mesh/foo-rhel8", "2.0.0"),
+					},
+					expected: nil,
 				},
 			}
 
