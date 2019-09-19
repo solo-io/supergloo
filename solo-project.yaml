@@ -4,8 +4,9 @@ config:
       base_url: quay.io
       organization: solo-io
   test_container_registry:
-    docker_hub:
-      organization: soloio
+    quay:
+      base_url: quay.io
+      organization: solo-io
   release_helm_repository:
     google_cloud_storage:
       bucket_url: gs://supergloo-helm/
