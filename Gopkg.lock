@@ -1372,7 +1372,7 @@
   version = "0.0.4"
 
 [[projects]]
-  digest = "1:84a0e45ee33cf48034b3d185adf1f0b2183bdad0bcb6906c4da4d25e0194a2eb"
+  digest = "1:a8b63bc74a538bb6c385dd19ceb359f25e693fd2dabecf90986a999e38c89e3e"
   name = "github.com/solo-io/go-utils"
   packages = [
     "changelogutils",
@@ -1391,11 +1391,13 @@
     "installutils/kubeinstall",
     "installutils/kubeinstall/mocks",
     "installutils/kuberesource",
+    "kubeerrutils",
     "kubeinstallutils",
     "kubeutils",
     "log",
     "pkgmgmtutils",
     "protoutils",
+    "randutils",
     "stats",
     "stringutils",
     "surveyutils",
@@ -1406,8 +1408,8 @@
     "vfsutils",
   ]
   pruneopts = "UT"
-  revision = "e4b060b3ae2d1192d45ede3ae403501b46935c7b"
-  version = "v0.8.22"
+  revision = "3fbca2c70e5d2dfd30d8364a6cf1d8db9c946def"
+  version = "v0.10.7"
 
 [[projects]]
   digest = "1:6fe6ffb3ee3b6fb1fc695ff4712549b15263bba4a1febb520fd455ad237b8d08"

@@ -70,7 +70,12 @@ func (o *installOpts) install(ctx context.Context, installer kubeinstall.Install
 
 	contextutils.LoggerFrom(ctx).Infof("installing linkerd with options: %#v", o)
 
-	if err := installer.ReconcileResources(ctx, o.installNamespace, resources, withLabels); err != nil {
+	reconcileParams := kubeinstall.ReconcileParams{
+		InstallNamespace: o.installNamespace,
+		Resources:        resources,
+		OwnerLabels:      withLabels,
+	}
+	if err := installer.ReconcileResources(ctx, reconcileParams); err != nil {
 		return err
 	}
 

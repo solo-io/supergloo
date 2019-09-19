@@ -100,7 +100,12 @@ func (i *glooInstaller) EnsureGlooInstall(ctx context.Context, install *v1.Insta
 	}
 
 	logger.Infof("installing gloo with options: %#v", glooInstall)
-	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
+	reconcileParams := kubeinstall.ReconcileParams{
+		InstallNamespace: installNamespace,
+		Resources:        rawResources,
+		OwnerLabels:      util.LabelsForResource(install),
+	}
+	if err := i.kubeInstaller.ReconcileResources(ctx, reconcileParams); err != nil {
 		return nil, errors.Wrapf(err, "reconciling install resources failed")
 	}
 
