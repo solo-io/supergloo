@@ -55,7 +55,7 @@ func TestGlooIngress(rootCtx context.Context, injectedNamespace, superglooNamesp
 
 	// with mtls in strict mode, curl will succeed routing through gloo
 	TestRunnerCurlEventuallyShouldRespond(rootCtx, basicNamespace, setup.CurlOpts{
-		Service: "gateway-proxy-v2." + glooNamespace + ".svc.cluster.local",
+		Service: "gateway-proxy." + glooNamespace + ".svc.cluster.local",
 		Port:    80,
 		Path:    "/details/1",
 	}, `"author":"William Shakespeare"`, time.Minute*3)

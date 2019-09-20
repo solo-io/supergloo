@@ -8,6 +8,7 @@ import (
 var SupportedGlooVersions = []string{
 	"latest",
 	"v0.13.0",
+	"v0.14.1",
 }
 
 var SupportedIstioVersions = []string{
