@@ -102,6 +102,7 @@ func teardown() {
 	}
 	testutils.TeardownWithPrefix(kube, "linkerd")
 	testutils.TeardownWithPrefix(kube, "gloo")
+	testutils.TeardownWithPrefix(kube, "gateway")
 	testutils.WaitForNamespaceTeardown("supergloo-system")
 	testutils.WaitForNamespaceTeardown(basicNamespace)
 	testutils.WaitForNamespaceTeardown(namespaceWithInject)
