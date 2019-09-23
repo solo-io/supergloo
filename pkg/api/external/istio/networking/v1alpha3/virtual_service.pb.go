@@ -52,7 +52,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // A `VirtualService` defines a set of traffic routing rules to apply when a host is
 // addressed. Each routing rule defines matching criteria for traffic of a specific
@@ -1717,13 +1717,13 @@ type isStringMatch_MatchType interface {
 }
 
 type StringMatch_Exact struct {
-	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof"`
+	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
 }
 type StringMatch_Prefix struct {
-	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof"`
+	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
 }
 type StringMatch_Regex struct {
-	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof"`
+	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
 }
 
 func (*StringMatch_Exact) isStringMatch_MatchType()  {}
@@ -1758,85 +1758,13 @@ func (m *StringMatch) GetRegex() string {
 	return ""
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*StringMatch) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _StringMatch_OneofMarshaler, _StringMatch_OneofUnmarshaler, _StringMatch_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*StringMatch) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*StringMatch_Exact)(nil),
 		(*StringMatch_Prefix)(nil),
 		(*StringMatch_Regex)(nil),
 	}
-}
-
-func _StringMatch_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Exact)
-	case *StringMatch_Prefix:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Prefix)
-	case *StringMatch_Regex:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Regex)
-	case nil:
-	default:
-		return fmt.Errorf("StringMatch.MatchType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _StringMatch_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*StringMatch)
-	switch tag {
-	case 1: // match_type.exact
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Exact{x}
-		return true, err
-	case 2: // match_type.prefix
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Prefix{x}
-		return true, err
-	case 3: // match_type.regex
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Regex{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _StringMatch_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Exact)))
-		n += len(x.Exact)
-	case *StringMatch_Prefix:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Prefix)))
-		n += len(x.Prefix)
-	case *StringMatch_Regex:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Regex)))
-		n += len(x.Regex)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Describes the retry policy to use when a HTTP request fails. For
@@ -2186,10 +2114,10 @@ type isHTTPFaultInjection_Delay_HttpDelayType interface {
 }
 
 type HTTPFaultInjection_Delay_FixedDelay struct {
-	FixedDelay *types.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,proto3,oneof"`
+	FixedDelay *types.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,proto3,oneof" json:"fixed_delay,omitempty"`
 }
 type HTTPFaultInjection_Delay_ExponentialDelay struct {
-	ExponentialDelay *types.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof"`
+	ExponentialDelay *types.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof" json:"exponential_delay,omitempty"`
 }
 
 func (*HTTPFaultInjection_Delay_FixedDelay) isHTTPFaultInjection_Delay_HttpDelayType()       {}
@@ -2231,78 +2159,12 @@ func (m *HTTPFaultInjection_Delay) GetPercentage() *Percent {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*HTTPFaultInjection_Delay) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _HTTPFaultInjection_Delay_OneofMarshaler, _HTTPFaultInjection_Delay_OneofUnmarshaler, _HTTPFaultInjection_Delay_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*HTTPFaultInjection_Delay) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*HTTPFaultInjection_Delay_FixedDelay)(nil),
 		(*HTTPFaultInjection_Delay_ExponentialDelay)(nil),
 	}
-}
-
-func _HTTPFaultInjection_Delay_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*HTTPFaultInjection_Delay)
-	// http_delay_type
-	switch x := m.HttpDelayType.(type) {
-	case *HTTPFaultInjection_Delay_FixedDelay:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.FixedDelay); err != nil {
-			return err
-		}
-	case *HTTPFaultInjection_Delay_ExponentialDelay:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ExponentialDelay); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("HTTPFaultInjection_Delay.HttpDelayType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _HTTPFaultInjection_Delay_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*HTTPFaultInjection_Delay)
-	switch tag {
-	case 2: // http_delay_type.fixed_delay
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(types.Duration)
-		err := b.DecodeMessage(msg)
-		m.HttpDelayType = &HTTPFaultInjection_Delay_FixedDelay{msg}
-		return true, err
-	case 3: // http_delay_type.exponential_delay
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(types.Duration)
-		err := b.DecodeMessage(msg)
-		m.HttpDelayType = &HTTPFaultInjection_Delay_ExponentialDelay{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _HTTPFaultInjection_Delay_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*HTTPFaultInjection_Delay)
-	// http_delay_type
-	switch x := m.HttpDelayType.(type) {
-	case *HTTPFaultInjection_Delay_FixedDelay:
-		s := proto.Size(x.FixedDelay)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *HTTPFaultInjection_Delay_ExponentialDelay:
-		s := proto.Size(x.ExponentialDelay)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Abort specification is used to prematurely abort a request with a
@@ -2380,13 +2242,13 @@ type isHTTPFaultInjection_Abort_ErrorType interface {
 }
 
 type HTTPFaultInjection_Abort_HttpStatus struct {
-	HttpStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof"`
+	HttpStatus int32 `protobuf:"varint,2,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
 }
 type HTTPFaultInjection_Abort_GrpcStatus struct {
-	GrpcStatus string `protobuf:"bytes,3,opt,name=grpc_status,json=grpcStatus,proto3,oneof"`
+	GrpcStatus string `protobuf:"bytes,3,opt,name=grpc_status,json=grpcStatus,proto3,oneof" json:"grpc_status,omitempty"`
 }
 type HTTPFaultInjection_Abort_Http2Error struct {
-	Http2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof"`
+	Http2Error string `protobuf:"bytes,4,opt,name=http2_error,json=http2Error,proto3,oneof" json:"http2_error,omitempty"`
 }
 
 func (*HTTPFaultInjection_Abort_HttpStatus) isHTTPFaultInjection_Abort_ErrorType() {}
@@ -2436,84 +2298,13 @@ func (m *HTTPFaultInjection_Abort) GetPercentage() *Percent {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*HTTPFaultInjection_Abort) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _HTTPFaultInjection_Abort_OneofMarshaler, _HTTPFaultInjection_Abort_OneofUnmarshaler, _HTTPFaultInjection_Abort_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*HTTPFaultInjection_Abort) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*HTTPFaultInjection_Abort_HttpStatus)(nil),
 		(*HTTPFaultInjection_Abort_GrpcStatus)(nil),
 		(*HTTPFaultInjection_Abort_Http2Error)(nil),
 	}
-}
-
-func _HTTPFaultInjection_Abort_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*HTTPFaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *HTTPFaultInjection_Abort_HttpStatus:
-		_ = b.EncodeVarint(2<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.HttpStatus))
-	case *HTTPFaultInjection_Abort_GrpcStatus:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.GrpcStatus)
-	case *HTTPFaultInjection_Abort_Http2Error:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Http2Error)
-	case nil:
-	default:
-		return fmt.Errorf("HTTPFaultInjection_Abort.ErrorType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _HTTPFaultInjection_Abort_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*HTTPFaultInjection_Abort)
-	switch tag {
-	case 2: // error_type.http_status
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.ErrorType = &HTTPFaultInjection_Abort_HttpStatus{int32(x)}
-		return true, err
-	case 3: // error_type.grpc_status
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.ErrorType = &HTTPFaultInjection_Abort_GrpcStatus{x}
-		return true, err
-	case 4: // error_type.http2_error
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.ErrorType = &HTTPFaultInjection_Abort_Http2Error{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _HTTPFaultInjection_Abort_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*HTTPFaultInjection_Abort)
-	// error_type
-	switch x := m.ErrorType.(type) {
-	case *HTTPFaultInjection_Abort_HttpStatus:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.HttpStatus))
-	case *HTTPFaultInjection_Abort_GrpcStatus:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.GrpcStatus)))
-		n += len(x.GrpcStatus)
-	case *HTTPFaultInjection_Abort_Http2Error:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Http2Error)))
-		n += len(x.Http2Error)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // PortSelector specifies the number of a port to be used for
@@ -2558,10 +2349,10 @@ type isPortSelector_Port interface {
 }
 
 type PortSelector_Number struct {
-	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof"`
+	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof" json:"number,omitempty"`
 }
 type PortSelector_Name struct {
-	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
 }
 
 func (*PortSelector_Number) isPortSelector_Port() {}
@@ -2588,69 +2379,12 @@ func (m *PortSelector) GetName() string {
 	return ""
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PortSelector) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PortSelector_OneofMarshaler, _PortSelector_OneofUnmarshaler, _PortSelector_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PortSelector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PortSelector_Number)(nil),
 		(*PortSelector_Name)(nil),
 	}
-}
-
-func _PortSelector_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		_ = b.EncodeVarint(1<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Name)
-	case nil:
-	default:
-		return fmt.Errorf("PortSelector.Port has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PortSelector_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PortSelector)
-	switch tag {
-	case 1: // port.number
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Port = &PortSelector_Number{uint32(x)}
-		return true, err
-	case 2: // port.name
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Port = &PortSelector_Name{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PortSelector_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Name)))
-		n += len(x.Name)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Percent specifies a percentage in the range of [0.0, 100.0].

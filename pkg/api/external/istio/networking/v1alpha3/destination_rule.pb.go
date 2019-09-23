@@ -25,7 +25,7 @@ var _ = time.Kitchen
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Standard load balancing algorithms that require no tuning.
 type LoadBalancerSettings_SimpleLB int32
@@ -659,10 +659,10 @@ type isLoadBalancerSettings_LbPolicy interface {
 }
 
 type LoadBalancerSettings_Simple struct {
-	Simple LoadBalancerSettings_SimpleLB `protobuf:"varint,1,opt,name=simple,proto3,enum=istio.networking.v1alpha3.LoadBalancerSettings_SimpleLB,oneof"`
+	Simple LoadBalancerSettings_SimpleLB `protobuf:"varint,1,opt,name=simple,proto3,enum=istio.networking.v1alpha3.LoadBalancerSettings_SimpleLB,oneof" json:"simple,omitempty"`
 }
 type LoadBalancerSettings_ConsistentHash struct {
-	ConsistentHash *LoadBalancerSettings_ConsistentHashLB `protobuf:"bytes,2,opt,name=consistent_hash,json=consistentHash,proto3,oneof"`
+	ConsistentHash *LoadBalancerSettings_ConsistentHashLB `protobuf:"bytes,2,opt,name=consistent_hash,json=consistentHash,proto3,oneof" json:"consistent_hash,omitempty"`
 }
 
 func (*LoadBalancerSettings_Simple) isLoadBalancerSettings_LbPolicy()         {}
@@ -696,73 +696,12 @@ func (m *LoadBalancerSettings) GetLocalityWeightSettings() []*LoadBalancerSettin
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*LoadBalancerSettings) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _LoadBalancerSettings_OneofMarshaler, _LoadBalancerSettings_OneofUnmarshaler, _LoadBalancerSettings_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*LoadBalancerSettings) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*LoadBalancerSettings_Simple)(nil),
 		(*LoadBalancerSettings_ConsistentHash)(nil),
 	}
-}
-
-func _LoadBalancerSettings_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*LoadBalancerSettings)
-	// lb_policy
-	switch x := m.LbPolicy.(type) {
-	case *LoadBalancerSettings_Simple:
-		_ = b.EncodeVarint(1<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.Simple))
-	case *LoadBalancerSettings_ConsistentHash:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ConsistentHash); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("LoadBalancerSettings.LbPolicy has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _LoadBalancerSettings_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*LoadBalancerSettings)
-	switch tag {
-	case 1: // lb_policy.simple
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.LbPolicy = &LoadBalancerSettings_Simple{LoadBalancerSettings_SimpleLB(x)}
-		return true, err
-	case 2: // lb_policy.consistent_hash
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(LoadBalancerSettings_ConsistentHashLB)
-		err := b.DecodeMessage(msg)
-		m.LbPolicy = &LoadBalancerSettings_ConsistentHash{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _LoadBalancerSettings_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*LoadBalancerSettings)
-	// lb_policy
-	switch x := m.LbPolicy.(type) {
-	case *LoadBalancerSettings_Simple:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Simple))
-	case *LoadBalancerSettings_ConsistentHash:
-		s := proto.Size(x.ConsistentHash)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Consistent Hash-based load balancing can be used to provide soft
@@ -820,13 +759,13 @@ type isLoadBalancerSettings_ConsistentHashLB_HashKey interface {
 }
 
 type LoadBalancerSettings_ConsistentHashLB_HttpHeaderName struct {
-	HttpHeaderName string `protobuf:"bytes,1,opt,name=http_header_name,json=httpHeaderName,proto3,oneof"`
+	HttpHeaderName string `protobuf:"bytes,1,opt,name=http_header_name,json=httpHeaderName,proto3,oneof" json:"http_header_name,omitempty"`
 }
 type LoadBalancerSettings_ConsistentHashLB_HttpCookie struct {
-	HttpCookie *LoadBalancerSettings_ConsistentHashLB_HTTPCookie `protobuf:"bytes,2,opt,name=http_cookie,json=httpCookie,proto3,oneof"`
+	HttpCookie *LoadBalancerSettings_ConsistentHashLB_HTTPCookie `protobuf:"bytes,2,opt,name=http_cookie,json=httpCookie,proto3,oneof" json:"http_cookie,omitempty"`
 }
 type LoadBalancerSettings_ConsistentHashLB_UseSourceIp struct {
-	UseSourceIp bool `protobuf:"varint,3,opt,name=use_source_ip,json=useSourceIp,proto3,oneof"`
+	UseSourceIp bool `protobuf:"varint,3,opt,name=use_source_ip,json=useSourceIp,proto3,oneof" json:"use_source_ip,omitempty"`
 }
 
 func (*LoadBalancerSettings_ConsistentHashLB_HttpHeaderName) isLoadBalancerSettings_ConsistentHashLB_HashKey() {
@@ -871,92 +810,13 @@ func (m *LoadBalancerSettings_ConsistentHashLB) GetMinimumRingSize() uint64 {
 	return 0
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*LoadBalancerSettings_ConsistentHashLB) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _LoadBalancerSettings_ConsistentHashLB_OneofMarshaler, _LoadBalancerSettings_ConsistentHashLB_OneofUnmarshaler, _LoadBalancerSettings_ConsistentHashLB_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*LoadBalancerSettings_ConsistentHashLB) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*LoadBalancerSettings_ConsistentHashLB_HttpHeaderName)(nil),
 		(*LoadBalancerSettings_ConsistentHashLB_HttpCookie)(nil),
 		(*LoadBalancerSettings_ConsistentHashLB_UseSourceIp)(nil),
 	}
-}
-
-func _LoadBalancerSettings_ConsistentHashLB_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*LoadBalancerSettings_ConsistentHashLB)
-	// hash_key
-	switch x := m.HashKey.(type) {
-	case *LoadBalancerSettings_ConsistentHashLB_HttpHeaderName:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.HttpHeaderName)
-	case *LoadBalancerSettings_ConsistentHashLB_HttpCookie:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.HttpCookie); err != nil {
-			return err
-		}
-	case *LoadBalancerSettings_ConsistentHashLB_UseSourceIp:
-		t := uint64(0)
-		if x.UseSourceIp {
-			t = 1
-		}
-		_ = b.EncodeVarint(3<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(t)
-	case nil:
-	default:
-		return fmt.Errorf("LoadBalancerSettings_ConsistentHashLB.HashKey has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _LoadBalancerSettings_ConsistentHashLB_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*LoadBalancerSettings_ConsistentHashLB)
-	switch tag {
-	case 1: // hash_key.http_header_name
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.HashKey = &LoadBalancerSettings_ConsistentHashLB_HttpHeaderName{x}
-		return true, err
-	case 2: // hash_key.http_cookie
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(LoadBalancerSettings_ConsistentHashLB_HTTPCookie)
-		err := b.DecodeMessage(msg)
-		m.HashKey = &LoadBalancerSettings_ConsistentHashLB_HttpCookie{msg}
-		return true, err
-	case 3: // hash_key.use_source_ip
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.HashKey = &LoadBalancerSettings_ConsistentHashLB_UseSourceIp{x != 0}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _LoadBalancerSettings_ConsistentHashLB_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*LoadBalancerSettings_ConsistentHashLB)
-	// hash_key
-	switch x := m.HashKey.(type) {
-	case *LoadBalancerSettings_ConsistentHashLB_HttpHeaderName:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.HttpHeaderName)))
-		n += len(x.HttpHeaderName)
-	case *LoadBalancerSettings_ConsistentHashLB_HttpCookie:
-		s := proto.Size(x.HttpCookie)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *LoadBalancerSettings_ConsistentHashLB_UseSourceIp:
-		n += 1 // tag and wire
-		n += 1
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Describes a HTTP cookie that will be used as the hash key for the

@@ -62,7 +62,12 @@ func (i *defaultIstioInstaller) EnsureIstioInstall(ctx context.Context, install 
 	installNamespace := install.InstallationNamespace
 
 	logger.Infof("installing istio with options: %#v", istio)
-	if err := i.kubeInstaller.ReconcileResources(ctx, installNamespace, rawResources, util.LabelsForResource(install)); err != nil {
+	reconcileParams := kubeinstall.ReconcileParams{
+		InstallNamespace: installNamespace,
+		Resources:        rawResources,
+		OwnerLabels:      util.LabelsForResource(install),
+	}
+	if err := i.kubeInstaller.ReconcileResources(ctx, reconcileParams); err != nil {
 		return errors.Wrapf(err, "reconciling install resources failed")
 	}
 

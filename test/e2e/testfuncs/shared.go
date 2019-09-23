@@ -29,7 +29,7 @@ func testConfigureOrInstallGloo(glooName, superglooNamespace, glooNamespace, mes
 		return
 	}
 
-	err = utils.Supergloo(fmt.Sprintf("install gloo --name=%s --target-meshes %s.%s ",
+	err = utils.Supergloo(fmt.Sprintf("install gloo --name=%s --target-meshes %s.%s --version v0.14.1",
 		glooName, superglooNamespace, meshName))
 	Expect(err).NotTo(HaveOccurred())
 

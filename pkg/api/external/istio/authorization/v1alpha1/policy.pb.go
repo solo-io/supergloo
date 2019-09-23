@@ -24,7 +24,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Associates authentication with request principal.
 type PrincipalBinding int32
@@ -125,16 +125,16 @@ type isStringMatch_MatchType interface {
 }
 
 type StringMatch_Exact struct {
-	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof"`
+	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
 }
 type StringMatch_Prefix struct {
-	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof"`
+	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
 }
 type StringMatch_Suffix struct {
-	Suffix string `protobuf:"bytes,3,opt,name=suffix,proto3,oneof"`
+	Suffix string `protobuf:"bytes,3,opt,name=suffix,proto3,oneof" json:"suffix,omitempty"`
 }
 type StringMatch_Regex struct {
-	Regex string `protobuf:"bytes,4,opt,name=regex,proto3,oneof"`
+	Regex string `protobuf:"bytes,4,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
 }
 
 func (*StringMatch_Exact) isStringMatch_MatchType()  {}
@@ -177,100 +177,14 @@ func (m *StringMatch) GetRegex() string {
 	return ""
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*StringMatch) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _StringMatch_OneofMarshaler, _StringMatch_OneofUnmarshaler, _StringMatch_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*StringMatch) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*StringMatch_Exact)(nil),
 		(*StringMatch_Prefix)(nil),
 		(*StringMatch_Suffix)(nil),
 		(*StringMatch_Regex)(nil),
 	}
-}
-
-func _StringMatch_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Exact)
-	case *StringMatch_Prefix:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Prefix)
-	case *StringMatch_Suffix:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Suffix)
-	case *StringMatch_Regex:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Regex)
-	case nil:
-	default:
-		return fmt.Errorf("StringMatch.MatchType has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _StringMatch_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*StringMatch)
-	switch tag {
-	case 1: // match_type.exact
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Exact{x}
-		return true, err
-	case 2: // match_type.prefix
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Prefix{x}
-		return true, err
-	case 3: // match_type.suffix
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Suffix{x}
-		return true, err
-	case 4: // match_type.regex
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.MatchType = &StringMatch_Regex{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _StringMatch_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*StringMatch)
-	// match_type
-	switch x := m.MatchType.(type) {
-	case *StringMatch_Exact:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Exact)))
-		n += len(x.Exact)
-	case *StringMatch_Prefix:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Prefix)))
-		n += len(x.Prefix)
-	case *StringMatch_Suffix:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Suffix)))
-		n += len(x.Suffix)
-	case *StringMatch_Regex:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Regex)))
-		n += len(x.Regex)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // TLS authentication params.
@@ -603,10 +517,10 @@ type isPeerAuthenticationMethod_Params interface {
 }
 
 type PeerAuthenticationMethod_Mtls struct {
-	Mtls *MutualTls `protobuf:"bytes,1,opt,name=mtls,proto3,oneof"`
+	Mtls *MutualTls `protobuf:"bytes,1,opt,name=mtls,proto3,oneof" json:"mtls,omitempty"`
 }
 type PeerAuthenticationMethod_Jwt struct {
-	Jwt *Jwt `protobuf:"bytes,2,opt,name=jwt,proto3,oneof"`
+	Jwt *Jwt `protobuf:"bytes,2,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
 }
 
 func (*PeerAuthenticationMethod_Mtls) isPeerAuthenticationMethod_Params() {}
@@ -633,78 +547,12 @@ func (m *PeerAuthenticationMethod) GetJwt() *Jwt {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PeerAuthenticationMethod) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PeerAuthenticationMethod_OneofMarshaler, _PeerAuthenticationMethod_OneofUnmarshaler, _PeerAuthenticationMethod_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PeerAuthenticationMethod) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PeerAuthenticationMethod_Mtls)(nil),
 		(*PeerAuthenticationMethod_Jwt)(nil),
 	}
-}
-
-func _PeerAuthenticationMethod_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PeerAuthenticationMethod)
-	// params
-	switch x := m.Params.(type) {
-	case *PeerAuthenticationMethod_Mtls:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Mtls); err != nil {
-			return err
-		}
-	case *PeerAuthenticationMethod_Jwt:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Jwt); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("PeerAuthenticationMethod.Params has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PeerAuthenticationMethod_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PeerAuthenticationMethod)
-	switch tag {
-	case 1: // params.mtls
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(MutualTls)
-		err := b.DecodeMessage(msg)
-		m.Params = &PeerAuthenticationMethod_Mtls{msg}
-		return true, err
-	case 2: // params.jwt
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(Jwt)
-		err := b.DecodeMessage(msg)
-		m.Params = &PeerAuthenticationMethod_Jwt{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PeerAuthenticationMethod_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PeerAuthenticationMethod)
-	// params
-	switch x := m.Params.(type) {
-	case *PeerAuthenticationMethod_Mtls:
-		s := proto.Size(x.Mtls)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PeerAuthenticationMethod_Jwt:
-		s := proto.Size(x.Jwt)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // OriginAuthenticationMethod defines authentication method/params for origin
@@ -1184,10 +1032,10 @@ type isPortSelector_Port interface {
 }
 
 type PortSelector_Number struct {
-	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof"`
+	Number uint32 `protobuf:"varint,1,opt,name=number,proto3,oneof" json:"number,omitempty"`
 }
 type PortSelector_Name struct {
-	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
 }
 
 func (*PortSelector_Number) isPortSelector_Port() {}
@@ -1214,69 +1062,12 @@ func (m *PortSelector) GetName() string {
 	return ""
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PortSelector) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PortSelector_OneofMarshaler, _PortSelector_OneofUnmarshaler, _PortSelector_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PortSelector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PortSelector_Number)(nil),
 		(*PortSelector_Name)(nil),
 	}
-}
-
-func _PortSelector_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		_ = b.EncodeVarint(1<<3 | proto.WireVarint)
-		_ = b.EncodeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		_ = b.EncodeStringBytes(x.Name)
-	case nil:
-	default:
-		return fmt.Errorf("PortSelector.Port has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PortSelector_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PortSelector)
-	switch tag {
-	case 1: // port.number
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Port = &PortSelector_Number{uint32(x)}
-		return true, err
-	case 2: // port.name
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Port = &PortSelector_Name{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PortSelector_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PortSelector)
-	// port
-	switch x := m.Port.(type) {
-	case *PortSelector_Number:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Number))
-	case *PortSelector_Name:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Name)))
-		n += len(x.Name)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 func init() {
