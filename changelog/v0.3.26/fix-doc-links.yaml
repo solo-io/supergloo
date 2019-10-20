@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: README.md - fix links to installation instructions and developer.md
+    issueLink: https://github.com/solo-io/supergloo/issues/496
