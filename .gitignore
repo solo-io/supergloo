@@ -1,12 +1,13 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+vendor
+_output/
+doc/site
 
-# Test binary, build with `go test -c`
-*.test
+# IDEA files
+.idea
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
+# Mac Files
+**/.DS_Store
+
+// for local testing
+cloudbuild-test.yaml
+
