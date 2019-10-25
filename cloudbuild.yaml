@@ -1,0 +1,47 @@
+steps:
+# Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
+# These two steps should populate the cache
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: 'bash'
+  args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://solo-public-cache/service-mesh-hub/service-mesh-hub-dep.tar.gz | tar -xzf -']
+  id: 'download-untar-dep-cache'
+
+# Run dep to set up the project so it can be built and tested
+# Dep modifies workspace so that the code is moved into the PROJECT_ROOT
+# All steps after this must set GOPATH
+- name: 'gcr.io/$PROJECT_ID/dep:0.1.8'
+  args: ['ensure']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  id: 'dep'
+  waitFor: ['download-untar-dep-cache']
+
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.11'
+  entrypoint: 'bash'
+  args: ['ci/check-code-and-docs-gen.sh']
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+    - 'GOPATH=/workspace/gopath'
+  dir: './gopath/src/github.com/solo-io/service-mesh-hub'
+  waitFor: ['dep']
+  id: 'check-code-and-docs-gen'
+
+- name: 'gcr.io/$PROJECT_ID/ginkgo:0.1.8'
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'GOPATH=/workspace/gopath'
+  dir: './gopath/src/github.com/solo-io/service-mesh-hub'
+  args: ['-r', '-p', '-failFast', '-race']
+  secretEnv: ['GITHUB_TOKEN']
+  waitFor: ['dep']
+  id: 'test'
+
+secrets:
+- kmsKeyName: projects/solo-public/locations/global/keyRings/build/cryptoKeys/build-key
+  secretEnv:
+    GITHUB_TOKEN: CiQABlzmSYYiveU0gTxGH2139eaBUedjV3vNCxQmJU+nRPlfQ/YSUQCCPGSGzbGp49fwDYuefAx9V94b8mivdp9AqB7zQAa07VtGJmrGdg9ZuhKGFrrgqxwABE0LLVNHyngCSHYSYMH8Vn/mRtT7wQuEHBlKVGtqPw==
+
+timeout: 3000s
+tags: ['service-mesh-hub']
+options:
+  machineType: 'N1_HIGHCPU_32'
