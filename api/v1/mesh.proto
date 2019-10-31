@@ -1,0 +1,161 @@
+syntax = "proto3";
+package meshdiscovery.solo.io;
+option go_package = "github.com/solo-io/mesh-discovery/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+import "github.com/solo-io/mesh-discovery/api/v1/selector.proto";
+
+/*
+Meshes represent a currently registered service mesh.
+*/
+message Mesh {
+
+    option (core.solo.io.resource).short_name = "m";
+    option (core.solo.io.resource).plural_name = "meshes";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by mesh-discovery during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    oneof mesh_type {
+        IstioMesh istio = 1;
+        AwsAppMesh aws_app_mesh = 4;
+        LinkerdMesh linkerd = 5;
+    }
+
+    // mtls config specifies configuration options for enabling mutual
+    // tls between pods in this mesh
+    MtlsConfig mtls_config = 2;
+
+    // configuration for propagating stats and metrics from
+    // mesh controllers and sidecars to a centralized datastore
+    // such as prometheus
+    MonitoringConfig monitoring_config = 3;
+
+    // object which represents the data mesh discovery finds about a given mesh
+    DiscoveryMetadata discovery_metadata = 6 [(core.solo.io.skip_hashing) = true];
+
+    // whether or not to use SMI to configure this mesh
+    bool smi_enabled = 7;
+}
+
+
+// Generic discovery data shared between different meshes
+message DiscoveryMetadata {
+    // The name of the cluster the mesh is installed to
+    string cluster = 1;
+
+    // Whether or not auto-injection is enabled for a given mesh
+    bool enable_auto_inject = 2;
+
+    // upstreams which point to injected pods in the mesh
+    repeated core.solo.io.ResourceRef upstreams = 5;
+
+    // discovered mtls config of the given mesh
+    MtlsConfig mtls_config = 6;
+}
+
+// Mesh object representing an installed Istio control plane
+message IstioMesh {
+    // where the istio control plane has been installed
+    string installation_namespace = 1;
+
+    // version of istio which has been installed
+    string version = 2;
+}
+
+// Mesh object representing AWS App Mesh
+message AwsAppMesh {
+
+    // Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service.
+    core.solo.io.ResourceRef aws_secret = 1;
+
+    // The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in.
+    string region = 2;
+
+    // Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy.
+    bool enable_auto_inject = 3;
+
+    // Pods matching this selector will be injected with the sidecar proxy at creation time.
+    //
+    // NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector
+    PodSelector injection_selector = 4;
+
+    // If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of
+    // APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container.
+    string virtual_node_label = 5;
+
+    // Reference to the config map that contains the patch that will be applied to the spec of the pods matching the
+    // injection_selector.
+    core.solo.io.ResourceRef sidecar_patch_config_map = 6;
+}
+
+// Mesh object representing an installed Linkerd control plane
+message LinkerdMesh {
+    // where the Linkerd control plane has been installed
+    string installation_namespace = 1;
+
+    // version of istio which has been installed
+    string version = 2;
+}
+
+// the encryption configuration that will be applied by the role
+message MtlsConfig {
+
+    // whether or not mutual TLS should be enabled between pods in this mesh
+    bool mtls_enabled = 1;
+
+    // Connection can be either plaintext or TLS, and client cert can be omitted
+    // this is true by default for Linkerd
+    bool mtls_permissive = 2;
+
+    // if set, rootCertificate will override the root certificate used by the mesh
+    // to encrypt mtls connections.
+    //
+    // The structure of the secret must be a standard kubernetes TLS secret
+    // such as can be created via `kubectl create secret tls`
+    //
+    // if mtlsEnabled is false, this field is ignored
+    // If deploying to Consul, Consul Connect requires that the cert and key are generated using ec, not rsa.
+    core.solo.io.ResourceRef root_certificate = 3;
+}
+
+// Contains configuration options for monitoring a mesh
+// Currently MonitoringConfig only contains options for configuring
+// an in-cluster Prometheus instance to scrape a mesh for metrics
+message MonitoringConfig {
+    // indicates to mesh-discovery that metrics should be propagated to one or more instances of prometheus.
+    // add a [`core.solo.io.ResourceRef`](../../../../solo-kit/api/v1/ref.proto.sk#ResourceRef) for each
+    // NAMESPACE.NAME of the configmap used to configure each prometheus instance.
+    // assumes that the configmap contains a key named `prometheus.yml` or `prometheus.yaml` whose value
+    // is the prometheus yaml config as an inline string
+    repeated core.solo.io.ResourceRef prometheus_configmaps = 1 [(gogoproto.nullable) = false];
+}
+
+message MeshGroup {
+
+    option (core.solo.io.resource).short_name = "mg";
+    option (core.solo.io.resource).plural_name = "meshgroups";
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by mesh-discovery during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // the meshes contained in this group
+    repeated core.solo.io.ResourceRef meshes = 3;
+
+}
