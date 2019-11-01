@@ -1,0 +1,56 @@
+# TODO - standardize the installation
+# Currently serving as a reference for how to mount aws credentials from a secret
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesh-discovery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mesh-discovery
+  template:
+    metadata:
+      labels:
+        app: mesh-discovery
+    spec:
+      containers:
+        - name: mesh-discovery
+          image: soloio/mesh-discovery:v0.0.1
+          env:
+          - name: PORT
+            value: "8080"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - mountPath: "/root/.aws/"
+              name: aws-cred
+              readOnly: true
+      volumes:
+        - name: aws-cred
+          secret:
+            secretName: aws-cred
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mesh-discovery
+spec:
+  selector:
+    app: mesh-discovery
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-cred
+  namespace: default
+data:
+  credentials: >
+    "REDACTED, to test with your own credentials (beware) do: cat ~/.aws/credentials | base64 >> manifest.yaml then delete this line"
+
