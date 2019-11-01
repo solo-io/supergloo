@@ -78,7 +78,7 @@ func (el *discoveryEventLoop) Run(namespaces []string, opts clients.WatchOpts) (
 				// cancel any open watches from previous loop
 				cancel()
 
-				ctx, span := trace.StartSpan(opts.Ctx, "discovery.meshdiscovery.solo.io.EventLoopSync")
+				ctx, span := trace.StartSpan(opts.Ctx, "discovery.zephyr.solo.io.EventLoopSync")
 				ctx, canc := context.WithCancel(ctx)
 				cancel = canc
 				err := el.syncer.Sync(ctx, snapshot)

@@ -1,13 +1,13 @@
 {
-  "title": "mesh-discovery",
-  "name": "meshdiscovery.solo.io",
+  "title": "mesh-projects",
+  "name": "zephyr.solo.io",
   "version": "v1",
   "docs_dir": "docs/v1",
   "imports": [
     "github.com/solo-io/solo-kit/api/external/kubernetes"
   ],
   "resource_groups": {
-    "discovery.meshdiscovery.solo.io": [
+    "discovery.zephyr.solo.io": [
       {
         "name": "Pod",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"

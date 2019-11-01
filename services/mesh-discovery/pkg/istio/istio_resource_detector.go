@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-discovery/pkg/api/external/istio/authorization/v1alpha1"
-	"github.com/solo-io/mesh-discovery/pkg/common/injectedpods"
+	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	sk_errors "github.com/solo-io/solo-kit/pkg/errors"

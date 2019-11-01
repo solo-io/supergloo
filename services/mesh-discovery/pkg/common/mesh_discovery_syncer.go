@@ -6,7 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/hashutils"
-	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
+	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"go.uber.org/zap"
 )

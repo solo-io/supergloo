@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-discovery/pkg/istio"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"

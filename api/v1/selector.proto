@@ -1,6 +1,6 @@
 syntax = "proto3";
-package meshdiscovery.solo.io;
-option go_package = "github.com/solo-io/mesh-discovery/pkg/api/v1";
+package zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;

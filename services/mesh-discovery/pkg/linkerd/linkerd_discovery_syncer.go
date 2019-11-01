@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
-	"github.com/solo-io/mesh-discovery/pkg/common"
-	"github.com/solo-io/mesh-discovery/pkg/common/injectedpods"
-	"github.com/solo-io/mesh-discovery/pkg/utils"
+	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	"github.com/solo-io/mesh-projects/pkg/utils"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
@@ -145,6 +145,6 @@ func (c linkerdControllerDeployment) name() string {
 	if c.cluster == "" {
 		return "linkerd-" + c.namespace
 	}
-	//TODO cluster is not restricted to kube name scheme, kebab it
+	// TODO cluster is not restricted to kube name scheme, kebab it
 	return "linkerd-" + c.namespace + "-" + c.cluster
 }

@@ -5,9 +5,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
-	. "github.com/solo-io/mesh-discovery/pkg/linkerd"
-	"github.com/solo-io/mesh-discovery/test/inputs"
+	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
+	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"

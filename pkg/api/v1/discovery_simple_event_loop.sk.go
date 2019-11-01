@@ -95,7 +95,7 @@ func (el *discoverySimpleEventLoop) Run(ctx context.Context) (<-chan error, erro
 						cancel()
 					}
 
-					ctx, span := trace.StartSpan(ctx, fmt.Sprintf("discovery.meshdiscovery.solo.io.SimpleEventLoopSync-%T", syncer))
+					ctx, span := trace.StartSpan(ctx, fmt.Sprintf("discovery.zephyr.solo.io.SimpleEventLoopSync-%T", syncer))
 					ctx, canc := context.WithCancel(ctx)
 					err := syncer.Sync(ctx, snapshot)
 					span.End()

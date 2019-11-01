@@ -164,7 +164,7 @@ func init() {
 var (
 	MeshGroupGVK = schema.GroupVersionKind{
 		Version: "v1",
-		Group:   "meshdiscovery.solo.io",
+		Group:   "zephyr.solo.io",
 		Kind:    "MeshGroup",
 	}
 )

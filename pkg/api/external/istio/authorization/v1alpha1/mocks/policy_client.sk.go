@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-discovery/pkg/api/external/istio/authorization/v1alpha1"
+	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 )
 

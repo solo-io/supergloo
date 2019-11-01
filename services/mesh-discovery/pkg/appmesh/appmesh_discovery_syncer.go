@@ -6,17 +6,17 @@ package appmesh
 //	"regexp"
 //	"strings"
 //
-//	appmeshtranslator "github.com/solo-io/mesh-discovery/pkg/translator/appmesh"
+//	appmeshtranslator "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/translator/appmesh"
 //
 //	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 //
-//	"github.com/solo-io/mesh-discovery/pkg/config/appmesh"
+//	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/config/appmesh"
 //
 //	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-//	"github.com/solo-io/mesh-discovery/pkg/common"
+//	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 //
 //	"github.com/solo-io/go-utils/contextutils"
-//	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
+//	v1 "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/api/v1"
 //	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 //	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 //)

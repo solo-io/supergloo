@@ -20,7 +20,7 @@ weight: 5
 
 
 
-##### Source File: [github.com/solo-io/mesh-discovery/api/v1/selector.proto](https://github.com/solo-io/mesh-discovery/blob/master/api/v1/selector.proto)
+##### Source File: [github.com/solo-io/mesh-projects/api/v1/selector.proto](https://github.com/solo-io/mesh-projects/blob/master/api/v1/selector.proto)
 
 
 

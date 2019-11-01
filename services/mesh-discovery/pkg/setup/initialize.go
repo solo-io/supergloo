@@ -6,8 +6,8 @@ import (
 
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/mesh-discovery/pkg/api/external/istio/authorization/v1alpha1"
-	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
+	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
+	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"

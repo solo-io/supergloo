@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/mesh-discovery/pkg/hack"
-	"github.com/solo-io/mesh-discovery/pkg/istio"
-	"github.com/solo-io/mesh-discovery/pkg/linkerd"
-	"github.com/solo-io/mesh-discovery/pkg/version"
+	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/hack"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
@@ -16,12 +16,12 @@ import (
 	"github.com/solo-io/solo-kit/pkg/multicluster/clustercache"
 	"k8s.io/client-go/kubernetes"
 
-	v1 "github.com/solo-io/mesh-discovery/pkg/api/v1"
+	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
-	"github.com/solo-io/mesh-discovery/pkg/clientset"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/clientset"
 )
 
 // customCtx and customErrHandler are expected to be passed by tests

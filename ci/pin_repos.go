@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/solo-io/go-utils/log"
 	version "github.com/solo-io/go-utils/versionutils"
-	md_version "github.com/solo-io/mesh-discovery/pkg/version"
+	md_version "github.com/solo-io/mesh-projects/pkg/version"
 )
 
 func main() {

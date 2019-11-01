@@ -21,7 +21,7 @@ syntax = "proto3";
 // This package defines user-facing authentication policy.
 package istio.authentication.v1alpha1;
 
-option go_package = "github.com/solo-io/mesh-discovery/pkg/api/external/istio/authorization/v1alpha1";
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1";
 
 
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
