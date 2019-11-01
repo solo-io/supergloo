@@ -23,10 +23,3 @@ func newErrorDetectingMeshPolicy(err error) *SyncerError {
 		Message: fmt.Sprintf("detecting default MeshPolicy: %v", err),
 	}
 }
-
-func IsErrorDetectingMeshPolicy(err error) bool {
-	if syncerErr, ok := err.(*SyncerError); ok {
-		return syncerErr.Type == ErrorType_DetectingMeshPolicy
-	}
-	return false
-}
