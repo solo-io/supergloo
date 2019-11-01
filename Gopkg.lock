@@ -183,6 +183,22 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:91099c6f78b1e7bdf9ed06eb4cb7f017174293a3689d76b995a06f4c8d64a7f0"
+  name = "github.com/google/go-github"
+  packages = ["github"]
+  pruneopts = "UT"
+  revision = "9686ff0746200cf521ce225525b421e13b4eac1a"
+  version = "v28.1.1"
+
+[[projects]]
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  pruneopts = "UT"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:a6181aca1fd5e27103f9a920876f29ac72854df7345a39f3b01e61c8c94cc8af"
   name = "github.com/google/gofuzz"
   packages = ["."]
@@ -197,6 +213,14 @@
   pruneopts = "UT"
   revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:fb39a574fbc3230a6a93530aa17215c6b79049a0a2d30b6d19db6f809a6e56f0"
+  name = "github.com/google/wire"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "89cb901fdf9dfcf4292cbfe0c9ac90d98213be68"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:ca4524b4855ded427c7003ec903a5c854f37e7b1e8e2a93277243462c5b753a8"
@@ -292,14 +316,6 @@
   pruneopts = "UT"
   revision = "c7188e74f6acae5a989bdc959aa779f8b9f42faf"
   version = "v1.0.2"
-
-[[projects]]
-  digest = "1:f14364057165381ea296e49f8870a9ffce2b8a95e34d6ae06c759106aaef428c"
-  name = "github.com/hashicorp/go-uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "4f571afc59f3043a65f8fe6bf46d887b10a01d43"
-  version = "v1.0.1"
 
 [[projects]]
   digest = "1:c77361e611524ec8f2ad37c408c3c916111a70b6acf806a1200855696bf8fa4d"
@@ -705,28 +721,25 @@
   version = "v0.20.11"
 
 [[projects]]
-  branch = "short-version-check-timeout"
-  digest = "1:075de3352ee3366e02ab1547a3a6d9149d9fc85419212deb126baee9976a4dc5"
-  name = "github.com/solo-io/go-checkpoint"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ea3b060af4178efd6ead9fdfbc27a77732a932b7"
-
-[[projects]]
-  digest = "1:5b6887bb7ff4f4c358715406ff693d9c8d7e6909fbfeeb8f0956b1e0f33d39e7"
+  digest = "1:6a9ecd655f80e8259e7dc71789248030d33d055e0f0e6fc4bec1b6a148292d45"
   name = "github.com/solo-io/go-utils"
   packages = [
     "clicore/constants",
+    "configutils",
     "contextutils",
+    "envutils",
     "errors",
     "errutils",
+    "githubutils",
     "hashutils",
     "kubeutils",
     "log",
+    "protoutils",
     "stats",
     "stringutils",
     "versionutils",
     "versionutils/dep",
+    "versionutils/git",
     "versionutils/kubeapi",
   ]
   pruneopts = "UT"
@@ -874,11 +887,18 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3031abe5ec8fc83fbb08976f29733d104ad689552ce11f815a9c6a09ada1a34d"
+  digest = "1:2ee543b54df26238aa0980ceb8345ba8585ea900b7e5c7ff28697908d05dcd1b"
   name = "golang.org/x/crypto"
   packages = [
+    "cast5",
     "ed25519",
     "ed25519/internal/edwards25519",
+    "openpgp",
+    "openpgp/armor",
+    "openpgp/elgamal",
+    "openpgp/errors",
+    "openpgp/packet",
+    "openpgp/s2k",
     "pbkdf2",
     "scrypt",
     "ssh/terminal",
@@ -1391,20 +1411,26 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
+    "github.com/google/wire",
     "github.com/hashicorp/go-multierror",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/pkg/errors",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes",
-    "github.com/solo-io/go-checkpoint",
+    "github.com/solo-io/go-utils/configutils",
     "github.com/solo-io/go-utils/contextutils",
+    "github.com/solo-io/go-utils/envutils",
+    "github.com/solo-io/go-utils/errors",
     "github.com/solo-io/go-utils/errutils",
+    "github.com/solo-io/go-utils/githubutils",
     "github.com/solo-io/go-utils/hashutils",
     "github.com/solo-io/go-utils/kubeutils",
     "github.com/solo-io/go-utils/log",
     "github.com/solo-io/go-utils/stats",
     "github.com/solo-io/go-utils/versionutils",
+    "github.com/solo-io/go-utils/versionutils/dep",
+    "github.com/solo-io/go-utils/versionutils/git",
     "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment",

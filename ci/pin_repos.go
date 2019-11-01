@@ -2,21 +2,35 @@ package main
 
 import (
 	"github.com/solo-io/go-utils/log"
-	version "github.com/solo-io/go-utils/versionutils"
-	md_version "github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/go-utils/versionutils"
+	"github.com/solo-io/go-utils/versionutils/dep"
+	"github.com/solo-io/go-utils/versionutils/git"
+	"github.com/solo-io/mesh-projects/pkg/version"
 )
 
 func main() {
-	tomlTree, err := version.ParseToml()
+	tomlTree, err := versionutils.ParseFullToml()
 	fatalCheck(err, "parsing error")
 
-	soloKitVersion, err := version.GetVersion(md_version.SoloKitPkg, tomlTree)
+	soloKitVersion, err := versionutils.GetDependencyVersionInfo(version.SoloKitPkg, tomlTree)
 	fatalCheck(err, "getting solo-kit version")
-	fatalCheck(version.PinGitVersion("../solo-kit", soloKitVersion), "consider git fetching in solo-kit repo")
 
-	glooVersion, err := version.GetVersion(md_version.GlooPkg, tomlTree)
-	fatalCheck(err, "getting gloo version")
-	fatalCheck(version.PinGitVersion("../gloo", glooVersion), "consider git fetching in gloo repo")
+	targetVersion := soloKitVersion.Version
+	if soloKitVersion.Type == dep.Version {
+		// If the toml version attribute is "version", we are looking for a tag
+		targetVersion = git.AppendTagPrefix(targetVersion)
+	}
+	fatalCheck(git.PinDependencyVersion("../solo-kit", targetVersion), "consider git fetching in solo-kit repo")
+
+	glooVersion, err := versionutils.GetDependencyVersionInfo(version.GlooPkg, tomlTree)
+	fatalCheck(err, "getting solo-kit version")
+
+	targetVersion = glooVersion.Version
+	if glooVersion.Type == dep.Version {
+		// If the toml version attribute is "version", we are looking for a tag
+		targetVersion = git.AppendTagPrefix(targetVersion)
+	}
+	fatalCheck(git.PinDependencyVersion("../gloo", targetVersion), "consider git fetching in gloo repo")
 }
 
 func fatalCheck(err error, msg string) {

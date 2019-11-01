@@ -46,10 +46,10 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 		}
 	}
 
-	//clientSet, err := clientset.ClientsetFromContext(rootCtx)
-	//if err != nil {
+	// clientSet, err := clientset.ClientsetFromContext(rootCtx)
+	// if err != nil {
 	//	return err
-	//}
+	// }
 
 	if err := runDiscoveryEventLoop(rootCtx, writeNamespace, errHandler); err != nil {
 		return err
@@ -74,36 +74,36 @@ func runDiscoveryEventLoopDeprecated(ctx context.Context, writeNamespace string,
 
 	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
 	//
-	//istioDiscovery := istio.NewIstioDiscoverySyncer(
+	// istioDiscovery := istio.NewIstioDiscoverySyncer(
 	//	writeNamespace,
 	//	meshReconciler,
 	//	istioClients.MeshPolicies,
 	//	cs.ApiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions(),
 	//	cs.Kube.BatchV1(),
-	//)
+	// )
 
 	linkerdDiscovery := linkerd.NewLinkerdDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
 	)
 
-	//appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(
+	// appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(
 	//	writeNamespace,
 	//	meshReconciler,
 	//	appmeshconfig.NewAppMeshClientBuilder(cs.Input.Secret),
 	//	cs.Input.Secret,
-	//)
+	// )
 
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Deployment.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
 		wrapper.ClientWatchOpts{BaseClient: cs.Input.Pod.BaseClient()},
-		//wrapper.ClientWatchOpts{BaseClient: cs.Input.TlsSecret.BaseClient()},
+		// wrapper.ClientWatchOpts{BaseClient: cs.Input.TlsSecret.BaseClient()},
 	))
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter,
-		//istioDiscovery,
+		// istioDiscovery,
 		linkerdDiscovery,
-		//appmeshDiscovery,
+		// appmeshDiscovery,
 	)
 
 	errs, err := eventLoop.Run(ctx)
@@ -211,7 +211,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	)
 
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.ResourceWatch(watchAggregator, "", nil))
-	//eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, linkerdDiscovery)
+	// eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, linkerdDiscovery)
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, linkerdDiscovery, istioDiscovery)
 
 	errs, err = eventLoop.Run(ctx)

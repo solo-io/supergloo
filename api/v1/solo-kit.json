@@ -20,6 +20,13 @@
         "name": "Deployment",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
       }
+    ],
+    "network_bridge.zephyr.solo.io": [
+      {
+        "name": "MeshBridge",
+        "package": "zephyr.solo.io",
+        "version": "v1"
+      }
     ]
   }
 }

@@ -5,13 +5,12 @@
 package mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	v10 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+	reflect "reflect"
 )
 
 // MockDiscoverySnapshotEmitter is a mock of DiscoverySnapshotEmitter interface

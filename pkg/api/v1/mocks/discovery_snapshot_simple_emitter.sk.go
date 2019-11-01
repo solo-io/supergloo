@@ -6,10 +6,9 @@ package mocks
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	reflect "reflect"
 )
 
 // MockDiscoverySimpleEmitter is a mock of DiscoverySimpleEmitter interface

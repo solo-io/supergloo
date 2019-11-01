@@ -5,11 +5,10 @@
 package mocks
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	reflect "reflect"
 )
 
 // MockMeshReconciler is a mock of MeshReconciler interface
