@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add aws secret injection to helm chart for multicluster containers
+    issueLink: https://github.com/solo-io/mesh-projects/issues/29
