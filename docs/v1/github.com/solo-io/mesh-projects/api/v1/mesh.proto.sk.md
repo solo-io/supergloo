@@ -207,6 +207,7 @@ an in-cluster Prometheus instance to scrape a mesh for metrics
 ```yaml
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
+"displayName": string
 "meshes": []core.solo.io.ResourceRef
 
 ```
@@ -215,7 +216,8 @@ an in-cluster Prometheus instance to scrape a mesh for metrics
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by mesh-discovery during validation. |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
-| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | the meshes contained in this group. |  |
+| `displayName` | `string` | User-provided display name for the mesh group. |  |
+| `meshes` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | The meshes contained in this group. |  |
 
 
 

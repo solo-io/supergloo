@@ -39,6 +39,7 @@ func (r *MeshGroup) Hash() uint64 {
 	// investigate zeroing out owner refs as well
 	return hashutils.HashAll(
 		metaCopy,
+		r.DisplayName,
 		r.Meshes,
 	)
 }

@@ -160,7 +160,10 @@ message MeshGroup {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
 
-    // the meshes contained in this group
+    // User-provided display name for the mesh group.
+    string display_name = 1;
+
+    // The meshes contained in this group.
     repeated core.solo.io.ResourceRef meshes = 3;
 
 }
