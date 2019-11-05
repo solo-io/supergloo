@@ -1,10 +1,10 @@
 |Option|Type|Default Value|Description|
 |------|----|-----------|-------------|
 |meshDiscovery.disabled|bool|false||
-|meshDiscovery.deployment.image.tag|string|v0.0.2-16-gc7a76c1|tag for the container|
+|meshDiscovery.deployment.image.tag|string|dev|tag for the container|
 |meshDiscovery.deployment.image.repository|string|mc-mesh-discovery|image name (repository) for the container.|
 |meshDiscovery.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
-|meshDiscovery.deployment.image.pullPolicy|string||image pull policy for the container|
+|meshDiscovery.deployment.image.pullPolicy|string|Always|image pull policy for the container|
 |meshDiscovery.deployment.image.pullSecret|string||image pull policy for the container |
 |meshDiscovery.deployment.stats|bool|true|enable prometheus stats|
 |meshDiscovery.deployment.replicas|int|1|number of instances to deploy|
@@ -13,10 +13,10 @@
 |meshDiscovery.deployment.resources.requests.memory|string||amount of memory|
 |meshDiscovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |meshBridge.disabled|bool|false||
-|meshBridge.deployment.image.tag|string|v0.0.2-16-gc7a76c1|tag for the container|
+|meshBridge.deployment.image.tag|string|dev|tag for the container|
 |meshBridge.deployment.image.repository|string|mc-mesh-bridge|image name (repository) for the container.|
 |meshBridge.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
-|meshBridge.deployment.image.pullPolicy|string||image pull policy for the container|
+|meshBridge.deployment.image.pullPolicy|string|Always|image pull policy for the container|
 |meshBridge.deployment.image.pullSecret|string||image pull policy for the container |
 |meshBridge.deployment.stats|bool|true|enable prometheus stats|
 |meshBridge.deployment.replicas|int|1|number of instances to deploy|
@@ -24,6 +24,18 @@
 |meshBridge.deployment.resources.limits.cpu|string||amount of CPUs|
 |meshBridge.deployment.resources.requests.memory|string||amount of memory|
 |meshBridge.deployment.resources.requests.cpu|string||amount of CPUs|
+|discovery.disabled|bool|false||
+|discovery.deployment.image.tag|string|0.20.11|tag for the container|
+|discovery.deployment.image.repository|string|discovery|image name (repository) for the container.|
+|discovery.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
+|discovery.deployment.image.pullPolicy|string||image pull policy for the container|
+|discovery.deployment.image.pullSecret|string||image pull policy for the container |
+|discovery.deployment.stats|bool|true|enable prometheus stats|
+|discovery.deployment.replicas|int|1|number of instances to deploy|
+|discovery.deployment.resources.limits.memory|string||amount of memory|
+|discovery.deployment.resources.limits.cpu|string||amount of CPUs|
+|discovery.deployment.resources.requests.memory|string||amount of memory|
+|discovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |global.image.tag|string||tag for the container|
 |global.image.repository|string||image name (repository) for the container.|
 |global.image.registry|string|quay.io/solo-io|image prefix/registry e.g. (quay.io/solo-io)|

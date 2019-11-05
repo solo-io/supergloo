@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
+	gloo_generate "github.com/solo-io/gloo/install/helm/gloo/generate"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/log"
-	gloo_generate "github.com/solo-io/gloo/install/helm/gloo/generate"
+	"github.com/solo-io/go-utils/versionutils"
 	"github.com/solo-io/mesh-projects/install/helm/mesh-projects/generate"
 )
 
@@ -19,7 +23,12 @@ var (
 	chartTemplate  = "install/helm/mesh-projects/Chart-template.yaml"
 	chartOutput    = "install/helm/mesh-projects/Chart.yaml"
 
-	always = "Always"
+	always     = "Always"
+	constraint = "constraint"
+
+	rootPrefix = ""
+	gopkgToml  = "Gopkg.toml"
+	glooPkg    = "github.com/solo-io/gloo"
 )
 
 func main() {
@@ -37,8 +46,13 @@ func main() {
 		}
 	}
 
+	glooVersion, err := getOsGlooVersion(rootPrefix)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	log.Printf("Generating helm files.")
-	if err := generateValuesYaml(version, repoPrefixOverride, globalPullPolicy); err != nil {
+	if err := generateValuesYaml(version, repoPrefixOverride, globalPullPolicy, glooVersion); err != nil {
 		log.Fatalf("generating values.yaml failed!: %v", err)
 	}
 	if err := generateChartYaml(version); err != nil {
@@ -88,8 +102,7 @@ func readConfig() (*generate.HelmConfig, error) {
 	return &config, nil
 }
 
-// install with gateway only
-func generateValuesYaml(version, repositoryPrefix, globalPullPolicy string) error {
+func generateValuesYaml(version, repositoryPrefix, globalPullPolicy, glooVersion string) error {
 	cfg, err := readConfig()
 	if err != nil {
 		return err
@@ -97,6 +110,7 @@ func generateValuesYaml(version, repositoryPrefix, globalPullPolicy string) erro
 
 	cfg.MeshBridge.Deployment.Image.Tag = version
 	cfg.MeshDiscovery.Deployment.Image.Tag = version
+	cfg.Discovery.Deployment.Image.Tag = glooVersion
 
 	if version == "dev" {
 		cfg.MeshBridge.Deployment.Image.PullPolicy = always
@@ -127,4 +141,34 @@ func generateChartYaml(version string) error {
 	chart.Version = version
 
 	return writeYaml(&chart, chartOutput)
+}
+
+func getOsGlooVersion(prefix string) (string, error) {
+	tomlTree, err := parseToml(prefix)
+	if err != nil {
+		return "", err
+	}
+	version, err := versionutils.GetVersion(glooPkg, tomlTree)
+	if err != nil {
+		return "", fmt.Errorf("failed to determine open source Gloo version. Cause: %v", err)
+	}
+	log.Printf("Open source gloo version is: %v", version)
+	return version, nil
+}
+
+func parseToml(prefix string) ([]*toml.Tree, error) {
+	tomlPath := filepath.Join(prefix, gopkgToml)
+	config, err := toml.LoadFile(tomlPath)
+	if err != nil {
+		return nil, err
+	}
+
+	tomlTree := config.Get(constraint)
+
+	switch typedTree := tomlTree.(type) {
+	case []*toml.Tree:
+		return typedTree, nil
+	default:
+		return nil, fmt.Errorf("unable to parse toml tree")
+	}
 }

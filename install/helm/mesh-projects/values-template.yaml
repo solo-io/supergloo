@@ -22,3 +22,9 @@ meshBridge:
     replicas: 1
     stats: true
 
+discovery:
+  deployment:
+    image:
+      repository: discovery
+    replicas: 1
+    stats: true

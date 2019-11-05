@@ -12,12 +12,13 @@ type HelmConfig struct {
 type Config struct {
 	MeshDiscovery *MeshDiscovery `json:"meshDiscovery,omitempty"`
 	MeshBridge    *MeshBridge    `json:"meshBridge,omitempty"`
+	Discovery     *Discovery     `json:"discovery,omitempty"`
 }
 
 type Global struct {
 	Image *generate.Image `json:"image,omitempty"`
-	Rbac  *Rbac  `json:"rbac,omitempty"`
-	Crds  *Crds  `json:"crds,omitempty"`
+	Rbac  *Rbac           `json:"rbac,omitempty"`
+	Crds  *Crds           `json:"crds,omitempty"`
 }
 
 type Namespace struct {
@@ -40,7 +41,7 @@ type MeshDiscovery struct {
 
 type MeshDiscoveryDeployment struct {
 	Image *generate.Image `json:"image,omitempty"`
-	Stats bool   `json:"stats" desc:"enable prometheus stats"`
+	Stats bool            `json:"stats" desc:"enable prometheus stats"`
 	*generate.DeploymentSpec
 }
 
@@ -51,6 +52,17 @@ type MeshBridge struct {
 
 type MeshBridgeDeployment struct {
 	Image *generate.Image `json:"image,omitempty"`
-	Stats bool   `json:"stats" desc:"enable prometheus stats"`
+	Stats bool            `json:"stats" desc:"enable prometheus stats"`
+	*generate.DeploymentSpec
+}
+
+type Discovery struct {
+	Disabled   bool                 `json:"disabled"`
+	Deployment *DiscoveryDeployment `json:"deployment,omitempty"`
+}
+
+type DiscoveryDeployment struct {
+	Image *generate.Image `json:"image,omitempty"`
+	Stats bool            `json:"stats" desc:"enable prometheus stats"`
 	*generate.DeploymentSpec
 }
