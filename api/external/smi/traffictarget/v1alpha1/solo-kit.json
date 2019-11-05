@@ -1,0 +1,16 @@
+{
+  "title": "",
+  "name": "smi.traffictarget.v1alpha1",
+  "version": "v1alpha1",
+  "docs_dir": "",
+  "crd_group_override": "access.smi-spec.io",
+  "resource_groups": {
+    "access.smi-spec.io": [
+      {
+        "name": "TrafficTarget",
+        "package": "smi.traffictarget.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ]
+  }
+}

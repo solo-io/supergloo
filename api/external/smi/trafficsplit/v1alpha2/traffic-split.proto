@@ -1,0 +1,41 @@
+syntax = "proto3";
+package smi.trafficsplit.v1alpha1;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/external/smi/trafficsplit/v1alpha2";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+import "github.com/solo-io/solo-kit/api/v1/status.proto";
+
+// Matches https://github.com/deislabs/smi-sdk-go/blob/master/pkg/apis/split/v1alpha2/traffic_split.go
+
+// TrafficSplit allows users to incrementally direct percentages of traffic
+// between various services. It will be used by clients such as ingress
+// controllers or service mesh sidecars to split the outgoing traffic to
+// different destinations.
+message TrafficSplit {
+    option (core.solo.io.resource).short_name = "trafficsplit";
+    option (core.solo.io.resource).plural_name = "trafficsplits";
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
+    // +optional
+    TrafficSplitSpec spec = 1;
+}
+
+// TrafficSplitSpec is the specification for a TrafficSplit
+message TrafficSplitSpec {
+    string service = 1;
+    repeated TrafficSplitBackend backends = 2;
+}
+
+// TrafficSplitBackend defines a backend
+message TrafficSplitBackend {
+    string service  = 1;
+    int32 weight = 2;
+}
