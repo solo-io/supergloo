@@ -1,0 +1,7 @@
+
+apiVersion: v1
+data:
+  refreshRate: 1s
+kind: ConfigMap
+metadata:
+  name: operator-config

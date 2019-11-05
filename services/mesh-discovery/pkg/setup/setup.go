@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/mesh-projects/pkg/mcutils"
 	"github.com/solo-io/mesh-projects/pkg/version"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/hack"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
@@ -45,11 +45,6 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 			contextutils.LoggerFrom(rootCtx).Errorf("error: %v", err)
 		}
 	}
-
-	// clientSet, err := clientset.ClientsetFromContext(rootCtx)
-	// if err != nil {
-	//	return err
-	// }
 
 	if err := runDiscoveryEventLoop(rootCtx, writeNamespace, errHandler); err != nil {
 		return err
@@ -144,7 +139,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	}
 
 	watchAggregator := wrapper.NewWatchAggregator()
-	watchHandler := hack.NewAggregatedWatchClusterClientHandler(watchAggregator)
+	watchHandler := mcutils.NewAggregatedWatchClusterClientHandler(watchAggregator)
 
 	// TODO does this Should Not be multicluster
 	meshClient, _ := InitializeMeshClient(ctx, sharedCacheGetter)

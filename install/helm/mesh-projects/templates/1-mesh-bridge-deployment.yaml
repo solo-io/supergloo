@@ -1,0 +1,57 @@
+{{- if not .Values.meshBridge.disabled }}
+{{- $image := .Values.meshBridge.deployment.image }}
+{{- if .Values.global  }}
+{{- $image = merge .Values.meshBridge.deployment.image .Values.global.image }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sm-marketplace
+    sm-marketplace: mc-mesh-bridge
+  name: mc-mesh-bridge
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.meshBridge.deployment.replicas }}
+  selector:
+    matchLabels:
+      sm-marketplace: mc-mesh-bridge
+  template:
+    metadata:
+      labels:
+        sm-marketplace: mc-mesh-bridge
+      {{- if .Values.meshBridge.deployment.stats }}
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9091"
+        prometheus.io/scrape: "true"
+      {{- end}}
+    spec:
+      serviceAccountName: mc-mesh-bridge
+      containers:
+      - image: {{template "gloo.image" $image }}
+        imagePullPolicy: {{ $image.pullPolicy }}
+        name: mc-mesh-bridge
+{{- if .Values.meshBridge.deployment.resources }}
+        resources:
+{{ toYaml .Values.meshBridge.deployment.resources | indent 10}}
+{{- else}}
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+{{- end}}
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        {{- if .Values.meshBridge.deployment.stats }}
+          - name: START_STATS_SERVER
+            value: "true"
+        {{- end}}
+      {{- if $image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ $image.pullSecret }}
+      {{- end}}
+{{- end}}

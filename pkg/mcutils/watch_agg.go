@@ -1,4 +1,4 @@
-package hack
+package mcutils
 
 import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -20,6 +20,13 @@ var _ handler.ClusterHandler = &ClusterWatchAggregator{}
 // Provides a ClusterHandler to sync all clients to the aggregated watch.
 // NOTE that all clients must be added to the ClientForClusterHandler before ANY are sent to the watch.
 func NewAggregatedWatchClusterClientHandler(aggregator wrapper.WatchAggregator) *ClusterWatchAggregator {
+	return &ClusterWatchAggregator{
+		aggregator: aggregator,
+		watchers:   make(map[string][]clients.ResourceWatcher),
+	}
+}
+
+func NewClientForClusterHandler(aggregator wrapper.WatchAggregator) multicluster.ClientForClusterHandler {
 	return &ClusterWatchAggregator{
 		aggregator: aggregator,
 		watchers:   make(map[string][]clients.ResourceWatcher),

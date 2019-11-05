@@ -42,6 +42,7 @@ func (r *Mesh) Hash() uint64 {
 		r.MtlsConfig,
 		r.MonitoringConfig,
 		r.SmiEnabled,
+		r.EntryPoint,
 		r.MeshType,
 	)
 }

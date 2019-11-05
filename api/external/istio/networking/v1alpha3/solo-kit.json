@@ -3,5 +3,6 @@
   "version": "v1alpha3",
   "name": "istio.networking.v1alpha3",
   "docs_dir": "docs/api",
-  "go_package": "github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
+  "go_package": "github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3",
+  "crd_group_override": "networking.istio.io"
 }

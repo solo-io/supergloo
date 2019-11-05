@@ -45,6 +45,7 @@ Meshes represent a currently registered service mesh.
 "monitoringConfig": .zephyr.solo.io.MonitoringConfig
 "discoveryMetadata": .zephyr.solo.io.DiscoveryMetadata
 "smiEnabled": bool
+"entryPoint": .core.zephyr.solo.io.ClusterResourceRef
 
 ```
 
@@ -59,6 +60,7 @@ Meshes represent a currently registered service mesh.
 | `monitoringConfig` | [.zephyr.solo.io.MonitoringConfig](../mesh.proto.sk/#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus. |  |
 | `discoveryMetadata` | [.zephyr.solo.io.DiscoveryMetadata](../mesh.proto.sk/#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh. |  |
 | `smiEnabled` | `bool` | whether or not to use SMI to configure this mesh. |  |
+| `entryPoint` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | reference to the EntryPoints to this mesh. |  |
 
 
 

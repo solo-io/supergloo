@@ -13,6 +13,8 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 import "github.com/solo-io/mesh-projects/api/v1/selector.proto";
 
+import "github.com/solo-io/mesh-projects/api/v1/core/ref.proto";
+
 /*
 Meshes represent a currently registered service mesh.
 */
@@ -48,6 +50,9 @@ message Mesh {
 
     // whether or not to use SMI to configure this mesh
     bool smi_enabled = 7;
+
+    // reference to the EntryPoints to this mesh
+    core.zephyr.solo.io.ClusterResourceRef entry_point = 8;
 }
 
 

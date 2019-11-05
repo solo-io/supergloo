@@ -26,6 +26,7 @@ API Version: `zephyr.solo.io.v1`
 - [Mesh](../github.com/solo-io/mesh-projects/api/v1/mesh.proto.sk#mesh)
 - [MeshBridge](../github.com/solo-io/mesh-projects/api/v1/cluster-route.proto.sk#meshbridge)
 - [MeshGroup](../github.com/solo-io/mesh-projects/api/v1/mesh.proto.sk#meshgroup)
+- [MeshIngress](../github.com/solo-io/mesh-projects/api/v1/ingress.proto.sk#meshingress)
 - [MeshPolicy](../github.com/solo-io/mesh-projects/api/external/istio/authorization/v1alpha1/policy.proto.sk#meshpolicy)
 - [Policy](../github.com/solo-io/mesh-projects/api/external/istio/authorization/v1alpha1/policy.proto.sk#policy)
 - [Proxy](../github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto.sk#proxy)

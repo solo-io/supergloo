@@ -10,6 +10,8 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
 
+import "github.com/solo-io/mesh-projects/api/v1/core/ref.proto";
+
 message MeshBridge {
     option (core.solo.io.resource).short_name = "mb";
     option (core.solo.io.resource).plural_name = "mesh_bridges";
@@ -22,16 +24,30 @@ message MeshBridge {
     // Metadata contains the object metadata for this resource
     core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
 
-    ClusterResourceRef source_mesh = 3;
+    // Source mesh from which to create the bridge
+    core.zephyr.solo.io.ClusterResourceRef source_mesh = 3;
+    // Target mesh to which the bridge will be pointing
+    core.zephyr.solo.io.ClusterResourceRef target_mesh = 4;
 
-    ClusterResourceRef target_mesh = 4;
-    // Namespace in which to find gloo
+    // Namespace in which to find gloo in the target mesh cluster
     string gloo_namespace = 5;
 
-    repeated core.solo.io.ResourceRef sources = 6;
-}
+    /*
+        Source service which will be using the bridge.
+        Currently a string as it assumes that the service which will need
+        this bridge is located in the same namespace as the bridge object.
+    */
+    string source = 6;
 
-message ClusterResourceRef {
-    core.solo.io.ResourceRef resource = 1;
-    string cluster_name = 2;
+    /*
+        Target service in a different mesh to which this bridge will allow
+        traffic from the source service.
+
+        This source pointer is important as the name of this service
+        (e.g. `gloo.gloo-system.svc.cluster.local`) is translated into
+        `gloo.gloo-system.global`. Which allows is to be routed to and
+        understood by istio as being in a foreign cluster, or other
+        non-local space.
+    */
+    core.zephyr.solo.io.ClusterResourceRef target = 7;
 }

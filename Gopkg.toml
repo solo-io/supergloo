@@ -16,17 +16,17 @@
 
 [[override]]
   name = "github.com/gogo/googleapis"
-  version = "=v1.0.0"
+  version = "v1.0.0"
 
 [[override]]
-  version = "1.3.1"
+  version = "1.3.2"
   name = "github.com/golang/protobuf"
 
 [[constraint]]
   name = "github.com/solo-io/solo-kit"
   version = "0.11.9"
 
-[[override]]
+[[constraint]]
   name = "github.com/solo-io/go-utils"
   version = "0.10.21"
 
@@ -34,8 +34,14 @@
   name = "github.com/onsi/gomega"
   version = "1.5.0"
 
+
 [[override]]
-  version = "=0.8.0"
+  version = "v1.5.2"
+  name = "github.com/russross/blackfriday"
+
+
+[[override]]
+  version = "=v0.8.2"
   name = "github.com/envoyproxy/go-control-plane"
 
 # make sure all kubernetes code is the same version.
@@ -67,7 +73,7 @@
 
 [[override]]
   name = "k8s.io/helm"
-  version = "v2.12.3"
+  version = "=v2.12.3"
 
 [[override]]
   name = "github.com/go-openapi/spec"

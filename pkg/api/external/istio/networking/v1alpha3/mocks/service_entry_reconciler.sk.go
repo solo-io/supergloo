@@ -5,10 +5,11 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3 "github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	reflect "reflect"
 )
 
 // MockServiceEntryReconciler is a mock of ServiceEntryReconciler interface

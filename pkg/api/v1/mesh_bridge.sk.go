@@ -42,7 +42,8 @@ func (r *MeshBridge) Hash() uint64 {
 		r.SourceMesh,
 		r.TargetMesh,
 		r.GlooNamespace,
-		r.Sources,
+		r.Source,
+		r.Target,
 	)
 }
 

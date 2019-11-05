@@ -1,0 +1,48 @@
+{{- if not .Values.meshDiscovery.disabled }}
+{{- $image := .Values.meshDiscovery.deployment.image }}
+{{- if .Values.global  }}
+{{- $image = merge .Values.meshDiscovery.deployment.image .Values.global.image }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sm-marketplace
+    sm-marketplace: mc-mesh-discovery
+  name: mc-mesh-discovery
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.meshDiscovery.deployment.replicas }}
+  selector:
+    matchLabels:
+      sm-marketplace: mc-mesh-discovery
+  template:
+    metadata:
+      labels:
+        sm-marketplace: mc-mesh-discovery
+      {{- if .Values.meshDiscovery.deployment.stats }}
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9091"
+        prometheus.io/scrape: "true"
+      {{- end}}
+    spec:
+      serviceAccountName: mc-mesh-discovery
+      containers:
+      - image: {{template "gloo.image" $image}}
+        imagePullPolicy: {{ $image.pullPolicy }}
+        name: mc-mesh-discovery
+{{- if .Values.meshDiscovery.deployment.resources }}
+        resources:
+{{ toYaml .Values.meshDiscovery.deployment.resources | indent 10}}
+{{- end}}
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        {{- if .Values.meshDiscovery.deployment.stats }}
+          - name: START_STATS_SERVER
+            value: "true"
+        {{- end}}
+{{- end }}

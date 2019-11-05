@@ -51,6 +51,23 @@ steps:
   id: 'dep'
   waitFor: ['download-untar-dep-cache']
 
+# Helm setup steps
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: mkdir
+  args: ['-p', './_output/helm']
+  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  waitFor: ['dep']
+  id: 'make-helm-dir'
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
+  args: ['fetch-helm']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'GOPATH=/workspace/gopath'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  id: 'fetch-helm'
+  waitFor: ['dep']
+
 
 
 - name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.1.9'
@@ -63,7 +80,7 @@ steps:
   waitFor: ['dep']
   id: 'check-format'
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
   entrypoint: 'bash'
   args: ['ci/check-code-and-docs-gen.sh']
   env:
@@ -77,7 +94,7 @@ steps:
   waitFor: ['dep']
   id: 'check-code-and-docs-gen'
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
   args: ['docker']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -115,7 +132,7 @@ steps:
   waitFor: ['test']
 
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.1.8'
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
   args: ['release']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -129,6 +146,30 @@ steps:
   waitFor: ['docker-login']
   secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
   id: 'release'
+# 2) Publish helm chart, compile manifests, produce release artifacts, deploy docs
+# isolating this portion of the release in order to force the manifest to be regenerated with the tagged version
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
+  args: ['manifest',  '-B']
+  env:
+  - 'DOCKER_CONFIG=/workspace/docker-config'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'GOPATH=/workspace/gopath'
+  - 'HELM_HOME=/root/.helm' # tell helm where to find data
+  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  volumes:
+  - name: 'ssh'
+    path: /root/.ssh
+  id: 'release-chart'
+# 3) Sync helm chart data back to google storage bucket
+- name: 'gcr.io/$PROJECT_ID/go-make:0.1.12'
+  args: ['save-helm']
+  env:
+  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'GOPATH=/workspace/gopath'
+  - 'TAGGED_VERSION=$TAG_NAME'
+  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  id: 'save-helm-chart'
 
 secrets:
 - kmsKeyName: projects/gloo-ee/locations/global/keyRings/build/cryptoKeys/build-key

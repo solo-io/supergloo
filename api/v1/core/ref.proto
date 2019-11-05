@@ -1,0 +1,14 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/v1/core";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+
+
+message ClusterResourceRef {
+    core.solo.io.ResourceRef resource = 1;
+    string cluster = 2;
+}

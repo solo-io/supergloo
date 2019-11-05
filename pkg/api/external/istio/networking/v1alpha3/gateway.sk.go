@@ -165,7 +165,7 @@ func init() {
 var (
 	GatewayGVK = schema.GroupVersionKind{
 		Version: "v1alpha3",
-		Group:   "istio.networking.v1alpha3",
+		Group:   "networking.istio.io",
 		Kind:    "Gateway",
 	}
 )
