@@ -64,7 +64,7 @@ spec:
     listKind: MeshGroupList
     plural: meshgroups
     shortNames:
-    - m
+    - mg
   scope: Namespaced
   version: v1
   versions:
