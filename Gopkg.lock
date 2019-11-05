@@ -982,7 +982,7 @@
   version = "v0.10.21"
 
 [[projects]]
-  digest = "1:b14b3faf7ca55a9b4c4705a2dbcaa0ed5eaa453646e0dc2ceec955f9c392eddb"
+  digest = "1:50f1970f41d13168ed83c866e3b840fb91e855035d1df8186c4f32ee50a6c824"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -1051,8 +1051,8 @@
     "pkg/utils/protoutils",
   ]
   pruneopts = "UT"
-  revision = "cc9103f9edf34c789b31449d73fbf6f485896107"
-  version = "v0.11.9"
+  revision = "acf498079bc26a59229e9afda1e2f93491884c77"
+  version = "v0.11.10"
 
 [[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
@@ -1907,6 +1907,7 @@
     "github.com/hashicorp/go-multierror",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
+    "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
     "github.com/solo-io/gloo/install/helm/gloo/generate",
     "github.com/solo-io/gloo/projects/gloo/pkg/api/v1",
