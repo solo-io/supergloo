@@ -24,7 +24,6 @@ func main() {
 		GenDocs:            docsOpts,
 		CustomImports:      []string{"../gloo"},
 		SkipGeneratedTests: true,
-		SkipGenMocks:       true,
 	}); err != nil {
 		log.Fatalf("generate failed!: %v", err)
 	}
