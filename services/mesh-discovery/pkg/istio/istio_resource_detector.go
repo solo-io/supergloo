@@ -12,8 +12,6 @@ import (
 	sk_errors "github.com/solo-io/solo-kit/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	kubev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	batchv1client "k8s.io/client-go/kubernetes/typed/batch/v1"
 )
 
 type PilotDeployment struct {
@@ -36,7 +34,7 @@ var PostInstallJobs = []string{
 type IstioResourceDetector interface {
 	DetectPilotDeployments(ctx context.Context, deployments kubernetes.DeploymentList) []PilotDeployment
 	DetectMeshPolicyCrd(crdGetter CrdGetter, cluster string) (bool, error)
-	DetectPostInstallJobComplete(jobGetter batchv1client.JobsGetter, pilotNamespace string) (bool, error)
+	DetectPostInstallJobComplete(jobClient kubernetes.JobClient, pilotNamespace, pilotCluster string) (bool, error)
 	DetectInjectedIstioPods(ctx context.Context, pods kubernetes.PodList) injectedpods.InjectedPods
 }
 
@@ -76,16 +74,16 @@ func (i istioResourceDetector) DetectMeshPolicyCrd(crdGetter CrdGetter, cluster 
 	return false, err
 }
 
-func (i istioResourceDetector) DetectPostInstallJobComplete(jobGetter batchv1client.JobsGetter, pilotNamespace string) (bool, error) {
-	jobsList, err := jobGetter.Jobs(pilotNamespace).List(metav1.ListOptions{})
+func (i istioResourceDetector) DetectPostInstallJobComplete(jobClient kubernetes.JobClient, pilotNamespace, pilotCluster string) (bool, error) {
+	jobsList, err := jobClient.List(pilotNamespace, clients.ListOpts{Cluster: pilotCluster})
 	if err != nil {
 		return false, err
 	}
 
-	getJobFromPrefix := func(prefix string) *batchv1.Job {
-		for _, job := range jobsList.Items {
+	getJobFromPrefix := func(prefix string) *kubernetes.Job {
+		for _, job := range jobsList {
 			if strings.HasPrefix(job.Name, prefix) {
-				return &job
+				return job
 			}
 		}
 		return nil

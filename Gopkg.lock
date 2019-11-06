@@ -982,18 +982,20 @@
   version = "v0.10.21"
 
 [[projects]]
-  digest = "1:50f1970f41d13168ed83c866e3b840fb91e855035d1df8186c4f32ee50a6c824"
+  digest = "1:db3accc3a03ff4c5e2276e50cd324f2a3f31340baf1b782335c2d18d9d5f22d7"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
     "api/external/kubernetes/customresourcedefinition",
     "api/external/kubernetes/deployment",
+    "api/external/kubernetes/job",
     "api/external/kubernetes/namespace",
     "api/external/kubernetes/pod",
     "api/external/kubernetes/service",
     "api/multicluster/v1",
     "pkg/api/external/kubernetes/customresourcedefinition",
     "pkg/api/external/kubernetes/deployment",
+    "pkg/api/external/kubernetes/job",
     "pkg/api/external/kubernetes/pod",
     "pkg/api/v1/clients",
     "pkg/api/v1/clients/common",
@@ -1051,8 +1053,8 @@
     "pkg/utils/protoutils",
   ]
   pruneopts = "UT"
-  revision = "acf498079bc26a59229e9afda1e2f93491884c77"
-  version = "v0.11.10"
+  revision = "258de88787d528dfc542ad03301da5f61725c795"
+  version = "v0.11.11"
 
 [[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
@@ -1926,8 +1928,10 @@
     "github.com/solo-io/go-utils/versionutils/dep",
     "github.com/solo-io/go-utils/versionutils/git",
     "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
+    "github.com/solo-io/solo-kit/api/external/kubernetes/job",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment",
+    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/job",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
@@ -1964,10 +1968,7 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/apimachinery/pkg/types",
-    "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/kubernetes",
-    "k8s.io/client-go/kubernetes/typed/batch/v1",
     "k8s.io/client-go/rest",
   ]
   solver-name = "gps-cdcl"

@@ -8,8 +8,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"go.uber.org/zap"
 
-	batchv1client "k8s.io/client-go/kubernetes/typed/batch/v1"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -26,16 +24,15 @@ type CrdGetter interface {
 type istioDiscoveryPlugin struct {
 	meshPolicyClient v1alpha1.MeshPolicyClient
 	crdGetter        CrdGetter
-	// TODO bring this into s-k for multicluster
-	jobGetter        batchv1client.JobsGetter
+	jobClient        kubernetes.JobClient
 	resourceDetector IstioResourceDetector
 }
 
-func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient, crdGetter CrdGetter, jobGetter batchv1client.JobsGetter) v1.DiscoverySyncer {
+func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient, crdGetter CrdGetter, jobClient kubernetes.JobClient) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
-		&istioDiscoveryPlugin{meshPolicyClient: meshPolicyClient, crdGetter: crdGetter, jobGetter: jobGetter, resourceDetector: NewIstioResourceDetector()},
+		&istioDiscoveryPlugin{meshPolicyClient: meshPolicyClient, crdGetter: crdGetter, jobClient: jobClient, resourceDetector: NewIstioResourceDetector()},
 	)
 }
 
@@ -88,16 +85,15 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 
 		// ensure that the post-install jobs have run for this pilot,
 		// if not, we're not ready to detect it
-		// TODO joekelley punting on jobs for now, need multicluster jobs client in solo-kit
-		// postInstallComplete, err := p.resourceDetector.DetectPostInstallJobComplete(p.jobGetter, pilot.Namespace)
-		// if err != nil {
-		//	contextutils.LoggerFrom(ctx).Errorf("failed to detect if post-install jobs have finished: %v", err)
-		//	continue
-		// }
-		//
-		// if !postInstallComplete {
-		//	continue
-		// }
+		postInstallComplete, err := p.resourceDetector.DetectPostInstallJobComplete(p.jobClient, pilot.Namespace, pilot.Cluster)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to detect if post-install jobs have finished: %v", err)
+			continue
+		}
+
+		if !postInstallComplete {
+			continue
+		}
 
 		var autoInjectionEnabled bool
 		sidecarInjector, err := snap.Deployments.Find(pilot.Namespace, "istio-sidecar-injector")
