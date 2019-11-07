@@ -4,15 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
+	"github.com/solo-io/mesh-projects/services/internal/kube"
+	"github.com/solo-io/mesh-projects/services/internal/networking"
 	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/setup/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
 type Translator interface {
-	Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (ServiceEntriesByNamespace, error)
+	Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (v1alpha3.ServiceEntryList, error)
 }
 
 func NewMeshBridgeTranslator(clientset config.ClientSet) Translator {
@@ -28,15 +32,15 @@ type translator struct {
 type MeshBridgesByNamespace map[string]v1.MeshBridgeList
 type ServiceEntriesByNamespace map[string]v1alpha3.ServiceEntryList
 
-func (t *translator) Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (ServiceEntriesByNamespace, error) {
-	result := make(ServiceEntriesByNamespace)
+func (t *translator) Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (v1alpha3.ServiceEntryList, error) {
+	var result v1alpha3.ServiceEntryList
 	ipGen := newIpGenerator()
 	for namespace, meshBridges := range meshBridgesByNamespace {
 		serviceEntries, err := t.meshBridgesToServiceEntry(ctx, namespace, meshBridges, ipGen)
 		if err != nil {
 			return nil, err
 		}
-		result[namespace] = append(result[namespace], serviceEntries...)
+		result = append(result, serviceEntries...)
 	}
 	return result, nil
 }
@@ -46,10 +50,11 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 
 	var result []*v1alpha3.ServiceEntry
 
-	uniqueAddresses := make(map[string]*BridgesWithExits)
+	uniqueAddresses := make(map[string]*BridgeDetails)
 	for _, meshBridge := range meshBridges {
-		mesh, err := t.clientset.Mesh().Read(meshBridge.GetTargetMesh().GetResource().GetNamespace(),
-			meshBridge.GetTargetMesh().GetResource().GetName(), clients.ReadOpts{})
+		meshRef := meshBridge.GetTarget().GetMeshService().GetMesh()
+		mesh, err := t.clientset.Mesh().Read(meshRef.GetNamespace(),
+			meshRef.GetName(), clients.ReadOpts{})
 		if err != nil {
 			return nil, err
 		}
@@ -60,13 +65,38 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 			return nil, err
 		}
 
-		if bridgeWithExit, ok := uniqueAddresses[entryPoint.GetAddress()]; ok {
-			bridgeWithExit.meshBridges = append(bridgeWithExit.meshBridges, meshBridge)
-			bridgeWithExit.ports = append(bridgeWithExit.ports, entryPoint.GetPort())
+		var (
+			address string
+			port    uint32
+		)
+		switch typedIngress := entryPoint.GetIngressType().(type) {
+		case *v1.MeshIngress_Gloo:
+			clusterRestCfg, err := kube.GetKubeConfigForCluster(ctx, t.clientset.LocalClientGo(),
+				mesh.GetDiscoveryMetadata().GetCluster())
+			if err != nil {
+				return nil, err
+			}
+			address, port, err = networking.GetIngressHostAndPort(clusterRestCfg, &zephyr_core.ClusterResourceRef{
+				Resource: &core.ResourceRef{
+					Name:      typedIngress.Gloo.GetServiceName(),
+					Namespace: typedIngress.Gloo.GetNamespace(),
+				},
+				Cluster: mesh.GetDiscoveryMetadata().GetCluster(),
+			}, typedIngress.Gloo.GetPort())
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, errors.Errorf("current only gloo ingress types are supported")
+		}
+
+		if bridgeWithExit, ok := uniqueAddresses[address]; ok {
+			bridgeWithExit.meshBridges[meshBridge] = mesh.GetDiscoveryMetadata().GetCluster()
+			bridgeWithExit.ports = append(bridgeWithExit.ports, port)
 		} else {
-			uniqueAddresses[entryPoint.GetAddress()] = &BridgesWithExits{
-				meshBridges: v1.MeshBridgeList{meshBridge},
-				ports:       []uint32{entryPoint.GetPort()},
+			uniqueAddresses[address] = &BridgeDetails{
+				meshBridges: map[*v1.MeshBridge]string{meshBridge: mesh.GetDiscoveryMetadata().GetCluster()},
+				ports:       []uint32{port},
 			}
 		}
 	}
@@ -96,14 +126,16 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 					Ports:   ports,
 				},
 			},
+			// Only apply the service entry to the local namespace
+			ExportTo: []string{"."},
 		}
 		result = append(result, serviceEntry)
 	}
 	return result, nil
 }
 
-type BridgesWithExits struct {
-	meshBridges v1.MeshBridgeList
+type BridgeDetails struct {
+	meshBridges map[*v1.MeshBridge]string
 	ports       []uint32
 }
 
@@ -112,13 +144,16 @@ type UpstreamInfo struct {
 	ports []*v1alpha3.Port
 }
 
-func (t *translator) infoFromTargetServices(list v1.MeshBridgeList) (*UpstreamInfo, error) {
+func (t *translator) infoFromTargetServices(list map[*v1.MeshBridge]string) (*UpstreamInfo, error) {
 	hosts := make(map[string]bool)
 	var endpoints []*v1alpha3.Port
-	for i, bridge := range list {
-		upstream, err := t.clientset.Upstreams().Read(bridge.GetTarget().GetResource().GetNamespace(),
-			bridge.GetTarget().GetResource().GetName(), clients.ReadOpts{
-				Cluster: bridge.GetTarget().GetCluster(),
+	i := 0
+	for bridge, cluster := range list {
+		i += 1
+		upstreamRef := bridge.GetTarget().GetMeshService().GetUpstream()
+		upstream, err := t.clientset.Upstreams().Read(upstreamRef.GetNamespace(),
+			upstreamRef.GetName(), clients.ReadOpts{
+				Cluster: cluster,
 			})
 		if err != nil {
 			return nil, err
@@ -133,7 +168,7 @@ func (t *translator) infoFromTargetServices(list v1.MeshBridgeList) (*UpstreamIn
 		endpoints = append(endpoints, &v1alpha3.Port{
 			Number:   kubeUpstream.GetServicePort(),
 			Protocol: "http",
-			Name:     fmt.Sprintf("http%d", i+1),
+			Name:     fmt.Sprintf("http%d", i),
 		})
 	}
 	var result []string

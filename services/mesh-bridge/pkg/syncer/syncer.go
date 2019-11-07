@@ -46,15 +46,13 @@ func (s *networkBridgeSyncer) Sync(ctx context.Context, snapshot *v1.NetworkBrid
 	contextutils.LoggerFrom(ctx).Infow("snapshot resources", zap.Int("mesh bridges", len(snapshot.MeshBridges)))
 	var multiErr *multierror.Error
 
-	serviceEntriesByNamespace, err := s.mbTranslator.Translate(ctx, s.getMeshBridgesByNamespace(snapshot.MeshBridges))
+	serviceEntries, err := s.mbTranslator.Translate(ctx, s.getMeshBridgesByNamespace(snapshot.MeshBridges))
 	if err != nil {
 		return err
 	}
 
-	for namespace, serviceEntries := range serviceEntriesByNamespace {
-		err = s.serviceEntryReconciler.Reconcile(namespace, serviceEntries, nil, clients.ListOpts{})
-		multiErr = multierror.Append(multiErr, err)
-	}
+	err = s.serviceEntryReconciler.Reconcile("", serviceEntries, nil, clients.ListOpts{})
+	multiErr = multierror.Append(multiErr, err)
 
 	return multiErr.ErrorOrNil()
 }

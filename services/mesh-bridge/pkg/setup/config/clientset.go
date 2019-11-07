@@ -12,26 +12,62 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/clientfactory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/multicluster"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/multicluster/clustercache"
 	"github.com/solo-io/solo-kit/pkg/multicluster/handler"
 	"go.uber.org/zap"
+	client_go "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
-func NewSharedCacheManager(ctx context.Context) (clustercache.CacheGetter, error) {
-	return clustercache.NewCacheManager(ctx, kube.NewKubeSharedCacheForConfig)
+type CacheManager interface {
+	SharedCache(ctx context.Context) clustercache.CacheGetter
+	CoreCache(ctx context.Context) clustercache.CacheGetter
 }
 
-func GetInitialSettings(installNamespace string, settings *OperatorConfig) InitialSettings {
-	return InitialSettings{
+type cacheManager struct {
+	sharedCache clustercache.CacheGetter
+	coreCache   clustercache.CacheGetter
+}
+
+func NewCacheManager(ctx context.Context) (*cacheManager, error) {
+	sharedCacheGetter, err := clustercache.NewCacheManager(ctx, kube.NewKubeSharedCacheForConfig)
+	if err != nil {
+		return nil, err
+	}
+	coreCacheGetter, err := clustercache.NewCacheManager(ctx, cache.NewCoreCacheForConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &cacheManager{
+		sharedCache: sharedCacheGetter,
+		coreCache:   coreCacheGetter,
+	}, nil
+}
+
+func (c *cacheManager) SharedCache(ctx context.Context) clustercache.CacheGetter {
+	return c.sharedCache
+}
+
+func (c *cacheManager) CoreCache(ctx context.Context) clustercache.CacheGetter {
+	return c.coreCache
+}
+
+type MultiClusterGetters struct {
+	upstream handler.ClusterHandler
+}
+
+func GetInitialSettings(installNamespace string, settings *OperatorConfig) *InitialSettings {
+	return &InitialSettings{
 		InstallNamespace: "",
 		RefreshRate:      settings.RefreshRate,
 	}
 }
 
-func GetWatchNamespaces(ctx context.Context, settings InitialSettings) []string {
+func GetWatchNamespaces(ctx context.Context, settings *InitialSettings) []string {
 	return []string{settings.InstallNamespace}
 }
 
@@ -40,7 +76,7 @@ type InitialSettings struct {
 	RefreshRate      time.Duration
 }
 
-func GetWatchOpts(ctx context.Context, settings InitialSettings) clients.WatchOpts {
+func GetWatchOpts(ctx context.Context, settings *InitialSettings) clients.WatchOpts {
 	refreshRate := settings.RefreshRate
 	if settings.RefreshRate <= 0 {
 		refreshRate = time.Second
@@ -58,6 +94,8 @@ type ClientSet interface {
 	ServiceEntry() v1alpha3.ServiceEntryClient
 	Upstreams() gloov1.UpstreamClient
 	MultiClusterHandlers() []handler.ClusterHandler
+
+	LocalClientGo() client_go.Interface
 }
 
 type clientSet struct {
@@ -66,63 +104,85 @@ type clientSet struct {
 	meshIngress  v1.MeshIngressClient
 	serviceEntry v1alpha3.ServiceEntryClient
 	upstreams    gloov1.UpstreamClient
+	services     kubernetes.ServiceClient
+	pods         kubernetes.PodClient
 	mcHandlers   []handler.ClusterHandler
+
+	localKube client_go.Interface
+
+	// internal objects, used for lazy client loading
+	ctx          context.Context
+	cfg          *rest.Config
+	watchHandler multicluster.ClientForClusterHandler
+	settings     *InitialSettings
+	cacheManger  CacheManager
 }
 
 func (c *clientSet) MeshBridge() v1.MeshBridgeClient {
+	if c.meshBridge == nil {
+		c.meshBridge = MustGetMeshBridgeClient(c.ctx, c.cfg, c.settings)
+	}
 	return c.meshBridge
 }
 
 func (c *clientSet) Mesh() v1.MeshClient {
+	if c.mesh == nil {
+		c.mesh = MustGetMeshClient(c.ctx, c.cfg, c.settings)
+	}
 	return c.mesh
 }
 
 func (c *clientSet) MeshIngress() v1.MeshIngressClient {
+	if c.meshIngress == nil {
+		c.meshIngress = MustGetMeshIngressClient(c.ctx, c.cfg, c.settings)
+	}
 	return c.meshIngress
 }
 
 func (c *clientSet) ServiceEntry() v1alpha3.ServiceEntryClient {
+	if c.serviceEntry == nil {
+		c.serviceEntry = MustGetServiceEntryClient(c.ctx, c.cfg, c.settings)
+	}
 	return c.serviceEntry
 }
 
 func (c *clientSet) Upstreams() gloov1.UpstreamClient {
+	if c.upstreams == nil {
+		usClient, usHandler := MustGetUpstreamClient(c.ctx, c.cacheManger.SharedCache(c.ctx), c.settings)
+		c.upstreams = usClient
+		c.mcHandlers = append(c.mcHandlers, usHandler)
+	}
 	return c.upstreams
 }
 
+func (c *clientSet) LocalClientGo() client_go.Interface {
+	if c.localKube == nil {
+		c.localKube = client_go.NewForConfigOrDie(c.cfg)
+	}
+	return c.localKube
+}
+
 func (c *clientSet) MultiClusterHandlers() []handler.ClusterHandler {
+	// TODO(EItanya): figure out a way to lazy load multi cluster clients
 	return c.mcHandlers
 }
 
-func NewClientSet(
-	meshBridge v1.MeshBridgeClient,
-	mesh v1.MeshClient,
-	meshIngress v1.MeshIngressClient,
-	serviceEntry v1alpha3.ServiceEntryClient,
-	upstreams gloov1.UpstreamClient) ClientSet {
-	return &clientSet{
-		meshBridge:   meshBridge,
-		mesh:         mesh,
-		meshIngress:  meshIngress,
-		serviceEntry: serviceEntry,
-		upstreams:    upstreams,
-	}
-}
+func MustGetClientSet(ctx context.Context, cm CacheManager, cfg *rest.Config,
+	watchHandler multicluster.ClientForClusterHandler, settings *InitialSettings) ClientSet {
 
-func MustGetClientSet(ctx context.Context, sharedCacheGetter clustercache.CacheGetter, cfg *rest.Config,
-	watchHandler multicluster.ClientForClusterHandler, settings InitialSettings) ClientSet {
-
-	upstreamClient, upstreamHandler := MustGetUpstreamClient(ctx, sharedCacheGetter, cfg, watchHandler, settings)
+	upstreamClient, upstreamGetter := MustGetUpstreamClient(ctx, cm.SharedCache(ctx), settings)
 	return &clientSet{
-		meshBridge:   MustGetMeshBridgeClient(ctx, cfg, settings),
-		serviceEntry: MustGetServiceEntryClient(ctx, cfg, settings),
-		mesh:         MustGetMeshClient(ctx, cfg, settings),
-		meshIngress:  MustGetMeshIngressClient(ctx, cfg, settings),
+		ctx:          ctx,
+		cfg:          cfg,
+		watchHandler: watchHandler,
+		settings:     settings,
+		cacheManger:  cm,
 		upstreams:    upstreamClient,
-		mcHandlers:   []handler.ClusterHandler{upstreamHandler},
+		mcHandlers:   []handler.ClusterHandler{upstreamGetter},
 	}
 }
 
-func MustGetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) v1.MeshBridgeClient {
+func MustGetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1.MeshBridgeClient {
 	client, err := GetMeshBridgeClient(ctx, cfg, settings)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Fatalw("unable to get Mesh bridge client")
@@ -130,7 +190,7 @@ func MustGetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings Ini
 	return client
 }
 
-func GetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) (v1.MeshBridgeClient, error) {
+func GetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) (v1.MeshBridgeClient, error) {
 	skipCrdCreation := true
 	namespaceWhitelist := []string{settings.InstallNamespace}
 	contextutils.LoggerFrom(ctx).Infow("Getting Mesh bridge client",
@@ -153,7 +213,7 @@ func GetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings Initial
 	return client, nil
 }
 
-func MustGetMeshClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) v1.MeshClient {
+func MustGetMeshClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1.MeshClient {
 	client, err := GetMeshClient(ctx, cfg, settings)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Fatalw("unable to get Mesh bridge client")
@@ -161,7 +221,7 @@ func MustGetMeshClient(ctx context.Context, cfg *rest.Config, settings InitialSe
 	return client
 }
 
-func GetMeshClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) (v1.MeshClient, error) {
+func GetMeshClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) (v1.MeshClient, error) {
 	skipCrdCreation := true
 	namespaceWhitelist := []string{settings.InstallNamespace}
 	contextutils.LoggerFrom(ctx).Infow("Getting mesh client",
@@ -184,7 +244,7 @@ func GetMeshClient(ctx context.Context, cfg *rest.Config, settings InitialSettin
 	return client, nil
 }
 
-func MustGetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) v1.MeshIngressClient {
+func MustGetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1.MeshIngressClient {
 	client, err := GetMeshIngressClient(ctx, cfg, settings)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Fatalw("unable to get Mesh bridge client")
@@ -192,7 +252,7 @@ func MustGetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings In
 	return client
 }
 
-func GetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) (v1.MeshIngressClient, error) {
+func GetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) (v1.MeshIngressClient, error) {
 	skipCrdCreation := true
 	namespaceWhitelist := []string{settings.InstallNamespace}
 	contextutils.LoggerFrom(ctx).Infow("Getting Mesh ingress client",
@@ -215,7 +275,7 @@ func GetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings Initia
 	return meshClient, nil
 }
 
-func MustGetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) v1alpha3.ServiceEntryClient {
+func MustGetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1alpha3.ServiceEntryClient {
 	serviceEntryClient, err := GetServiceEntryClient(ctx, cfg, settings)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Fatalw("unable to get service entry client")
@@ -223,7 +283,7 @@ func MustGetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings I
 	return serviceEntryClient
 }
 
-func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings InitialSettings) (v1alpha3.ServiceEntryClient, error) {
+func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) (v1alpha3.ServiceEntryClient, error) {
 	skipCrdCreation := true
 	namespaceWhitelist := []string{settings.InstallNamespace}
 	contextutils.LoggerFrom(ctx).Infow("Getting Mesh bridge client",
@@ -246,17 +306,17 @@ func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings Initi
 	return serviceEntryClient, nil
 }
 
-func MustGetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter, cfg *rest.Config,
-	watchHandler multicluster.ClientForClusterHandler, settings InitialSettings) (gloov1.UpstreamClient, handler.ClusterHandler) {
-	upstreamClient, handler, err := GetUpstreamClient(ctx, sharedCacheGetter, cfg, watchHandler, settings)
+func MustGetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter,
+	settings *InitialSettings) (gloov1.UpstreamClient, handler.ClusterHandler) {
+	upstreamClient, handler, err := GetUpstreamClient(ctx, sharedCacheGetter, settings)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Fatalw("unable to get upstream client")
 	}
 	return upstreamClient, handler
 }
 
-func GetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter, cfg *rest.Config,
-	watchHandler multicluster.ClientForClusterHandler, settings InitialSettings) (gloov1.UpstreamClient, handler.ClusterHandler, error) {
+func GetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter,
+	settings *InitialSettings) (gloov1.UpstreamClient, handler.ClusterHandler, error) {
 	skipCrdCreation := true
 	namespaceWhitelist := []string{settings.InstallNamespace}
 	upstreamClientFactory := clientfactory.NewKubeResourceClientFactory(sharedCacheGetter,

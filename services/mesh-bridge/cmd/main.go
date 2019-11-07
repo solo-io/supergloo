@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	if err := run(); err != nil {
 		log.Fatalf("err in main: %v", err.Error())
 	}

@@ -22,16 +22,22 @@ type OperatorConfig struct {
 }
 
 func GetOperatorConfig(ctx context.Context, configMapClient configutils.ConfigMapClient, configMapNamespace string) (*OperatorConfig, error) {
-	contextutils.LoggerFrom(ctx).Infow("Getting operator config",
+	contextutils.LoggerFrom(ctx).Debugw("Getting operator config",
 		zap.String("namespace", configMapNamespace))
+
+	data := make(map[string]string)
 	configMap, err := configMapClient.GetConfigMap(ctx, configMapNamespace, OperatorConfigMapName)
 	if err != nil {
-		return nil, err
+		contextutils.LoggerFrom(ctx).Debugw("Operator config map could not be found, using defaults",
+			zap.String("namespace", configMapNamespace))
+
+	} else {
+		if configMap.Data != nil {
+			data = configMap.Data
+		}
 	}
-	if configMap.Data == nil {
-		configMap.Data = make(map[string]string)
-	}
-	refreshRate, err := getRefreshRate(ctx, configMap.Data)
+
+	refreshRate, err := getRefreshRate(ctx, data)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +47,7 @@ func GetOperatorConfig(ctx context.Context, configMapClient configutils.ConfigMa
 }
 
 func getRefreshRate(ctx context.Context, data map[string]string) (time.Duration, error) {
-	contextutils.LoggerFrom(ctx).Infow("Getting refresh rate",
+	contextutils.LoggerFrom(ctx).Debugw("Getting refresh rate",
 		zap.Any("data", data),
 		zap.String("key", RefreshRateKey),
 		zap.Int64("default", DefaultRefreshRate.Nanoseconds()))

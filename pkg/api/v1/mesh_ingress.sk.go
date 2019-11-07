@@ -39,8 +39,7 @@ func (r *MeshIngress) Hash() uint64 {
 	// investigate zeroing out owner refs as well
 	return hashutils.HashAll(
 		metaCopy,
-		r.Address,
-		r.Port,
+		r.IngressType,
 	)
 }
 

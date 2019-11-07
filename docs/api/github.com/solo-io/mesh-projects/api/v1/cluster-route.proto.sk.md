@@ -12,6 +12,9 @@ weight: 5
 
 
 - [MeshBridge](#meshbridge) **Top-Level Resource**
+- [Target](#target)
+- [Source](#source)
+- [MeshService](#meshservice)
   
 
 
@@ -30,11 +33,8 @@ weight: 5
 ```yaml
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
-"sourceMesh": .core.zephyr.solo.io.ClusterResourceRef
-"targetMesh": .core.zephyr.solo.io.ClusterResourceRef
-"glooNamespace": string
-"source": string
-"target": .core.zephyr.solo.io.ClusterResourceRef
+"source": .zephyr.solo.io.Source
+"target": .zephyr.solo.io.Target
 
 ```
 
@@ -42,11 +42,75 @@ weight: 5
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by gloo during validation. |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
-| `sourceMesh` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | Source mesh from which to create the bridge. |  |
-| `targetMesh` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | Target mesh to which the bridge will be pointing. |  |
-| `glooNamespace` | `string` | Namespace in which to find gloo in the target mesh cluster. |  |
-| `source` | `string` | Source service which will be using the bridge. Currently a string as it assumes that the service which will need this bridge is located in the same namespace as the bridge object. |  |
-| `target` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | Target service in a different mesh to which this bridge will allow traffic from the source service. This source pointer is important as the name of this service (e.g. `gloo.gloo-system.svc.cluster.local`) is translated into `gloo.gloo-system.global`. Which allows is to be routed to and understood by istio as being in a foreign cluster, or other non-local space. |  |
+| `source` | [.zephyr.solo.io.Source](../cluster-route.proto.sk/#source) | Source mesh, service from which to create the bridge. |  |
+| `target` | [.zephyr.solo.io.Target](../cluster-route.proto.sk/#target) | Target mesh, service to which the bridge will be pointing. |  |
+
+
+
+
+---
+### Target
+
+ 
+Target service in a different mesh to which this bridge will allow
+traffic from the source service.
+
+This source pointer is important as the name of this service
+(e.g. `gloo.gloo-system.svc.cluster.local`) is translated into
+`gloo.gloo-system.global`. Which allows is to be routed to and
+understood by istio as being in a foreign cluster, or other
+non-local space.
+
+The cluster of this target is assumed to be the same as the
+one found in the discovery metedata of the mesh object.
+
+```yaml
+"meshService": .zephyr.solo.io.MeshService
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `meshService` | [.zephyr.solo.io.MeshService](../cluster-route.proto.sk/#meshservice) |  |  |
+
+
+
+
+---
+### Source
+
+ 
+Source service which will be using the bridge.
+Currently a string as it assumes that the service which will need
+this bridge is located in the same namespace as the bridge object.
+
+```yaml
+"meshService": .zephyr.solo.io.MeshService
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `meshService` | [.zephyr.solo.io.MeshService](../cluster-route.proto.sk/#meshservice) |  |  |
+
+
+
+
+---
+### MeshService
+
+
+
+```yaml
+"mesh": .core.solo.io.ResourceRef
+"upstream": .core.solo.io.ResourceRef
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `mesh` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | mesh which the service is associated with. |  |
+| `upstream` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | service on the mesh. |  |
 
 
 

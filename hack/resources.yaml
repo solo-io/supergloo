@@ -1,24 +1,38 @@
 apiVersion: zephyr.solo.io/v1
 kind: MeshIngress
 metadata:
-  name: one
+  name: linkerd-gloo-ingress
   namespace: bookinfo
 spec:
-  address: 35.222.131.57
-  port: 8000
+  gloo:
+    namespace: gloo-system
+    serviceName: gateway-proxy-v2
+    port: mesh-bridge
 
 ---
 
 apiVersion: zephyr.solo.io/v1
 kind: Mesh
 metadata:
-  name: one
+  name: linkerd
   namespace: bookinfo
 spec:
+  discoveryMetadata:
+    cluster: linkerd-mesh-bridge
   entryPoint:
     resource:
-      name: one
+      name: linkerd-gloo-ingress
       namespace: bookinfo
+
+---
+
+
+apiVersion: zephyr.solo.io/v1
+kind: Mesh
+metadata:
+  name: istio
+  namespace: bookinfo
+
 
 ---
 
@@ -28,15 +42,22 @@ metadata:
   name: one
   namespace: bookinfo
 spec:
-  targetMesh:
-    resource:
-      name: one
-      namespace: bookinfo
   target:
-    resource:
-      name: bookinfo-details-v1-9080
-      namespace: gloo-system
-    cluster: linkerd-mesh-bridge
+    meshService:
+      mesh:
+        name: linkerd
+        namespace: bookinfo
+      upstream:
+        name: bookinfo-details-v1-9080
+        namespace: gloo-system
+  source:
+    meshService:
+      mesh:
+        name: istio
+        namespace: bookinfo
+      upstream:
+        name: bookinfo-productpage-v1-9080
+        namespace: gloo-system
 
 ---
 # Copyright 2017 Istio Authors
@@ -60,13 +81,11 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: sleep
-  namespace: bookinfo
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: sleep
-  namespace: bookinfo
   labels:
     app: sleep
 spec:
@@ -80,7 +99,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sleep
-  namespace: bookinfo
 spec:
   replicas: 1
   selector:

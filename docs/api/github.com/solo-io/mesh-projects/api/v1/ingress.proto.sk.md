@@ -12,6 +12,7 @@ weight: 5
 
 
 - [MeshIngress](#meshingress) **Top-Level Resource**
+- [GlooIngress](#glooingress)
   
 
 
@@ -32,8 +33,7 @@ for services in a Mesh managed by SuperGloo
 ```yaml
 "status": .core.solo.io.Status
 "metadata": .core.solo.io.Metadata
-"address": string
-"port": int
+"gloo": .zephyr.solo.io.MeshIngress.GlooIngress
 
 ```
 
@@ -41,8 +41,28 @@ for services in a Mesh managed by SuperGloo
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation. |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
-| `address` | `string` | Public address by which this entry point can be reached Must be either DNS or a valid IP. |  |
-| `port` | `int` |  |  |
+| `gloo` | [.zephyr.solo.io.MeshIngress.GlooIngress](../ingress.proto.sk/#glooingress) |  |  |
+
+
+
+
+---
+### GlooIngress
+
+
+
+```yaml
+"namespace": string
+"serviceName": string
+"port": string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `namespace` | `string` | namespace which the ingress is located in. |  |
+| `serviceName` | `string` |  |  |
+| `port` | `string` | name of port which will be used for mesh traffic. |  |
 
 
 

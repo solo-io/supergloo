@@ -58,11 +58,10 @@ var _ = Describe("ConfigTest", func() {
 		Expect(*actual).To(BeEquivalentTo(expected))
 	})
 
-	It("errors from client error", func() {
+	It("does not error from client error", func() {
 		expectedErr := errors.Errorf("Dummy error")
 		client := getMockClient(nil, expectedErr)
 		_, err := config.GetOperatorConfig(context.TODO(), client, "test-namespace")
-		Expect(err).To(HaveOccurred())
-		Expect(err).To(BeEquivalentTo(expectedErr))
+		Expect(err).NotTo(HaveOccurred())
 	})
 })

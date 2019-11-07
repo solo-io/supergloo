@@ -20,14 +20,22 @@ message MeshIngress {
 
     // Status indicates the validation status of this resource.
     // Status is read-only by clients, and set by supergloo during validation
-    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+    core.solo.io.Status status = 1 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
 
     // Metadata contains the object metadata for this resource
-    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+    core.solo.io.Metadata metadata = 2 [(gogoproto.nullable) = false];
 
-    // Public address by which this entry point can be reached
-    // Must be either DNS or a valid IP
-    string address = 3;
+    message GlooIngress {
+        // namespace which the ingress is located in.
+        string namespace = 1;
 
-    uint32 port = 4;
+        string service_name = 2;
+
+        // name of port which will be used for mesh traffic.
+        string port = 3;
+    }
+
+    oneof ingress_type {
+        GlooIngress gloo = 3;
+    }
 }

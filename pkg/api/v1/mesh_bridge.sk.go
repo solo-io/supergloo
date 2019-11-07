@@ -39,9 +39,6 @@ func (r *MeshBridge) Hash() uint64 {
 	// investigate zeroing out owner refs as well
 	return hashutils.HashAll(
 		metaCopy,
-		r.SourceMesh,
-		r.TargetMesh,
-		r.GlooNamespace,
 		r.Source,
 		r.Target,
 	)

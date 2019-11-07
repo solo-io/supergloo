@@ -50,12 +50,12 @@ func MustInitializeMeshBridge(ctx context.Context) (*RunOpts, error) {
 	}
 	initialSettings := config.GetInitialSettings(podNamespace, operatorConfig)
 	watchAggregator := wrapper.NewWatchAggregator()
-	cacheGetter, err := config.NewSharedCacheManager(ctx)
+	clientForClusterHandler := mcutils.NewClientForClusterHandler(watchAggregator)
+	cacheManager, err := config.NewCacheManager(ctx)
 	if err != nil {
 		return nil, err
 	}
-	clientForClusterHandler := mcutils.NewClientForClusterHandler(watchAggregator)
-	clientSet := config.MustGetClientSet(ctx, cacheGetter, restConfig, clientForClusterHandler, initialSettings)
+	clientSet := config.MustGetClientSet(ctx, cacheManager, restConfig, clientForClusterHandler, initialSettings)
 	networkBridgeEmitter := v1.NewNetworkBridgeEmitter(clientSet.MeshBridge())
 	translatorTranslator := translator.NewMeshBridgeTranslator(clientSet)
 	serviceEntryReconciler := v1alpha3.NewServiceEntryReconciler(clientSet.ServiceEntry())
