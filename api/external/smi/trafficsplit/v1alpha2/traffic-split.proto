@@ -1,5 +1,5 @@
 syntax = "proto3";
-package smi.trafficsplit.v1alpha1;
+package smi.trafficsplit.v1alpha2;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/external/smi/trafficsplit/v1alpha2";
 
 import "gogoproto/gogo.proto";

@@ -1,6 +1,6 @@
 {
   "title": "",
-  "name": "smi.trafficsplit.v1alpha1",
+  "name": "smi.trafficsplit.v1alpha2",
   "version": "v1alpha2",
   "docs_dir": "",
   "crd_group_override": "split.smi-spec.io",
@@ -8,7 +8,7 @@
     "split.smi-spec.io": [
       {
         "name": "TrafficSplit",
-        "package": "smi.trafficsplit.v1alpha1",
+        "package": "smi.trafficsplit.v1alpha2",
         "version": "v1alpha2"
       }
     ]
