@@ -16,6 +16,7 @@ type DiscoverySnapshot struct {
 	Pods        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList
 	Upstreams   gloo_solo_io.UpstreamList
 	Deployments github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList
+	Tlssecrets  TlsSecretList
 }
 
 func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
@@ -23,6 +24,7 @@ func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 		Pods:        s.Pods.Clone(),
 		Upstreams:   s.Upstreams.Clone(),
 		Deployments: s.Deployments.Clone(),
+		Tlssecrets:  s.Tlssecrets.Clone(),
 	}
 }
 
@@ -31,6 +33,7 @@ func (s DiscoverySnapshot) Hash() uint64 {
 		s.hashPods(),
 		s.hashUpstreams(),
 		s.hashDeployments(),
+		s.hashTlssecrets(),
 	)
 }
 
@@ -46,11 +49,16 @@ func (s DiscoverySnapshot) hashDeployments() uint64 {
 	return hashutils.HashAll(s.Deployments.AsInterfaces()...)
 }
 
+func (s DiscoverySnapshot) hashTlssecrets() uint64 {
+	return hashutils.HashAll(s.Tlssecrets.AsInterfaces()...)
+}
+
 func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("pods", s.hashPods()))
 	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
 	fields = append(fields, zap.Uint64("deployments", s.hashDeployments()))
+	fields = append(fields, zap.Uint64("tlssecrets", s.hashTlssecrets()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
@@ -60,6 +68,7 @@ type DiscoverySnapshotStringer struct {
 	Pods        []string
 	Upstreams   []string
 	Deployments []string
+	Tlssecrets  []string
 }
 
 func (ss DiscoverySnapshotStringer) String() string {
@@ -80,6 +89,11 @@ func (ss DiscoverySnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
+	s += fmt.Sprintf("  Tlssecrets %v\n", len(ss.Tlssecrets))
+	for _, name := range ss.Tlssecrets {
+		s += fmt.Sprintf("    %v\n", name)
+	}
+
 	return s
 }
 
@@ -89,5 +103,6 @@ func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
 		Pods:        s.Pods.NamespacesDotNames(),
 		Upstreams:   s.Upstreams.NamespacesDotNames(),
 		Deployments: s.Deployments.NamespacesDotNames(),
+		Tlssecrets:  s.Tlssecrets.NamespacesDotNames(),
 	}
 }

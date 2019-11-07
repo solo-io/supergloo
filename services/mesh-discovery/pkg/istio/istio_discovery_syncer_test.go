@@ -68,7 +68,6 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
-	// TODO restore support for jobs
 	Context("pilot present, istio crds registered, job not complete", func() {
 		var snap *v1.DiscoverySnapshot
 		BeforeEach(func() {
@@ -182,20 +181,19 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 						expectedMesh(true, false, false, nil)))
 				})
 			})
-			// TODO restore tls secrets
-			//Context("cacerts present", func() {
-			//	BeforeEach(func() {
-			//		snap.Tlssecrets = v1.TlsSecretList{{Metadata: core.Metadata{Name: "cacerts", Namespace: "istio-system"}}}
-			//	})
-			//	It("sets mtls enabled true", func() {
-			//		err := istioDiscovery.Sync(context.TODO(), snap)
-			//		Expect(err).NotTo(HaveOccurred())
-			//		Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			//		Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-			//		Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
-			//			expectedMesh(true, false, false, &core.ResourceRef{Name: "cacerts", Namespace: "istio-system"})))
-			//	})
-			//})
+			Context("cacerts present", func() {
+				BeforeEach(func() {
+					snap.Tlssecrets = v1.TlsSecretList{{Metadata: core.Metadata{Name: "cacerts", Namespace: "istio-system"}}}
+				})
+				It("sets mtls enabled true", func() {
+					err := istioDiscovery.Sync(context.TODO(), snap)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
+					Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
+					Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+						expectedMesh(true, false, false, &core.ResourceRef{Name: "cacerts", Namespace: "istio-system"})))
+				})
+			})
 
 		})
 		Context("sidecar injector deployed", func() {

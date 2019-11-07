@@ -46,7 +46,7 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	logger.Infow("begin sync",
 		zap.Int("Upstreams", len(snap.Upstreams)),
 		zap.Int("Deployments", len(snap.Deployments)),
-		//zap.Int("Tlssecrets", len(snap.Tlssecrets)),
+		zap.Int("Tlssecrets", len(snap.Tlssecrets)),
 		zap.Int("Pods", len(snap.Pods)),
 	)
 	defer logger.Infow("end sync")

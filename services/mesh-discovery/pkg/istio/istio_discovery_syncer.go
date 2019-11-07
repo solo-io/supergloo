@@ -49,7 +49,6 @@ func (p *istioDiscoveryPlugin) DiscoveryLabels() map[string]string {
 }
 
 func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
-	// for every pilot, do the following
 	pilots := p.resourceDetector.DetectPilotDeployments(ctx, snap.Deployments)
 
 	if len(pilots) == 0 {
@@ -57,6 +56,8 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 	}
 
 	injectedPods := p.resourceDetector.DetectInjectedIstioPods(ctx, snap.Pods)
+
+	byCluster := snapShotByCluster(snap)
 
 	var istioMeshes v1.MeshList
 	for _, pilot := range pilots {
@@ -96,25 +97,24 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 		}
 
 		var autoInjectionEnabled bool
-		sidecarInjector, err := snap.Deployments.Find(pilot.Namespace, "istio-sidecar-injector")
+		sidecarInjector, err := byCluster[pilot.Cluster].Deployments.Find(pilot.Namespace, "istio-sidecar-injector")
 		if err == nil && (sidecarInjector.Spec.Replicas == nil || *sidecarInjector.Spec.Replicas > 0) {
 			autoInjectionEnabled = true
 		}
 
 		var smiEnabled bool
-		smiAdapter, err := snap.Deployments.Find(pilot.Namespace, "smi-adapter-istio")
+		smiAdapter, err := byCluster[pilot.Cluster].Deployments.Find(pilot.Namespace, "smi-adapter-istio")
 		if err == nil && (smiAdapter.Spec.Replicas == nil || *smiAdapter.Spec.Replicas > 0) {
 			smiEnabled = true
 		}
 
 		// https://istio.io/docs/tasks/security/plugin-ca-cert/#plugging-in-the-existing-certificate-and-key
 		var rootCa *core.ResourceRef
-		// TODO joekelley support TLS secrets
-		// customRootCa, err := snap.Tlssecrets.Find(pilot.Namespace, "cacerts")
-		// if err == nil {
-		//	root := customRootCa.Metadata.Ref()
-		//	rootCa = &root
-		// }
+		customRootCa, err := byCluster[pilot.Cluster].Tlssecrets.Find(pilot.Namespace, "cacerts")
+		if err == nil {
+			root := customRootCa.Metadata.Ref()
+			rootCa = &root
+		}
 
 		var mtlsConfig *v1.MtlsConfig
 		if globalMtlsEnabled {
@@ -159,4 +159,33 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 	}
 
 	return istioMeshes, nil
+}
+
+// TODO extract utils like this into solo-kit and test them
+func snapShotByCluster(snap *v1.DiscoverySnapshot) map[string]*v1.DiscoverySnapshot {
+	snapByCluster := make(map[string]*v1.DiscoverySnapshot)
+
+	createIfNeedBe := func(cluster string) {
+		if snapByCluster[cluster] == nil {
+			snapByCluster[cluster] = &v1.DiscoverySnapshot{}
+		}
+	}
+
+	for _, p := range snap.Pods {
+		createIfNeedBe(p.GetMetadata().Cluster)
+		snapByCluster[p.GetMetadata().Cluster].Pods = append(snapByCluster[p.GetMetadata().Cluster].Pods, p)
+	}
+	for _, u := range snap.Upstreams {
+		createIfNeedBe(u.GetMetadata().Cluster)
+		snapByCluster[u.GetMetadata().Cluster].Upstreams = append(snapByCluster[u.GetMetadata().Cluster].Upstreams, u)
+	}
+	for _, d := range snap.Deployments {
+		createIfNeedBe(d.GetMetadata().Cluster)
+		snapByCluster[d.GetMetadata().Cluster].Deployments = append(snapByCluster[d.GetMetadata().Cluster].Deployments, d)
+	}
+	for _, t := range snap.Tlssecrets {
+		createIfNeedBe(t.GetMetadata().Cluster)
+		snapByCluster[t.GetMetadata().Cluster].Tlssecrets = append(snapByCluster[t.GetMetadata().Cluster].Tlssecrets, t)
+	}
+	return snapByCluster
 }

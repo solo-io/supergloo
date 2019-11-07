@@ -84,17 +84,19 @@ type DiscoveryEmitter interface {
 	Pod() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	Upstream() gloo_solo_io.UpstreamClient
 	Deployment() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient
+	TlsSecret() TlsSecretClient
 }
 
-func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient) DiscoveryEmitter {
-	return NewDiscoveryEmitterWithEmit(podClient, upstreamClient, deploymentClient, make(chan struct{}))
+func NewDiscoveryEmitter(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient, tlsSecretClient TlsSecretClient) DiscoveryEmitter {
+	return NewDiscoveryEmitterWithEmit(podClient, upstreamClient, deploymentClient, tlsSecretClient, make(chan struct{}))
 }
 
-func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient, emit <-chan struct{}) DiscoveryEmitter {
+func NewDiscoveryEmitterWithEmit(podClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient, upstreamClient gloo_solo_io.UpstreamClient, deploymentClient github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient, tlsSecretClient TlsSecretClient, emit <-chan struct{}) DiscoveryEmitter {
 	return &discoveryEmitter{
 		pod:        podClient,
 		upstream:   upstreamClient,
 		deployment: deploymentClient,
+		tlsSecret:  tlsSecretClient,
 		forceEmit:  emit,
 	}
 }
@@ -104,6 +106,7 @@ type discoveryEmitter struct {
 	pod        github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodClient
 	upstream   gloo_solo_io.UpstreamClient
 	deployment github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient
+	tlsSecret  TlsSecretClient
 }
 
 func (c *discoveryEmitter) Register() error {
@@ -114,6 +117,9 @@ func (c *discoveryEmitter) Register() error {
 		return err
 	}
 	if err := c.deployment.Register(); err != nil {
+		return err
+	}
+	if err := c.tlsSecret.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -129,6 +135,10 @@ func (c *discoveryEmitter) Upstream() gloo_solo_io.UpstreamClient {
 
 func (c *discoveryEmitter) Deployment() github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentClient {
 	return c.deployment
+}
+
+func (c *discoveryEmitter) TlsSecret() TlsSecretClient {
+	return c.tlsSecret
 }
 
 func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *DiscoverySnapshot, <-chan error, error) {
@@ -171,6 +181,14 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 	deploymentChan := make(chan deploymentListWithNamespace)
 
 	var initialDeploymentList github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList
+	/* Create channel for TlsSecret */
+	type tlsSecretListWithNamespace struct {
+		list      TlsSecretList
+		namespace string
+	}
+	tlsSecretChan := make(chan tlsSecretListWithNamespace)
+
+	var initialTlsSecretList TlsSecretList
 
 	currentSnapshot := DiscoverySnapshot{}
 
@@ -229,6 +247,24 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, deploymentErrs, namespace+"-deployments")
 		}(namespace)
+		/* Setup namespaced watch for TlsSecret */
+		{
+			tlssecrets, err := c.tlsSecret.List(namespace, clients.ListOpts{Ctx: opts.Ctx, Selector: opts.Selector})
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "initial TlsSecret list")
+			}
+			initialTlsSecretList = append(initialTlsSecretList, tlssecrets...)
+		}
+		tlsSecretNamespacesChan, tlsSecretErrs, err := c.tlsSecret.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting TlsSecret watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, tlsSecretErrs, namespace+"-tlssecrets")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -254,6 +290,12 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 						return
 					case deploymentChan <- deploymentListWithNamespace{list: deploymentList, namespace: namespace}:
 					}
+				case tlsSecretList := <-tlsSecretNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case tlsSecretChan <- tlsSecretListWithNamespace{list: tlsSecretList, namespace: namespace}:
+					}
 				}
 			}
 		}(namespace)
@@ -264,6 +306,8 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 	currentSnapshot.Upstreams = initialUpstreamList.Sort()
 	/* Initialize snapshot for Deployments */
 	currentSnapshot.Deployments = initialDeploymentList.Sort()
+	/* Initialize snapshot for Tlssecrets */
+	currentSnapshot.Tlssecrets = initialTlsSecretList.Sort()
 
 	snapshots := make(chan *DiscoverySnapshot)
 	go func() {
@@ -291,6 +335,7 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 		podsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.PodList)
 		upstreamsByNamespace := make(map[string]gloo_solo_io.UpstreamList)
 		deploymentsByNamespace := make(map[string]github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes.DeploymentList)
+		tlssecretsByNamespace := make(map[string]TlsSecretList)
 
 		for {
 			record := func() { stats.Record(ctx, mDiscoverySnapshotIn.M(1)) }
@@ -363,6 +408,25 @@ func (c *discoveryEmitter) Snapshots(watchNamespaces []string, opts clients.Watc
 					deploymentList = append(deploymentList, deployments...)
 				}
 				currentSnapshot.Deployments = deploymentList.Sort()
+			case tlsSecretNamespacedList := <-tlsSecretChan:
+				record()
+
+				namespace := tlsSecretNamespacedList.namespace
+
+				skstats.IncrementResourceCount(
+					ctx,
+					namespace,
+					"tls_secret",
+					mDiscoveryResourcesIn,
+				)
+
+				// merge lists by namespace
+				tlssecretsByNamespace[namespace] = tlsSecretNamespacedList.list
+				var tlsSecretList TlsSecretList
+				for _, tlssecrets := range tlssecretsByNamespace {
+					tlsSecretList = append(tlsSecretList, tlssecrets...)
+				}
+				currentSnapshot.Tlssecrets = tlsSecretList.Sort()
 			}
 		}
 	}()

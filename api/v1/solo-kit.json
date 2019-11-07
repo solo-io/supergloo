@@ -19,6 +19,10 @@
       {
         "name": "Deployment",
         "package": "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
+      },
+      {
+        "name": "TlsSecret",
+        "package": "zephyr.solo.io"
       }
     ],
     "network_bridge.zephyr.solo.io": [

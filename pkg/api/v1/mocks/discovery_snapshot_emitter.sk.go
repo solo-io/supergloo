@@ -147,3 +147,17 @@ func (mr *MockDiscoveryEmitterMockRecorder) Deployment() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deployment", reflect.TypeOf((*MockDiscoveryEmitter)(nil).Deployment))
 }
+
+// TlsSecret mocks base method
+func (m *MockDiscoveryEmitter) TlsSecret() v10.TlsSecretClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TlsSecret")
+	ret0, _ := ret[0].(v10.TlsSecretClient)
+	return ret0
+}
+
+// TlsSecret indicates an expected call of TlsSecret
+func (mr *MockDiscoveryEmitterMockRecorder) TlsSecret() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TlsSecret", reflect.TypeOf((*MockDiscoveryEmitter)(nil).TlsSecret))
+}
