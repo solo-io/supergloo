@@ -982,7 +982,7 @@
   version = "v0.10.21"
 
 [[projects]]
-  digest = "1:b6bdcc5f9c12e7150722268bfb395968a5b4508b65d036e93973085402d862b2"
+  digest = "1:db3accc3a03ff4c5e2276e50cd324f2a3f31340baf1b782335c2d18d9d5f22d7"
   name = "github.com/solo-io/solo-kit"
   packages = [
     "api/external/kubernetes/configmap",
@@ -997,7 +997,6 @@
     "pkg/api/external/kubernetes/deployment",
     "pkg/api/external/kubernetes/job",
     "pkg/api/external/kubernetes/pod",
-    "pkg/api/external/kubernetes/service",
     "pkg/api/v1/clients",
     "pkg/api/v1/clients/common",
     "pkg/api/v1/clients/configmap",
@@ -1905,6 +1904,7 @@
     "github.com/ghodss/yaml",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
     "github.com/hashicorp/go-multierror",
     "github.com/onsi/ginkgo",
@@ -1929,11 +1929,11 @@
     "github.com/solo-io/go-utils/versionutils/git",
     "github.com/solo-io/solo-kit/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/api/external/kubernetes/job",
+    "github.com/solo-io/solo-kit/api/multicluster/v1",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/job",
     "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod",
-    "github.com/solo-io/solo-kit/pkg/api/external/kubernetes/service",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/factory",
     "github.com/solo-io/solo-kit/pkg/api/v1/clients/kube",
@@ -1954,6 +1954,8 @@
     "github.com/solo-io/solo-kit/pkg/multicluster",
     "github.com/solo-io/solo-kit/pkg/multicluster/clustercache",
     "github.com/solo-io/solo-kit/pkg/multicluster/handler",
+    "github.com/solo-io/solo-kit/pkg/multicluster/secretconverter",
+    "github.com/solo-io/solo-kit/pkg/multicluster/v1",
     "github.com/solo-io/solo-kit/pkg/stats",
     "go.opencensus.io/stats",
     "go.opencensus.io/stats/view",
@@ -1971,6 +1973,8 @@
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/tools/clientcmd",
+    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -35,6 +35,7 @@ different destinations.
 
 ```yaml
 "metadata": .core.solo.io.Metadata
+"status": .core.solo.io.Status
 "spec": .smi.trafficsplit.v1alpha1.TrafficSplitSpec
 
 ```
@@ -42,6 +43,7 @@ different destinations.
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by controllers during validation. |  |
 | `spec` | [.smi.trafficsplit.v1alpha1.TrafficSplitSpec](../traffic-split.proto.sk/#trafficsplitspec) | More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status +optional. |  |
 
 

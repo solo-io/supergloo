@@ -48,7 +48,7 @@ Access is controlled via referenced TrafficSpecs and by a list of source service
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by controllers during validation. |  |
 | `destination` | [.smi.traffictarget.v1alpha1.IdentityBindingSubject](../traffic-target.proto.sk/#identitybindingsubject) | Destination is the pod or group of pods to allow ingress traffic. |  |
 | `sources` | [[]smi.traffictarget.v1alpha1.IdentityBindingSubject](../traffic-target.proto.sk/#identitybindingsubject) | Sources are the pod or group of pods to allow ingress traffic. |  |
 | `specs` | [[]smi.traffictarget.v1alpha1.TrafficTargetSpec](../traffic-target.proto.sk/#traffictargetspec) | Rules are the traffic rules to allow (HTTPRoutes | TCPRoute),. |  |

@@ -28,6 +28,10 @@ func (r *TrafficSplit) SetMetadata(meta core.Metadata) {
 	r.Metadata = meta
 }
 
+func (r *TrafficSplit) SetStatus(status core.Status) {
+	r.Status = status
+}
+
 func (r *TrafficSplit) Hash() uint64 {
 	metaCopy := r.GetMetadata()
 	metaCopy.ResourceVersion = ""
@@ -59,6 +63,14 @@ func (list TrafficSplitList) Find(namespace, name string) (*TrafficSplit, error)
 
 func (list TrafficSplitList) AsResources() resources.ResourceList {
 	var ress resources.ResourceList
+	for _, trafficSplit := range list {
+		ress = append(ress, trafficSplit)
+	}
+	return ress
+}
+
+func (list TrafficSplitList) AsInputResources() resources.InputResourceList {
+	var ress resources.InputResourceList
 	for _, trafficSplit := range list {
 		ress = append(ress, trafficSplit)
 	}
