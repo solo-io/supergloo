@@ -10,6 +10,7 @@ import "github.com/solo-io/solo-kit/api/v1/status.proto";
 import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
 import "github.com/solo-io/mesh-projects/api/v1/selector.proto";
+import "github.com/solo-io/mesh-projects/api/v1/rbac.proto";
 
 import "github.com/solo-io/mesh-projects/api/v1/core/ref.proto";
 
@@ -51,6 +52,9 @@ message Mesh {
 
     // reference to the EntryPoints to this mesh
     core.zephyr.solo.io.ClusterResourceRef entry_point = 10;
+
+    // RBAC configuration properties (not applicable to all mesh types)
+    RbacMode rbac = 11;
 }
 
 

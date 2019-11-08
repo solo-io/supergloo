@@ -25,6 +25,18 @@
         "package": "zephyr.solo.io"
       }
     ],
+    "rbac.zephyr.solo.io": [
+      {
+        "name": "Mesh",
+        "package": "zephyr.solo.io",
+        "version": "v1"
+      },
+      {
+        "name": "RbacConfig",
+        "package": "istio.rbac.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ],
     "network_bridge.zephyr.solo.io": [
       {
         "name": "MeshBridge",

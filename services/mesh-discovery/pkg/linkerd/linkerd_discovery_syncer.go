@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/solo-io/go-utils/contextutils"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/mesh-projects/pkg/utils"
@@ -41,6 +43,7 @@ type linkerdControllerDeployment struct {
 
 func (p *linkerdDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	linkerdControllers := detectLinkerdControllers(ctx, snap.Deployments)
+	contextutils.LoggerFrom(ctx).Infow("linkerd controllers", zap.Any("length", len(linkerdControllers)))
 
 	if len(linkerdControllers) == 0 {
 		return nil, nil
@@ -94,6 +97,7 @@ func (p *linkerdDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Dis
 		linkerdMeshes = append(linkerdMeshes, linkerdMesh)
 	}
 
+	contextutils.LoggerFrom(ctx).Infow("linkerd desired meshes", zap.Any("count", len(linkerdMeshes)))
 	return linkerdMeshes, nil
 }
 

@@ -13,6 +13,7 @@ type Config struct {
 	MeshDiscovery *MeshDiscovery `json:"meshDiscovery,omitempty"`
 	MeshBridge    *MeshBridge    `json:"meshBridge,omitempty"`
 	Discovery     *Discovery     `json:"discovery,omitempty"`
+	MeshConfig    *MeshConfig    `json:"meshConfig,omitempty"`
 }
 
 type Global struct {
@@ -62,6 +63,17 @@ type Discovery struct {
 }
 
 type DiscoveryDeployment struct {
+	Image *generate.Image `json:"image,omitempty"`
+	Stats bool            `json:"stats" desc:"enable prometheus stats"`
+	*generate.DeploymentSpec
+}
+
+type MeshConfig struct {
+	Disabled   bool                  `json:"disabled"`
+	Deployment *MeshConfigDeployment `json:"deployment,omitempty"`
+}
+
+type MeshConfigDeployment struct {
 	Image *generate.Image `json:"image,omitempty"`
 	Stats bool            `json:"stats" desc:"enable prometheus stats"`
 	*generate.DeploymentSpec

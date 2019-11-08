@@ -61,7 +61,10 @@ var _ = Describe("ConfigTest", func() {
 	It("does not error from client error", func() {
 		expectedErr := errors.Errorf("Dummy error")
 		client := getMockClient(nil, expectedErr)
-		_, err := config.GetOperatorConfig(context.TODO(), client, "test-namespace")
+		cfg, err := config.GetOperatorConfig(context.TODO(), client, "test-namespace")
 		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg).To(Equal(&config.OperatorConfig{
+			RefreshRate: config.DefaultRefreshRate,
+		}))
 	})
 })

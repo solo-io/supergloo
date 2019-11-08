@@ -111,10 +111,12 @@ func generateValuesYaml(version, repositoryPrefix, globalPullPolicy, glooVersion
 	cfg.MeshBridge.Deployment.Image.Tag = version
 	cfg.MeshDiscovery.Deployment.Image.Tag = version
 	cfg.Discovery.Deployment.Image.Tag = glooVersion
+	cfg.MeshConfig.Deployment.Image.Tag = version
 
 	if version == "dev" {
 		cfg.MeshBridge.Deployment.Image.PullPolicy = always
 		cfg.MeshDiscovery.Deployment.Image.PullPolicy = always
+		cfg.MeshConfig.Deployment.Image.PullPolicy = always
 	}
 
 	if repositoryPrefix != "" {

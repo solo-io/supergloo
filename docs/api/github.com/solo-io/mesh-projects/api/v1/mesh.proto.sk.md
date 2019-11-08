@@ -46,6 +46,7 @@ Meshes represent a currently registered service mesh.
 "discoveryMetadata": .zephyr.solo.io.DiscoveryMetadata
 "smiEnabled": bool
 "entryPoint": .core.zephyr.solo.io.ClusterResourceRef
+"rbac": .zephyr.solo.io.RbacMode
 
 ```
 
@@ -61,6 +62,7 @@ Meshes represent a currently registered service mesh.
 | `discoveryMetadata` | [.zephyr.solo.io.DiscoveryMetadata](../mesh.proto.sk/#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh. |  |
 | `smiEnabled` | `bool` | whether or not to use SMI to configure this mesh. |  |
 | `entryPoint` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | reference to the EntryPoints to this mesh. |  |
+| `rbac` | [.zephyr.solo.io.RbacMode](../rbac.proto.sk/#rbacmode) | RBAC configuration properties (not applicable to all mesh types). |  |
 
 
 

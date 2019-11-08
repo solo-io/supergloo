@@ -349,7 +349,7 @@ spec:
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by supergloo during validation. |  |
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by operator during validation. |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
 | `targets` | [[]istio.authentication.v1alpha1.TargetSelector](../policy.proto.sk/#targetselector) | List rules to select workloads that the policy should be applied on. If empty, policy will be used on all workloads in the same namespace. |  |
 | `peers` | [[]istio.authentication.v1alpha1.PeerAuthenticationMethod](../policy.proto.sk/#peerauthenticationmethod) | List of authentication methods that can be used for peer authentication. They will be evaluated in order; the first validate one will be used to set peer identity (source.user) and other peer attributes. If none of these methods pass, request will be rejected with authentication failed error (401). Leave the list empty if peer authentication is not required. |  |

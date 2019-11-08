@@ -50,6 +50,7 @@ func (p *istioDiscoveryPlugin) DiscoveryLabels() map[string]string {
 
 func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	pilots := p.resourceDetector.DetectPilotDeployments(ctx, snap.Deployments)
+	contextutils.LoggerFrom(ctx).Infow("pilots", zap.Any("length", len(pilots)))
 
 	if len(pilots) == 0 {
 		return nil, nil
@@ -158,6 +159,7 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 		istioMeshes = append(istioMeshes, istioMesh)
 	}
 
+	contextutils.LoggerFrom(ctx).Infow("istio desired meshes", zap.Any("count", len(istioMeshes)))
 	return istioMeshes, nil
 }
 

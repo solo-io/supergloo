@@ -19,10 +19,13 @@ func main() {
 		Output: options.Hugo,
 	}
 	if err := cmd.Generate(cmd.GenerateOptions{
-		RelativeRoot:       ".",
-		CompileProtos:      true,
-		GenDocs:            docsOpts,
-		CustomImports:      []string{"../gloo"},
+		RelativeRoot:  ".",
+		CompileProtos: true,
+		GenDocs:       docsOpts,
+		CustomImports: []string{
+			"../gloo/projects/gloo/api/v1/upstream.proto",
+			"../gloo/projects/gloo/api/external/envoy/type/range.proto",
+		},
 		SkipGeneratedTests: true,
 	}); err != nil {
 		log.Fatalf("generate failed!: %v", err)

@@ -28,3 +28,10 @@ discovery:
       repository: discovery
     replicas: 1
     stats: true
+
+meshConfig:
+  deployment:
+    image:
+      repository: mc-mesh-config
+    replicas: 1
+    stats: true

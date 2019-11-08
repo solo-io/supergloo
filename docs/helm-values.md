@@ -36,6 +36,18 @@
 |discovery.deployment.resources.limits.cpu|string||amount of CPUs|
 |discovery.deployment.resources.requests.memory|string||amount of memory|
 |discovery.deployment.resources.requests.cpu|string||amount of CPUs|
+|meshConfig.disabled|bool|false||
+|meshConfig.deployment.image.tag|string|dev|tag for the container|
+|meshConfig.deployment.image.repository|string|mc-mesh-config|image name (repository) for the container.|
+|meshConfig.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
+|meshConfig.deployment.image.pullPolicy|string|Always|image pull policy for the container|
+|meshConfig.deployment.image.pullSecret|string||image pull policy for the container |
+|meshConfig.deployment.stats|bool|true|enable prometheus stats|
+|meshConfig.deployment.replicas|int|1|number of instances to deploy|
+|meshConfig.deployment.resources.limits.memory|string||amount of memory|
+|meshConfig.deployment.resources.limits.cpu|string||amount of CPUs|
+|meshConfig.deployment.resources.requests.memory|string||amount of memory|
+|meshConfig.deployment.resources.requests.cpu|string||amount of CPUs|
 |global.image.tag|string||tag for the container|
 |global.image.repository|string||image name (repository) for the container.|
 |global.image.registry|string|quay.io/solo-io|image prefix/registry e.g. (quay.io/solo-io)|

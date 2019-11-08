@@ -322,7 +322,7 @@ message Policy {
   option (core.solo.io.resource).plural_name = "policies";
 
   // Status indicates the validation status of this resource.
-  // Status is read-only by clients, and set by supergloo during validation
+  // Status is read-only by clients, and set by operator during validation
   core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
 
   // Metadata contains the object metadata for this resource

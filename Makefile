@@ -125,6 +125,30 @@ $(OUTPUT_DIR)/.mesh-bridge-docker: $(OUTPUT_DIR)/mesh-bridge-linux-amd64 $(OUTPU
 
 
 #----------------------------------------------------------------------------------
+# mesh-config
+# Generated with args: {"BinaryNameBase":"mesh-config","ImageName":"mc-mesh-config","OutputFile":"","BinaryDir":"services/mesh-config/cmd"}
+#----------------------------------------------------------------------------------
+MESH_CONFIG_DIR=services/mesh-config/cmd
+MESH_CONFIG_SOURCES=$(shell find $(MESH_CONFIG_DIR) -name "*.go" | grep -v test | grep -v generated.go)
+
+$(OUTPUT_DIR)/mesh-config-linux-amd64: $(MESH_CONFIG_SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_CONFIG_DIR)/main.go
+
+.PHONY: mesh-config
+mesh-config: $(OUTPUT_DIR)/mesh-config-linux-amd64
+
+$(OUTPUT_DIR)/Dockerfile.mesh-config: $(MESH_CONFIG_DIR)/Dockerfile
+	cp $< $@
+
+.PHONY: mesh-config-docker
+mesh-config-docker: $(OUTPUT_DIR)/.mesh-config-docker
+
+$(OUTPUT_DIR)/.mesh-config-docker: $(OUTPUT_DIR)/mesh-config-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-config
+	docker build -t quay.io/solo-io/mc-mesh-config:$(VERSION) $(call get_test_tag_option,mesh-config) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-config
+	touch $@
+
+
+#----------------------------------------------------------------------------------
 # Deployment Manifests / Helm
 #----------------------------------------------------------------------------------
 
@@ -181,6 +205,24 @@ fetch-helm:
 release: docker-push
 
 #----------------------------------------------------------------------------------
+# Base Image
+# Note: this is managed by a manual process
+# To update the base image, run this step with the appropriate version, and update
+# the version referenced in the code (pkg/version/version.go)
+# cmd: TAGGED_VERSION=vX.Y.Z make push-base-image
+#----------------------------------------------------------------------------------
+.PHONY: push-base-image
+push-base-image: dockerfile-generation
+	cd build/base_image && docker build -t quay.io/solo-io/mc-base-image:$(VERSION) .
+	docker push quay.io/solo-io/mc-base-image:$(VERSION)
+
+# Note that this script can generate other resources too.
+# At the moment, only Dockerfiles are managed by it.
+.PHONY: dockerfile-generation
+dockerfile-generation:
+	go run hack/genbuild/main.go
+
+#----------------------------------------------------------------------------------
 # Docker
 #----------------------------------------------------------------------------------
 #
@@ -194,7 +236,7 @@ ifeq ($(RELEASE),"true")
 endif
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker mesh-bridge-docker
+docker: mesh-discovery-docker mesh-bridge-docker mesh-config-docker
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`
@@ -204,4 +246,5 @@ docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
 	docker push quay.io/solo-io/mc-mesh-bridge:$(VERSION) && \
 	docker push quay.io/solo-io/mc-mesh-discovery:$(VERSION)
+	docker push quay.io/solo-io/mc-mesh-config:$(VERSION)
 endif

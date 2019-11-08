@@ -43,6 +43,7 @@ func (r *Mesh) Hash() uint64 {
 		r.MonitoringConfig,
 		r.SmiEnabled,
 		r.EntryPoint,
+		r.Rbac,
 		r.MeshType,
 	)
 }
