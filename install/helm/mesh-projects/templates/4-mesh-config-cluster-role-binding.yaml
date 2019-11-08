@@ -1,0 +1,18 @@
+{{- if .Values.global.rbac.create}}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: mc-mesh-config-role-binding
+  labels:
+    app: sm-marketplace
+    sm-marketplace: mc-mesh-config
+subjects:
+- kind: ServiceAccount
+  name: mc-mesh-config
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+

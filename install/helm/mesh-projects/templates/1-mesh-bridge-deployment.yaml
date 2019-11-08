@@ -32,6 +32,7 @@ spec:
       - name: aws-cred
         secret:
           secretName: aws-cred
+          optional: true
       containers:
       - image: {{template "gloo.image" $image }}
         imagePullPolicy: {{ $image.pullPolicy }}

@@ -4,9 +4,6 @@ import (
 	"text/template"
 )
 
-var assumptions = `
-Dockerfile is in the same dir as the main function's file
-`
 var GoBinaryMakefileBuildTemplate = template.Must(
 	template.New("go_binary_makefile_build").
 		Funcs(GenBuildFuncs).

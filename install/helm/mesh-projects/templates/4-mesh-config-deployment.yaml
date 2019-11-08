@@ -1,0 +1,60 @@
+{{- if not .Values.meshConfig.disabled }}
+{{- $image := .Values.meshConfig.deployment.image }}
+{{- if .Values.global  }}
+{{- $image = merge .Values.meshConfig.deployment.image .Values.global.image }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sm-marketplace
+    sm-marketplace: mc-mesh-config
+  name: mc-mesh-config
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.meshConfig.deployment.replicas }}
+  selector:
+    matchLabels:
+      sm-marketplace: mc-mesh-config
+  template:
+    metadata:
+      labels:
+        sm-marketplace: mc-mesh-config
+            {{- if .Values.meshConfig.deployment.stats }}
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9091"
+        prometheus.io/scrape: "true"
+          {{- end}}
+    spec:
+      serviceAccountName: mc-mesh-config
+      volumes:
+      - name: aws-cred
+        secret:
+          secretName: aws-cred
+          optional: true
+      containers:
+      - image: {{template "gloo.image" $image}}
+        imagePullPolicy: {{ $image.pullPolicy }}
+        name: mc-mesh-config
+        ## If using EKS, create a secret called "aws-cred" in the .Release.Namespace namespace
+        ## and include the following key-value pair:
+        ## "credentials": <base64-encoded aws credentials, as can be gotten from: cat ~/.aws/credentials | base64>
+        volumeMounts:
+        - mountPath: "/root/.aws/"
+          name: aws-cred
+          readOnly: true
+{{- if .Values.meshConfig.deployment.resources }}
+        resources:
+{{ toYaml .Values.meshConfig.deployment.resources | indent 10}}
+{{- end}}
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+            {{- if .Values.meshConfig.deployment.stats }}
+        - name: START_STATS_SERVER
+          value: "true"
+            {{- end}}
+{{- end }}
