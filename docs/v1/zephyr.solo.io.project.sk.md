@@ -16,6 +16,7 @@ API Version: `zephyr.solo.io.v1`
 
 ### API Resources:
 - [AuthConfig](../github.com/solo-io/gloo/projects/gloo/api/v1/enterprise/plugins/extauth/v1/extauth.proto.sk#authconfig)
+- [ClusterRbacConfig](../github.com/solo-io/mesh-projects/api/external/istio/rbac/v1alpha1/rbac.proto.sk#clusterrbacconfig)
 - [Gateway](../github.com/solo-io/mesh-projects/api/external/istio/networking/v1alpha3/gateway.proto.sk#gateway)
 - [HTTPRouteGroup](../github.com/solo-io/mesh-projects/api/external/smi/httproutegroup/v1alpha1/http-route-group.proto.sk#httproutegroup)
 - [Mesh](../github.com/solo-io/mesh-projects/api/v1/mesh.proto.sk#mesh)

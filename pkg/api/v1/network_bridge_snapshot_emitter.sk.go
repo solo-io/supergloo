@@ -79,26 +79,38 @@ type NetworkBridgeEmitter interface {
 	NetworkBridgeSnapshotEmitter
 	Register() error
 	MeshBridge() MeshBridgeClient
+	Mesh() MeshClient
+	MeshIngress() MeshIngressClient
 }
 
-func NewNetworkBridgeEmitter(meshBridgeClient MeshBridgeClient) NetworkBridgeEmitter {
-	return NewNetworkBridgeEmitterWithEmit(meshBridgeClient, make(chan struct{}))
+func NewNetworkBridgeEmitter(meshBridgeClient MeshBridgeClient, meshClient MeshClient, meshIngressClient MeshIngressClient) NetworkBridgeEmitter {
+	return NewNetworkBridgeEmitterWithEmit(meshBridgeClient, meshClient, meshIngressClient, make(chan struct{}))
 }
 
-func NewNetworkBridgeEmitterWithEmit(meshBridgeClient MeshBridgeClient, emit <-chan struct{}) NetworkBridgeEmitter {
+func NewNetworkBridgeEmitterWithEmit(meshBridgeClient MeshBridgeClient, meshClient MeshClient, meshIngressClient MeshIngressClient, emit <-chan struct{}) NetworkBridgeEmitter {
 	return &networkBridgeEmitter{
-		meshBridge: meshBridgeClient,
-		forceEmit:  emit,
+		meshBridge:  meshBridgeClient,
+		mesh:        meshClient,
+		meshIngress: meshIngressClient,
+		forceEmit:   emit,
 	}
 }
 
 type networkBridgeEmitter struct {
-	forceEmit  <-chan struct{}
-	meshBridge MeshBridgeClient
+	forceEmit   <-chan struct{}
+	meshBridge  MeshBridgeClient
+	mesh        MeshClient
+	meshIngress MeshIngressClient
 }
 
 func (c *networkBridgeEmitter) Register() error {
 	if err := c.meshBridge.Register(); err != nil {
+		return err
+	}
+	if err := c.mesh.Register(); err != nil {
+		return err
+	}
+	if err := c.meshIngress.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -106,6 +118,14 @@ func (c *networkBridgeEmitter) Register() error {
 
 func (c *networkBridgeEmitter) MeshBridge() MeshBridgeClient {
 	return c.meshBridge
+}
+
+func (c *networkBridgeEmitter) Mesh() MeshClient {
+	return c.mesh
+}
+
+func (c *networkBridgeEmitter) MeshIngress() MeshIngressClient {
+	return c.meshIngress
 }
 
 func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *NetworkBridgeSnapshot, <-chan error, error) {
@@ -132,6 +152,22 @@ func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.
 	meshBridgeChan := make(chan meshBridgeListWithNamespace)
 
 	var initialMeshBridgeList MeshBridgeList
+	/* Create channel for Mesh */
+	type meshListWithNamespace struct {
+		list      MeshList
+		namespace string
+	}
+	meshChan := make(chan meshListWithNamespace)
+
+	var initialMeshList MeshList
+	/* Create channel for MeshIngress */
+	type meshIngressListWithNamespace struct {
+		list      MeshIngressList
+		namespace string
+	}
+	meshIngressChan := make(chan meshIngressListWithNamespace)
+
+	var initialMeshIngressList MeshIngressList
 
 	currentSnapshot := NetworkBridgeSnapshot{}
 
@@ -154,6 +190,42 @@ func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshBridgeErrs, namespace+"-meshBridges")
 		}(namespace)
+		/* Setup namespaced watch for Mesh */
+		{
+			meshes, err := c.mesh.List(namespace, clients.ListOpts{Ctx: opts.Ctx, Selector: opts.Selector})
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "initial Mesh list")
+			}
+			initialMeshList = append(initialMeshList, meshes...)
+		}
+		meshNamespacesChan, meshErrs, err := c.mesh.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting Mesh watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
+		}(namespace)
+		/* Setup namespaced watch for MeshIngress */
+		{
+			meshIngresses, err := c.meshIngress.List(namespace, clients.ListOpts{Ctx: opts.Ctx, Selector: opts.Selector})
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "initial MeshIngress list")
+			}
+			initialMeshIngressList = append(initialMeshIngressList, meshIngresses...)
+		}
+		meshIngressNamespacesChan, meshIngressErrs, err := c.meshIngress.Watch(namespace, opts)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "starting MeshIngress watch")
+		}
+
+		done.Add(1)
+		go func(namespace string) {
+			defer done.Done()
+			errutils.AggregateErrs(ctx, errs, meshIngressErrs, namespace+"-meshIngresses")
+		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -167,12 +239,28 @@ func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.
 						return
 					case meshBridgeChan <- meshBridgeListWithNamespace{list: meshBridgeList, namespace: namespace}:
 					}
+				case meshList := <-meshNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
+					}
+				case meshIngressList := <-meshIngressNamespacesChan:
+					select {
+					case <-ctx.Done():
+						return
+					case meshIngressChan <- meshIngressListWithNamespace{list: meshIngressList, namespace: namespace}:
+					}
 				}
 			}
 		}(namespace)
 	}
 	/* Initialize snapshot for MeshBridges */
 	currentSnapshot.MeshBridges = initialMeshBridgeList.Sort()
+	/* Initialize snapshot for Meshes */
+	currentSnapshot.Meshes = initialMeshList.Sort()
+	/* Initialize snapshot for MeshIngresses */
+	currentSnapshot.MeshIngresses = initialMeshIngressList.Sort()
 
 	snapshots := make(chan *NetworkBridgeSnapshot)
 	go func() {
@@ -198,6 +286,8 @@ func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.
 			}
 		}
 		meshBridgesByNamespace := make(map[string]MeshBridgeList)
+		meshesByNamespace := make(map[string]MeshList)
+		meshIngressesByNamespace := make(map[string]MeshIngressList)
 
 		for {
 			record := func() { stats.Record(ctx, mNetworkBridgeSnapshotIn.M(1)) }
@@ -232,6 +322,44 @@ func (c *networkBridgeEmitter) Snapshots(watchNamespaces []string, opts clients.
 					meshBridgeList = append(meshBridgeList, meshBridges...)
 				}
 				currentSnapshot.MeshBridges = meshBridgeList.Sort()
+			case meshNamespacedList := <-meshChan:
+				record()
+
+				namespace := meshNamespacedList.namespace
+
+				skstats.IncrementResourceCount(
+					ctx,
+					namespace,
+					"mesh",
+					mNetworkBridgeResourcesIn,
+				)
+
+				// merge lists by namespace
+				meshesByNamespace[namespace] = meshNamespacedList.list
+				var meshList MeshList
+				for _, meshes := range meshesByNamespace {
+					meshList = append(meshList, meshes...)
+				}
+				currentSnapshot.Meshes = meshList.Sort()
+			case meshIngressNamespacedList := <-meshIngressChan:
+				record()
+
+				namespace := meshIngressNamespacedList.namespace
+
+				skstats.IncrementResourceCount(
+					ctx,
+					namespace,
+					"mesh_ingress",
+					mNetworkBridgeResourcesIn,
+				)
+
+				// merge lists by namespace
+				meshIngressesByNamespace[namespace] = meshIngressNamespacedList.list
+				var meshIngressList MeshIngressList
+				for _, meshIngresses := range meshIngressesByNamespace {
+					meshIngressList = append(meshIngressList, meshIngresses...)
+				}
+				currentSnapshot.MeshIngresses = meshIngressList.Sort()
 			}
 		}
 	}()

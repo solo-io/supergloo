@@ -33,6 +33,9 @@ limitations under the License.
 - [RbacConfig](#rbacconfig) **Top-Level Resource**
 - [Target](#target)
 - [Mode](#mode)
+- [ClusterRbacConfig](#clusterrbacconfig) **Top-Level Resource**
+- [Target](#target)
+- [Mode](#mode)
   
 
  
@@ -209,6 +212,70 @@ message RoleRef {
 | `mode` | [.istio.rbac.v1alpha1.RbacConfig.Mode](../rbac.proto.sk/#mode) | Istio RBAC mode. |  |
 | `inclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk/#target) | A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes. |  |
 | `exclusion` | [.istio.rbac.v1alpha1.RbacConfig.Target](../rbac.proto.sk/#target) | A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes. |  |
+| `enforcementMode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk/#enforcementmode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
+
+
+
+
+---
+### Target
+
+ 
+Target defines a list of services or namespaces.
+
+```yaml
+"services": []string
+"namespaces": []string
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `services` | `[]string` | A list of services. |  |
+| `namespaces` | `[]string` | A list of namespaces. |  |
+
+
+
+
+---
+### Mode
+
+
+
+| Name | Description |
+| ----- | ----------- | 
+| `OFF` | Disable Istio RBAC completely, Istio RBAC policies will not be enforced. |
+| `ON` | Enable Istio RBAC for all services and namespaces. Note Istio RBAC is deny-by-default which means all requests will be denied if it's not allowed by RBAC rules. |
+| `ON_WITH_INCLUSION` | Enable Istio RBAC only for services and namespaces specified in the inclusion field. Any other services and namespaces not in the inclusion field will not be enforced by Istio RBAC policies. |
+| `ON_WITH_EXCLUSION` | Enable Istio RBAC for all services and namespaces except those specified in the exclusion field. Any other services and namespaces not in the exclusion field will be enforced by Istio RBAC policies. |
+
+
+
+
+---
+### ClusterRbacConfig
+
+ 
+Necessary to have a second nearly identical object, because Istio builds the 2
+crds from the single proto
+
+```yaml
+"status": .core.solo.io.Status
+"metadata": .core.solo.io.Metadata
+"mode": .istio.rbac.v1alpha1.ClusterRbacConfig.Mode
+"inclusion": .istio.rbac.v1alpha1.ClusterRbacConfig.Target
+"exclusion": .istio.rbac.v1alpha1.ClusterRbacConfig.Target
+"enforcementMode": .istio.rbac.v1alpha1.EnforcementMode
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `status` | [.core.solo.io.Status](../../../../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by operator during validation. |  |
+| `metadata` | [.core.solo.io.Metadata](../../../../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
+| `mode` | [.istio.rbac.v1alpha1.ClusterRbacConfig.Mode](../rbac.proto.sk/#mode) | Istio RBAC mode. |  |
+| `inclusion` | [.istio.rbac.v1alpha1.ClusterRbacConfig.Target](../rbac.proto.sk/#target) | A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes. |  |
+| `exclusion` | [.istio.rbac.v1alpha1.ClusterRbacConfig.Target](../rbac.proto.sk/#target) | A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes. |  |
 | `enforcementMode` | [.istio.rbac.v1alpha1.EnforcementMode](../rbac.proto.sk/#enforcementmode) | $hide_from_docs Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default. It's used to verify new RbacConfig work as expected before rolling to production. When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users. RBAC engine run RbacConfig in PERMISSIVE mode and logs stats. Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode. |  |
 
 

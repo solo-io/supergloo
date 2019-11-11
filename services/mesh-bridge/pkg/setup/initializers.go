@@ -5,11 +5,10 @@ import (
 
 	"github.com/solo-io/go-utils/configutils"
 	"github.com/solo-io/go-utils/envutils"
-	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/mesh-projects/pkg/mcutils"
+	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/mesh-projects/services/internal/kube"
-	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/setup/config"
 	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/syncer"
 	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/translator"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -55,11 +54,10 @@ func MustInitializeMeshBridge(ctx context.Context) (*RunOpts, error) {
 	if err != nil {
 		return nil, err
 	}
-	clientSet := config.MustGetClientSet(ctx, cacheManager, restConfig, clientForClusterHandler, initialSettings)
-	networkBridgeEmitter := v1.NewNetworkBridgeEmitter(clientSet.MeshBridge())
+	clientSet := config.MustGetMeshBridgeClientSet(ctx, cacheManager, restConfig, clientForClusterHandler, initialSettings)
+	networkBridgeEmitter := v1.NewNetworkBridgeEmitter(clientSet.MeshBridge(), clientSet.Mesh(), clientSet.MeshIngress())
 	translatorTranslator := translator.NewMeshBridgeTranslator(clientSet)
-	serviceEntryReconciler := v1alpha3.NewServiceEntryReconciler(clientSet.ServiceEntry())
-	networkBridgeSyncer := syncer.NewMeshBridgeSyncer(clientSet, translatorTranslator, serviceEntryReconciler)
+	networkBridgeSyncer := syncer.NewMeshBridgeSyncer(clientSet, translatorTranslator)
 	eventLoop := v1.NewNetworkBridgeEventLoop(networkBridgeEmitter, networkBridgeSyncer)
 	watchOpts := config.GetWatchOpts(ctx, initialSettings)
 	v := config.GetWatchNamespaces(ctx, initialSettings)

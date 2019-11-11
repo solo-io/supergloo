@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
@@ -88,25 +89,36 @@ func GetWatchOpts(ctx context.Context, settings *InitialSettings) clients.WatchO
 }
 
 type ClientSet interface {
-	MeshBridge() v1.MeshBridgeClient
 	Mesh() v1.MeshClient
+
+	MultiClusterHandlers() []handler.ClusterHandler
+	LocalClientGo() client_go.Interface
+}
+type MeshBridgeClientSet interface {
+	ClientSet
+	MeshBridge() v1.MeshBridgeClient
 	MeshIngress() v1.MeshIngressClient
 	ServiceEntry() v1alpha3.ServiceEntryClient
 	Upstreams() gloov1.UpstreamClient
-	MultiClusterHandlers() []handler.ClusterHandler
+}
 
-	LocalClientGo() client_go.Interface
+type MeshConfigClientSet interface {
+	ClientSet
+	// RbacConfig() v1alpha1.RbacConfigClient
+	ClusterRbacConfig() v1alpha1.ClusterRbacConfigClient
 }
 
 type clientSet struct {
-	meshBridge   v1.MeshBridgeClient
-	mesh         v1.MeshClient
-	meshIngress  v1.MeshIngressClient
-	serviceEntry v1alpha3.ServiceEntryClient
-	upstreams    gloov1.UpstreamClient
-	services     kubernetes.ServiceClient
-	pods         kubernetes.PodClient
-	mcHandlers   []handler.ClusterHandler
+	meshBridge              v1.MeshBridgeClient
+	mesh                    v1.MeshClient
+	meshIngress             v1.MeshIngressClient
+	serviceEntry            v1alpha3.ServiceEntryClient
+	rbacConfigClient        v1alpha1.RbacConfigClient
+	clusterRbacConfigClient v1alpha1.ClusterRbacConfigClient
+	upstreams               gloov1.UpstreamClient
+	services                kubernetes.ServiceClient
+	pods                    kubernetes.PodClient
+	mcHandlers              []handler.ClusterHandler
 
 	localKube client_go.Interface
 
@@ -146,6 +158,20 @@ func (c *clientSet) ServiceEntry() v1alpha3.ServiceEntryClient {
 	return c.serviceEntry
 }
 
+// func (c *clientSet) RbacConfig() v1alpha1.RbacConfigClient {
+// 	if c.rbacConfigClient == nil {
+// 		c.rbacConfigClient = MustGetRbacConfigClient(c.ctx, c.cfg, c.settings)
+// 	}
+// 	return c.rbacConfigClient
+// }
+
+func (c *clientSet) ClusterRbacConfig() v1alpha1.ClusterRbacConfigClient {
+	if c.clusterRbacConfigClient == nil {
+		c.clusterRbacConfigClient = MustGetClusterRbacConfigClient(c.ctx, c.cfg, c.settings)
+	}
+	return c.clusterRbacConfigClient
+}
+
 func (c *clientSet) Upstreams() gloov1.UpstreamClient {
 	if c.upstreams == nil {
 		usClient, usHandler := MustGetUpstreamClient(c.ctx, c.cacheManger.SharedCache(c.ctx), c.settings)
@@ -167,8 +193,8 @@ func (c *clientSet) MultiClusterHandlers() []handler.ClusterHandler {
 	return c.mcHandlers
 }
 
-func MustGetClientSet(ctx context.Context, cm CacheManager, cfg *rest.Config,
-	watchHandler multicluster.ClientForClusterHandler, settings *InitialSettings) ClientSet {
+func MustGetMeshBridgeClientSet(ctx context.Context, cm CacheManager, cfg *rest.Config,
+	watchHandler multicluster.ClientForClusterHandler, settings *InitialSettings) MeshBridgeClientSet {
 
 	upstreamClient, upstreamGetter := MustGetUpstreamClient(ctx, cm.SharedCache(ctx), settings)
 	return &clientSet{
@@ -179,6 +205,18 @@ func MustGetClientSet(ctx context.Context, cm CacheManager, cfg *rest.Config,
 		cacheManger:  cm,
 		upstreams:    upstreamClient,
 		mcHandlers:   []handler.ClusterHandler{upstreamGetter},
+	}
+}
+
+func MustGetMeshConfigClientSet(ctx context.Context, cm CacheManager, cfg *rest.Config,
+	watchHandler multicluster.ClientForClusterHandler, settings *InitialSettings) MeshConfigClientSet {
+
+	return &clientSet{
+		ctx:          ctx,
+		cfg:          cfg,
+		watchHandler: watchHandler,
+		settings:     settings,
+		cacheManger:  cm,
 	}
 }
 
@@ -278,7 +316,8 @@ func GetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings *Initi
 func MustGetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1alpha3.ServiceEntryClient {
 	serviceEntryClient, err := GetServiceEntryClient(ctx, cfg, settings)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Fatalw("unable to get service entry client")
+		contextutils.LoggerFrom(ctx).Fatalw("unable to get service entry client",
+			zap.Error(err))
 	}
 	return serviceEntryClient
 }
@@ -304,6 +343,72 @@ func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *Init
 		return nil, errors.Wrapf(err, "Failed to register service entry client")
 	}
 	return serviceEntryClient, nil
+}
+
+// func MustGetRbacConfigClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) v1alpha1.RbacConfigClient {
+// 	rbacConfigClient, err := GetRbacConfigClient(ctx, cfg, settings)
+// 	if err != nil {
+// 		contextutils.LoggerFrom(ctx).Fatalw("unable to get rbac config client",
+// 			zap.Error(err))
+// 	}
+// 	return rbacConfigClient
+// }
+//
+// func GetRbacConfigClient(ctx context.Context, cfg *rest.Config, settings *InitialSettings) (v1alpha1.RbacConfigClient, error) {
+// 	skipCrdCreation := true
+// 	namespaceWhitelist := []string{settings.InstallNamespace}
+// 	contextutils.LoggerFrom(ctx).Infow("Getting rbac config client",
+// 		zap.Bool("skipCrdCreation", skipCrdCreation),
+// 		zap.Strings("namespaceWhitelist", namespaceWhitelist))
+// 	rbacConfigClient, err := v1alpha1.NewRbacConfigClient(&factory.KubeResourceClientFactory{
+// 		Crd:                v1alpha1.RbacConfigCrd,
+// 		Cfg:                cfg,
+// 		SharedCache:        kube.NewKubeCache(ctx),
+// 		SkipCrdCreation:    skipCrdCreation,
+// 		NamespaceWhitelist: namespaceWhitelist,
+// 	})
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "failed to get rbac config client")
+// 	}
+// 	err = rbacConfigClient.Register()
+// 	if err != nil {
+// 		return nil, errors.Wrapf(err, "Failed to register rbac config client")
+// 	}
+// 	return rbacConfigClient, nil
+// }
+
+func MustGetClusterRbacConfigClient(ctx context.Context, cfg *rest.Config,
+	settings *InitialSettings) v1alpha1.ClusterRbacConfigClient {
+	clusterRbacConfigClient, err := GetRbacClusterConfigClient(ctx, cfg, settings)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Fatalw("unable to get cluster rbac config client",
+			zap.Error(err))
+	}
+	return clusterRbacConfigClient
+}
+
+func GetRbacClusterConfigClient(ctx context.Context, cfg *rest.Config,
+	settings *InitialSettings) (v1alpha1.ClusterRbacConfigClient, error) {
+	skipCrdCreation := true
+	namespaceWhitelist := []string{settings.InstallNamespace}
+	contextutils.LoggerFrom(ctx).Infow("Getting rbac config client",
+		zap.Bool("skipCrdCreation", skipCrdCreation),
+		zap.Strings("namespaceWhitelist", namespaceWhitelist))
+	clusterRbacConfigClient, err := v1alpha1.NewClusterRbacConfigClient(&factory.KubeResourceClientFactory{
+		Crd:                v1alpha1.ClusterRbacConfigCrd,
+		Cfg:                cfg,
+		SharedCache:        kube.NewKubeCache(ctx),
+		SkipCrdCreation:    skipCrdCreation,
+		NamespaceWhitelist: namespaceWhitelist,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get cluster rbac config client")
+	}
+	err = clusterRbacConfigClient.Register()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to register cluster rbac config client")
+	}
+	return clusterRbacConfigClient, nil
 }
 
 func MustGetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter,

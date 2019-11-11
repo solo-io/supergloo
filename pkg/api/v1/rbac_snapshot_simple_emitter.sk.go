@@ -7,8 +7,6 @@ import (
 	fmt "fmt"
 	"time"
 
-	istio_rbac_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
-
 	"go.opencensus.io/stats"
 
 	"github.com/solo-io/go-utils/errutils"
@@ -87,8 +85,6 @@ func (c *rbacSimpleEmitter) Snapshots(ctx context.Context) (<-chan *RbacSnapshot
 					switch typed := res.(type) {
 					case *Mesh:
 						currentSnapshot.Meshes = append(currentSnapshot.Meshes, typed)
-					case *istio_rbac_v1alpha1.RbacConfig:
-						currentSnapshot.RbacConfigs = append(currentSnapshot.RbacConfigs, typed)
 					default:
 						select {
 						case errs <- fmt.Errorf("RbacSnapshotEmitter "+

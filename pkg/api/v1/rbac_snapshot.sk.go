@@ -5,28 +5,23 @@ package v1
 import (
 	"fmt"
 
-	istio_rbac_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
-
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
 
 type RbacSnapshot struct {
-	Meshes      MeshList
-	RbacConfigs istio_rbac_v1alpha1.RbacConfigList
+	Meshes MeshList
 }
 
 func (s RbacSnapshot) Clone() RbacSnapshot {
 	return RbacSnapshot{
-		Meshes:      s.Meshes.Clone(),
-		RbacConfigs: s.RbacConfigs.Clone(),
+		Meshes: s.Meshes.Clone(),
 	}
 }
 
 func (s RbacSnapshot) Hash() uint64 {
 	return hashutils.HashAll(
 		s.hashMeshes(),
-		s.hashRbacConfigs(),
 	)
 }
 
@@ -34,22 +29,16 @@ func (s RbacSnapshot) hashMeshes() uint64 {
 	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
 }
 
-func (s RbacSnapshot) hashRbacConfigs() uint64 {
-	return hashutils.HashAll(s.RbacConfigs.AsInterfaces()...)
-}
-
 func (s RbacSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
 	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
-	fields = append(fields, zap.Uint64("rbacConfigs", s.hashRbacConfigs()))
 
 	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
 }
 
 type RbacSnapshotStringer struct {
-	Version     uint64
-	Meshes      []string
-	RbacConfigs []string
+	Version uint64
+	Meshes  []string
 }
 
 func (ss RbacSnapshotStringer) String() string {
@@ -60,18 +49,12 @@ func (ss RbacSnapshotStringer) String() string {
 		s += fmt.Sprintf("    %v\n", name)
 	}
 
-	s += fmt.Sprintf("  RbacConfigs %v\n", len(ss.RbacConfigs))
-	for _, name := range ss.RbacConfigs {
-		s += fmt.Sprintf("    %v\n", name)
-	}
-
 	return s
 }
 
 func (s RbacSnapshot) Stringer() RbacSnapshotStringer {
 	return RbacSnapshotStringer{
-		Version:     s.Hash(),
-		Meshes:      s.Meshes.NamespacesDotNames(),
-		RbacConfigs: s.RbacConfigs.NamespacesDotNames(),
+		Version: s.Hash(),
+		Meshes:  s.Meshes.NamespacesDotNames(),
 	}
 }

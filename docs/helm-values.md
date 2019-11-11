@@ -1,10 +1,10 @@
 |Option|Type|Default Value|Description|
 |------|----|-----------|-------------|
 |meshDiscovery.disabled|bool|false||
-|meshDiscovery.deployment.image.tag|string|dev|tag for the container|
+|meshDiscovery.deployment.image.tag|string|v0.0.12-6-g1c6ecfc|tag for the container|
 |meshDiscovery.deployment.image.repository|string|mc-mesh-discovery|image name (repository) for the container.|
 |meshDiscovery.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
-|meshDiscovery.deployment.image.pullPolicy|string|Always|image pull policy for the container|
+|meshDiscovery.deployment.image.pullPolicy|string||image pull policy for the container|
 |meshDiscovery.deployment.image.pullSecret|string||image pull policy for the container |
 |meshDiscovery.deployment.stats|bool|true|enable prometheus stats|
 |meshDiscovery.deployment.replicas|int|1|number of instances to deploy|
@@ -13,10 +13,10 @@
 |meshDiscovery.deployment.resources.requests.memory|string||amount of memory|
 |meshDiscovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |meshBridge.disabled|bool|false||
-|meshBridge.deployment.image.tag|string|dev|tag for the container|
+|meshBridge.deployment.image.tag|string|v0.0.12-6-g1c6ecfc|tag for the container|
 |meshBridge.deployment.image.repository|string|mc-mesh-bridge|image name (repository) for the container.|
 |meshBridge.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
-|meshBridge.deployment.image.pullPolicy|string|Always|image pull policy for the container|
+|meshBridge.deployment.image.pullPolicy|string||image pull policy for the container|
 |meshBridge.deployment.image.pullSecret|string||image pull policy for the container |
 |meshBridge.deployment.stats|bool|true|enable prometheus stats|
 |meshBridge.deployment.replicas|int|1|number of instances to deploy|
@@ -37,10 +37,10 @@
 |discovery.deployment.resources.requests.memory|string||amount of memory|
 |discovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |meshConfig.disabled|bool|false||
-|meshConfig.deployment.image.tag|string|dev|tag for the container|
+|meshConfig.deployment.image.tag|string|v0.0.12-6-g1c6ecfc|tag for the container|
 |meshConfig.deployment.image.repository|string|mc-mesh-config|image name (repository) for the container.|
 |meshConfig.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
-|meshConfig.deployment.image.pullPolicy|string|Always|image pull policy for the container|
+|meshConfig.deployment.image.pullPolicy|string||image pull policy for the container|
 |meshConfig.deployment.image.pullSecret|string||image pull policy for the container |
 |meshConfig.deployment.stats|bool|true|enable prometheus stats|
 |meshConfig.deployment.replicas|int|1|number of instances to deploy|

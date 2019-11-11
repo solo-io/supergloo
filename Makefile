@@ -44,7 +44,6 @@ update-deps:
 	go get -u golang.org/x/tools/cmd/goimports
 	go get -u github.com/gogo/protobuf/gogoproto
 	go get -u github.com/gogo/protobuf/protoc-gen-gogo
-	go get -u github.com/paulvollmer/2gobytes
 	go get -u github.com/google/wire/cmd/wire
 	go get -u github.com/golang/mock/gomock
 	go install github.com/golang/mock/mockgen

@@ -1,4 +1,4 @@
-package rbac_test
+package translator_test
 
 import (
 	"testing"

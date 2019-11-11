@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	istio_rbac_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
-
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -81,32 +79,26 @@ type RbacEmitter interface {
 	RbacSnapshotEmitter
 	Register() error
 	Mesh() MeshClient
-	RbacConfig() istio_rbac_v1alpha1.RbacConfigClient
 }
 
-func NewRbacEmitter(meshClient MeshClient, rbacConfigClient istio_rbac_v1alpha1.RbacConfigClient) RbacEmitter {
-	return NewRbacEmitterWithEmit(meshClient, rbacConfigClient, make(chan struct{}))
+func NewRbacEmitter(meshClient MeshClient) RbacEmitter {
+	return NewRbacEmitterWithEmit(meshClient, make(chan struct{}))
 }
 
-func NewRbacEmitterWithEmit(meshClient MeshClient, rbacConfigClient istio_rbac_v1alpha1.RbacConfigClient, emit <-chan struct{}) RbacEmitter {
+func NewRbacEmitterWithEmit(meshClient MeshClient, emit <-chan struct{}) RbacEmitter {
 	return &rbacEmitter{
-		mesh:       meshClient,
-		rbacConfig: rbacConfigClient,
-		forceEmit:  emit,
+		mesh:      meshClient,
+		forceEmit: emit,
 	}
 }
 
 type rbacEmitter struct {
-	forceEmit  <-chan struct{}
-	mesh       MeshClient
-	rbacConfig istio_rbac_v1alpha1.RbacConfigClient
+	forceEmit <-chan struct{}
+	mesh      MeshClient
 }
 
 func (c *rbacEmitter) Register() error {
 	if err := c.mesh.Register(); err != nil {
-		return err
-	}
-	if err := c.rbacConfig.Register(); err != nil {
 		return err
 	}
 	return nil
@@ -114,10 +106,6 @@ func (c *rbacEmitter) Register() error {
 
 func (c *rbacEmitter) Mesh() MeshClient {
 	return c.mesh
-}
-
-func (c *rbacEmitter) RbacConfig() istio_rbac_v1alpha1.RbacConfigClient {
-	return c.rbacConfig
 }
 
 func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts) (<-chan *RbacSnapshot, <-chan error, error) {
@@ -144,14 +132,6 @@ func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts
 	meshChan := make(chan meshListWithNamespace)
 
 	var initialMeshList MeshList
-	/* Create channel for RbacConfig */
-	type rbacConfigListWithNamespace struct {
-		list      istio_rbac_v1alpha1.RbacConfigList
-		namespace string
-	}
-	rbacConfigChan := make(chan rbacConfigListWithNamespace)
-
-	var initialRbacConfigList istio_rbac_v1alpha1.RbacConfigList
 
 	currentSnapshot := RbacSnapshot{}
 
@@ -174,24 +154,6 @@ func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts
 			defer done.Done()
 			errutils.AggregateErrs(ctx, errs, meshErrs, namespace+"-meshes")
 		}(namespace)
-		/* Setup namespaced watch for RbacConfig */
-		{
-			rbacConfigs, err := c.rbacConfig.List(namespace, clients.ListOpts{Ctx: opts.Ctx, Selector: opts.Selector})
-			if err != nil {
-				return nil, nil, errors.Wrapf(err, "initial RbacConfig list")
-			}
-			initialRbacConfigList = append(initialRbacConfigList, rbacConfigs...)
-		}
-		rbacConfigNamespacesChan, rbacConfigErrs, err := c.rbacConfig.Watch(namespace, opts)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "starting RbacConfig watch")
-		}
-
-		done.Add(1)
-		go func(namespace string) {
-			defer done.Done()
-			errutils.AggregateErrs(ctx, errs, rbacConfigErrs, namespace+"-rbacConfigs")
-		}(namespace)
 
 		/* Watch for changes and update snapshot */
 		go func(namespace string) {
@@ -205,20 +167,12 @@ func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts
 						return
 					case meshChan <- meshListWithNamespace{list: meshList, namespace: namespace}:
 					}
-				case rbacConfigList := <-rbacConfigNamespacesChan:
-					select {
-					case <-ctx.Done():
-						return
-					case rbacConfigChan <- rbacConfigListWithNamespace{list: rbacConfigList, namespace: namespace}:
-					}
 				}
 			}
 		}(namespace)
 	}
 	/* Initialize snapshot for Meshes */
 	currentSnapshot.Meshes = initialMeshList.Sort()
-	/* Initialize snapshot for RbacConfigs */
-	currentSnapshot.RbacConfigs = initialRbacConfigList.Sort()
 
 	snapshots := make(chan *RbacSnapshot)
 	go func() {
@@ -244,7 +198,6 @@ func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts
 			}
 		}
 		meshesByNamespace := make(map[string]MeshList)
-		rbacConfigsByNamespace := make(map[string]istio_rbac_v1alpha1.RbacConfigList)
 
 		for {
 			record := func() { stats.Record(ctx, mRbacSnapshotIn.M(1)) }
@@ -279,25 +232,6 @@ func (c *rbacEmitter) Snapshots(watchNamespaces []string, opts clients.WatchOpts
 					meshList = append(meshList, meshes...)
 				}
 				currentSnapshot.Meshes = meshList.Sort()
-			case rbacConfigNamespacedList := <-rbacConfigChan:
-				record()
-
-				namespace := rbacConfigNamespacedList.namespace
-
-				skstats.IncrementResourceCount(
-					ctx,
-					namespace,
-					"rbac_config",
-					mRbacResourcesIn,
-				)
-
-				// merge lists by namespace
-				rbacConfigsByNamespace[namespace] = rbacConfigNamespacedList.list
-				var rbacConfigList istio_rbac_v1alpha1.RbacConfigList
-				for _, rbacConfigs := range rbacConfigsByNamespace {
-					rbacConfigList = append(rbacConfigList, rbacConfigs...)
-				}
-				currentSnapshot.RbacConfigs = rbacConfigList.Sort()
 			}
 		}
 	}()

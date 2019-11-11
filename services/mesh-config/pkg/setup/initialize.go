@@ -2,36 +2,72 @@ package setup
 
 import (
 	"context"
-	"os"
+	"time"
 
+	"github.com/solo-io/go-utils/configutils"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/go-utils/envutils"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
-	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/rbac"
+	"github.com/solo-io/mesh-projects/pkg/mcutils"
+	"github.com/solo-io/mesh-projects/services/internal/config"
+	mp_kube "github.com/solo-io/mesh-projects/services/internal/kube"
+	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/clusterrbac"
+	cr_translator "github.com/solo-io/mesh-projects/services/mesh-config/pkg/clusterrbac/translator"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
+	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func Run(ctx context.Context, writeNamespace string, errHandler func(error)) error {
-	contextutils.LoggerFrom(ctx).Infow("running", zap.Any("write namespace", writeNamespace))
-	// istio rbac
-	rbacConfigClient, err := initializeRbacConfigClient(ctx)
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infow("waiting for crds to be registered before starting up",
+		zap.Any("service entry", v1alpha1.RbacConfigCrd))
+
+	// Do not start running until rbac crd has been registered
+	ticker := time.Tick(2 * time.Second)
+	cfg := mp_kube.MustGetKubeConfig(ctx)
+	eg := &errgroup.Group{}
+	eg.Go(func() error {
+		for {
+			select {
+			case <-ticker:
+				if config.CrdsExist(cfg, v1alpha1.RbacConfigCrd, v1alpha1.ClusterRbacConfigCrd) {
+					return nil
+				}
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	})
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	logger.Infow("running", zap.Any("write namespace", writeNamespace))
+	podNamespace := envutils.MustGetPodNamespace(ctx)
+	kubernetesInterface := mp_kube.MustGetClient(ctx, cfg)
+	configMapClient := configutils.NewConfigMapClient(kubernetesInterface)
+	operatorConfig, err := config.GetOperatorConfig(ctx, configMapClient, podNamespace)
 	if err != nil {
 		return err
 	}
-	rbacConfigReconciler := v1alpha1.NewRbacConfigReconciler(rbacConfigClient)
-
-	meshClient, err := initializeMeshClient(ctx)
+	initialSettings := config.GetInitialSettings(podNamespace, operatorConfig)
+	watchAggregator := wrapper.NewWatchAggregator()
+	clientForClusterHandler := mcutils.NewClientForClusterHandler(watchAggregator)
+	cacheManager, err := config.NewCacheManager(ctx)
 	if err != nil {
 		return err
 	}
-	meshReconciler := v1.NewMeshReconciler(meshClient)
 
-	emitter := v1.NewRbacEmitter(meshClient, rbacConfigClient)
-	syncer := rbac.NewRbacSyncer(writeNamespace, meshReconciler, rbacConfigReconciler)
+	clientSet := config.MustGetMeshConfigClientSet(ctx, cacheManager, cfg, clientForClusterHandler, initialSettings)
+	meshReconciler := v1.NewMeshReconciler(clientSet.Mesh())
+	rbacConfigReconciler := v1alpha1.NewClusterRbacConfigReconciler(clientSet.ClusterRbacConfig())
+	translator := cr_translator.NewTranslator(clientSet)
+	emitter := v1.NewRbacEmitter(clientSet.Mesh())
+	syncer := clusterrbac.NewRbacSyncer(writeNamespace, meshReconciler, rbacConfigReconciler, translator)
 	eventLoop := v1.NewRbacEventLoop(emitter, syncer)
 	errs, err := eventLoop.Run(nil, clients.WatchOpts{})
 	if err != nil {
@@ -50,52 +86,4 @@ func Run(ctx context.Context, writeNamespace string, errHandler func(error)) err
 	}()
 
 	return nil
-}
-
-func initializeRbacConfigClient(ctx context.Context) (v1alpha1.RbacConfigClient, error) {
-	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
-	if err != nil {
-		panic("KUBECONFIG is not defined")
-	}
-	kubeCache := kube.NewKubeCache(ctx)
-	rbacConfigClientFactory := factory.KubeResourceClientFactory{
-		Crd:         v1alpha1.RbacConfigCrd,
-		Cfg:         cfg,
-		SharedCache: kubeCache,
-		// this is registered by istio, however we need to register in case istio has not yet been deployed
-		// so that the watches can start
-		SkipCrdCreation: false,
-	}
-
-	client, err := v1alpha1.NewRbacConfigClient(&rbacConfigClientFactory)
-	if err != nil {
-		return nil, err
-	}
-	if err := client.Register(); err != nil {
-		return nil, err
-	}
-	return client, nil
-}
-
-func initializeMeshClient(ctx context.Context) (v1.MeshClient, error) {
-	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
-	if err != nil {
-		panic("KUBECONFIG is not defined")
-	}
-	kubeCache := kube.NewKubeCache(ctx)
-	meshClientFactory := factory.KubeResourceClientFactory{
-		Crd:             v1.MeshCrd,
-		Cfg:             cfg,
-		SharedCache:     kubeCache,
-		SkipCrdCreation: false,
-	}
-
-	client, err := v1.NewMeshClient(&meshClientFactory)
-	if err != nil {
-		return nil, err
-	}
-	if err := client.Register(); err != nil {
-		return nil, err
-	}
-	return client, nil
 }

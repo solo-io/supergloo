@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/setup/config"
+	"github.com/solo-io/mesh-projects/services/internal/config"
 )
 
 var _ = Describe("ConfigTest", func() {

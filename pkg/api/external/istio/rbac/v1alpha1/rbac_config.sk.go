@@ -153,7 +153,7 @@ var (
 		RbacConfigGVK.Group,
 		RbacConfigGVK.Version,
 		RbacConfigGVK.Kind,
-		"rbacconfig",
+		"rc",
 		false,
 		&RbacConfig{})
 )

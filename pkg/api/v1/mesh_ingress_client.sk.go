@@ -10,7 +10,7 @@ import (
 )
 
 type MeshIngressWatcher interface {
-	// watch namespace-scoped Meshingresses
+	// watch namespace-scoped MeshIngresses
 	Watch(namespace string, opts clients.WatchOpts) (<-chan MeshIngressList, <-chan error, error)
 }
 
@@ -99,19 +99,19 @@ func (client *meshIngressClient) Watch(namespace string, opts clients.WatchOpts)
 	if initErr != nil {
 		return nil, nil, initErr
 	}
-	meshingressesChan := make(chan MeshIngressList)
+	meshIngressesChan := make(chan MeshIngressList)
 	go func() {
 		for {
 			select {
 			case resourceList := <-resourcesChan:
-				meshingressesChan <- convertToMeshIngress(resourceList)
+				meshIngressesChan <- convertToMeshIngress(resourceList)
 			case <-opts.Ctx.Done():
-				close(meshingressesChan)
+				close(meshIngressesChan)
 				return
 			}
 		}
 	}()
-	return meshingressesChan, errs, nil
+	return meshIngressesChan, errs, nil
 }
 
 func convertToMeshIngress(resources resources.ResourceList) MeshIngressList {

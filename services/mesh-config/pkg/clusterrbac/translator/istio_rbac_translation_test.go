@@ -1,4 +1,4 @@
-package rbac
+package translator
 
 import (
 	"context"
@@ -29,8 +29,10 @@ var _ = Describe("Rbac Translation", func() {
 		}
 	})
 	Context("Istio", func() {
-		verifyHandleIstioRbac := func(inputMesh, expectedMesh *v1.Mesh, inputRbac, expectedRbac *v1alpha1.RbacConfig) {
-			computedMesh, computedRbacConfig := handleIstioRbac(testOpts.ctx, inputMesh, inputRbac)
+		verifyHandleIstioRbac := func(inputMesh, expectedMesh *v1.Mesh, expectedRbac *v1alpha1.ClusterRbacConfig) {
+			computedRbacConfig := handleIstioRbac(testOpts.ctx, inputMesh)
+			computedMesh := &v1.Mesh{}
+			inputMesh.DeepCopyInto(computedMesh)
 			ExpectWithOffset(1, computedMesh.String()).To(Equal(expectedMesh.String()))
 			ExpectWithOffset(1, computedRbacConfig.String()).To(Equal(expectedRbac.String()))
 			ExpectWithOffset(1, computedMesh).To(Equal(expectedMesh))
@@ -49,38 +51,7 @@ var _ = Describe("Rbac Translation", func() {
 						Message: statusInactive,
 					},
 				})
-				verifyHandleIstioRbac(inputMesh, expectedMesh, nil, nil)
-			})
-			It("should not remove existing rbac configs", func() {
-				inputMesh := meshWithRbac(testOpts, &v1.RbacMode{
-					Mode: &v1.RbacMode_Unspecified_{Unspecified: &v1.RbacMode_Unspecified{}},
-				})
-				expectedMesh := meshWithRbac(testOpts, &v1.RbacMode{
-					Mode: &v1.RbacMode_Unspecified_{Unspecified: &v1.RbacMode_Unspecified{}},
-					Status: &v1.RbacStatus{
-						Code:    v1.RbacStatusCode_OK,
-						Message: statusInactive,
-					},
-				})
-				inputRbac := &v1alpha1.RbacConfig{
-					Status: core.Status{},
-					Metadata: core.Metadata{
-						Name:      "default",
-						Namespace: testOpts.installationNs,
-						Cluster:   testOpts.cluster1,
-					},
-					Mode: v1alpha1.RbacConfig_ON,
-				}
-				expectedRbac := &v1alpha1.RbacConfig{
-					Status: core.Status{},
-					Metadata: core.Metadata{
-						Name:      "default",
-						Namespace: testOpts.installationNs,
-						Cluster:   testOpts.cluster1,
-					},
-					Mode: v1alpha1.RbacConfig_ON,
-				}
-				verifyHandleIstioRbac(inputMesh, expectedMesh, inputRbac, expectedRbac)
+				verifyHandleIstioRbac(inputMesh, expectedMesh, nil)
 			})
 		})
 		It("should handle disable mode", func() {
@@ -94,16 +65,17 @@ var _ = Describe("Rbac Translation", func() {
 					Message: statusDisable,
 				},
 			})
-			expectedRbac := &v1alpha1.RbacConfig{
+			expectedRbac := &v1alpha1.ClusterRbacConfig{
 				Status: core.Status{},
 				Metadata: core.Metadata{
 					Name:      "default",
 					Namespace: testOpts.installationNs,
 					Cluster:   testOpts.cluster1,
+					Labels:    OwnerLabels,
 				},
-				Mode: v1alpha1.RbacConfig_OFF,
+				Mode: v1alpha1.ClusterRbacConfig_OFF,
 			}
-			verifyHandleIstioRbac(inputMesh, expectedMesh, nil, expectedRbac)
+			verifyHandleIstioRbac(inputMesh, expectedMesh, expectedRbac)
 		})
 		It("should handle isolate mode", func() {
 			inputMesh := meshWithRbac(testOpts, &v1.RbacMode{
@@ -116,22 +88,26 @@ var _ = Describe("Rbac Translation", func() {
 					Message: statusIsolate,
 				},
 			})
-			expectedRbac := &v1alpha1.RbacConfig{
+			expectedRbac := &v1alpha1.ClusterRbacConfig{
 				Status: core.Status{},
 				Metadata: core.Metadata{
 					Name:      "default",
 					Namespace: testOpts.installationNs,
 					Cluster:   testOpts.cluster1,
+					Labels:    OwnerLabels,
 				},
-				Mode: v1alpha1.RbacConfig_ON,
+				Mode: v1alpha1.ClusterRbacConfig_ON,
 			}
-			verifyHandleIstioRbac(inputMesh, expectedMesh, nil, expectedRbac)
+			verifyHandleIstioRbac(inputMesh, expectedMesh, expectedRbac)
 		})
 	})
 })
 
 func meshWithRbac(opts *testOptions, rbacCfg *v1.RbacMode) *v1.Mesh {
 	return &v1.Mesh{
+		Metadata: core.Metadata{
+			Labels: OwnerLabels,
+		},
 		MeshType: &v1.Mesh_Istio{Istio: &v1.IstioMesh{
 			InstallationNamespace: opts.installationNs,
 			Version:               "1",

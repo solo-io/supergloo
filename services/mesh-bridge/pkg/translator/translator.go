@@ -8,31 +8,49 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
+	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/mesh-projects/services/internal/kube"
 	"github.com/solo-io/mesh-projects/services/internal/networking"
-	"github.com/solo-io/mesh-projects/services/mesh-bridge/pkg/setup/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
 type Translator interface {
-	Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (v1alpha3.ServiceEntryList, error)
+	Translate(ctx context.Context, snap *v1.NetworkBridgeSnapshot) (v1alpha3.ServiceEntryList, error)
 }
 
-func NewMeshBridgeTranslator(clientset config.ClientSet) Translator {
+func NewMeshBridgeTranslator(clientset config.MeshBridgeClientSet) Translator {
 	return &translator{
 		clientset: clientset,
 	}
 }
 
 type translator struct {
-	clientset config.ClientSet
+	clientset config.MeshBridgeClientSet
+
+	// internal, must clear after translation
+	meshes        v1.MeshList
+	meshIngresses v1.MeshIngressList
+}
+
+func (t *translator) populateLocalLists(snap *v1.NetworkBridgeSnapshot) {
+	t.meshes = snap.Meshes
+	t.meshIngresses = snap.MeshIngresses
+}
+func (t *translator) clearLocalLists() {
+	t.meshes = nil
+	t.meshIngresses = nil
 }
 
 type MeshBridgesByNamespace map[string]v1.MeshBridgeList
 type ServiceEntriesByNamespace map[string]v1alpha3.ServiceEntryList
 
-func (t *translator) Translate(ctx context.Context, meshBridgesByNamespace MeshBridgesByNamespace) (v1alpha3.ServiceEntryList, error) {
+func (t *translator) Translate(ctx context.Context, snap *v1.NetworkBridgeSnapshot) (v1alpha3.ServiceEntryList, error) {
+
+	t.populateLocalLists(snap)
+	defer t.clearLocalLists()
+
+	meshBridgesByNamespace := t.getMeshBridgesByNamespace(snap.MeshBridges)
 	var result v1alpha3.ServiceEntryList
 	ipGen := newIpGenerator()
 	for namespace, meshBridges := range meshBridgesByNamespace {
@@ -52,15 +70,28 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 
 	uniqueAddresses := make(map[string]*BridgeDetails)
 	for _, meshBridge := range meshBridges {
+
+		// TODO(EItanya): reimplement when source mesh is important
+		// sourceRef := meshBridge.GetSource().GetMeshService().GetMesh()
+		// sourceMesh, err := t.meshes.Find(sourceRef.GetNamespace(), sourceRef.GetName())
+		// if err != nil {
+		// 	return nil, err
+		// }
+		//
+		// switch meshType := sourceMesh.GetMeshType().(type) {
+		// case *v1.Mesh_Istio:
+		// default:
+		// 	return nil, errors.Errorf("mesh type %t is not valid", meshType)
+		// }
+
 		meshRef := meshBridge.GetTarget().GetMeshService().GetMesh()
-		mesh, err := t.clientset.Mesh().Read(meshRef.GetNamespace(),
-			meshRef.GetName(), clients.ReadOpts{})
+		mesh, err := t.meshes.Find(meshRef.GetNamespace(), meshRef.GetName())
 		if err != nil {
 			return nil, err
 		}
 
-		entryPoint, err := t.clientset.MeshIngress().Read(mesh.GetEntryPoint().GetResource().GetNamespace(),
-			mesh.GetEntryPoint().GetResource().GetName(), clients.ReadOpts{})
+		entryPoint, err := t.meshIngresses.Find(mesh.GetEntryPoint().GetResource().GetNamespace(),
+			mesh.GetEntryPoint().GetResource().GetName())
 		if err != nil {
 			return nil, err
 		}
@@ -132,6 +163,14 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 		result = append(result, serviceEntry)
 	}
 	return result, nil
+}
+
+func (t *translator) getMeshBridgesByNamespace(meshBridges v1.MeshBridgeList) MeshBridgesByNamespace {
+	meshBridgeMap := make(MeshBridgesByNamespace)
+	for _, v := range meshBridges {
+		meshBridgeMap[v.Metadata.GetNamespace()] = append(meshBridgeMap[v.Metadata.GetNamespace()], v)
+	}
+	return meshBridgeMap
 }
 
 type BridgeDetails struct {

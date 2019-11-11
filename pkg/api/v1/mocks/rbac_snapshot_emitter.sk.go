@@ -8,7 +8,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	clients "github.com/solo-io/solo-kit/pkg/api/v1/clients"
 )
@@ -117,18 +116,4 @@ func (m *MockRbacEmitter) Mesh() v1.MeshClient {
 func (mr *MockRbacEmitterMockRecorder) Mesh() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mesh", reflect.TypeOf((*MockRbacEmitter)(nil).Mesh))
-}
-
-// RbacConfig mocks base method
-func (m *MockRbacEmitter) RbacConfig() v1alpha1.RbacConfigClient {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RbacConfig")
-	ret0, _ := ret[0].(v1alpha1.RbacConfigClient)
-	return ret0
-}
-
-// RbacConfig indicates an expected call of RbacConfig
-func (mr *MockRbacEmitterMockRecorder) RbacConfig() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RbacConfig", reflect.TypeOf((*MockRbacEmitter)(nil).RbacConfig))
 }

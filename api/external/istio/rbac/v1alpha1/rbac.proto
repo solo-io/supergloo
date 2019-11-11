@@ -334,9 +334,8 @@ enum EnforcementMode {
 ////     namespaces: [ "default" ]
 //// ```
 message RbacConfig {
-
-    option (core.solo.io.resource).short_name = "rbacconfig";
-    option (core.solo.io.resource).plural_name = "rbacConfigs";
+    option (core.solo.io.resource).short_name = "rc";
+    option (core.solo.io.resource).plural_name = "rbac_configs";
 
     // Status indicates the validation status of this resource.
     // Status is read-only by clients, and set by operator during validation
@@ -387,3 +386,63 @@ message RbacConfig {
     // Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode.
     EnforcementMode enforcement_mode = 4;
 }
+
+/*
+    Necessary to have a second nearly identical object, because Istio builds the 2
+    crds from the single proto
+*/
+message ClusterRbacConfig {
+    option (core.solo.io.resource).short_name = "crc";
+    option (core.solo.io.resource).plural_name = "cluster_rbac_configs";
+    option (core.solo.io.resource).cluster_scoped = true;
+
+    // Status indicates the validation status of this resource.
+    // Status is read-only by clients, and set by operator during validation
+    core.solo.io.Status status = 100 [(gogoproto.nullable) = false, (gogoproto.moretags) = "testdiff:\"ignore\""];
+
+    // Metadata contains the object metadata for this resource
+    core.solo.io.Metadata metadata = 101 [(gogoproto.nullable) = false];
+
+    enum Mode {
+        // Disable Istio RBAC completely, Istio RBAC policies will not be enforced.
+        OFF = 0;
+        // Enable Istio RBAC for all services and namespaces. Note Istio RBAC is deny-by-default
+        // which means all requests will be denied if it's not allowed by RBAC rules.
+        ON = 1;
+        // Enable Istio RBAC only for services and namespaces specified in the inclusion field. Any other
+        // services and namespaces not in the inclusion field will not be enforced by Istio RBAC policies.
+        ON_WITH_INCLUSION = 2;
+        // Enable Istio RBAC for all services and namespaces except those specified in the exclusion field. Any other
+        // services and namespaces not in the exclusion field will be enforced by Istio RBAC policies.
+        ON_WITH_EXCLUSION = 3;
+    }
+
+    // Istio RBAC mode.
+    Mode mode = 1;
+
+    // Target defines a list of services or namespaces.
+    message Target {
+        // A list of services.
+        repeated string services = 1;
+
+        // A list of namespaces.
+        repeated string namespaces = 2;
+    }
+
+    // A list of services or namespaces that should be enforced by Istio RBAC policies. Note: This field have
+    // effect only when mode is ON_WITH_INCLUSION and will be ignored for any other modes.
+    Target inclusion = 2;
+
+    // A list of services or namespaces that should not be enforced by Istio RBAC policies. Note: This field have
+    // effect only when mode is ON_WITH_EXCLUSION and will be ignored for any other modes.
+    Target exclusion = 3;
+
+    // $hide_from_docs
+    // Indicates enforcement mode of the RbacConfig, in ENFORCED mode by default.
+    // It's used to verify new RbacConfig work as expected before rolling to production.
+    // When setting as PERMISSIVE, RBAC isn't enforced and has no impact on users.
+    // RBAC engine run RbacConfig in PERMISSIVE mode and logs stats.
+    // Invalid to set RbacConfig in PERMISSIVE and ServiceRoleBinding in ENFORCED mode.
+    EnforcementMode enforcement_mode = 4;
+}
+

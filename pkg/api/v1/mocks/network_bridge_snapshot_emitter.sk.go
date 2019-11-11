@@ -117,3 +117,31 @@ func (mr *MockNetworkBridgeEmitterMockRecorder) MeshBridge() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshBridge", reflect.TypeOf((*MockNetworkBridgeEmitter)(nil).MeshBridge))
 }
+
+// Mesh mocks base method
+func (m *MockNetworkBridgeEmitter) Mesh() v1.MeshClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Mesh")
+	ret0, _ := ret[0].(v1.MeshClient)
+	return ret0
+}
+
+// Mesh indicates an expected call of Mesh
+func (mr *MockNetworkBridgeEmitterMockRecorder) Mesh() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mesh", reflect.TypeOf((*MockNetworkBridgeEmitter)(nil).Mesh))
+}
+
+// MeshIngress mocks base method
+func (m *MockNetworkBridgeEmitter) MeshIngress() v1.MeshIngressClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MeshIngress")
+	ret0, _ := ret[0].(v1.MeshIngressClient)
+	return ret0
+}
+
+// MeshIngress indicates an expected call of MeshIngress
+func (mr *MockNetworkBridgeEmitterMockRecorder) MeshIngress() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MeshIngress", reflect.TypeOf((*MockNetworkBridgeEmitter)(nil).MeshIngress))
+}

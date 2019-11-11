@@ -7,8 +7,11 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
+	"github.com/solo-io/mesh-projects/services/internal/config"
+	"github.com/solo-io/mesh-projects/services/internal/kube"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func Main(customCtx context.Context, errHandler func(error)) error {
@@ -21,41 +24,52 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 		writeNamespace = "sm-marketplace"
 	}
 
-	rootCtx := createRootContext(customCtx)
-
 	if errHandler == nil {
 		errHandler = func(err error) {
 			if err == nil {
 				return
 			}
-			contextutils.LoggerFrom(rootCtx).Errorf("error: %v", err)
+			contextutils.LoggerFrom(customCtx).Errorf("error: %v", err)
 		}
 	}
 
-	if err := runMeshBridgeEventLoop(rootCtx, writeNamespace, errHandler); err != nil {
+	if err := runMeshBridgeEventLoop(customCtx, writeNamespace, errHandler); err != nil {
 		return err
 	}
 
-	<-rootCtx.Done()
+	<-customCtx.Done()
 	return nil
 
 }
 
-func createRootContext(customCtx context.Context) context.Context {
-	rootCtx := customCtx
-	if rootCtx == nil {
-		rootCtx = context.Background()
-	}
-	rootCtx = contextutils.WithLogger(rootCtx, "mesh-bridge")
-	loggingContext := []interface{}{"version", version.Version}
-	rootCtx = contextutils.WithLoggerValues(rootCtx, loggingContext...)
-	return rootCtx
-}
-
 func runMeshBridgeEventLoop(ctx context.Context, writeNamespace string, errHandler func(error)) error {
+	logger := contextutils.LoggerFrom(ctx)
+	logger.Infow("waiting for crds to be registered before starting up",
+		zap.Any("service entry", v1alpha3.ServiceEntryCrd))
+	// Do not start running until service entry crd has been registered
+	ticker := time.Tick(2 * time.Second)
+	cfg := kube.MustGetKubeConfig(ctx)
+	eg := &errgroup.Group{}
+	eg.Go(func() error {
+		for {
+			select {
+			case <-ticker:
+				if config.CrdsExist(cfg, v1alpha3.ServiceEntryCrd) {
+					return nil
+				}
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	})
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
 	loops, err := MustInitializeMeshBridge(ctx)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Fatalw("Failed to initialize mesh bridge event loops", zap.Error(err))
+		logger.Fatalw("Failed to initialize mesh bridge event loops", zap.Error(err))
 	}
 
 	errs, err := loops.MultiClusterRunFunc()
@@ -76,15 +90,15 @@ func runMeshBridgeEventLoop(ctx context.Context, writeNamespace string, errHandl
 
 	time.Sleep(time.Second * 5)
 	// run mesh bridge loop
-	contextutils.LoggerFrom(ctx).Infow("Starting event loop",
+	logger.Infow("Starting event loop",
 		zap.Any("watchOpts", loops.WatchOpts),
 		zap.Strings("watchNamespaces", loops.WatchNamespaces))
 	errs, err = loops.OperatorLoop.Run(loops.WatchNamespaces, loops.WatchOpts)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Fatalw("Failed to start event loop", zap.Error(err))
+		logger.Fatalw("Failed to start event loop", zap.Error(err))
 	}
 	for err := range errs {
-		contextutils.LoggerFrom(ctx).Errorw("Error during event loop", zap.Error(err))
+		logger.Errorw("Error during event loop", zap.Error(err))
 	}
 	return nil
 }

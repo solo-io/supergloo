@@ -52,8 +52,10 @@ message Target {
     this bridge is located in the same namespace as the bridge object.
 */
 message Source {
-
     MeshService mesh_service = 1;
+
+    // Refers to a local service account. Assumed to be in the same namespace as the bridge
+    string service_account = 2;
 }
 
 message MeshService {

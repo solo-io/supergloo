@@ -85,6 +85,10 @@ func (c *networkBridgeSimpleEmitter) Snapshots(ctx context.Context) (<-chan *Net
 					switch typed := res.(type) {
 					case *MeshBridge:
 						currentSnapshot.MeshBridges = append(currentSnapshot.MeshBridges, typed)
+					case *Mesh:
+						currentSnapshot.Meshes = append(currentSnapshot.Meshes, typed)
+					case *MeshIngress:
+						currentSnapshot.MeshIngresses = append(currentSnapshot.MeshIngresses, typed)
 					default:
 						select {
 						case errs <- fmt.Errorf("NetworkBridgeSnapshotEmitter "+

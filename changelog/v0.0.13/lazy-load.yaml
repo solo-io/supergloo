@@ -1,0 +1,11 @@
+changelog:
+- type: FIX
+  description: Lazily load the clients, and don't start syncers until resources are available.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/46
+- type: FIX
+  description: Make secret non-optional again.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/43
+- type: NEW_FEATURE
+  description: Add servicee account to mesh bridge source.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/47
+

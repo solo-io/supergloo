@@ -86,12 +86,14 @@ this bridge is located in the same namespace as the bridge object.
 
 ```yaml
 "meshService": .zephyr.solo.io.MeshService
+"serviceAccount": string
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
 | `meshService` | [.zephyr.solo.io.MeshService](../cluster-route.proto.sk/#meshservice) |  |  |
+| `serviceAccount` | `string` | Refers to a local service account. Assumed to be in the same namespace as the bridge. |  |
 
 
 
