@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/mesh-projects/pkg/mcutils"
 	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/mesh-projects/services/internal/mcutils"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
@@ -21,7 +21,6 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stats"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/clientset"
 )
 
 // customCtx and customErrHandler are expected to be passed by tests
@@ -34,23 +33,20 @@ func Main(customCtx context.Context, errHandler func(error)) error {
 	if writeNamespace == "" {
 		writeNamespace = "sm-marketplace"
 	}
-
-	rootCtx := createRootContext(customCtx)
-
 	if errHandler == nil {
 		errHandler = func(err error) {
 			if err == nil {
 				return
 			}
-			contextutils.LoggerFrom(rootCtx).Errorf("error: %v", err)
+			contextutils.LoggerFrom(customCtx).Errorf("error: %v", err)
 		}
 	}
 
-	if err := runDiscoveryEventLoop(rootCtx, writeNamespace, errHandler); err != nil {
+	if err := runDiscoveryEventLoop(customCtx, writeNamespace, errHandler); err != nil {
 		return err
 	}
 
-	<-rootCtx.Done()
+	<-customCtx.Done()
 	return nil
 }
 
@@ -63,61 +59,6 @@ func createRootContext(customCtx context.Context) context.Context {
 	loggingContext := []interface{}{"version", version.Version}
 	rootCtx = contextutils.WithLoggerValues(rootCtx, loggingContext...)
 	return rootCtx
-}
-
-func runDiscoveryEventLoopDeprecated(ctx context.Context, writeNamespace string, cs *clientset.Clientset, errHandler func(error)) error {
-
-	meshReconciler := v1.NewMeshReconciler(cs.Discovery.Mesh)
-	//
-	// istioDiscovery := istio.NewIstioDiscoverySyncer(
-	//	writeNamespace,
-	//	meshReconciler,
-	//	istioClients.MeshPolicies,
-	//	cs.ApiExtensions.ApiextensionsV1beta1().CustomResourceDefinitions(),
-	//	cs.Kube.BatchV1(),
-	// )
-
-	linkerdDiscovery := linkerd.NewLinkerdDiscoverySyncer(
-		writeNamespace,
-		meshReconciler,
-	)
-
-	// appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(
-	//	writeNamespace,
-	//	meshReconciler,
-	//	appmeshconfig.NewAppMeshClientBuilder(cs.Input.Secret),
-	//	cs.Input.Secret,
-	// )
-
-	emitter := v1.NewDiscoverySimpleEmitter(wrapper.AggregatedWatchFromClients(
-		wrapper.ClientWatchOpts{BaseClient: cs.Input.Deployment.BaseClient()},
-		wrapper.ClientWatchOpts{BaseClient: cs.Input.Upstream.BaseClient()},
-		wrapper.ClientWatchOpts{BaseClient: cs.Input.Pod.BaseClient()},
-		// wrapper.ClientWatchOpts{BaseClient: cs.Input.TlsSecret.BaseClient()},
-	))
-	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter,
-		// istioDiscovery,
-		linkerdDiscovery,
-		// appmeshDiscovery,
-	)
-
-	errs, err := eventLoop.Run(ctx)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			select {
-			case err := <-errs:
-				errHandler(err)
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
-
-	return nil
 }
 
 func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandler func(error)) error {
@@ -211,9 +152,15 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 		jobClient,
 	)
 
+	// appMeshClientBuilder := appmesh.NewAppMeshClientBuilder()
+	// appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(writeNamespace, meshReconciler, appMeshClientBuilder)
+
 	emitter := v1.NewDiscoverySimpleEmitter(wrapper.ResourceWatch(watchAggregator, "", nil))
-	// eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, linkerdDiscovery)
-	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter, linkerdDiscovery, istioDiscovery)
+	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter,
+		linkerdDiscovery,
+		istioDiscovery,
+		// appmeshDiscovery,
+	)
 
 	errs, err = eventLoop.Run(ctx)
 	if err != nil {

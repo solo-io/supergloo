@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"go.uber.org/zap"
@@ -21,12 +22,6 @@ var (
 	statusDisable     = "RBAC policies will not be evaluated"
 	statusIsolate     = "RBAC is enabled and will deny-by-default. If no policies are defined (isolation mode requirement) no services will be allowed to communicate."
 	statusConfigError = "Unknown config specified"
-)
-
-var (
-	OwnerLabels = map[string]string{
-		"owner": "service-mesh-hub",
-	}
 )
 
 type Translator interface {
@@ -67,13 +62,6 @@ func handleIstioRbac(ctx context.Context, istioMesh *v1.Mesh) *v1alpha1.ClusterR
 		return nil
 	}
 	switch istioMesh.Rbac.Mode.(type) {
-	case *v1.RbacMode_Unspecified_:
-		istioMesh.GetRbac().Status = &v1.RbacStatus{
-			Code:    v1.RbacStatusCode_OK,
-			Message: statusInactive,
-		}
-		// return nil, will not overwrite any existing as the labels will be different
-		return nil
 	case *v1.RbacMode_Disable_:
 		contextutils.LoggerFrom(ctx).Infow("syncing istio rbac to disable",
 			zap.Any("mesh metadata", istioMesh.Metadata.String()))
@@ -125,7 +113,7 @@ func handleUnsupportedMeshes(unsupportedInputMesh *v1.Mesh) *v1.Mesh {
 // helper for generating metadata for istio meshes
 func newIstioRbacConfigMetadata(istioMesh *v1.Mesh) core.Metadata {
 	return core.Metadata{
-		Labels: OwnerLabels,
+		Labels: common.OwnerLabels,
 		// Must use the same cluster as the mesh as this is where it will be written
 		Cluster: istioMesh.DiscoveryMetadata.Cluster,
 		Name:    istioRbacConfigObjectName,

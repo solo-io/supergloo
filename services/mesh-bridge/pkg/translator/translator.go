@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
+	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/mesh-projects/services/internal/kube"
 	"github.com/solo-io/mesh-projects/services/internal/networking"
@@ -145,6 +146,7 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 			Metadata: core.Metadata{
 				Name:      addressToServiceEntryName(address, namespace),
 				Namespace: namespace,
+				Labels:    common.OwnerLabels,
 			},
 			Hosts:      info.hosts,
 			Addresses:  []string{generator.nextIp()},

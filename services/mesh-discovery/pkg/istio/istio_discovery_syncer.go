@@ -3,7 +3,7 @@ package istio
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/utils"
+	"github.com/solo-io/mesh-projects/services/internal/utils"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"go.uber.org/zap"

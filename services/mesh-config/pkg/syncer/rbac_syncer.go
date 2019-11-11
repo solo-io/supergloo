@@ -1,10 +1,11 @@
-package clusterrbac
+package syncer
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/clusterrbac/translator"
+	"github.com/solo-io/mesh-projects/services/common"
+	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/translator"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -55,7 +56,7 @@ func (s *rbacSyncer) Sync(ctx context.Context, snap *v1.RbacSnapshot) error {
 		return err
 	}
 	if err := s.clusterRbacConfigReconciler.Reconcile("", desiredClusterRbac,
-		nil, clients.ListOpts{Selector: translator.OwnerLabels}); err != nil {
+		nil, clients.ListOpts{Selector: common.OwnerLabels}); err != nil {
 		return err
 	}
 

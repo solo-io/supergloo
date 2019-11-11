@@ -10,13 +10,6 @@ option (gogoproto.equal_all) = true;
 
 // Configure RBAC properties on the mesh
 message RbacMode {
-
-    // Unspecified is the default RBAC policy mode
-    // If a particular mesh does not support RBAC policy, this is the only allowed mode.
-    // Compatibility: [all]
-    message Unspecified {
-    }
-
     // Disable indicates that RBAC policies should not be enforced
     // Compatibility: [only: istio]
     message Disable {
@@ -30,12 +23,10 @@ message RbacMode {
     // Mode describes the desired RBAC behavior an optionally takes mode-specific configuration
     // implementation note: using oneof instead of enum since future modes may accept config
     oneof mode {
-        // default mode: does not configure RBAC.
-        Unspecified unspecified = 1;
         // Disable enforcement of RBAC policies.
-        Disable disable = 2;
+        Disable disable = 1;
         // Use RBAC to isolate all services, preventing any communication between services.
-        Enable enable = 3;
+        Enable enable = 2;
     }
 
     // Set by operator

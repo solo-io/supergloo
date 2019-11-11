@@ -9,11 +9,11 @@ import (
 	"github.com/solo-io/go-utils/envutils"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
-	"github.com/solo-io/mesh-projects/pkg/mcutils"
 	"github.com/solo-io/mesh-projects/services/internal/config"
 	mp_kube "github.com/solo-io/mesh-projects/services/internal/kube"
-	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/clusterrbac"
-	cr_translator "github.com/solo-io/mesh-projects/services/mesh-config/pkg/clusterrbac/translator"
+	"github.com/solo-io/mesh-projects/services/internal/mcutils"
+	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/syncer"
+	cr_translator "github.com/solo-io/mesh-projects/services/mesh-config/pkg/translator"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	"go.uber.org/zap"
@@ -67,7 +67,7 @@ func Run(ctx context.Context, writeNamespace string, errHandler func(error)) err
 	rbacConfigReconciler := v1alpha1.NewClusterRbacConfigReconciler(clientSet.ClusterRbacConfig())
 	translator := cr_translator.NewTranslator(clientSet)
 	emitter := v1.NewRbacEmitter(clientSet.Mesh())
-	syncer := clusterrbac.NewRbacSyncer(writeNamespace, meshReconciler, rbacConfigReconciler, translator)
+	syncer := syncer.NewRbacSyncer(writeNamespace, meshReconciler, rbacConfigReconciler, translator)
 	eventLoop := v1.NewRbacEventLoop(emitter, syncer)
 	errs, err := eventLoop.Run(nil, clients.WatchOpts{})
 	if err != nil {

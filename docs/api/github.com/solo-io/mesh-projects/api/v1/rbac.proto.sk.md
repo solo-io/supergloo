@@ -12,7 +12,6 @@ weight: 5
 
 
 - [RbacMode](#rbacmode)
-- [Unspecified](#unspecified)
 - [Disable](#disable)
 - [Enable](#enable)
 - [RbacStatus](#rbacstatus)
@@ -40,7 +39,6 @@ weight: 5
 Configure RBAC properties on the mesh
 
 ```yaml
-"unspecified": .zephyr.solo.io.RbacMode.Unspecified
 "disable": .zephyr.solo.io.RbacMode.Disable
 "enable": .zephyr.solo.io.RbacMode.Enable
 "status": .zephyr.solo.io.RbacStatus
@@ -49,28 +47,9 @@ Configure RBAC properties on the mesh
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `unspecified` | [.zephyr.solo.io.RbacMode.Unspecified](../rbac.proto.sk/#unspecified) | default mode: does not configure RBAC. Only one of `unspecified`, or `enable` can be set. |  |
-| `disable` | [.zephyr.solo.io.RbacMode.Disable](../rbac.proto.sk/#disable) | Disable enforcement of RBAC policies. Only one of `disable`, or `enable` can be set. |  |
-| `enable` | [.zephyr.solo.io.RbacMode.Enable](../rbac.proto.sk/#enable) | Use RBAC to isolate all services, preventing any communication between services. Only one of `enable`, or `disable` can be set. |  |
+| `disable` | [.zephyr.solo.io.RbacMode.Disable](../rbac.proto.sk/#disable) | Disable enforcement of RBAC policies. Only one of `disable` or `enable` can be set. |  |
+| `enable` | [.zephyr.solo.io.RbacMode.Enable](../rbac.proto.sk/#enable) | Use RBAC to isolate all services, preventing any communication between services. Only one of `enable` or `disable` can be set. |  |
 | `status` | [.zephyr.solo.io.RbacStatus](../rbac.proto.sk/#rbacstatus) | Set by operator - Initialized as pending. - If isolation cannot be expressed, an error code corresponding to the reason is reported. - If isolation can be expressed, an "OK" status code is reported. |  |
-
-
-
-
----
-### Unspecified
-
- 
-Unspecified is the default RBAC policy mode
-If a particular mesh does not support RBAC policy, this is the only allowed mode.
-Compatibility: [all]
-
-```yaml
-
-```
-
-| Field | Type | Description | Default |
-| ----- | ---- | ----------- |----------- | 
 
 
 

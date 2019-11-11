@@ -118,23 +118,13 @@ Mesh object representing an installed Istio control plane
 Mesh object representing AWS App Mesh
 
 ```yaml
-"awsSecret": .core.solo.io.ResourceRef
 "region": string
-"enableAutoInject": bool
-"injectionSelector": .zephyr.solo.io.PodSelector
-"virtualNodeLabel": string
-"sidecarPatchConfigMap": .core.solo.io.ResourceRef
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `awsSecret` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service. |  |
-| `region` | `string` | The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in. |  |
-| `enableAutoInject` | `bool` | Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy. |  |
-| `injectionSelector` | [.zephyr.solo.io.PodSelector](../selector.proto.sk/#podselector) | Pods matching this selector will be injected with the sidecar proxy at creation time. NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector. |  |
-| `virtualNodeLabel` | `string` | If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container. |  |
-| `sidecarPatchConfigMap` | [.core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | Reference to the config map that contains the patch that will be applied to the spec of the pods matching the injection_selector. |  |
+| `region` | `string` | The AWS region the AWS App Mesh control plane resources exist in. |  |
 
 
 

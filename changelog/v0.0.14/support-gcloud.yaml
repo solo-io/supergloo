@@ -1,0 +1,12 @@
+changelog:
+- type: FIX
+  issueLink: https://github.com/solo-io/mesh-projects/issues/19
+  description: Simplify with 2 deterministic rbac states. Enabled/Disabled.
+- type: FIX
+  description: Support gcloud foreign clusters
+  issueLink: https://github.com/solo-io/mesh-projects/issues/23
+- type: FIX
+  description: Remove unspecified option, and only read and write resources with OwnerLabels
+  issueLink: https://github.com/solo-io/mesh-projects/issues/42
+
+

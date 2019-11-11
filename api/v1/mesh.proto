@@ -84,28 +84,8 @@ message IstioMesh {
 
 // Mesh object representing AWS App Mesh
 message AwsAppMesh {
-
-    // Reference to the secret that holds the AWS credentials that will be used to access the AWS App Mesh service.
-    core.solo.io.ResourceRef aws_secret = 1;
-
-    // The AWS region the AWS App Mesh control plane resources (Virtual Nodes, Virtual Routers, etc.) will be created in.
-    string region = 2;
-
-    // Determines whether pods will be automatically injected with the AWS App Mesh Envoy sidecar proxy.
-    bool enable_auto_inject = 3;
-
-    // Pods matching this selector will be injected with the sidecar proxy at creation time.
-    //
-    // NOTE: the sidecar injector webhook currently supports only the NamespaceSelector and LabelSelector
-    PodSelector injection_selector = 4;
-
-    // If auto-injection is enabled, the value of the pod label with this key will be used to calculate the value of
-    // APPMESH_VIRTUAL_NODE_NAME environment variable that is set on the injected sidecar proxy container.
-    string virtual_node_label = 5;
-
-    // Reference to the config map that contains the patch that will be applied to the spec of the pods matching the
-    // injection_selector.
-    core.solo.io.ResourceRef sidecar_patch_config_map = 6;
+    // The AWS region the AWS App Mesh control plane resources exist in.
+    string region = 1;
 }
 
 // Mesh object representing an installed Linkerd control plane

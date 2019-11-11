@@ -8,7 +8,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
-	"github.com/solo-io/mesh-projects/pkg/utils"
+	"github.com/solo-io/mesh-projects/services/internal/utils"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"

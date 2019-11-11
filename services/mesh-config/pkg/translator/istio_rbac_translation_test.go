@@ -3,6 +3,7 @@ package translator
 import (
 	"context"
 
+	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 
 	. "github.com/onsi/ginkgo"
@@ -39,21 +40,6 @@ var _ = Describe("Rbac Translation", func() {
 			ExpectWithOffset(1, computedRbacConfig).To(Equal(expectedRbac))
 
 		}
-		Context("inactive mode", func() {
-			It("should not add new rbac configs when none exist", func() {
-				inputMesh := meshWithRbac(testOpts, &v1.RbacMode{
-					Mode: &v1.RbacMode_Unspecified_{Unspecified: &v1.RbacMode_Unspecified{}},
-				})
-				expectedMesh := meshWithRbac(testOpts, &v1.RbacMode{
-					Mode: &v1.RbacMode_Unspecified_{Unspecified: &v1.RbacMode_Unspecified{}},
-					Status: &v1.RbacStatus{
-						Code:    v1.RbacStatusCode_OK,
-						Message: statusInactive,
-					},
-				})
-				verifyHandleIstioRbac(inputMesh, expectedMesh, nil)
-			})
-		})
 		It("should handle disable mode", func() {
 			inputMesh := meshWithRbac(testOpts, &v1.RbacMode{
 				Mode: &v1.RbacMode_Disable_{Disable: &v1.RbacMode_Disable{}},
@@ -71,7 +57,7 @@ var _ = Describe("Rbac Translation", func() {
 					Name:      "default",
 					Namespace: testOpts.installationNs,
 					Cluster:   testOpts.cluster1,
-					Labels:    OwnerLabels,
+					Labels:    common.OwnerLabels,
 				},
 				Mode: v1alpha1.ClusterRbacConfig_OFF,
 			}
@@ -94,7 +80,7 @@ var _ = Describe("Rbac Translation", func() {
 					Name:      "default",
 					Namespace: testOpts.installationNs,
 					Cluster:   testOpts.cluster1,
-					Labels:    OwnerLabels,
+					Labels:    common.OwnerLabels,
 				},
 				Mode: v1alpha1.ClusterRbacConfig_ON,
 			}
@@ -106,7 +92,7 @@ var _ = Describe("Rbac Translation", func() {
 func meshWithRbac(opts *testOptions, rbacCfg *v1.RbacMode) *v1.Mesh {
 	return &v1.Mesh{
 		Metadata: core.Metadata{
-			Labels: OwnerLabels,
+			Labels: common.OwnerLabels,
 		},
 		MeshType: &v1.Mesh_Istio{Istio: &v1.IstioMesh{
 			InstallationNamespace: opts.installationNs,
