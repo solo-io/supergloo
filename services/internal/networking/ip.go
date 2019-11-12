@@ -44,7 +44,7 @@ func GetIngressHost(restCfg *rest.Config, ref *core.ClusterResourceRef, proxyPor
 	if err != nil {
 		return "", err
 	}
-	namespace, name := ref.GetResource().GetNamespace(), ref.GetResource().GetName()
+	namespace, name := ref.GetResource().Namespace, ref.GetResource().Name
 	svc, err := kube.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return "", errors.Wrapf(err, "could not detect '%v' service in %v namespace", name, namespace)

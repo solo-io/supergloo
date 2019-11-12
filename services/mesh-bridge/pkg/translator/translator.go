@@ -91,8 +91,8 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 			return nil, err
 		}
 
-		entryPoint, err := t.meshIngresses.Find(mesh.GetEntryPoint().GetResource().GetNamespace(),
-			mesh.GetEntryPoint().GetResource().GetName())
+		entryPoint, err := t.meshIngresses.Find(mesh.GetEntryPoint().GetResource().Namespace,
+			mesh.GetEntryPoint().GetResource().Name)
 		if err != nil {
 			return nil, err
 		}
@@ -109,7 +109,7 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 				return nil, err
 			}
 			address, port, err = networking.GetIngressHostAndPort(clusterRestCfg, &zephyr_core.ClusterResourceRef{
-				Resource: &core.ResourceRef{
+				Resource: core.ResourceRef{
 					Name:      typedIngress.Gloo.GetServiceName(),
 					Namespace: typedIngress.Gloo.GetNamespace(),
 				},
