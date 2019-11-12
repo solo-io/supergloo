@@ -72,6 +72,9 @@ SUBDIRS:=services ci pkg
 
 .PHONY: generated-code
 generated-code:
+	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/httproutegroup/v1alpha1  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/httproutegroup/v1alpha1/http-route-group.proto
+	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/traffictarget/v1alpha1  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/traffictarget/v1alpha1/traffic-target.proto
+	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/trafficsplit/v1alpha2  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/trafficsplit/v1alpha2/traffic-split.proto
 	CGO_ENABLED=0 go generate ./...
 	gofmt -w $(SUBDIRS)
 	goimports -w $(SUBDIRS)
