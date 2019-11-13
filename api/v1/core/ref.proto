@@ -9,6 +9,10 @@ import "github.com/solo-io/solo-kit/api/v1/ref.proto";
 
 
 message ClusterResourceRef {
+    option (gogoproto.goproto_sizecache) = false;
+    option (gogoproto.goproto_unkeyed) = false;
+    option (gogoproto.goproto_unrecognized) = false;
+
     core.solo.io.ResourceRef resource = 1 [(gogoproto.nullable) = false];
     string cluster = 2;
 }
