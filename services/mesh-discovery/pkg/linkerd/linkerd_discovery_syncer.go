@@ -18,7 +18,7 @@ import (
 type linkerdDiscoveryPlugin struct{}
 
 func (p *linkerdDiscoveryPlugin) MeshType() string {
-	return "linkerd"
+	return common.LinkerdMeshID
 }
 
 var discoveryLabels = map[string]string{

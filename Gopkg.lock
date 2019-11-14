@@ -960,11 +960,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:42553aa0a52fc463869339c705ea8836e7413c18dc3af01770321067ee07b6e8"
+  digest = "1:a68c381e9533de34d95607aee7b172fb3ea58098461bf9af86873a98e92cf369"
   name = "github.com/solo-io/gloo"
   packages = [
     "install/helm/gloo/generate",
     "projects/gloo/constants",
+    "projects/gloo/pkg/api/external/envoy/extensions/transformation",
     "projects/gloo/pkg/api/external/envoy/extensions/waf",
     "projects/gloo/pkg/api/v1",
     "projects/gloo/pkg/api/v1/enterprise/plugins/extauth/v1",
@@ -999,8 +1000,8 @@
     "projects/gloo/pkg/api/v1/plugins/transformation",
   ]
   pruneopts = "UT"
-  revision = "26ec451ba817a62cf01cbf125fcf8c873fc47d1e"
-  version = "v0.20.11"
+  revision = "bc3835e66855758ab7ffaa53c30fb75f57365546"
+  version = "v0.20.13"
 
 [[projects]]
   digest = "1:a0a4fe5802fd3d633f69900c213a1d199f372fd79a107a8b1f2b5b2c6763d20a"
@@ -2033,7 +2034,6 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
-    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

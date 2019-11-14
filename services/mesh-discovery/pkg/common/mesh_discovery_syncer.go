@@ -3,12 +3,20 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/hashutils"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
+	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"go.uber.org/zap"
+)
+
+const (
+	LinkerdMeshID = "linkerd"
+	IstioMeshID   = "istio"
+	AppmeshMeshID = "appmesh"
 )
 
 type MeshDiscoveryPlugin interface {
@@ -59,6 +67,8 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 
 	desiredMeshes.Each(func(mesh *v1.Mesh) {
 		mesh.Metadata.Namespace = s.writeNamespace
+		// remove sidecar upstreams from injection list
+		s.removeSidecarUpstreams(mesh)
 	})
 
 	if err := s.meshReconciler.Reconcile(
@@ -73,6 +83,26 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 	s.lastDesired = desiredMeshes
 
 	return nil
+}
+
+func (s *meshDiscoverySyncer) removeSidecarUpstreams(mesh *v1.Mesh) {
+	var removalString string
+	switch mesh.GetMeshType().(type) {
+	case *v1.Mesh_Istio:
+		removalString = IstioMeshID
+	case *v1.Mesh_Linkerd:
+		removalString = LinkerdMeshID
+	case *v1.Mesh_AwsAppMesh:
+		removalString = AppmeshMeshID
+	}
+	removalString = fmt.Sprintf("-%s-", removalString)
+	var tempList []*core.ResourceRef
+	for _, ref := range mesh.DiscoveryMetadata.Upstreams {
+		if !strings.Contains(ref.GetName(), removalString) {
+			tempList = append(tempList, ref)
+		}
+	}
+	mesh.DiscoveryMetadata.Upstreams = tempList
 }
 
 func (s *meshDiscoverySyncer) desiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {

@@ -30,7 +30,7 @@ func NewAppmeshDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReco
 }
 
 func (p *appmeshDiscoveryPlugin) MeshType() string {
-	return "appmesh"
+	return common.AppmeshMeshID
 }
 
 var discoveryLabels = map[string]string{

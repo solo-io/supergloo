@@ -37,7 +37,7 @@ func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconc
 }
 
 func (p *istioDiscoveryPlugin) MeshType() string {
-	return "istio"
+	return common.IstioMeshID
 }
 
 var discoveryLabels = map[string]string{
