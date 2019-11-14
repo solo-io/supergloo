@@ -32,7 +32,7 @@ but does require a few steps depending on where the clusters are located. The cu
     eksctl. `eksctl utils write-kubeconfig --region <cluster-region> --name <cluster-namne> --auto-kubeconfig`. This command 
     will save the kubeconfig into `~/.kube/eksctl/clusters/<cluster-name>`.
     4) Create a secret containing the above kubeconfig. This can be done using the following script:
-    `go run ./hack/kube/remote-kube-config.go -f ~/.kube/eksctl/clusters/<cluster-name> <cluster-id> | k apply -f -`
+    `go run ./hack/kube/remote-kube-config.go -f ~/.kube/eksctl/clusters/<cluster-name> <cluster-id> | k apply -f -`, where `cluster-id` is a value that you choose.
     5) Now the multi cluster clients should pick up the kube config, and use it. Notice the `<cluster-id>` above. That value
     is how the multi-cluster clients ID the cluster internally. This value can be the same as the `<cluster-name>` or not.
  
@@ -50,7 +50,7 @@ but does require a few steps depending on where the clusters are located. The cu
     The run: `KUBECONFIG=~/.kube/gcloud/clusters/<cluster-name> gcloud container clusters get-credentials ...`. Fill in
     the rest with the cluster you wish to connect to.
     4) Create a secret containing the above kubeconfig. This can be done using the following script:
-    `go run ./hack/kube/remote-kube-config.go -f ~/.kube/gcloud/clusters/<cluster-name> <cluster-id> | k apply -f -`
+    `go run ./hack/kube/remote-kube-config.go -f ~/.kube/gcloud/clusters/<cluster-name> <cluster-id> | k apply -f -`, where `cluster-id` is a value that you choose.
     5) Now the multi cluster clients should pick up the kube config, and use it. Notice the `<cluster-id>` above. That value
     is how the multi-cluster clients ID the cluster internally. This value can be the same as the `<cluster-name>` or not.
     
