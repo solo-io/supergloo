@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
@@ -27,15 +28,17 @@ import (
 
 var _ = Describe("IstioDiscoverySyncer", func() {
 	var (
-		istioDiscovery   v1.DiscoverySyncer
-		reconciler       *mockMeshReconciler
-		meshPolicyClient v1alpha1.MeshPolicyClient
-		crdGetter        *mockCrdGetter
-		jobGetter        *mockJobClient
-		writeNs          = "write-objects-here"
+		istioDiscovery    v1.DiscoverySyncer
+		reconciler        *mockMeshReconciler
+		ingressReconciler *mockMeshIngressReconciler
+		meshPolicyClient  v1alpha1.MeshPolicyClient
+		crdGetter         *mockCrdGetter
+		jobGetter         *mockJobClient
+		writeNs           = "write-objects-here"
 	)
 	BeforeEach(func() {
 		reconciler = &mockMeshReconciler{}
+		ingressReconciler = &mockMeshIngressReconciler{}
 		meshPolicyClient, _ = v1alpha1.NewMeshPolicyClient(
 			&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 		crdGetter = &mockCrdGetter{}
@@ -46,6 +49,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			meshPolicyClient,
 			crdGetter,
 			jobGetter,
+			ingressReconciler,
 		)
 	})
 	Context("pilot not present", func() {
@@ -81,6 +85,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				meshPolicyClient,
 				crdGetter,
 				newIncompleteJobGetter(),
+				ingressReconciler,
 			)
 		})
 		It("reconciles nil", func() {
@@ -100,6 +105,7 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				meshPolicyClient,
 				crdGetter,
 				jobGetter,
+				ingressReconciler,
 			)
 		})
 		It("reconciles nil", func() {
@@ -139,6 +145,12 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 					MtlsConfig:       mtlsConfig,
 				},
 				SmiEnabled: smiEnabled,
+				EntryPoint: &zeph_core.ClusterResourceRef{
+					Resource: core.ResourceRef{
+						Name:      "istio-istio-system",
+						Namespace: writeNs,
+					},
+				},
 			}
 		}
 		var snap *v1.DiscoverySnapshot
@@ -289,6 +301,15 @@ type mockMeshReconciler struct {
 }
 
 func (r *mockMeshReconciler) Reconcile(namespace string, desiredResources v1.MeshList, transition v1.TransitionMeshFunc, opts clients.ListOpts) error {
+	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
+	return nil
+}
+
+type mockMeshIngressReconciler struct {
+	reconcileCalledWith []v1.MeshIngressList
+}
+
+func (r *mockMeshIngressReconciler) Reconcile(namespace string, desiredResources v1.MeshIngressList, transition v1.TransitionMeshIngressFunc, opts clients.ListOpts) error {
 	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
 	return nil
 }

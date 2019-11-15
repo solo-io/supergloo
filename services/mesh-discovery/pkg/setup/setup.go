@@ -88,6 +88,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 
 	// TODO does this Should Not be multicluster
 	meshClient, _ := InitializeMeshClient(ctx, sharedCacheGetter)
+	meshIngressClient, _ := InitializeMeshIngressClient(ctx, sharedCacheGetter)
 	_, upstreamClientHandler := InitializeUpstreamClient(ctx, sharedCacheGetter, watchHandler)
 	_, deploymentClientHandler := InitializeDeploymentClient(ctx, deploymentCacheGetter, watchHandler)
 	_, podClientHandler := InitializePodClient(ctx, coreCacheGetter, watchHandler)
@@ -138,10 +139,12 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	}()
 
 	meshReconciler := v1.NewMeshReconciler(meshClient)
+	meshIngressReconciler := v1.NewMeshIngressReconciler(meshIngressClient)
 
 	linkerdDiscovery := linkerd.NewLinkerdDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
+		meshIngressReconciler,
 	)
 
 	istioDiscovery := istio.NewIstioDiscoverySyncer(
@@ -150,6 +153,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 		meshPolicyClient,
 		crdClient,
 		jobClient,
+		meshIngressReconciler,
 	)
 
 	// appMeshClientBuilder := appmesh.NewAppMeshClientBuilder()

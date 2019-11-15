@@ -1,0 +1,4 @@
+changelog:
+- type: NON_USER_FACING
+  description: Don't discover upstreams on a foreign cluster.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/61

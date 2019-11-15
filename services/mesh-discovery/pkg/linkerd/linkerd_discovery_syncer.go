@@ -29,10 +29,13 @@ func (p *linkerdDiscoveryPlugin) DiscoveryLabels() map[string]string {
 	return discoveryLabels
 }
 
-func NewLinkerdDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler) v1.DiscoverySyncer {
+func NewLinkerdDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler,
+	reconciler v1.MeshIngressReconciler) v1.DiscoverySyncer {
+
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
+		reconciler,
 		&linkerdDiscoveryPlugin{},
 	)
 }

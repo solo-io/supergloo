@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/hashutils"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"go.uber.org/zap"
@@ -26,15 +27,23 @@ type MeshDiscoveryPlugin interface {
 }
 
 type meshDiscoverySyncer struct {
-	writeNamespace string
-	meshReconciler v1.MeshReconciler
-	plugin         MeshDiscoveryPlugin
+	writeNamespace        string
+	meshReconciler        v1.MeshReconciler
+	meshIngressReconciler v1.MeshIngressReconciler
+	plugin                MeshDiscoveryPlugin
 
 	lastDesired v1.MeshList
 }
 
-func NewDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, plugin MeshDiscoveryPlugin) v1.DiscoverySyncer {
-	return &meshDiscoverySyncer{writeNamespace: writeNamespace, meshReconciler: meshReconciler, plugin: plugin}
+func NewDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshIngressReconciler v1.MeshIngressReconciler,
+	plugin MeshDiscoveryPlugin) v1.DiscoverySyncer {
+
+	return &meshDiscoverySyncer{
+		writeNamespace:        writeNamespace,
+		meshReconciler:        meshReconciler,
+		plugin:                plugin,
+		meshIngressReconciler: meshIngressReconciler,
+	}
 }
 
 func (s *meshDiscoverySyncer) ShouldSync(_, new *v1.DiscoverySnapshot) bool {
@@ -65,12 +74,20 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 		return err
 	}
 
+	meshIngresses := v1.MeshIngressList{}
+
 	desiredMeshes.Each(func(mesh *v1.Mesh) {
 		mesh.Metadata.Namespace = s.writeNamespace
 		// remove sidecar upstreams from injection list
 		s.removeSidecarUpstreams(mesh)
+		meshIngress := s.createMeshIngressForMesh(mesh)
+		meshIngresses = append(meshIngresses, meshIngress)
+		mesh.EntryPoint = &zeph_core.ClusterResourceRef{
+			Resource: meshIngress.Metadata.Ref(),
+		}
 	})
 
+	// reconcile meshes
 	if err := s.meshReconciler.Reconcile(
 		s.writeNamespace,
 		desiredMeshes,
@@ -80,9 +97,36 @@ func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapsh
 		return err
 	}
 
+	// reconcile ingresses
+	if err := s.meshIngressReconciler.Reconcile(
+		s.writeNamespace,
+		meshIngresses,
+		nil,
+		clients.ListOpts{Ctx: ctx, Selector: s.plugin.DiscoveryLabels()},
+	); err != nil {
+		return err
+	}
+
 	s.lastDesired = desiredMeshes
 
 	return nil
+}
+
+func (s *meshDiscoverySyncer) createMeshIngressForMesh(mesh *v1.Mesh) *v1.MeshIngress {
+	return &v1.MeshIngress{
+		Metadata: core.Metadata{
+			Name:      mesh.Metadata.Name,
+			Namespace: mesh.Metadata.Namespace,
+			Labels:    s.plugin.DiscoveryLabels(),
+		},
+		IngressType: &v1.MeshIngress_Gloo{
+			Gloo: &v1.MeshIngress_GlooIngress{
+				Namespace:   "gloo-system",
+				ServiceName: "gateway-proxy-v2",
+				Port:        "mesh-bridge",
+			},
+		},
+	}
 }
 
 func (s *meshDiscoverySyncer) removeSidecarUpstreams(mesh *v1.Mesh) {

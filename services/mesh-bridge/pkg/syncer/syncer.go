@@ -41,7 +41,11 @@ func NewMeshBridgeSyncer(clients config.MeshBridgeClientSet, mbTranslator transl
 
 func (s *networkBridgeSyncer) Sync(ctx context.Context, snapshot *v1.NetworkBridgeSnapshot) error {
 	ctx = contextutils.WithLoggerValues(ctx, zap.String("syncer", "operator"))
-	contextutils.LoggerFrom(ctx).Infow("snapshot resources", zap.Int("mesh bridges", len(snapshot.MeshBridges)))
+	contextutils.LoggerFrom(ctx).Infow("snapshot resources",
+		zap.Int("mesh bridges", len(snapshot.MeshBridges)),
+		zap.Int("mesh ingresses", len(snapshot.MeshIngresses)),
+		zap.Int("meshes", len(snapshot.Meshes)),
+	)
 	// Lazy load this reconciler because it requires an istio client, which we do not want to load until after
 	// the CRDs are registered
 	serviceEntryReconciler := v1alpha3.NewServiceEntryReconciler(s.clients.ServiceEntry())

@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
+	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
@@ -19,15 +20,18 @@ import (
 
 var _ = Describe("LinkerdDiscoverySyncer", func() {
 	var (
-		linkerdDiscovery v1.DiscoverySyncer
-		reconciler       *mockMeshReconciler
-		writeNs          = "write-objects-here"
+		linkerdDiscovery  v1.DiscoverySyncer
+		reconciler        *mockMeshReconciler
+		ingressReconciler *mockMeshIngressReconciler
+		writeNs           = "write-objects-here"
 	)
 	BeforeEach(func() {
 		reconciler = &mockMeshReconciler{}
+		ingressReconciler = &mockMeshIngressReconciler{}
 		linkerdDiscovery = NewLinkerdDiscoverySyncer(
 			writeNs,
 			reconciler,
+			ingressReconciler,
 		)
 	})
 	Context("linkerd controller not present", func() {
@@ -60,6 +64,12 @@ var _ = Describe("LinkerdDiscoverySyncer", func() {
 					EnableAutoInject: enableAutoInject,
 					MtlsConfig: &v1.MtlsConfig{
 						MtlsEnabled: true,
+					},
+				},
+				EntryPoint: &zeph_core.ClusterResourceRef{
+					Resource: core.ResourceRef{
+						Name:      "linkerd-linkerd",
+						Namespace: writeNs,
 					},
 				},
 			}
@@ -150,6 +160,15 @@ type mockMeshReconciler struct {
 }
 
 func (r *mockMeshReconciler) Reconcile(namespace string, desiredResources v1.MeshList, transition v1.TransitionMeshFunc, opts clients.ListOpts) error {
+	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
+	return nil
+}
+
+type mockMeshIngressReconciler struct {
+	reconcileCalledWith []v1.MeshIngressList
+}
+
+func (r *mockMeshIngressReconciler) Reconcile(namespace string, desiredResources v1.MeshIngressList, transition v1.TransitionMeshIngressFunc, opts clients.ListOpts) error {
 	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
 	return nil
 }

@@ -99,3 +99,26 @@ func InitializeMeshClient(ctx context.Context, sharedCacheGetter clustercache.Ca
 	}
 	return client, nil
 }
+
+func InitializeMeshIngressClient(ctx context.Context, sharedCacheGetter clustercache.CacheGetter) (v1.MeshIngressClient, error) {
+	cfg, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
+	if err != nil {
+		panic("KUBECONFIG is not defined")
+	}
+	meshIngressClientFactory := factory.KubeResourceClientFactory{
+		Crd: v1.MeshIngressCrd,
+		Cfg: cfg,
+		// TODO panic if the cache is wrong type
+		SharedCache:     sharedCacheGetter.GetCache(multicluster2.LocalCluster, cfg).(kube.SharedCache),
+		SkipCrdCreation: false,
+	}
+
+	client, err := v1.NewMeshIngressClient(&meshIngressClientFactory)
+	if err != nil {
+		return nil, err
+	}
+	if err := client.Register(); err != nil {
+		return nil, err
+	}
+	return client, nil
+}

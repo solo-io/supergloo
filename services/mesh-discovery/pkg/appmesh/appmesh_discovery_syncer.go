@@ -19,10 +19,12 @@ type appmeshDiscoveryPlugin struct {
 	clientBuilder ClientBuilder
 }
 
-func NewAppmeshDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, clientBuilder ClientBuilder) v1.DiscoverySyncer {
+func NewAppmeshDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler,
+	meshIngressReconciler v1.MeshIngressReconciler, clientBuilder ClientBuilder) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
+		meshIngressReconciler,
 		&appmeshDiscoveryPlugin{
 			clientBuilder: clientBuilder,
 		},

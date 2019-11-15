@@ -23,7 +23,9 @@ func UpstreamsForPods(pods kubernetes.PodList, allUpstreams gloov1.UpstreamList)
 		}
 
 		for _, pod := range pods {
-			if kubeUs.Kube.ServiceNamespace == pod.Namespace && labels.SelectorFromSet(selector).Matches(labels.Set(pod.Labels)) {
+			if kubeUs.Kube.ServiceNamespace == pod.Namespace &&
+				labels.SelectorFromSet(selector).Matches(labels.Set(pod.Labels)) &&
+				us.Metadata.Cluster == pod.ClusterName {
 				upstreamsForPods = append(upstreamsForPods, us)
 				break
 			}

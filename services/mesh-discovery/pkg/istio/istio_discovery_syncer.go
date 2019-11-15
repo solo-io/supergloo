@@ -28,10 +28,12 @@ type istioDiscoveryPlugin struct {
 	resourceDetector IstioResourceDetector
 }
 
-func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient, crdGetter CrdGetter, jobClient kubernetes.JobClient) v1.DiscoverySyncer {
+func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient,
+	crdGetter CrdGetter, jobClient kubernetes.JobClient, meshIngressReconciler v1.MeshIngressReconciler) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
+		meshIngressReconciler,
 		&istioDiscoveryPlugin{meshPolicyClient: meshPolicyClient, crdGetter: crdGetter, jobClient: jobClient, resourceDetector: NewIstioResourceDetector()},
 	)
 }
@@ -56,12 +58,13 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 		return nil, nil
 	}
 
-	injectedPods := p.resourceDetector.DetectInjectedIstioPods(ctx, snap.Pods)
-
 	byCluster := snapShotByCluster(snap)
 
 	var istioMeshes v1.MeshList
 	for _, pilot := range pilots {
+
+		injectedPods := p.resourceDetector.DetectInjectedIstioPods(ctx, byCluster[pilot.Cluster].Pods)
+
 		meshPolicyCrdRegistered, err := p.resourceDetector.DetectMeshPolicyCrd(p.crdGetter, pilot.Cluster)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Errorw("Failed to detect mesh policy CRD", zap.Error(err), zap.Any("cluster", pilot.Cluster))
@@ -126,15 +129,12 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 			}
 		}
 
-		meshUpstreams := func() []*core.ResourceRef {
-			injectedUpstreams := utils.UpstreamsForPods(injectedPods[pilot.Cluster][pilot.Namespace], snap.Upstreams)
-			var usRefs []*core.ResourceRef
-			for _, us := range injectedUpstreams {
-				ref := us.Metadata.Ref()
-				usRefs = append(usRefs, &ref)
-			}
-			return usRefs
-		}()
+		injectedUpstreams := utils.UpstreamsForPods(injectedPods[pilot.Cluster][pilot.Namespace], snap.Upstreams)
+		var usRefs []*core.ResourceRef
+		for _, us := range injectedUpstreams {
+			ref := us.Metadata.Ref()
+			usRefs = append(usRefs, &ref)
+		}
 
 		istioMesh := &v1.Mesh{
 			Metadata: core.Metadata{
@@ -153,7 +153,7 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 				Cluster:          pilot.Cluster,
 				EnableAutoInject: autoInjectionEnabled,
 				MtlsConfig:       mtlsConfig,
-				Upstreams:        meshUpstreams,
+				Upstreams:        usRefs,
 			},
 		}
 		istioMeshes = append(istioMeshes, istioMesh)
