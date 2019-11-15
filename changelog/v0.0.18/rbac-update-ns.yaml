@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    description: Fix RBAC updates, now that we are writing ClusterRbacConfig we cannot pass a namespace to the reconciler.
+    issueLink: https://github.com/solo-io/sm-marketplace/issues/1015
+    resolvesIssue: false

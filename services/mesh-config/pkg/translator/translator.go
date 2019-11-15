@@ -117,8 +117,7 @@ func newIstioRbacConfigMetadata(istioMesh *v1.Mesh) core.Metadata {
 		// Must use the same cluster as the mesh as this is where it will be written
 		Cluster: istioMesh.DiscoveryMetadata.Cluster,
 		Name:    istioRbacConfigObjectName,
-		// currently, we will install these resources in the InstallationNamespace
-		// TODO - consider providing write namespace option
-		Namespace: istioMesh.MeshType.(*v1.Mesh_Istio).Istio.InstallationNamespace,
+		// resource is cluster scoped, so we MUST pass an empty string (no namespace), otherwise updates will fail
+		Namespace: "",
 	}
 }
