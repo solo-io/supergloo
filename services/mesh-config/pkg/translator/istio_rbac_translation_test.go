@@ -54,10 +54,9 @@ var _ = Describe("Rbac Translation", func() {
 			expectedRbac := &v1alpha1.ClusterRbacConfig{
 				Status: core.Status{},
 				Metadata: core.Metadata{
-					Name:      "default",
-					Namespace: testOpts.installationNs,
-					Cluster:   testOpts.cluster1,
-					Labels:    common.OwnerLabels,
+					Name:    "default",
+					Cluster: testOpts.cluster1,
+					Labels:  common.OwnerLabels,
 				},
 				Mode: v1alpha1.ClusterRbacConfig_OFF,
 			}
@@ -77,10 +76,9 @@ var _ = Describe("Rbac Translation", func() {
 			expectedRbac := &v1alpha1.ClusterRbacConfig{
 				Status: core.Status{},
 				Metadata: core.Metadata{
-					Name:      "default",
-					Namespace: testOpts.installationNs,
-					Cluster:   testOpts.cluster1,
-					Labels:    common.OwnerLabels,
+					Name:    "default",
+					Cluster: testOpts.cluster1,
+					Labels:  common.OwnerLabels,
 				},
 				Mode: v1alpha1.ClusterRbacConfig_ON,
 			}
