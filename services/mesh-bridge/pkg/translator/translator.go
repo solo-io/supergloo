@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
@@ -185,11 +186,11 @@ type UpstreamInfo struct {
 	ports []*v1alpha3.Port
 }
 
-func (t *translator) infoFromTargetServices(list map[*v1.MeshBridge]string) (*UpstreamInfo, error) {
+func (t *translator) infoFromTargetServices(mesBridgeToCluster map[*v1.MeshBridge]string) (*UpstreamInfo, error) {
 	hosts := make(map[string]bool)
 	var endpoints []*v1alpha3.Port
 	i := 0
-	for bridge, cluster := range list {
+	for bridge, cluster := range mesBridgeToCluster {
 		i += 1
 		upstreamRef := bridge.GetTarget().GetMeshService().GetUpstream()
 		upstream, err := t.clientset.Upstreams().Read(upstreamRef.GetNamespace(),
@@ -204,7 +205,7 @@ func (t *translator) infoFromTargetServices(list map[*v1.MeshBridge]string) (*Up
 			return nil, fmt.Errorf("currently only kube upstreams are supported, %s supplied",
 				bridge.GetTarget().String())
 		}
-		hostName := fmt.Sprintf("%s.%s.global", kubeUpstream.GetServiceName(), kubeUpstream.GetServiceNamespace())
+		hostName := DnsName(kubeUpstream, cluster)
 		hosts[hostName] = true
 		endpoints = append(endpoints, &v1alpha3.Port{
 			Number:   kubeUpstream.GetServicePort(),
@@ -220,6 +221,11 @@ func (t *translator) infoFromTargetServices(list map[*v1.MeshBridge]string) (*Up
 		hosts: result,
 		ports: endpoints,
 	}, nil
+}
+
+func DnsName(kubeUpstream *kubernetes.UpstreamSpec, clusterName string) string {
+	return fmt.Sprintf("%s.%s.%s.global", kubeUpstream.GetServiceName(),
+		kubeUpstream.GetServiceNamespace(), clusterName)
 }
 
 func addressToServiceEntryName(address string, namespace string) string {

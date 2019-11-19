@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Update DNS name to `name.namespace.cluster.global`.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/66
