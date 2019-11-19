@@ -16,6 +16,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/wrapper"
 	"github.com/solo-io/solo-kit/pkg/api/v1/eventloop"
 	sk_multicluster "github.com/solo-io/solo-kit/pkg/multicluster"
+	"github.com/solo-io/solo-kit/pkg/multicluster/handler"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -62,9 +63,12 @@ func MustInitializeMeshBridge(ctx context.Context) (*RunOpts, error) {
 	watchOpts := config.GetWatchOpts(ctx, initialSettings)
 	v := config.GetWatchNamespaces(ctx, initialSettings)
 
+	handlers := []handler.ClusterHandler{cacheManager}
+	handlers = append(handlers, clientSet.MultiClusterHandlers()...)
+
 	restConfigHandler := sk_multicluster.NewRestConfigHandler(
 		sk_multicluster.NewKubeConfigWatcher(),
-		clientSet.MultiClusterHandlers()...,
+		handlers...,
 	)
 
 	localKubeClient := kubernetes.NewForConfigOrDie(restConfig)

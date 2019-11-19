@@ -27,11 +27,12 @@ import (
 type CacheManager interface {
 	SharedCache(ctx context.Context) clustercache.CacheGetter
 	CoreCache(ctx context.Context) clustercache.CacheGetter
+	handler.ClusterHandler
 }
 
 type cacheManager struct {
-	sharedCache clustercache.CacheGetter
-	coreCache   clustercache.CacheGetter
+	sharedCache clustercache.CacheManager
+	coreCache   clustercache.CacheManager
 }
 
 func NewCacheManager(ctx context.Context) (*cacheManager, error) {
@@ -55,6 +56,16 @@ func (c *cacheManager) SharedCache(ctx context.Context) clustercache.CacheGetter
 
 func (c *cacheManager) CoreCache(ctx context.Context) clustercache.CacheGetter {
 	return c.coreCache
+}
+
+func (c *cacheManager) ClusterAdded(cluster string, restConfig *rest.Config) {
+	c.sharedCache.ClusterAdded(cluster, restConfig)
+	c.coreCache.ClusterAdded(cluster, restConfig)
+}
+
+func (c *cacheManager) ClusterRemoved(cluster string, restConfig *rest.Config) {
+	c.sharedCache.ClusterRemoved(cluster, restConfig)
+	c.coreCache.ClusterRemoved(cluster, restConfig)
 }
 
 type MultiClusterGetters struct {
