@@ -28,8 +28,10 @@ func linkerdMesh(namespace, installNs, version string, secretRef *core.ResourceR
 		},
 		MeshType: &v1.Mesh_Linkerd{
 			Linkerd: &v1.LinkerdMesh{
-				InstallationNamespace: installNs,
-				Version:               version,
+				Installation: &v1.MeshInstallation{
+					InstallationNamespace: installNs,
+					Version:               version,
+				},
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

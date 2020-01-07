@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
+	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
@@ -51,12 +52,18 @@ func (i istioResourceDetector) DetectPilotDeployments(ctx context.Context, deplo
 	for _, deployment := range deployments {
 		for _, container := range deployment.Spec.Template.Spec.Containers {
 			if strings.Contains(container.Image, "istio") && strings.Contains(container.Image, "pilot") {
-				split := strings.Split(container.Image, ":")
-				if len(split) != 2 {
+				parsedImage, err := common.NewImageNameParser().Parse(container.Image)
+				if err != nil {
 					contextutils.LoggerFrom(ctx).Errorf("invalid or unexpected image format for pilot: %v", container.Image)
 					continue
 				}
-				pilots = append(pilots, PilotDeployment{Version: split[1], Namespace: deployment.Namespace, Cluster: deployment.ClusterName})
+
+				version := parsedImage.Tag
+				if parsedImage.Digest != "" {
+					version = parsedImage.Digest
+				}
+
+				pilots = append(pilots, PilotDeployment{Version: version, Namespace: deployment.Namespace, Cluster: deployment.ClusterName})
 			}
 		}
 	}

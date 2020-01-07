@@ -43,7 +43,7 @@ func (p *appmeshDiscoveryPlugin) DiscoveryLabels() map[string]string {
 	return discoveryLabels
 }
 
-func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, writeNamespace string, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	isEksCluster, awsRegion := detectEksCluster(snap.Pods)
 
 	if !isEksCluster {
@@ -85,8 +85,9 @@ func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Dis
 
 		appmeshMesh := &v1.Mesh{
 			Metadata: core.Metadata{
-				Name:   "appmesh-" + meshName,
-				Labels: discoveryLabels,
+				Name:      "appmesh-" + meshName,
+				Namespace: writeNamespace,
+				Labels:    discoveryLabels,
 			},
 			MeshType: &v1.Mesh_AwsAppMesh{
 				AwsAppMesh: &v1.AwsAppMesh{

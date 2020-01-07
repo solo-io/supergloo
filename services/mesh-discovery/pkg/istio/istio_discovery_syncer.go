@@ -2,9 +2,14 @@ package istio
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
+	coreapi "github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	"github.com/solo-io/mesh-projects/services/internal/utils"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"go.uber.org/zap"
 
@@ -28,6 +33,15 @@ type istioDiscoveryPlugin struct {
 	resourceDetector IstioResourceDetector
 }
 
+var (
+	// sidecar proxy upstreams should have this as a substring in their name
+	sidecarUpstreamNameSubstring = fmt.Sprintf("-%s-", common.IstioMeshID)
+
+	discoveryLabels = map[string]string{
+		"discovered_by": "istio-mesh-discovery",
+	}
+)
+
 func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient,
 	crdGetter CrdGetter, jobClient kubernetes.JobClient, meshIngressReconciler v1.MeshIngressReconciler) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
@@ -42,15 +56,11 @@ func (p *istioDiscoveryPlugin) MeshType() string {
 	return common.IstioMeshID
 }
 
-var discoveryLabels = map[string]string{
-	"discovered_by": "istio-mesh-discovery",
-}
-
 func (p *istioDiscoveryPlugin) DiscoveryLabels() map[string]string {
 	return discoveryLabels
 }
 
-func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
+func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, writeNamespace string, snap *v1.DiscoverySnapshot) (v1.MeshList, error) {
 	pilots := p.resourceDetector.DetectPilotDeployments(ctx, snap.Deployments)
 	contextutils.LoggerFrom(ctx).Infow("pilots", zap.Any("length", len(pilots)))
 
@@ -129,22 +139,24 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 			}
 		}
 
-		injectedUpstreams := utils.UpstreamsForPods(injectedPods[pilot.Cluster][pilot.Namespace], snap.Upstreams)
-		var usRefs []*core.ResourceRef
-		for _, us := range injectedUpstreams {
-			ref := us.Metadata.Ref()
-			usRefs = append(usRefs, &ref)
+		meshUpstreams := findUpstreamsToReport(injectedPods, pilot, snap.Upstreams)
+
+		meshMetadata := core.Metadata{
+			Name:      pilot.Name(),
+			Namespace: writeNamespace,
+			Labels:    discoveryLabels,
 		}
+		meshRef := meshMetadata.Ref()
+		ingressRef := v1.BuildMeshIngress(&meshRef, meshMetadata.Labels).Metadata.Ref()
 
 		istioMesh := &v1.Mesh{
-			Metadata: core.Metadata{
-				Name:   pilot.Name(),
-				Labels: discoveryLabels,
-			},
+			Metadata: meshMetadata,
 			MeshType: &v1.Mesh_Istio{
 				Istio: &v1.IstioMesh{
-					InstallationNamespace: pilot.Namespace,
-					Version:               pilot.Version,
+					Installation: &v1.MeshInstallation{
+						InstallationNamespace: pilot.Namespace,
+						Version:               pilot.Version,
+					},
 				},
 			},
 			MtlsConfig: mtlsConfig,
@@ -153,7 +165,10 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 				Cluster:          pilot.Cluster,
 				EnableAutoInject: autoInjectionEnabled,
 				MtlsConfig:       mtlsConfig,
-				Upstreams:        usRefs,
+				Upstreams:        meshUpstreams,
+			},
+			EntryPoint: &coreapi.ClusterResourceRef{
+				Resource: ingressRef,
 			},
 		}
 		istioMeshes = append(istioMeshes, istioMesh)
@@ -161,6 +176,20 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, snap *v1.Disco
 
 	contextutils.LoggerFrom(ctx).Infow("istio desired meshes", zap.Any("count", len(istioMeshes)))
 	return istioMeshes, nil
+}
+
+// report all injected upstreams that are not sidecar proxies
+func findUpstreamsToReport(injectedPods injectedpods.InjectedPods, pilot PilotDeployment, upstreams gloov1.UpstreamList) (usRefs []*core.ResourceRef) {
+	injectedUpstreams := utils.UpstreamsForPods(injectedPods[pilot.Cluster][pilot.Namespace], upstreams)
+	for _, us := range injectedUpstreams {
+		if strings.Contains(us.Metadata.GetName(), sidecarUpstreamNameSubstring) {
+			continue
+		}
+		ref := us.Metadata.Ref()
+		usRefs = append(usRefs, &ref)
+	}
+
+	return
 }
 
 // TODO extract utils like this into solo-kit and test them

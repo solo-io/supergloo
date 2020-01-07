@@ -93,8 +93,10 @@ func meshWithRbac(opts *testOptions, rbacCfg *v1.RbacMode) *v1.Mesh {
 			Labels: common.OwnerLabels,
 		},
 		MeshType: &v1.Mesh_Istio{Istio: &v1.IstioMesh{
-			InstallationNamespace: opts.installationNs,
-			Version:               "1",
+			Installation: &v1.MeshInstallation{
+				InstallationNamespace: opts.installationNs,
+				Version:               "1",
+			},
 		}},
 		DiscoveryMetadata: &v1.DiscoveryMetadata{
 			Cluster: opts.cluster1,

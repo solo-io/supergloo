@@ -7,10 +7,10 @@ import (
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
+	mocks_common "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/mocks"
 	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	appsv1 "k8s.io/api/apps/v1"
@@ -21,13 +21,13 @@ import (
 var _ = Describe("LinkerdDiscoverySyncer", func() {
 	var (
 		linkerdDiscovery  v1.DiscoverySyncer
-		reconciler        *mockMeshReconciler
-		ingressReconciler *mockMeshIngressReconciler
+		reconciler        *mocks_common.MockMeshReconciler
+		ingressReconciler *mocks_common.MockMeshIngressReconciler
 		writeNs           = "write-objects-here"
 	)
 	BeforeEach(func() {
-		reconciler = &mockMeshReconciler{}
-		ingressReconciler = &mockMeshIngressReconciler{}
+		reconciler = &mocks_common.MockMeshReconciler{}
+		ingressReconciler = &mocks_common.MockMeshIngressReconciler{}
 		linkerdDiscovery = NewLinkerdDiscoverySyncer(
 			writeNs,
 			reconciler,
@@ -39,8 +39,8 @@ var _ = Describe("LinkerdDiscoverySyncer", func() {
 			snap := &v1.DiscoverySnapshot{}
 			err := linkerdDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
 	Context("linkerd controller present", func() {
@@ -53,8 +53,10 @@ var _ = Describe("LinkerdDiscoverySyncer", func() {
 				},
 				MeshType: &v1.Mesh_Linkerd{
 					Linkerd: &v1.LinkerdMesh{
-						InstallationNamespace: "linkerd",
-						Version:               "1234",
+						Installation: &v1.MeshInstallation{
+							InstallationNamespace: "linkerd",
+							Version:               "1234",
+						},
 					},
 				},
 				MtlsConfig: &v1.MtlsConfig{
@@ -87,9 +89,9 @@ var _ = Describe("LinkerdDiscoverySyncer", func() {
 			It("sets enable auto inject true", func() {
 				err := linkerdDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 					expectedMesh(true)))
 			})
 		})
@@ -147,31 +149,13 @@ var _ = Describe("LinkerdDiscoverySyncer", func() {
 				}
 				err := linkerdDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(expected))
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(expected))
 			})
 		})
 	})
 })
-
-type mockMeshReconciler struct {
-	reconcileCalledWith []v1.MeshList
-}
-
-func (r *mockMeshReconciler) Reconcile(namespace string, desiredResources v1.MeshList, transition v1.TransitionMeshFunc, opts clients.ListOpts) error {
-	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
-	return nil
-}
-
-type mockMeshIngressReconciler struct {
-	reconcileCalledWith []v1.MeshIngressList
-}
-
-func (r *mockMeshIngressReconciler) Reconcile(namespace string, desiredResources v1.MeshIngressList, transition v1.TransitionMeshIngressFunc, opts clients.ListOpts) error {
-	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
-	return nil
-}
 
 func linkerdDeployment(namespace, version string) *kubernetes.Deployment {
 	return &kubernetes.Deployment{

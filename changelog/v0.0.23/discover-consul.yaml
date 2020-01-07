@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Discover the presence of Consul Connect
+    issueLink: https://github.com/solo-io/mesh-projects/issues/70

@@ -30,8 +30,10 @@ func istioMesh(namespace, installNs, version string, secretRef *core.ResourceRef
 		},
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
-				InstallationNamespace: installNs,
-				Version:               version,
+				Installation: &v1.MeshInstallation{
+					InstallationNamespace: installNs,
+					Version:               version,
+				},
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{
@@ -55,7 +57,9 @@ func IstioMeshWithInstallNsPrometheus(namespace, installNs string, secretRef *co
 		},
 		MeshType: &v1.Mesh_Istio{
 			Istio: &v1.IstioMesh{
-				InstallationNamespace: installNs,
+				Installation: &v1.MeshInstallation{
+					InstallationNamespace: installNs,
+				},
 			},
 		},
 		MtlsConfig: &v1.MtlsConfig{

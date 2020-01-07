@@ -6,7 +6,9 @@ import (
 
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/internal/mcutils"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/consul"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/linkerd"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
@@ -156,6 +158,17 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 		meshIngressReconciler,
 	)
 
+	dockerImageNameParser := common.NewImageNameParser()
+	connectInstallationFinder := consul.NewConsulConnectInstallationFinder(dockerImageNameParser)
+
+	consulDiscovery := consul.NewConsulDiscoveryPlugin(
+		writeNamespace,
+		meshReconciler,
+		meshIngressReconciler,
+		connectInstallationFinder,
+		dockerImageNameParser,
+	)
+
 	// appMeshClientBuilder := appmesh.NewAppMeshClientBuilder()
 	// appmeshDiscovery := appmesh.NewAppmeshDiscoverySyncer(writeNamespace, meshReconciler, appMeshClientBuilder)
 
@@ -163,6 +176,7 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	eventLoop := v1.NewDiscoverySimpleEventLoop(emitter,
 		linkerdDiscovery,
 		istioDiscovery,
+		consulDiscovery,
 		// appmeshDiscovery,
 	)
 

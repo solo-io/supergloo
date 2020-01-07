@@ -29,11 +29,11 @@ func main() {
 	kubeCfgSecret1, err := secretconverter.KubeConfigToSecret(&v1.KubeConfig{
 		KubeConfig: mcv1.KubeConfig{
 			Metadata: core.Metadata{
-				Name:                 *secretName,
-				Namespace:            *namespace,
+				Name:      *secretName,
+				Namespace: *namespace,
 			},
-			Config:   *kubeConfig,
-			Cluster:  clusterName,
+			Config:  *kubeConfig,
+			Cluster: clusterName,
 		},
 	})
 	kubeCfgSecret1.Kind = "Secret"

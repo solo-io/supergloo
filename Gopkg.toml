@@ -27,6 +27,10 @@
   version = "0.11.11"
 
 [[constraint]]
+  name = "github.com/hashicorp/consul"
+  version = "1.6.2"
+
+[[constraint]]
   name = "github.com/solo-io/go-utils"
   version = "0.10.21"
 
@@ -43,6 +47,10 @@
 [[override]]
   version = "=v0.8.2"
   name = "github.com/envoyproxy/go-control-plane"
+
+[[override]]
+  version = "=v2.3.0"
+  name = "github.com/circonus-labs/circonus-gometrics"
 
 # make sure all kubernetes code is the same version.
 # when updating, update all in the same time.

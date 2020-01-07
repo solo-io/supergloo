@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/authorization/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
+	mocks_common "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/mocks"
 	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
@@ -29,16 +30,16 @@ import (
 var _ = Describe("IstioDiscoverySyncer", func() {
 	var (
 		istioDiscovery    v1.DiscoverySyncer
-		reconciler        *mockMeshReconciler
-		ingressReconciler *mockMeshIngressReconciler
+		reconciler        *mocks_common.MockMeshReconciler
+		ingressReconciler *mocks_common.MockMeshIngressReconciler
 		meshPolicyClient  v1alpha1.MeshPolicyClient
 		crdGetter         *mockCrdGetter
 		jobGetter         *mockJobClient
 		writeNs           = "write-objects-here"
 	)
 	BeforeEach(func() {
-		reconciler = &mockMeshReconciler{}
-		ingressReconciler = &mockMeshIngressReconciler{}
+		reconciler = &mocks_common.MockMeshReconciler{}
+		ingressReconciler = &mocks_common.MockMeshIngressReconciler{}
 		meshPolicyClient, _ = v1alpha1.NewMeshPolicyClient(
 			&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 		crdGetter = &mockCrdGetter{}
@@ -57,8 +58,8 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			snap := &v1.DiscoverySnapshot{}
 			err := istioDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
 	Context("pilot present, istio crds not registered", func() {
@@ -68,8 +69,8 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			}
 			err := istioDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
 	Context("pilot present, istio crds registered, job not complete", func() {
@@ -91,8 +92,8 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		It("reconciles nil", func() {
 			err := istioDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
 	Context("pilot present, meshpolicy client failing", func() {
@@ -114,8 +115,8 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			}
 			err := istioDiscovery.Sync(context.TODO(), snap)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(0))
+			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
 	Context("pilot present, istio crds registered", func() {
@@ -135,8 +136,10 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				},
 				MeshType: &v1.Mesh_Istio{
 					Istio: &v1.IstioMesh{
-						InstallationNamespace: "istio-system",
-						Version:               "1234",
+						Installation: &v1.MeshInstallation{
+							InstallationNamespace: "istio-system",
+							Version:               "1234",
+						},
 					},
 				},
 				MtlsConfig: mtlsConfig,
@@ -164,9 +167,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			It("determines the correct namespace and version of the mesh", func() {
 				err := istioDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 					expectedMesh(false, false, false, nil)))
 			})
 		})
@@ -187,9 +190,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				It("sets mtls enabled true", func() {
 					err := istioDiscovery.Sync(context.TODO(), snap)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-					Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-					Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+					Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+					Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+					Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 						expectedMesh(true, false, false, nil)))
 				})
 			})
@@ -200,9 +203,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				It("sets mtls enabled true", func() {
 					err := istioDiscovery.Sync(context.TODO(), snap)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-					Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-					Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+					Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+					Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+					Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 						expectedMesh(true, false, false, &core.ResourceRef{Name: "cacerts", Namespace: "istio-system"})))
 				})
 			})
@@ -215,9 +218,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			It("sets enable auto inject true", func() {
 				err := istioDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 					expectedMesh(false, true, false, nil)))
 			})
 		})
@@ -228,9 +231,9 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			It("sets smienabled true", func() {
 				err := istioDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(
 					expectedMesh(false, false, true, nil)))
 			})
 		})
@@ -288,31 +291,13 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				}
 				err := istioDiscovery.Sync(context.TODO(), snap)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(reconciler.reconcileCalledWith).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0]).To(HaveLen(1))
-				Expect(reconciler.reconcileCalledWith[0][0]).To(Equal(expected))
+				Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(1))
+				Expect(reconciler.ReconcileCalledWith[0][0]).To(Equal(expected))
 			})
 		})
 	})
 })
-
-type mockMeshReconciler struct {
-	reconcileCalledWith []v1.MeshList
-}
-
-func (r *mockMeshReconciler) Reconcile(namespace string, desiredResources v1.MeshList, transition v1.TransitionMeshFunc, opts clients.ListOpts) error {
-	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
-	return nil
-}
-
-type mockMeshIngressReconciler struct {
-	reconcileCalledWith []v1.MeshIngressList
-}
-
-func (r *mockMeshIngressReconciler) Reconcile(namespace string, desiredResources v1.MeshIngressList, transition v1.TransitionMeshIngressFunc, opts clients.ListOpts) error {
-	r.reconcileCalledWith = append(r.reconcileCalledWith, desiredResources)
-	return nil
-}
 
 type mockCrdGetter struct {
 	shouldSucceed bool

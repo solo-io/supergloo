@@ -33,6 +33,7 @@ message Mesh {
         IstioMesh istio = 3;
         AwsAppMesh aws_app_mesh = 4;
         LinkerdMesh linkerd = 5;
+        ConsulConnectMesh consul_connect = 12;
     }
 
     // mtls config specifies configuration options for enabling mutual
@@ -73,13 +74,17 @@ message DiscoveryMetadata {
     MtlsConfig mtls_config = 6;
 }
 
-// Mesh object representing an installed Istio control plane
-message IstioMesh {
-    // where the istio control plane has been installed
+message MeshInstallation {
+    // where the control plane has been installed
     string installation_namespace = 1;
 
-    // version of istio which has been installed
+    // version of the mesh which has been installed
     string version = 2;
+}
+
+// Mesh object representing an installed Istio control plane
+message IstioMesh {
+    MeshInstallation installation = 1;
 }
 
 // Mesh object representing AWS App Mesh
@@ -90,11 +95,11 @@ message AwsAppMesh {
 
 // Mesh object representing an installed Linkerd control plane
 message LinkerdMesh {
-    // where the Linkerd control plane has been installed
-    string installation_namespace = 1;
+    MeshInstallation installation = 1;
+}
 
-    // version of istio which has been installed
-    string version = 2;
+message ConsulConnectMesh {
+    MeshInstallation installation = 1;
 }
 
 // the encryption configuration that will be applied by the role

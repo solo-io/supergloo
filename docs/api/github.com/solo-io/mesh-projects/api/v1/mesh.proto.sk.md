@@ -13,9 +13,11 @@ weight: 5
 
 - [Mesh](#mesh) **Top-Level Resource**
 - [DiscoveryMetadata](#discoverymetadata)
+- [MeshInstallation](#meshinstallation)
 - [IstioMesh](#istiomesh)
 - [AwsAppMesh](#awsappmesh)
 - [LinkerdMesh](#linkerdmesh)
+- [ConsulConnectMesh](#consulconnectmesh)
 - [MtlsConfig](#mtlsconfig)
 - [MonitoringConfig](#monitoringconfig)
 - [MeshGroup](#meshgroup) **Top-Level Resource**
@@ -41,6 +43,7 @@ Meshes represent a currently registered service mesh.
 "istio": .zephyr.solo.io.IstioMesh
 "awsAppMesh": .zephyr.solo.io.AwsAppMesh
 "linkerd": .zephyr.solo.io.LinkerdMesh
+"consulConnect": .zephyr.solo.io.ConsulConnectMesh
 "mtlsConfig": .zephyr.solo.io.MtlsConfig
 "monitoringConfig": .zephyr.solo.io.MonitoringConfig
 "discoveryMetadata": .zephyr.solo.io.DiscoveryMetadata
@@ -54,9 +57,10 @@ Meshes represent a currently registered service mesh.
 | ----- | ---- | ----------- |----------- | 
 | `status` | [.core.solo.io.Status](../../../../solo-kit/api/v1/status.proto.sk/#status) | Status indicates the validation status of this resource. Status is read-only by clients, and set by mesh-discovery during validation. |  |
 | `metadata` | [.core.solo.io.Metadata](../../../../solo-kit/api/v1/metadata.proto.sk/#metadata) | Metadata contains the object metadata for this resource. |  |
-| `istio` | [.zephyr.solo.io.IstioMesh](../mesh.proto.sk/#istiomesh) |  Only one of `istio`, or `linkerd` can be set. |  |
-| `awsAppMesh` | [.zephyr.solo.io.AwsAppMesh](../mesh.proto.sk/#awsappmesh) |  Only one of `awsAppMesh`, or `linkerd` can be set. |  |
-| `linkerd` | [.zephyr.solo.io.LinkerdMesh](../mesh.proto.sk/#linkerdmesh) |  Only one of `linkerd`, or `awsAppMesh` can be set. |  |
+| `istio` | [.zephyr.solo.io.IstioMesh](../mesh.proto.sk/#istiomesh) |  Only one of `istio`, `awsAppMesh`, or `consulConnect` can be set. |  |
+| `awsAppMesh` | [.zephyr.solo.io.AwsAppMesh](../mesh.proto.sk/#awsappmesh) |  Only one of `awsAppMesh`, `istio`, or `consulConnect` can be set. |  |
+| `linkerd` | [.zephyr.solo.io.LinkerdMesh](../mesh.proto.sk/#linkerdmesh) |  Only one of `linkerd`, `istio`, or `consulConnect` can be set. |  |
+| `consulConnect` | [.zephyr.solo.io.ConsulConnectMesh](../mesh.proto.sk/#consulconnectmesh) |  Only one of `consulConnect`, `istio`, or `linkerd` can be set. |  |
 | `mtlsConfig` | [.zephyr.solo.io.MtlsConfig](../mesh.proto.sk/#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh. |  |
 | `monitoringConfig` | [.zephyr.solo.io.MonitoringConfig](../mesh.proto.sk/#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus. |  |
 | `discoveryMetadata` | [.zephyr.solo.io.DiscoveryMetadata](../mesh.proto.sk/#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh. |  |
@@ -92,10 +96,9 @@ Generic discovery data shared between different meshes
 
 
 ---
-### IstioMesh
+### MeshInstallation
 
- 
-Mesh object representing an installed Istio control plane
+
 
 ```yaml
 "installationNamespace": string
@@ -105,8 +108,26 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installationNamespace` | `string` | where the istio control plane has been installed. |  |
-| `version` | `string` | version of istio which has been installed. |  |
+| `installationNamespace` | `string` | where the control plane has been installed. |  |
+| `version` | `string` | version of the mesh which has been installed. |  |
+
+
+
+
+---
+### IstioMesh
+
+ 
+Mesh object representing an installed Istio control plane
+
+```yaml
+"installation": .zephyr.solo.io.MeshInstallation
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `installation` | [.zephyr.solo.io.MeshInstallation](../mesh.proto.sk/#meshinstallation) |  |  |
 
 
 
@@ -136,15 +157,30 @@ Mesh object representing AWS App Mesh
 Mesh object representing an installed Linkerd control plane
 
 ```yaml
-"installationNamespace": string
-"version": string
+"installation": .zephyr.solo.io.MeshInstallation
 
 ```
 
 | Field | Type | Description | Default |
 | ----- | ---- | ----------- |----------- | 
-| `installationNamespace` | `string` | where the Linkerd control plane has been installed. |  |
-| `version` | `string` | version of istio which has been installed. |  |
+| `installation` | [.zephyr.solo.io.MeshInstallation](../mesh.proto.sk/#meshinstallation) |  |  |
+
+
+
+
+---
+### ConsulConnectMesh
+
+
+
+```yaml
+"installation": .zephyr.solo.io.MeshInstallation
+
+```
+
+| Field | Type | Description | Default |
+| ----- | ---- | ----------- |----------- | 
+| `installation` | [.zephyr.solo.io.MeshInstallation](../mesh.proto.sk/#meshinstallation) |  |  |
 
 
 
