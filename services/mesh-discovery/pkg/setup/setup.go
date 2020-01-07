@@ -80,10 +80,6 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	if err != nil {
 		return err
 	}
-	jobCacheGetter, err := clustercache.NewCacheManager(ctx, cache.NewJobCacheFromConfig)
-	if err != nil {
-		return err
-	}
 
 	watchAggregator := wrapper.NewWatchAggregator()
 	watchHandler := mcutils.NewAggregatedWatchClusterClientHandler(watchAggregator)
@@ -96,7 +92,6 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 	_, podClientHandler := InitializePodClient(ctx, coreCacheGetter, watchHandler)
 	crdClient, crdClientHandler := InitializeCustomResourceDefinitionClient(ctx, crdCacheGetter)
 	meshPolicyClient, meshPolicyClientHandler := InitializeMeshPolicyClient(ctx, sharedCacheGetter)
-	jobClient, jobClientHandler := InitializeJobClient(ctx, jobCacheGetter)
 
 	localRestConfig, err := kubeutils.GetConfig("", os.Getenv("KUBECONFIG"))
 	if err != nil {
@@ -120,7 +115,6 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 		podClientHandler,
 		crdClientHandler,
 		meshPolicyClientHandler,
-		jobClientHandler,
 		watchHandler,
 	)
 
@@ -154,7 +148,6 @@ func runDiscoveryEventLoop(ctx context.Context, writeNamespace string, errHandle
 		meshReconciler,
 		meshPolicyClient,
 		crdClient,
-		jobClient,
 		meshIngressReconciler,
 	)
 

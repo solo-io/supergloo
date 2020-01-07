@@ -11,8 +11,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	sk_errors "github.com/solo-io/solo-kit/pkg/errors"
-	batchv1 "k8s.io/api/batch/v1"
-	kubev1 "k8s.io/api/core/v1"
 )
 
 type PilotDeployment struct {
@@ -28,14 +26,9 @@ func (c PilotDeployment) Name() string {
 	return "istio-" + c.Namespace + "-" + c.Cluster
 }
 
-var PostInstallJobs = []string{
-	"istio-security-post-install",
-}
-
 type IstioResourceDetector interface {
 	DetectPilotDeployments(ctx context.Context, deployments kubernetes.DeploymentList) []PilotDeployment
 	DetectMeshPolicyCrd(crdGetter CrdGetter, cluster string) (bool, error)
-	DetectPostInstallJobComplete(jobClient kubernetes.JobClient, pilotNamespace, pilotCluster string) (bool, error)
 	DetectInjectedIstioPods(ctx context.Context, pods kubernetes.PodList) injectedpods.InjectedPods
 }
 
@@ -79,41 +72,6 @@ func (i istioResourceDetector) DetectMeshPolicyCrd(crdGetter CrdGetter, cluster 
 		return false, nil
 	}
 	return false, err
-}
-
-func (i istioResourceDetector) DetectPostInstallJobComplete(jobClient kubernetes.JobClient, pilotNamespace, pilotCluster string) (bool, error) {
-	jobsList, err := jobClient.List(pilotNamespace, clients.ListOpts{Cluster: pilotCluster})
-	if err != nil {
-		return false, err
-	}
-
-	getJobFromPrefix := func(prefix string) *kubernetes.Job {
-		for _, job := range jobsList {
-			if strings.HasPrefix(job.Name, prefix) {
-				return job
-			}
-		}
-		return nil
-	}
-
-	for _, jobName := range PostInstallJobs {
-		job := getJobFromPrefix(jobName)
-		if job == nil {
-			return false, nil
-		}
-
-		var jobComplete bool
-		for _, condition := range job.Status.Conditions {
-			if condition.Type == batchv1.JobComplete && condition.Status == kubev1.ConditionTrue {
-				jobComplete = true
-				break
-			}
-		}
-		if !jobComplete {
-			return false, nil
-		}
-	}
-	return true, nil
 }
 
 func (i istioResourceDetector) DetectInjectedIstioPods(ctx context.Context, pods kubernetes.PodList) injectedpods.InjectedPods {

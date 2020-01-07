@@ -29,7 +29,6 @@ type CrdGetter interface {
 type istioDiscoveryPlugin struct {
 	meshPolicyClient v1alpha1.MeshPolicyClient
 	crdGetter        CrdGetter
-	jobClient        kubernetes.JobClient
 	resourceDetector IstioResourceDetector
 }
 
@@ -43,12 +42,12 @@ var (
 )
 
 func NewIstioDiscoverySyncer(writeNamespace string, meshReconciler v1.MeshReconciler, meshPolicyClient v1alpha1.MeshPolicyClient,
-	crdGetter CrdGetter, jobClient kubernetes.JobClient, meshIngressReconciler v1.MeshIngressReconciler) v1.DiscoverySyncer {
+	crdGetter CrdGetter, meshIngressReconciler v1.MeshIngressReconciler) v1.DiscoverySyncer {
 	return common.NewDiscoverySyncer(
 		writeNamespace,
 		meshReconciler,
 		meshIngressReconciler,
-		&istioDiscoveryPlugin{meshPolicyClient: meshPolicyClient, crdGetter: crdGetter, jobClient: jobClient, resourceDetector: NewIstioResourceDetector()},
+		&istioDiscoveryPlugin{meshPolicyClient: meshPolicyClient, crdGetter: crdGetter, resourceDetector: NewIstioResourceDetector()},
 	)
 }
 
@@ -97,18 +96,6 @@ func (p *istioDiscoveryPlugin) DesiredMeshes(ctx context.Context, writeNamespace
 			}
 			return false, false
 		}()
-
-		// ensure that the post-install jobs have run for this pilot,
-		// if not, we're not ready to detect it
-		postInstallComplete, err := p.resourceDetector.DetectPostInstallJobComplete(p.jobClient, pilot.Namespace, pilot.Cluster)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).Errorf("failed to detect if post-install jobs have finished: %v", err)
-			continue
-		}
-
-		if !postInstallComplete {
-			continue
-		}
 
 		var autoInjectionEnabled bool
 		sidecarInjector, err := byCluster[pilot.Cluster].Deployments.Find(pilot.Namespace, "istio-sidecar-injector")

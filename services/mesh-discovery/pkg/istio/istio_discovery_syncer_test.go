@@ -13,14 +13,12 @@ import (
 	. "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/istio"
 	"github.com/solo-io/mesh-projects/test/inputs"
 	"github.com/solo-io/solo-kit/api/external/kubernetes/deployment"
-	"github.com/solo-io/solo-kit/api/external/kubernetes/job"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/memory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	appsv1 "k8s.io/api/apps/v1"
-	v13 "k8s.io/api/batch/v1"
 	kubev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +32,6 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		ingressReconciler *mocks_common.MockMeshIngressReconciler
 		meshPolicyClient  v1alpha1.MeshPolicyClient
 		crdGetter         *mockCrdGetter
-		jobGetter         *mockJobClient
 		writeNs           = "write-objects-here"
 	)
 	BeforeEach(func() {
@@ -43,13 +40,11 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 		meshPolicyClient, _ = v1alpha1.NewMeshPolicyClient(
 			&factory.MemoryResourceClientFactory{Cache: memory.NewInMemoryResourceCache()})
 		crdGetter = &mockCrdGetter{}
-		jobGetter = newCompletedJobGetter()
 		istioDiscovery = NewIstioDiscoverySyncer(
 			writeNs,
 			reconciler,
 			meshPolicyClient,
 			crdGetter,
-			jobGetter,
 			ingressReconciler,
 		)
 	})
@@ -73,29 +68,6 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
 		})
 	})
-	Context("pilot present, istio crds registered, job not complete", func() {
-		var snap *v1.DiscoverySnapshot
-		BeforeEach(func() {
-			crdGetter.shouldSucceed = true
-			snap = &v1.DiscoverySnapshot{
-				Deployments: []*kubernetes.Deployment{istioDeployment("istio-system", "1234")},
-			}
-			istioDiscovery = NewIstioDiscoverySyncer(
-				writeNs,
-				reconciler,
-				meshPolicyClient,
-				crdGetter,
-				newIncompleteJobGetter(),
-				ingressReconciler,
-			)
-		})
-		It("reconciles nil", func() {
-			err := istioDiscovery.Sync(context.TODO(), snap)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(reconciler.ReconcileCalledWith).To(HaveLen(1))
-			Expect(reconciler.ReconcileCalledWith[0]).To(HaveLen(0))
-		})
-	})
 	Context("pilot present, meshpolicy client failing", func() {
 		BeforeEach(func() {
 			// use a meshpolicy client we know will always fail
@@ -105,7 +77,6 @@ var _ = Describe("IstioDiscoverySyncer", func() {
 				reconciler,
 				meshPolicyClient,
 				crdGetter,
-				jobGetter,
 				ingressReconciler,
 			)
 		})
@@ -328,77 +299,5 @@ func istioDeployment(namespace, version string) *kubernetes.Deployment {
 				},
 			},
 		},
-	}
-}
-
-type mockJobClient struct {
-	jobListToReturn kubernetes.JobList
-	errorToReturn   error
-}
-
-func (m *mockJobClient) BaseClient() clients.ResourceClient {
-	panic("implement me")
-}
-
-func (m *mockJobClient) Register() error {
-	panic("implement me")
-}
-
-func (m *mockJobClient) Read(namespace, name string, opts clients.ReadOpts) (*kubernetes.Job, error) {
-	panic("implement me")
-}
-
-func (m *mockJobClient) Write(resource *kubernetes.Job, opts clients.WriteOpts) (*kubernetes.Job, error) {
-	panic("implement me")
-}
-
-func (m *mockJobClient) Delete(namespace, name string, opts clients.DeleteOpts) error {
-	panic("implement me")
-}
-
-func (m *mockJobClient) List(namespace string, opts clients.ListOpts) (kubernetes.JobList, error) {
-	return m.jobListToReturn, m.errorToReturn
-}
-
-func (m *mockJobClient) Watch(namespace string, opts clients.WatchOpts) (<-chan kubernetes.JobList, <-chan error, error) {
-	panic("implement me")
-}
-
-func newCompletedJobGetter() *mockJobClient {
-	var jobList kubernetes.JobList
-	for _, jobName := range PostInstallJobs {
-		job := &kubernetes.Job{
-			Job: job.Job{
-				ObjectMeta: metav1.ObjectMeta{Name: jobName},
-				Status: v13.JobStatus{
-					Conditions: []v13.JobCondition{{
-						Type:   v13.JobComplete,
-						Status: kubev1.ConditionTrue,
-					}},
-				},
-			},
-		}
-		jobList = append(jobList, job)
-	}
-
-	return &mockJobClient{
-		jobListToReturn: jobList,
-	}
-}
-
-func newIncompleteJobGetter() *mockJobClient {
-	var jobList kubernetes.JobList
-	for _, jobName := range PostInstallJobs {
-		j := &kubernetes.Job{
-			Job: job.Job{
-				ObjectMeta: metav1.ObjectMeta{Name: jobName},
-				Status:     v13.JobStatus{},
-			},
-		}
-		jobList = append(jobList, j)
-	}
-
-	return &mockJobClient{
-		jobListToReturn: jobList,
 	}
 }

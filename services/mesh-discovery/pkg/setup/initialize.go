@@ -10,7 +10,6 @@ import (
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/customresourcedefinition"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/deployment"
-	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/job"
 	"github.com/solo-io/solo-kit/pkg/api/external/kubernetes/pod"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/factory"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube"
@@ -61,13 +60,6 @@ func InitializeMeshPolicyClient(ctx context.Context, sharedCacheGetter clusterca
 	meshPolicyClientGetter := multicluster.NewClusterClientManager(ctx, meshPolicyClientFactory)
 	meshPolicyBaseClient := multicluster.NewMultiClusterResourceClient(&v1alpha1.MeshPolicy{}, meshPolicyClientGetter)
 	return v1alpha1.NewMeshPolicyClientWithBase(meshPolicyBaseClient), meshPolicyClientGetter
-}
-
-func InitializeJobClient(ctx context.Context, jobCacheGetter clustercache.CacheGetter) (kubernetes.JobClient, handler.ClusterHandler) {
-	jobClientFactory := job.NewJobResourceClientFactory(jobCacheGetter)
-	jobClientGetter := multicluster.NewClusterClientManager(ctx, jobClientFactory)
-	jobBaseClient := multicluster.NewMultiClusterResourceClient(&kubernetes.Job{}, jobClientGetter)
-	return kubernetes.NewJobClientWithBase(jobBaseClient), jobClientGetter
 }
 
 func InitializeCustomResourceDefinitionClient(ctx context.Context, coreCacheGetter clustercache.CacheGetter) (kubernetes.CustomResourceDefinitionClient, handler.ClusterHandler) {
