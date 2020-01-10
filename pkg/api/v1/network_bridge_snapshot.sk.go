@@ -4,7 +4,11 @@ package v1
 
 import (
 	"fmt"
+	"hash"
+	"hash/fnv"
+	"log"
 
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
@@ -23,33 +27,57 @@ func (s NetworkBridgeSnapshot) Clone() NetworkBridgeSnapshot {
 	}
 }
 
-func (s NetworkBridgeSnapshot) Hash() uint64 {
-	return hashutils.HashAll(
-		s.hashMeshBridges(),
-		s.hashMeshes(),
-		s.hashMeshIngresses(),
-	)
+func (s NetworkBridgeSnapshot) Hash(hasher hash.Hash64) (uint64, error) {
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	if _, err := s.hashMeshBridges(hasher); err != nil {
+		return 0, err
+	}
+	if _, err := s.hashMeshes(hasher); err != nil {
+		return 0, err
+	}
+	if _, err := s.hashMeshIngresses(hasher); err != nil {
+		return 0, err
+	}
+	return hasher.Sum64(), nil
 }
 
-func (s NetworkBridgeSnapshot) hashMeshBridges() uint64 {
-	return hashutils.HashAll(s.MeshBridges.AsInterfaces()...)
+func (s NetworkBridgeSnapshot) hashMeshBridges(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.MeshBridges.AsInterfaces()...)
 }
 
-func (s NetworkBridgeSnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
+func (s NetworkBridgeSnapshot) hashMeshes(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Meshes.AsInterfaces()...)
 }
 
-func (s NetworkBridgeSnapshot) hashMeshIngresses() uint64 {
-	return hashutils.HashAll(s.MeshIngresses.AsInterfaces()...)
+func (s NetworkBridgeSnapshot) hashMeshIngresses(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.MeshIngresses.AsInterfaces()...)
 }
 
 func (s NetworkBridgeSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("meshBridges", s.hashMeshBridges()))
-	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
-	fields = append(fields, zap.Uint64("meshIngresses", s.hashMeshIngresses()))
-
-	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+	hasher := fnv.New64()
+	MeshBridgesHash, err := s.hashMeshBridges(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("meshBridges", MeshBridgesHash))
+	MeshesHash, err := s.hashMeshes(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("meshes", MeshesHash))
+	MeshIngressesHash, err := s.hashMeshIngresses(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("meshIngresses", MeshIngressesHash))
+	snapshotHash, err := s.Hash(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	return append(fields, zap.Uint64("snapshotHash", snapshotHash))
 }
 
 type NetworkBridgeSnapshotStringer struct {
@@ -81,8 +109,12 @@ func (ss NetworkBridgeSnapshotStringer) String() string {
 }
 
 func (s NetworkBridgeSnapshot) Stringer() NetworkBridgeSnapshotStringer {
+	snapshotHash, err := s.Hash(nil)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
 	return NetworkBridgeSnapshotStringer{
-		Version:       s.Hash(),
+		Version:       snapshotHash,
 		MeshBridges:   s.MeshBridges.NamespacesDotNames(),
 		Meshes:        s.Meshes.NamespacesDotNames(),
 		MeshIngresses: s.MeshIngresses.NamespacesDotNames(),

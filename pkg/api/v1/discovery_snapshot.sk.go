@@ -4,10 +4,14 @@ package v1
 
 import (
 	"fmt"
+	"hash"
+	"hash/fnv"
+	"log"
 
 	gloo_solo_io "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	github_com_solo_io_solo_kit_pkg_api_v1_resources_common_kubernetes "github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
@@ -28,39 +32,69 @@ func (s DiscoverySnapshot) Clone() DiscoverySnapshot {
 	}
 }
 
-func (s DiscoverySnapshot) Hash() uint64 {
-	return hashutils.HashAll(
-		s.hashPods(),
-		s.hashUpstreams(),
-		s.hashDeployments(),
-		s.hashTlssecrets(),
-	)
+func (s DiscoverySnapshot) Hash(hasher hash.Hash64) (uint64, error) {
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	if _, err := s.hashPods(hasher); err != nil {
+		return 0, err
+	}
+	if _, err := s.hashUpstreams(hasher); err != nil {
+		return 0, err
+	}
+	if _, err := s.hashDeployments(hasher); err != nil {
+		return 0, err
+	}
+	if _, err := s.hashTlssecrets(hasher); err != nil {
+		return 0, err
+	}
+	return hasher.Sum64(), nil
 }
 
-func (s DiscoverySnapshot) hashPods() uint64 {
-	return hashutils.HashAll(s.Pods.AsInterfaces()...)
+func (s DiscoverySnapshot) hashPods(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Pods.AsInterfaces()...)
 }
 
-func (s DiscoverySnapshot) hashUpstreams() uint64 {
-	return hashutils.HashAll(s.Upstreams.AsInterfaces()...)
+func (s DiscoverySnapshot) hashUpstreams(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Upstreams.AsInterfaces()...)
 }
 
-func (s DiscoverySnapshot) hashDeployments() uint64 {
-	return hashutils.HashAll(s.Deployments.AsInterfaces()...)
+func (s DiscoverySnapshot) hashDeployments(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Deployments.AsInterfaces()...)
 }
 
-func (s DiscoverySnapshot) hashTlssecrets() uint64 {
-	return hashutils.HashAll(s.Tlssecrets.AsInterfaces()...)
+func (s DiscoverySnapshot) hashTlssecrets(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Tlssecrets.AsInterfaces()...)
 }
 
 func (s DiscoverySnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("pods", s.hashPods()))
-	fields = append(fields, zap.Uint64("upstreams", s.hashUpstreams()))
-	fields = append(fields, zap.Uint64("deployments", s.hashDeployments()))
-	fields = append(fields, zap.Uint64("tlssecrets", s.hashTlssecrets()))
-
-	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+	hasher := fnv.New64()
+	PodsHash, err := s.hashPods(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("pods", PodsHash))
+	UpstreamsHash, err := s.hashUpstreams(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("upstreams", UpstreamsHash))
+	DeploymentsHash, err := s.hashDeployments(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("deployments", DeploymentsHash))
+	TlssecretsHash, err := s.hashTlssecrets(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("tlssecrets", TlssecretsHash))
+	snapshotHash, err := s.Hash(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	return append(fields, zap.Uint64("snapshotHash", snapshotHash))
 }
 
 type DiscoverySnapshotStringer struct {
@@ -98,8 +132,12 @@ func (ss DiscoverySnapshotStringer) String() string {
 }
 
 func (s DiscoverySnapshot) Stringer() DiscoverySnapshotStringer {
+	snapshotHash, err := s.Hash(nil)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
 	return DiscoverySnapshotStringer{
-		Version:     s.Hash(),
+		Version:     snapshotHash,
 		Pods:        s.Pods.NamespacesDotNames(),
 		Upstreams:   s.Upstreams.NamespacesDotNames(),
 		Deployments: s.Deployments.NamespacesDotNames(),

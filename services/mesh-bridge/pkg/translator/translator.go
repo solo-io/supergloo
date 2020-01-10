@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/kubernetes"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
@@ -200,7 +200,7 @@ func (t *translator) infoFromTargetServices(mesBridgeToCluster map[*v1.MeshBridg
 		if err != nil {
 			return nil, err
 		}
-		kubeUpstream := upstream.GetUpstreamSpec().GetKube()
+		kubeUpstream := upstream.GetKube()
 		if kubeUpstream == nil {
 			return nil, fmt.Errorf("currently only kube upstreams are supported, %s supplied",
 				bridge.GetTarget().String())

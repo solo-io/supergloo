@@ -13,7 +13,7 @@ var GenBuildFuncs = template.FuncMap{
 	"uppercase": strings.ToUpper,
 	"jsoner":    Jsoner,
 	"makefileArg": func(in string, suffix string) string {
-		base := strcase.ToScreamingDelimited(in, '_', true)
+		base := strcase.ToScreamingDelimited(in, '_', 0, true)
 		if suffix != "" {
 			return strings.Join([]string{base, suffix}, "_")
 		}

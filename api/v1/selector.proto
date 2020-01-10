@@ -4,8 +4,10 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
 
-import "github.com/solo-io/solo-kit/api/v1/ref.proto";
+import "solo-kit/api/v1/ref.proto";
 // specifies a method by which to select pods
 // with in a mesh for the application of rules and policies
 message PodSelector {

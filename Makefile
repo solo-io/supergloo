@@ -9,7 +9,7 @@ RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 	# TAGGED_VERSION := $(shell git describe --tags)
 	# This doesn't work in CI, need to find another way...
-	TAGGED_VERSION := vdev
+	TAGGED_VERSION := $(shell git describe --tags --dirty)
 	RELEASE := "false"
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
@@ -39,19 +39,25 @@ clean:
 init:
 	git config core.hooksPath .githooks
 
+.PHONY: mod-download
+mod-download:
+	go mod download
+
+
 .PHONY: update-deps
-update-deps:
-	go get -u golang.org/x/tools/cmd/goimports
-	go get -u github.com/gogo/protobuf/gogoproto
-	go get -u github.com/gogo/protobuf/protoc-gen-gogo
-	go get -u github.com/google/wire/cmd/wire
-	go get -u github.com/golang/mock/gomock
-	go install github.com/golang/mock/mockgen
+update-deps: mod-download
+	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	GO111MODULE=off go get -u github.com/gogo/protobuf/gogoproto
+	GO111MODULE=off go get -u github.com/gogo/protobuf/protoc-gen-gogo
+	GO111MODULE=off go get -u github.com/solo-io/protoc-gen-ext
+	GO111MODULE=off go get -u github.com/google/wire/cmd/wire
+	GO111MODULE=off go get -u github.com/golang/mock/gomock
+	GO111MODULE=off go install github.com/golang/mock/mockgen
 
 
-.PHONY: pin-repos
-pin-repos:
-	go run ci/pin_repos.go
+.PHONY: fmt-changed
+fmt-changed:
+	git diff --name-only | grep '.*.go$$' | xargs goimports -w
 
 
 # Enumerate the directories to validate with yamllint. If we just run "yamllint ." the command fails on a symlink in
@@ -72,11 +78,7 @@ SUBDIRS:=services ci pkg
 
 .PHONY: generated-code
 generated-code:
-	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/httproutegroup/v1alpha1  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/httproutegroup/v1alpha1/http-route-group.proto
-	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/traffictarget/v1alpha1  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/traffictarget/v1alpha1/traffic-target.proto
-	protoc --gogo_out=$(GOPATH)/src -I=api/external/smi/trafficsplit/v1alpha2  -I$(GOPATH)/src -I$(GOPATH)/src/github.com/gogo/protobuf -I$(GOPATH)/src/github.com/gogo/protobuf/protobuf api/external/smi/trafficsplit/v1alpha2/traffic-split.proto
 	CGO_ENABLED=0 go generate ./...
-	gofmt -w $(SUBDIRS)
 	goimports -w $(SUBDIRS)
 
 #----------------------------------------------------------------------------------

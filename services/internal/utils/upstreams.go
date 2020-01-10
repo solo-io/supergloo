@@ -9,7 +9,7 @@ import (
 func UpstreamsForPods(pods kubernetes.PodList, allUpstreams gloov1.UpstreamList) gloov1.UpstreamList {
 	var upstreamsForPods gloov1.UpstreamList
 	for _, us := range allUpstreams {
-		kubeUs, ok := us.UpstreamSpec.UpstreamType.(*gloov1.UpstreamSpec_Kube)
+		kubeUs, ok := us.UpstreamType.(*gloov1.Upstream_Kube)
 		if !ok {
 			continue
 		}
@@ -44,7 +44,7 @@ func PodsForUpstreams(upstreams gloov1.UpstreamList, allPods kubernetes.PodList)
 	var selectedPods kubernetes.PodList
 	var selectors []namespacedSelector
 	for _, us := range upstreams {
-		kubeUs, ok := us.UpstreamSpec.UpstreamType.(*gloov1.UpstreamSpec_Kube)
+		kubeUs, ok := us.UpstreamType.(*gloov1.Upstream_Kube)
 		if !ok {
 			continue
 		}

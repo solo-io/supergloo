@@ -4,15 +4,17 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
 
-import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
-import "github.com/solo-io/solo-kit/api/v1/status.proto";
-import "github.com/solo-io/solo-kit/api/v1/ref.proto";
-import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
-import "github.com/solo-io/mesh-projects/api/v1/selector.proto";
-import "github.com/solo-io/mesh-projects/api/v1/rbac.proto";
+import "solo-kit/api/v1/metadata.proto";
+import "solo-kit/api/v1/status.proto";
+import "solo-kit/api/v1/ref.proto";
+import "solo-kit/api/v1/solo-kit.proto";
+import "mesh-projects/api/v1/selector.proto";
+import "mesh-projects/api/v1/rbac.proto";
 
-import "github.com/solo-io/mesh-projects/api/v1/core/ref.proto";
+import "mesh-projects/api/v1/core/ref.proto";
 
 /*
 Meshes represent a currently registered service mesh.
@@ -46,7 +48,7 @@ message Mesh {
     MonitoringConfig monitoring_config = 7;
 
     // object which represents the data mesh discovery finds about a given mesh
-    DiscoveryMetadata discovery_metadata = 8 [(core.solo.io.skip_hashing) = true];
+    DiscoveryMetadata discovery_metadata = 8 [(extproto.skip_hashing) = true];
 
     // whether or not to use SMI to configure this mesh
     bool smi_enabled = 9;

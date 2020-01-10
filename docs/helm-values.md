@@ -1,7 +1,7 @@
 |Option|Type|Default Value|Description|
 |------|----|-----------|-------------|
 |meshDiscovery.disabled|bool|false||
-|meshDiscovery.deployment.image.tag|string|v0.0.19-2-g9a9d678|tag for the container|
+|meshDiscovery.deployment.image.tag|string|0.0.23-13-g954fb42-dirty|tag for the container|
 |meshDiscovery.deployment.image.repository|string|mc-mesh-discovery|image name (repository) for the container.|
 |meshDiscovery.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
 |meshDiscovery.deployment.image.pullPolicy|string||image pull policy for the container|
@@ -13,7 +13,7 @@
 |meshDiscovery.deployment.resources.requests.memory|string||amount of memory|
 |meshDiscovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |meshBridge.disabled|bool|false||
-|meshBridge.deployment.image.tag|string|v0.0.19-2-g9a9d678|tag for the container|
+|meshBridge.deployment.image.tag|string|0.0.23-13-g954fb42-dirty|tag for the container|
 |meshBridge.deployment.image.repository|string|mc-mesh-bridge|image name (repository) for the container.|
 |meshBridge.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
 |meshBridge.deployment.image.pullPolicy|string||image pull policy for the container|
@@ -25,7 +25,7 @@
 |meshBridge.deployment.resources.requests.memory|string||amount of memory|
 |meshBridge.deployment.resources.requests.cpu|string||amount of CPUs|
 |discovery.disabled|bool|false||
-|discovery.deployment.image.tag|string|0.20.11|tag for the container|
+|discovery.deployment.image.tag|string|1.3.1|tag for the container|
 |discovery.deployment.image.repository|string|discovery|image name (repository) for the container.|
 |discovery.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
 |discovery.deployment.image.pullPolicy|string||image pull policy for the container|
@@ -37,7 +37,7 @@
 |discovery.deployment.resources.requests.memory|string||amount of memory|
 |discovery.deployment.resources.requests.cpu|string||amount of CPUs|
 |meshConfig.disabled|bool|false||
-|meshConfig.deployment.image.tag|string|v0.0.19-2-g9a9d678|tag for the container|
+|meshConfig.deployment.image.tag|string|0.0.23-13-g954fb42-dirty|tag for the container|
 |meshConfig.deployment.image.repository|string|mc-mesh-config|image name (repository) for the container.|
 |meshConfig.deployment.image.registry|string||image prefix/registry e.g. (quay.io/solo-io)|
 |meshConfig.deployment.image.pullPolicy|string||image pull policy for the container|

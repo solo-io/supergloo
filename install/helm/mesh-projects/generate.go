@@ -1,18 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
+	"os/exec"
+	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 	gloo_generate "github.com/solo-io/gloo/install/helm/gloo/generate"
 	"github.com/solo-io/go-utils/installutils/helmchart"
 	"github.com/solo-io/go-utils/log"
-	"github.com/solo-io/go-utils/versionutils"
 	"github.com/solo-io/mesh-projects/install/helm/mesh-projects/generate"
 )
 
@@ -27,7 +25,6 @@ var (
 	constraint = "constraint"
 
 	rootPrefix = ""
-	gopkgToml  = "Gopkg.toml"
 	glooPkg    = "github.com/solo-io/gloo"
 )
 
@@ -46,7 +43,7 @@ func main() {
 		}
 	}
 
-	glooVersion, err := getOsGlooVersion(rootPrefix)
+	glooVersion, err := glooGoModPackageVersion()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -145,32 +142,12 @@ func generateChartYaml(version string) error {
 	return writeYaml(&chart, chartOutput)
 }
 
-func getOsGlooVersion(prefix string) (string, error) {
-	tomlTree, err := parseToml(prefix)
+func glooGoModPackageVersion() (string, error) {
+	cmd := exec.Command("go", "list", "-f", "'{{ .Version }}'", "-m", "github.com/solo-io/gloo")
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", err
 	}
-	version, err := versionutils.GetVersion(glooPkg, tomlTree)
-	if err != nil {
-		return "", fmt.Errorf("failed to determine open source Gloo version. Cause: %v", err)
-	}
-	log.Printf("Open source gloo version is: %v", version)
-	return version, nil
-}
-
-func parseToml(prefix string) ([]*toml.Tree, error) {
-	tomlPath := filepath.Join(prefix, gopkgToml)
-	config, err := toml.LoadFile(tomlPath)
-	if err != nil {
-		return nil, err
-	}
-
-	tomlTree := config.Get(constraint)
-
-	switch typedTree := tomlTree.(type) {
-	case []*toml.Tree:
-		return typedTree, nil
-	default:
-		return nil, fmt.Errorf("unable to parse toml tree")
-	}
+	cleanedOutput := strings.Trim(strings.TrimSpace(string(output)), "'")
+	return strings.TrimPrefix(cleanedOutput, "v"), nil
 }

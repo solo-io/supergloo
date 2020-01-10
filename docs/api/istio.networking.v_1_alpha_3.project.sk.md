@@ -15,21 +15,32 @@ API Version: `istio.networking.v1alpha3.v1alpha3`
 
 
 ### API Resources:
-- [AuthConfig](../github.com/solo-io/gloo/projects/gloo/api/v1/enterprise/plugins/extauth/v1/extauth.proto.sk#authconfig)
+- [Artifact](../github.com/solo-io/gloo/projects/gloo/api/v1/artifact.proto.sk#artifact)
+- [AuthConfig](../github.com/solo-io/gloo/projects/gloo/api/v1/enterprise/options/extauth/v1/extauth.proto.sk#authconfig)
 - [ClusterRbacConfig](../github.com/solo-io/mesh-projects/api/external/istio/rbac/v1alpha1/rbac.proto.sk#clusterrbacconfig)
+- [Endpoint](../github.com/solo-io/gloo/projects/gloo/api/v1/endpoint.proto.sk#endpoint)
+- [Gateway](../github.com/solo-io/gloo/projects/gateway/api/v1/gateway.proto.sk#gateway)
 - [Gateway](../github.com/solo-io/mesh-projects/api/external/istio/networking/v1alpha3/gateway.proto.sk#gateway)
 - [HTTPRouteGroup](../github.com/solo-io/mesh-projects/api/external/smi/httproutegroup/v1alpha1/http-route-group.proto.sk#httproutegroup)
+- [Ingress](../github.com/solo-io/gloo/projects/ingress/api/v1/ingress.proto.sk#ingress)
+- [KubeService](../github.com/solo-io/gloo/projects/ingress/api/v1/service.proto.sk#kubeservice)
 - [Mesh](../github.com/solo-io/mesh-projects/api/v1/mesh.proto.sk#mesh)
 - [MeshBridge](../github.com/solo-io/mesh-projects/api/v1/cluster-route.proto.sk#meshbridge)
 - [MeshGroup](../github.com/solo-io/mesh-projects/api/v1/mesh.proto.sk#meshgroup)
 - [MeshIngress](../github.com/solo-io/mesh-projects/api/v1/ingress.proto.sk#meshingress)
 - [MeshPolicy](../github.com/solo-io/mesh-projects/api/external/istio/authorization/v1alpha1/policy.proto.sk#meshpolicy)
 - [Policy](../github.com/solo-io/mesh-projects/api/external/istio/authorization/v1alpha1/policy.proto.sk#policy)
+- [Proxy](../github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto.sk#proxy)
 - [RbacConfig](../github.com/solo-io/mesh-projects/api/external/istio/rbac/v1alpha1/rbac.proto.sk#rbacconfig)
+- [RouteTable](../github.com/solo-io/gloo/projects/gateway/api/v1/route_table.proto.sk#routetable)
+- [Secret](../github.com/solo-io/gloo/projects/gloo/api/v1/secret.proto.sk#secret)
 - [ServiceEntry](../github.com/solo-io/mesh-projects/api/external/istio/networking/v1alpha3/service_entry.proto.sk#serviceentry)
+- [Settings](../github.com/solo-io/gloo/projects/gloo/api/v1/settings.proto.sk#settings)
 - [TrafficSplit](../github.com/solo-io/mesh-projects/api/external/smi/trafficsplit/v1alpha2/traffic-split.proto.sk#trafficsplit)
 - [TrafficTarget](../github.com/solo-io/mesh-projects/api/external/smi/traffictarget/v1alpha1/traffic-target.proto.sk#traffictarget)
 - [Upstream](../github.com/solo-io/gloo/projects/gloo/api/v1/upstream.proto.sk#upstream)
+- [UpstreamGroup](../github.com/solo-io/gloo/projects/gloo/api/v1/proxy.proto.sk#upstreamgroup)
+- [VirtualService](../github.com/solo-io/gloo/projects/gateway/api/v1/virtual_service.proto.sk#virtualservice)
 
 <!-- Start of HubSpot Embed Code -->
 <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/5130874.js"></script>

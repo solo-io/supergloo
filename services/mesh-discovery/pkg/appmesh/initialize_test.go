@@ -330,13 +330,12 @@ metadata:
     discovered_by: kubernetesplugin
   name: test-ns-my-app-8080
   namespace: gloo-system
-upstreamSpec:
-  kube:
-    selector:
-      app: my-app
-    serviceName: my-app
-    serviceNamespace: test-ns
-    servicePort: 8080
+kube:
+  selector:
+    app: my-app
+  serviceName: my-app
+  serviceNamespace: test-ns
+  servicePort: 8080
 ---
 metadata:
   labels:
@@ -344,13 +343,12 @@ metadata:
     discovered_by: kubernetesplugin
   name: test-ns-my-app-8081
   namespace: gloo-system
-upstreamSpec:
-  kube:
-    selector:
-      app: my-app
-    serviceName: my-app
-    serviceNamespace: test-ns
-    servicePort: 8081
+kube:
+  selector:
+    app: my-app
+  serviceName: my-app
+  serviceNamespace: test-ns
+  servicePort: 8081
 ---
 metadata:
   labels:
@@ -358,14 +356,13 @@ metadata:
     discovered_by: kubernetesplugin
   name: test-ns-my-app-v1-8080
   namespace: gloo-system
-upstreamSpec:
-  kube:
-    selector:
-      app: my-app
-      version: v1
-    serviceName: my-app
-    serviceNamespace: test-ns
-    servicePort: 8080
+kube:
+  selector:
+    app: my-app
+    version: v1
+  serviceName: my-app
+  serviceNamespace: test-ns
+  servicePort: 8080
 ---
 metadata:
   labels:
@@ -373,14 +370,13 @@ metadata:
     discovered_by: kubernetesplugin
   name: test-ns-my-app-v1-8081
   namespace: gloo-system
-upstreamSpec:
-  kube:
-    selector:
-      app: my-app
-      version: v1
-    serviceName: my-app
-    serviceNamespace: test-ns
-    servicePort: 8081
+kube:
+  selector:
+    app: my-app
+    version: v1
+  serviceName: my-app
+  serviceNamespace: test-ns
+  servicePort: 8081
 `
 
 const upstreamForOtherPod = `
@@ -390,10 +386,10 @@ metadata:
     discovered_by: kubernetesplugin
   name: default-no-sidecar-app-1234
   namespace: gloo-system
-upstreamSpec:
-  kube:
-    selector:
-      app: no-sidecar
-    serviceName: no-sidecar-app
-    serviceNamespace: test-ns
-    servicePort: 1234`
+kube:
+  selector:
+    app: no-sidecar
+  serviceName: no-sidecar-app
+  serviceNamespace: test-ns
+  servicePort: 1234
+`

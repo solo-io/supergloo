@@ -1,4 +1,4 @@
-vendor
+vendor*/
 _output/
 doc/site
 

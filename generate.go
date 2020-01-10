@@ -2,18 +2,26 @@ package main
 
 import (
 	"github.com/solo-io/go-utils/log"
-	"github.com/solo-io/mesh-projects/pkg/version"
 	"github.com/solo-io/solo-kit/pkg/code-generator/cmd"
 	"github.com/solo-io/solo-kit/pkg/code-generator/docgen/options"
+	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 )
 
 //go:generate go run generate.go
+//go:generate bash ./api/external/smi/generate.sh
+
+const GlooPkg = "github.com/solo-io/gloo"
 
 func main() {
-	err := version.CheckVersions()
-	if err != nil {
-		log.Fatalf("generate failed!: %v", err)
-	}
+
+	imports := sk_anyvendor.CreateDefaultMatchOptions(
+		[]string{
+			"api/**/*.proto",
+			sk_anyvendor.SoloKitMatchPattern,
+		},
+	)
+	imports.External[GlooPkg] = []string{"projects/**/*.proto"}
+
 	log.Printf("starting generate")
 	docsOpts := &cmd.DocsOptions{
 		Output: options.Hugo,
@@ -21,13 +29,12 @@ func main() {
 	if err := cmd.Generate(cmd.GenerateOptions{
 		RelativeRoot:  ".",
 		CompileProtos: true,
-		GenDocs:       docsOpts,
-		CustomImports: []string{
-			"../gloo/projects/gloo/api/v1/upstream.proto",
-			"../gloo/projects/gloo/api/external/envoy/type/range.proto",
-		},
+		GenDocs:            docsOpts,
 		SkipGeneratedTests: true,
+		SkipGenMocks:       true,
+		ExternalImports:    imports,
 	}); err != nil {
 		log.Fatalf("generate failed!: %v", err)
 	}
+	log.Printf("Finished generating code")
 }

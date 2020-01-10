@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/mesh-config/pkg/translator"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
@@ -36,7 +37,8 @@ func NewRbacSyncer(writeNamespace string,
 }
 
 func (s *rbacSyncer) Sync(ctx context.Context, snap *v1.RbacSnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("rbac-sync-%v", snap.Hash()))
+	snapHash := hashutils.MustHash(snap)
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("rbac-sync-%v", snapHash))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infow("begin sync",
 		zap.Int("Meshes", len(snap.Meshes)),

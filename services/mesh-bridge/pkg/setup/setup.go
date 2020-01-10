@@ -15,9 +15,7 @@ import (
 )
 
 func Main(customCtx context.Context, errHandler func(error)) error {
-	if os.Getenv("START_STATS_SERVER") != "" {
-		stats.StartStatsServer()
-	}
+	stats.ConditionallyStartStatsServer()
 
 	writeNamespace := os.Getenv("POD_NAMESPACE")
 	if writeNamespace == "" {

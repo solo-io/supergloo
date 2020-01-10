@@ -19,11 +19,13 @@
 syntax = "proto3";
 
 // solo-kit imports
-import "github.com/solo-io/solo-kit/api/v1/metadata.proto";
-import "github.com/solo-io/solo-kit/api/v1/status.proto";
-import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
+import "solo-kit/api/v1/metadata.proto";
+import "solo-kit/api/v1/status.proto";
+import "solo-kit/api/v1/solo-kit.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
 
 //// $title: RBAC
 //// $description: Configuration for Role Based Access Control.

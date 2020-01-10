@@ -10,9 +10,6 @@ steps:
   - --location=global
   - --keyring=build
   - --key=build-key
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
   id: 'get-ssh-key'
 - name: 'gcr.io/cloud-builders/git'
   entrypoint: 'bash'
@@ -26,102 +23,106 @@ steps:
     EOF
     mv ./ci/github_known_hosts /root/.ssh/known_hosts
     git config --global url."ssh://git@github.com/solo-io".insteadOf https://github.com/solo-io
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
   id: 'configure-git'
 
-# Can create a dep cache by running 'gcloud builds submit . --config=cloudbuild-cache.yaml'
-# These two steps should populate the cache
-- name: gcr.io/cloud-builders/gsutil
-  entrypoint: 'bash'
-  args: ['-c', 'mkdir -p ./gopath/pkg/dep && gsutil cat gs://gloo-ee-cache/mesh-projects/mesh-projects-dep.tar.gz | tar -xzf -']
-  id: 'download-untar-dep-cache'
+# This is required to instruct go not to use it's standard sumdb for pulling these deps
+- name: "golang:1.13.4"
+  args: ["go", "env", "-w", "GOPRIVATE=github.com/solo-io"]
+  id: "set-private"
 
-# Run dep to set up the project so it can be built and tested
-# Dep modifies workspace so that the code is moved into the PROJECT_ROOT
-# All steps after this must set GOPATH
-- name: 'gcr.io/$PROJECT_ID/dep:0.2.0'
-  args: ['ensure']
+
+- name: gcr.io/cloud-builders/gsutil
+  entrypoint: "bash"
+  args:
+    [
+      "-c",
+      "mkdir -p ./gopath/pkg && cd ./gopath/pkg && gsutil cat gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz | tar -xzf -",
+    ]
+  id: "untar-mod-cache"
+  waitFor: ["-"]
+
+# Using prepare-workspace container from github.com/solo-io/cloud-builders/prepare-go-workspace
+# This copies files into the proper workspace layout and so must be run before other tasks
+- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.2.4"
+  args:
+  - "--repo-owner"
+  - "solo-io"
+  - "--repo-name"
+  - "mesh-projects"
+  - "--repo-sha"
+  - "$COMMIT_SHA"
+  - "--repo-output-dir"
+  - "."
+  - "--use-ssh"
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
-  id: 'dep'
-  waitFor: ['download-untar-dep-cache']
+  - "PROJECT_ROOT=github.com/solo-io/mesh-projects"
+  id: "prepare-workspace"
 
 # Helm setup steps
 - name: gcr.io/cloud-builders/gsutil
   entrypoint: mkdir
   args: ['-p', './_output/helm']
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  waitFor: ['dep']
+  dir: &dir "/workspace/mesh-projects"
+  waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   args: ['fetch-helm']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  dir: *dir
   id: 'fetch-helm'
-  waitFor: ['dep']
+  waitFor: ['prepare-workspace']
 
 
 
-- name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/e2e-go-mod-ginkgo:0.2.1'
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  dir: *dir
   entrypoint: make
   args: ['check-format']
-  waitFor: ['dep']
+  waitFor: ['prepare-workspace']
   id: 'check-format'
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   entrypoint: 'bash'
   args: ['ci/check-code-and-docs-gen.sh']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
-  waitFor: ['dep']
+  dir: *dir
+  waitFor: ['prepare-workspace']
   id: 'check-code-and-docs-gen'
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   args: ['docker']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
+  dir: *dir
   id: 'make'
 
-- name: 'gcr.io/$PROJECT_ID/e2e-ginkgo:0.2.0'
+- name: gcr.io/cloud-builders/gcloud
+  args: ['config', 'set', 'compute/zone', 'us-central1-a']
+  id: 'set-test-zone'
+  waitFor: ['prepare-workspace']
+- name: gcr.io/cloud-builders/gcloud
+  args: ['container', 'clusters', 'get-credentials', 'test-cluster']
+  id: 'get-test-credentials'
+  waitFor: ['set-test-zone']
+
+
+- name: 'gcr.io/$PROJECT_ID/e2e-go-mod-ginkgo:0.2.1'
   args: ['-r', '-p']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
-  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=test-cluster'
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
-  waitFor: ['make']
+  dir: *dir
+  waitFor: ['make', 'get-test-credentials']
   id: 'test'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -132,43 +133,34 @@ steps:
   waitFor: ['test']
 
 
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   args: ['release']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
+  dir: *dir
   waitFor: ['docker-login']
   secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
   id: 'release'
 # 2) Publish helm chart, compile manifests, produce release artifacts, deploy docs
 # isolating this portion of the release in order to force the manifest to be regenerated with the tagged version
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   args: ['manifest',  '-B']
   env:
   - 'DOCKER_CONFIG=/workspace/docker-config'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'HELM_HOME=/root/.helm' # tell helm where to find data
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
-  volumes:
-  - name: 'ssh'
-    path: /root/.ssh
+  dir: *dir
   id: 'release-chart'
 # 3) Sync helm chart data back to google storage bucket
-- name: 'gcr.io/$PROJECT_ID/go-make:0.2.0'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
   args: ['save-helm']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'GOPATH=/workspace/gopath'
   - 'TAGGED_VERSION=$TAG_NAME'
-  dir: './gopath/src/github.com/solo-io/mesh-projects'
+  dir: *dir
   id: 'save-helm-chart'
 
 secrets:
@@ -180,3 +172,8 @@ timeout: 1800s
 tags: ['mesh-projects']
 options:
   machineType: 'N1_HIGHCPU_32'
+  volumes:
+  - name: "gopath"
+    path: "/go"
+  - name: "ssh"
+    path: /root/.ssh

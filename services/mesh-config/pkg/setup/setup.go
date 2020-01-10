@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"os"
 
 	"go.uber.org/zap"
 
@@ -13,9 +12,7 @@ import (
 )
 
 func Main(ctx context.Context, errHandler func(error)) error {
-	if os.Getenv("START_STATS_SERVER") != "" {
-		stats.StartStatsServer()
-	}
+	stats.ConditionallyStartStatsServer()
 
 	writeNamespace := env.GetWriteNamespace()
 

@@ -2,22 +2,20 @@ package inputs
 
 import (
 	v1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/plugins/kubernetes"
+	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
 
 func BookInfoUpstreams(namespace string) v1.UpstreamList {
 	return v1.UpstreamList{
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "details",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app": "details",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "details",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app": "details",
 					},
 				},
 			},
@@ -31,16 +29,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "details",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"version": "v1",
-							"app":     "details",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "details",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"version": "v1",
+						"app":     "details",
 					},
 				},
 			},
@@ -54,15 +50,13 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "productpage",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app": "productpage",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "productpage",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app": "productpage",
 					},
 				},
 			},
@@ -76,16 +70,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "productpage",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app":     "productpage",
-							"version": "v1",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "productpage",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app":     "productpage",
+						"version": "v1",
 					},
 				},
 			},
@@ -99,15 +91,13 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "ratings",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app": "ratings",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "ratings",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app": "ratings",
 					},
 				},
 			},
@@ -121,16 +111,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "ratings",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app":     "ratings",
-							"version": "v1",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "ratings",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app":     "ratings",
+						"version": "v1",
 					},
 				},
 			},
@@ -144,15 +132,13 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "reviews",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app": "reviews",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "reviews",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app": "reviews",
 					},
 				},
 			},
@@ -166,16 +152,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "reviews",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"version": "v1",
-							"app":     "reviews",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "reviews",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"version": "v1",
+						"app":     "reviews",
 					},
 				},
 			},
@@ -189,16 +173,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "reviews",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"app":     "reviews",
-							"version": "v2",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "reviews",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"app":     "reviews",
+						"version": "v2",
 					},
 				},
 			},
@@ -212,16 +194,14 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 			},
 		},
 		&v1.Upstream{
-			UpstreamSpec: &v1.UpstreamSpec{
-				UpstreamType: &v1.UpstreamSpec_Kube{
-					Kube: &kubernetes.UpstreamSpec{
-						ServiceName:      "reviews",
-						ServiceNamespace: namespace,
-						ServicePort:      0x00002378,
-						Selector: map[string]string{
-							"version": "v3",
-							"app":     "reviews",
-						},
+			UpstreamType: &v1.Upstream_Kube{
+				Kube: &kubernetes.UpstreamSpec{
+					ServiceName:      "reviews",
+					ServiceNamespace: namespace,
+					ServicePort:      0x00002378,
+					Selector: map[string]string{
+						"version": "v3",
+						"app":     "reviews",
 					},
 				},
 			},
@@ -236,37 +216,3 @@ func BookInfoUpstreams(namespace string) v1.UpstreamList {
 		},
 	}
 }
-
-//
-//func BookInfoServices(namespace string) skkube.ServiceList {
-//	svc := func(name string) *skkube.Service {
-//		return &skkube.Service{
-//			Service: service.Service{
-//				ObjectMeta: metav1.ObjectMeta{
-//					Name:      name,
-//					Namespace: namespace,
-//					Labels: map[string]string{
-//						"app": name,
-//					},
-//				},
-//				Spec: kubev1.ServiceSpec{
-//					Ports: []kubev1.ServicePort{
-//						{
-//							Name:       "http",
-//							Port:       9080,
-//							Protocol:   kubev1.ProtocolTCP,
-//							TargetPort: intstr.IntOrString{IntVal: 9080},
-//						},
-//					},
-//					Selector: map[string]string{"app": name},
-//				},
-//			},
-//		}
-//	}
-//	return skkube.ServiceList{
-//		svc("details"),
-//		svc("productpage"),
-//		svc("ratings"),
-//		svc("reviews"),
-//	}
-//}

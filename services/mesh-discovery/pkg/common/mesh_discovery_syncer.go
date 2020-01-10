@@ -65,7 +65,8 @@ func (s *meshDiscoverySyncer) ShouldSync(_, new *v1.DiscoverySnapshot) bool {
 }
 
 func (s *meshDiscoverySyncer) Sync(ctx context.Context, snap *v1.DiscoverySnapshot) error {
-	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-mesh-discovery-%v", s.plugin.MeshType(), snap.Hash()))
+	snapHash := hashutils.MustHash(snap)
+	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("%v-mesh-discovery-%v", s.plugin.MeshType(), snapHash))
 	logger := contextutils.LoggerFrom(ctx)
 	logger.Infow("begin sync",
 		zap.Int("Upstreams", len(snap.Upstreams)),

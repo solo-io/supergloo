@@ -4,7 +4,11 @@ package v1
 
 import (
 	"fmt"
+	"hash"
+	"hash/fnv"
+	"log"
 
+	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
@@ -19,21 +23,33 @@ func (s RbacSnapshot) Clone() RbacSnapshot {
 	}
 }
 
-func (s RbacSnapshot) Hash() uint64 {
-	return hashutils.HashAll(
-		s.hashMeshes(),
-	)
+func (s RbacSnapshot) Hash(hasher hash.Hash64) (uint64, error) {
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	if _, err := s.hashMeshes(hasher); err != nil {
+		return 0, err
+	}
+	return hasher.Sum64(), nil
 }
 
-func (s RbacSnapshot) hashMeshes() uint64 {
-	return hashutils.HashAll(s.Meshes.AsInterfaces()...)
+func (s RbacSnapshot) hashMeshes(hasher hash.Hash64) (uint64, error) {
+	return hashutils.HashAllSafe(hasher, s.Meshes.AsInterfaces()...)
 }
 
 func (s RbacSnapshot) HashFields() []zap.Field {
 	var fields []zap.Field
-	fields = append(fields, zap.Uint64("meshes", s.hashMeshes()))
-
-	return append(fields, zap.Uint64("snapshotHash", s.Hash()))
+	hasher := fnv.New64()
+	MeshesHash, err := s.hashMeshes(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	fields = append(fields, zap.Uint64("meshes", MeshesHash))
+	snapshotHash, err := s.Hash(hasher)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
+	return append(fields, zap.Uint64("snapshotHash", snapshotHash))
 }
 
 type RbacSnapshotStringer struct {
@@ -53,8 +69,12 @@ func (ss RbacSnapshotStringer) String() string {
 }
 
 func (s RbacSnapshot) Stringer() RbacSnapshotStringer {
+	snapshotHash, err := s.Hash(nil)
+	if err != nil {
+		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+	}
 	return RbacSnapshotStringer{
-		Version: s.Hash(),
+		Version: snapshotHash,
 		Meshes:  s.Meshes.NamespacesDotNames(),
 	}
 }

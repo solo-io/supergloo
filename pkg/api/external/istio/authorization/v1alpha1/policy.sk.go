@@ -6,7 +6,6 @@ import (
 	"log"
 	"sort"
 
-	"github.com/solo-io/go-utils/hashutils"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/crd"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -32,20 +31,12 @@ func (r *Policy) SetStatus(status core.Status) {
 	r.Status = status
 }
 
-func (r *Policy) Hash() uint64 {
-	metaCopy := r.GetMetadata()
-	metaCopy.ResourceVersion = ""
-	metaCopy.Generation = 0
-	// investigate zeroing out owner refs as well
-	return hashutils.HashAll(
-		metaCopy,
-		r.Targets,
-		r.Peers,
-		r.PeerIsOptional,
-		r.Origins,
-		r.OriginIsOptional,
-		r.PrincipalBinding,
-	)
+func (r *Policy) MustHash() uint64 {
+	hashVal, err := r.Hash(nil)
+	if err != nil {
+		log.Panicf("error while hashing: (%s) this should never happen", err)
+	}
+	return hashVal
 }
 
 func (r *Policy) GroupVersionKind() schema.GroupVersionKind {

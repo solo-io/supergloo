@@ -2,11 +2,13 @@ syntax = "proto3";
 package zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/v1";
 
-import "github.com/solo-io/solo-kit/api/v1/solo-kit.proto";
-import "gogoproto/gogo.proto";
+import "solo-kit/api/v1/solo-kit.proto";
 import "google/protobuf/duration.proto";
-import "google/protobuf/wrappers.proto";
+
+import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.hash_all) = true;
 
 // Configure RBAC properties on the mesh
 message RbacMode {
@@ -33,7 +35,7 @@ message RbacMode {
     // - Initialized as pending.
     // - If isolation cannot be expressed, an error code corresponding to the reason is reported.
     // - If isolation can be expressed, an "OK" status code is reported.
-    RbacStatus status = 4 [(core.solo.io.skip_hashing) = true];
+    RbacStatus status = 4 [(extproto.skip_hashing) = true];
 }
 
 // if RBAC policies have been specified, service isolation will not work as expected.

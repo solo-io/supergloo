@@ -8,22 +8,7 @@ if [ ! -f .gitignore ]; then
   echo "_output" > .gitignore
 fi
 
-git init
-git add .
-
-# set up a fake git identity- the commit will fail otherwise
-git config user.name 'CI'
-git config user.email 'fake-ci-email@solo.io'
-
-git commit -m "set up dummy repo for diffing" -q --allow-empty
-
-git clone https://github.com/solo-io/solo-kit /workspace/gopath/src/github.com/solo-io/solo-kit
-git clone https://github.com/solo-io/gloo /workspace/gopath/src/github.com/solo-io/gloo
-
 make update-deps
-make pin-repos
-
-PATH=/workspace/gopath/bin:$PATH
 
 set +e
 
