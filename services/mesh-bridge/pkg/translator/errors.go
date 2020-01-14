@@ -1,19 +1,19 @@
 package translator
 
 import (
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 )
 
 var (
 	FailedToGenerateRenderValues = func(err error, namespace, name string) error {
-		return errors.Errorf("Failed to generate render arguments from app state %v.%v", namespace, name)
+		return eris.Errorf("Failed to generate render arguments from app state %v.%v", namespace, name)
 	}
 
 	FlavorNotFoundError = func(name, version string) error {
-		return errors.Errorf("Could not find flavor with name %v for version %v")
+		return eris.Errorf("Could not find flavor with name %v for version %v", name, version)
 	}
 
 	UnsupportedParamType = func(paramValueType interface{}) error {
-		return errors.Errorf("The operator does not currently support params of type %T", paramValueType)
+		return eris.Errorf("The operator does not currently support params of type %T", paramValueType)
 	}
 )

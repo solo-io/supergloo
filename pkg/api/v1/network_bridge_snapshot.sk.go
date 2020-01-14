@@ -8,7 +8,7 @@ import (
 	"hash/fnv"
 	"log"
 
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
@@ -60,22 +60,22 @@ func (s NetworkBridgeSnapshot) HashFields() []zap.Field {
 	hasher := fnv.New64()
 	MeshBridgesHash, err := s.hashMeshBridges(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	fields = append(fields, zap.Uint64("meshBridges", MeshBridgesHash))
 	MeshesHash, err := s.hashMeshes(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	fields = append(fields, zap.Uint64("meshes", MeshesHash))
 	MeshIngressesHash, err := s.hashMeshIngresses(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	fields = append(fields, zap.Uint64("meshIngresses", MeshIngressesHash))
 	snapshotHash, err := s.Hash(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	return append(fields, zap.Uint64("snapshotHash", snapshotHash))
 }
@@ -111,7 +111,7 @@ func (ss NetworkBridgeSnapshotStringer) String() string {
 func (s NetworkBridgeSnapshot) Stringer() NetworkBridgeSnapshotStringer {
 	snapshotHash, err := s.Hash(nil)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	return NetworkBridgeSnapshotStringer{
 		Version:       snapshotHash,

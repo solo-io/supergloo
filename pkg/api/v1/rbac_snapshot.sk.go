@@ -8,7 +8,7 @@ import (
 	"hash/fnv"
 	"log"
 
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/hashutils"
 	"go.uber.org/zap"
 )
@@ -42,12 +42,12 @@ func (s RbacSnapshot) HashFields() []zap.Field {
 	hasher := fnv.New64()
 	MeshesHash, err := s.hashMeshes(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	fields = append(fields, zap.Uint64("meshes", MeshesHash))
 	snapshotHash, err := s.Hash(hasher)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	return append(fields, zap.Uint64("snapshotHash", snapshotHash))
 }
@@ -71,7 +71,7 @@ func (ss RbacSnapshotStringer) String() string {
 func (s RbacSnapshot) Stringer() RbacSnapshotStringer {
 	snapshotHash, err := s.Hash(nil)
 	if err != nil {
-		log.Println(errors.Wrapf(err, "error hashing, this should never happen"))
+		log.Println(eris.Wrapf(err, "error hashing, this should never happen"))
 	}
 	return RbacSnapshotStringer{
 		Version: snapshotHash,

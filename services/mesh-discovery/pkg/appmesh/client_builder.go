@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/appmesh"
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 )
 
 func NewAppMeshClientBuilder() ClientBuilder {
@@ -26,7 +26,7 @@ func (c *clientBuilder) GetClientInstance(region string) (Client, error) {
 	})
 	awsSession, err := session.NewSession(aws.NewConfig().WithCredentials(chainedProvider))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create aws session with provided credentials")
+		return nil, eris.Wrapf(err, "failed to create aws session with provided credentials")
 	}
 	appMeshApi := appmesh.New(awsSession, &aws.Config{Region: aws.String(region)})
 

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,11 +32,11 @@ func GetIngressHostAndPort(restCfg *rest.Config, ref *core.ClusterResourceRef, p
 	if len(parts) == 2 {
 		port, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return "", 0, errors.Wrapf(err, "could not convert port to int")
+			return "", 0, eris.Wrapf(err, "could not convert port to int")
 		}
 		return parts[0], uint32(port), nil
 	}
-	return "", 0, errors.Errorf("Unexpected url %s", url)
+	return "", 0, eris.Errorf("Unexpected url %s", url)
 }
 
 func GetIngressHost(restCfg *rest.Config, ref *core.ClusterResourceRef, proxyPort string) (string, error) {
@@ -47,12 +47,12 @@ func GetIngressHost(restCfg *rest.Config, ref *core.ClusterResourceRef, proxyPor
 	namespace, name := ref.GetResource().Namespace, ref.GetResource().Name
 	svc, err := kube.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		return "", errors.Wrapf(err, "could not detect '%v' service in %v namespace", name, namespace)
+		return "", eris.Wrapf(err, "could not detect '%v' service in %v namespace", name, namespace)
 	}
 	var svcPort *v1.ServicePort
 	switch len(svc.Spec.Ports) {
 	case 0:
-		return "", errors.Errorf("service %v is missing ports", name)
+		return "", eris.Errorf("service %v is missing ports", name)
 	case 1:
 		svcPort = &svc.Spec.Ports[0]
 	default:
@@ -63,7 +63,7 @@ func GetIngressHost(restCfg *rest.Config, ref *core.ClusterResourceRef, proxyPor
 			}
 		}
 		if svcPort == nil {
-			return "", errors.Errorf("named port %v not found on service %v", proxyPort, name)
+			return "", eris.Errorf("named port %v not found on service %v", proxyPort, name)
 		}
 	}
 
@@ -73,7 +73,7 @@ func GetIngressHost(restCfg *rest.Config, ref *core.ClusterResourceRef, proxyPor
 		// TODO: support more types of NodePort services
 		host, err = getNodeIp(svc, kube)
 		if err != nil {
-			return "", errors.Wrapf(err, "")
+			return "", eris.Wrapf(err, "")
 		}
 		port = fmt.Sprintf("%v", svcPort.NodePort)
 	} else {
@@ -102,7 +102,7 @@ func getNodeIp(svc *v1.Service, kube kubernetes.Interface) (string, error) {
 		}
 	}
 	if nodeName == "" {
-		return "", errors.Errorf("no node found for %v's pods. ensure at least one pod has been deployed "+
+		return "", eris.Errorf("no node found for %v's pods. ensure at least one pod has been deployed "+
 			"for the %v service", svc.Name, svc.Name)
 	}
 	// special case for minikube
@@ -121,7 +121,7 @@ func getNodeIp(svc *v1.Service, kube kubernetes.Interface) (string, error) {
 		return addr.Address, nil
 	}
 
-	return "", errors.Errorf("no active addresses found for node %v", node.Name)
+	return "", eris.Errorf("no active addresses found for node %v", node.Name)
 }
 
 func minikubeIp(clusterName string) (string, error) {

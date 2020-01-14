@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/rotisserie/eris"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -55,11 +55,11 @@ func (p *appmeshDiscoveryPlugin) DesiredMeshes(ctx context.Context, writeNamespa
 	var uniqueMeshes []string
 	awsClient, err := p.clientBuilder.GetClientInstance(awsRegion)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed getting aws client instance")
+		return nil, eris.Wrapf(err, "failed getting aws client instance")
 	}
 	meshNames, err := awsClient.ListMeshes(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed listing appmesh meshes")
+		return nil, eris.Wrapf(err, "failed listing appmesh meshes")
 	}
 	for _, meshName := range meshNames {
 		uniqueMeshes = append(uniqueMeshes, meshName)

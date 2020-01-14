@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/rotisserie/eris"
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/errors"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
@@ -253,11 +253,11 @@ func GetMeshBridgeClient(ctx context.Context, cfg *rest.Config, settings *Initia
 		NamespaceWhitelist: namespaceWhitelist,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get Mesh bridge client")
+		return nil, eris.Wrapf(err, "failed to get Mesh bridge client")
 	}
 	err = client.Register()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to register Mesh bridge client")
+		return nil, eris.Wrapf(err, "failed to register Mesh bridge client")
 	}
 	return client, nil
 }
@@ -284,11 +284,11 @@ func GetMeshClient(ctx context.Context, cfg *rest.Config, settings *InitialSetti
 		NamespaceWhitelist: namespaceWhitelist,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get mesh client")
+		return nil, eris.Wrapf(err, "failed to get mesh client")
 	}
 	err = client.Register()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to register mesh client")
+		return nil, eris.Wrapf(err, "failed to register mesh client")
 	}
 	return client, nil
 }
@@ -315,11 +315,11 @@ func GetMeshIngressClient(ctx context.Context, cfg *rest.Config, settings *Initi
 		NamespaceWhitelist: namespaceWhitelist,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get mesh ingress client")
+		return nil, eris.Wrapf(err, "failed to get mesh ingress client")
 	}
 	err = meshClient.Register()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to register mesh ingress client")
+		return nil, eris.Wrapf(err, "failed to register mesh ingress client")
 	}
 	return meshClient, nil
 }
@@ -347,11 +347,11 @@ func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *Init
 		NamespaceWhitelist: namespaceWhitelist,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get service entry client")
+		return nil, eris.Wrapf(err, "failed to get service entry client")
 	}
 	err = serviceEntryClient.Register()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to register service entry client")
+		return nil, eris.Wrapf(err, "Failed to register service entry client")
 	}
 	return serviceEntryClient, nil
 }
@@ -379,11 +379,11 @@ func GetServiceEntryClient(ctx context.Context, cfg *rest.Config, settings *Init
 // 		NamespaceWhitelist: namespaceWhitelist,
 // 	})
 // 	if err != nil {
-// 		return nil, errors.Wrapf(err, "failed to get rbac config client")
+// 		return nil, eris.Wrapf(err, "failed to get rbac config client")
 // 	}
 // 	err = rbacConfigClient.Register()
 // 	if err != nil {
-// 		return nil, errors.Wrapf(err, "Failed to register rbac config client")
+// 		return nil, eris.Wrapf(err, "Failed to register rbac config client")
 // 	}
 // 	return rbacConfigClient, nil
 // }
@@ -413,11 +413,11 @@ func GetRbacClusterConfigClient(ctx context.Context, cfg *rest.Config,
 		NamespaceWhitelist: namespaceWhitelist,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get cluster rbac config client")
+		return nil, eris.Wrapf(err, "failed to get cluster rbac config client")
 	}
 	err = clusterRbacConfigClient.Register()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to register cluster rbac config client")
+		return nil, eris.Wrapf(err, "Failed to register cluster rbac config client")
 	}
 	return clusterRbacConfigClient, nil
 }
@@ -451,7 +451,7 @@ func GetUpstreamClient(ctx context.Context, sharedCacheGetter clustercache.Cache
 	upstreamClient := gloov1.NewUpstreamClientWithBase(upstreamBaseClient)
 	err := upstreamClient.Register()
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "Failed to register upstream client")
+		return nil, nil, eris.Wrapf(err, "Failed to register upstream client")
 	}
 	return upstreamClient, upstreamClientGetter, nil
 }

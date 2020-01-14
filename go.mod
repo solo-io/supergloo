@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2 // indirect
+	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/aws/aws-sdk-go v1.26.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
@@ -18,12 +19,12 @@ require (
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
-	github.com/pelletier/go-toml v1.4.0
 	github.com/pkg/errors v0.8.1
-	github.com/solo-io/gloo v1.3.1
-	github.com/solo-io/go-utils v0.11.7
+	github.com/rotisserie/eris v0.1.1
+	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
+	github.com/solo-io/go-utils v0.13.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
-	github.com/solo-io/solo-kit v0.12.1
+	github.com/solo-io/solo-kit v0.13.0
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e

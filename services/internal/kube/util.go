@@ -3,7 +3,7 @@ package kube
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/errors"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/multicluster/secretconverter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,10 +65,10 @@ func GetKubeConfigForCluster(ctx context.Context, kube kubernetes.Interface, clu
 		}
 		restCfg, err := clientcmd.RESTConfigFromKubeConfig(raw)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to construct *rest.Config from "+
+			return nil, eris.Wrapf(err, "failed to construct *rest.Config from "+
 				"kubeconfig %v", kubeCfg.Metadata.Ref())
 		}
 		return restCfg, nil
 	}
-	return nil, errors.Errorf("could not find a rest config for the given cluster name")
+	return nil, eris.Errorf("could not find a rest config for the given cluster name")
 }
