@@ -74,7 +74,7 @@ check-spelling:
 # Generated Code and Docs
 #----------------------------------------------------------------------------------
 
-SUBDIRS:=services ci pkg
+SUBDIRS:=services ci pkg cli
 
 .PHONY: generated-code
 generated-code:
@@ -151,6 +151,14 @@ $(OUTPUT_DIR)/.mesh-config-docker: $(OUTPUT_DIR)/mesh-config-linux-amd64 $(OUTPU
 	docker build -t quay.io/solo-io/mc-mesh-config:$(VERSION) $(call get_test_tag_option,mesh-config) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-config
 	touch $@
 
+#----------------------------------------------------------------------------------
+# meshctl
+#----------------------------------------------------------------------------------
+CLI_DIR=cli
+
+.PHONY: meshctl
+meshctl: $(SOURCES)
+	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $(OUTPUT_DIR)/$@ $(CLI_DIR)/cmd/main.go
 
 #----------------------------------------------------------------------------------
 # Deployment Manifests / Helm

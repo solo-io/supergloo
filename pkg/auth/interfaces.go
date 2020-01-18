@@ -35,23 +35,25 @@ type Clients struct {
 // given a config for a cluster and a namespace where resources should be written, create clients capable of writing there
 type ClientFactory func(cfg *rest.Config, writeNamespace string) (*Clients, error)
 
-func DefaultClients(cfg *rest.Config, writeNamespace string) (*Clients, error) {
-	k8sClient, err := k8sclientv1.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
+func DefaultClientsProvider() ClientFactory {
+	return func(cfg *rest.Config, writeNamespace string) (clients *Clients, err error) {
+		k8sClient, err := k8sclientv1.NewForConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		serviceAccountClient := k8sClient.ServiceAccounts(writeNamespace)
+
+		k8sRbacClient, err := k8srbacv1.NewForConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		rbacClient := &defaultRbacClient{
+			clusterRoleBindingClient: k8sRbacClient.ClusterRoleBindings(),
+		}
+
+		secretClient := k8sClient.Secrets(writeNamespace)
+
+		return &Clients{serviceAccountClient, rbacClient, secretClient}, nil
 	}
-
-	serviceAccountClient := k8sClient.ServiceAccounts(writeNamespace)
-
-	k8sRbacClient, err := k8srbacv1.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	rbacClient := &defaultRbacClient{
-		clusterRoleBindingClient: k8sRbacClient.ClusterRoleBindings(),
-	}
-
-	secretClient := k8sClient.Secrets(writeNamespace)
-
-	return &Clients{serviceAccountClient, rbacClient, secretClient}, nil
 }

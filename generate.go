@@ -27,8 +27,8 @@ func main() {
 		Output: options.Hugo,
 	}
 	if err := cmd.Generate(cmd.GenerateOptions{
-		RelativeRoot:  ".",
-		CompileProtos: true,
+		RelativeRoot:       ".",
+		CompileProtos:      true,
 		GenDocs:            docsOpts,
 		SkipGeneratedTests: true,
 		SkipGenMocks:       true,

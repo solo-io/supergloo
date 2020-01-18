@@ -12,10 +12,12 @@ require (
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.3.1
+	github.com/google/wire v0.4.0
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+	github.com/mattn/go-shellwords v1.0.7
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
@@ -25,6 +27,8 @@ require (
 	github.com/solo-io/go-utils v0.13.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/solo-kit v0.13.0
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/pflag v1.0.5
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
