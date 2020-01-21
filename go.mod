@@ -3,7 +3,6 @@ module github.com/solo-io/mesh-projects
 go 1.13
 
 require (
-	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2 // indirect
 	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/aws/aws-sdk-go v1.26.2
 	github.com/docker/distribution v2.7.1+incompatible
@@ -32,11 +31,14 @@ require (
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	k8s.io/api v0.0.0
+	istio.io/api v0.0.0-20200114183323-7f5243e44d9e
+	istio.io/client-go v0.0.0-20191218043923-5fad2566daf6
+	k8s.io/api v0.17.0
 	k8s.io/apiextensions-apiserver v0.0.0
-	k8s.io/apimachinery v0.0.0
+	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/code-generator v0.17.0
+	k8s.io/code-generator v0.17.1
+	sigs.k8s.io/controller-runtime v0.4.0
 )
 
 replace (

@@ -1,0 +1,298 @@
+syntax = "proto3";
+package config.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+import "solo-kit/api/v1/solo-kit.proto";
+import "mesh-projects/api/core/v1alpha1/selector.proto";
+
+// a routing rule applies some L7 routing features to an existing mesh
+// routing rules specify the following:
+// for all requests:
+// - originating from from **source pods**
+// - sent to **destination pods**
+// - matching one or more **request matcher**
+// apply the specified RoutingRuleSpec
+// the routing configuration that will be applied to the mesh(es)
+message RoutingRuleSpec {
+    // requests originating from these pods will have the rule applied
+    // leave empty to have all pods in the mesh apply these rules
+    //
+    // > Note: Source Selectors are ignored when RoutingRules are
+    // applied to pods in a Linkerd mesh. RoutingRules will apply to
+    // all selected destinations in Linkerd, regardless of the source.
+    core.zephyr.solo.io.Selector source_selector = 1;
+
+    // requests destined for these pods will have the rule applied
+    // leave empty to apply to all destination pods in the mesh
+    core.zephyr.solo.io.Selector destination_selector = 2;
+
+    // if specified, this rule will only apply to http requests
+    // in the mesh matching these parameters
+    // note that Linkerd only supports matching on Request Path and Method
+    Matcher request_matchers = 3;
+
+    // a routing rule can have one of several types
+    // Note: types imported from istio will be replaced with our own
+    // simpler types, this is just a place to start from
+    oneof rule_type {
+
+        // enables traffic shifting, i.e. to reroute requests to a different service,
+        // to a subset of pods based on their label, and/or split traffic between multiple services
+        MultiDestination traffic_shift = 4;
+
+        // enable fault injection on requests
+        FaultInjection fault_injection = 5;
+
+        // set a timeout on requests
+        google.protobuf.Duration request_timeout = 6;
+
+        // set a retry policy on requests
+        RetryPolicy retries = 7;
+
+        // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+        // for further details about cross origin resource sharing.
+        CorsPolicy cors_policy = 8;
+
+        // Mirror HTTP traffic to a another destination. Traffic will still be sent
+        // to its original destination as normal.
+        core.zephyr.solo.io.ResourceRef mirror = 9;
+
+        // manipulate request and response headers
+        HeaderManipulation header_manipulation = 10;
+    }
+}
+
+message RoutingRuleStatus {
+
+}
+
+// RetryPolicy contains mesh-specific retry configuration
+// Different meshes support different Retry features
+// Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
+// Allowing the same RoutingRule to apply retries to different mesh types
+// The configuration applied to the target mesh will use the corresponding
+// config for each type, while other config types will be ignored
+message RetryPolicy {
+    // Number of retries for a given request
+    int32 attempts = 1;
+
+    // Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
+    google.protobuf.Duration per_try_timeout = 2;
+}
+
+message MultiDestination {
+    message WeightedDestination {
+        core.zephyr.solo.io.ResourceRef destination = 1;
+
+        // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route
+        uint32 weight = 2;
+    }
+
+    repeated WeightedDestination destinations = 1;
+}
+
+
+// FaultInjection can be used to specify one or more faults to inject
+// while forwarding http requests to the destination specified in a route.
+// Faults include aborting the Http request from downstream service, and/or delaying
+// proxying of requests. A fault rule MUST HAVE delay or abort.
+message FaultInjection {
+
+    oneof fault_injection_type {
+        // Delay requests before forwarding, emulating various failures such as
+        // network issues, overloaded upstream service, etc.
+        Delay delay = 1;
+
+        // Abort Http request attempts and return error codes back to downstream
+        // service, giving the impression that the upstream service is faulty.
+        Abort abort = 2;
+    }
+
+    // The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+    // The optional _percentage_ field can be used to only delay a certain
+    // percentage of requests. If left unspecified, all request will be delayed.
+    message Delay {
+        oneof http_delay_type {
+            // Add a fixed delay before forwarding the request. Format:
+            // 1h/1m/1s/1ms. MUST be >=1ms.
+            google.protobuf.Duration fixed_delay = 2;
+
+            // $hide_from_docs
+            google.protobuf.Duration exponential_delay = 3 ;
+        }
+
+        // Percentage of requests on which the delay will be injected.
+        // value from 0.0 to 100.0
+        double percentage = 5;
+
+    }
+
+    // The _httpStatus_ field is used to indicate the HTTP status code to
+    // return to the caller. The optional _percentage_ field can be used to only
+    // abort a certain percentage of requests. If not specified, all requests are
+    // aborted.
+    message Abort {
+
+        oneof error_type {
+            // REQUIRED. HTTP status code to use to abort the Http request.
+            int32 http_status = 4;
+        }
+    }
+
+    // Percentage of requests to be faulted with the error code provided.
+    // Values range between 0 and 100
+    double percentage = 5;
+}
+
+// manipulate request and response headers
+message HeaderManipulation {
+    // HTTP headers to remove before returning a response to the caller.
+    repeated string remove_response_headers = 12;
+
+    // Additional HTTP headers to add before returning a response to the
+    // caller.
+    map<string, string> append_response_headers = 13;
+
+    // HTTP headers to remove before forwarding a request to the
+    // destination service.
+    repeated string remove_request_headers = 14;
+
+    // Additional HTTP headers to add before forwarding a request to the
+    // destination service.
+    map<string, string> append_request_headers = 15;
+}
+
+message CorsPolicy {
+    // The list of origins that are allowed to perform CORS requests. The
+    // content will be serialized into the Access-Control-Allow-Origin
+    // header. Wildcard * will allow all origins.
+    // $hide_from_docs
+    repeated string allow_origin = 1 [deprecated=true];
+
+    // String patterns that match allowed origins.
+    // An origin is allowed if any of the string matchers match.
+    // If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+    repeated StringMatch allow_origins = 7;
+
+    // List of HTTP methods allowed to access the resource. The content will
+    // be serialized into the Access-Control-Allow-Methods header.
+    repeated string allow_methods = 2;
+
+    // List of HTTP headers that can be used when requesting the
+    // resource. Serialized to Access-Control-Allow-Headers header.
+    repeated string allow_headers = 3;
+
+    // A white list of HTTP headers that the browsers are allowed to
+    // access. Serialized into Access-Control-Expose-Headers header.
+    repeated string expose_headers = 4;
+
+    // Specifies how long the results of a preflight request can be
+    // cached. Translates to the `Access-Control-Max-Age` header.
+    google.protobuf.Duration max_age = 5;
+
+    // Indicates whether the caller is allowed to send the actual request
+    // (not the preflight) using credentials. Translates to
+    // `Access-Control-Allow-Credentials` header.
+    google.protobuf.BoolValue allow_credentials = 6;
+}
+
+// Parameters for matching routes
+message Matcher {
+    oneof path_specifier {
+        // If specified, the route is a prefix rule meaning that the prefix must
+        // match the beginning of the *:path* header.
+        string prefix = 1;
+
+        // If specified, the route is an exact path rule meaning that the path must
+        // exactly match the *:path* header once the query string is removed.
+        string exact = 2;
+
+        // If specified, the route is a regular expression rule meaning that the
+        // regex must match the *:path* header once the query string is removed. The entire path
+        // (without the query string) must match the regex. The rule will not match if only a
+        // sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here
+        // <http://en.cppreference.com/w/cpp/regex/ecmascript>`_.
+        string regex = 3;
+    }
+
+    // Specifies a set of headers that the route should match on. The router will
+    // check the request’s headers against all the specified headers in the route
+    // config. A match will happen if all the headers in the route are present in
+    // the request with the same values (or based on presence if the value field
+    // is not in the config).
+    repeated HeaderMatcher headers = 6;
+
+    // Specifies a set of URL query parameters on which the route should
+    // match. The router will check the query string from the *path* header
+    // against all the specified query parameters. If the number of specified
+    // query parameters is nonzero, they all must match the *path* header's
+    // query string for a match to occur.
+    repeated QueryParameterMatcher query_parameters = 7;
+
+    // HTTP Method/Verb(s) to match on. If none specified, the matcher will ignore the HTTP Method
+    repeated string methods = 8;
+}
+
+// Describes how to match a given string in HTTP headers. Match is
+// case-sensitive.
+message StringMatch {
+    oneof match_type {
+
+        // exact string match
+        string exact = 1;
+
+        // prefix-based match
+        string prefix = 2;
+
+        // ECMAscript style regex-based match
+        string regex = 3;
+    }
+}
+
+message HeaderMatcher {
+    oneof match_type {
+        // Specifies the name of the header in the request.
+        string name = 1;
+
+        // Specifies the value of the header. If the value is absent a request that
+        // has the name header will match, regardless of the header’s value.
+        string value = 2;
+
+        // Specifies whether the header value should be treated as regex or not.
+        bool regex = 3;
+    }
+
+    // If set to true, the result of the match will be inverted. Defaults to false.
+    //
+    // Examples:
+    // * name=foo, invert_match=true: matches if no header named `foo` is present
+    // * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+    // * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+    bool invert_match = 4;
+}
+
+// Query parameter matching treats the query string of a request's :path header
+// as an ampersand-separated list of keys and/or key=value elements.
+message QueryParameterMatcher {
+    oneof match_type {
+        // Specifies the name of a key that must be present in the requested
+        // *path*'s query string.
+        string name = 1;
+
+        // Specifies the value of the key. If the value is absent, a request
+        // that contains the key in its query string will match, whether the
+        // key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
+        string value = 2;
+
+        // Specifies whether the query parameter value is a regular expression.
+        // Defaults to false. The entire query parameter value (i.e., the part to
+        // the right of the equals sign in "key=value") must match the regex.
+        // E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
+        bool regex = 3;
+    }
+}

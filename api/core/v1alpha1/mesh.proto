@@ -1,0 +1,68 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
+
+import "solo-kit/api/v1/solo-kit.proto";
+import "mesh-projects/api/v1/selector.proto";
+import "mesh-projects/api/v1/rbac.proto";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+
+/*
+Meshes represent a currently registered service mesh.
+*/
+message MeshSpec {
+    oneof mesh_type {
+        IstioMesh istio = 1;
+        AwsAppMesh aws_app_mesh = 2;
+        LinkerdMesh linkerd = 3;
+        ConsulConnectMesh consul_connect = 4;
+    }
+
+    ResourceRef cluster = 5;
+    // List of services, these can either be kube services, or smh services
+    repeated ResourceRef services = 6;
+
+    // pods also contain ServiceAccount Information, therefore we do not need to store it here
+    repeated ResourceRef pods = 7;
+}
+
+
+message MeshInstallation {
+    // where the control plane has been installed
+    string installation_namespace = 1;
+
+    // version of the mesh which has been installed
+    string version = 2;
+}
+
+// Mesh object representing an installed Istio control plane
+message IstioMesh {
+    MeshInstallation installation = 1;
+}
+
+// Mesh object representing AWS App Mesh
+message AwsAppMesh {
+    MeshInstallation installation = 1;
+    // The AWS region the AWS App Mesh control plane resources exist in.
+    string region = 2;
+}
+
+// Mesh object representing an installed Linkerd control plane
+message LinkerdMesh {
+    MeshInstallation installation = 1;
+}
+
+message ConsulConnectMesh {
+    MeshInstallation installation = 1;
+}
+
+
+message MeshGroupSpec {
+    // User-provided display name for the mesh group.
+    string display_name = 1;
+
+    // The meshes contained in this group.
+    repeated core.zephyr.solo.io.ResourceRef meshes = 3;
+}

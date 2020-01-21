@@ -1,0 +1,18 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+// specifies a method by which to select pods
+// with in a mesh for the application of rules and policies
+message KubernetesClusterSpec {
+    // pointer to secret which contains the kubeconfig with information to connect to the remote cluster.
+    ResourceRef secret_ref = 1;
+    // context to use within the kubeconfig pointed to by the above reference
+    string context = 2;
+    // version of kubernetes
+    string version = 3;
+    // cloud provider, empty if unknown
+    string cloud = 4;
+}

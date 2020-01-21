@@ -5,6 +5,9 @@ doc/site
 # IDEA files
 .idea
 
+# Mocks
+**/gomock_reflect*/
+
 # Mac Files
 **/.DS_Store
 

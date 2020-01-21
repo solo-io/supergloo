@@ -1,0 +1,9 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+message ServiceSpec {
+    ResourceRef kube_service = 1;
+}

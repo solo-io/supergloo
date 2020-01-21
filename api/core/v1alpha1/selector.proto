@@ -1,0 +1,61 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+// select resources by their labels
+message LabelSelector {
+    map<string, string> labels_to_match = 1;
+}
+
+// select resources individually
+message ResourceSelector {
+    // apply the selector to one or more services by adding their refs here
+    repeated ResourceRef services = 1;
+}
+
+// select all resources in these namespaces
+message NamespaceSelector {
+    // list of namespaces to search
+    repeated string namespaces = 1;
+}
+
+/*
+    specifies a method by which to select pods
+    with in a mesh for the application of rules and policies
+
+    Precedence:
+    1. LabelSeclector
+    2. NamespaceSelector
+    3. ResourceSelector
+*/
+message ServiceSelector {
+
+    LabelSelector labels = 1;
+
+    ResourceSelector resources = 4;
+
+    NamespaceSelector namespaces = 3;
+}
+
+/*
+    Precedence:
+    1. LabelSeclector
+    2. ResourceSelector
+*/
+message ClusterSelector {
+    // specify the type of selector to use with selectorType
+    // select clusters by their labels
+    LabelSelector label_selector = 1;
+
+    // select clusters by their names
+    ResourceSelector cluster_selector = 4;
+}
+
+// global selector used to select resources from any set of clusters, namespaces, and/or labels
+message Selector {
+    ClusterSelector cluster_selector = 1;
+
+    ServiceSelector service_selector = 2;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/zephyr.solo.io/v1alpha1";
+
+import "google/protobuf/wrappers.proto";
+
+// reference object for kubernetes objects, support multi cluster
+message ResourceRef {
+    // (optional): The kubernetes kind of the object
+    // Up to the user to decide whether or not to use this field, can be implicit
+    // or explicit depending on the use case.
+    google.protobuf.StringValue APIGroup = 1;
+
+    google.protobuf.StringValue kind = 2;
+
+    string name = 3;
+    // (optional): The namespace in which the object lives
+    // if left empty it will default to the namespace of the object referencing it.
+    string namespace = 4;
+
+    // (optional) the cluster in which the object lives
+    // if left empty will assume the curent cluster
+    google.protobuf.StringValue cluster = 5;
+}
