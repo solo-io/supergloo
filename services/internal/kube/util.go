@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/solo-kit/pkg/api/v1/clients/kube/cache"
 	"github.com/solo-io/solo-kit/pkg/multicluster/secretconverter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -33,14 +32,6 @@ func MustGetKubeConfig(ctx context.Context) *rest.Config {
 		contextutils.LoggerFrom(ctx).Fatalw("Failed to get kubernetes config.", zap.Error(err))
 	}
 	return cfg
-}
-
-func NewKubeCoreCache(ctx context.Context, iface kubernetes.Interface) (cache.KubeCoreCache, error) {
-	cache, err := cache.NewKubeCoreCache(ctx, iface)
-	if err != nil {
-		return nil, err
-	}
-	return cache, nil
 }
 
 func GetKubeConfigForCluster(ctx context.Context, kube kubernetes.Interface, clusterName string) (*rest.Config, error) {

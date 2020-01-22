@@ -23,7 +23,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.1.1
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
-	github.com/solo-io/go-utils v0.13.1
+	github.com/solo-io/go-utils v0.13.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5

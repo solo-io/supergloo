@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/networkutils"
+
 	"github.com/pkg/errors"
 	"github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/kubernetes"
 	"github.com/solo-io/mesh-projects/pkg/api/external/istio/networking/v1alpha3"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
 	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/mesh-projects/services/internal/kube"
-	"github.com/solo-io/mesh-projects/services/internal/networking"
 	"github.com/solo-io/solo-kit/pkg/api/v1/clients"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 )
@@ -109,13 +109,8 @@ func (t *translator) meshBridgesToServiceEntry(ctx context.Context, namespace st
 			if err != nil {
 				return nil, err
 			}
-			address, port, err = networking.GetIngressHostAndPort(clusterRestCfg, &zephyr_core.ClusterResourceRef{
-				Resource: core.ResourceRef{
-					Name:      typedIngress.Gloo.GetServiceName(),
-					Namespace: typedIngress.Gloo.GetNamespace(),
-				},
-				Cluster: mesh.GetDiscoveryMetadata().GetCluster(),
-			}, typedIngress.Gloo.GetPort())
+			svcRef := networkutils.ServiceRef{Name: typedIngress.Gloo.GetServiceName(), Namespace: typedIngress.Gloo.GetNamespace()}
+			address, port, err = networkutils.GetIngressHostAndPort(clusterRestCfg, &svcRef, typedIngress.Gloo.GetPort())
 			if err != nil {
 				return nil, err
 			}
