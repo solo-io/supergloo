@@ -2,15 +2,14 @@ package register
 
 import (
 	"fmt"
+
 	"io"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
-	multiclusterapi "github.com/solo-io/solo-kit/api/multicluster/v1"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
-	"github.com/solo-io/solo-kit/pkg/multicluster/secretconverter"
-	multiclusterv1 "github.com/solo-io/solo-kit/pkg/multicluster/v1"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -91,13 +90,10 @@ func (c *clusterRegistrationClient) RegisterCluster(cmd *cobra.Command, args []s
 
 	fmt.Fprintf(c.out, "Successfully wrote service account to target cluster...\n")
 
-	// TODO: Stop using a custom secret type when we've moved off of solo-kit
-	secret, err := secretconverter.KubeConfigToSecret(&multiclusterv1.KubeConfig{
-		KubeConfig: multiclusterapi.KubeConfig{
-			Metadata: core.Metadata{
-				Name:      c.flagConfig.TargetClusterName,
-				Namespace: c.flagConfig.MasterWriteNamespace,
-			},
+	secret, err := kubeconfig.KubeConfigToSecret(
+		c.flagConfig.TargetClusterName,
+		c.flagConfig.MasterWriteNamespace,
+		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
 				APIVersion:  "v1",
@@ -122,8 +118,7 @@ func (c *clusterRegistrationClient) RegisterCluster(cmd *cobra.Command, args []s
 				CurrentContext: c.flagConfig.TargetClusterName,
 			},
 			Cluster: c.flagConfig.TargetClusterName,
-		},
-	})
+		})
 
 	if err != nil {
 		return FailedToConvertToSecret(err)

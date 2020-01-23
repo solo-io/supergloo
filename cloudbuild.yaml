@@ -36,7 +36,7 @@ steps:
   args:
     [
       "-c",
-      "mkdir -p ./gopath/pkg && cd ./gopath/pkg && gsutil cat gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz | tar -xzf -",
+      "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz | tar -xzf -",
     ]
   id: "untar-mod-cache"
   waitFor: ["-"]

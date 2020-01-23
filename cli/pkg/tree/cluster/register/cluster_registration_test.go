@@ -3,13 +3,15 @@ package register_test
 import (
 	"os"
 
+	"github.com/solo-io/mesh-projects/pkg/env"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
-	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -105,14 +107,14 @@ users:
 				EXPECT().
 				Write(&v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:            "test-name",
-						Namespace:       env.DefaultWriteNamespace,
-						OwnerReferences: []metav1.OwnerReference{}, // this can't be nil, which I only discovered after stepping through reflect.deepequal for entirely too long
+						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+						Name:      serviceAccountRef.Name,
+						Namespace: env.DefaultWriteNamespace,
 					},
 					Data: map[string][]byte{
 						"test-name": []byte(expectedKubeConfig),
 					},
-					Type: "solo.io/kubeconfig",
+					Type: v1.SecretTypeOpaque,
 				}).
 				Return(nil)
 
@@ -149,14 +151,14 @@ Cluster test-name is now registered in your Service Mesh Hub installation
 				EXPECT().
 				Write(&v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:            "test-name",
-						Namespace:       env.DefaultWriteNamespace,
-						OwnerReferences: []metav1.OwnerReference{}, // this can't be nil, which I only discovered after stepping through reflect.deepequal for entirely too long
+						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+						Name:      serviceAccountRef.Name,
+						Namespace: env.DefaultWriteNamespace,
 					},
 					Data: map[string][]byte{
 						"test-name": []byte(expectedKubeConfig),
 					},
-					Type: "solo.io/kubeconfig",
+					Type: v1.SecretTypeOpaque,
 				}).
 				Return(nil)
 
