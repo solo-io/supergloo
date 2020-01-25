@@ -2,22 +2,27 @@ package cli_mocks
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/golang/mock/gomock"
 	"github.com/mattn/go-shellwords"
 	"github.com/onsi/ginkgo"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/mocks"
 	"github.com/spf13/cobra"
 )
 
 // Build and execute the CLI app using the given clients
 type MockMeshctl struct {
-	// MUST be non-nil - we always need to produce a mocked master cluster verification client
+	// MUST be non-nil - we always need to produce a mocked master cluster verification client and a mocked usage reporter
 	MockController *gomock.Controller
 
 	// safe to leave nil if not needed
 	MasterVerification func(cmd *cobra.Command, args []string) (err error)
+
+	// safe to leave as nil if not needed
+	Ctx context.Context
 
 	Clients    *common.Clients
 	KubeLoader common.KubeLoader
@@ -38,7 +43,13 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		BuildVerificationCallback(gomock.Any(), gomock.Any()).
 		Return(m.MasterVerification)
 
-	app := cli.BuildCli(MockClientsFactory(m.Clients), buffer, masterVerification)
+	usageReporter := usage_mocks.NewMockClient(m.MockController)
+	usageReporter.
+		EXPECT().
+		StartReportingUsage(m.Ctx, common.UsageReportingInterval).
+		Return(nil)
+
+	app := cli.BuildCli(m.Ctx, MockClientsFactory(m.Clients), buffer, masterVerification, usageReporter)
 
 	splitArgs, err := shellwords.Parse(argString)
 	if err != nil {

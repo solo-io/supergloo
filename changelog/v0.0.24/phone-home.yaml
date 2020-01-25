@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Report usage from meshctl invocations
+    issueLink: https://github.com/solo-io/mesh-projects/issues/89

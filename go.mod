@@ -15,7 +15,6 @@ require (
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
-	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/mattn/go-shellwords v1.0.7
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.11.0
@@ -25,6 +24,7 @@ require (
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
+	github.com/solo-io/reporting-client v0.1.3-0.20200124192607-71d80a5d0532
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	go.opencensus.io v0.22.2

@@ -6,6 +6,7 @@
 package wire
 
 import (
+	"context"
 	"io"
 
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
@@ -33,11 +34,12 @@ func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*c
 	return clients, nil
 }
 
-func InitializeCLI(out io.Writer) *cobra.Command {
+func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	clientsFactory := DefaultClientsFactoryProvider()
 	kubeLoader := common.DefaultKubeLoaderProvider()
 	fileExistenceChecker := common.DefaultFileExistenceCheckerProvider()
 	masterKubeConfigVerifier := common.NewMasterKubeConfigVerifier(kubeLoader, fileExistenceChecker)
-	command := cli.BuildCli(clientsFactory, out, masterKubeConfigVerifier)
+	client := common.DefaultUsageReporterProvider()
+	command := cli.BuildCli(ctx, clientsFactory, out, masterKubeConfigVerifier, client)
 	return command
 }

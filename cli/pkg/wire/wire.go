@@ -3,6 +3,7 @@
 package wire
 
 import (
+	"context"
 	"io"
 
 	"github.com/google/wire"
@@ -29,12 +30,13 @@ func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*c
 	return nil, nil
 }
 
-func InitializeCLI(out io.Writer) *cobra.Command {
+func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	wire.Build(
 		DefaultClientsFactoryProvider,
 		common.DefaultFileExistenceCheckerProvider,
 		common.DefaultKubeLoaderProvider,
 		common.NewMasterKubeConfigVerifier,
+		common.DefaultUsageReporterProvider,
 		cli.BuildCli,
 	)
 

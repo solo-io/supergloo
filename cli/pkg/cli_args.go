@@ -1,12 +1,14 @@
 package cli
 
 import (
+	"context"
 	"io"
 
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
+	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 )
 
@@ -21,10 +23,22 @@ type clusterTree struct {
 }
 
 // build an instance of the meshctl implementation
-func BuildCli(clientsFactory common.ClientsFactory, out io.Writer, masterClusterVerifier common.MasterKubeConfigVerifier) *cobra.Command {
+func BuildCli(ctx context.Context,
+	clientsFactory common.ClientsFactory,
+	out io.Writer,
+	masterClusterVerifier common.MasterKubeConfigVerifier,
+	usageReporter usageclient.Client,
+) *cobra.Command {
+
 	meshctl := &cobra.Command{
 		Use:   "meshctl",
 		Short: "CLI for Service Mesh Hub",
+	}
+
+	meshctl.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		usageReporter.StartReportingUsage(ctx, common.UsageReportingInterval)
+
+		return nil
 	}
 
 	commandTree := buildCommandTree(clientsFactory, masterClusterVerifier, out)
@@ -43,7 +57,7 @@ func BuildCli(clientsFactory common.ClientsFactory, out io.Writer, masterCluster
 func buildCommandTree(clientsFactory common.ClientsFactory, masterClusterVerifier common.MasterKubeConfigVerifier, out io.Writer) cliTree {
 	return cliTree{
 		cluster: clusterTree{
-			rootCmd:  cluster.ClusterRootCmd(),
+			rootCmd:  clusterroot.ClusterRootCmd(),
 			register: register.ClusterRegistrationCmd(clientsFactory, masterClusterVerifier, out),
 		},
 		version: version.VersionCmd(out),
