@@ -76,7 +76,7 @@ check-spelling:
 # Generated Code and Docs
 #----------------------------------------------------------------------------------
 
-SUBDIRS:=services ci pkg cli
+SUBDIRS:=services ci pkg cli test
 
 .PHONY: generated-code
 generated-code:

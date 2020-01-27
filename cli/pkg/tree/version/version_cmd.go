@@ -3,18 +3,20 @@ package version
 import (
 	"io"
 
+	"github.com/solo-io/mesh-projects/cli/pkg/common"
+
 	"github.com/spf13/cobra"
 )
 
-func VersionCmd(out io.Writer) *cobra.Command {
+func VersionCmd(out io.Writer, clientsFactory common.ClientsFactory, globalFlagConfig *common.GlobalFlagConfig) *cobra.Command {
 	cmdName := "version"
-	version := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   cmdName,
-		Short: "Display the version of meshctl",
+		Short: "Display the version of meshctl and Service Mesh Hub server components",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return ReportVersion(out)
+			return ReportVersion(out, clientsFactory, globalFlagConfig)
 		},
 	}
 
-	return version
+	return cmd
 }

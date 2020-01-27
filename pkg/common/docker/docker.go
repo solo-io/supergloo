@@ -1,4 +1,4 @@
-package common
+package docker
 
 import (
 	"github.com/docker/distribution/reference"
@@ -11,8 +11,7 @@ type Image struct {
 	Digest string
 }
 
-//go:generate mockgen -destination ./mocks/mock_image_name_parser.go github.com/solo-io/mesh-projects/services/common ImageNameParser
-
+//go:generate mockgen -source docker.go -destination mocks/docker.go
 type ImageNameParser interface {
 	// Parses a tagged or digested docker image name into its different parts
 	// The image's path is normalized (i.e., calling this function on "consul:1.6.2" returns a path of "library/consul")

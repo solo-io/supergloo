@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
+
 	gloov1 "github.com/solo-io/gloo/projects/gloo/pkg/api/v1"
 	"github.com/solo-io/go-utils/contextutils"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	coreapi "github.com/solo-io/mesh-projects/pkg/api/v1/core"
-	globalcommon "github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/internal/utils"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/injectedpods"
@@ -137,7 +138,7 @@ func detectLinkerdControllers(ctx context.Context, deployments kubernetes.Deploy
 		for _, container := range deployment.Spec.Template.Spec.Containers {
 			if strings.Contains(container.Image, "linkerd-io/controller") {
 				// TODO there can be > 1 controller image per pod, do we care?
-				parsedImage, err := globalcommon.NewImageNameParser().Parse(container.Image)
+				parsedImage, err := docker.NewImageNameParser().Parse(container.Image)
 				if err != nil {
 					contextutils.LoggerFrom(ctx).Errorf("invalid or unexpected image format for linkerd controller: %v", container.Image)
 					continue

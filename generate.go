@@ -126,7 +126,7 @@ func main() {
 						Kind: "Service",
 					},
 					{
-							Kind: "Pod",
+						Kind: "Pod",
 					},
 				},
 				RenderController:      true,

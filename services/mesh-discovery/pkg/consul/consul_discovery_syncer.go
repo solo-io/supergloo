@@ -6,10 +6,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
+
 	"github.com/solo-io/go-utils/contextutils"
 	meshprojectsapi "github.com/solo-io/mesh-projects/pkg/api/v1"
 	coreapi "github.com/solo-io/mesh-projects/pkg/api/v1/core"
-	globalcommon "github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/common/kubernetes"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -32,14 +33,14 @@ var (
 
 type consulDiscoveryPlugin struct {
 	consulConnectInstallationFinder ConsulConnectInstallationFinder
-	imageNameParser                 globalcommon.ImageNameParser
+	imageNameParser                 docker.ImageNameParser
 }
 
 func NewConsulDiscoveryPlugin(writeNamespace string,
 	meshReconciler meshprojectsapi.MeshReconciler,
 	reconciler meshprojectsapi.MeshIngressReconciler,
 	consulConnectInstallationFinder ConsulConnectInstallationFinder,
-	imageNameParser globalcommon.ImageNameParser) meshprojectsapi.DiscoverySyncer {
+	imageNameParser docker.ImageNameParser) meshprojectsapi.DiscoverySyncer {
 
 	return common.NewDiscoverySyncer(
 		writeNamespace,

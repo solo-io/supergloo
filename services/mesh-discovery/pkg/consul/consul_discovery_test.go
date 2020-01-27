@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"
+
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "github.com/solo-io/mesh-projects/pkg/api/v1"
 	zeph_core "github.com/solo-io/mesh-projects/pkg/api/v1/core"
-	"github.com/solo-io/mesh-projects/services/common"
-	mock_common "github.com/solo-io/mesh-projects/services/common/mocks"
 	mocks_common "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/common/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/consul"
 	mock_consul "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/consul/mocks"
@@ -80,7 +82,7 @@ var _ = Describe("Consul Discovery", func() {
 		consulContainer := snap.Deployments[0].Spec.Template.Spec.Containers[0]
 		imageNameParser.EXPECT().
 			Parse(consulContainer.Image).
-			Return(&common.Image{
+			Return(&docker.Image{
 				Domain: "docker.io",
 				Path:   "library/consul",
 				Tag:    "1.6.2",
@@ -102,12 +104,12 @@ func buildGlobalObjects(ctrl *gomock.Controller) (v1.DiscoverySyncer,
 	*mocks_common.MockMeshReconciler,
 	*mocks_common.MockMeshIngressReconciler,
 	*mock_consul.MockConsulConnectInstallationFinder,
-	*mock_common.MockImageNameParser) {
+	*mock_docker.MockImageNameParser) {
 
 	reconciler := &mocks_common.MockMeshReconciler{}
 	ingressReconciler := &mocks_common.MockMeshIngressReconciler{}
 	mockConnectDeploymentFinder := mock_consul.NewMockConsulConnectInstallationFinder(ctrl)
-	mockImageNameParser := mock_common.NewMockImageNameParser(ctrl)
+	mockImageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 
 	return consul.NewConsulDiscoveryPlugin(writeNs, reconciler, ingressReconciler, mockConnectDeploymentFinder, mockImageNameParser),
 		reconciler,

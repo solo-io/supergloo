@@ -6,6 +6,8 @@ import (
 	"context"
 	"io"
 
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
+
 	"github.com/google/wire"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
@@ -25,6 +27,7 @@ func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*c
 		common.DefaultSecretWriterProvider,
 		auth.NewClusterAuthorization,
 		common.ClientsProvider,
+		server.DefaultServerVersionClientProvider,
 	)
 
 	return nil, nil

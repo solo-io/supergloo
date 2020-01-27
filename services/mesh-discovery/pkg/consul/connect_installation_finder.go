@@ -4,9 +4,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
+
 	consulconfig "github.com/hashicorp/consul/agent/config"
 	"github.com/hashicorp/hcl"
-	globalcommon "github.com/solo-io/mesh-projects/services/common"
 	kubev1 "k8s.io/api/core/v1"
 )
 
@@ -29,12 +30,12 @@ type ConsulConnectInstallationFinder interface {
 	IsConsulConnect(kubev1.Container) (isConsulConnect bool, err error)
 }
 
-func NewConsulConnectInstallationFinder(imageNameParser globalcommon.ImageNameParser) ConsulConnectInstallationFinder {
+func NewConsulConnectInstallationFinder(imageNameParser docker.ImageNameParser) ConsulConnectInstallationFinder {
 	return &consulConnectInstallationFinder{imageNameParser}
 }
 
 type consulConnectInstallationFinder struct {
-	imageNameParser globalcommon.ImageNameParser
+	imageNameParser docker.ImageNameParser
 }
 
 func (c *consulConnectInstallationFinder) IsConsulConnect(container kubev1.Container) (isConsulConnect bool, err error) {

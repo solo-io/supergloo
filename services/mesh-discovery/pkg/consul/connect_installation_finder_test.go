@@ -3,10 +3,11 @@ package consul_test
 import (
 	"errors"
 
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/consul"
 	kubev1 "k8s.io/api/core/v1"
 )
@@ -15,7 +16,7 @@ var _ = Describe("Consul Connect Installation Finder", func() {
 	testErr := errors.New("")
 
 	runTestCase := func(container kubev1.Container, shouldBeConsul bool, expectedErrMessageSubstring string) {
-		connectInstallationFinder := consul.NewConsulConnectInstallationFinder(common.NewImageNameParser())
+		connectInstallationFinder := consul.NewConsulConnectInstallationFinder(docker.NewImageNameParser())
 
 		isConsulConnect, err := connectInstallationFinder.IsConsulConnect(container)
 		Expect(isConsulConnect).To(Equal(shouldBeConsul), "Should have correctly determined whether connect is deployed")

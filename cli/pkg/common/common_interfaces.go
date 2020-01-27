@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -12,6 +13,7 @@ type Clients struct {
 	ClusterAuthorization auth.ClusterAuthorization
 	SecretWriter         SecretWriter
 	KubeLoader           KubeLoader
+	ServerVersionClient  server.ServerVersionClient
 }
 
 type ClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*Clients, error)
@@ -40,10 +42,11 @@ type SecretWriter interface {
 }
 
 // facilitates wire codegen
-func ClientsProvider(authorization auth.ClusterAuthorization, writer SecretWriter, kubeLoader KubeLoader) *Clients {
+func ClientsProvider(authorization auth.ClusterAuthorization, writer SecretWriter, kubeLoader KubeLoader, serverVersionClient server.ServerVersionClient) *Clients {
 	return &Clients{
 		ClusterAuthorization: authorization,
 		SecretWriter:         writer,
 		KubeLoader:           kubeLoader,
+		ServerVersionClient:  serverVersionClient,
 	}
 }

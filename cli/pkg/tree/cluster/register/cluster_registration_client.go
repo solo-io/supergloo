@@ -37,11 +37,7 @@ type ClusterRegistrationClient interface {
 // most of these references will be invalid when this constructor runs- we just care about
 // being able to get to these values at game time (when the command actually runs and flags
 // have been parsed)
-func NewClusterRegistrationClient(
-	out io.Writer,
-	flagConfig *cluster.FlagConfig,
-	clientsFactory common.ClientsFactory,
-) ClusterRegistrationClient {
+func NewClusterRegistrationClient(out io.Writer, flagConfig *cluster.FlagConfig, clientsFactory common.ClientsFactory) ClusterRegistrationClient {
 	return &clusterRegistrationClient{
 		out:            out,
 		flagConfig:     flagConfig,
@@ -57,7 +53,7 @@ type clusterRegistrationClient struct {
 
 func (c *clusterRegistrationClient) RegisterCluster(cmd *cobra.Command, args []string) error {
 	// game time- build the clients and use the values
-	clients, err := c.clientsFactory(c.flagConfig.MasterKubeConfig, c.flagConfig.MasterWriteNamespace)
+	clients, err := c.clientsFactory(c.flagConfig.GlobalFlagConfig.MasterKubeConfig, c.flagConfig.GlobalFlagConfig.MasterWriteNamespace)
 	if err != nil {
 		return err
 	}
@@ -92,7 +88,7 @@ func (c *clusterRegistrationClient) RegisterCluster(cmd *cobra.Command, args []s
 
 	secret, err := kubeconfig.KubeConfigToSecret(
 		c.flagConfig.TargetClusterName,
-		c.flagConfig.MasterWriteNamespace,
+		c.flagConfig.GlobalFlagConfig.MasterWriteNamespace,
 		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",

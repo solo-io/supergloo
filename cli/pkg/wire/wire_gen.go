@@ -11,6 +11,7 @@ import (
 
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -30,7 +31,8 @@ func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*c
 	}
 	secretWriter := common.DefaultSecretWriterProvider(coreV1Client, writeNamespace)
 	kubeLoader := common.DefaultKubeLoaderProvider()
-	clients := common.ClientsProvider(clusterAuthorization, secretWriter, kubeLoader)
+	serverVersionClient := server.DefaultServerVersionClientProvider(writeNamespace)
+	clients := common.ClientsProvider(clusterAuthorization, secretWriter, kubeLoader, serverVersionClient)
 	return clients, nil
 }
 
