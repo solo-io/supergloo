@@ -21,17 +21,3 @@ meshBridge:
       repository: mc-mesh-bridge
     replicas: 1
     stats: true
-
-discovery:
-  deployment:
-    image:
-      repository: discovery
-    replicas: 1
-    stats: true
-
-meshConfig:
-  deployment:
-    image:
-      repository: mc-mesh-config
-    replicas: 1
-    stats: true

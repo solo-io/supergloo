@@ -12,8 +12,6 @@ type HelmConfig struct {
 type Config struct {
 	MeshDiscovery *MeshDiscovery `json:"meshDiscovery,omitempty"`
 	MeshBridge    *MeshBridge    `json:"meshBridge,omitempty"`
-	Discovery     *Discovery     `json:"discovery,omitempty"`
-	MeshConfig    *MeshConfig    `json:"meshConfig,omitempty"`
 }
 
 type Global struct {
@@ -27,7 +25,7 @@ type Namespace struct {
 }
 
 type Rbac struct {
-	Create     bool `json:"create" desc:"create rbac rules for the gloo-system service account"`
+	Create     bool `json:"create" desc:"create rbac rules for the service-mesh-hub service account"`
 	Namespaced bool `json:"Namespaced" desc:"use Roles instead of ClusterRoles"`
 }
 
@@ -52,28 +50,6 @@ type MeshBridge struct {
 }
 
 type MeshBridgeDeployment struct {
-	Image *generate.Image `json:"image,omitempty"`
-	Stats bool            `json:"stats" desc:"enable prometheus stats"`
-	*generate.DeploymentSpec
-}
-
-type Discovery struct {
-	Disabled   bool                 `json:"disabled"`
-	Deployment *DiscoveryDeployment `json:"deployment,omitempty"`
-}
-
-type DiscoveryDeployment struct {
-	Image *generate.Image `json:"image,omitempty"`
-	Stats bool            `json:"stats" desc:"enable prometheus stats"`
-	*generate.DeploymentSpec
-}
-
-type MeshConfig struct {
-	Disabled   bool                  `json:"disabled"`
-	Deployment *MeshConfigDeployment `json:"deployment,omitempty"`
-}
-
-type MeshConfigDeployment struct {
 	Image *generate.Image `json:"image,omitempty"`
 	Stats bool            `json:"stats" desc:"enable prometheus stats"`
 	*generate.DeploymentSpec
