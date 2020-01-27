@@ -21,20 +21,24 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.1.1
+	github.com/solo-io/autopilot v0.1.1-0.20200120150033-db11c4f61ad5
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
-	github.com/solo-io/reporting-client v0.1.3-0.20200124192607-71d80a5d0532
+	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	istio.io/api v0.0.0-20191109011911-e51134872853
+	istio.io/client-go v0.0.0-20191218043923-5fad2566daf6
 	k8s.io/api v0.17.0
 	k8s.io/apiextensions-apiserver v0.0.0
 	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.1
+	sigs.k8s.io/controller-runtime v0.4.0
 )
 
 replace (

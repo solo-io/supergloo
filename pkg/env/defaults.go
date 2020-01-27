@@ -4,7 +4,7 @@ import "os"
 
 const (
 	EnvPodNamespace       = "POD_NAMESPACE"
-	DefaultWriteNamespace = "sm-marketplace"
+	DefaultWriteNamespace = "service-mesh-hub"
 )
 
 func GetWriteNamespace() string {

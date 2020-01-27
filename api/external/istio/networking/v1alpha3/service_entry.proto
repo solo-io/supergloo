@@ -20,15 +20,15 @@ import "networking/v1alpha3/gateway.proto";
 // $description: Configuration affecting service registry.
 // $location: https://istio.io/docs/reference/config/networking/v1alpha3/service-entry.html
 
-// `ServiceEntry` enables adding additional entries into Istio's internal
+// `ServiceEntry` enables adding additional entries into Istio's internal_watcher
 // service registry, so that auto-discovered services in the mesh can
 // access/route to these manually specified services. A service entry
 // describes the properties of a service (DNS name, VIPs, ports, protocols,
 // endpoints). These services could be external to the mesh (e.g., web
-// APIs) or mesh-internal services that are not part of the platform's
+// APIs) or mesh-internal_watcher services that are not part of the platform's
 // service registry (e.g., a set of VMs talking to services in Kubernetes).
 //
-// The following example declares a few external APIs accessed by internal
+// The following example declares a few external APIs accessed by internal_watcher
 // applications over HTTPS. The sidecar inspects the SNI value in the
 // ClientHello message to route to the appropriate external service.
 //
@@ -95,7 +95,7 @@ import "networking/v1alpha3/gateway.proto";
 //
 // The following example uses a combination of service entry and TLS
 // routing in a virtual service to steer traffic based on the SNI value to
-// an internal egress firewall.
+// an internal_watcher egress firewall.
 //
 // ```yaml
 // apiVersion: networking.istio.io/v1alpha3
@@ -132,7 +132,7 @@ import "networking/v1alpha3/gateway.proto";
 //       - "*.wikipedia.org"
 //     route:
 //     - destination:
-//         host: internal-egress-firewall.ns1.svc.cluster.local
+//         host: internal_watcher-egress-firewall.ns1.svc.cluster.local
 // ```
 //
 // The virtual service with TLS match serves to override the default SNI

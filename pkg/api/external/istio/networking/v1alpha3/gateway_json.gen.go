@@ -60,7 +60,7 @@
 //     hosts:
 //     - "*"
 //   - port:
-//       number: 2379 # to expose internal service via external port 2379
+//       number: 2379 # to expose internal_watcher service via external port 2379
 //       name: mongo
 //       protocol: MONGO
 //     hosts:
@@ -75,7 +75,7 @@
 // `https://uk.bookinfo.com/reviews`, `https://eu.bookinfo.com/reviews`,
 // `http://uk.bookinfo.com:9080/reviews`,
 // `http://eu.bookinfo.com:9080/reviews` into two versions (prod and qa) of
-// an internal reviews service on port 9080. In addition, requests
+// an internal_watcher reviews service on port 9080. In addition, requests
 // containing the cookie "user: dev-123" will be sent to special port 7777
 // in the qa version. The same rule is also applicable inside the mesh for
 // requests to the "reviews.prod.svc.cluster.local" service. This rule is
@@ -121,7 +121,7 @@
 // ```
 //
 // The following VirtualService forwards traffic arriving at (external)
-// port 27017 to internal Mongo server on port 5555. This rule is not
+// port 27017 to internal_watcher Mongo server on port 5555. This rule is not
 // applicable internally in the mesh as the gateway list omits the
 // reserved name `mesh`.
 //
@@ -133,7 +133,7 @@
 //   namespace: bookinfo-namespace
 // spec:
 //   hosts:
-//   - mongosvr.prod.svc.cluster.local # name of internal Mongo service
+//   - mongosvr.prod.svc.cluster.local # name of internal_watcher Mongo service
 //   gateways:
 //   - some-config-namespace/my-gateway # can omit the namespace if gateway is in same
 //                                        namespace as virtual service.

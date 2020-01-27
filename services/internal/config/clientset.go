@@ -133,7 +133,7 @@ type clientSet struct {
 
 	localKube client_go.Interface
 
-	// internal objects, used for lazy client loading
+	// internal_watcher objects, used for lazy client loading
 	ctx          context.Context
 	cfg          *rest.Config
 	watchHandler multicluster.ClientForClusterHandler

@@ -5,8 +5,8 @@ doc/site
 # IDEA files
 .idea
 
-# Mocks
-**/gomock_reflect*/
+# ignore intermediate files that gomock sometimes generates
+**/gomock_reflect*
 
 # Mac Files
 **/.DS_Store

@@ -30,7 +30,7 @@ func NewMeshBridgeTranslator(clientset config.MeshBridgeClientSet) Translator {
 type translator struct {
 	clientset config.MeshBridgeClientSet
 
-	// internal, must clear after translation
+	// internal_watcher, must clear after translation
 	meshes        v1.MeshList
 	meshIngresses v1.MeshIngressList
 }

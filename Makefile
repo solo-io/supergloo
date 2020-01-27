@@ -46,6 +46,8 @@ mod-download:
 
 .PHONY: update-deps
 update-deps: mod-download
+	cd $(shell go list -f '{{ .Dir }}' -m istio.io/tools) && \
+	  go install ./cmd/protoc-gen-jsonshim
 	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
 	GO111MODULE=off go get -u github.com/gogo/protobuf/gogoproto
 	GO111MODULE=off go get -u github.com/gogo/protobuf/protoc-gen-gogo
