@@ -13,8 +13,19 @@ All mesh-projects operators are located in the `services` folder. Current the 3 
 3) mesh-bridge
     * mesh-bridge is the mesh-projects cross cluster networking operator. It operates on the mesh-bridge crd and creates
     network bridges between different meshes.
+    
+## Make Targets
 
-#### Multi Cluster Setup
+The following make targets should be noted:
+
+1. `init` — This should be executed after cloning the repo. It applies a pre-commit githook that verifies the integrity
+of your local source code.
+2. `mod-download` — Downloads required go dependencies.
+3. `update-deps` — Downloads go binaries required during build time.
+4. `generated-code` — Executes code generation (e.g. for mockgen)
+
+
+## Multi Cluster Setup
 
 As mentioned earlier all of the above operators/services have multi-cluster features. Enabling these features is simple,
 but does require a few steps depending on where the clusters are located. The current supported platforms are EKS and GKE.

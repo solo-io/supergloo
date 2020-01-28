@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add documentation about makefile targets
+    issueLink: https://github.com/solo-io/mesh-projects/issues/111
