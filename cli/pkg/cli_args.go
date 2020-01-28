@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/rest"
 )
 
 type cliTree struct {
@@ -67,10 +66,12 @@ func setGlobalFlags(cmd *cobra.Command,
 	masterKubeConfigPath := ""
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		usageReporter.StartReportingUsage(ctx, common.UsageReportingInterval)
-		masterClusterVerifier.BuildVerificationCallback(&masterKubeConfigPath, func(verifiedMasterKubeConfig *rest.Config) {
-			// grab the parsed kube config from the verifier if the config is validated successfully
-			globalFlagConfig.MasterKubeConfig = verifiedMasterKubeConfig
-		})
+		verifiedMasterKubeConfig, err := masterClusterVerifier.Verify(&masterKubeConfigPath)
+		if err != nil {
+			return err
+		}
+
+		globalFlagConfig.MasterKubeConfig = verifiedMasterKubeConfig
 		return nil
 	}
 

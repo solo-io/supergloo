@@ -8,8 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	common "github.com/solo-io/mesh-projects/cli/pkg/common"
-	cobra "github.com/spf13/cobra"
+	rest "k8s.io/client-go/rest"
 )
 
 // MockMasterKubeConfigVerifier is a mock of MasterKubeConfigVerifier interface
@@ -35,16 +34,17 @@ func (m *MockMasterKubeConfigVerifier) EXPECT() *MockMasterKubeConfigVerifierMoc
 	return m.recorder
 }
 
-// BuildVerificationCallback mocks base method
-func (m *MockMasterKubeConfigVerifier) BuildVerificationCallback(arg0 *string, arg1 common.OnMasterVerificationSuccess) func(*cobra.Command, []string) error {
+// Verify mocks base method
+func (m *MockMasterKubeConfigVerifier) Verify(arg0 *string) (*rest.Config, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildVerificationCallback", arg0, arg1)
-	ret0, _ := ret[0].(func(*cobra.Command, []string) error)
-	return ret0
+	ret := m.ctrl.Call(m, "Verify", arg0)
+	ret0, _ := ret[0].(*rest.Config)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// BuildVerificationCallback indicates an expected call of BuildVerificationCallback
-func (mr *MockMasterKubeConfigVerifierMockRecorder) BuildVerificationCallback(arg0, arg1 interface{}) *gomock.Call {
+// Verify indicates an expected call of Verify
+func (mr *MockMasterKubeConfigVerifierMockRecorder) Verify(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildVerificationCallback", reflect.TypeOf((*MockMasterKubeConfigVerifier)(nil).BuildVerificationCallback), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockMasterKubeConfigVerifier)(nil).Verify), arg0)
 }

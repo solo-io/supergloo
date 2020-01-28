@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/rotisserie/eris"
-	"github.com/spf13/cobra"
 	"k8s.io/client-go/rest"
 )
 
@@ -33,7 +32,7 @@ type MasterKubeConfigVerifier interface {
 	// Build and return a callback that cobra can run as a prerun step
 	// If the cluster is determined to have a valid SMH installation, then `onSuccessCallback` is called with the parsed REST config for that cluster;
 	// commonly used to return that rest config out of the verification step
-	BuildVerificationCallback(masterKubeConfigPath *string, onSuccessCallback OnMasterVerificationSuccess) func(cmd *cobra.Command, args []string) (err error)
+	Verify(masterKubeConfigPath *string) (masterKubeConfig *rest.Config, err error)
 }
 
 // Accepts the validated master kube REST config
@@ -65,38 +64,34 @@ type masterKubeConfigVerifier struct {
 	fileExistenceChecker FileExistenceChecker
 }
 
-func (m *masterKubeConfigVerifier) BuildVerificationCallback(masterKubeConfigPath *string, onSuccessCallback OnMasterVerificationSuccess) func(cmd *cobra.Command, args []string) (err error) {
-	return func(cmd *cobra.Command, args []string) (err error) {
-		if masterKubeConfigPath == nil || *masterKubeConfigPath == "" {
-			return MustProvideMasterConfigPath
-		}
-
-		fileExists, err := m.fileExistenceChecker(*masterKubeConfigPath)
-		if err != nil {
-			return FailedToCheckFileExistence(err, *masterKubeConfigPath)
-		}
-		if !fileExists {
-			return FileDoesNotExist(*masterKubeConfigPath)
-		}
-
-		_, err = m.kubeLoader.ParseContext(*masterKubeConfigPath)
-		if err != nil {
-			return FailedToParseContext(err)
-		}
-		isSMH, err := m.verifyIsMaster()
-		if err != nil {
-			return CouldNotVerifyMaster(err, *masterKubeConfigPath)
-		}
-		if !isSMH {
-			return NoSmhInstallationFound(*masterKubeConfigPath)
-		}
-
-		masterKubeConfig, _ := m.kubeLoader.GetRestConfig(*masterKubeConfigPath)
-
-		onSuccessCallback(masterKubeConfig)
-
-		return nil
+func (m *masterKubeConfigVerifier) Verify(masterKubeConfigPath *string) (masterKubeConfig *rest.Config, err error) {
+	if masterKubeConfigPath == nil || *masterKubeConfigPath == "" {
+		return nil, MustProvideMasterConfigPath
 	}
+
+	fileExists, err := m.fileExistenceChecker(*masterKubeConfigPath)
+	if err != nil {
+		return nil, FailedToCheckFileExistence(err, *masterKubeConfigPath)
+	}
+	if !fileExists {
+		return nil, FileDoesNotExist(*masterKubeConfigPath)
+	}
+
+	_, err = m.kubeLoader.ParseContext(*masterKubeConfigPath)
+	if err != nil {
+		return nil, FailedToParseContext(err)
+	}
+	isSMH, err := m.verifyIsMaster()
+	if err != nil {
+		return nil, CouldNotVerifyMaster(err, *masterKubeConfigPath)
+	}
+	if !isSMH {
+		return nil, NoSmhInstallationFound(*masterKubeConfigPath)
+	}
+
+	masterKubeConfig, _ = m.kubeLoader.GetRestConfig(*masterKubeConfigPath)
+
+	return
 }
 
 func (m *masterKubeConfigVerifier) verifyIsMaster() (bool, error) {

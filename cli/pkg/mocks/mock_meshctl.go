@@ -10,7 +10,7 @@ import (
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/mocks"
-	"github.com/spf13/cobra"
+	"k8s.io/client-go/rest"
 )
 
 // Build and execute the CLI app using the given clients
@@ -19,7 +19,7 @@ type MockMeshctl struct {
 	MockController *gomock.Controller
 
 	// safe to leave nil if not needed
-	MasterVerification func(cmd *cobra.Command, args []string) (err error)
+	MasterKubeConfig *rest.Config
 
 	// safe to leave as nil if not needed
 	Ctx context.Context
@@ -40,8 +40,8 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 	masterVerification := NewMockMasterKubeConfigVerifier(m.MockController)
 	masterVerification.
 		EXPECT().
-		BuildVerificationCallback(gomock.Any(), gomock.Any()).
-		Return(m.MasterVerification)
+		Verify(gomock.Any()).
+		Return(m.MasterKubeConfig, nil)
 
 	usageReporter := usage_mocks.NewMockClient(m.MockController)
 	usageReporter.

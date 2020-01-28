@@ -9,7 +9,6 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/mesh-projects/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/mesh-projects/pkg/version"
-	"github.com/spf13/cobra"
 )
 
 var _ = Describe("Version", func() {
@@ -23,8 +22,7 @@ var _ = Describe("Version", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockServerVersionClient = mock_server.NewMockServerVersionClient(ctrl)
 		meshctl = &cli_mocks.MockMeshctl{
-			MockController:     ctrl,
-			MasterVerification: func(cmd *cobra.Command, args []string) (err error) { return },
+			MockController: ctrl,
 			Clients: &common.Clients{
 				ServerVersionClient: mockServerVersionClient,
 			},
