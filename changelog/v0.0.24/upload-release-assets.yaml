@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Upload CLI release assets.
+  issueLink:  https://github.com/solo-io/mesh-projects/issues/115

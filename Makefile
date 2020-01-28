@@ -135,9 +135,30 @@ $(OUTPUT_DIR)/.mesh-bridge-docker: $(OUTPUT_DIR)/mesh-bridge-linux-amd64 $(OUTPU
 #----------------------------------------------------------------------------------
 CLI_DIR=cli
 
+$(OUTPUT_DIR)/meshctl: $(SOURCES)
+	GO111MODULE=on go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
+
+$(OUTPUT_DIR)/meshctl-linux-amd64: $(SOURCES)
+	$(GO_BUILD_FLAGS) GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
+
+$(OUTPUT_DIR)/meshctl-darwin-amd64: $(SOURCES)
+	$(GO_BUILD_FLAGS) GOOS=darwin go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
+
+$(OUTPUT_DIR)/meshctl-windows-amd64.exe: $(SOURCES)
+	$(GO_BUILD_FLAGS) GOOS=windows go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
+
+
 .PHONY: meshctl
-meshctl: $(SOURCES)
-	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $(OUTPUT_DIR)/$@ $(CLI_DIR)/cmd/main.go
+meshctl: $(OUTPUT_DIR)/meshctl
+.PHONY: meshctl-linux-amd64
+meshctl-linux-amd64: $(OUTPUT_DIR)/meshctl-linux-amd64
+.PHONY: meshctl-darwin-amd64
+meshctl-darwin-amd64: $(OUTPUT_DIR)/meshctl-darwin-amd64
+.PHONY: meshctl-windows-amd64
+meshctl-windows-amd64: $(OUTPUT_DIR)/meshctl-windows-amd64.exe
+
+.PHONY: build-cli
+build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
 #----------------------------------------------------------------------------------
 # Deployment Manifests / Helm
@@ -193,7 +214,12 @@ fetch-helm:
 #----------------------------------------------------------------------------------
 
 .PHONY: release
-release: docker-push
+release: docker-push upload-github-release-assets
+
+# The code does the proper checking for a TAGGED_VERSION
+.PHONY: upload-github-release-assets
+upload-github-release-assets: build-cli
+	go run ci/upload_github_release_assets.go
 
 #----------------------------------------------------------------------------------
 # Base Image
