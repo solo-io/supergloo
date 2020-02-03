@@ -21,7 +21,7 @@ var _ = Describe("Cluster Root Cmd", func() {
 	})
 
 	It("complains if it is invoked without a subcommand", func() {
-		output, err := cli_mocks.MockMeshctl{MockController: ctrl}.Invoke("cluster --master-cluster-config foo")
+		output, err := cli_mocks.MockMeshctl{MockController: ctrl}.Invoke("cluster --kubeconfig foo")
 		Expect(output).To(BeEmpty())
 
 		nonTerminalCommandErrorBuilder := cli_util.NonTerminalCommand("cluster")

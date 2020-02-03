@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/version"
 )
 
@@ -14,7 +16,7 @@ const (
 	undefinedServer = "version undefined, could not find any version of service mesh hub running"
 )
 
-func ReportVersion(out io.Writer, clientsFactory common.ClientsFactory, globalFlagConfig *common.GlobalFlagConfig) error {
+func ReportVersion(out io.Writer, clientsFactory common.ClientsFactory, opts *options.Options) error {
 	clientVersionInfo := map[string]string{
 		"version": version.Version,
 	}
@@ -25,12 +27,12 @@ func ReportVersion(out io.Writer, clientsFactory common.ClientsFactory, globalFl
 	fmt.Fprintf(out, "Client: %s\n", string(clientBytes))
 
 	serverVersionString := undefinedServer
-	clients, err := clientsFactory(globalFlagConfig.MasterKubeConfig, globalFlagConfig.MasterWriteNamespace)
+	clients, err := clientsFactory(opts)
 	if err != nil {
 		return err
 	}
 	serverVersionInfo, err := clients.ServerVersionClient.GetServerVersion()
-	if err != nil {
+	if err != nil && !eris.Is(err, server.ConfigClientError(err)) {
 		return err
 	}
 	if serverVersionInfo != nil {

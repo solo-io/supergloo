@@ -7,7 +7,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattn/go-shellwords"
 	"github.com/onsi/ginkgo"
-	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/mocks"
 	"k8s.io/client-go/rest"
@@ -24,8 +23,9 @@ type MockMeshctl struct {
 	// safe to leave as nil if not needed
 	Ctx context.Context
 
-	Clients    *common.Clients
-	KubeLoader common.KubeLoader
+	Clients common.Clients
+
+	KubeClients common.KubeClients
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -37,19 +37,14 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 
 	buffer := &bytes.Buffer{}
 
-	masterVerification := NewMockMasterKubeConfigVerifier(m.MockController)
-	masterVerification.
-		EXPECT().
-		Verify(gomock.Any()).
-		Return(m.MasterKubeConfig, nil)
-
 	usageReporter := usage_mocks.NewMockClient(m.MockController)
 	usageReporter.
 		EXPECT().
 		StartReportingUsage(m.Ctx, common.UsageReportingInterval).
 		Return(nil)
 
-	app := cli.BuildCli(m.Ctx, MockClientsFactory(m.Clients), buffer, masterVerification, usageReporter)
+	app := InitializeCLIWithMocks(m.Ctx, buffer, usageReporter, m.KubeClients.ClusterAuthorization,
+		m.KubeClients.SecretWriter, m.Clients.ServerVersionClient, m.Clients.KubeLoader, m.Clients.MasterClusterVerifier)
 
 	splitArgs, err := shellwords.Parse(argString)
 	if err != nil {

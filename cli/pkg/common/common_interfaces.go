@@ -1,38 +1,29 @@
 package common
 
 import (
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 // a grab bag of various clients that command implementations may use
-type Clients struct {
+type KubeClients struct {
 	ClusterAuthorization auth.ClusterAuthorization
 	SecretWriter         SecretWriter
-	KubeLoader           KubeLoader
-	ServerVersionClient  server.ServerVersionClient
 }
 
-type ClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*Clients, error)
+type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
 
-// only the pieces from a kube config that we need to operate on
-// mainly just used to simplify from the complexity of the actual object
-type KubeContext struct {
-	CurrentContext string
-	Contexts       map[string]*api.Context
-	Clusters       map[string]*api.Cluster
+type Clients struct {
+	ServerVersionClient   server.ServerVersionClient
+	KubeLoader            common_config.KubeLoader
+	MasterClusterVerifier common_config.MasterKubeConfigVerifier
 }
 
-// given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
-// or return the contexts/clusters it is aware of
-//go:generate mockgen -destination ../mocks/mock_kube_loader.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common KubeLoader
-type KubeLoader interface {
-	GetRestConfig(path string) (*rest.Config, error)
-	ParseContext(path string) (*KubeContext, error)
-}
+type ClientsFactory func(opts *options.Options) (*Clients, error)
 
 // write a k8s secret
 // used to pare down from the complexity of all the methods on the k8s client-go SecretInterface
@@ -41,12 +32,18 @@ type SecretWriter interface {
 	Write(secret *k8sapiv1.Secret) error
 }
 
-// facilitates wire codegen
-func ClientsProvider(authorization auth.ClusterAuthorization, writer SecretWriter, kubeLoader KubeLoader, serverVersionClient server.ServerVersionClient) *Clients {
+func ClientsProvider(serverVersionClient server.ServerVersionClient, loader common_config.KubeLoader, verifier common_config.MasterKubeConfigVerifier) *Clients {
 	return &Clients{
+		ServerVersionClient:   serverVersionClient,
+		KubeLoader:            loader,
+		MasterClusterVerifier: verifier,
+	}
+}
+
+// facilitates wire codegen
+func KubeClientsProvider(authorization auth.ClusterAuthorization, writer SecretWriter) *KubeClients {
+	return &KubeClients{
 		ClusterAuthorization: authorization,
 		SecretWriter:         writer,
-		KubeLoader:           kubeLoader,
-		ServerVersionClient:  serverVersionClient,
 	}
 }

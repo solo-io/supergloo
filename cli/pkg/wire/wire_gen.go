@@ -11,6 +11,11 @@ import (
 
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	"github.com/spf13/cobra"
@@ -20,7 +25,7 @@ import (
 
 // Injectors from wire.go:
 
-func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.Clients, error) {
+func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
 	clientFactory := auth.DefaultClientsProvider()
 	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(clientFactory)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(clientFactory)
@@ -30,18 +35,27 @@ func DefaultClientsFactory(masterConfig *rest.Config, writeNamespace string) (*c
 		return nil, err
 	}
 	secretWriter := common.DefaultSecretWriterProvider(coreV1Client, writeNamespace)
-	kubeLoader := common.DefaultKubeLoaderProvider()
-	serverVersionClient := server.DefaultServerVersionClientProvider(writeNamespace)
-	clients := common.ClientsProvider(clusterAuthorization, secretWriter, kubeLoader, serverVersionClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter)
+	return kubeClients, nil
+}
+
+func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
+	kubeLoader := common_config.DefaultKubeLoaderProvider()
+	serverVersionClient := server.DefaultServerVersionClientProvider(opts, kubeLoader)
+	fileExistenceChecker := common_config.DefaultFileExistenceCheckerProvider()
+	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader, fileExistenceChecker)
+	clients := common.ClientsProvider(serverVersionClient, kubeLoader, masterKubeConfigVerifier)
 	return clients, nil
 }
 
 func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
-	clientsFactory := DefaultClientsFactoryProvider()
-	kubeLoader := common.DefaultKubeLoaderProvider()
-	fileExistenceChecker := common.DefaultFileExistenceCheckerProvider()
-	masterKubeConfigVerifier := common.NewMasterKubeConfigVerifier(kubeLoader, fileExistenceChecker)
+	optionsOptions := options.NewOptionsProvider()
 	client := common.DefaultUsageReporterProvider()
-	command := cli.BuildCli(ctx, clientsFactory, out, masterKubeConfigVerifier, client)
+	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
+	clientsFactory := DefaultClientsFactoryProvider()
+	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
+	clusterCommand := cluster.ClusterRootCmd(registrationCmd, optionsOptions)
+	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand)
 	return command
 }

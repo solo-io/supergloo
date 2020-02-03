@@ -23,7 +23,7 @@ var _ = Describe("Version", func() {
 		mockServerVersionClient = mock_server.NewMockServerVersionClient(ctrl)
 		meshctl = &cli_mocks.MockMeshctl{
 			MockController: ctrl,
-			Clients: &common.Clients{
+			Clients: common.Clients{
 				ServerVersionClient: mockServerVersionClient,
 			},
 		}
@@ -36,7 +36,7 @@ var _ = Describe("Version", func() {
 	It("handles the case where master kube config is undefined", func() {
 		version.Version = "fake-version"
 		mockServerVersionClient.EXPECT().GetServerVersion().Return(nil, nil)
-		output, err := meshctl.Invoke("version --master-cluster-config foo --master-write-namespace bar")
+		output, err := meshctl.Invoke("version")
 
 		Expect(output).To(Equal("Client: {\"version\":\"fake-version\"}\nServer: version undefined, could not find any version of service mesh hub running\n"))
 		Expect(err).NotTo(HaveOccurred())
@@ -59,7 +59,7 @@ var _ = Describe("Version", func() {
 				},
 			}, nil)
 
-		output, err := meshctl.Invoke("version --master-cluster-config foo --master-write-namespace bar")
+		output, err := meshctl.Invoke("version")
 
 		Expect(output).To(Equal("Client: {\"version\":\"fake-version\"}\nServer: {\"Namespace\":\"namespace\",\"Containers\":[{\"Tag\":\"latest\",\"Name\":\"mesh-discovery\",\"Registry\":\"gcr.io/service-mesh-hub/foo/bar\"}]}\n"))
 		Expect(err).NotTo(HaveOccurred())

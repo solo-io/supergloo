@@ -1,4 +1,4 @@
-package common
+package common_config
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 
 var (
 	FailedToParseContext = func(err error) error {
-		return eris.Wrap(err, "Could not parse target kube context")
+		return eris.Wrap(err, "Could not parse target kube context information")
 	}
 	NoSmhInstallationFound = func(path string) error {
 		return eris.Errorf("Could not find a Service Mesh Hub installation in the cluster pointed to by the kube config %s", path)
@@ -27,12 +27,9 @@ var (
 )
 
 // Verify that the cluster pointed to by the given kube config is actually a Service Mesh Hub installation
-//go:generate mockgen -destination ../mocks/mock_master_cluster_verifier.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common MasterKubeConfigVerifier
+//go:generate mockgen -destination ../../mocks/mock_master_cluster_verifier.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common/config MasterKubeConfigVerifier
 type MasterKubeConfigVerifier interface {
-	// Build and return a callback that cobra can run as a prerun step
-	// If the cluster is determined to have a valid SMH installation, then `onSuccessCallback` is called with the parsed REST config for that cluster;
-	// commonly used to return that rest config out of the verification step
-	Verify(masterKubeConfigPath *string) (masterKubeConfig *rest.Config, err error)
+	Verify(masterKubeConfigPath string, masterContext string) (err error)
 }
 
 // Accepts the validated master kube REST config
@@ -64,34 +61,31 @@ type masterKubeConfigVerifier struct {
 	fileExistenceChecker FileExistenceChecker
 }
 
-func (m *masterKubeConfigVerifier) Verify(masterKubeConfigPath *string) (masterKubeConfig *rest.Config, err error) {
-	if masterKubeConfigPath == nil || *masterKubeConfigPath == "" {
-		return nil, MustProvideMasterConfigPath
+func (m *masterKubeConfigVerifier) Verify(masterKubeConfigPath string, masterContext string) (err error) {
+	if masterKubeConfigPath == "" {
+		return MustProvideMasterConfigPath
 	}
 
-	fileExists, err := m.fileExistenceChecker(*masterKubeConfigPath)
+	fileExists, err := m.fileExistenceChecker(masterKubeConfigPath)
 	if err != nil {
-		return nil, FailedToCheckFileExistence(err, *masterKubeConfigPath)
+		return FailedToCheckFileExistence(err, masterKubeConfigPath)
 	}
 	if !fileExists {
-		return nil, FileDoesNotExist(*masterKubeConfigPath)
+		return FileDoesNotExist(masterKubeConfigPath)
 	}
 
-	_, err = m.kubeLoader.ParseContext(*masterKubeConfigPath)
+	_, err = m.kubeLoader.GetRawConfigForContext(masterKubeConfigPath, masterContext)
 	if err != nil {
-		return nil, FailedToParseContext(err)
+		return FailedToParseContext(err)
 	}
 	isSMH, err := m.verifyIsMaster()
 	if err != nil {
-		return nil, CouldNotVerifyMaster(err, *masterKubeConfigPath)
+		return CouldNotVerifyMaster(err, masterKubeConfigPath)
 	}
 	if !isSMH {
-		return nil, NoSmhInstallationFound(*masterKubeConfigPath)
+		return NoSmhInstallationFound(masterKubeConfigPath)
 	}
-
-	masterKubeConfig, _ = m.kubeLoader.GetRestConfig(*masterKubeConfigPath)
-
-	return
+	return nil
 }
 
 func (m *masterKubeConfigVerifier) verifyIsMaster() (bool, error) {

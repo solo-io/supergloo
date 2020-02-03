@@ -3,11 +3,11 @@ package server
 import (
 	"strings"
 
-	"github.com/solo-io/mesh-projects/pkg/env"
-
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/kubeutils"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/mesh-projects/pkg/env"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -30,17 +30,22 @@ type DeploymentClient interface {
 	GetDeployments(namespace string, labelSelector string) (*v1.DeploymentList, error)
 }
 
-type defaultDeploymentClient struct{}
+type defaultDeploymentClient struct {
+	opts   *options.Options
+	loader common_config.KubeLoader
+}
 
-func NewDeploymentClient() DeploymentClient {
-	return &defaultDeploymentClient{}
+func NewDeploymentClient(loader common_config.KubeLoader, opts *options.Options) DeploymentClient {
+	return &defaultDeploymentClient{
+		opts:   opts,
+		loader: loader,
+	}
 }
 
 func (k *defaultDeploymentClient) GetDeployments(namespace string, labelSelector string) (*v1.DeploymentList, error) {
-	cfg, err := kubeutils.GetConfig("", "")
+	cfg, err := k.loader.GetRestConfigForContext(k.opts.Root.KubeConfig, k.opts.Root.KubeContext)
 	if err != nil {
-		// kubecfg is missing, therefore no cluster is present, only print client version
-		return nil, nil
+		return nil, err
 	}
 	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
@@ -67,8 +72,11 @@ type ServerVersionClient interface {
 }
 
 // default ServerVersionClient
-func DefaultServerVersionClientProvider(namespace string) ServerVersionClient {
-	return NewServerVersionClient(namespace, NewDeploymentClient())
+func DefaultServerVersionClientProvider(opts *options.Options, loader common_config.KubeLoader) ServerVersionClient {
+	return NewServerVersionClient(
+		opts.Root.WriteNamespace,
+		NewDeploymentClient(loader, opts),
+	)
 }
 
 type serverVersionClient struct {
@@ -76,8 +84,8 @@ type serverVersionClient struct {
 	configClient DeploymentClient
 }
 
-func NewServerVersionClient(namespace string, kubeConfigClient DeploymentClient) ServerVersionClient {
-	return &serverVersionClient{namespace: namespace, configClient: kubeConfigClient}
+func NewServerVersionClient(namespace string, configClient DeploymentClient) *serverVersionClient {
+	return &serverVersionClient{namespace: namespace, configClient: configClient}
 }
 
 func (k *serverVersionClient) GetServerVersion() (*ServerVersion, error) {
