@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Initial structure for Helm chart generation, packaged by SMH component
+    issueLink: https://github.com/solo-io/mesh-projects/issues/81

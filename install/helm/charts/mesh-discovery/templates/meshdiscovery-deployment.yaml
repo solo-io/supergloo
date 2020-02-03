@@ -1,0 +1,38 @@
+{{- $image := .Values.deployment.image }}
+{{- $statsConfig := coalesce .Values.deployment.stats .Values.global.stats -}}
+{{- if .Values.global  }}
+{{- $image = merge .Values.deployment.image .Values.global.image }}
+{{- end }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: service-mesh-hub
+    service-mesh-hub: mesh-discovery
+  name: mesh-discovery
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-mesh-hub: mesh-discovery
+  template:
+    metadata:
+      labels:
+        service-mesh-hub: mesh-discovery
+    spec:
+      serviceAccountName: mesh-discovery
+      containers:
+        - image: {{ template "image" $image }}
+          imagePullPolicy: {{ $image.pullPolicy }}
+          name: mesh-discovery
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if $statsConfig.enabled }}
+            - name: START_STATS_SERVER
+              value: "true"
+            {{- end}}

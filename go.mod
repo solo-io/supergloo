@@ -20,7 +20,7 @@ require (
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.8.1
-	github.com/rotisserie/eris v0.1.1
+	github.com/rotisserie/eris v0.2.0
 	github.com/solo-io/autopilot v0.1.1-0.20200120150033-db11c4f61ad5
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
@@ -31,6 +31,7 @@ require (
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71 // indirect
 	istio.io/api v0.0.0-20191109011911-e51134872853
 	istio.io/client-go v0.0.0-20191218043923-5fad2566daf6
 	k8s.io/api v0.17.0

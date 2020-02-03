@@ -1,0 +1,14 @@
+apiVersion: v2
+description: mesh-discovery Helm chart for Kubernetes
+name: mesh-discovery
+version: %version%
+home: https://solo.io
+icon: ""
+sources:
+  - https://github.com/solo-io/mesh-projects
+keywords:
+  - kubernetes
+  - istio
+  - mesh
+  - servicemesh
+  - servicemeshhub

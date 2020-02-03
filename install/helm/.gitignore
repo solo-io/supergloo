@@ -1,0 +1,8 @@
+# generated during local testing
+charts/*/.helmignore
+Chart.yaml
+values.yaml
+Chart.lock
+# packages for app level Helm dependencies
+charts/management-plane/charts/*
+

@@ -1,0 +1,15 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: mesh-discovery-role-binding
+  labels:
+    app: service-mesh-hub
+    service-mesh-hub: mesh-discovery
+subjects:
+  - kind: ServiceAccount
+    name: mesh-discovery
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: mesh-discovery-role
+  apiGroup: rbac.authorization.k8s.io
