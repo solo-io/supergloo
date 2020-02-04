@@ -15,6 +15,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
+	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
@@ -24,13 +26,14 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, authorization auth.ClusterAuthorization, writer common.SecretWriter, client2 server.ServerVersionClient, kubeLoader common_config.KubeLoader, verifier common_config.MasterKubeConfigVerifier) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, authorization auth.ClusterAuthorization, writer common.SecretWriter, client2 server.ServerVersionClient, kubeLoader common_config.KubeLoader, verifier common_config.MasterKubeConfigVerifier, upgrader upgrade_assets.AssetHelper) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	kubeClientsFactory := MockKubeClientsFactoryProvider(authorization, writer)
-	clientsFactory := MockClientsFactoryProvider(client2, kubeLoader, verifier)
+	clientsFactory := MockClientsFactoryProvider(client2, kubeLoader, verifier, upgrader)
 	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, optionsOptions)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand)
+	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, upgradeCommand)
 	return command
 }

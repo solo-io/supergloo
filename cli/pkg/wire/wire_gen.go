@@ -15,6 +15,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
+	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
@@ -42,9 +44,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	kubeLoader := common_config.DefaultKubeLoaderProvider()
 	serverVersionClient := server.DefaultServerVersionClientProvider(opts, kubeLoader)
+	githubAssetClient := upgrade_assets.DefaultGithubAssetClient()
+	assetHelper := upgrade_assets.NewAssetHelper(githubAssetClient)
 	fileExistenceChecker := common_config.DefaultFileExistenceCheckerProvider()
 	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader, fileExistenceChecker)
-	clients := common.ClientsProvider(serverVersionClient, kubeLoader, masterKubeConfigVerifier)
+	clients := common.ClientsProvider(serverVersionClient, assetHelper, kubeLoader, masterKubeConfigVerifier)
 	return clients, nil
 }
 
@@ -56,6 +60,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd, optionsOptions)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand)
+	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, upgradeCommand)
 	return command
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
@@ -17,6 +18,7 @@ func BuildCli(ctx context.Context,
 	usageReporter usageclient.Client,
 	clusterCmd clusterroot.ClusterCommand,
 	versionCmd version.VersionCommand,
+	upgradeCmd upgrade.UpgradeCommand,
 ) *cobra.Command {
 
 	meshctl := &cobra.Command{
@@ -29,7 +31,7 @@ func BuildCli(ctx context.Context,
 	}
 	options.AddRootFlags(meshctl.PersistentFlags(), opts)
 
-	meshctl.AddCommand(clusterCmd, versionCmd)
+	meshctl.AddCommand(clusterCmd, versionCmd, upgradeCmd)
 
 	return meshctl
 }

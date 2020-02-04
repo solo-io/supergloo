@@ -12,6 +12,8 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
+	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
@@ -27,13 +29,15 @@ func InitializeCLIWithMocks(
 	writer common.SecretWriter,
 	client server.ServerVersionClient,
 	kubeLoader common_config.KubeLoader,
-	verifier common_config.MasterKubeConfigVerifier) *cobra.Command {
+	verifier common_config.MasterKubeConfigVerifier,
+	upgrader upgrade_assets.AssetHelper) *cobra.Command {
 	wire.Build(
 		options.NewOptionsProvider,
 		MockKubeClientsFactoryProvider,
 		MockClientsFactoryProvider,
 		cluster.ClusterSet,
 		version.VersionSet,
+		upgrade.UpgradeSet,
 		cli.BuildCli,
 	)
 	return nil

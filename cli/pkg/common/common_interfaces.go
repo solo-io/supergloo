@@ -3,6 +3,7 @@ package common
 import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	k8sapiv1 "k8s.io/api/core/v1"
@@ -19,6 +20,7 @@ type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (
 
 type Clients struct {
 	ServerVersionClient   server.ServerVersionClient
+	ReleaseAssetHelper    upgrade_assets.AssetHelper
 	KubeLoader            common_config.KubeLoader
 	MasterClusterVerifier common_config.MasterKubeConfigVerifier
 }
@@ -32,9 +34,14 @@ type SecretWriter interface {
 	Write(secret *k8sapiv1.Secret) error
 }
 
-func ClientsProvider(serverVersionClient server.ServerVersionClient, loader common_config.KubeLoader, verifier common_config.MasterKubeConfigVerifier) *Clients {
+func ClientsProvider(
+	serverVersionClient server.ServerVersionClient,
+	upgrader upgrade_assets.AssetHelper,
+	loader common_config.KubeLoader,
+	verifier common_config.MasterKubeConfigVerifier) *Clients {
 	return &Clients{
 		ServerVersionClient:   serverVersionClient,
+		ReleaseAssetHelper:    upgrader,
 		KubeLoader:            loader,
 		MasterClusterVerifier: verifier,
 	}

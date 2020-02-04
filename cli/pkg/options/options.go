@@ -14,6 +14,7 @@ func NewOptionsProvider() *Options {
 type Options struct {
 	Root    Root
 	Cluster Cluster
+	Upgrade Upgrade
 }
 
 type Root struct {
@@ -40,4 +41,9 @@ type Register struct {
 	RemoteWriteNamespace string
 	RemoteContext        string
 	RemoteKubeConfig     string
+}
+
+type Upgrade struct {
+	ReleaseTag   string
+	DownloadPath string
 }

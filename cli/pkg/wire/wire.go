@@ -8,6 +8,7 @@ import (
 
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 
@@ -36,6 +37,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	wire.Build(
+		upgrade.UpgraderClientSet,
 		common_config.DefaultKubeLoaderProvider,
 		common_config.DefaultFileExistenceCheckerProvider,
 		common_config.NewMasterKubeConfigVerifier,
@@ -51,6 +53,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 		DefaultKubeClientsFactoryProvider,
 		DefaultClientsFactoryProvider,
 		common.DefaultUsageReporterProvider,
+		upgrade.UpgradeSet,
 		cluster.ClusterSet,
 		version.VersionSet,
 		cli.BuildCli,
