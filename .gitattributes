@@ -1,4 +1,2 @@
-pkg/api/**/*.go	      linguist-generated=true
-pkg/api/**/*.go	      -diff -merge
 docs/**	              linguist-generated=true
 docs/**	              -diff -merge

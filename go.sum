@@ -765,6 +765,12 @@ github.com/solo-io/anyvendor v0.0.1 h1:csAXLNLkUQWlr/ll4tgmc+Id9kHw2ibncf35weg03
 github.com/solo-io/anyvendor v0.0.1/go.mod h1:SLucIeU8qBOYI82BveNVn2LzZFcMWJSCf8Kd1S4Jcr4=
 github.com/solo-io/autopilot v0.1.1-0.20200204221936-697f7d429054 h1:CJVQpL6raKxD/+1QjdnnvxbPR+wtOtQOxFYqvGfxNFo=
 github.com/solo-io/autopilot v0.1.1-0.20200204221936-697f7d429054/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
+github.com/solo-io/autopilot v0.1.1-0.20200205202627-7f9e5551bc98 h1:5NTGay0ZYAazo3dzswJVTjxmzjRkwgluTnlSs1UQaN0=
+github.com/solo-io/autopilot v0.1.1-0.20200205202627-7f9e5551bc98/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
+github.com/solo-io/autopilot v0.1.1-0.20200205202833-c4cb083e66e6 h1:YttptnRcZV9r//RDN6FW6cNsWNpFpmD1PWUc+cZmu4E=
+github.com/solo-io/autopilot v0.1.1-0.20200205202833-c4cb083e66e6/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
+github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e h1:Zu34pXt/ByZDyA+/p+zDY8hkESasLQB9SmjO6VYxVrY=
+github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
 github.com/solo-io/envoy-operator v0.1.1/go.mod h1:ZP5hB+khljAFCROj/yDjVPXCPHntdewy6mqYybcCneQ=
 github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e h1:5EXsDys5n06LwjFY4Hs+WUIhLTkin0DgOQrYWcgmim4=
 github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e/go.mod h1:ZH5SXTKli2gaA9Lsm3Wv9kuMT60g8b5NH/AftYiTneo=

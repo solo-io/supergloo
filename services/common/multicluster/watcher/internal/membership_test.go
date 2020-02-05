@@ -7,14 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/kubeutils"
 	. "github.com/solo-io/go-utils/testutils"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 var _ = Describe("multicluster-watcher", func() {
@@ -22,6 +19,28 @@ var _ = Describe("multicluster-watcher", func() {
 	var (
 		ctrl *gomock.Controller
 		ctx  context.Context
+
+		byteConfig = []byte(`
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://localhost:9090
+  name: k3s-default
+contexts:
+- context:
+    cluster: k3s-default
+    user: k3s-default
+  name: k3s-default
+current-context: k3s-default
+kind: Config
+preferences: {}
+users:
+- name: k3s-default
+  user:
+    password: admin
+    username: admin
+
+`)
 	)
 
 	BeforeEach(func() {
@@ -38,21 +57,13 @@ var _ = Describe("multicluster-watcher", func() {
 		var (
 			receiver *mock_mc_manager.MockKubeConfigHandler
 			cmh      *ClusterMembershipHandler
-			cfg      *clientcmdapi.Config
 
-			byteConfig              []byte
 			clusterName, secretName = "cluster-name", "secret-name"
 		)
 
 		BeforeEach(func() {
 			receiver = mock_mc_manager.NewMockKubeConfigHandler(ctrl)
 			cmh = NewClusterMembershipHandler(receiver)
-			var err error
-			cfg, err = kubeutils.GetKubeConfig("", "")
-			Expect(err).NotTo(HaveOccurred())
-
-			byteConfig, err = clientcmd.Write(*cfg)
-			Expect(err).NotTo(HaveOccurred())
 		})
 
 		Context("add cluster", func() {

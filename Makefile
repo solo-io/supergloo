@@ -80,6 +80,7 @@ SUBDIRS:=services ci pkg cli test
 
 .PHONY: generated-code
 generated-code:
+	rm -rf vendor_any
 	CGO_ENABLED=0 go generate ./...
 	goimports -w $(SUBDIRS)
 

@@ -23,7 +23,7 @@ require (
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.1.1
-	github.com/solo-io/autopilot v0.1.1-0.20200204221936-697f7d429054
+	github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
 	github.com/solo-io/protoc-gen-ext v0.0.7

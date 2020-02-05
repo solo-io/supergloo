@@ -8,8 +8,8 @@ steps:
   - --ciphertext-file=ci/id_rsa.enc
   - --plaintext-file=/root/.ssh/id_rsa
   - --location=global
-  - --keyring=build
-  - --key=build-key
+  - --keyring=buildkey
+  - --key=buildkey
   id: 'get-ssh-key'
 - name: 'gcr.io/cloud-builders/git'
   entrypoint: 'bash'
@@ -36,14 +36,14 @@ steps:
   args:
     [
       "-c",
-      "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz | tar -xzf -",
+      "mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz | tar -xzf -",
     ]
   id: "untar-mod-cache"
   waitFor: ["-"]
 
 # Using prepare-workspace container from github.com/solo-io/cloud-builders/prepare-go-workspace
 # This copies files into the proper workspace layout and so must be run before other tasks
-- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.2.4"
+- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.2.6"
   args:
   - "--repo-owner"
   - "solo-io"
@@ -65,7 +65,7 @@ steps:
   dir: &dir "/workspace/mesh-projects"
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
-- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['fetch-helm']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -76,7 +76,7 @@ steps:
 
 
 
-- name: 'gcr.io/$PROJECT_ID/e2e-go-mod-ginkgo:0.2.1'
+- name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
   dir: *dir
@@ -85,7 +85,7 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'check-format'
 
-- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   entrypoint: 'bash'
   args: ['ci/check-code-and-docs-gen.sh']
   env:
@@ -95,7 +95,7 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'check-code-and-docs-gen'
 
-- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['docker']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -104,25 +104,15 @@ steps:
   dir: *dir
   id: 'make'
 
-- name: gcr.io/cloud-builders/gcloud
-  args: ['config', 'set', 'compute/zone', 'us-central1-a']
-  id: 'set-test-zone'
-  waitFor: ['prepare-workspace']
-- name: gcr.io/cloud-builders/gcloud
-  args: ['container', 'clusters', 'get-credentials', 'test-cluster']
-  id: 'get-test-credentials'
-  waitFor: ['set-test-zone']
-
-
-- name: 'gcr.io/$PROJECT_ID/e2e-go-mod-ginkgo:0.2.1'
-  args: ['-r', '-p']
+- name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
+  args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
   dir: *dir
-  waitFor: ['make', 'get-test-credentials']
+  waitFor: ['make']
   id: 'test'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -133,7 +123,7 @@ steps:
   waitFor: ['test']
 
 
-- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['release']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -143,31 +133,12 @@ steps:
   waitFor: ['docker-login']
   secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
   id: 'release'
-## 2) Publish helm chart, compile manifests, produce release artifacts, deploy docs
-## isolating this portion of the release in order to force the manifest to be regenerated with the tagged version
-#- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
-#  args: ['manifest',  '-B']
-#  env:
-#  - 'DOCKER_CONFIG=/workspace/docker-config'
-#  - 'TAGGED_VERSION=$TAG_NAME'
-#  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-#  - 'HELM_HOME=/root/.helm' # tell helm where to find data
-#  dir: *dir
-#  id: 'release-chart'
-## 3) Sync helm chart data back to google storage bucket
-#- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.1'
-#  args: ['save-helm']
-#  env:
-#  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-#  - 'TAGGED_VERSION=$TAG_NAME'
-#  dir: *dir
-#  id: 'save-helm-chart'
 
 secrets:
-- kmsKeyName: projects/gloo-ee/locations/global/keyRings/build/cryptoKeys/build-key
+- kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey
   secretEnv:
-    GITHUB_TOKEN: CiQAwdWthrSJ1uI5Ao/LnmX8OzXmA5TNCtDpeV6JdNouaGh5vpwSUQD5SXFIkCBvnu/wYDSGwgWNJaQV75wP/kDephn5GGuGCe0EGFXXE54zyH8iHRL45Uq0s39SoHEyYoZXF2Qla8IbKGAKswPRViYSChPthQILdA==
-    QUAY_IO_PASSWORD: CiQAwdWthifvdUjpVHAln3ZIz4WljWx6qLt8E4yJArmrU4/1HQoSaQD5SXFIeMulT7DxGdwW0L9R+gA0SATR05xpTz7JS9LXJK+4iYPlFvVPs7O3DYee2YPJoF7o44vJ94+AyuMLQucS6BhHXQ0t//GvQWaFvdcTO4qH5HYgGQSrRY0a4E3l+4q6/M4da2m98Q==
+    GITHUB_TOKEN: CiQAKyB5I9fr8p5nvPXPUGM9XiM+33WlWIsqpaTJv3+dHRnWwrcSUQCNH9Xw2VlfjBBwejOc6gsrxSpCBywVSl17DPIJ+D7a1ZUnqWftDabLyMCelzmVFYTZ/HMVycLntO+09UlXmpWKNR/Aly39oumqCMJkd1xTog==
+    QUAY_IO_PASSWORD: CiQAKyB5I9JZaTwv2wu/GPqBN+tmY2/tx0L3Y2SIHmfGmINY/9ISaQCNH9Xw+TvaCHp5A/5cdmQTlSmgYVWgTDcYDNbgPinb0+VsaiBC61V6Zw7VhsKrfYTGw4KoMbFUrT/36Mqq1QXx2GjNJwdXv/sqJGZmrmGXutXXQ3OO4WcJs98+Ji749Z3XIm/QD38tag==
 timeout: 1800s
 tags: ['mesh-projects']
 options:

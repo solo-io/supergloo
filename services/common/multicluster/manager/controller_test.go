@@ -13,7 +13,6 @@ import (
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	mock_manager "github.com/solo-io/mesh-projects/test/mocks/manager"
 	"k8s.io/client-go/rest"
-	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
 var _ = Describe("mc_manager", func() {
@@ -40,9 +39,7 @@ var _ = Describe("mc_manager", func() {
 		ctx = context.TODO()
 		managerController := NewAsyncManagerControllerFromLocal(ctx, mgr, asyncMgrFactory)
 		informer, configHandler = managerController, managerController
-		var err error
-		cfg, err = controllerruntime.GetConfig()
-		Expect(err).NotTo(HaveOccurred())
+		cfg = &rest.Config{}
 	})
 
 	AfterEach(func() {

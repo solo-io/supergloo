@@ -8,8 +8,8 @@ steps:
   - --ciphertext-file=ci/id_rsa.enc
   - --plaintext-file=/root/.ssh/id_rsa
   - --location=global
-  - --keyring=build
-  - --key=build-key
+  - --keyring=buildkey
+  - --key=buildkey
   volumes:
   - name: 'ssh'
     path: /root/.ssh
@@ -33,7 +33,7 @@ steps:
 
 - name: gcr.io/cloud-builders/gsutil
   entrypoint: 'bash'
-  args: ['-c', 'mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz | tar -xzf -']
+  args: ['-c', 'mkdir -p /go/pkg && cd /go/pkg && gsutil cat gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz | tar -xzf -']
   env:
   volumes: &vol
   - name: 'gopath'
@@ -60,11 +60,11 @@ steps:
 - name: 'golang:1.13.4'
   entrypoint: 'bash'
   volumes: *vol
-  args: ['-c', ' cd /go/pkg && tar -zvcf mesh-projects-mod.tar.gz mod']
+  args: ['-c', ' cd /go/pkg && tar -zvcf service-mesh-hub-mod.tar.gz mod']
   id: 'tar-cache'
 
 - name: gcr.io/cloud-builders/gsutil
-  args: ['cp', '/go/pkg/mesh-projects-mod.tar.gz', 'gs://$PROJECT_ID-cache/mesh-projects/mesh-projects-mod.tar.gz']
+  args: ['cp', '/go/pkg/service-mesh-hub-mod.tar.gz', 'gs://$PROJECT_ID-cache/service-mesh-hub/service-mesh-hub-mod.tar.gz']
   volumes: *vol
   id: 'upload-cache'
 
