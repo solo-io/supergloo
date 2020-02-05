@@ -39,6 +39,7 @@ type MeshGroupsGetter interface {
 type MeshGroupInterface interface {
 	Create(*v1alpha1.MeshGroup) (*v1alpha1.MeshGroup, error)
 	Update(*v1alpha1.MeshGroup) (*v1alpha1.MeshGroup, error)
+	UpdateStatus(*v1alpha1.MeshGroup) (*v1alpha1.MeshGroup, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1alpha1.MeshGroup, error)
@@ -126,6 +127,22 @@ func (c *meshGroups) Update(meshGroup *v1alpha1.MeshGroup) (result *v1alpha1.Mes
 		Namespace(c.ns).
 		Resource("meshgroups").
 		Name(meshGroup.Name).
+		Body(meshGroup).
+		Do().
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+
+func (c *meshGroups) UpdateStatus(meshGroup *v1alpha1.MeshGroup) (result *v1alpha1.MeshGroup, err error) {
+	result = &v1alpha1.MeshGroup{}
+	err = c.client.Put().
+		Namespace(c.ns).
+		Resource("meshgroups").
+		Name(meshGroup.Name).
+		SubResource("status").
 		Body(meshGroup).
 		Do().
 		Into(result)

@@ -2,6 +2,7 @@
 package v1alpha1
 
 import (
+	. "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,36 +31,61 @@ type KubernetesClusterList struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +genclient:noStatus
+// +kubebuilder:subresource:status
 
-// Service is the Schema for the service API
-type Service struct {
+// MeshService is the Schema for the meshService API
+type MeshService struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec ServiceSpec `json:"spec,omitempty"`
+	Spec   MeshServiceSpec   `json:"spec,omitempty"`
+	Status MeshServiceStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ServiceList contains a list of Service
-type ServiceList struct {
+// MeshServiceList contains a list of MeshService
+type MeshServiceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Service `json:"items"`
+	Items           []MeshService `json:"items"`
 }
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +genclient:noStatus
+// +kubebuilder:subresource:status
+
+// MeshWorkload is the Schema for the meshWorkload API
+type MeshWorkload struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MeshWorkloadSpec   `json:"spec,omitempty"`
+	Status MeshWorkloadStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// MeshWorkloadList contains a list of MeshWorkload
+type MeshWorkloadList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []MeshWorkload `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 
 // Mesh is the Schema for the mesh API
 type Mesh struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec MeshSpec `json:"spec,omitempty"`
+	Spec   MeshSpec   `json:"spec,omitempty"`
+	Status MeshStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -74,14 +100,15 @@ type MeshList struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
-// +genclient:noStatus
+// +kubebuilder:subresource:status
 
 // MeshGroup is the Schema for the meshGroup API
 type MeshGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec MeshGroupSpec `json:"spec,omitempty"`
+	Spec   MeshGroupSpec   `json:"spec,omitempty"`
+	Status MeshGroupStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -95,7 +122,8 @@ type MeshGroupList struct {
 
 func init() {
 	SchemeBuilder.Register(&KubernetesCluster{}, &KubernetesClusterList{})
-	SchemeBuilder.Register(&Service{}, &ServiceList{})
+	SchemeBuilder.Register(&MeshService{}, &MeshServiceList{})
+	SchemeBuilder.Register(&MeshWorkload{}, &MeshWorkloadList{})
 	SchemeBuilder.Register(&Mesh{}, &MeshList{})
 	SchemeBuilder.Register(&MeshGroup{}, &MeshGroupList{})
 }

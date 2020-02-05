@@ -1,0 +1,49 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+/*
+    The MeshService is an abstraction for a service which we have discovered to be, or are told, is part of a
+    given mesh. The Mesh object has references to the MeshServices which belong to it.
+*/
+message MeshServiceSpec {
+    /*
+       Resource ref to the underlying resource which this service is representing. It can potentially represent
+       multiple different resource types, but currently supports only kubernetes services
+
+       The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
+    */
+
+    ResourceRef service = 1;
+
+    // The mesh with which this service is associated
+    ResourceRef mesh = 2;
+}
+
+message MeshServiceStatus {
+
+}
+
+/*
+    The MeshWorkload is an abstraction for a workload/client which we have discovered to be, or are told, is part of a
+    given mesh. The Mesh object has references to the MeshWorkloads which belong to it.
+*/
+message MeshWorkloadSpec {
+    /*
+       Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+       It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially
+       any other kubernetes object which creates injected pods.
+
+       The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
+    */
+    ResourceRef kube_controller = 1;
+
+    // The mesh with which this workload is associated
+    ResourceRef mesh = 2;
+}
+
+message MeshWorkloadStatus {
+
+}

@@ -29,7 +29,8 @@ type CoreV1alpha1Interface interface {
 	KubernetesClustersGetter
 	MeshesGetter
 	MeshGroupsGetter
-	ServicesGetter
+	MeshServicesGetter
+	MeshWorkloadsGetter
 }
 
 // CoreV1alpha1Client is used to interact with features provided by the core.zephyr.solo.io group.
@@ -49,8 +50,12 @@ func (c *CoreV1alpha1Client) MeshGroups(namespace string) MeshGroupInterface {
 	return newMeshGroups(c, namespace)
 }
 
-func (c *CoreV1alpha1Client) Services(namespace string) ServiceInterface {
-	return newServices(c, namespace)
+func (c *CoreV1alpha1Client) MeshServices(namespace string) MeshServiceInterface {
+	return newMeshServices(c, namespace)
+}
+
+func (c *CoreV1alpha1Client) MeshWorkloads(namespace string) MeshWorkloadInterface {
+	return newMeshWorkloads(c, namespace)
 }
 
 // NewForConfig creates a new CoreV1alpha1Client for the given config.

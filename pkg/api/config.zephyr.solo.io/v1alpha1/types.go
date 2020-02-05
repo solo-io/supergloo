@@ -2,6 +2,7 @@
 package v1alpha1
 
 import (
+	. "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -42,10 +42,18 @@ type MeshGroupListerExpansion interface{}
 // MeshGroupNamespaceLister.
 type MeshGroupNamespaceListerExpansion interface{}
 
-// ServiceListerExpansion allows custom methods to be added to
-// ServiceLister.
-type ServiceListerExpansion interface{}
+// MeshServiceListerExpansion allows custom methods to be added to
+// MeshServiceLister.
+type MeshServiceListerExpansion interface{}
 
-// ServiceNamespaceListerExpansion allows custom methods to be added to
-// ServiceNamespaceLister.
-type ServiceNamespaceListerExpansion interface{}
+// MeshServiceNamespaceListerExpansion allows custom methods to be added to
+// MeshServiceNamespaceLister.
+type MeshServiceNamespaceListerExpansion interface{}
+
+// MeshWorkloadListerExpansion allows custom methods to be added to
+// MeshWorkloadLister.
+type MeshWorkloadListerExpansion interface{}
+
+// MeshWorkloadNamespaceListerExpansion allows custom methods to be added to
+// MeshWorkloadNamespaceLister.
+type MeshWorkloadNamespaceListerExpansion interface{}

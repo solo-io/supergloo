@@ -107,30 +107,6 @@ $(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $
 	touch $@
 
 #----------------------------------------------------------------------------------
-# Mesh Bridge
-#----------------------------------------------------------------------------------
-
-MESH_BRIDGE_DIR=services/mesh-bridge
-MESH_BRIDGE_SOURCES=$(shell find $(MESH_BRIDGE_DIR) -name "*.go" | grep -v test | grep -v generated.go)
-
-$(OUTPUT_DIR)/mesh-bridge-linux-amd64: $(MESH_BRIDGE_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_BRIDGE_DIR)/cmd/main.go
-
-.PHONY: mesh-bridge
-mesh-bridge: $(OUTPUT_DIR)/mesh-bridge-linux-amd64
-
-$(OUTPUT_DIR)/Dockerfile.mesh-bridge: $(MESH_BRIDGE_DIR)/cmd/Dockerfile
-	cp $< $@
-
-.PHONY: mesh-bridge-docker
-mesh-bridge-docker: $(OUTPUT_DIR)/.mesh-bridge-docker
-
-$(OUTPUT_DIR)/.mesh-bridge-docker: $(OUTPUT_DIR)/mesh-bridge-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-bridge
-	docker build -t quay.io/solo-io/mc-mesh-bridge:$(VERSION) $(call get_test_tag_option,mesh-bridge) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-bridge
-	touch $@
-
-
-#----------------------------------------------------------------------------------
 # meshctl
 #----------------------------------------------------------------------------------
 CLI_DIR=cli
@@ -253,7 +229,7 @@ ifeq ($(RELEASE),"true")
 endif
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker mesh-bridge-docker
+docker: mesh-discovery-docker
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`
@@ -261,6 +237,5 @@ docker: mesh-discovery-docker mesh-bridge-docker
 # docker-push is intended to be run by CI
 docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
-	docker push quay.io/solo-io/mc-mesh-bridge:$(VERSION) && \
 	docker push quay.io/solo-io/mc-mesh-discovery:$(VERSION)
 endif

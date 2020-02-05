@@ -24,4 +24,6 @@ type MeshExpansion interface{}
 
 type MeshGroupExpansion interface{}
 
-type ServiceExpansion interface{}
+type MeshServiceExpansion interface{}
+
+type MeshWorkloadExpansion interface{}

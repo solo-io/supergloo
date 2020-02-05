@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Revamp MeshService and MeshWorkload CRDs. As well as begin to flesh out MeshGroup CRD
+  issueLink:  https://github.com/solo-io/mesh-projects/issues/83

@@ -30,8 +30,10 @@ type Interface interface {
 	Meshes() MeshInformer
 	// MeshGroups returns a MeshGroupInformer.
 	MeshGroups() MeshGroupInformer
-	// Services returns a ServiceInformer.
-	Services() ServiceInformer
+	// MeshServices returns a MeshServiceInformer.
+	MeshServices() MeshServiceInformer
+	// MeshWorkloads returns a MeshWorkloadInformer.
+	MeshWorkloads() MeshWorkloadInformer
 }
 
 type version struct {
@@ -60,7 +62,12 @@ func (v *version) MeshGroups() MeshGroupInformer {
 	return &meshGroupInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// Services returns a ServiceInformer.
-func (v *version) Services() ServiceInformer {
-	return &serviceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// MeshServices returns a MeshServiceInformer.
+func (v *version) MeshServices() MeshServiceInformer {
+	return &meshServiceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// MeshWorkloads returns a MeshWorkloadInformer.
+func (v *version) MeshWorkloads() MeshWorkloadInformer {
+	return &meshWorkloadInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

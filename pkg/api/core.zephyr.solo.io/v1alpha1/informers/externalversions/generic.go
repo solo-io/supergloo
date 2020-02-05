@@ -59,8 +59,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Core().V1alpha1().Meshes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("meshgroups"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Core().V1alpha1().MeshGroups().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("services"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Core().V1alpha1().Services().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("meshservices"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Core().V1alpha1().MeshServices().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("meshworkloads"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Core().V1alpha1().MeshWorkloads().Informer()}, nil
 
 	}
 

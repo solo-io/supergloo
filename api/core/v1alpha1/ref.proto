@@ -1,6 +1,6 @@
 syntax = "proto3";
 package core.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
 
 import "google/protobuf/wrappers.proto";
 

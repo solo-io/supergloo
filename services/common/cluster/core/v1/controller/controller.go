@@ -55,11 +55,15 @@ func (f *SecretEventHandlerFuncs) Generic(obj *Secret) error {
 	return f.OnGeneric(obj)
 }
 
-type SecretController struct {
+type SecretController interface {
+	AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error
+}
+
+type SecretControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewSecretController(name string, mgr manager.Manager) (*SecretController, error) {
+func NewSecretController(name string, mgr manager.Manager) (SecretController, error) {
 	if err := AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -68,12 +72,12 @@ func NewSecretController(name string, mgr manager.Manager) (*SecretController, e
 	if err != nil {
 		return nil, err
 	}
-	return &SecretController{
+	return &SecretControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *SecretController) AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error {
+func (c *SecretControllerImpl) AddEventHandler(ctx context.Context, h SecretEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericSecretHandler{handler: h}
 	if err := c.watcher.Watch(ctx, &Secret{}, handler, predicates...); err != nil {
 		return err
@@ -89,7 +93,7 @@ type genericSecretHandler struct {
 func (h genericSecretHandler) Create(object runtime.Object) error {
 	obj, ok := object.(*Secret)
 	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T")
+		return errors.Errorf("internal error: Secret handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
@@ -97,7 +101,7 @@ func (h genericSecretHandler) Create(object runtime.Object) error {
 func (h genericSecretHandler) Delete(object runtime.Object) error {
 	obj, ok := object.(*Secret)
 	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T")
+		return errors.Errorf("internal error: Secret handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
@@ -105,11 +109,11 @@ func (h genericSecretHandler) Delete(object runtime.Object) error {
 func (h genericSecretHandler) Update(old, new runtime.Object) error {
 	objOld, ok := old.(*Secret)
 	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T")
+		return errors.Errorf("internal error: Secret handler received event for %T", old)
 	}
 	objNew, ok := new.(*Secret)
 	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T")
+		return errors.Errorf("internal error: Secret handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
@@ -117,7 +121,7 @@ func (h genericSecretHandler) Update(old, new runtime.Object) error {
 func (h genericSecretHandler) Generic(object runtime.Object) error {
 	obj, ok := object.(*Secret)
 	if !ok {
-		return errors.Errorf("internal error: Secret handler received event for %T")
+		return errors.Errorf("internal error: Secret handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }
@@ -164,11 +168,15 @@ func (f *ServiceEventHandlerFuncs) Generic(obj *Service) error {
 	return f.OnGeneric(obj)
 }
 
-type ServiceController struct {
+type ServiceController interface {
+	AddEventHandler(ctx context.Context, h ServiceEventHandler, predicates ...predicate.Predicate) error
+}
+
+type ServiceControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewServiceController(name string, mgr manager.Manager) (*ServiceController, error) {
+func NewServiceController(name string, mgr manager.Manager) (ServiceController, error) {
 	if err := AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -177,12 +185,12 @@ func NewServiceController(name string, mgr manager.Manager) (*ServiceController,
 	if err != nil {
 		return nil, err
 	}
-	return &ServiceController{
+	return &ServiceControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *ServiceController) AddEventHandler(ctx context.Context, h ServiceEventHandler, predicates ...predicate.Predicate) error {
+func (c *ServiceControllerImpl) AddEventHandler(ctx context.Context, h ServiceEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericServiceHandler{handler: h}
 	if err := c.watcher.Watch(ctx, &Service{}, handler, predicates...); err != nil {
 		return err
@@ -198,7 +206,7 @@ type genericServiceHandler struct {
 func (h genericServiceHandler) Create(object runtime.Object) error {
 	obj, ok := object.(*Service)
 	if !ok {
-		return errors.Errorf("internal error: Service handler received event for %T")
+		return errors.Errorf("internal error: Service handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
@@ -206,7 +214,7 @@ func (h genericServiceHandler) Create(object runtime.Object) error {
 func (h genericServiceHandler) Delete(object runtime.Object) error {
 	obj, ok := object.(*Service)
 	if !ok {
-		return errors.Errorf("internal error: Service handler received event for %T")
+		return errors.Errorf("internal error: Service handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
@@ -214,11 +222,11 @@ func (h genericServiceHandler) Delete(object runtime.Object) error {
 func (h genericServiceHandler) Update(old, new runtime.Object) error {
 	objOld, ok := old.(*Service)
 	if !ok {
-		return errors.Errorf("internal error: Service handler received event for %T")
+		return errors.Errorf("internal error: Service handler received event for %T", old)
 	}
 	objNew, ok := new.(*Service)
 	if !ok {
-		return errors.Errorf("internal error: Service handler received event for %T")
+		return errors.Errorf("internal error: Service handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
@@ -226,7 +234,7 @@ func (h genericServiceHandler) Update(old, new runtime.Object) error {
 func (h genericServiceHandler) Generic(object runtime.Object) error {
 	obj, ok := object.(*Service)
 	if !ok {
-		return errors.Errorf("internal error: Service handler received event for %T")
+		return errors.Errorf("internal error: Service handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }
@@ -273,11 +281,15 @@ func (f *PodEventHandlerFuncs) Generic(obj *Pod) error {
 	return f.OnGeneric(obj)
 }
 
-type PodController struct {
+type PodController interface {
+	AddEventHandler(ctx context.Context, h PodEventHandler, predicates ...predicate.Predicate) error
+}
+
+type PodControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewPodController(name string, mgr manager.Manager) (*PodController, error) {
+func NewPodController(name string, mgr manager.Manager) (PodController, error) {
 	if err := AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -286,12 +298,12 @@ func NewPodController(name string, mgr manager.Manager) (*PodController, error) 
 	if err != nil {
 		return nil, err
 	}
-	return &PodController{
+	return &PodControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *PodController) AddEventHandler(ctx context.Context, h PodEventHandler, predicates ...predicate.Predicate) error {
+func (c *PodControllerImpl) AddEventHandler(ctx context.Context, h PodEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericPodHandler{handler: h}
 	if err := c.watcher.Watch(ctx, &Pod{}, handler, predicates...); err != nil {
 		return err
@@ -307,7 +319,7 @@ type genericPodHandler struct {
 func (h genericPodHandler) Create(object runtime.Object) error {
 	obj, ok := object.(*Pod)
 	if !ok {
-		return errors.Errorf("internal error: Pod handler received event for %T")
+		return errors.Errorf("internal error: Pod handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
@@ -315,7 +327,7 @@ func (h genericPodHandler) Create(object runtime.Object) error {
 func (h genericPodHandler) Delete(object runtime.Object) error {
 	obj, ok := object.(*Pod)
 	if !ok {
-		return errors.Errorf("internal error: Pod handler received event for %T")
+		return errors.Errorf("internal error: Pod handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
@@ -323,11 +335,11 @@ func (h genericPodHandler) Delete(object runtime.Object) error {
 func (h genericPodHandler) Update(old, new runtime.Object) error {
 	objOld, ok := old.(*Pod)
 	if !ok {
-		return errors.Errorf("internal error: Pod handler received event for %T")
+		return errors.Errorf("internal error: Pod handler received event for %T", old)
 	}
 	objNew, ok := new.(*Pod)
 	if !ok {
-		return errors.Errorf("internal error: Pod handler received event for %T")
+		return errors.Errorf("internal error: Pod handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
@@ -335,7 +347,7 @@ func (h genericPodHandler) Update(old, new runtime.Object) error {
 func (h genericPodHandler) Generic(object runtime.Object) error {
 	obj, ok := object.(*Pod)
 	if !ok {
-		return errors.Errorf("internal error: Pod handler received event for %T")
+		return errors.Errorf("internal error: Pod handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }

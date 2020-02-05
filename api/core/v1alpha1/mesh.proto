@@ -1,12 +1,9 @@
 syntax = "proto3";
 package core.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1";
-
-import "solo-kit/api/v1/solo-kit.proto";
-import "mesh-projects/api/v1/selector.proto";
-import "mesh-projects/api/v1/rbac.proto";
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
+import "mesh-projects/api/core/v1alpha1/health.proto";
 
 
 /*
@@ -21,11 +18,10 @@ message MeshSpec {
     }
 
     ResourceRef cluster = 5;
-    // List of services, these can either be kube services, or smh services
-    repeated ResourceRef services = 6;
+}
 
-    // pods also contain ServiceAccount Information, therefore we do not need to store it here
-    repeated ResourceRef pods = 7;
+message MeshStatus {
+
 }
 
 
@@ -64,5 +60,46 @@ message MeshGroupSpec {
     string display_name = 1;
 
     // The meshes contained in this group.
-    repeated core.zephyr.solo.io.ResourceRef meshes = 3;
+    repeated core.zephyr.solo.io.ResourceRef meshes = 2;
+
+    /*
+        Shared trust is a mesh group trust model requiring a shared root certificate, as well as shared identity
+        between all entities which wish to communicate within the mesh group.
+
+        The best current example of this would be the replicated control planes example from istio:
+        https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+    */
+    message SharedTrust {}
+
+    /*
+        Limited trust is a mesh group trust model which does not require all meshes sharing the same root certificate
+        or identity model. But rather, the limited trust creates trust between meshes running on different clusters
+        by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
+        between different have the following request path when communicating between clusters
+
+                        cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
+        client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
+
+        This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
+        addition of additional clusters into a mesh group.
+    */
+    message LimitedTrust {}
+
+    oneof trust_model {
+        SharedTrust shared = 3;
+        LimitedTrust limited = 4;
+    }
+}
+
+message MeshGroupStatus {
+    /*
+        0:  The state of the mesh group is unknown, this most likely means that the state is being calculated.
+        1:  The state of the mesh group is Good. All operations have been completed successfully, and all routing
+            is enabled.
+        2:  The state of the mesh group is bad. Either a mesh group operation has failed, or some portion of
+            inter-mesh routing is down.
+
+        TODO: Enumerate further information below on the following states in a description message
+    */
+    HealthStatus health = 1;
 }

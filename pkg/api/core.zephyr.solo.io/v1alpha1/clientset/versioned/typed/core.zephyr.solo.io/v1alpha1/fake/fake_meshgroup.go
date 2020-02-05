@@ -100,6 +100,18 @@ func (c *FakeMeshGroups) Update(meshGroup *v1alpha1.MeshGroup) (result *v1alpha1
 	return obj.(*v1alpha1.MeshGroup), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeMeshGroups) UpdateStatus(meshGroup *v1alpha1.MeshGroup) (*v1alpha1.MeshGroup, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(meshgroupsResource, "status", c.ns, meshGroup), &v1alpha1.MeshGroup{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.MeshGroup), err
+}
+
 // Delete takes name of the meshGroup and deletes it. Returns an error if one occurs.
 func (c *FakeMeshGroups) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

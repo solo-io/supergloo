@@ -1,11 +1,7 @@
 syntax = "proto3";
 package config.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1/types";
 
-import "solo-kit/api/v1/metadata.proto";
-import "solo-kit/api/v1/status.proto";
-import "solo-kit/api/v1/ref.proto";
-import "solo-kit/api/v1/solo-kit.proto";
 import "mesh-projects/api/core/v1alpha1/selector.proto";
 
 // security rules apply ALLOW policies to communication in a mesh

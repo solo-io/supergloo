@@ -40,8 +40,12 @@ func (c *FakeCoreV1alpha1) MeshGroups(namespace string) v1alpha1.MeshGroupInterf
 	return &FakeMeshGroups{c, namespace}
 }
 
-func (c *FakeCoreV1alpha1) Services(namespace string) v1alpha1.ServiceInterface {
-	return &FakeServices{c, namespace}
+func (c *FakeCoreV1alpha1) MeshServices(namespace string) v1alpha1.MeshServiceInterface {
+	return &FakeMeshServices{c, namespace}
+}
+
+func (c *FakeCoreV1alpha1) MeshWorkloads(namespace string) v1alpha1.MeshWorkloadInterface {
+	return &FakeMeshWorkloads{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

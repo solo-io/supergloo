@@ -5,14 +5,11 @@ import (
 
 	"github.com/solo-io/autopilot/codegen"
 	"github.com/solo-io/autopilot/codegen/model"
-	"github.com/solo-io/solo-kit/pkg/code-generator/cmd"
-	"github.com/solo-io/solo-kit/pkg/code-generator/docgen/options"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate go run generate.go
-//go:generate bash ./api/external/smi/generate.sh
 //go:generate mockgen -package mock_manager -destination ./test/mocks/manager/mock_manager.go sigs.k8s.io/controller-runtime/pkg/manager Manager
 //go:generate mockgen -package mock_manager -destination ./test/mocks/manager/mock_cache.go sigs.k8s.io/controller-runtime/pkg/cache Cache
 
@@ -22,39 +19,24 @@ const (
 
 func main() {
 
-	imports := sk_anyvendor.CreateDefaultMatchOptions(
-		[]string{
-			"api/**/*.proto",
-			sk_anyvendor.SoloKitMatchPattern,
-		},
-	)
-	imports.External[GlooPkg] = []string{"projects/**/*.proto"}
-	imports.External["istio.io/api"] = []string{
-		"networking/v1alpha3/*.proto", "security/v1beta1/*.proto", "type/v1beta1/*.proto",
-	}
-
-	log.Printf("starting generate")
-	docsOpts := &cmd.DocsOptions{
-		Output: options.Hugo,
-	}
-	if err := cmd.Generate(cmd.GenerateOptions{
-		RelativeRoot:       ".",
-		CompileProtos:      true,
-		GenDocs:            docsOpts,
-		SkipGeneratedTests: true,
-		SkipGenMocks:       true,
-		ExternalImports:    imports,
-	}); err != nil {
-		log.Fatalf("generate failed!: %v", err)
-	}
+	// log.Printf("starting generate")
+	// docsOpts := &cmd.DocsOptions{
+	// 	Output: options.Hugo,
+	// }
+	// if err := cmd.Generate(cmd.GenerateOptions{
+	// 	RelativeRoot:       "api",
+	// 	GenDocs:            docsOpts,
+	// 	SkipGeneratedTests: true,
+	// 	SkipGenMocks:       true,
+	// 	ExternalImports:    &sk_anyvendor.Imports{},
+	// }); err != nil {
+	// 	log.Fatalf("generate failed!: %v", err)
+	// }
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/config/v1alpha1/*.proto",
 		"api/core/v1alpha1/*.proto",
 	})
-	apImports.External["istio.io/api"] = []string{
-		"networking/v1alpha3/*.proto", "security/v1beta1/*.proto", "type/v1beta1/*.proto",
-	}
 	autopilotCmd := codegen.Command{
 		AppName: "service-mesh-hub",
 		Groups: []model.Group{
@@ -66,19 +48,22 @@ func main() {
 				Module: "github.com/solo-io/mesh-projects",
 				Resources: []model.Resource{
 					{
-						Kind:   "RoutingRule",
-						Spec:   model.Field{Type: "RoutingRuleSpec"},
-						Status: &model.Field{Type: "RoutingRuleStatus"},
+						Kind:                 "RoutingRule",
+						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "RoutingRuleSpec"},
+						Status:               &model.Field{Type: "RoutingRuleStatus"},
 					},
 					{
-						Kind:   "SecurityRule",
-						Spec:   model.Field{Type: "SecurityRuleSpec"},
-						Status: &model.Field{Type: "SecurityRuleStatus"},
+						Kind:                 "SecurityRule",
+						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "SecurityRuleSpec"},
+						Status:               &model.Field{Type: "SecurityRuleStatus"},
 					},
 				},
 				RenderManifests:  true,
 				RenderTypes:      true,
 				RenderController: true,
+				RenderClients:    true,
 				RenderProtos:     true,
 				ApiRoot:          "pkg/api",
 			},
@@ -90,25 +75,39 @@ func main() {
 				Module: "github.com/solo-io/mesh-projects",
 				Resources: []model.Resource{
 					{
-						Kind: "KubernetesCluster",
-						Spec: model.Field{Type: "KubernetesClusterSpec"},
+						Kind:                 "KubernetesCluster",
+						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "KubernetesClusterSpec"},
 					},
 					{
-						Kind: "Service",
-						Spec: model.Field{Type: "ServiceSpec"},
+						Kind:                 "MeshService",
+						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshServiceSpec"},
+						Status:               &model.Field{Type: "MeshServiceStatus"},
 					},
 					{
-						Kind: "Mesh",
-						Spec: model.Field{Type: "MeshSpec"},
+						Kind:                 "MeshWorkload",
+						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshWorkloadSpec"},
+						Status:               &model.Field{Type: "MeshWorkloadStatus"},
 					},
 					{
-						Kind: "MeshGroup",
-						Spec: model.Field{Type: "MeshGroupSpec"},
+						Kind:                 "Mesh",
+						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshSpec"},
+						Status:               &model.Field{Type: "MeshStatus"},
+					},
+					{
+						Kind:                 "MeshGroup",
+						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshGroupSpec"},
+						Status:               &model.Field{Type: "MeshGroupStatus"},
 					},
 				},
 				RenderManifests:  true,
 				RenderTypes:      true,
 				RenderController: true,
+				RenderClients:    true,
 				RenderProtos:     true,
 				ApiRoot:          "pkg/api",
 			},

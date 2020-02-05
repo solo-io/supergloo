@@ -1,12 +1,11 @@
 syntax = "proto3";
 package config.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/config.zephyr.solo.io/v1alpha1/types";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "solo-kit/api/v1/solo-kit.proto";
 import "mesh-projects/api/core/v1alpha1/selector.proto";
 
 // a routing rule applies some L7 routing features to an existing mesh

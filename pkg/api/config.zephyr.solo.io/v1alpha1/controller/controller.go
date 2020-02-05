@@ -55,11 +55,15 @@ func (f *RoutingRuleEventHandlerFuncs) Generic(obj *RoutingRule) error {
 	return f.OnGeneric(obj)
 }
 
-type RoutingRuleController struct {
+type RoutingRuleController interface {
+	AddEventHandler(ctx context.Context, h RoutingRuleEventHandler, predicates ...predicate.Predicate) error
+}
+
+type RoutingRuleControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewRoutingRuleController(name string, mgr manager.Manager) (*RoutingRuleController, error) {
+func NewRoutingRuleController(name string, mgr manager.Manager) (RoutingRuleController, error) {
 	if err := AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -68,12 +72,12 @@ func NewRoutingRuleController(name string, mgr manager.Manager) (*RoutingRuleCon
 	if err != nil {
 		return nil, err
 	}
-	return &RoutingRuleController{
+	return &RoutingRuleControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *RoutingRuleController) AddEventHandler(ctx context.Context, h RoutingRuleEventHandler, predicates ...predicate.Predicate) error {
+func (c *RoutingRuleControllerImpl) AddEventHandler(ctx context.Context, h RoutingRuleEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericRoutingRuleHandler{handler: h}
 	if err := c.watcher.Watch(ctx, &RoutingRule{}, handler, predicates...); err != nil {
 		return err
@@ -89,7 +93,7 @@ type genericRoutingRuleHandler struct {
 func (h genericRoutingRuleHandler) Create(object runtime.Object) error {
 	obj, ok := object.(*RoutingRule)
 	if !ok {
-		return errors.Errorf("internal error: RoutingRule handler received event for %T")
+		return errors.Errorf("internal error: RoutingRule handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
@@ -97,7 +101,7 @@ func (h genericRoutingRuleHandler) Create(object runtime.Object) error {
 func (h genericRoutingRuleHandler) Delete(object runtime.Object) error {
 	obj, ok := object.(*RoutingRule)
 	if !ok {
-		return errors.Errorf("internal error: RoutingRule handler received event for %T")
+		return errors.Errorf("internal error: RoutingRule handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
@@ -105,11 +109,11 @@ func (h genericRoutingRuleHandler) Delete(object runtime.Object) error {
 func (h genericRoutingRuleHandler) Update(old, new runtime.Object) error {
 	objOld, ok := old.(*RoutingRule)
 	if !ok {
-		return errors.Errorf("internal error: RoutingRule handler received event for %T")
+		return errors.Errorf("internal error: RoutingRule handler received event for %T", old)
 	}
 	objNew, ok := new.(*RoutingRule)
 	if !ok {
-		return errors.Errorf("internal error: RoutingRule handler received event for %T")
+		return errors.Errorf("internal error: RoutingRule handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
@@ -117,7 +121,7 @@ func (h genericRoutingRuleHandler) Update(old, new runtime.Object) error {
 func (h genericRoutingRuleHandler) Generic(object runtime.Object) error {
 	obj, ok := object.(*RoutingRule)
 	if !ok {
-		return errors.Errorf("internal error: RoutingRule handler received event for %T")
+		return errors.Errorf("internal error: RoutingRule handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }
@@ -164,11 +168,15 @@ func (f *SecurityRuleEventHandlerFuncs) Generic(obj *SecurityRule) error {
 	return f.OnGeneric(obj)
 }
 
-type SecurityRuleController struct {
+type SecurityRuleController interface {
+	AddEventHandler(ctx context.Context, h SecurityRuleEventHandler, predicates ...predicate.Predicate) error
+}
+
+type SecurityRuleControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewSecurityRuleController(name string, mgr manager.Manager) (*SecurityRuleController, error) {
+func NewSecurityRuleController(name string, mgr manager.Manager) (SecurityRuleController, error) {
 	if err := AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -177,12 +185,12 @@ func NewSecurityRuleController(name string, mgr manager.Manager) (*SecurityRuleC
 	if err != nil {
 		return nil, err
 	}
-	return &SecurityRuleController{
+	return &SecurityRuleControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *SecurityRuleController) AddEventHandler(ctx context.Context, h SecurityRuleEventHandler, predicates ...predicate.Predicate) error {
+func (c *SecurityRuleControllerImpl) AddEventHandler(ctx context.Context, h SecurityRuleEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericSecurityRuleHandler{handler: h}
 	if err := c.watcher.Watch(ctx, &SecurityRule{}, handler, predicates...); err != nil {
 		return err
@@ -198,7 +206,7 @@ type genericSecurityRuleHandler struct {
 func (h genericSecurityRuleHandler) Create(object runtime.Object) error {
 	obj, ok := object.(*SecurityRule)
 	if !ok {
-		return errors.Errorf("internal error: SecurityRule handler received event for %T")
+		return errors.Errorf("internal error: SecurityRule handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
@@ -206,7 +214,7 @@ func (h genericSecurityRuleHandler) Create(object runtime.Object) error {
 func (h genericSecurityRuleHandler) Delete(object runtime.Object) error {
 	obj, ok := object.(*SecurityRule)
 	if !ok {
-		return errors.Errorf("internal error: SecurityRule handler received event for %T")
+		return errors.Errorf("internal error: SecurityRule handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
@@ -214,11 +222,11 @@ func (h genericSecurityRuleHandler) Delete(object runtime.Object) error {
 func (h genericSecurityRuleHandler) Update(old, new runtime.Object) error {
 	objOld, ok := old.(*SecurityRule)
 	if !ok {
-		return errors.Errorf("internal error: SecurityRule handler received event for %T")
+		return errors.Errorf("internal error: SecurityRule handler received event for %T", old)
 	}
 	objNew, ok := new.(*SecurityRule)
 	if !ok {
-		return errors.Errorf("internal error: SecurityRule handler received event for %T")
+		return errors.Errorf("internal error: SecurityRule handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
@@ -226,7 +234,7 @@ func (h genericSecurityRuleHandler) Update(old, new runtime.Object) error {
 func (h genericSecurityRuleHandler) Generic(object runtime.Object) error {
 	obj, ok := object.(*SecurityRule)
 	if !ok {
-		return errors.Errorf("internal error: SecurityRule handler received event for %T")
+		return errors.Errorf("internal error: SecurityRule handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }

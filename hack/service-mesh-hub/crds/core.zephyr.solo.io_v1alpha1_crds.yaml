@@ -30,16 +30,42 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: services.core.zephyr.solo.io
+  name: meshservices.core.zephyr.solo.io
 spec:
   group: core.zephyr.solo.io
   names:
-    kind: Service
-    listKind: ServiceList
-    plural: services
-    singular: service
+    kind: MeshService
+    listKind: MeshServiceList
+    plural: meshservices
+    singular: meshservice
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    helm.sh/hook: crd-install
+  labels:
+    app: service-mesh-hub
+    app.kubernetes.io/name: service-mesh-hub
+  name: meshworkloads.core.zephyr.solo.io
+spec:
+  group: core.zephyr.solo.io
+  names:
+    kind: MeshWorkload
+    listKind: MeshWorkloadList
+    plural: meshworkloads
+    singular: meshworkload
+  scope: Namespaced
+  subresources:
+    status: {}
   versions:
   - name: v1alpha1
     served: true
@@ -63,7 +89,8 @@ spec:
     plural: meshes
     singular: mesh
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
   versions:
   - name: v1alpha1
     served: true
@@ -87,7 +114,8 @@ spec:
     plural: meshgroups
     singular: meshgroup
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
   versions:
   - name: v1alpha1
     served: true
