@@ -37,33 +37,31 @@ message RoutingRuleSpec {
     // a routing rule can have one of several types
     // Note: types imported from istio will be replaced with our own
     // simpler types, this is just a place to start from
-    oneof rule_type {
 
-        // enables traffic shifting, i.e. to reroute requests to a different service,
-        // to a subset of pods based on their label, and/or split traffic between multiple services
-        MultiDestination traffic_shift = 4;
+    // enables traffic shifting, i.e. to reroute requests to a different service,
+    // to a subset of pods based on their label, and/or split traffic between multiple services
+    MultiDestination traffic_shift = 4;
 
-        // enable fault injection on requests
-        FaultInjection fault_injection = 5;
+    // enable fault injection on requests
+    FaultInjection fault_injection = 5;
 
-        // set a timeout on requests
-        google.protobuf.Duration request_timeout = 6;
+    // set a timeout on requests
+    google.protobuf.Duration request_timeout = 6;
 
-        // set a retry policy on requests
-        RetryPolicy retries = 7;
+    // set a retry policy on requests
+    RetryPolicy retries = 7;
 
-        // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-        // for further details about cross origin resource sharing.
-        CorsPolicy cors_policy = 8;
+    // set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+    // for further details about cross origin resource sharing.
+    CorsPolicy cors_policy = 8;
 
-        // Mirror HTTP traffic to a another destination. Traffic will still be sent
-        // to its original destination as normal.
-        core.zephyr.solo.io.ResourceRef mirror = 9;
+    // Mirror HTTP traffic to a another destination. Traffic will still be sent
+    // to its original destination as normal.
+    core.zephyr.solo.io.ResourceRef mirror = 9;
 
-        // manipulate request and response headers
-        HeaderManipulation header_manipulation = 10;
-    }
+    // manipulate request and response headers
+    HeaderManipulation header_manipulation = 10;
 }
 
 message RoutingRuleStatus {

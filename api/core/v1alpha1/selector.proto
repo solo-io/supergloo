@@ -23,10 +23,10 @@ message NamespaceSelector {
 
 /*
     specifies a method by which to select pods
-    with in a mesh for the application of rules and policies
+    within a mesh for the application of rules and policies
 
     Precedence:
-    1. LabelSeclector
+    1. LabelSelector
     2. NamespaceSelector
     3. ResourceSelector
 */
@@ -41,7 +41,7 @@ message ServiceSelector {
 
 /*
     Precedence:
-    1. LabelSeclector
+    1. LabelSelector
     2. ResourceSelector
 */
 message ClusterSelector {

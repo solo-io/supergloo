@@ -19,7 +19,7 @@ var _ = Describe("ServerVersion", func() {
 		kubeConfigClient    *mock_server.MockDeploymentClient
 		serverVersionClient server.ServerVersionClient
 		namespace           = "test-namespace"
-		labelSelector       = "app=sm-marketplace"
+		labelSelector       = "app=service-mesh-hub"
 	)
 
 	BeforeEach(func() {

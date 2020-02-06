@@ -135,54 +135,6 @@ meshctl-windows-amd64: $(OUTPUT_DIR)/meshctl-windows-amd64.exe
 .PHONY: build-cli
 build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
-#----------------------------------------------------------------------------------
-# Deployment Manifests / Helm
-#----------------------------------------------------------------------------------
-
-HELM_SYNC_DIR := $(OUTPUT_DIR)/helm
-HELM_DIR := install/helm
-INSTALL_NAMESPACE ?= sm-marketplace
-
-.PHONY: manifest
-manifest: prepare-helm update-helm-chart install/mesh-projects.yaml
-
-# creates Chart.yaml, values.yaml See install/helm/mesh-projects/README.md for more info.
-.PHONY: prepare-helm
-prepare-helm: $(OUTPUT_DIR)/.helm-prepared
-
-$(OUTPUT_DIR)/.helm-prepared:
-	go run install/helm/mesh-projects/generate.go $(VERSION)
-	mkdir -p $(OUTPUT_DIR)/helm
-	touch $@
-
-update-helm-chart:
-	mkdir -p $(HELM_SYNC_DIR)/charts
-	helm package --destination $(HELM_SYNC_DIR)/charts $(HELM_DIR)/mesh-projects
-	helm repo index $(HELM_SYNC_DIR)
-
-HELMFLAGS ?= --namespace $(INSTALL_NAMESPACE) --set namespace.create=true
-
-MANIFEST_OUTPUT = > /dev/null
-ifneq ($(BUILD_ID),)
-MANIFEST_OUTPUT =
-endif
-
-install/mesh-projects.yaml: prepare-helm
-	helm template install/helm/mesh-projects $(HELMFLAGS) | tee $@ $(OUTPUT_YAML) $(MANIFEST_OUTPUT)
-
-.PHONY: render-yaml
-render-yaml: install/mesh-projects.yaml
-
-.PHONY: save-helm
-save-helm:
-ifeq ($(RELEASE),"true")
-	gsutil -m rsync -r './_output/helm' gs://mesh-projects-helm/
-endif
-
-.PHONY: fetch-helm
-fetch-helm:
-	mkdir -p $(OUTPUT_DIR)/helm
-	gsutil -m rsync -r gs://mesh-projects-helm/ './_output/helm'
 
 #----------------------------------------------------------------------------------
 # Release

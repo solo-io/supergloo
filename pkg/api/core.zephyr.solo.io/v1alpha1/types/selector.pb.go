@@ -142,10 +142,10 @@ func (m *NamespaceSelector) GetNamespaces() []string {
 
 //
 //specifies a method by which to select pods
-//with in a mesh for the application of rules and policies
+//within a mesh for the application of rules and policies
 //
 //Precedence:
-//1. LabelSeclector
+//1. LabelSelector
 //2. NamespaceSelector
 //3. ResourceSelector
 type ServiceSelector struct {
@@ -204,7 +204,7 @@ func (m *ServiceSelector) GetNamespaces() *NamespaceSelector {
 
 //
 //Precedence:
-//1. LabelSeclector
+//1. LabelSelector
 //2. ResourceSelector
 type ClusterSelector struct {
 	// specify the type of selector to use with selectorType

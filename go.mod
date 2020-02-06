@@ -3,7 +3,10 @@ module github.com/solo-io/mesh-projects
 go 1.13
 
 require (
+	cloud.google.com/go v0.45.1 // indirect
+	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/avast/retry-go v2.4.3+incompatible
+	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-test/deep v1.0.3 // indirect
@@ -11,28 +14,32 @@ require (
 	github.com/golang/mock v1.4.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/wire v0.4.0
+	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/mattn/go-shellwords v1.0.7
-	github.com/mitchellh/hashstructure v1.0.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
+	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.2.0
 	github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e
-	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
-	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
+	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
+	golang.org/x/tools v0.0.0-20191212051200-825cb0626375 // indirect
+	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
+	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
+	google.golang.org/grpc v1.25.1 // indirect
 	k8s.io/api v0.17.1
-	k8s.io/apiextensions-apiserver v0.0.0
+	k8s.io/apiextensions-apiserver v0.0.0 // indirect
 	k8s.io/apimachinery v0.17.1
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.1

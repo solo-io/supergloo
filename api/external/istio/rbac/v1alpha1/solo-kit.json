@@ -1,8 +1,0 @@
-{
-  "title": "istio rbac crds",
-  "version": "v1alpha1",
-  "name": "istio.rbac.v1alpha1",
-  "docs_dir": "docs/api",
-  "go_package": "github.com/solo-io/mesh-projects/pkg/api/external/istio/rbac/v1alpha1",
-  "crd_group_override": "rbac.istio.io"
-}

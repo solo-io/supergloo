@@ -14,10 +14,6 @@ import (
 //go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_cache.go sigs.k8s.io/controller-runtime/pkg/cache Cache
 //go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_dynamic_client.go  sigs.k8s.io/controller-runtime/pkg/client Client
 
-const (
-	GlooPkg = "github.com/solo-io/gloo"
-)
-
 func main() {
 	log.Printf("starting generate")
 
