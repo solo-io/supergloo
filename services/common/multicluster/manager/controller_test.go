@@ -11,14 +11,14 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	mock_manager "github.com/solo-io/mesh-projects/test/mocks/manager"
+	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	"k8s.io/client-go/rest"
 )
 
 var _ = Describe("mc_manager", func() {
 	var (
 		ctrl            *gomock.Controller
-		mgr             *mock_manager.MockManager
+		mgr             *mock_controller_runtime.MockManager
 		asyncMgr        *MockAsyncManager
 		asyncMgrFactory *MockAsyncManagerFactory
 		ctx             context.Context
@@ -32,7 +32,7 @@ var _ = Describe("mc_manager", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mgr = mock_manager.NewMockManager(ctrl)
+		mgr = mock_controller_runtime.NewMockManager(ctrl)
 		managerHandler = NewMockAsyncManagerHandler(ctrl)
 		asyncMgr = NewMockAsyncManager(ctrl)
 		asyncMgrFactory = NewMockAsyncManagerFactory(ctrl)

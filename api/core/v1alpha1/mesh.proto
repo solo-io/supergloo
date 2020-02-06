@@ -5,6 +5,8 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.i
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 import "mesh-projects/api/core/v1alpha1/health.proto";
 
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 /*
 Meshes represent a currently registered service mesh.
@@ -30,6 +32,7 @@ message MeshInstallation {
     string installation_namespace = 1;
 
     // version of the mesh which has been installed
+    // Note that the version may be "latest"
     string version = 2;
 }
 

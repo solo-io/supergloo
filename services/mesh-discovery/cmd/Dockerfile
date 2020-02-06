@@ -1,5 +1,5 @@
 # GENERATED FILE - DO NOT EDIT
-FROM quay.io/solo-io/mc-base-image:0.0.2
+FROM alpine:3.10
 
 COPY mesh-discovery-linux-amd64 /usr/local/bin/mesh-discovery
 

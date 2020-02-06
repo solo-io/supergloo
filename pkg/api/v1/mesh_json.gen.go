@@ -32,17 +32,6 @@ func (this *Mesh) UnmarshalJSON(b []byte) error {
 	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for DiscoveryMetadata
-func (this *DiscoveryMetadata) MarshalJSON() ([]byte, error) {
-	str, err := MeshMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for DiscoveryMetadata
-func (this *DiscoveryMetadata) UnmarshalJSON(b []byte) error {
-	return MeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for MeshInstallation
 func (this *MeshInstallation) MarshalJSON() ([]byte, error) {
 	str, err := MeshMarshaler.MarshalToString(this)

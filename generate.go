@@ -10,32 +10,21 @@ import (
 )
 
 //go:generate go run generate.go
-//go:generate mockgen -package mock_manager -destination ./test/mocks/manager/mock_manager.go sigs.k8s.io/controller-runtime/pkg/manager Manager
-//go:generate mockgen -package mock_manager -destination ./test/mocks/manager/mock_cache.go sigs.k8s.io/controller-runtime/pkg/cache Cache
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_manager.go sigs.k8s.io/controller-runtime/pkg/manager Manager
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_cache.go sigs.k8s.io/controller-runtime/pkg/cache Cache
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_dynamic_client.go  sigs.k8s.io/controller-runtime/pkg/client Client
 
 const (
 	GlooPkg = "github.com/solo-io/gloo"
 )
 
 func main() {
-
-	// log.Printf("starting generate")
-	// docsOpts := &cmd.DocsOptions{
-	// 	Output: options.Hugo,
-	// }
-	// if err := cmd.Generate(cmd.GenerateOptions{
-	// 	RelativeRoot:       "api",
-	// 	GenDocs:            docsOpts,
-	// 	SkipGeneratedTests: true,
-	// 	SkipGenMocks:       true,
-	// 	ExternalImports:    &sk_anyvendor.Imports{},
-	// }); err != nil {
-	// 	log.Fatalf("generate failed!: %v", err)
-	// }
+	log.Printf("starting generate")
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/config/v1alpha1/*.proto",
 		"api/core/v1alpha1/*.proto",
+		"api/external/google/api/*.proto",
 	})
 	autopilotCmd := codegen.Command{
 		AppName: "service-mesh-hub",
@@ -61,9 +50,9 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
+				RenderClients:    true,
 				RenderTypes:      true,
 				RenderController: true,
-				RenderClients:    true,
 				RenderProtos:     true,
 				ApiRoot:          "pkg/api",
 			},
@@ -130,6 +119,21 @@ func main() {
 				},
 				RenderController:      true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
+				ApiRoot:               "services/common/cluster",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "apps",
+					Version: "v1",
+				},
+				Module: "k8s.io/api",
+				Resources: []model.Resource{
+					{
+						Kind: "Deployment",
+					},
+				},
+				RenderController:      true,
+				CustomTypesImportPath: "k8s.io/api/apps/v1",
 				ApiRoot:               "services/common/cluster",
 			},
 		},

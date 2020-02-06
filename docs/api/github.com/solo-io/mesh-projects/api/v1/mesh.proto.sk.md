@@ -12,7 +12,6 @@ weight: 5
 
 
 - [Mesh](#mesh) **Top-Level Resource**
-- [DiscoveryMetadata](#discoverymetadata)
 - [MeshInstallation](#meshinstallation)
 - [IstioMesh](#istiomesh)
 - [AwsAppMesh](#awsappmesh)
@@ -44,12 +43,6 @@ Meshes represent a currently registered service mesh.
 "awsAppMesh": .zephyr.solo.io.AwsAppMesh
 "linkerd": .zephyr.solo.io.LinkerdMesh
 "consulConnect": .zephyr.solo.io.ConsulConnectMesh
-"mtlsConfig": .zephyr.solo.io.MtlsConfig
-"monitoringConfig": .zephyr.solo.io.MonitoringConfig
-"discoveryMetadata": .zephyr.solo.io.DiscoveryMetadata
-"smiEnabled": bool
-"entryPoint": .core.zephyr.solo.io.ClusterResourceRef
-"rbac": .zephyr.solo.io.RbacMode
 
 ```
 
@@ -61,36 +54,6 @@ Meshes represent a currently registered service mesh.
 | `awsAppMesh` | [.zephyr.solo.io.AwsAppMesh](../mesh.proto.sk/#awsappmesh) |  Only one of `awsAppMesh`, `istio`, or `consulConnect` can be set. |  |
 | `linkerd` | [.zephyr.solo.io.LinkerdMesh](../mesh.proto.sk/#linkerdmesh) |  Only one of `linkerd`, `istio`, or `consulConnect` can be set. |  |
 | `consulConnect` | [.zephyr.solo.io.ConsulConnectMesh](../mesh.proto.sk/#consulconnectmesh) |  Only one of `consulConnect`, `istio`, or `linkerd` can be set. |  |
-| `mtlsConfig` | [.zephyr.solo.io.MtlsConfig](../mesh.proto.sk/#mtlsconfig) | mtls config specifies configuration options for enabling mutual tls between pods in this mesh. |  |
-| `monitoringConfig` | [.zephyr.solo.io.MonitoringConfig](../mesh.proto.sk/#monitoringconfig) | configuration for propagating stats and metrics from mesh controllers and sidecars to a centralized datastore such as prometheus. |  |
-| `discoveryMetadata` | [.zephyr.solo.io.DiscoveryMetadata](../mesh.proto.sk/#discoverymetadata) | object which represents the data mesh discovery finds about a given mesh. |  |
-| `smiEnabled` | `bool` | whether or not to use SMI to configure this mesh. |  |
-| `entryPoint` | [.core.zephyr.solo.io.ClusterResourceRef](../core/ref.proto.sk/#clusterresourceref) | reference to the EntryPoints to this mesh. |  |
-| `rbac` | [.zephyr.solo.io.RbacMode](../rbac.proto.sk/#rbacmode) | RBAC configuration properties (not applicable to all mesh types). |  |
-
-
-
-
----
-### DiscoveryMetadata
-
- 
-Generic discovery data shared between different meshes
-
-```yaml
-"cluster": string
-"enableAutoInject": bool
-"upstreams": []core.solo.io.ResourceRef
-"mtlsConfig": .zephyr.solo.io.MtlsConfig
-
-```
-
-| Field | Type | Description | Default |
-| ----- | ---- | ----------- |----------- | 
-| `cluster` | `string` | The name of the cluster the mesh is installed to. |  |
-| `enableAutoInject` | `bool` | Whether or not auto-injection is enabled for a given mesh. |  |
-| `upstreams` | [[]core.solo.io.ResourceRef](../../../../solo-kit/api/v1/ref.proto.sk/#resourceref) | upstreams which point to injected pods in the mesh. |  |
-| `mtlsConfig` | [.zephyr.solo.io.MtlsConfig](../mesh.proto.sk/#mtlsconfig) | discovered mtls config of the given mesh. |  |
 
 
 

@@ -40,8 +40,6 @@ Meshes represent a currently registered service mesh.
 "linkerd": .core.zephyr.solo.io.LinkerdMesh
 "consulConnect": .core.zephyr.solo.io.ConsulConnectMesh
 "cluster": .core.zephyr.solo.io.ResourceRef
-"services": []core.zephyr.solo.io.ResourceRef
-"pods": []core.zephyr.solo.io.ResourceRef
 
 ```
 
@@ -52,8 +50,6 @@ Meshes represent a currently registered service mesh.
 | `linkerd` | [.core.zephyr.solo.io.LinkerdMesh](../mesh.proto.sk/#linkerdmesh) |  Only one of `linkerd`, `istio`, or `consulConnect` can be set. |  |
 | `consulConnect` | [.core.zephyr.solo.io.ConsulConnectMesh](../mesh.proto.sk/#consulconnectmesh) |  Only one of `consulConnect`, `istio`, or `linkerd` can be set. |  |
 | `cluster` | [.core.zephyr.solo.io.ResourceRef](../ref.proto.sk/#resourceref) |  |  |
-| `services` | [[]core.zephyr.solo.io.ResourceRef](../ref.proto.sk/#resourceref) | List of services, these can either be kube services, or smh services. |  |
-| `pods` | [[]core.zephyr.solo.io.ResourceRef](../ref.proto.sk/#resourceref) | pods also contain ServiceAccount Information, therefore we do not need to store it here. |  |
 
 
 

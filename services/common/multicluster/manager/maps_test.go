@@ -9,7 +9,7 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	mock_manager "github.com/solo-io/mesh-projects/test/mocks/manager"
+	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 )
 
 var _ = Describe("sync maps", func() {
@@ -27,12 +27,12 @@ var _ = Describe("sync maps", func() {
 		var (
 			asyncManagerMap *AsyncManagerMap
 			asyncManager    AsyncManager
-			mockManager     *mock_manager.MockManager
+			mockManager     *mock_controller_runtime.MockManager
 		)
 
 		BeforeEach(func() {
 			asyncManagerMap = NewAsyncManagerMap()
-			mockManager = mock_manager.NewMockManager(ctrl)
+			mockManager = mock_controller_runtime.NewMockManager(ctrl)
 			asyncManager = NewAsyncManager(context.TODO(), mockManager)
 		})
 

@@ -10,23 +10,23 @@ import (
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	mock_manager "github.com/solo-io/mesh-projects/test/mocks/manager"
+	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 var _ = Describe("multi cluster manager", func() {
 	var (
 		ctrl  *gomock.Controller
-		mgr   *mock_manager.MockManager
-		cache *mock_manager.MockCache
+		mgr   *mock_controller_runtime.MockManager
+		cache *mock_controller_runtime.MockCache
 		ctx   context.Context
 		async AsyncManager
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mgr = mock_manager.NewMockManager(ctrl)
-		cache = mock_manager.NewMockCache(ctrl)
+		mgr = mock_controller_runtime.NewMockManager(ctrl)
+		cache = mock_controller_runtime.NewMockCache(ctrl)
 		ctx = context.TODO()
 		async = NewAsyncManager(ctx, mgr)
 	})

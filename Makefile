@@ -60,6 +60,7 @@ update-deps: mod-download
 .PHONY: fmt-changed
 fmt-changed:
 	git diff --name-only | grep '.*.go$$' | xargs goimports -w
+	git diff --cached --name-only | grep '.*.go$$' | xargs goimports -w
 
 
 # Enumerate the directories to validate with yamllint. If we just run "yamllint ." the command fails on a symlink in
@@ -76,13 +77,11 @@ check-spelling:
 # Generated Code and Docs
 #----------------------------------------------------------------------------------
 
-SUBDIRS:=services ci pkg cli test
-
 .PHONY: generated-code
 generated-code:
 	rm -rf vendor_any
 	CGO_ENABLED=0 go generate ./...
-	goimports -w $(SUBDIRS)
+	goimports -w .
 
 #----------------------------------------------------------------------------------
 # Apiserver
@@ -104,9 +103,8 @@ $(OUTPUT_DIR)/Dockerfile.mesh-discovery: $(MESH_DISCOVERY_DIR)/cmd/Dockerfile
 mesh-discovery-docker: $(OUTPUT_DIR)/.mesh-discovery-docker
 
 $(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-discovery
-	docker build -t quay.io/solo-io/mc-mesh-discovery:$(VERSION) $(call get_test_tag_option,mesh-discovery) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
+	docker build -t quay.io/solo-io/mesh-discovery:$(VERSION) $(call get_test_tag_option,mesh-discovery) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
 	touch $@
-
 #----------------------------------------------------------------------------------
 # meshctl
 #----------------------------------------------------------------------------------
@@ -199,24 +197,6 @@ upload-github-release-assets: build-cli
 	go run ci/upload_github_release_assets.go
 
 #----------------------------------------------------------------------------------
-# Base Image
-# Note: this is managed by a manual process
-# To update the base image, run this step with the appropriate version, and update
-# the version referenced in the code (pkg/version/version.go)
-# cmd: TAGGED_VERSION=vX.Y.Z make push-base-image
-#----------------------------------------------------------------------------------
-.PHONY: push-base-image
-push-base-image: dockerfile-generation
-	cd build/base_image && docker build -t quay.io/solo-io/mc-base-image:$(VERSION) .
-	docker push quay.io/solo-io/mc-base-image:$(VERSION)
-
-# Note that this script can generate other resources too.
-# At the moment, only Dockerfiles are managed by it.
-.PHONY: dockerfile-generation
-dockerfile-generation:
-	go run hack/genbuild/main.go
-
-#----------------------------------------------------------------------------------
 # Docker
 #----------------------------------------------------------------------------------
 #
@@ -238,5 +218,5 @@ docker: mesh-discovery-docker
 # docker-push is intended to be run by CI
 docker-push: $(DOCKER_IMAGES)
 ifeq ($(RELEASE),"true")
-	docker push quay.io/solo-io/mc-mesh-discovery:$(VERSION)
+	docker push quay.io/solo-io/mesh-discovery:$(VERSION)
 endif

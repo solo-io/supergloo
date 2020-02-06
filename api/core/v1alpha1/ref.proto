@@ -4,6 +4,9 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.i
 
 import "google/protobuf/wrappers.proto";
 
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
 // reference object for kubernetes objects, support multi cluster
 message ResourceRef {
     // (optional): The kubernetes kind of the object

@@ -64,9 +64,10 @@ func (a *asyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config,
 	}
 	ctx, cancel := context.WithCancel(parentCtx)
 	return &asyncManager{
-		mgr:    mgr,
-		ctx:    ctx,
-		cancel: cancel,
+		mgr:      mgr,
+		ctx:      ctx,
+		cancel:   cancel,
+		signaler: errutils.NewErrorSignaler(),
 	}, nil
 }
 

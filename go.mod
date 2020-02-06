@@ -4,10 +4,8 @@ go 1.13
 
 require (
 	github.com/avast/retry-go v2.4.3+incompatible
-	github.com/aws/aws-sdk-go v1.26.2
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.0
@@ -22,7 +20,7 @@ require (
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.8.1
-	github.com/rotisserie/eris v0.1.1
+	github.com/rotisserie/eris v0.2.0
 	github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e
 	github.com/solo-io/gloo v1.3.2-0.20200114165049-10749124158e
 	github.com/solo-io/go-utils v0.13.2
@@ -33,9 +31,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	istio.io/api v0.0.0-20191109011911-e51134872853
-	istio.io/client-go v0.0.0-20191218043923-5fad2566daf6
 	k8s.io/api v0.17.1
 	k8s.io/apiextensions-apiserver v0.0.0
 	k8s.io/apimachinery v0.17.1
