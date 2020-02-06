@@ -66,7 +66,7 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
-  args: ['fetch-helm']
+  args: ['fetch-helm',  '-C', 'install/helm']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
   - 'TAGGED_VERSION=$TAG_NAME'
@@ -122,7 +122,6 @@ steps:
   id: 'docker-login'
   waitFor: ['test']
 
-
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['release']
   env:
@@ -133,6 +132,32 @@ steps:
   waitFor: ['docker-login']
   secretEnv: ['GITHUB_TOKEN', 'QUAY_IO_PASSWORD']
   id: 'release'
+  # 2) Publish Helm charts to GCS
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['release-helm',  '-C', 'install/helm']
+  env:
+    - 'TAGGED_VERSION=$TAG_NAME'
+    - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+    - 'HELM_HOME=/root/.helm' # tell helm where to find data
+  dir: *dir
+  id: 'release-helm'
+  # 3) Publish Helm charts as OCI images
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['auth', 'configure-docker']
+  env:
+    - 'DOCKER_CONFIG=/workspace/docker-config'
+  dir: *dir
+  id: 'gcr-auth'
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['push-chart-to-registry', '-C', 'install/helm']
+  env:
+    - 'TAGGED_VERSION=$TAG_NAME'
+    - 'HELM_HOME=/root/.helm' # tell helm where to find data
+    - 'DOCKER_CONFIG=/workspace/docker-config'
+    - 'HELM_REPOSITORY_CACHE=/builder/home/.cache/helm/registry'
+  dir: *dir
+  id: 'push-chart-to-registry'
+  waitFor: ['gcr-auth']
 
 secrets:
 - kmsKeyName: projects/service-mesh-hub/locations/global/keyRings/buildkey/cryptoKeys/buildkey

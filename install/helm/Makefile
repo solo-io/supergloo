@@ -34,6 +34,11 @@ HELM_EXPERIMENTAL_OCI=1 helm chart save $(CHARTS_DIR)/$(1) gcr.io/service-mesh-h
 HELM_EXPERIMENTAL_OCI=1 helm chart push gcr.io/service-mesh-hub/$(1):$(VERSION)
 endef
 
+define copy_as_dependency
+mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1)
+cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/
+endef
+
 # make a copy of */Chart-template.yaml and */values-template.yaml to */Chart.yaml and */values.yaml, with version injection
 .PHONY: set-version
 set-version:
@@ -50,7 +55,6 @@ package-component-charts:
 # fetch all SMH Helm dependencies (SMH component charts), then package SMH
 .PHONY: package-app-chart
 package-app-chart:
-	helm dependency update $(CHARTS_DIR)/management-plane
 	$(call package_chart,management-plane)
 
 # generate the helm repo index.yaml for SMH components
@@ -63,23 +67,30 @@ index-component-charts:
 index-app-chart:
 	$(call index_chart,management-plane)
 
+# copy component dependencies into app chart
+.PHONY: copy-dependencies
+copy-dependencies:
+	$(foreach chart,$(CHARTS),$(call copy_as_dependency,$(chart)))
+
 # upload the new Helm package and index.yaml
 # use a wildcard in order to execute the target multiple times
 # which is needed because the component Helm packages must exist in the repo
 # before the app can be packaged
-.PHONY: save-helm%
-save-helm%:
+.PHONY: save-helm
+save-helm:
 ifeq ($(RELEASE),"true")
 	gsutil -m rsync -r $(HELM_SYNC_DIR)/charts gs://service-mesh-hub/
+else
+	echo "Not a release, skipping uploading to GCS."
 endif
 
 # package, index, and upload Helm charts SMH components
 .PHONY: release-components-helm
-release-components-helm: set-version package-component-charts index-component-charts save-helm-components
+release-components-helm: set-version package-component-charts index-component-charts copy-dependencies
 
 # package, index, and upload Helm chart for the SMH app
 .PHONY: release-app-helm
-release-app-helm: set-version package-app-chart index-app-chart save-helm-app
+release-app-helm: set-version package-app-chart index-app-chart
 
 #----------------------------------------------------------------------------------
 # Build Targets
@@ -101,7 +112,7 @@ push-chart-to-registry:
 
 # package, index, and upload Helm charts for SMH components, then the SMH app
 .PHONY: release-helm
-release-helm: release-components-helm release-app-helm
+release-helm: release-components-helm release-app-helm save-helm
 
 .PHONY: clean
 clean:
