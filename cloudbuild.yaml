@@ -105,7 +105,7 @@ steps:
   id: 'make'
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
-  args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor']
+  args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
   - 'TAGGED_VERSION=$TAG_NAME'
