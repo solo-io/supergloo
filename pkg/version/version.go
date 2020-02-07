@@ -1,21 +1,16 @@
 package version
 
+import (
+	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
+)
+
 var (
 	UndefinedVersion = "undefined"
 
-	// default version set if running without setting TAGGED_VERSION in env
-	DevVersion = "dev"
-
-	// Will be set by the linker during build
+	// Will be set by the linker during build. Does not include "v" prefix.
 	Version = UndefinedVersion
 )
 
 func IsReleaseVersion() bool {
-	return Version != UndefinedVersion && Version != DevVersion
+	return Version != UndefinedVersion && cli_util.ValidReleaseSemver(Version)
 }
-
-const (
-	MeshBridgeAppName    = "mesh-bridge"
-	MeshDiscoveryAppName = "mesh-discovery"
-	MeshConfigAppName    = "mesh-config"
-)

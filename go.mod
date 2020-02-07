@@ -7,7 +7,10 @@ require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7 // indirect
+	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
@@ -15,11 +18,15 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/wire v0.4.0
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
+	github.com/gorilla/handlers v1.4.2 // indirect
+	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
+	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.7
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect
@@ -43,6 +50,7 @@ require (
 	k8s.io/apimachinery v0.17.1
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.1
+	k8s.io/kubectl v0.0.0 // indirect
 	sigs.k8s.io/controller-runtime v0.4.0
 )
 

@@ -23,7 +23,8 @@ type RemoteAuthorityManager interface {
 
 func NewRemoteAuthorityManager(
 	kubeClients kubernetes.Interface,
-	rbacClient RbacClient, writeNamespace string) RemoteAuthorityManager {
+	rbacClient RbacClient,
+	writeNamespace string) RemoteAuthorityManager {
 	return &remoteAuthorityManager{
 		saClient:   kubeClients.CoreV1().ServiceAccounts(writeNamespace),
 		rbacClient: rbacClient,

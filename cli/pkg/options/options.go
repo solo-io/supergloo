@@ -17,9 +17,10 @@ const (
 )
 
 type Options struct {
-	Root    Root
-	Cluster Cluster
-	Upgrade Upgrade
+	Root       Root
+	Cluster    Cluster
+	Upgrade    Upgrade
+	SmhInstall SmhInstall
 }
 
 type Root struct {
@@ -27,6 +28,7 @@ type Root struct {
 	KubeContext    string
 	WriteNamespace string
 	KubeTimeout    time.Duration
+	Verbose        bool
 }
 
 func AddRootFlags(pflags *pflag.FlagSet, options *Options) {
@@ -38,6 +40,8 @@ func AddRootFlags(pflags *pflag.FlagSet, options *Options) {
 		"Specify the context of the kube config which should be used, uses current context if none is specified")
 	pflags.DurationVar(&options.Root.KubeTimeout, "kube-timeout", defaultKubeClientTimeout, "Specify the default "+
 		"timeout for requests to kubernetes API servers.")
+	pflags.BoolVarP(&options.Root.Verbose, "verbose", "v", false,
+		"Enable verbose mode, which outputs additional execution details that may be helpful for debugging")
 }
 
 type Cluster struct {
@@ -54,4 +58,13 @@ type Register struct {
 type Upgrade struct {
 	ReleaseTag   string
 	DownloadPath string
+}
+
+type SmhInstall struct {
+	DryRun                  bool
+	HelmChartOverride       string
+	HelmChartValueFileNames []string
+	HelmReleaseName         string
+	Version                 string
+	CreateNamespace         bool
 }

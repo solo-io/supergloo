@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/solo-io/go-utils/installutils/helminstall"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
@@ -14,6 +15,7 @@ import (
 type KubeClients struct {
 	ClusterAuthorization auth.ClusterAuthorization
 	SecretWriter         SecretWriter
+	HelmInstaller        helminstall.Installer
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -49,9 +51,13 @@ func ClientsProvider(
 }
 
 // facilitates wire codegen
-func KubeClientsProvider(authorization auth.ClusterAuthorization, writer SecretWriter) *KubeClients {
+func KubeClientsProvider(
+	authorization auth.ClusterAuthorization,
+	writer SecretWriter,
+	helmInstaller helminstall.Installer) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization: authorization,
 		SecretWriter:         writer,
+		HelmInstaller:        helmInstaller,
 	}
 }

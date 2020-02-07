@@ -1,6 +1,7 @@
 package cli_mocks
 
 import (
+	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -10,11 +11,12 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func MockKubeClientsFactoryProvider(authorization auth.ClusterAuthorization, writer common.SecretWriter) common.KubeClientsFactory {
+func MockKubeClientsFactoryProvider(authorization auth.ClusterAuthorization, writer common.SecretWriter, helmInstaller helminstall.Installer) common.KubeClientsFactory {
 	return func(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
 		return &common.KubeClients{
 			ClusterAuthorization: authorization,
 			SecretWriter:         writer,
+			HelmInstaller:        helmInstaller,
 		}, nil
 	}
 }

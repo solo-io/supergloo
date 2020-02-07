@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"github.com/google/wire"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -15,13 +16,11 @@ var ClusterSet = wire.NewSet(
 )
 
 func ClusterRootCmd(registerCmd register.RegistrationCmd) ClusterCommand {
-	cmdName := "cluster"
 	cluster := &cobra.Command{
-		Use:   cmdName,
-		Short: "Register and perform operations on clusters",
-		RunE:  cli_util.NonTerminalCommand(cmdName),
+		Use:   cliconstants.ClusterCommand.Use,
+		Short: cliconstants.ClusterCommand.Short,
+		RunE:  cli_util.NonTerminalCommand(cliconstants.ClusterCommand.Use),
 	}
 	cluster.AddCommand(registerCmd)
-
 	return cluster
 }

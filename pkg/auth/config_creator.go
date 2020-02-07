@@ -50,9 +50,7 @@ func NewRemoteAuthorityConfigCreator(kubeClients kubernetes.Interface, writeName
 	}
 }
 
-func NewRemoteAuthorityConfigCreatorForTest(
-	saClient ServiceAccountClient,
-	secretClient SecretClient) RemoteAuthorityConfigCreator {
+func NewRemoteAuthorityConfigCreatorForTest(saClient ServiceAccountClient, secretClient SecretClient) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		saClient:     saClient,
 		secretClient: secretClient,

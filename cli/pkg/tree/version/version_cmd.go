@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/google/wire"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/spf13/cobra"
@@ -16,14 +17,12 @@ var VersionSet = wire.NewSet(
 )
 
 func VersionCmd(out io.Writer, clientsFactory common.ClientsFactory, opts *options.Options) VersionCommand {
-	cmdName := "version"
 	cmd := &cobra.Command{
-		Use:   cmdName,
-		Short: "Display the version of meshctl and Service Mesh Hub server components",
+		Use:   cliconstants.VersionCommand.Use,
+		Short: cliconstants.VersionCommand.Short,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return ReportVersion(out, clientsFactory, opts)
 		},
 	}
-
 	return cmd
 }

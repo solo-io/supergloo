@@ -9,12 +9,14 @@ import (
 	"context"
 	"io"
 
+	"github.com/solo-io/go-utils/installutils/helminstall"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
@@ -37,7 +39,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(clientset, rbacClient, writeNamespace)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter)
+	helmClient := helminstall.DefaultHelmClient()
+	installer := install.HelmInstallerProvider(helmClient, clientset)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer)
 	return kubeClients, nil
 }
 
@@ -60,6 +64,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, upgradeCommand)
+	installCommand := install.InstallCmd(optionsOptions, clientsFactory, kubeClientsFactory)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, upgradeCommand, installCommand)
 	return command
 }

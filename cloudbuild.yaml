@@ -102,7 +102,7 @@ steps:
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   dir: *dir
-  id: 'make'
+  id: 'docker'
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
   args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
@@ -112,7 +112,7 @@ steps:
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
   dir: *dir
-  waitFor: ['make']
+  waitFor: ['docker']
   id: 'test'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -121,6 +121,16 @@ steps:
   secretEnv: ['QUAY_IO_PASSWORD']
   id: 'docker-login'
   waitFor: ['test']
+
+- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
+  args: ['docker-push']
+  env:
+    - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+    - 'TAGGED_VERSION=$TAG_NAME'
+    - 'HELM_HOME=/root/.helm'
+  dir: *dir
+  id: 'docker-push'
+  waitFor: ['docker-login']
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['release']

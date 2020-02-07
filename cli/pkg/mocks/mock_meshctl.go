@@ -51,6 +51,7 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.KubeClients.SecretWriter,
 		m.Clients.ServerVersionClient,
 		m.Clients.KubeLoader,
+		m.KubeClients.HelmInstaller,
 		m.Clients.MasterClusterVerifier,
 		m.Clients.ReleaseAssetHelper)
 

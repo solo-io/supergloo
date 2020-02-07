@@ -7,11 +7,13 @@ import (
 	"io"
 
 	"github.com/google/wire"
+	"github.com/solo-io/go-utils/installutils/helminstall"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
@@ -30,6 +32,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		auth.NewRemoteAuthorityManager,
 		common.DefaultSecretWriterProvider,
 		auth.NewClusterAuthorization,
+		helminstall.DefaultHelmClient,
+		install.HelmInstallerProvider,
 		common.KubeClientsProvider,
 	)
 	return nil, nil
@@ -55,6 +59,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 		upgrade.UpgradeSet,
 		cluster.ClusterSet,
 		version.VersionSet,
+		install.InstallSet,
 		cli.BuildCli,
 	)
 	return nil

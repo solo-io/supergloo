@@ -4,6 +4,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: mesh-discovery-role
 rules:
-  - apiGroups: []
-    resources: []
-    verbs: []
+  - apiGroups: ["core.zephyr.solo.io"]
+    resources: ["mesh"]
+    verbs: ["*"]

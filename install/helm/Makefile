@@ -85,12 +85,11 @@ else
 endif
 
 # package, index, and upload Helm charts SMH components
-.PHONY: release-components-helm
-release-components-helm: set-version package-component-charts index-component-charts copy-dependencies
+.PHONY: package-index-components-helm
+package-index-components-helm: set-version package-component-charts index-component-charts
 
 # package, index, and upload Helm chart for the SMH app
-.PHONY: release-app-helm
-release-app-helm: set-version package-app-chart index-app-chart
+package-index-app-helm: package-index-components-helm copy-dependencies package-app-chart index-app-chart
 
 #----------------------------------------------------------------------------------
 # Build Targets
@@ -112,7 +111,7 @@ push-chart-to-registry:
 
 # package, index, and upload Helm charts for SMH components, then the SMH app
 .PHONY: release-helm
-release-helm: release-components-helm release-app-helm save-helm
+release-helm: package-index-app-helm save-helm
 
 .PHONY: clean
 clean:
