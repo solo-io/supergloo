@@ -26,7 +26,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.2.0
 	github.com/solo-io/autopilot v0.1.1-0.20200205211911-ee21dd59807e
-	github.com/solo-io/go-utils v0.13.2
+	github.com/solo-io/go-utils v0.13.4
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0
@@ -74,7 +74,6 @@ replace (
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.17.1
 	k8s.io/kubectl => k8s.io/kubectl v0.17.1
 	k8s.io/kubelet => k8s.io/kubelet v0.17.1
-
 	k8s.io/kubernetes => k8s.io/kubernetes v0.17.1
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.17.1
 	k8s.io/metrics => k8s.io/metrics v0.17.1

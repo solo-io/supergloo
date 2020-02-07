@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	NoRemoteConfigSpecifiedError = eris.New("flag(s) missing: must set either --remote-kubeconfig or --remote-context")
+	NoRemoteConfigSpecifiedError = eris.New("flag(s) missing: must set either --remote-kubeconfig or " +
+		"--remote-context")
 )
 
 func VerifyMasterCluster(factory common.ClientsFactory, opts *options.Options) error {

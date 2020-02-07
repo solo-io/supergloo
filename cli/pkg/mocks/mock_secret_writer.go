@@ -34,16 +34,16 @@ func (m *MockSecretWriter) EXPECT() *MockSecretWriterMockRecorder {
 	return m.recorder
 }
 
-// Write mocks base method
-func (m *MockSecretWriter) Write(arg0 *v1.Secret) error {
+// Apply mocks base method
+func (m *MockSecretWriter) Apply(arg0 *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Write", arg0)
+	ret := m.ctrl.Call(m, "Apply", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Write indicates an expected call of Write
-func (mr *MockSecretWriterMockRecorder) Write(arg0 interface{}) *gomock.Call {
+// Apply indicates an expected call of Apply
+func (mr *MockSecretWriterMockRecorder) Apply(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockSecretWriter)(nil).Write), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockSecretWriter)(nil).Apply), arg0)
 }

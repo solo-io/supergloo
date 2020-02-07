@@ -1,9 +1,8 @@
 package common_config
 
 import (
-	"os"
-
 	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -27,27 +26,27 @@ type KubeContext struct {
 }
 
 // default KubeLoader
-func DefaultKubeLoaderProvider() KubeLoader {
-	return &kubeLoader{}
+func DefaultKubeLoaderProvider(opts *options.Options) KubeLoader {
+	return &kubeLoader{
+		timeout: opts.Root.KubeTimeout.String(),
+	}
 }
 
-type kubeLoader struct{}
+type kubeLoader struct {
+	timeout string
+}
 
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
-	return getConfigWithContext("", path, context).ClientConfig()
+	return k.getConfigWithContext("", path, context).ClientConfig()
 }
 
-func getConfigWithContext(masterURL, kubeconfigPath, context string) clientcmd.ClientConfig {
-	if kubeconfigPath != "" {
-		if _, err := os.Stat(kubeconfigPath); os.IsNotExist(err) {
-			// the specified kubeconfig does not exist so fallback to default
-			kubeconfigPath = ""
-		}
-	}
-
+func (k *kubeLoader) getConfigWithContext(masterURL, kubeconfigPath, context string) clientcmd.ClientConfig {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = kubeconfigPath
-	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}}
+	configOverrides := &clientcmd.ConfigOverrides{
+		ClusterInfo: clientcmdapi.Cluster{Server: masterURL},
+		Timeout:     k.timeout,
+	}
 	if context != "" {
 		configOverrides.CurrentContext = context
 	}
@@ -55,7 +54,7 @@ func getConfigWithContext(masterURL, kubeconfigPath, context string) clientcmd.C
 }
 
 func (k *kubeLoader) GetRawConfigForContext(path, context string) (clientcmdapi.Config, error) {
-	return getConfigWithContext("", path, context).RawConfig()
+	return k.getConfigWithContext("", path, context).RawConfig()
 }
 
 func (k *kubeLoader) ParseContext(path string) (*KubeContext, error) {

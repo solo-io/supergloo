@@ -22,7 +22,8 @@ func AddFlags(cmd *cobra.Command, opts *options.Options) {
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
 		"Set the context you would like to use for the target cluster")
 	flags.StringVar(&opts.Cluster.Register.RemoteKubeConfig, remoteKubeconfig, "",
-		"Set the path to the kubeconfig you would like to use for the target cluster. Leave empty to use the default.")
+		"Set the path to the kubeconfig you would like to use for the target cluster. Leave empty to use the "+
+			"default.")
 
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }

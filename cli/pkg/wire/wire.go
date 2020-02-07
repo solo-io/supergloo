@@ -6,28 +6,28 @@ import (
 	"context"
 	"io"
 
+	"github.com/google/wire"
+	cli "github.com/solo-io/mesh-projects/cli/pkg"
+	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
-
-	"github.com/google/wire"
-	cli "github.com/solo-io/mesh-projects/cli/pkg"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	"github.com/spf13/cobra"
-	k8sclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
-func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
+func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (clients *common.KubeClients, err error) {
 	wire.Build(
-		auth.DefaultClientsProvider,
+		kubernetes.NewForConfig,
+		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		auth.NewRemoteAuthorityConfigCreator,
+		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
-		k8sclientv1.NewForConfig,
 		common.DefaultSecretWriterProvider,
 		auth.NewClusterAuthorization,
 		common.KubeClientsProvider,
@@ -39,7 +39,6 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	wire.Build(
 		upgrade.UpgraderClientSet,
 		common_config.DefaultKubeLoaderProvider,
-		common_config.DefaultFileExistenceCheckerProvider,
 		common_config.NewMasterKubeConfigVerifier,
 		server.DefaultServerVersionClientProvider,
 		common.ClientsProvider,

@@ -47,7 +47,7 @@ var _ = Describe("Cluster authorization", func() {
 
 		mockRemoteAuthorityManager.
 			EXPECT().
-			CreateRemoteServiceAccount(testKubeConfig, serviceAccountRef, auth.ServiceAccountRoles).
+			ApplyRemoteServiceAccount(serviceAccountRef, auth.ServiceAccountRoles).
 			Return(nil, nil)
 
 		mockConfigCreator.
@@ -71,7 +71,7 @@ var _ = Describe("Cluster authorization", func() {
 
 		mockRemoteAuthorityManager.
 			EXPECT().
-			CreateRemoteServiceAccount(testKubeConfig, serviceAccountRef, auth.ServiceAccountRoles).
+			ApplyRemoteServiceAccount(serviceAccountRef, auth.ServiceAccountRoles).
 			Return(nil, testErr)
 
 		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(testKubeConfig, serviceAccountRef)

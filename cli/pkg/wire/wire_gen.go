@@ -21,33 +21,32 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 // Injectors from wire.go:
 
 func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
-	clientFactory := auth.DefaultClientsProvider()
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(clientFactory)
-	remoteAuthorityManager := auth.NewRemoteAuthorityManager(clientFactory)
-	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
-	coreV1Client, err := v1.NewForConfig(masterConfig)
+	clientset, err := kubernetes.NewForConfig(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	secretWriter := common.DefaultSecretWriterProvider(coreV1Client, writeNamespace)
+	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(clientset, writeNamespace)
+	rbacClient := auth.RbacClientProvider(clientset)
+	remoteAuthorityManager := auth.NewRemoteAuthorityManager(clientset, rbacClient, writeNamespace)
+	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
+	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter)
 	return kubeClients, nil
 }
 
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
-	kubeLoader := common_config.DefaultKubeLoaderProvider()
+	kubeLoader := common_config.DefaultKubeLoaderProvider(opts)
 	serverVersionClient := server.DefaultServerVersionClientProvider(opts, kubeLoader)
 	githubAssetClient := upgrade_assets.DefaultGithubAssetClient()
 	assetHelper := upgrade_assets.NewAssetHelper(githubAssetClient)
-	fileExistenceChecker := common_config.DefaultFileExistenceCheckerProvider()
-	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader, fileExistenceChecker)
+	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader)
 	clients := common.ClientsProvider(serverVersionClient, assetHelper, kubeLoader, masterKubeConfigVerifier)
 	return clients, nil
 }
@@ -58,7 +57,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
 	clientsFactory := DefaultClientsFactoryProvider()
 	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
-	clusterCommand := cluster.ClusterRootCmd(registrationCmd, optionsOptions)
+	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, upgradeCommand)

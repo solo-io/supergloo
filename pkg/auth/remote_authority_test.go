@@ -1,19 +1,18 @@
 package auth_test
 
 import (
-	"errors"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	kubeapiv1 "k8s.io/api/core/v1"
 	rbacapiv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 )
 
 var _ = Describe("Remote service account client", func() {
@@ -23,13 +22,13 @@ var _ = Describe("Remote service account client", func() {
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}
-		testKubeConfig = &rest.Config{
-			Host: "www.grahams-a-great-programmer.edu",
-			TLSClientConfig: rest.TLSClientConfig{
-				CertData: []byte("super secure cert data"),
+		roles       = append([]*rbacapiv1.ClusterRole{}, auth.ServiceAccountRoles...)
+		testErr     = eris.New("hello")
+		notFoundErr = &errors.StatusError{
+			ErrStatus: v1.Status{
+				Reason: v1.StatusReasonAlreadyExists,
 			},
 		}
-		roles = append([]*rbacapiv1.ClusterRole{}, auth.ServiceAccountRoles...)
 	)
 
 	BeforeEach(func() {
@@ -44,7 +43,7 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManager(mock_auth.MockClients(saClient, rbacClient, nil))
+		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
@@ -62,16 +61,16 @@ var _ = Describe("Remote service account client", func() {
 			BindClusterRolesToServiceAccount(serviceAccount, roles).
 			Return(nil)
 
-		sa, err := remoteAuthManager.CreateRemoteServiceAccount(testKubeConfig, serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(sa).To(Equal(serviceAccount))
 	})
 
-	It("reports an error if service account creation fails", func() {
+	It("will try and update if create fails", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManager(mock_auth.MockClients(saClient, rbacClient, nil))
+		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
@@ -79,14 +78,39 @@ var _ = Describe("Remote service account client", func() {
 			},
 		}
 
-		testErr := errors.New("test err")
+		saClient.
+			EXPECT().
+			Create(serviceAccount).
+			Return(nil, notFoundErr)
+
+		saClient.
+			EXPECT().
+			Update(serviceAccount).
+			Return(nil, testErr)
+
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
+		Expect(err).To(HaveInErrorChain(testErr))
+		Expect(sa).To(BeNil())
+	})
+
+	It("reports an error if service account creation fails, on not IsAlreadyExists error", func() {
+		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
+		rbacClient := mock_auth.NewMockRbacClient(ctrl)
+
+		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
+
+		serviceAccount := &kubeapiv1.ServiceAccount{
+			ObjectMeta: v1.ObjectMeta{
+				Name: serviceAccountRef.Name,
+			},
+		}
 
 		saClient.
 			EXPECT().
 			Create(serviceAccount).
 			Return(nil, testErr)
 
-		sa, err := remoteAuthManager.CreateRemoteServiceAccount(testKubeConfig, serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
 		Expect(err).To(HaveInErrorChain(testErr))
 		Expect(sa).To(BeNil())
 	})
@@ -95,15 +119,13 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManager(mock_auth.MockClients(saClient, rbacClient, nil))
+		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
 				Name: serviceAccountRef.Name,
 			},
 		}
-
-		testErr := errors.New("test err")
 
 		saClient.
 			EXPECT().
@@ -115,7 +137,7 @@ var _ = Describe("Remote service account client", func() {
 			BindClusterRolesToServiceAccount(serviceAccount, roles).
 			Return(testErr)
 
-		sa, err := remoteAuthManager.CreateRemoteServiceAccount(testKubeConfig, serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
 		Expect(err).To(HaveInErrorChain(testErr))
 		Expect(sa).To(BeNil())
 	})

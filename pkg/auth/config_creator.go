@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	k8sapiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
@@ -18,7 +19,11 @@ const (
 
 var (
 	// exponential backoff retry with an initial period of 0.1s for 7 iterations, which will mean a cumulative retry period of ~6s
-	secretLookupOpts = []retry.Option{retry.Delay(time.Millisecond * 100), retry.Attempts(7), retry.DelayType(retry.BackOffDelay)}
+	secretLookupOpts = []retry.Option{
+		retry.Delay(time.Millisecond * 100),
+		retry.Attempts(7),
+		retry.DelayType(retry.BackOffDelay),
+	}
 )
 
 // create a kube config that can authorize to the target cluster as the service account from that target cluster
@@ -34,15 +39,30 @@ type RemoteAuthorityConfigCreator interface {
 }
 
 type remoteAuthorityConfigCreator struct {
-	clientFactory ClientFactory
+	saClient     ServiceAccountClient
+	secretClient SecretClient
 }
 
-func NewRemoteAuthorityConfigCreator(clientFactory ClientFactory) RemoteAuthorityConfigCreator {
-	return &remoteAuthorityConfigCreator{clientFactory}
+func NewRemoteAuthorityConfigCreator(kubeClients kubernetes.Interface, writeNamespace string) RemoteAuthorityConfigCreator {
+	return &remoteAuthorityConfigCreator{
+		saClient:     kubeClients.CoreV1().ServiceAccounts(writeNamespace),
+		secretClient: kubeClients.CoreV1().Secrets(writeNamespace),
+	}
 }
 
-func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
-	tokenSecret, err := r.waitForSecret(targetClusterCfg, serviceAccountRef)
+func NewRemoteAuthorityConfigCreatorForTest(
+	saClient ServiceAccountClient,
+	secretClient SecretClient) RemoteAuthorityConfigCreator {
+	return &remoteAuthorityConfigCreator{
+		saClient:     saClient,
+		secretClient: secretClient,
+	}
+}
+
+func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
+	targetClusterCfg *rest.Config,
+	serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
+	tokenSecret, err := r.waitForSecret(serviceAccountRef)
 	if err != nil {
 		return nil, SecretNotReady(err)
 	}
@@ -62,11 +82,11 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(targetClus
 	return newCfg, nil
 }
 
-func (r *remoteAuthorityConfigCreator) waitForSecret(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (foundSecret *k8sapiv1.Secret, err error) {
-	clients, err := r.clientFactory(targetClusterCfg, serviceAccountRef.Namespace)
+func (r *remoteAuthorityConfigCreator) waitForSecret(
+	serviceAccountRef *core.ResourceRef) (foundSecret *k8sapiv1.Secret, err error) {
 
 	err = retry.Do(func() error {
-		serviceAccount, err := clients.ServiceAccountClient.Get(serviceAccountRef.Name, v1.GetOptions{})
+		serviceAccount, err := r.saClient.Get(serviceAccountRef.Name, v1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -80,7 +100,7 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(targetClusterCfg *rest.Conf
 
 		secretName := serviceAccount.Secrets[0].Name
 
-		secret, err := clients.SecretClient.Get(secretName, v1.GetOptions{})
+		secret, err := r.secretClient.Get(secretName, v1.GetOptions{})
 		if err != nil {
 			return err
 		}

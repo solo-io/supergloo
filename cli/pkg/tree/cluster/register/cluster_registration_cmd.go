@@ -16,15 +16,20 @@ var RegistrationSet = wire.NewSet(
 	ClusterRegistrationCmd,
 )
 
-func ClusterRegistrationCmd(kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, opts *options.Options, out io.Writer) RegistrationCmd {
+func ClusterRegistrationCmd(
+	kubeClientsFactory common.KubeClientsFactory,
+	clientsFactory common.ClientsFactory,
+	opts *options.Options,
+	out io.Writer) RegistrationCmd {
 	cmdName := "register"
 
 	register := &cobra.Command{
-		Use:   cmdName,
-		Short: "Register a new cluster by creating a service account token in that cluster through which to authorize Service Mesh Hub",
+		Use: cmdName,
+		Short: "Register a new cluster by creating a service account token in that cluster through which to authorize " +
+			"Service Mesh Hub",
 		Long: "In order to specify the remote cluster against which to perform this operation, one or both of the" +
-			" --remote-kubeconfig or --remote-context flags must be set. The former selects the kubeconfig file, and the latter" +
-			"the context within to use.",
+			" --remote-kubeconfig or --remote-context flags must be set. The former selects the kubeconfig file, and " +
+			"the latter selects which context should be used from that kubeconfig file.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RegisterCluster(clientsFactory, kubeClientsFactory, opts, out)
 		},

@@ -15,14 +15,17 @@ import (
 )
 
 var (
-	FailedLoadingTargetConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load the kube config for the target cluster")
+	FailedLoadingRemoteConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config for the remote cluster")
 	}
-	FailedToCreateAuthToken = func(err error, saRef *core.ResourceRef, targetKubeConfig string) error {
-		return eris.Wrapf(err, "Failed to create an auth token for service account %s.%s in cluster "+
-			"pointed to by kube config %s. This operation is not atomic, so the service account may have been"+
-			" created and left in the cluster while a later step failed.",
-			saRef.Namespace, saRef.Name, targetKubeConfig)
+	FailedLoadingMasterConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
+	}
+	FailedToCreateAuthToken = func(saRef *core.ResourceRef, remoteKubeConfig, remoteContext string) string {
+		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
+			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
+			"have been created and left in the cluster while a later step failed. \n",
+			saRef.Namespace, saRef.Name, remoteKubeConfig, remoteContext)
 	}
 	FailedToConvertToSecret = func(err error) error {
 		return eris.Wrap(err, "Could not convert kube config for new service account into secret")
@@ -51,10 +54,10 @@ func RegisterCluster(
 	if err != nil {
 		return err
 	}
-	// first we need the credentials to talk to the target cluster
+	// first we need the credentials to talk to the master cluster
 	cfg, err := clients.KubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
-		return FailedLoadingTargetConfig(err)
+		return FailedLoadingMasterConfig(err)
 	}
 	kubeClients, err := kubeClientsFactory(cfg, opts.Root.WriteNamespace)
 	if err != nil {
@@ -71,7 +74,7 @@ func RegisterCluster(
 	// first we need the credentials to talk to the target cluster
 	targetAuthConfig, err := clients.KubeLoader.GetRestConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
-		return FailedLoadingTargetConfig(err)
+		return FailedLoadingRemoteConfig(err)
 	}
 
 	// the new cluster name doubles as the name for the service account we will auth as
@@ -82,7 +85,12 @@ func RegisterCluster(
 	configForServiceAccount, err := kubeClients.ClusterAuthorization.
 		CreateAuthConfigForCluster(targetAuthConfig, serviceAccountRef)
 	if err != nil {
-		return FailedToCreateAuthToken(err, serviceAccountRef, registerOpts.RemoteContext)
+		fmt.Fprintf(out, FailedToCreateAuthToken(
+			serviceAccountRef,
+			registerOpts.RemoteKubeConfig,
+			registerOpts.RemoteContext,
+		))
+		return err
 	}
 
 	// now we need the cluster/context information from that config
@@ -135,7 +143,7 @@ func RegisterCluster(
 		return FailedToConvertToSecret(err)
 	}
 
-	err = kubeClients.SecretWriter.Write(secret)
+	err = kubeClients.SecretWriter.Apply(secret)
 	if err != nil {
 		return FailedToWriteSecret(err)
 	}

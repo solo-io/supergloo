@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 	"github.com/spf13/cobra"
@@ -15,7 +14,7 @@ var ClusterSet = wire.NewSet(
 	ClusterRootCmd,
 )
 
-func ClusterRootCmd(registerCmd register.RegistrationCmd, opts *options.Options) ClusterCommand {
+func ClusterRootCmd(registerCmd register.RegistrationCmd) ClusterCommand {
 	cmdName := "cluster"
 	cluster := &cobra.Command{
 		Use:   cmdName,

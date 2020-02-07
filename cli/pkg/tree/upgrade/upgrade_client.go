@@ -55,7 +55,9 @@ func Upgrade(ctx context.Context, opts *options.Options, out io.Writer, clientFa
 		return CouldNotFindAssetForReleaseError(meshctlBinaryName, release.GetTagName())
 	}
 
-	if err := clients.ReleaseAssetHelper.DownloadAsset(asset.GetBrowserDownloadURL(), opts.Upgrade.DownloadPath); err != nil {
+	if err := clients.ReleaseAssetHelper.DownloadAsset(
+		asset.GetBrowserDownloadURL(),
+		opts.Upgrade.DownloadPath); err != nil {
 		return DownloadingAssetError(err, meshctlBinaryName)
 	}
 

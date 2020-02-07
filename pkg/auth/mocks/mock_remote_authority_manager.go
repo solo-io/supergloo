@@ -11,7 +11,6 @@ import (
 	core "github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "k8s.io/api/core/v1"
 	v10 "k8s.io/api/rbac/v1"
-	rest "k8s.io/client-go/rest"
 )
 
 // MockRemoteAuthorityManager is a mock of RemoteAuthorityManager interface
@@ -37,17 +36,17 @@ func (m *MockRemoteAuthorityManager) EXPECT() *MockRemoteAuthorityManagerMockRec
 	return m.recorder
 }
 
-// CreateRemoteServiceAccount mocks base method
-func (m *MockRemoteAuthorityManager) CreateRemoteServiceAccount(arg0 *rest.Config, arg1 *core.ResourceRef, arg2 []*v10.ClusterRole) (*v1.ServiceAccount, error) {
+// ApplyRemoteServiceAccount mocks base method
+func (m *MockRemoteAuthorityManager) ApplyRemoteServiceAccount(arg0 *core.ResourceRef, arg1 []*v10.ClusterRole) (*v1.ServiceAccount, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRemoteServiceAccount", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ApplyRemoteServiceAccount", arg0, arg1)
 	ret0, _ := ret[0].(*v1.ServiceAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateRemoteServiceAccount indicates an expected call of CreateRemoteServiceAccount
-func (mr *MockRemoteAuthorityManagerMockRecorder) CreateRemoteServiceAccount(arg0, arg1, arg2 interface{}) *gomock.Call {
+// ApplyRemoteServiceAccount indicates an expected call of ApplyRemoteServiceAccount
+func (mr *MockRemoteAuthorityManagerMockRecorder) ApplyRemoteServiceAccount(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRemoteServiceAccount", reflect.TypeOf((*MockRemoteAuthorityManager)(nil).CreateRemoteServiceAccount), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyRemoteServiceAccount", reflect.TypeOf((*MockRemoteAuthorityManager)(nil).ApplyRemoteServiceAccount), arg0, arg1)
 }

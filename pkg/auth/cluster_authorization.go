@@ -27,12 +27,16 @@ type clusterAuthorization struct {
 	remoteAuthorityManager RemoteAuthorityManager
 }
 
-func NewClusterAuthorization(configCreator RemoteAuthorityConfigCreator, remoteAuthorityManager RemoteAuthorityManager) ClusterAuthorization {
+func NewClusterAuthorization(
+	configCreator RemoteAuthorityConfigCreator,
+	remoteAuthorityManager RemoteAuthorityManager) ClusterAuthorization {
 	return &clusterAuthorization{configCreator, remoteAuthorityManager}
 }
 
-func (c *clusterAuthorization) CreateAuthConfigForCluster(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
-	_, err := c.remoteAuthorityManager.CreateRemoteServiceAccount(targetClusterCfg, serviceAccountRef, ServiceAccountRoles)
+func (c *clusterAuthorization) CreateAuthConfigForCluster(
+	targetClusterCfg *rest.Config,
+	serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
+	_, err := c.remoteAuthorityManager.ApplyRemoteServiceAccount(serviceAccountRef, ServiceAccountRoles)
 	if err != nil {
 		return nil, err
 	}

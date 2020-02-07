@@ -43,9 +43,16 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		StartReportingUsage(m.Ctx, common.UsageReportingInterval).
 		Return(nil)
 
-	app := InitializeCLIWithMocks(m.Ctx, buffer, usageReporter, m.KubeClients.ClusterAuthorization,
-		m.KubeClients.SecretWriter, m.Clients.ServerVersionClient, m.Clients.KubeLoader,
-		m.Clients.MasterClusterVerifier, m.Clients.ReleaseAssetHelper)
+	app := InitializeCLIWithMocks(
+		m.Ctx,
+		buffer,
+		usageReporter,
+		m.KubeClients.ClusterAuthorization,
+		m.KubeClients.SecretWriter,
+		m.Clients.ServerVersionClient,
+		m.Clients.KubeLoader,
+		m.Clients.MasterClusterVerifier,
+		m.Clients.ReleaseAssetHelper)
 
 	splitArgs, err := shellwords.Parse(argString)
 	if err != nil {

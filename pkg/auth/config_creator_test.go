@@ -50,7 +50,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_auth.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(mock_auth.MockClients(saClient, nil, secretClient))
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreatorForTest(saClient, secretClient)
 
 		saClient.
 			EXPECT().
@@ -75,7 +75,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_auth.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(mock_auth.MockClients(saClient, nil, secretClient))
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreatorForTest(saClient, secretClient)
 
 		attemptsRemaining := 3
 		saClient.
@@ -109,7 +109,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_auth.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(mock_auth.MockClients(saClient, nil, secretClient))
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreatorForTest(saClient, secretClient)
 
 		saClient.
 			EXPECT().
@@ -134,7 +134,7 @@ var _ = Describe("Config creator", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		secretClient := mock_auth.NewMockSecretClient(ctrl)
 
-		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(mock_auth.MockClients(saClient, nil, secretClient))
+		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreatorForTest(saClient, secretClient)
 
 		saClient.
 			EXPECT().

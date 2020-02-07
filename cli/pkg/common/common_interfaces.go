@@ -31,7 +31,8 @@ type ClientsFactory func(opts *options.Options) (*Clients, error)
 // used to pare down from the complexity of all the methods on the k8s client-go SecretInterface
 //go:generate mockgen -destination ../mocks/mock_secret_writer.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common SecretWriter
 type SecretWriter interface {
-	Write(secret *k8sapiv1.Secret) error
+	// create, or update if already exists
+	Apply(secret *k8sapiv1.Secret) error
 }
 
 func ClientsProvider(

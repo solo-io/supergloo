@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
@@ -134,7 +135,7 @@ users:
 
 			secretWriter.
 				EXPECT().
-				Write(&v1.Secret{
+				Apply(&v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 						Name:      serviceAccountRef.Name,
@@ -187,7 +188,7 @@ Cluster test-name is now registered in your Service Mesh Hub installation
 
 			secretWriter.
 				EXPECT().
-				Write(&v1.Secret{
+				Apply(&v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 						Name:      serviceAccountRef.Name,
@@ -240,7 +241,7 @@ Cluster test-name is now registered in your Service Mesh Hub installation
 
 			secretWriter.
 				EXPECT().
-				Write(&v1.Secret{
+				Apply(&v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 						Name:      serviceAccountRef.Name,
@@ -262,6 +263,116 @@ Successfully wrote kube config secret to master cluster...
 Cluster test-name is now registered in your Service Mesh Hub installation
 `))
 			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("will fail if local or remote cluster config fails to initialize", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+			testErr := eris.New("hello")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(nil, testErr)
+
+			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(err).To(HaveInErrorChain(register.FailedLoadingMasterConfig(testErr)))
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(nil, testErr)
+
+			_, err = meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(err).To(HaveInErrorChain(register.FailedLoadingRemoteConfig(testErr)))
+		})
+
+		It("will fail if unable to create auth config", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+			testErr := eris.New("hello")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(targetRestConfig, nil)
+			authClient.
+				EXPECT().
+				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				Return(nil, testErr)
+
+			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(err).To(Equal(testErr))
+			Expect(stdout).To(ContainSubstring(register.FailedToCreateAuthToken(serviceAccountRef, remoteKubeConfig, "")))
+		})
+
+		It("will fail if unable to write secret", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+			testErr := eris.New("hello")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(targetRestConfig, nil)
+			authClient.
+				EXPECT().
+				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				Return(configForServiceAccount, nil)
+
+			kubeLoader.
+				EXPECT().
+				GetRawConfigForContext(remoteKubeConfig, "").
+				Return(cxt, nil)
+
+			secretWriter.
+				EXPECT().
+				Apply(&v1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+						Name:      serviceAccountRef.Name,
+						Namespace: env.DefaultWriteNamespace,
+					},
+					Data: map[string][]byte{
+						"test-name": []byte(expectedKubeConfig(testServerABC)),
+					},
+					Type: v1.SecretTypeOpaque,
+				}).
+				Return(testErr)
+
+			output, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(output).To(ContainSubstring("Successfully wrote service account to target cluster..."))
+			Expect(err).To(HaveInErrorChain(register.FailedToWriteSecret(testErr)))
 		})
 
 		It("errors if a master or target cluster are not set", func() {
@@ -290,5 +401,6 @@ Cluster test-name is now registered in your Service Mesh Hub installation
 			Expect(stdout).To(BeEmpty())
 			Expect(err).To(HaveInErrorChain(testErr))
 		})
+
 	})
 })

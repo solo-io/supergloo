@@ -31,7 +31,7 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient clie
 	kubeClientsFactory := MockKubeClientsFactoryProvider(authorization, writer)
 	clientsFactory := MockClientsFactoryProvider(client2, kubeLoader, verifier, upgrader)
 	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
-	clusterCommand := cluster.ClusterRootCmd(registrationCmd, optionsOptions)
+	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, upgradeCommand)

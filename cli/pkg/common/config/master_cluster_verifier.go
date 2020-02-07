@@ -12,17 +12,15 @@ var (
 		return eris.Wrap(err, "Could not parse target kube context information")
 	}
 	NoSmhInstallationFound = func(path string) error {
-		return eris.Errorf("Could not find a Service Mesh Hub installation in the cluster pointed to by the kube config %s", path)
+		return eris.Errorf("Could not find a Service Mesh Hub installation in the cluster pointed "+
+			"to by the kube config %s", path)
 	}
 	CouldNotVerifyMaster = func(err error, path string) error {
-		return eris.Wrapf(err, "Could not verify whether a Service Mesh Hub installation is present in the cluster pointed to by the kube config %s", path)
+		return eris.Wrapf(err, "Could not verify whether a Service Mesh Hub installation is present "+
+			"in the cluster pointed to by the kube config %s", path)
 	}
-	MustProvideMasterConfigPath = eris.New("Must provide a path to the kube config for your master cluster by either providing the --master-cluster flag or setting the KUBECONFIG env var")
-	FailedToCheckFileExistence  = func(err error, path string) error {
-		return eris.Wrapf(err, "Failed to check whether the path %s exists", path)
-	}
-	FileDoesNotExist = func(path string) error {
-		return eris.Errorf("Kube config at %s does not exist", path)
+	FileDoesNotExist = func(err error, path string) error {
+		return eris.Wrapf(err, "Kube config at %s does not exist", path)
 	}
 )
 
@@ -34,48 +32,23 @@ type MasterKubeConfigVerifier interface {
 
 // Accepts the validated master kube REST config
 type OnMasterVerificationSuccess func(masterKubeConfig *rest.Config)
-type FileExistenceChecker func(path string) (bool, error)
 
-func NewMasterKubeConfigVerifier(kubeLoader KubeLoader, fileExistenceChecker FileExistenceChecker) MasterKubeConfigVerifier {
+func NewMasterKubeConfigVerifier(kubeLoader KubeLoader) MasterKubeConfigVerifier {
 	return &masterKubeConfigVerifier{
-		kubeLoader:           kubeLoader,
-		fileExistenceChecker: fileExistenceChecker,
-	}
-}
-
-func DefaultFileExistenceCheckerProvider() FileExistenceChecker {
-	return func(path string) (b bool, err error) {
-		_, err = os.Stat(path)
-		if os.IsNotExist(err) {
-			return false, nil
-		} else if err != nil {
-			return false, err
-		}
-
-		return true, nil
+		kubeLoader: kubeLoader,
 	}
 }
 
 type masterKubeConfigVerifier struct {
-	kubeLoader           KubeLoader
-	fileExistenceChecker FileExistenceChecker
+	kubeLoader KubeLoader
 }
 
 func (m *masterKubeConfigVerifier) Verify(masterKubeConfigPath string, masterContext string) (err error) {
-	if masterKubeConfigPath == "" {
-		return MustProvideMasterConfigPath
-	}
-
-	fileExists, err := m.fileExistenceChecker(masterKubeConfigPath)
-	if err != nil {
-		return FailedToCheckFileExistence(err, masterKubeConfigPath)
-	}
-	if !fileExists {
-		return FileDoesNotExist(masterKubeConfigPath)
-	}
-
 	_, err = m.kubeLoader.GetRawConfigForContext(masterKubeConfigPath, masterContext)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return FileDoesNotExist(err, masterKubeConfigPath)
+		}
 		return FailedToParseContext(err)
 	}
 	isSMH, err := m.verifyIsMaster()
