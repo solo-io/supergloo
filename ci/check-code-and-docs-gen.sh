@@ -2,6 +2,14 @@
 
 set -ex
 
+go mod tidy
+
+if [[ $(git status --porcelain | wc -l) -ne 0 ]]; then
+  echo "Need to run go mod tidy before committing"
+  git diff
+  exit 1;
+fi
+
 protoc --version
 
 if [ ! -f .gitignore ]; then
