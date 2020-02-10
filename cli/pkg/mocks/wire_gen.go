@@ -9,34 +9,33 @@ import (
 	"context"
 	"io"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
-	"github.com/solo-io/mesh-projects/pkg/auth"
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 )
 
 // Injectors from wire.go:
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, authorization auth.ClusterAuthorization, writer common.SecretWriter, client2 server.ServerVersionClient, kubeLoader common_config.KubeLoader, helmInstaller helminstall.Installer, verifier common_config.MasterKubeConfigVerifier, upgrader upgrade_assets.AssetHelper) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
-	kubeClientsFactory := MockKubeClientsFactoryProvider(authorization, writer, helmInstaller)
-	clientsFactory := MockClientsFactoryProvider(client2, kubeLoader, verifier, upgrader)
-	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
+	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
+	istioInstallationCmd := install.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, kubeLoader, imageNameParser, fileReader)
+	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(optionsOptions, clientsFactory, kubeClientsFactory)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, upgradeCommand, installCommand)
+	installCommand := install2.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
 	return command
 }

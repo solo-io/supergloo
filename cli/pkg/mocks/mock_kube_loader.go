@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	resource "k8s.io/cli-runtime/pkg/resource"
 	rest "k8s.io/client-go/rest"
 	api "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -63,4 +64,18 @@ func (m *MockKubeLoader) GetRestConfigForContext(arg0, arg1 string) (*rest.Confi
 func (mr *MockKubeLoaderMockRecorder) GetRestConfigForContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestConfigForContext", reflect.TypeOf((*MockKubeLoader)(nil).GetRestConfigForContext), arg0, arg1)
+}
+
+// RESTClientGetter mocks base method
+func (m *MockKubeLoader) RESTClientGetter(arg0 string) resource.RESTClientGetter {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RESTClientGetter", arg0)
+	ret0, _ := ret[0].(resource.RESTClientGetter)
+	return ret0
+}
+
+// RESTClientGetter indicates an expected call of RESTClientGetter
+func (mr *MockKubeLoaderMockRecorder) RESTClientGetter(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTClientGetter", reflect.TypeOf((*MockKubeLoader)(nil).RESTClientGetter), arg0)
 }

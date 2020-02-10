@@ -1,4 +1,4 @@
-package common
+package usage
 
 import (
 	"runtime"

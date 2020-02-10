@@ -1,6 +1,7 @@
 package install_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/mock/gomock"
@@ -19,18 +20,22 @@ import (
 var _ = Describe("Install", func() {
 	var (
 		ctrl              *gomock.Controller
+		ctx               context.Context
 		mockKubeLoader    *cli_mocks.MockKubeLoader
 		meshctl           *cli_mocks.MockMeshctl
 		mockHelmInstaller *mock_helminstall.MockInstaller
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
 		mockHelmInstaller = mock_helminstall.NewMockInstaller(ctrl)
 		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		meshctl = &cli_mocks.MockMeshctl{
 			MockController: ctrl,
-			Clients:        common.Clients{KubeLoader: mockKubeLoader},
+			Clients:        common.Clients{},
 			KubeClients:    common.KubeClients{HelmInstaller: mockHelmInstaller},
+			KubeLoader:     mockKubeLoader,
+			Ctx:            ctx,
 		}
 	})
 

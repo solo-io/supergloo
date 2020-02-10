@@ -8,10 +8,15 @@ import (
 
 var _ = Describe("err signaler", func() {
 	var (
+		errSignaler *errorSignaler
+	)
+
+	BeforeEach(func() {
 		errSignaler = &errorSignaler{
 			errSignal: make(chan struct{}),
 		}
-	)
+	})
+
 	It("will set an error", func() {
 		testErr := eris.New("hello")
 		errSignaler.SignalError(testErr)

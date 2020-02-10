@@ -5,10 +5,10 @@ import (
 )
 
 type Image struct {
-	Domain string
-	Path   string
-	Tag    string
-	Digest string
+	Domain string `json:"domain,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Tag    string `json:"tag,omitempty"`
+	Digest string `json:"digest,omitempty"`
 }
 
 //go:generate mockgen -source docker.go -destination mocks/docker.go

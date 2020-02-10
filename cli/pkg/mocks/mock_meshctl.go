@@ -6,9 +6,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/mattn/go-shellwords"
-	"github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/mocks"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
+	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/usage/mocks"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"k8s.io/client-go/rest"
 )
 
@@ -26,13 +30,17 @@ type MockMeshctl struct {
 	Clients common.Clients
 
 	KubeClients common.KubeClients
+
+	KubeLoader      common_config.KubeLoader
+	ImageNameParser docker.ImageNameParser
+	FileReader      common.FileReader
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
 // returns the output produced by meshctl on stdout as a string
 func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
-	if m.MockController == nil {
-		ginkgo.Fail("Must provide the ginkgo mock controller to mock meshctl")
+	if m.MockController == nil || m.Ctx == nil {
+		Fail("Must provide both the ginkgo mock controller and a non-nil context to mock meshctl")
 	}
 
 	buffer := &bytes.Buffer{}
@@ -40,20 +48,18 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 	usageReporter := usage_mocks.NewMockClient(m.MockController)
 	usageReporter.
 		EXPECT().
-		StartReportingUsage(m.Ctx, common.UsageReportingInterval).
+		StartReportingUsage(m.Ctx, usage.UsageReportingInterval).
 		Return(nil)
 
-	app := InitializeCLIWithMocks(
-		m.Ctx,
-		buffer,
-		usageReporter,
-		m.KubeClients.ClusterAuthorization,
-		m.KubeClients.SecretWriter,
-		m.Clients.ServerVersionClient,
-		m.Clients.KubeLoader,
-		m.KubeClients.HelmInstaller,
-		m.Clients.MasterClusterVerifier,
-		m.Clients.ReleaseAssetHelper)
+	kubeFactory := func(masterConfig *rest.Config, writeNamespace string) (*common.KubeClients, error) {
+		return &m.KubeClients, nil
+	}
+
+	clientsFactory := func(opts *options.Options) (*common.Clients, error) {
+		return &m.Clients, nil
+	}
+
+	app := InitializeCLIWithMocks(m.Ctx, buffer, usageReporter, kubeFactory, clientsFactory, m.KubeLoader, m.ImageNameParser, m.FileReader)
 
 	splitArgs, err := shellwords.Parse(argString)
 	if err != nil {

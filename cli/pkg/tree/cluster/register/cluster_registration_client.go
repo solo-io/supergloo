@@ -41,21 +41,19 @@ func RegisterCluster(
 	clientsFactory common.ClientsFactory,
 	kubeClientsFactory common.KubeClientsFactory,
 	opts *options.Options,
-	out io.Writer) error {
+	out io.Writer,
+	kubeLoader common_config.KubeLoader,
+) error {
 
-	if err := cluster_common.VerifyRootContextFlags(opts); err != nil {
+	if err := cluster_common.VerifyRemoteContextFlags(opts); err != nil {
 		return err
 	}
 	if err := cluster_common.VerifyMasterCluster(clientsFactory, opts); err != nil {
 		return err
 	}
 
-	clients, err := clientsFactory(opts)
-	if err != nil {
-		return err
-	}
-	// first we need the credentials to talk to the master cluster
-	cfg, err := clients.KubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+	// first we need the credentials to talk to the target cluster
+	cfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
 		return FailedLoadingMasterConfig(err)
 	}
@@ -72,7 +70,7 @@ func RegisterCluster(
 	}
 
 	// first we need the credentials to talk to the target cluster
-	targetAuthConfig, err := clients.KubeLoader.GetRestConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
+	targetAuthConfig, err := kubeLoader.GetRestConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
 		return FailedLoadingRemoteConfig(err)
 	}
@@ -94,7 +92,7 @@ func RegisterCluster(
 	}
 
 	// now we need the cluster/context information from that config
-	ctx, err := clients.KubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
+	ctx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
 		return common_config.FailedToParseContext(err)
 	}

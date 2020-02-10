@@ -6,8 +6,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
-
 	"github.com/google/wire"
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
@@ -15,11 +13,10 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
-	"github.com/solo-io/mesh-projects/pkg/auth"
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 )
@@ -28,19 +25,18 @@ func InitializeCLIWithMocks(
 	ctx context.Context,
 	out io.Writer,
 	usageClient usageclient.Client,
-	authorization auth.ClusterAuthorization,
-	writer common.SecretWriter,
-	client server.ServerVersionClient,
+	kubeClientsFactory common.KubeClientsFactory,
+	clientsFactory common.ClientsFactory,
 	kubeLoader common_config.KubeLoader,
-	helmInstaller helminstall.Installer,
-	verifier common_config.MasterKubeConfigVerifier,
-	upgrader upgrade_assets.AssetHelper) *cobra.Command {
+	imageNameParser docker.ImageNameParser,
+	fileReader common.FileReader,
+) *cobra.Command {
+
 	wire.Build(
 		options.NewOptionsProvider,
-		MockKubeClientsFactoryProvider,
-		MockClientsFactoryProvider,
 		cluster.ClusterSet,
 		version.VersionSet,
+		istio.IstioProviderSet,
 		install.InstallSet,
 		upgrade.UpgradeSet,
 		cli.BuildCli,

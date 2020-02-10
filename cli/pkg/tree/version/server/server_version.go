@@ -1,8 +1,6 @@
 package server
 
 import (
-	"strings"
-
 	"github.com/rotisserie/eris"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -17,7 +15,7 @@ import (
 
 type ServerVersion struct {
 	Namespace  string
-	Containers []*ImageMeta
+	Containers []*docker.Image
 }
 
 type ImageMeta struct {
@@ -72,20 +70,22 @@ type ServerVersionClient interface {
 }
 
 // default ServerVersionClient
-func DefaultServerVersionClientProvider(opts *options.Options, loader common_config.KubeLoader) ServerVersionClient {
+func DefaultServerVersionClientProvider(opts *options.Options, loader common_config.KubeLoader, imageNameParser docker.ImageNameParser) ServerVersionClient {
 	return NewServerVersionClient(
 		opts.Root.WriteNamespace,
 		NewDeploymentClient(loader, opts),
+		imageNameParser,
 	)
 }
 
 type serverVersionClient struct {
-	namespace    string
-	configClient DeploymentClient
+	namespace       string
+	configClient    DeploymentClient
+	imageNameParser docker.ImageNameParser
 }
 
-func NewServerVersionClient(namespace string, configClient DeploymentClient) *serverVersionClient {
-	return &serverVersionClient{namespace: namespace, configClient: configClient}
+func NewServerVersionClient(namespace string, configClient DeploymentClient, imageNameParser docker.ImageNameParser) *serverVersionClient {
+	return &serverVersionClient{namespace: namespace, configClient: configClient, imageNameParser: imageNameParser}
 }
 
 func (k *serverVersionClient) GetServerVersion() (*ServerVersion, error) {
@@ -96,20 +96,15 @@ func (k *serverVersionClient) GetServerVersion() (*ServerVersion, error) {
 	if deployments == nil { // service-mesh-hub deployments available
 		return nil, nil
 	}
-	imageParser := docker.NewImageNameParser()
-	var containers []*ImageMeta
+
+	var containers []*docker.Image
 	for _, v := range deployments.Items {
 		for _, container := range v.Spec.Template.Spec.Containers {
-			parsedImage, err := imageParser.Parse(container.Image)
+			parsedImage, err := k.imageNameParser.Parse(container.Image)
 			if err != nil {
 				return nil, err
 			}
-			splitRepoName := strings.Split(parsedImage.Path, "/")
-			containers = append(containers, &ImageMeta{
-				Tag:      parsedImage.Tag,
-				Name:     container.Image,
-				Registry: parsedImage.Domain + "/" + strings.Join(splitRepoName[:len(splitRepoName)-1], "/"),
-			})
+			containers = append(containers, parsedImage)
 		}
 	}
 	if len(containers) == 0 {

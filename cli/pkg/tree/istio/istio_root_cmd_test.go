@@ -1,4 +1,4 @@
-package cluster_test
+package istio_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 )
 
-var _ = Describe("Cluster Root Cmd", func() {
+var _ = Describe("Istio Root Cmd", func() {
 	var ctrl *gomock.Controller
 
 	BeforeEach(func() {
@@ -23,10 +23,10 @@ var _ = Describe("Cluster Root Cmd", func() {
 	})
 
 	It("complains if it is invoked without a subcommand", func() {
-		output, err := cli_mocks.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("cluster --kubeconfig foo")
+		output, err := cli_mocks.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("istio --kubeconfig foo")
 		Expect(output).To(BeEmpty())
 
-		nonTerminalCommandErrorBuilder := cli_util.NonTerminalCommand("cluster")
+		nonTerminalCommandErrorBuilder := cli_util.NonTerminalCommand("istio")
 		nonTerminalErr := nonTerminalCommandErrorBuilder(nil, nil)
 		Expect(err).To(testutils.HaveInErrorChain(nonTerminalErr))
 	})

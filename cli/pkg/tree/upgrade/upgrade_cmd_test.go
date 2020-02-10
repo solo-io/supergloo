@@ -1,6 +1,7 @@
 package upgrade_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/mock/gomock"
@@ -20,6 +21,7 @@ import (
 var _ = Describe("Upgrade", func() {
 	var (
 		ctrl         *gomock.Controller
+		ctx          context.Context
 		meshctl      *cli_mocks.MockMeshctl
 		mockUpgrader *mock_upgrade_assets.MockAssetHelper
 
@@ -28,12 +30,14 @@ var _ = Describe("Upgrade", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
 		mockUpgrader = mock_upgrade_assets.NewMockAssetHelper(ctrl)
 		meshctl = &cli_mocks.MockMeshctl{
 			MockController: ctrl,
 			Clients: common.Clients{
 				ReleaseAssetHelper: mockUpgrader,
 			},
+			Ctx: ctx,
 		}
 	})
 

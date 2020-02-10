@@ -20,7 +20,7 @@ func VerifyMasterCluster(factory common.ClientsFactory, opts *options.Options) e
 	return err
 }
 
-func VerifyRootContextFlags(opts *options.Options) error {
+func VerifyRemoteContextFlags(opts *options.Options) error {
 	if opts.Cluster.Register.RemoteKubeConfig == "" &&
 		opts.Cluster.Register.RemoteContext == "" {
 		return NoRemoteConfigSpecifiedError

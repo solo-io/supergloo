@@ -1,6 +1,7 @@
 package register_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -27,6 +28,7 @@ import (
 var _ = Describe("Cluster Operations", func() {
 	var (
 		ctrl           *gomock.Controller
+		ctx            context.Context
 		secretWriter   *cli_mocks.MockSecretWriter
 		authClient     *mock_auth.MockClusterAuthorization
 		kubeLoader     *cli_mocks.MockKubeLoader
@@ -36,6 +38,7 @@ var _ = Describe("Cluster Operations", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
 
 		secretWriter = cli_mocks.NewMockSecretWriter(ctrl)
 		authClient = mock_auth.NewMockClusterAuthorization(ctrl)
@@ -47,10 +50,11 @@ var _ = Describe("Cluster Operations", func() {
 				SecretWriter:         secretWriter,
 			},
 			Clients: common.Clients{
-				KubeLoader:            kubeLoader,
 				MasterClusterVerifier: configVerifier,
 			},
 			MockController: ctrl,
+			KubeLoader:     kubeLoader,
+			Ctx:            ctx,
 		}
 	})
 

@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/install"
 	"github.com/spf13/pflag"
 )
 
@@ -21,6 +22,7 @@ type Options struct {
 	Cluster    Cluster
 	Upgrade    Upgrade
 	SmhInstall SmhInstall
+	Istio      Istio
 }
 
 type Root struct {
@@ -53,6 +55,17 @@ type Register struct {
 	RemoteWriteNamespace string
 	RemoteContext        string
 	RemoteKubeConfig     string
+}
+
+type Istio struct {
+	Install IstioInstall
+}
+
+type IstioInstall struct {
+	InstallationConfig            install.InstallationConfig
+	DryRun                        bool
+	IstioControlPlaneManifestPath string
+	Profile                       string
 }
 
 type Upgrade struct {

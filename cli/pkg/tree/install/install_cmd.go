@@ -3,6 +3,7 @@ package install
 import (
 	"os"
 
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 
 	"github.com/google/wire"
@@ -37,17 +38,13 @@ func HelmInstallerProvider(helmClient helminstall.HelmClient, kubeClient kuberne
 	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 
-func InstallCmd(opts *options.Options, clientFactory common.ClientsFactory, kubeClientsFactory common.KubeClientsFactory) InstallCommand {
+func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFactory, kubeLoader common_config.KubeLoader) InstallCommand {
 	cmd := &cobra.Command{
 		Use:     cliconstants.InstallCommand.Use,
 		Short:   cliconstants.InstallCommand.Short,
 		PreRunE: validateArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clients, err := clientFactory(opts)
-			if err != nil {
-				return err
-			}
-			cfg, err := clients.KubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+			cfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 			if err != nil {
 				return err
 			}

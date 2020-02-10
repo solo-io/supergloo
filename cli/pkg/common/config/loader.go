@@ -1,8 +1,11 @@
 package common_config
 
 import (
+	"os"
+
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -15,6 +18,7 @@ import (
 type KubeLoader interface {
 	GetRestConfigForContext(path string, context string) (*rest.Config, error)
 	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)
+	RESTClientGetter(path string) resource.RESTClientGetter
 }
 
 // only the pieces from a kube config that we need to operate on
@@ -37,24 +41,50 @@ type kubeLoader struct {
 }
 
 func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest.Config, error) {
-	return k.getConfigWithContext("", path, context).ClientConfig()
+	cfg, err := getConfigWithContext("", path, context)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg.ClientConfig()
 }
 
-func (k *kubeLoader) getConfigWithContext(masterURL, kubeconfigPath, context string) clientcmd.ClientConfig {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeconfigPath
-	configOverrides := &clientcmd.ConfigOverrides{
-		ClusterInfo: clientcmdapi.Cluster{Server: masterURL},
-		Timeout:     k.timeout,
+func getConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error) {
+	verifiedKubeConfigPath := clientcmd.RecommendedHomeFile
+	if kubeconfigPath != "" {
+		verifiedKubeConfigPath = kubeconfigPath
 	}
+
+	if err := assertKubeConfigExists(verifiedKubeConfigPath); err != nil {
+		return nil, err
+	}
+
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	loadingRules.ExplicitPath = verifiedKubeConfigPath
+	configOverrides := &clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: masterURL}}
+
 	if context != "" {
 		configOverrides.CurrentContext = context
 	}
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides), nil
+}
+
+// expects `path` to be nonempty
+func assertKubeConfigExists(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (k *kubeLoader) GetRawConfigForContext(path, context string) (clientcmdapi.Config, error) {
-	return k.getConfigWithContext("", path, context).RawConfig()
+	cfg, err := getConfigWithContext("", path, context)
+	if err != nil {
+		return clientcmdapi.Config{}, err
+	}
+
+	return cfg.RawConfig()
 }
 
 func (k *kubeLoader) ParseContext(path string) (*KubeContext, error) {
@@ -68,4 +98,8 @@ func (k *kubeLoader) ParseContext(path string) (*KubeContext, error) {
 		Contexts:       cfg.Contexts,
 		Clusters:       cfg.Clusters,
 	}, nil
+}
+
+func (k *kubeLoader) RESTClientGetter(path string) resource.RESTClientGetter {
+	return NewRESTClientGetter(k, path)
 }

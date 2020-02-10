@@ -13,15 +13,21 @@ import (
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
+	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,24 +53,35 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 
 func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	kubeLoader := common_config.DefaultKubeLoaderProvider(opts)
-	serverVersionClient := server.DefaultServerVersionClientProvider(opts, kubeLoader)
+	imageNameParser := docker.NewImageNameParser()
+	serverVersionClient := server.DefaultServerVersionClientProvider(opts, kubeLoader, imageNameParser)
 	githubAssetClient := upgrade_assets.DefaultGithubAssetClient()
 	assetHelper := upgrade_assets.NewAssetHelper(githubAssetClient)
 	masterKubeConfigVerifier := common_config.NewMasterKubeConfigVerifier(kubeLoader)
-	clients := common.ClientsProvider(serverVersionClient, assetHelper, kubeLoader, masterKubeConfigVerifier)
+	unstructuredKubeClientFactory := kube.NewUnstructuredKubeClientFactory()
+	deploymentClient := server.NewDeploymentClient(kubeLoader, opts)
+	installerManifestBuilder := operator.NewInstallerManifestBuilder()
+	operatorManagerFactory := operator.NewOperatorManagerFactory()
+	istioClients := common.IstioClientsProvider(installerManifestBuilder, operatorManagerFactory)
+	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients)
 	return clients, nil
 }
 
 func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
-	client := common.DefaultUsageReporterProvider()
+	client := usage.DefaultUsageReporterProvider()
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
 	clientsFactory := DefaultClientsFactoryProvider()
-	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out)
+	kubeLoader := common_config.DefaultKubeLoaderProvider(optionsOptions)
+	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
+	imageNameParser := docker.NewImageNameParser()
+	fileReader := common.NewDefaultFileReader()
+	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, kubeLoader, imageNameParser, fileReader)
+	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
-	installCommand := install.InstallCmd(optionsOptions, clientsFactory, kubeClientsFactory)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, upgradeCommand, installCommand)
+	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
 	return command
 }
