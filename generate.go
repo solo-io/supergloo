@@ -135,7 +135,7 @@ func main() {
 			},
 		},
 		AnyVendorConfig: apImports,
-		ManifestRoot:    "hack",
+		ManifestRoot:    "install/helm/charts/custom-resource-definitions",
 	}
 	if err := autopilotCmd.Execute(); err != nil {
 		log.Fatal(err)

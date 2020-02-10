@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/pkg/common/concurrency"
 	mock_concurrency "github.com/solo-io/mesh-projects/pkg/common/concurrency/mocks"
+	"github.com/solo-io/mesh-projects/services/common"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery"
 	mock_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mocks"
@@ -37,17 +38,17 @@ var _ = Describe("Local mesh client", func() {
 		threadSafeMap := mock_concurrency.NewMockThreadSafeMap(ctrl)
 		meshDiscoverer := discovery.NewMeshDiscoverer(
 			ctx,
-			multicluster.LocalClusterName,
+			common.LocalClusterName,
 			[]discovery.MeshFinder{},
 			localMeshClient,
 		)
 
-		controllerFactory.EXPECT().Build(localManager, multicluster.LocalClusterName).
+		controllerFactory.EXPECT().Build(localManager, common.LocalClusterName).
 			Return(deploymentController, nil)
 
 		deploymentController.EXPECT().AddEventHandler(ctx, meshDiscoverer, multicluster.DeploymentPredicates)
 
-		threadSafeMap.EXPECT().Store(multicluster.LocalClusterName, deploymentController)
+		threadSafeMap.EXPECT().Store(common.LocalClusterName, deploymentController)
 
 		clusterHandler, err := multicluster.NewMeshDiscoveryClusterHandler(
 			ctx,

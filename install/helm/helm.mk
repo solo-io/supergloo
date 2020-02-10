@@ -1,11 +1,12 @@
-ROOTDIR := $(shell pwd)
-OUTPUT_DIR ?= $(ROOTDIR)/_output
-HELM_SYNC_DIR := $(OUTPUT_DIR)/helm
+HELM_DIR := install/helm
+HELM_ROOTDIR := $(shell pwd)/$(HELM_DIR)
+HELM_OUTPUT_DIR ?= $(HELM_ROOTDIR)/_output
+HELM_SYNC_DIR := $(HELM_OUTPUT_DIR)/helm
 # Helm chart sources
-CHARTS_DIR := $(ROOTDIR)/charts
+CHARTS_DIR := $(HELM_ROOTDIR)/charts
 PACKAGED_CHARTS_DIR := $(HELM_SYNC_DIR)/charts
 # list of SMH component directories, must be a subdirectory in install/helm/charts/
-CHARTS := mesh-discovery
+CHARTS := mesh-discovery mesh-group custom-resource-definitions
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 # TAGGED_VERSION := $(shell git describe --tags)
@@ -19,24 +20,24 @@ VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 # 1. include install/helm/charts/.helmignore
 # 2. package the chart into a new directory under $(PACKAGED_CHARTS_DIR)
 define package_chart
-cp .helmignore $(CHARTS_DIR)/$(1)/
-mkdir -p $(PACKAGED_CHARTS_DIR)
-helm package --destination $(PACKAGED_CHARTS_DIR)/$(1) $(CHARTS_DIR)/$(1)
+cp $(HELM_ROOTDIR)/.helmignore $(CHARTS_DIR)/$(1)/;
+mkdir -p $(PACKAGED_CHARTS_DIR);
+helm package --destination $(PACKAGED_CHARTS_DIR)/$(1) $(CHARTS_DIR)/$(1);
 endef
 
 # create the helm repo index.yaml in the packaged directory
 define index_chart
-helm repo index $(PACKAGED_CHARTS_DIR)/$(1)
+helm repo index $(PACKAGED_CHARTS_DIR)/$(1);
 endef
 
 define push_chart_to_registry
-HELM_EXPERIMENTAL_OCI=1 helm chart save $(CHARTS_DIR)/$(1) gcr.io/service-mesh-hub/$(1):$(VERSION)
-HELM_EXPERIMENTAL_OCI=1 helm chart push gcr.io/service-mesh-hub/$(1):$(VERSION)
+HELM_EXPERIMENTAL_OCI=1 helm chart save $(CHARTS_DIR)/$(1) gcr.io/service-mesh-hub/$(1):$(VERSION);
+HELM_EXPERIMENTAL_OCI=1 helm chart push gcr.io/service-mesh-hub/$(1):$(VERSION);
 endef
 
 define copy_as_dependency
-mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1)
-cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/
+mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1);
+cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/;
 endef
 
 # make a copy of */Chart-template.yaml and */values-template.yaml to */Chart.yaml and */values.yaml, with version injection
@@ -113,9 +114,9 @@ push-chart-to-registry:
 .PHONY: release-helm
 release-helm: package-index-app-helm save-helm
 
-.PHONY: clean
-clean:
-	rm -rf $(OUTPUT_DIR)
+.PHONY: helm-clean
+helm-clean:
+	rm -rf $(HELM_OUTPUT_DIR)
 	rm -rf $(CHARTS_DIR)/management-plane/charts
 	rm -rf $(CHARTS_DIR)/management-plane/Chart.lock
 	find $(CHARTS_DIR) -type f -name "Chart.yaml" -exec rm {} \;

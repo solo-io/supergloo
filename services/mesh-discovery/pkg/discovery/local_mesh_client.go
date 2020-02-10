@@ -16,6 +16,9 @@ type LocalMeshClient interface {
 
 	// if the mesh is not found, returns an error on which k8s.io/apimachinery/pkg/api/errors::IsNotFound should return true
 	Get(ctx context.Context, objKey client.ObjectKey) (*mp_v1alpha1.Mesh, error)
+	// Will list meshes in all namespaces by default.
+	// To specify a namespace call with List(ctx , client.InNamespace("namespace"))
+	List(ctx context.Context, opts ...client.ListOption) (*mp_v1alpha1.MeshList, error)
 }
 
 func NewLocalMeshClient(localManager mc_manager.AsyncManager) LocalMeshClient {
@@ -42,4 +45,13 @@ func (m *localMeshClient) Get(ctx context.Context, objKey client.ObjectKey) (*mp
 		return nil, err
 	}
 	return &mesh, nil
+}
+
+func (m *localMeshClient) List(ctx context.Context, opts ...client.ListOption) (*mp_v1alpha1.MeshList, error) {
+	result := mp_v1alpha1.MeshList{}
+	err := m.localClient.List(ctx, &result, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

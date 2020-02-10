@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/solo-io/mesh-projects/pkg/common/concurrency"
+	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -12,13 +14,8 @@ import (
 var (
 	// visible for testing
 	DeploymentPredicates = []predicate.Predicate{
-		RestrictedNamespacePredicate(),
+		mc_predicate.BlacklistedNamespacePredicateProvider(mc_predicate.KubeBlacklistedNamespaces),
 	}
-
-	// a name that won't clash with any user-provided name since it isn't a valid k8s name
-	// just used to register the controller for the local mesh- the name can't be empty
-	// visible for testing
-	LocalClusterName = "$local$"
 )
 
 //go:generate mockgen -destination ./mocks/mock_deployment_controller.go -package mock_multicluster github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller DeploymentController
@@ -47,7 +44,7 @@ func NewMeshDiscoveryClusterHandler(
 	}
 
 	// be sure that we are also watching our local cluster
-	err := handler.ClusterAdded(localManager, LocalClusterName)
+	err := handler.ClusterAdded(localManager, common.LocalClusterName)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: mesh-group-role
+rules:
+- apiGroups: ["core.zephyr.solo.io"]
+  resources: ["meshgroup"]
+  verbs: ["*"]
+- apiGroups: ["core.zephyr.solo.io"]
+  resources: ["mesh"]
+  verbs: ["read"]

@@ -16,3 +16,9 @@ dependencies:
   - name: mesh-discovery
     version: %version%
     repository: https://storage.googleapis.com/service-mesh-hub/mesh-discovery
+  - name: mesh-group
+    version: %version%
+    repository: https://storage.googleapis.com/service-mesh-hub/mesh-group
+  - name: custom-resource-definitions
+    version: %version%
+    repository: https://storage.googleapis.com/service-mesh-hub/custom-resource-definitions

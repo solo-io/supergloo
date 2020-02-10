@@ -1,0 +1,14 @@
+apiVersion: v2
+description: service-mesh-hub custom resource definition Helm chart
+home: https://solo.io
+name: custom-resource-definitions
+version: %version%
+icon: ""
+sources:
+  - https://github.com/solo-io/mesh-projects
+keywords:
+  - kubernetes
+  - istio
+  - mesh
+  - servicemesh
+  - servicemeshhub

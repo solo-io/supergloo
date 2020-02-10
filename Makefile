@@ -4,11 +4,9 @@
 
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
-SOURCES := $(shell find . -name "*.go" | grep -v test.go | grep -v '\.\#*')
+SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
-	# TAGGED_VERSION := $(shell git describe --tags)
-	# This doesn't work in CI, need to find another way...
 	TAGGED_VERSION := $(shell git describe --tags --dirty)
 	RELEASE := "false"
 endif
@@ -19,6 +17,8 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
+# include helm makefile so it can be ran from the root
+include install/helm/helm.mk
 
 #----------------------------------------------------------------------------------
 # Clean
@@ -26,9 +26,7 @@ GCFLAGS := all="-N -l"
 
 # Important to clean before pushing new releases. Dockerfiles and binaries may not update properly
 .PHONY: clean
-clean:
-	rm -rf _output
-	git clean -xdf install ui/src/proto/github.com
+clean: helm-clean
 
 #----------------------------------------------------------------------------------
 # Repo setup
@@ -36,7 +34,7 @@ clean:
 
 # https://www.viget.com/articles/two-ways-to-share-git-hooks-with-your-team/
 .PHONY: init
-init:
+init: update-deps
 	git config core.hooksPath .githooks
 
 .PHONY: mod-download
@@ -84,27 +82,45 @@ generated-code:
 	goimports -w .
 
 #----------------------------------------------------------------------------------
-# Apiserver
+# Docker functions
 #----------------------------------------------------------------------------------
 
-MESH_DISCOVERY_DIR=services/mesh-discovery
+# $(1) name of container
+define build_container
+docker build -t quay.io/solo-io/$(1):$(VERSION) $(ROOTDIR)/services/$(1)/_output -f $(ROOTDIR)/services/$(1)/cmd/Dockerfile;
+endef
+
+#----------------------------------------------------------------------------------
+# Mesh Discovery
+#----------------------------------------------------------------------------------
+MESH_DISCOVERY=mesh-discovery
+MESH_DISCOVERY_DIR=services/$(MESH_DISCOVERY)
+MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
+$(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/cmd/main.go
 
-.PHONY: apiserver
-apiserver: $(OUTPUT_DIR)/mesh-discovery-linux-amd64
-
-$(OUTPUT_DIR)/Dockerfile.mesh-discovery: $(MESH_DISCOVERY_DIR)/cmd/Dockerfile
-	cp $< $@
-
 .PHONY: mesh-discovery-docker
-mesh-discovery-docker: $(OUTPUT_DIR)/.mesh-discovery-docker
+mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
+	$(call build_container,$(MESH_DISCOVERY))
 
-$(OUTPUT_DIR)/.mesh-discovery-docker: $(OUTPUT_DIR)/mesh-discovery-linux-amd64 $(OUTPUT_DIR)/Dockerfile.mesh-discovery
-	docker build -t quay.io/solo-io/mesh-discovery:$(VERSION) $(call get_test_tag_option,mesh-discovery) $(OUTPUT_DIR) -f $(OUTPUT_DIR)/Dockerfile.mesh-discovery
-	touch $@
+
+#----------------------------------------------------------------------------------
+# Mesh Group
+#----------------------------------------------------------------------------------
+MESH_GROUP=mesh-group
+MESH_GROUP_DIR=services/$(MESH_GROUP)
+MESH_GROUP_OUTPUT_DIR=$(ROOTDIR)/$(MESH_GROUP_DIR)/_output
+MESH_GROUP_SOURCES=$(shell find $(MESH_GROUP_DIR) -name "*.go" | grep -v test | grep -v generated.go)
+
+$(MESH_GROUP_OUTPUT_DIR)/mesh-group-linux-amd64: $(MESH_GROUP_SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_GROUP_DIR)/cmd/main.go
+
+.PHONY: mesh-group-docker
+mesh-group-docker: $(MESH_GROUP_OUTPUT_DIR)/mesh-group-linux-amd64
+	$(call build_container,$(MESH_GROUP))
+
 #----------------------------------------------------------------------------------
 # meshctl
 #----------------------------------------------------------------------------------
@@ -161,7 +177,7 @@ upload-github-release-assets: build-cli
 #---------
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker
+docker: mesh-discovery-docker mesh-group-docker
 
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`

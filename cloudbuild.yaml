@@ -43,12 +43,10 @@ steps:
 
 # Using prepare-workspace container from github.com/solo-io/cloud-builders/prepare-go-workspace
 # This copies files into the proper workspace layout and so must be run before other tasks
-- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.2.6"
+- name: "gcr.io/$PROJECT_ID/prepare-go-workspace:0.3.0"
   args:
-  - "--repo-owner"
-  - "solo-io"
   - "--repo-name"
-  - "mesh-projects"
+  - "$REPO_NAME"
   - "--repo-sha"
   - "$COMMIT_SHA"
   - "--repo-output-dir"
@@ -66,7 +64,7 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
-  args: ['fetch-helm',  '-C', 'install/helm']
+  args: ['fetch-helm']
   env:
   - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
   - 'TAGGED_VERSION=$TAG_NAME'
@@ -144,7 +142,7 @@ steps:
   id: 'release'
   # 2) Publish Helm charts to GCS
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
-  args: ['release-helm',  '-C', 'install/helm']
+  args: ['release-helm']
   env:
     - 'TAGGED_VERSION=$TAG_NAME'
     - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
@@ -159,7 +157,7 @@ steps:
   dir: *dir
   id: 'gcr-auth'
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
-  args: ['push-chart-to-registry', '-C', 'install/helm']
+  args: ['push-chart-to-registry']
   env:
     - 'TAGGED_VERSION=$TAG_NAME'
     - 'HELM_HOME=/root/.helm' # tell helm where to find data

@@ -78,3 +78,23 @@ func (mr *MockLocalMeshClientMockRecorder) Get(ctx, objKey interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockLocalMeshClient)(nil).Get), ctx, objKey)
 }
+
+// List mocks base method
+func (m *MockLocalMeshClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.MeshList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockLocalMeshClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockLocalMeshClient)(nil).List), varargs...)
+}
