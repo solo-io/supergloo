@@ -43,11 +43,12 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
+		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
-				Name: serviceAccountRef.Name,
+				Name:      serviceAccountRef.Name,
+				Namespace: serviceAccountRef.Namespace,
 			},
 		}
 
@@ -70,11 +71,12 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
+		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
-				Name: serviceAccountRef.Name,
+				Name:      serviceAccountRef.Name,
+				Namespace: serviceAccountRef.Namespace,
 			},
 		}
 
@@ -97,11 +99,12 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
+		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
-				Name: serviceAccountRef.Name,
+				Name:      serviceAccountRef.Name,
+				Namespace: serviceAccountRef.Namespace,
 			},
 		}
 
@@ -119,11 +122,12 @@ var _ = Describe("Remote service account client", func() {
 		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
-		remoteAuthManager := auth.NewRemoteAuthorityManagerForTest(saClient, rbacClient)
+		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
 
 		serviceAccount := &kubeapiv1.ServiceAccount{
 			ObjectMeta: v1.ObjectMeta{
-				Name: serviceAccountRef.Name,
+				Name:      serviceAccountRef.Name,
+				Namespace: serviceAccountRef.Namespace,
 			},
 		}
 

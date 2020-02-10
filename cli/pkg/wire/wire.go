@@ -32,6 +32,8 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	wire.Build(
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
+		auth.NewServiceAccountClient,
+		auth.NewSecretClient,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,

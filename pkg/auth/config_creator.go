@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	k8sapiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
@@ -38,28 +37,23 @@ type RemoteAuthorityConfigCreator interface {
 	ConfigFromRemoteServiceAccount(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (*rest.Config, error)
 }
 
+func NewRemoteAuthorityConfigCreator(secretClient SecretClient, serviceAccountClient ServiceAccountClient) RemoteAuthorityConfigCreator {
+	return &remoteAuthorityConfigCreator{
+		serviceAccountClient: serviceAccountClient,
+		secretClient:         secretClient,
+	}
+}
+
 type remoteAuthorityConfigCreator struct {
-	saClient     ServiceAccountClient
-	secretClient SecretClient
-}
-
-func NewRemoteAuthorityConfigCreator(kubeClients kubernetes.Interface, writeNamespace string) RemoteAuthorityConfigCreator {
-	return &remoteAuthorityConfigCreator{
-		saClient:     kubeClients.CoreV1().ServiceAccounts(writeNamespace),
-		secretClient: kubeClients.CoreV1().Secrets(writeNamespace),
-	}
-}
-
-func NewRemoteAuthorityConfigCreatorForTest(saClient ServiceAccountClient, secretClient SecretClient) RemoteAuthorityConfigCreator {
-	return &remoteAuthorityConfigCreator{
-		saClient:     saClient,
-		secretClient: secretClient,
-	}
+	secretClient         SecretClient
+	serviceAccountClient ServiceAccountClient
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
+	serviceAccountRef *core.ResourceRef,
+) (*rest.Config, error) {
+
 	tokenSecret, err := r.waitForSecret(serviceAccountRef)
 	if err != nil {
 		return nil, SecretNotReady(err)
@@ -84,7 +78,7 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 	serviceAccountRef *core.ResourceRef) (foundSecret *k8sapiv1.Secret, err error) {
 
 	err = retry.Do(func() error {
-		serviceAccount, err := r.saClient.Get(serviceAccountRef.Name, v1.GetOptions{})
+		serviceAccount, err := r.serviceAccountClient.Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -98,7 +92,7 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 
 		secretName := serviceAccount.Secrets[0].Name
 
-		secret, err := r.secretClient.Get(secretName, v1.GetOptions{})
+		secret, err := r.secretClient.Get(serviceAccountRef.Namespace, secretName, v1.GetOptions{})
 		if err != nil {
 			return err
 		}

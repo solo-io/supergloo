@@ -40,9 +40,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	if err != nil {
 		return nil, err
 	}
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(clientset, writeNamespace)
+	secretClient := auth.NewSecretClient(clientset)
+	serviceAccountClient := auth.NewServiceAccountClient(clientset)
+	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
 	rbacClient := auth.RbacClientProvider(clientset)
-	remoteAuthorityManager := auth.NewRemoteAuthorityManager(clientset, rbacClient, writeNamespace)
+	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	helmClient := helminstall.DefaultHelmClient()

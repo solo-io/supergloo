@@ -135,6 +135,10 @@ meshctl-windows-amd64: $(OUTPUT_DIR)/meshctl-windows-amd64.exe
 .PHONY: build-cli
 build-cli: meshctl-linux-amd64 meshctl-darwin-amd64 meshctl-windows-amd64
 
+.PHONY: cli-wire
+cli-wire:
+	cd cli/pkg/wire && wire
+	cd cli/pkg/mocks && wire
 
 #----------------------------------------------------------------------------------
 # Release

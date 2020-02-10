@@ -6,7 +6,6 @@ import (
 	rbactypes "k8s.io/api/rbac/v1"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 // Create a service account on a cluster that `targetClusterCfg` can reach
@@ -22,25 +21,19 @@ type RemoteAuthorityManager interface {
 }
 
 func NewRemoteAuthorityManager(
-	kubeClients kubernetes.Interface,
+	serviceAccountClient ServiceAccountClient,
 	rbacClient RbacClient,
-	writeNamespace string) RemoteAuthorityManager {
-	return &remoteAuthorityManager{
-		saClient:   kubeClients.CoreV1().ServiceAccounts(writeNamespace),
-		rbacClient: rbacClient,
-	}
-}
+) RemoteAuthorityManager {
 
-func NewRemoteAuthorityManagerForTest(saClient ServiceAccountClient, rbacClient RbacClient) RemoteAuthorityManager {
 	return &remoteAuthorityManager{
-		saClient:   saClient,
-		rbacClient: rbacClient,
+		serviceAccountClient: serviceAccountClient,
+		rbacClient:           rbacClient,
 	}
 }
 
 type remoteAuthorityManager struct {
-	saClient   ServiceAccountClient
-	rbacClient RbacClient
+	serviceAccountClient ServiceAccountClient
+	rbacClient           RbacClient
 }
 
 func (r *remoteAuthorityManager) ApplyRemoteServiceAccount(
@@ -49,13 +42,15 @@ func (r *remoteAuthorityManager) ApplyRemoteServiceAccount(
 
 	saToCreate := &k8sapiv1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: newServiceAccountRef.Name,
+			Name:      newServiceAccountRef.Name,
+			Namespace: newServiceAccountRef.Namespace,
 		},
 	}
-	newServiceAccount, err := r.saClient.Create(saToCreate)
+
+	newServiceAccount, err := r.serviceAccountClient.Create(saToCreate)
 	if err != nil {
 		if kubeerrs.IsAlreadyExists(err) {
-			newServiceAccount, err = r.saClient.Update(saToCreate)
+			newServiceAccount, err = r.serviceAccountClient.Update(saToCreate)
 			if err != nil {
 				return nil, err
 			}
