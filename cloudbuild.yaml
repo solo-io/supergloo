@@ -72,27 +72,6 @@ steps:
   id: 'fetch-helm'
   waitFor: ['prepare-workspace']
 
-
-
-- name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
-  env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  dir: *dir
-  entrypoint: make
-  args: ['check-format']
-  waitFor: ['prepare-workspace']
-  id: 'check-format'
-
-- name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
-  entrypoint: 'bash'
-  args: ['ci/check-code-and-docs-gen.sh']
-  env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
-  - 'TAGGED_VERSION=$TAG_NAME'
-  dir: *dir
-  waitFor: ['prepare-workspace']
-  id: 'check-code-and-docs-gen'
-
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['docker']
   env:
