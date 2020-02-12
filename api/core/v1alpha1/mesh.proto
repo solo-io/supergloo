@@ -66,6 +66,16 @@ message MeshGroupSpec {
     repeated core.zephyr.solo.io.ResourceRef meshes = 2;
 
     /*
+        optional: if set will use this resource ref to determine the secret from which the
+        root trust bundle should be grabbed. Otherwise it will default to
+
+        trust_bundle:
+            name: cacerts
+            namespace: service-mesh-hub (default write namespace)
+    */
+    core.zephyr.solo.io.ResourceRef trust_bundle_ref = 3;
+
+    /*
         Shared trust is a mesh group trust model requiring a shared root certificate, as well as shared identity
         between all entities which wish to communicate within the mesh group.
 
@@ -89,8 +99,8 @@ message MeshGroupSpec {
     message LimitedTrust {}
 
     oneof trust_model {
-        SharedTrust shared = 3;
-        LimitedTrust limited = 4;
+        SharedTrust shared = 4;
+        LimitedTrust limited = 5;
     }
 }
 

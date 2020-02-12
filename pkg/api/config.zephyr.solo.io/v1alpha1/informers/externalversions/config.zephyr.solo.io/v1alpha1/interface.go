@@ -24,6 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// MeshGroupCertificateSigningRequests returns a MeshGroupCertificateSigningRequestInformer.
+	MeshGroupCertificateSigningRequests() MeshGroupCertificateSigningRequestInformer
 	// RoutingRules returns a RoutingRuleInformer.
 	RoutingRules() RoutingRuleInformer
 	// SecurityRules returns a SecurityRuleInformer.
@@ -39,6 +41,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// MeshGroupCertificateSigningRequests returns a MeshGroupCertificateSigningRequestInformer.
+func (v *version) MeshGroupCertificateSigningRequests() MeshGroupCertificateSigningRequestInformer {
+	return &meshGroupCertificateSigningRequestInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // RoutingRules returns a RoutingRuleInformer.

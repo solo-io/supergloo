@@ -45,6 +45,12 @@ func main() {
 						Spec:                 model.Field{Type: "SecurityRuleSpec"},
 						Status:               &model.Field{Type: "SecurityRuleStatus"},
 					},
+					{
+						Kind:                 "MeshGroupCertificateSigningRequest",
+						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshGroupCertificateSigningRequestSpec"},
+						Status:               &model.Field{Type: "MeshGroupCertificateSigningRequestStatus"},
+					},
 				},
 				RenderManifests:  true,
 				RenderClients:    true,

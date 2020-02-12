@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha1
 
+// MeshGroupCertificateSigningRequestListerExpansion allows custom methods to be added to
+// MeshGroupCertificateSigningRequestLister.
+type MeshGroupCertificateSigningRequestListerExpansion interface{}
+
+// MeshGroupCertificateSigningRequestNamespaceListerExpansion allows custom methods to be added to
+// MeshGroupCertificateSigningRequestNamespaceLister.
+type MeshGroupCertificateSigningRequestNamespaceListerExpansion interface{}
+
 // RoutingRuleListerExpansion allows custom methods to be added to
 // RoutingRuleLister.
 type RoutingRuleListerExpansion interface{}

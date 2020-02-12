@@ -18,6 +18,8 @@ limitations under the License.
 
 package v1alpha1
 
+type MeshGroupCertificateSigningRequestExpansion interface{}
+
 type RoutingRuleExpansion interface{}
 
 type SecurityRuleExpansion interface{}

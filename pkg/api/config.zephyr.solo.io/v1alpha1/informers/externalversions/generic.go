@@ -53,6 +53,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=config.zephyr.solo.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("meshgroupcertificatesigningrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().MeshGroupCertificateSigningRequests().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("routingrules"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Config().V1alpha1().RoutingRules().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("securityrules"):

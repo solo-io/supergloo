@@ -52,7 +52,31 @@ type SecurityRuleList struct {
 	Items           []SecurityRule `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// MeshGroupCertificateSigningRequest is the Schema for the meshGroupCertificateSigningRequest API
+type MeshGroupCertificateSigningRequest struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MeshGroupCertificateSigningRequestSpec   `json:"spec,omitempty"`
+	Status MeshGroupCertificateSigningRequestStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// MeshGroupCertificateSigningRequestList contains a list of MeshGroupCertificateSigningRequest
+type MeshGroupCertificateSigningRequestList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []MeshGroupCertificateSigningRequest `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&RoutingRule{}, &RoutingRuleList{})
 	SchemeBuilder.Register(&SecurityRule{}, &SecurityRuleList{})
+	SchemeBuilder.Register(&MeshGroupCertificateSigningRequest{}, &MeshGroupCertificateSigningRequestList{})
 }

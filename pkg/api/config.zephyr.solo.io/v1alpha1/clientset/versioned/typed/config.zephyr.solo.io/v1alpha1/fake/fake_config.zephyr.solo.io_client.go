@@ -28,6 +28,10 @@ type FakeConfigV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeConfigV1alpha1) MeshGroupCertificateSigningRequests(namespace string) v1alpha1.MeshGroupCertificateSigningRequestInterface {
+	return &FakeMeshGroupCertificateSigningRequests{c, namespace}
+}
+
 func (c *FakeConfigV1alpha1) RoutingRules(namespace string) v1alpha1.RoutingRuleInterface {
 	return &FakeRoutingRules{c, namespace}
 }
