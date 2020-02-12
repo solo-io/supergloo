@@ -1,0 +1,78 @@
+package options
+
+import (
+	"os"
+
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
+	"github.com/spf13/cobra"
+)
+
+func AddRootFlags(cmd *cobra.Command, options *Options) {
+	flags := cmd.PersistentFlags()
+	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", "service-mesh-hub",
+		"Specify the namespace where resources should be written")
+	flags.StringVar(&options.Root.KubeConfig, "kubeconfig", os.Getenv("KUBECONFIG"),
+		"Specify the kubeconfig for the current command")
+	flags.StringVar(&options.Root.KubeContext, "context", "",
+		"Specify which context from the kubeconfig should be used; uses current context if none is specified")
+	flags.DurationVar(&options.Root.KubeTimeout, "kube-timeout", cliconstants.DefaultKubeClientTimeout,
+		"Specify the default timeout for requests to kubernetes API servers.")
+	flags.BoolVarP(&options.Root.Verbose, "verbose", "v", false,
+		"Enable verbose mode, which outputs additional execution details that may be helpful for debugging")
+}
+
+func AddUpgradeFlags(cmd *cobra.Command, opts *Upgrade) {
+	flags := cmd.PersistentFlags()
+	flags.StringVar(&opts.ReleaseTag, "release", cliconstants.DefaultReleaseTag,
+		"Which meshctl release to download. Specify a tag corresponding to the desired version of meshctl or \"latest\". "+
+			"Service Mesh Hub releases can be found here: https://github.com/solo-io/service-mesh-hub/releases. "+
+			"Omitting this tag defaults to \"latest\".")
+	flags.StringVar(&opts.DownloadPath, "path", "",
+		"Desired path for your upgraded meshctl binary. Defaults to the location of your currently executing binary.")
+}
+
+func AddInstallFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.Flags()
+	flags.BoolVarP(&opts.SmhInstall.DryRun, "dry-run", "d", false,
+		"Send the raw installation yaml to stdout instead of applying it to kubernetes")
+	flags.StringVarP(&opts.SmhInstall.HelmChartOverride, "file", "f", "",
+		"Install Service Mesh Hub from this Helm chart archive file rather than from a release")
+	flags.StringSliceVarP(&opts.SmhInstall.HelmChartValueFileNames, "values", "", []string{},
+		"List of files with value overrides for the Service Mesh Hub Helm chart, "+
+			"(e.g. --values file1,file2 or --values file1 --values file2)")
+	flags.StringVar(&opts.SmhInstall.HelmReleaseName, "release-name", cliconstants.ReleaseName,
+		"Helm release name")
+	flags.StringVar(&opts.SmhInstall.Version, "version", "",
+		"Version to install (e.g. v1.2.0, defaults to latest)")
+	flags.BoolVar(&opts.SmhInstall.CreateNamespace, "create-namespace", true,
+		"Create the namespace to install Service Mesh Hub into")
+}
+
+func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.PersistentFlags()
+	remoteClusterName := "remote-cluster-name"
+	remoteWriteNamespace := "remote-write-namespace"
+	remoteContext := "remote-context"
+	remoteKubeconfig := "remote-kubeconfig"
+	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
+		"Name of the cluster to be operated upon")
+	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, "default",
+		"Namespace in the target cluster in which to write resources")
+	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
+		"Set the context you would like to use for the target cluster")
+	flags.StringVar(&opts.Cluster.Register.RemoteKubeConfig, remoteKubeconfig, "",
+		"Set the path to the kubeconfig you would like to use for the target cluster. Leave empty to use the default.")
+	cobra.MarkFlagRequired(flags, remoteClusterName)
+}
+
+func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage string) {
+	operatorNsFlag := "operator-namespace"
+	flags := cmd.PersistentFlags()
+	flags.StringVar(&opts.Istio.Install.InstallationConfig.IstioOperatorVersion, "operator-version", cliconstants.DefaultIstioOperatorVersion, "Version of the Istio operator to use (https://hub.docker.com/r/istio/operator/tags)")
+	flags.StringVar(&opts.Istio.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Istio operator")
+	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the target cluster")
+	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
+	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
+	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")
+	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
+}

@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
@@ -24,24 +25,20 @@ func BuildCli(ctx context.Context,
 	upgradeCmd upgrade.UpgradeCommand,
 	installCmd install.InstallCommand,
 ) *cobra.Command {
-
-	meshctl := &cobra.Command{
-		Use:   "meshctl",
-		Short: "CLI for Service Mesh Hub",
+	cmd := &cobra.Command{
+		Use:   cliconstants.RootCommand.Use,
+		Short: cliconstants.RootCommand.Short,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			usageReporter.StartReportingUsage(ctx, usage.UsageReportingInterval)
 			return nil
 		},
 	}
-	options.AddRootFlags(meshctl.PersistentFlags(), opts)
-
-	meshctl.AddCommand(
+	options.AddRootFlags(cmd, opts)
+	cmd.AddCommand(
 		clusterCmd,
 		versionCmd,
-		upgradeCmd,
 		installCmd,
-		istioCmd,
-	)
-
-	return meshctl
+		upgradeCmd,
+		istioCmd)
+	return cmd
 }

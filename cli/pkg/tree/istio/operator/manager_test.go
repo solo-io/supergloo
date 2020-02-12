@@ -6,9 +6,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	mock_kube "github.com/solo-io/mesh-projects/cli/pkg/common/kube/mocks"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/install"
 	mock_operator "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/mocks"
 	mock_server "github.com/solo-io/mesh-projects/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
@@ -26,12 +27,12 @@ var _ = Describe("Cluster Operations", func() {
 		clusterName = "cluster-name"
 	)
 
-	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *install.InstallationConfig {
-		return &install.InstallationConfig{
+	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *options.IstioInstallationConfig {
+		return &options.IstioInstallationConfig{
 			CreateNamespace:            createNamespace,
 			CreateIstioControlPlaneCRD: createCRD,
-			InstallNamespace:           operator.DefaultIstioOperatorNamespace,
-			IstioOperatorVersion:       operator.DefaultIstioOperatorVersion,
+			InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
+			IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
 		}
 	}
 
@@ -50,7 +51,7 @@ var _ = Describe("Cluster Operations", func() {
 			deploymentClient := mock_server.NewMockDeploymentClient(ctrl)
 			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 
-			installConfig := &install.InstallationConfig{
+			installConfig := &options.IstioInstallationConfig{
 				CreateNamespace:            true,
 				CreateIstioControlPlaneCRD: true,
 				InstallNamespace:           "", // purposely left empty
@@ -58,8 +59,8 @@ var _ = Describe("Cluster Operations", func() {
 			}
 
 			installWithDefaults := *installConfig
-			installWithDefaults.InstallNamespace = operator.DefaultIstioOperatorNamespace
-			installWithDefaults.IstioOperatorVersion = operator.DefaultIstioOperatorVersion
+			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
+			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -68,8 +69,8 @@ var _ = Describe("Cluster Operations", func() {
 				{Name: "resource1"}, {Name: "resource2"},
 			}
 
-			kubeClient.EXPECT().BuildResources(operator.DefaultIstioOperatorNamespace, installManifest).Return(resources, nil)
-			kubeClient.EXPECT().Create(operator.DefaultIstioOperatorNamespace, resources).Return(resources, nil)
+			kubeClient.EXPECT().BuildResources(cliconstants.DefaultIstioOperatorNamespace, installManifest).Return(resources, nil)
+			kubeClient.EXPECT().Create(cliconstants.DefaultIstioOperatorNamespace, resources).Return(resources, nil)
 
 			operatorManager := operator.NewManager(
 				kubeClient,
@@ -124,7 +125,7 @@ var _ = Describe("Cluster Operations", func() {
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(installConfig).Return(installManifest, nil)
 
-			kubeClient.EXPECT().BuildResources(operator.DefaultIstioOperatorNamespace, installManifest).Return(nil, testErr)
+			kubeClient.EXPECT().BuildResources(cliconstants.DefaultIstioOperatorNamespace, installManifest).Return(nil, testErr)
 
 			err := operatorManager.Install()
 			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToParseInstallManifest(testErr)))
@@ -139,8 +140,8 @@ var _ = Describe("Cluster Operations", func() {
 			installConfig := buildInstallConfigWithDefaults(false, false)
 
 			installWithDefaults := *installConfig
-			installWithDefaults.InstallNamespace = operator.DefaultIstioOperatorNamespace
-			installWithDefaults.IstioOperatorVersion = operator.DefaultIstioOperatorVersion
+			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
+			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -150,9 +151,9 @@ var _ = Describe("Cluster Operations", func() {
 			}
 			successfulResources := resources[:1]
 
-			kubeClient.EXPECT().BuildResources(operator.DefaultIstioOperatorNamespace, installManifest).Return(resources, nil)
-			kubeClient.EXPECT().Create(operator.DefaultIstioOperatorNamespace, resources).Return(successfulResources, testErr)
-			kubeClient.EXPECT().Delete(operator.DefaultIstioOperatorNamespace, successfulResources).Return(successfulResources, nil)
+			kubeClient.EXPECT().BuildResources(cliconstants.DefaultIstioOperatorNamespace, installManifest).Return(resources, nil)
+			kubeClient.EXPECT().Create(cliconstants.DefaultIstioOperatorNamespace, resources).Return(successfulResources, testErr)
+			kubeClient.EXPECT().Delete(cliconstants.DefaultIstioOperatorNamespace, successfulResources).Return(successfulResources, nil)
 
 			operatorManager := operator.NewManager(
 				kubeClient,
@@ -183,7 +184,7 @@ var _ = Describe("Cluster Operations", func() {
 				installConfig,
 			)
 
-			deploymentClient.EXPECT().GetDeployments(operator.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{}, nil)
+			deploymentClient.EXPECT().GetDeployments(cliconstants.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{}, nil)
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeTrue())
@@ -205,11 +206,11 @@ var _ = Describe("Cluster Operations", func() {
 				installConfig,
 			)
 
-			deploymentClient.EXPECT().GetDeployments(operator.DefaultIstioOperatorNamespace, "").Return(nil, testErr)
+			deploymentClient.EXPECT().GetDeployments(cliconstants.DefaultIstioOperatorNamespace, "").Return(nil, testErr)
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, operator.DefaultIstioOperatorNamespace, operator.DefaultIstioOperatorVersion)))
+			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, cliconstants.DefaultIstioOperatorNamespace, cliconstants.DefaultIstioOperatorVersion)))
 		})
 
 		It("reports the proper error if the operator already exists at a different version than what was requested", func() {
@@ -227,10 +228,10 @@ var _ = Describe("Cluster Operations", func() {
 				installConfig,
 			)
 
-			deploymentClient.EXPECT().GetDeployments(operator.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{
+			deploymentClient.EXPECT().GetDeployments(cliconstants.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{
 				Items: []appsv1.Deployment{{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: operator.DefaultIstioOperatorDeploymentName,
+						Name: cliconstants.DefaultIstioOperatorDeploymentName,
 					},
 					Spec: appsv1.DeploymentSpec{
 						Template: corev1.PodTemplateSpec{
@@ -266,10 +267,10 @@ var _ = Describe("Cluster Operations", func() {
 				installConfig,
 			)
 
-			deploymentClient.EXPECT().GetDeployments(operator.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{
+			deploymentClient.EXPECT().GetDeployments(cliconstants.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{
 				Items: []appsv1.Deployment{{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: operator.DefaultIstioOperatorDeploymentName,
+						Name: cliconstants.DefaultIstioOperatorDeploymentName,
 					},
 					Spec: appsv1.DeploymentSpec{
 						Template: corev1.PodTemplateSpec{
@@ -283,7 +284,7 @@ var _ = Describe("Cluster Operations", func() {
 				}},
 			}, nil)
 
-			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: operator.DefaultIstioOperatorVersion}, nil)
+			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: cliconstants.DefaultIstioOperatorVersion}, nil)
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())

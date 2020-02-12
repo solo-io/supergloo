@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	install "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/install"
+	options "github.com/solo-io/mesh-projects/cli/pkg/options"
 )
 
 // MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface
@@ -35,7 +35,7 @@ func (m *MockInstallerManifestBuilder) EXPECT() *MockInstallerManifestBuilderMoc
 }
 
 // Build mocks base method
-func (m *MockInstallerManifestBuilder) Build(options *install.InstallationConfig) (string, error) {
+func (m *MockInstallerManifestBuilder) Build(options *options.IstioInstallationConfig) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", options)
 	ret0, _ := ret[0].(string)

@@ -72,7 +72,7 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 			return nil
 		},
 	}
-	AddInstallFlags(cmd.Flags(), opts)
+	options.AddInstallFlags(cmd, opts)
 	return cmd
 }
 

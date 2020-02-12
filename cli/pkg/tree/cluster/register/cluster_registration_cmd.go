@@ -8,7 +8,6 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +34,6 @@ func ClusterRegistrationCmd(
 		},
 	}
 
-	cluster_common.AddFlags(register, opts)
-
+	options.AddClusterRegisterFlags(register, opts)
 	return register
 }

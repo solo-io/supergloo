@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -47,7 +48,7 @@ var _ = Describe("Upgrade", func() {
 
 	It("will error if release cannot be fetched", func() {
 		opts := options.Upgrade{
-			ReleaseTag: upgrade.DefaultReleaseTag,
+			ReleaseTag: cliconstants.DefaultReleaseTag,
 		}
 		mockUpgrader.EXPECT().GetReleaseWithAsset(meshctl.Ctx, opts.ReleaseTag, upgrade_assets.MeshctlBinaryName()).Return(nil, testErr)
 		_, err := meshctl.Invoke("upgrade")
@@ -57,11 +58,11 @@ var _ = Describe("Upgrade", func() {
 
 	It("will error if release the asset cannot be found", func() {
 		opts := options.Upgrade{
-			ReleaseTag: upgrade.DefaultReleaseTag,
+			ReleaseTag: cliconstants.DefaultReleaseTag,
 		}
 		incorrectName := "incorrect"
 		mockUpgrader.EXPECT().GetReleaseWithAsset(meshctl.Ctx, opts.ReleaseTag, upgrade_assets.MeshctlBinaryName()).Return(&github.RepositoryRelease{
-			TagName: github.String(upgrade.DefaultReleaseTag),
+			TagName: github.String(cliconstants.DefaultReleaseTag),
 			Assets: []github.ReleaseAsset{
 				{
 					Name: github.String(incorrectName),
@@ -75,7 +76,7 @@ var _ = Describe("Upgrade", func() {
 
 	It("will error if asset cannot be downloaded", func() {
 		opts := options.Upgrade{
-			ReleaseTag:   upgrade.DefaultReleaseTag,
+			ReleaseTag:   cliconstants.DefaultReleaseTag,
 			DownloadPath: "downloadPath",
 		}
 		browserDownloadUrl := "download-url"
@@ -102,7 +103,7 @@ Successfully downloaded and installed meshctl version %s to`, upgrade_assets.Mes
 
 	It("will return nil if asset is downloaded correctly", func() {
 		opts := options.Upgrade{
-			ReleaseTag:   upgrade.DefaultReleaseTag,
+			ReleaseTag:   cliconstants.DefaultReleaseTag,
 			DownloadPath: "",
 		}
 		browserDownloadUrl := "download-url"

@@ -3,8 +3,9 @@ package operator
 import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,10 +40,6 @@ var (
 	FailedToCheckIfOperatorExists = func(err error, clusterName, namespace, version string) error {
 		return eris.Wrapf(err, "Failed to check whether the Istio operator is already installed to cluster %s in namespace %s at version %s", clusterName, namespace, version)
 	}
-
-	DefaultIstioOperatorNamespace      = "istio-operator"
-	DefaultIstioOperatorVersion        = "1.5.0-alpha.0"
-	DefaultIstioOperatorDeploymentName = "istio-operator"
 )
 
 //go:generate mockgen -source manager.go -destination ./mocks/mock_operator_manager.go
@@ -65,7 +62,7 @@ type OperatorManagerFactory func(
 	manifestBuilder InstallerManifestBuilder,
 	deploymentClient server.DeploymentClient,
 	imageNameParser docker.ImageNameParser,
-	installationConfig *install.InstallationConfig,
+	installationConfig *options.IstioInstallationConfig,
 ) OperatorManager
 
 func NewOperatorManagerFactory() OperatorManagerFactory {
@@ -77,7 +74,7 @@ func NewManager(
 	manifestBuilder InstallerManifestBuilder,
 	deploymentClient server.DeploymentClient,
 	imageNameParser docker.ImageNameParser,
-	installationConfig *install.InstallationConfig,
+	installationConfig *options.IstioInstallationConfig,
 ) OperatorManager {
 
 	setDefaults(installationConfig)
@@ -96,7 +93,7 @@ type manager struct {
 	manifestBuilder        InstallerManifestBuilder
 	deploymentClient       server.DeploymentClient
 	imageNameParser        docker.ImageNameParser
-	installationConfig     *install.InstallationConfig
+	installationConfig     *options.IstioInstallationConfig
 }
 
 func (m *manager) Install() error {
@@ -138,7 +135,7 @@ func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded b
 	}
 
 	for _, deployment := range deployments.Items {
-		if deployment.Name == DefaultIstioOperatorDeploymentName {
+		if deployment.Name == cliconstants.DefaultIstioOperatorDeploymentName {
 			err := m.validateExistingOperatorDeployment(clusterName, m.installationConfig, deployment)
 			if err != nil {
 				return false, FailedToValidateExistingOperator(err, clusterName, m.installationConfig.InstallNamespace, m.installationConfig.IstioOperatorVersion)
@@ -153,7 +150,7 @@ func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded b
 	return true, nil
 }
 
-func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *install.InstallationConfig, deployment appsv1.Deployment) error {
+func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *options.IstioInstallationConfig, deployment appsv1.Deployment) error {
 	containers := deployment.Spec.Template.Spec.Containers
 	if len(containers) != 1 {
 		return UnrecognizedOperatorInstance
@@ -176,12 +173,12 @@ func (m *manager) validateExistingOperatorDeployment(clusterName string, install
 	return nil
 }
 
-func setDefaults(installerOptions *install.InstallationConfig) {
+func setDefaults(installerOptions *options.IstioInstallationConfig) {
 	if installerOptions.InstallNamespace == "" {
-		installerOptions.InstallNamespace = DefaultIstioOperatorNamespace
+		installerOptions.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
 	}
 
 	if installerOptions.IstioOperatorVersion == "" {
-		installerOptions.IstioOperatorVersion = DefaultIstioOperatorVersion
+		installerOptions.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 	}
 }

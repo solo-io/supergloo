@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"html/template"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/options"
 )
 
 //go:generate mockgen -source ./manifest.go -destination mocks/mock_manifest_builder.go
 type InstallerManifestBuilder interface {
 	// Based on the pending installation config, generate an appropriate installation manifest
-	Build(options *install.InstallationConfig) (installationManifest string, err error)
+	Build(options *options.IstioInstallationConfig) (installationManifest string, err error)
 
 	// Generate an IstioControlPlane spec that sets up Istio with its demo profile
 	GetControlPlaneSpecWithProfile(profile, installationNamespace string) (string, error)
@@ -22,7 +22,7 @@ func NewInstallerManifestBuilder() InstallerManifestBuilder {
 
 type installerManifestBuilder struct{}
 
-func (i *installerManifestBuilder) Build(options *install.InstallationConfig) (string, error) {
+func (i *installerManifestBuilder) Build(options *options.IstioInstallationConfig) (string, error) {
 	tmpl := template.New("")
 	tmpl, err := tmpl.Parse(installationManifestTemplate)
 	if err != nil {

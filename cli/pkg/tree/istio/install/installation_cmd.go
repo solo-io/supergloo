@@ -45,25 +45,11 @@ func BuildIstioInstallationCmd(
 			return istioInstaller.Install()
 		},
 	}
-
-	flags := cmd.PersistentFlags()
-
-	operatorNsFlag := "operator-namespace"
 	profilesUsage := fmt.Sprintf(
 		"Install Istio in one of its pre-configured profiles; supported profiles: [%s] (https://preliminary.istio.io/docs/setup/additional-setup/config-profiles/)",
 		strings.Join(operator.ValidProfiles.List(), ", "),
 	)
-
-	flags.StringVar(&opts.Istio.Install.InstallationConfig.IstioOperatorVersion, "operator-version", operator.DefaultIstioOperatorVersion, "Version of the Istio operator to use (https://hub.docker.com/r/istio/operator/tags)")
-	flags.StringVar(&opts.Istio.Install.InstallationConfig.InstallNamespace, operatorNsFlag, operator.DefaultIstioOperatorNamespace, "Namespace in which to install the Istio operator")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the target cluster")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
-	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
-	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")
-	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
-
-	options.AddRootFlags(flags, opts)
-
+	options.AddIstioInstallFlags(cmd, opts, profilesUsage)
 	return cmd
 }
 

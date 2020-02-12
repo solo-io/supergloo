@@ -3,6 +3,11 @@ package cliconstants
 import "github.com/spf13/cobra"
 
 var (
+	RootCommand = cobra.Command{
+		Use:   "meshctl",
+		Short: "CLI for Service Mesh Hub",
+	}
+
 	ClusterCommand = cobra.Command{
 		Use:   "cluster",
 		Short: "Register and perform operations on clusters",
