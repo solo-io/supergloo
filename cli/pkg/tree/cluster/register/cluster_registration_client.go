@@ -9,8 +9,13 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	kubev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -32,6 +37,9 @@ var (
 	}
 	FailedToWriteSecret = func(err error) error {
 		return eris.Wrap(err, "Could not write secret to master cluster")
+	}
+	FailedToWriteKubeCluster = func(err error) error {
+		return eris.Wrap(err, "Could not write KubernetesCluster resource to master cluster")
 	}
 )
 
@@ -69,10 +77,48 @@ func RegisterCluster(
 		remoteKubeConfig = registerOpts.RemoteKubeConfig
 	}
 
+	configForServiceAccount, err := generateServiceAccountConfig(out, kubeClients, kubeLoader, remoteKubeConfig, registerOpts)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(out, "Successfully wrote service account to target cluster...\n")
+
+	secret, err := writeKubeConfigToMaster(
+		opts.Root.WriteNamespace,
+		registerOpts,
+		remoteKubeConfig,
+		configForServiceAccount,
+		kubeClients,
+		kubeLoader,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = writeKubeCluster(kubeClients, opts.Root.WriteNamespace, registerOpts, secret)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
+	fmt.Fprintf(out, "\nCluster %s is now registered in your Service Mesh Hub installation\n", registerOpts.RemoteClusterName)
+
+	return nil
+}
+
+func generateServiceAccountConfig(
+	out io.Writer,
+	kubeClients *common.KubeClients,
+	kubeLoader common_config.KubeLoader,
+	remoteKubeConfig string,
+	registerOpts options.Register,
+) (*rest.Config, error) {
+
 	// first we need the credentials to talk to the target cluster
 	targetAuthConfig, err := kubeLoader.GetRestConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
-		return FailedLoadingRemoteConfig(err)
+		return nil, FailedLoadingRemoteConfig(err)
 	}
 
 	// the new cluster name doubles as the name for the service account we will auth as
@@ -88,28 +134,38 @@ func RegisterCluster(
 			registerOpts.RemoteKubeConfig,
 			registerOpts.RemoteContext,
 		))
-		return err
+		return nil, err
 	}
+
+	return configForServiceAccount, nil
+}
+
+func writeKubeConfigToMaster(
+	writeNamespace string,
+	registerOpts options.Register,
+	remoteKubeConfig string,
+	serviceAccountConfig *rest.Config,
+	kubeClients *common.KubeClients,
+	kubeLoader common_config.KubeLoader,
+) (*kubev1.Secret, error) {
 
 	// now we need the cluster/context information from that config
-	ctx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
+	kubeCtx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
-		return common_config.FailedToParseContext(err)
+		return nil, common_config.FailedToParseContext(err)
 	}
 
-	remoteContext := ctx.CurrentContext
+	remoteContext := kubeCtx.CurrentContext
 	if registerOpts.RemoteContext != "" {
 		remoteContext = registerOpts.RemoteContext
 	}
 
-	targetContext := ctx.Contexts[remoteContext]
-	targetCluster := ctx.Clusters[targetContext.Cluster]
-
-	fmt.Fprintf(out, "Successfully wrote service account to target cluster...\n")
+	targetContext := kubeCtx.Contexts[remoteContext]
+	targetCluster := kubeCtx.Clusters[targetContext.Cluster]
 
 	secret, err := kubeconfig.KubeConfigToSecret(
 		registerOpts.RemoteClusterName,
-		opts.Root.WriteNamespace,
+		writeNamespace,
 		&kubeconfig.KubeConfig{
 			Config: api.Config{
 				Kind:        "Secret",
@@ -120,7 +176,7 @@ func RegisterCluster(
 				},
 				AuthInfos: map[string]*api.AuthInfo{
 					registerOpts.RemoteClusterName: {
-						Token: configForServiceAccount.BearerToken,
+						Token: serviceAccountConfig.BearerToken,
 					},
 				},
 				Contexts: map[string]*api.Context{
@@ -138,17 +194,39 @@ func RegisterCluster(
 		})
 
 	if err != nil {
-		return FailedToConvertToSecret(err)
+		return nil, FailedToConvertToSecret(err)
 	}
 
 	err = kubeClients.SecretWriter.Apply(secret)
 	if err != nil {
-		return FailedToWriteSecret(err)
+		return nil, FailedToWriteSecret(err)
 	}
 
-	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
-	fmt.Fprintf(out, "\nCluster %s is now registered in your Service Mesh Hub installation\n",
-		registerOpts.RemoteClusterName)
+	return secret, nil
+}
 
+// write the KubernetesCluster resource to the master cluster
+func writeKubeCluster(
+	kubeClients *common.KubeClients,
+	writeNamespace string,
+	registerOpts options.Register,
+	secret *kubev1.Secret,
+) error {
+
+	err := kubeClients.KubeClusterClient.Create(&v1alpha1.KubernetesCluster{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      registerOpts.RemoteClusterName,
+			Namespace: writeNamespace,
+		},
+		Spec: types.KubernetesClusterSpec{
+			SecretRef: &types.ResourceRef{
+				Name:      secret.GetName(),
+				Namespace: secret.GetNamespace(),
+			},
+		},
+	})
+	if err != nil {
+		return FailedToWriteKubeCluster(err)
+	}
 	return nil
 }

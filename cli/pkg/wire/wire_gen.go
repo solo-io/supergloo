@@ -49,7 +49,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer)
+	kubernetesClusterClient, err := kube.NewKubernetesClusterClient(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, kubernetesClusterClient)
 	return kubeClients, nil
 }
 

@@ -21,6 +21,7 @@ type KubeClients struct {
 	ClusterAuthorization auth.ClusterAuthorization
 	SecretWriter         SecretWriter
 	HelmInstaller        helminstall.Installer
+	KubeClusterClient    kube.KubernetesClusterClient // client for KubernetesCluster custom resources
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -79,11 +80,14 @@ func ClientsProvider(
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
 	writer SecretWriter,
-	helmInstaller helminstall.Installer) *KubeClients {
+	helmInstaller helminstall.Installer,
+	kubeClusterClient kube.KubernetesClusterClient,
+) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization: authorization,
 		SecretWriter:         writer,
 		HelmInstaller:        helmInstaller,
+		KubeClusterClient:    kubeClusterClient,
 	}
 }
 

@@ -19,8 +19,8 @@ type KubeConfig struct {
 }
 
 var (
-	RedundantClusterName = func(redundantClusterName string) error {
-		return eris.Errorf("Error converting KubeConfigs to secret, redundant cluster name found: %s", redundantClusterName)
+	DuplicateClusterName = func(repeatedClusterName string) error {
+		return eris.Errorf("Error converting KubeConfigs to secret, duplicate cluster name found: %s", repeatedClusterName)
 	}
 	FailedToConvertSecretToKubeConfig = func(err error) error {
 		return eris.Wrapf(err, "Could not deserialize string to KubeConfig while generating KubeConfig")
@@ -39,7 +39,7 @@ func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*kub
 			return nil, eris.Wrap(err, "Could not serialize KubeConfig to yaml while generating secret.")
 		}
 		if _, exists := secretData[kc.Cluster]; exists {
-			return nil, RedundantClusterName(kc.Cluster)
+			return nil, DuplicateClusterName(kc.Cluster)
 		}
 		secretData[kc.Cluster] = rawKubeConfig
 	}

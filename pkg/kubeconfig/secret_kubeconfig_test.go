@@ -130,6 +130,6 @@ users:
 		name := "secret-name"
 		namespace := "secret-namespace"
 		_, err := KubeConfigsToSecret(name, namespace, []*KubeConfig{&kubeConfig1, &kubeConfig1})
-		Expect(err).To(testutils.HaveInErrorChain(RedundantClusterName(clusterName1)))
+		Expect(err).To(testutils.HaveInErrorChain(DuplicateClusterName(clusterName1)))
 	})
 })
