@@ -57,11 +57,11 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
 		"Name of the cluster to be operated upon")
 	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, "default",
-		"Namespace in the target cluster in which to write resources")
+		"Namespace in the remote cluster in which to write resources")
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
-		"Set the context you would like to use for the target cluster")
+		"Set the context you would like to use for the remote cluster")
 	flags.StringVar(&opts.Cluster.Register.RemoteKubeConfig, remoteKubeconfig, "",
-		"Set the path to the kubeconfig you would like to use for the target cluster. Leave empty to use the default.")
+		"Set the path to the kubeconfig you would like to use for the remote cluster. Leave empty to use the default.")
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }
 
@@ -70,7 +70,7 @@ func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage strin
 	flags := cmd.PersistentFlags()
 	flags.StringVar(&opts.Istio.Install.InstallationConfig.IstioOperatorVersion, "operator-version", cliconstants.DefaultIstioOperatorVersion, "Version of the Istio operator to use (https://hub.docker.com/r/istio/operator/tags)")
 	flags.StringVar(&opts.Istio.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Istio operator")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the target cluster")
+	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the remote cluster")
 	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
 	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
 	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")

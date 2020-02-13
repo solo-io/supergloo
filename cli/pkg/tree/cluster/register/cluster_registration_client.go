@@ -43,7 +43,7 @@ var (
 	}
 )
 
-// write a new kube config secret to the master cluster containing creds for talking to the target cluster as the given service account
+// write a new kube config secret to the master cluster containing creds for talking to the remote cluster as the given service account
 
 func RegisterCluster(
 	clientsFactory common.ClientsFactory,
@@ -60,43 +60,62 @@ func RegisterCluster(
 		return err
 	}
 
-	// first we need the credentials to talk to the target cluster
-	cfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+	registerOpts := opts.Cluster.Register
+
+	// set up kube clients for the master cluster
+	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
 		return FailedLoadingMasterConfig(err)
 	}
-	kubeClients, err := kubeClientsFactory(cfg, opts.Root.WriteNamespace)
+	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
 	if err != nil {
 		return err
 	}
 
-	registerOpts := opts.Cluster.Register
+	// set up kube clients for the remote cluster
 
-	remoteKubeConfig := opts.Root.KubeConfig
+	// default the remote kube config/context to the root settings
+	remoteConfigPath, remoteContext := opts.Root.KubeConfig, opts.Root.KubeContext
 	if registerOpts.RemoteKubeConfig != "" {
-		remoteKubeConfig = registerOpts.RemoteKubeConfig
+		// if we specified a kube config for the remote cluster, use that instead
+		remoteConfigPath = registerOpts.RemoteKubeConfig
 	}
 
-	configForServiceAccount, err := generateServiceAccountConfig(out, kubeClients, kubeLoader, remoteKubeConfig, registerOpts)
+	// if we didn't have a context from the root, or if we had an override for the
+	// remote context, use the remote context instead
+	if remoteContext == "" || registerOpts.RemoteContext != "" {
+		remoteContext = registerOpts.RemoteContext
+	}
+
+	remoteCfg, err := kubeLoader.GetRestConfigForContext(remoteConfigPath, remoteContext)
+	if err != nil {
+		return FailedLoadingRemoteConfig(err)
+	}
+	remoteKubeClients, err := kubeClientsFactory(remoteCfg, registerOpts.RemoteWriteNamespace)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(out, "Successfully wrote service account to target cluster...\n")
+	configForServiceAccount, err := generateServiceAccountConfig(out, remoteKubeClients, remoteCfg, registerOpts)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(out, "Successfully wrote service account to remote cluster...\n")
 
 	secret, err := writeKubeConfigToMaster(
 		opts.Root.WriteNamespace,
 		registerOpts,
-		remoteKubeConfig,
+		remoteConfigPath,
 		configForServiceAccount,
-		kubeClients,
+		masterKubeClients,
 		kubeLoader,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = writeKubeCluster(kubeClients, opts.Root.WriteNamespace, registerOpts, secret)
+	err = writeKubeClusterToMaster(masterKubeClients, opts.Root.WriteNamespace, registerOpts, secret)
 	if err != nil {
 		return err
 	}
@@ -110,16 +129,9 @@ func RegisterCluster(
 func generateServiceAccountConfig(
 	out io.Writer,
 	kubeClients *common.KubeClients,
-	kubeLoader common_config.KubeLoader,
-	remoteKubeConfig string,
+	remoteAuthConfig *rest.Config,
 	registerOpts options.Register,
 ) (*rest.Config, error) {
-
-	// first we need the credentials to talk to the target cluster
-	targetAuthConfig, err := kubeLoader.GetRestConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
-	if err != nil {
-		return nil, FailedLoadingRemoteConfig(err)
-	}
 
 	// the new cluster name doubles as the name for the service account we will auth as
 	serviceAccountRef := &core.ResourceRef{
@@ -127,7 +139,7 @@ func generateServiceAccountConfig(
 		Namespace: registerOpts.RemoteWriteNamespace,
 	}
 	configForServiceAccount, err := kubeClients.ClusterAuthorization.
-		CreateAuthConfigForCluster(targetAuthConfig, serviceAccountRef)
+		CreateAuthConfigForCluster(remoteAuthConfig, serviceAccountRef)
 	if err != nil {
 		fmt.Fprintf(out, FailedToCreateAuthToken(
 			serviceAccountRef,
@@ -145,23 +157,23 @@ func writeKubeConfigToMaster(
 	registerOpts options.Register,
 	remoteKubeConfig string,
 	serviceAccountConfig *rest.Config,
-	kubeClients *common.KubeClients,
+	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
 ) (*kubev1.Secret, error) {
 
 	// now we need the cluster/context information from that config
-	kubeCtx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
+	remoteKubeCtx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
 	if err != nil {
 		return nil, common_config.FailedToParseContext(err)
 	}
 
-	remoteContext := kubeCtx.CurrentContext
+	remoteContextName := remoteKubeCtx.CurrentContext
 	if registerOpts.RemoteContext != "" {
-		remoteContext = registerOpts.RemoteContext
+		remoteContextName = registerOpts.RemoteContext
 	}
 
-	targetContext := kubeCtx.Contexts[remoteContext]
-	targetCluster := kubeCtx.Clusters[targetContext.Cluster]
+	remoteContext := remoteKubeCtx.Contexts[remoteContextName]
+	remoteCluster := remoteKubeCtx.Clusters[remoteContext.Cluster]
 
 	secret, err := kubeconfig.KubeConfigToSecret(
 		registerOpts.RemoteClusterName,
@@ -172,7 +184,7 @@ func writeKubeConfigToMaster(
 				APIVersion:  "v1",
 				Preferences: api.Preferences{},
 				Clusters: map[string]*api.Cluster{
-					registerOpts.RemoteClusterName: targetCluster,
+					registerOpts.RemoteClusterName: remoteCluster,
 				},
 				AuthInfos: map[string]*api.AuthInfo{
 					registerOpts.RemoteClusterName: {
@@ -181,11 +193,11 @@ func writeKubeConfigToMaster(
 				},
 				Contexts: map[string]*api.Context{
 					registerOpts.RemoteClusterName: {
-						LocationOfOrigin: targetContext.LocationOfOrigin,
+						LocationOfOrigin: remoteContext.LocationOfOrigin,
 						Cluster:          registerOpts.RemoteClusterName,
 						AuthInfo:         registerOpts.RemoteClusterName,
-						Namespace:        targetContext.Namespace,
-						Extensions:       targetContext.Extensions,
+						Namespace:        remoteContext.Namespace,
+						Extensions:       remoteContext.Extensions,
 					},
 				},
 				CurrentContext: registerOpts.RemoteClusterName,
@@ -197,7 +209,7 @@ func writeKubeConfigToMaster(
 		return nil, FailedToConvertToSecret(err)
 	}
 
-	err = kubeClients.SecretWriter.Apply(secret)
+	err = masterKubeClients.SecretWriter.Apply(secret)
 	if err != nil {
 		return nil, FailedToWriteSecret(err)
 	}
@@ -206,14 +218,14 @@ func writeKubeConfigToMaster(
 }
 
 // write the KubernetesCluster resource to the master cluster
-func writeKubeCluster(
-	kubeClients *common.KubeClients,
+func writeKubeClusterToMaster(
+	masterKubeClients *common.KubeClients,
 	writeNamespace string,
 	registerOpts options.Register,
 	secret *kubev1.Secret,
 ) error {
 
-	err := kubeClients.KubeClusterClient.Create(&v1alpha1.KubernetesCluster{
+	err := masterKubeClients.KubeClusterClient.Create(&v1alpha1.KubernetesCluster{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      registerOpts.RemoteClusterName,
 			Namespace: writeNamespace,

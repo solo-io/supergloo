@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Fix a registration bug where we only create kube clients for the master cluster
+  issueLink: https://github.com/solo-io/mesh-projects/issues/170

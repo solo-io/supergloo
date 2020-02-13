@@ -163,7 +163,7 @@ users:
 				" --kubeconfig %s --remote-cluster-name %s", remoteKubeConfig, localKubeConfig, clusterName))
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(stdout).To(Equal(`Successfully wrote service account to target cluster...
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
@@ -233,7 +233,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig "+
 				"%s --remote-cluster-name test-cluster-name", remoteKubeConfig))
 
-			Expect(stdout).To(Equal(`Successfully wrote service account to target cluster...
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
@@ -304,7 +304,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s "+
 				"--remote-context %s --remote-cluster-name test-cluster-name", remoteKubeConfig, contextDEF))
 
-			Expect(stdout).To(Equal(`Successfully wrote service account to target cluster...
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
@@ -418,7 +418,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			output, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
 				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
 
-			Expect(output).To(ContainSubstring("Successfully wrote service account to target cluster..."))
+			Expect(output).To(ContainSubstring("Successfully wrote service account to remote cluster..."))
 			Expect(err).To(HaveInErrorChain(register.FailedToWriteSecret(testErr)))
 		})
 
@@ -496,7 +496,58 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				" --kubeconfig %s --remote-cluster-name %s", remoteKubeConfig, localKubeConfig, clusterName))
 
 			Expect(err).To(HaveInErrorChain(register.FailedToWriteKubeCluster(testErr)))
-			Expect(stdout).To(Equal("Successfully wrote service account to target cluster...\n"))
+			Expect(stdout).To(Equal("Successfully wrote service account to remote cluster...\n"))
+		})
+
+		It("can use the same kube config with different contexts", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteContext := contextDEF
+			clusterName := "test-cluster-name"
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+
+			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
+			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, remoteContext).Return(targetRestConfig, nil)
+			authClient.EXPECT().CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
+
+			secret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Name:      serviceAccountRef.Name,
+					Namespace: env.DefaultWriteNamespace,
+				},
+				Data: map[string][]byte{
+					clusterName: []byte(expectedKubeConfig(testServerDEF)),
+				},
+				Type: v1.SecretTypeOpaque,
+			}
+
+			secretWriter.
+				EXPECT().
+				Apply(secret).
+				Return(nil)
+
+			clusterClient.EXPECT().Create(&v1alpha1.KubernetesCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				},
+				Spec: types.KubernetesClusterSpec{
+					SecretRef: &types.ResourceRef{
+						Name:      secret.GetName(),
+						Namespace: secret.GetNamespace(),
+					},
+				},
+			}).Return(nil)
+
+			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --kubeconfig %s --remote-cluster-name %s --remote-context %s", localKubeConfig, clusterName, remoteContext))
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
+Successfully wrote kube config secret to master cluster...
+
+Cluster test-cluster-name is now registered in your Service Mesh Hub installation
+`))
 		})
 	})
 })

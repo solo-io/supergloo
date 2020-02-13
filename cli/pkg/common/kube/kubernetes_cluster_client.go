@@ -27,7 +27,7 @@ type kubernetesClusterClient struct {
 }
 
 func (k *kubernetesClusterClient) Create(cluster *v1alpha1.KubernetesCluster) error {
-	_, err := k.clientSet.CoreV1alpha1().KubernetesClusters(cluster.GetName()).Create(cluster)
+	_, err := k.clientSet.CoreV1alpha1().KubernetesClusters(cluster.GetNamespace()).Create(cluster)
 	if err != nil {
 		return err
 	}
