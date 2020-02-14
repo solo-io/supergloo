@@ -21,6 +21,7 @@ type MeshClient interface {
 
 type MeshWorkloadClient interface {
 	Create(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
+	Update(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
 	Delete(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
 	// if the MeshWorkload is not found, returns an error on which k8s.io/apimachinery/pkg/api/errors::IsNotFound should return true
 	Get(ctx context.Context, objKey client.ObjectKey) (*discoveryv1alpha1.MeshWorkload, error)
