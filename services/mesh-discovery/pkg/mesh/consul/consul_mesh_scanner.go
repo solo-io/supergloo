@@ -8,8 +8,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
@@ -42,7 +43,9 @@ var (
 // disambiguates this MeshScanner from the other MeshScanner implementations so that wire stays happy
 type ConsulConnectMeshScanner mesh.MeshScanner
 
-func NewConsulMeshScanner(imageNameParser docker.ImageNameParser, consulConnectInstallationScanner ConsulConnectInstallationScanner) ConsulConnectMeshScanner {
+func NewConsulMeshScanner(
+	imageNameParser docker.ImageNameParser,
+	consulConnectInstallationScanner ConsulConnectInstallationScanner) ConsulConnectMeshScanner {
 	return &consulMeshScanner{
 		consulConnectInstallationScanner,
 		imageNameParser,
@@ -54,7 +57,9 @@ type consulMeshScanner struct {
 	imageNameParser                  docker.ImageNameParser
 }
 
-func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment) (*mp_v1alpha1.Mesh, error) {
+func (c *consulMeshScanner) ScanDeployment(_ context.Context,
+	deployment *k8s_apps_v1.Deployment) (*discoveryv1alpha1.Mesh, error) {
+
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := c.consulConnectInstallationScanner.IsConsulConnect(container)
 		if err != nil {
@@ -72,7 +77,11 @@ func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_ap
 }
 
 // returns an error if the image name is un-parsable
-func (c *consulMeshScanner) buildConsulMeshObject(deployment *k8s_apps_v1.Deployment, container k8s_core_v1.Container, writeNamespace string) (*mp_v1alpha1.Mesh, error) {
+func (c *consulMeshScanner) buildConsulMeshObject(
+	deployment *k8s_apps_v1.Deployment,
+	container k8s_core_v1.Container,
+	writeNamespace string) (*discoveryv1alpha1.Mesh, error) {
+
 	parsedImage, err := c.imageNameParser.Parse(container.Image)
 	if err != nil {
 		return nil, err
@@ -83,22 +92,22 @@ func (c *consulMeshScanner) buildConsulMeshObject(deployment *k8s_apps_v1.Deploy
 		imageVersion = parsedImage.Digest
 	}
 
-	return &mp_v1alpha1.Mesh{
+	return &discoveryv1alpha1.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      buildMeshName(deployment, container),
 			Namespace: env.DefaultWriteNamespace,
 			Labels:    DiscoveryLabels,
 		},
-		Spec: v1alpha1_types.MeshSpec{
-			MeshType: &v1alpha1_types.MeshSpec_ConsulConnect{
-				ConsulConnect: &v1alpha1_types.ConsulConnectMesh{
-					Installation: &v1alpha1_types.MeshInstallation{
+		Spec: discovery_types.MeshSpec{
+			MeshType: &discovery_types.MeshSpec_ConsulConnect{
+				ConsulConnect: &discovery_types.ConsulConnectMesh{
+					Installation: &discovery_types.MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               imageVersion,
 					},
 				},
 			},
-			Cluster: &v1alpha1_types.ResourceRef{
+			Cluster: &core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.DefaultWriteNamespace,
 			},

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	mock_server "github.com/solo-io/mesh-projects/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
@@ -18,7 +18,7 @@ var _ = Describe("Version", func() {
 	var (
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
-		meshctl                 *cli_mocks.MockMeshctl
+		meshctl                 *cli_test.MockMeshctl
 		mockServerVersionClient *mock_server.MockServerVersionClient
 	)
 
@@ -26,7 +26,7 @@ var _ = Describe("Version", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockServerVersionClient = mock_server.NewMockServerVersionClient(ctrl)
-		meshctl = &cli_mocks.MockMeshctl{
+		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients: common.Clients{
 				ServerVersionClient: mockServerVersionClient,

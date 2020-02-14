@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"k8s.io/client-go/rest"
 )
@@ -22,7 +23,7 @@ var _ = Describe("Install", func() {
 		ctrl              *gomock.Controller
 		ctx               context.Context
 		mockKubeLoader    *cli_mocks.MockKubeLoader
-		meshctl           *cli_mocks.MockMeshctl
+		meshctl           *cli_test.MockMeshctl
 		mockHelmInstaller *mock_helminstall.MockInstaller
 	)
 	BeforeEach(func() {
@@ -30,7 +31,7 @@ var _ = Describe("Install", func() {
 		ctx = context.TODO()
 		mockHelmInstaller = mock_helminstall.NewMockInstaller(ctrl)
 		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
-		meshctl = &cli_mocks.MockMeshctl{
+		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients:        common.Clients{},
 			KubeClients:    common.KubeClients{HelmInstaller: mockHelmInstaller},

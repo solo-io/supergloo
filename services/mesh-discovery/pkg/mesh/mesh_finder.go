@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/logging"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
 	"go.uber.org/zap"
 	k8s_api_v1 "k8s.io/api/apps/v1"
@@ -130,7 +130,7 @@ func (d *meshFinder) Generic(deployment *k8s_api_v1.Deployment) error {
 }
 
 // if both `discoveredMesh` and `err` are non-nil, then `err` should be considered a non-fatal error
-func (d *meshFinder) discoverMesh(deployment *k8s_api_v1.Deployment) (discoveredMesh *v1alpha1.Mesh, err error) {
+func (d *meshFinder) discoverMesh(deployment *k8s_api_v1.Deployment) (discoveredMesh *discoveryv1alpha1.Mesh, err error) {
 	var multiErr *multierror.Error
 	for _, meshFinder := range d.meshScanners {
 		discoveredMesh, err = meshFinder.ScanDeployment(d.ctx, deployment)
@@ -145,7 +145,7 @@ func (d *meshFinder) discoverMesh(deployment *k8s_api_v1.Deployment) (discovered
 	return discoveredMesh, multiErr.ErrorOrNil()
 }
 
-func (d *meshFinder) createIfNotExists(discoveredMesh *v1alpha1.Mesh) error {
+func (d *meshFinder) createIfNotExists(discoveredMesh *discoveryv1alpha1.Mesh) error {
 	objectKey, err := client.ObjectKeyFromObject(discoveredMesh)
 	if err != nil {
 		return err
@@ -160,6 +160,6 @@ func (d *meshFinder) createIfNotExists(discoveredMesh *v1alpha1.Mesh) error {
 	return nil
 }
 
-func (d *meshFinder) delete(mesh *v1alpha1.Mesh) error {
+func (d *meshFinder) delete(mesh *discoveryv1alpha1.Mesh) error {
 	return d.localMeshClient.Delete(d.ctx, mesh)
 }

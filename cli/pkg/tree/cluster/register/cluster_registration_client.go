@@ -1,6 +1,7 @@
 package register
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -9,8 +10,9 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	kubev1 "k8s.io/api/core/v1"
@@ -46,6 +48,7 @@ var (
 // write a new kube config secret to the master cluster containing creds for talking to the remote cluster as the given service account
 
 func RegisterCluster(
+	ctx context.Context,
 	clientsFactory common.ClientsFactory,
 	kubeClientsFactory common.KubeClientsFactory,
 	opts *options.Options,
@@ -115,7 +118,7 @@ func RegisterCluster(
 		return err
 	}
 
-	err = writeKubeClusterToMaster(masterKubeClients, opts.Root.WriteNamespace, registerOpts, secret)
+	err = writeKubeClusterToMaster(ctx, masterKubeClients, opts.Root.WriteNamespace, registerOpts, secret)
 	if err != nil {
 		return err
 	}
@@ -219,19 +222,20 @@ func writeKubeConfigToMaster(
 
 // write the KubernetesCluster resource to the master cluster
 func writeKubeClusterToMaster(
+	ctx context.Context,
 	masterKubeClients *common.KubeClients,
 	writeNamespace string,
 	registerOpts options.Register,
 	secret *kubev1.Secret,
 ) error {
 
-	err := masterKubeClients.KubeClusterClient.Create(&v1alpha1.KubernetesCluster{
+	err := masterKubeClients.KubeClusterClient.Create(ctx, &discoveryv1alpha1.KubernetesCluster{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      registerOpts.RemoteClusterName,
 			Namespace: writeNamespace,
 		},
-		Spec: types.KubernetesClusterSpec{
-			SecretRef: &types.ResourceRef{
+		Spec: discovery_types.KubernetesClusterSpec{
+			SecretRef: &core_types.ResourceRef{
 				Name:      secret.GetName(),
 				Namespace: secret.GetNamespace(),
 			},

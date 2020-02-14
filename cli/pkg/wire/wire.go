@@ -22,7 +22,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -33,7 +35,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		auth.NewServiceAccountClient,
-		kube.NewKubernetesClusterClient,
+		discovery_core.NewGeneratedKubernetesClusterClient,
 		auth.NewSecretClient,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
@@ -78,6 +80,29 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 		version.VersionSet,
 		istio.IstioProviderSet,
 		install.InstallSet,
+		cli.BuildCli,
+	)
+	return nil
+}
+
+func InitializeCLIWithMocks(
+	ctx context.Context,
+	out io.Writer,
+	usageClient usageclient.Client,
+	kubeClientsFactory common.KubeClientsFactory,
+	clientsFactory common.ClientsFactory,
+	kubeLoader common_config.KubeLoader,
+	imageNameParser docker.ImageNameParser,
+	fileReader common.FileReader,
+) *cobra.Command {
+
+	wire.Build(
+		options.NewOptionsProvider,
+		cluster.ClusterSet,
+		version.VersionSet,
+		istio.IstioProviderSet,
+		install.InstallSet,
+		upgrade.UpgradeSet,
 		cli.BuildCli,
 	)
 	return nil

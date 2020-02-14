@@ -5,9 +5,9 @@ import (
 
 	pb_types "github.com/gogo/protobuf/types"
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/logging"
 	"go.uber.org/zap"
@@ -131,9 +131,9 @@ func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
 	return nil
 }
 
-func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*v1alpha1.MeshWorkload, error) {
+func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
 	var multiErr *multierror.Error
-	var discoveredMeshWorkload *v1alpha1.MeshWorkload
+	var discoveredMeshWorkload *discoveryv1alpha1.MeshWorkload
 	var err error
 	for _, meshWorkloadScanner := range d.meshWorkloadScanners {
 		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(d.ctx, pod)
@@ -152,7 +152,7 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*v1alpha1.Me
 	return discoveredMeshWorkload, multiErr.ErrorOrNil()
 }
 
-func (d *meshWorkloadFinder) createMeshWorkloadIfNotExists(discoveredWorkload *v1alpha1.MeshWorkload) error {
+func (d *meshWorkloadFinder) createMeshWorkloadIfNotExists(discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
 	objectKey, err := client.ObjectKeyFromObject(discoveredWorkload)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (d *meshWorkloadFinder) createMeshWorkloadIfNotExists(discoveredWorkload *v
 	return nil
 }
 
-func (d *meshWorkloadFinder) populateMeshResourceRef(ctx context.Context, discoveredWorkload *v1alpha1.MeshWorkload) error {
+func (d *meshWorkloadFinder) populateMeshResourceRef(ctx context.Context, discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
 	meshList, err := d.localMeshClient.List(ctx, &client.ListOptions{})
 	if err != nil {
 		return err
@@ -174,7 +174,7 @@ func (d *meshWorkloadFinder) populateMeshResourceRef(ctx context.Context, discov
 	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
 		if mesh.Spec.Cluster.Name == d.clusterName {
-			discoveredWorkload.Spec.Mesh = &types.ResourceRef{
+			discoveredWorkload.Spec.Mesh = &core_types.ResourceRef{
 				Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,

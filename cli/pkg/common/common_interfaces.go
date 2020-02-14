@@ -12,16 +12,19 @@ import (
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 )
+
+//go:generate mockgen -destination ../mocks/mock_common_interfaces.go -package cli_mocks -source ./common_interfaces.go
 
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
 	ClusterAuthorization auth.ClusterAuthorization
 	SecretWriter         SecretWriter
 	HelmInstaller        helminstall.Installer
-	KubeClusterClient    kube.KubernetesClusterClient // client for KubernetesCluster custom resources
+	KubeClusterClient    discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -52,7 +55,6 @@ type ClientsFactory func(opts *options.Options) (*Clients, error)
 
 // write a k8s secret
 // used to pare down from the complexity of all the methods on the k8s client-go SecretInterface
-//go:generate mockgen -destination ../mocks/mock_secret_writer.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common SecretWriter
 type SecretWriter interface {
 	// create, or update if already exists
 	Apply(secret *k8sapiv1.Secret) error
@@ -81,7 +83,7 @@ func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
 	writer SecretWriter,
 	helmInstaller helminstall.Installer,
-	kubeClusterClient kube.KubernetesClusterClient,
+	kubeClusterClient discovery_core.KubernetesClusterClient,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization: authorization,
@@ -91,7 +93,6 @@ func KubeClientsProvider(
 	}
 }
 
-//go:generate mockgen -destination ../mocks/mock_file_reader.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common FileReader
 type FileReader interface {
 	Read(filePath string) ([]byte, error)
 	Exists(filePath string) (exists bool, err error)

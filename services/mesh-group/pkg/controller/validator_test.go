@@ -9,9 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core/mocks"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -43,87 +46,87 @@ var _ = Describe("validator", func() {
 		status, err := validator.Validate(ctx, nil)
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(Equal(testErr))
-		Expect(status).To(Equal(types.MeshGroupStatus{
-			Config: types.MeshGroupStatus_PROCESSING_ERROR,
+		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
+			Config: v1alpha1_types.MeshGroupStatus_PROCESSING_ERROR,
 		}))
 	})
 
 	It("will return an error if a mesh ref doesn't exist", func() {
-		ref := &types.ResourceRef{
+		ref := &core_types.ResourceRef{
 			Name:      "incorrect",
 			Namespace: "ref",
 		}
-		meshClient.EXPECT().List(ctx).Return(&v1alpha1.MeshList{}, nil)
-		status, err := validator.Validate(ctx, &v1alpha1.MeshGroup{
-			Spec: types.MeshGroupSpec{
-				Meshes: []*types.ResourceRef{ref},
+		meshClient.EXPECT().List(ctx).Return(&discoveryv1alpha1.MeshList{}, nil)
+		status, err := validator.Validate(ctx, &networkingv1alpha1.MeshGroup{
+			Spec: v1alpha1_types.MeshGroupSpec{
+				Meshes: []*core_types.ResourceRef{ref},
 			},
 		})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(controller.InvalidMeshRefsError([]string{
 			fmt.Sprintf("%s.%s", ref.GetName(), ref.GetNamespace()),
 		})))
-		Expect(status).To(Equal(types.MeshGroupStatus{
-			Config: types.MeshGroupStatus_INVALID,
+		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
+			Config: v1alpha1_types.MeshGroupStatus_INVALID,
 		}))
 	})
 
 	It("will return an error if a non-istio mesh is referenced", func() {
-		ref := &types.ResourceRef{
+		ref := &core_types.ResourceRef{
 			Name:      "valid",
 			Namespace: "ref",
 		}
-		mesh := v1alpha1.Mesh{
+		mesh := discoveryv1alpha1.Mesh{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      ref.GetName(),
 				Namespace: ref.GetNamespace(),
 			},
-			Spec: types.MeshSpec{
-				MeshType: &types.MeshSpec_ConsulConnect{},
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_ConsulConnect{},
 			},
 		}
-		meshClient.EXPECT().List(ctx).Return(&v1alpha1.MeshList{
-			Items: []v1alpha1.Mesh{mesh},
+		meshClient.EXPECT().List(ctx).Return(&discoveryv1alpha1.MeshList{
+			Items: []discoveryv1alpha1.Mesh{mesh},
 		}, nil)
-		status, err := validator.Validate(ctx, &v1alpha1.MeshGroup{
-			Spec: types.MeshGroupSpec{
-				Meshes: []*types.ResourceRef{ref},
+		status, err := validator.Validate(ctx, &networkingv1alpha1.MeshGroup{
+			Spec: v1alpha1_types.MeshGroupSpec{
+				Meshes: []*core_types.ResourceRef{ref},
 			},
 		})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(controller.OnlyIstioSupportedError(mesh.Name)))
-		Expect(status).To(Equal(types.MeshGroupStatus{
-			Config: types.MeshGroupStatus_INVALID,
+		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
+			Config: v1alpha1_types.MeshGroupStatus_INVALID,
 		}))
 	})
 
 	It("will return valid and no error if all went fine", func() {
-		ref := &types.ResourceRef{
+		ref := &core_types.ResourceRef{
 			Name:      "valid",
 			Namespace: "ref",
 		}
-		mesh := v1alpha1.Mesh{
+		mesh := discoveryv1alpha1.Mesh{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      ref.GetName(),
 				Namespace: ref.GetNamespace(),
 			},
-			Spec: types.MeshSpec{
-				MeshType: &types.MeshSpec_Istio{
-					Istio: &types.IstioMesh{},
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{
+					Istio: &discovery_types.IstioMesh{},
 				},
 			},
 		}
-		meshClient.EXPECT().List(ctx).Return(&v1alpha1.MeshList{
-			Items: []v1alpha1.Mesh{mesh},
+		meshClient.EXPECT().List(ctx).Return(&discoveryv1alpha1.MeshList{
+			Items: []discoveryv1alpha1.Mesh{mesh},
 		}, nil)
-		status, err := validator.Validate(ctx, &v1alpha1.MeshGroup{
-			Spec: types.MeshGroupSpec{
-				Meshes: []*types.ResourceRef{ref},
+		status, err := validator.Validate(ctx, &networkingv1alpha1.MeshGroup{
+			Spec: v1alpha1_types.MeshGroupSpec{
+				Meshes: []*core_types.ResourceRef{ref},
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(status).To(Equal(types.MeshGroupStatus{
-			Config: types.MeshGroupStatus_VALID,
+		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
+			Config: v1alpha1_types.MeshGroupStatus_VALID,
 		}))
 	})
 })

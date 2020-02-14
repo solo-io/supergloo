@@ -19,35 +19,21 @@ func main() {
 	log.Printf("starting generate")
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
-		"api/config/v1alpha1/*.proto",
-		"api/core/v1alpha1/*.proto",
-		"api/external/google/api/*.proto",
+		"api/**/*.proto",
 	})
 	autopilotCmd := codegen.Command{
 		AppName: "service-mesh-hub",
 		Groups: []model.Group{
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "config.zephyr.solo.io",
+					Group:   "security.zephyr.solo.io",
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/mesh-projects",
 				Resources: []model.Resource{
 					{
-						Kind:                 "RoutingRule",
-						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "RoutingRuleSpec"},
-						Status:               &model.Field{Type: "RoutingRuleStatus"},
-					},
-					{
-						Kind:                 "SecurityRule",
-						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "SecurityRuleSpec"},
-						Status:               &model.Field{Type: "SecurityRuleStatus"},
-					},
-					{
 						Kind:                 "MeshGroupCertificateSigningRequest",
-						RelativePathFromRoot: "pkg/api/config.zephyr.solo.io/v1alpha1/types",
+						RelativePathFromRoot: "pkg/api/security.zephyr.solo.io/v1alpha1/types",
 						Spec:                 model.Field{Type: "MeshGroupCertificateSigningRequestSpec"},
 						Status:               &model.Field{Type: "MeshGroupCertificateSigningRequestStatus"},
 					},
@@ -61,39 +47,66 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "core.zephyr.solo.io",
+					Group:   "networking.zephyr.solo.io",
+					Version: "v1alpha1",
+				},
+				Module: "github.com/solo-io/mesh-projects",
+				Resources: []model.Resource{
+					{
+						Kind:                 "TrafficPolicy",
+						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "TrafficPolicySpec"},
+						Status:               &model.Field{Type: "TrafficPolicyStatus"},
+					},
+					{
+						Kind:                 "AccessControlPolicy",
+						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "AccessControlPolicySpec"},
+						Status:               &model.Field{Type: "AccessControlPolicyStatus"},
+					},
+					{
+						Kind:                 "MeshGroup",
+						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						Spec:                 model.Field{Type: "MeshGroupSpec"},
+						Status:               &model.Field{Type: "MeshGroupStatus"},
+					},
+				},
+				RenderManifests:  true,
+				RenderClients:    true,
+				RenderTypes:      true,
+				RenderController: true,
+				RenderProtos:     true,
+				ApiRoot:          "pkg/api",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "discovery.zephyr.solo.io",
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/mesh-projects",
 				Resources: []model.Resource{
 					{
 						Kind:                 "KubernetesCluster",
-						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
 						Spec:                 model.Field{Type: "KubernetesClusterSpec"},
 					},
 					{
 						Kind:                 "MeshService",
-						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
 						Spec:                 model.Field{Type: "MeshServiceSpec"},
 						Status:               &model.Field{Type: "MeshServiceStatus"},
 					},
 					{
 						Kind:                 "MeshWorkload",
-						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
 						Spec:                 model.Field{Type: "MeshWorkloadSpec"},
 						Status:               &model.Field{Type: "MeshWorkloadStatus"},
 					},
 					{
 						Kind:                 "Mesh",
-						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
+						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
 						Spec:                 model.Field{Type: "MeshSpec"},
 						Status:               &model.Field{Type: "MeshStatus"},
-					},
-					{
-						Kind:                 "MeshGroup",
-						RelativePathFromRoot: "pkg/api/core.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshGroupSpec"},
-						Status:               &model.Field{Type: "MeshGroupStatus"},
 					},
 				},
 				RenderManifests:  true,

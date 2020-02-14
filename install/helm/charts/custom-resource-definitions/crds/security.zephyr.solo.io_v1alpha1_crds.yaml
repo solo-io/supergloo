@@ -1,0 +1,23 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    helm.sh/hook: crd-install
+  labels:
+    app: service-mesh-hub
+    app.kubernetes.io/name: service-mesh-hub
+  name: meshgroupcertificatesigningrequests.security.zephyr.solo.io
+spec:
+  group: security.zephyr.solo.io
+  names:
+    kind: MeshGroupCertificateSigningRequest
+    listKind: MeshGroupCertificateSigningRequestList
+    plural: meshgroupcertificatesigningrequests
+    singular: meshgroupcertificatesigningrequest
+  scope: Namespaced
+  subresources:
+    status: {}
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

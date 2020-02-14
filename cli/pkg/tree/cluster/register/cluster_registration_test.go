@@ -11,13 +11,15 @@ import (
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	mock_kube "github.com/solo-io/mesh-projects/cli/pkg/common/kube/mocks"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
@@ -35,9 +37,9 @@ var _ = Describe("Cluster Operations", func() {
 		secretWriter   *cli_mocks.MockSecretWriter
 		authClient     *mock_auth.MockClusterAuthorization
 		kubeLoader     *cli_mocks.MockKubeLoader
-		meshctl        *cli_mocks.MockMeshctl
+		meshctl        *cli_test.MockMeshctl
 		configVerifier *cli_mocks.MockMasterKubeConfigVerifier
-		clusterClient  *mock_kube.MockKubernetesClusterClient
+		clusterClient  *mock_core.MockKubernetesClusterClient
 	)
 
 	BeforeEach(func() {
@@ -48,8 +50,8 @@ var _ = Describe("Cluster Operations", func() {
 		authClient = mock_auth.NewMockClusterAuthorization(ctrl)
 		kubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
-		clusterClient = mock_kube.NewMockKubernetesClusterClient(ctrl)
-		meshctl = &cli_mocks.MockMeshctl{
+		clusterClient = mock_core.NewMockKubernetesClusterClient(ctrl)
+		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
 				SecretWriter:         secretWriter,
@@ -146,13 +148,13 @@ users:
 				Apply(secret).
 				Return(nil)
 
-			clusterClient.EXPECT().Create(&v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types.KubernetesClusterSpec{
-					SecretRef: &types.ResourceRef{
+				Spec: discovery_types.KubernetesClusterSpec{
+					SecretRef: &core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
@@ -216,13 +218,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Create(&v1alpha1.KubernetesCluster{
+				Create(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.DefaultWriteNamespace,
 					},
-					Spec: types.KubernetesClusterSpec{
-						SecretRef: &types.ResourceRef{
+					Spec: discovery_types.KubernetesClusterSpec{
+						SecretRef: &core_types.ResourceRef{
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
@@ -287,13 +289,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Create(&v1alpha1.KubernetesCluster{
+				Create(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.DefaultWriteNamespace,
 					},
-					Spec: types.KubernetesClusterSpec{
-						SecretRef: &types.ResourceRef{
+					Spec: discovery_types.KubernetesClusterSpec{
+						SecretRef: &core_types.ResourceRef{
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
@@ -479,13 +481,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			testErr := eris.New("test")
 
-			clusterClient.EXPECT().Create(&v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types.KubernetesClusterSpec{
-					SecretRef: &types.ResourceRef{
+				Spec: discovery_types.KubernetesClusterSpec{
+					SecretRef: &core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
@@ -527,13 +529,13 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Apply(secret).
 				Return(nil)
 
-			clusterClient.EXPECT().Create(&v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types.KubernetesClusterSpec{
-					SecretRef: &types.ResourceRef{
+				Spec: discovery_types.KubernetesClusterSpec{
+					SecretRef: &core_types.ResourceRef{
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},

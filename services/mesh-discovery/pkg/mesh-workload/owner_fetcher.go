@@ -12,17 +12,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-//go:generate mockgen -source ./owner_fetcher.go -destination mocks/mock_owner_fetcher.go
-
 var (
 	ControllerOwnerNotFound = func(namespace string, name string, kind string) error {
 		return eris.New(fmt.Sprintf("Could not find owner reference with 'controller: true' for %s: %s/%s", kind, namespace, name))
 	}
 )
-
-type OwnerFetcher interface {
-	GetDeployment(ctx context.Context, pod *corev1.Pod) (*appsv1.Deployment, error)
-}
 
 func DefaultOwnerFetcher(dynamicClient client.Client) *ownerFetcher {
 	return &ownerFetcher{

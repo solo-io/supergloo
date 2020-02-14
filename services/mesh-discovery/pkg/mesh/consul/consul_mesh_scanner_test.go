@@ -9,8 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	mp_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
@@ -115,22 +116,22 @@ var _ = Describe("Consul Mesh Finder", func() {
 				Tag:    consulVersion,
 			}, nil)
 
-		expectedMesh := &mp_v1alpha1.Mesh{
+		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: k8s_meta_v1.ObjectMeta{
 				Name:      "consul-minidc-consul-ns",
 				Namespace: env.DefaultWriteNamespace,
 				Labels:    consul.DiscoveryLabels,
 			},
-			Spec: mp_v1alpha1_types.MeshSpec{
-				MeshType: &mp_v1alpha1_types.MeshSpec_ConsulConnect{
-					ConsulConnect: &mp_v1alpha1_types.ConsulConnectMesh{
-						Installation: &mp_v1alpha1_types.MeshInstallation{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_ConsulConnect{
+					ConsulConnect: &discovery_types.ConsulConnectMesh{
+						Installation: &discovery_types.MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               consulVersion,
 						},
 					},
 				},
-				Cluster: &mp_v1alpha1_types.ResourceRef{
+				Cluster: &core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
 					Namespace: env.DefaultWriteNamespace,
 				},

@@ -12,8 +12,8 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	mock_upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets/mocks"
@@ -23,7 +23,7 @@ var _ = Describe("Upgrade", func() {
 	var (
 		ctrl         *gomock.Controller
 		ctx          context.Context
-		meshctl      *cli_mocks.MockMeshctl
+		meshctl      *cli_test.MockMeshctl
 		mockUpgrader *mock_upgrade_assets.MockAssetHelper
 
 		testErr = eris.New("hello")
@@ -33,7 +33,7 @@ var _ = Describe("Upgrade", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockUpgrader = mock_upgrade_assets.NewMockAssetHelper(ctrl)
-		meshctl = &cli_mocks.MockMeshctl{
+		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
 			Clients: common.Clients{
 				ReleaseAssetHelper: mockUpgrader,

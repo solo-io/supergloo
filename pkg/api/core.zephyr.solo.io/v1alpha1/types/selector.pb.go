@@ -21,207 +21,34 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// select resources by their labels
-type LabelSelector struct {
-	LabelsToMatch        map[string]string `protobuf:"bytes,1,rep,name=labels_to_match,json=labelsToMatch,proto3" json:"labels_to_match,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *LabelSelector) Reset()         { *m = LabelSelector{} }
-func (m *LabelSelector) String() string { return proto.CompactTextString(m) }
-func (*LabelSelector) ProtoMessage()    {}
-func (*LabelSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{0}
-}
-func (m *LabelSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_LabelSelector.Unmarshal(m, b)
-}
-func (m *LabelSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_LabelSelector.Marshal(b, m, deterministic)
-}
-func (m *LabelSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LabelSelector.Merge(m, src)
-}
-func (m *LabelSelector) XXX_Size() int {
-	return xxx_messageInfo_LabelSelector.Size(m)
-}
-func (m *LabelSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_LabelSelector.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_LabelSelector proto.InternalMessageInfo
-
-func (m *LabelSelector) GetLabelsToMatch() map[string]string {
-	if m != nil {
-		return m.LabelsToMatch
-	}
-	return nil
-}
-
-// select resources individually
-type ResourceSelector struct {
+//
+//Clusters are represented in Service Mesh Hub using a KubernetesCluster custom resource, which has the canonical
+//name, connection/authentication information, as well as other imporant metadata about the cluster. The following
+//selector uses the `KubernetesCluster` custom resoruces to aid in selecting resources from multiple kubernetes
+//clusters simultaneously. Therefore, the labels and resoruce reference fields in the `ClusterSelector` refer to
+//our `KubernetesCluster` resources, which as mentioned earlier represent real clusters
+//
+//These `KubernetesCluster` resources currently all live in the install namespace of the Service Mesh Hub management
+//plane. This may change at some point in the future, and if it does, we may add a namespaces field to the selector
+//below.
+//
+//Only one of (labels) or (resource refs) may be provided. If both are provided, it will be
+//considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
+type ClusterSelector struct {
+	// select clusters by their labels
+	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// apply the selector to one or more services by adding their refs here
-	Services             []*ResourceRef `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
+	Clusters             []*ResourceRef `protobuf:"bytes,2,rep,name=clusters,proto3" json:"clusters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`
 	XXX_sizecache        int32          `json:"-"`
-}
-
-func (m *ResourceSelector) Reset()         { *m = ResourceSelector{} }
-func (m *ResourceSelector) String() string { return proto.CompactTextString(m) }
-func (*ResourceSelector) ProtoMessage()    {}
-func (*ResourceSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{1}
-}
-func (m *ResourceSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ResourceSelector.Unmarshal(m, b)
-}
-func (m *ResourceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ResourceSelector.Marshal(b, m, deterministic)
-}
-func (m *ResourceSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResourceSelector.Merge(m, src)
-}
-func (m *ResourceSelector) XXX_Size() int {
-	return xxx_messageInfo_ResourceSelector.Size(m)
-}
-func (m *ResourceSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_ResourceSelector.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ResourceSelector proto.InternalMessageInfo
-
-func (m *ResourceSelector) GetServices() []*ResourceRef {
-	if m != nil {
-		return m.Services
-	}
-	return nil
-}
-
-// select all resources in these namespaces
-type NamespaceSelector struct {
-	// list of namespaces to search
-	Namespaces           []string `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *NamespaceSelector) Reset()         { *m = NamespaceSelector{} }
-func (m *NamespaceSelector) String() string { return proto.CompactTextString(m) }
-func (*NamespaceSelector) ProtoMessage()    {}
-func (*NamespaceSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{2}
-}
-func (m *NamespaceSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_NamespaceSelector.Unmarshal(m, b)
-}
-func (m *NamespaceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_NamespaceSelector.Marshal(b, m, deterministic)
-}
-func (m *NamespaceSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NamespaceSelector.Merge(m, src)
-}
-func (m *NamespaceSelector) XXX_Size() int {
-	return xxx_messageInfo_NamespaceSelector.Size(m)
-}
-func (m *NamespaceSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_NamespaceSelector.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_NamespaceSelector proto.InternalMessageInfo
-
-func (m *NamespaceSelector) GetNamespaces() []string {
-	if m != nil {
-		return m.Namespaces
-	}
-	return nil
-}
-
-//
-//specifies a method by which to select pods
-//within a mesh for the application of rules and policies
-//
-//Precedence:
-//1. LabelSelector
-//2. NamespaceSelector
-//3. ResourceSelector
-type ServiceSelector struct {
-	Labels               *LabelSelector     `protobuf:"bytes,1,opt,name=labels,proto3" json:"labels,omitempty"`
-	Resources            *ResourceSelector  `protobuf:"bytes,4,opt,name=resources,proto3" json:"resources,omitempty"`
-	Namespaces           *NamespaceSelector `protobuf:"bytes,3,opt,name=namespaces,proto3" json:"namespaces,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
-}
-
-func (m *ServiceSelector) Reset()         { *m = ServiceSelector{} }
-func (m *ServiceSelector) String() string { return proto.CompactTextString(m) }
-func (*ServiceSelector) ProtoMessage()    {}
-func (*ServiceSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{3}
-}
-func (m *ServiceSelector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ServiceSelector.Unmarshal(m, b)
-}
-func (m *ServiceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ServiceSelector.Marshal(b, m, deterministic)
-}
-func (m *ServiceSelector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ServiceSelector.Merge(m, src)
-}
-func (m *ServiceSelector) XXX_Size() int {
-	return xxx_messageInfo_ServiceSelector.Size(m)
-}
-func (m *ServiceSelector) XXX_DiscardUnknown() {
-	xxx_messageInfo_ServiceSelector.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ServiceSelector proto.InternalMessageInfo
-
-func (m *ServiceSelector) GetLabels() *LabelSelector {
-	if m != nil {
-		return m.Labels
-	}
-	return nil
-}
-
-func (m *ServiceSelector) GetResources() *ResourceSelector {
-	if m != nil {
-		return m.Resources
-	}
-	return nil
-}
-
-func (m *ServiceSelector) GetNamespaces() *NamespaceSelector {
-	if m != nil {
-		return m.Namespaces
-	}
-	return nil
-}
-
-//
-//Precedence:
-//1. LabelSelector
-//2. ResourceSelector
-type ClusterSelector struct {
-	// specify the type of selector to use with selectorType
-	// select clusters by their labels
-	LabelSelector *LabelSelector `protobuf:"bytes,1,opt,name=label_selector,json=labelSelector,proto3" json:"label_selector,omitempty"`
-	// select clusters by their names
-	ClusterSelector      *ResourceSelector `protobuf:"bytes,4,opt,name=cluster_selector,json=clusterSelector,proto3" json:"cluster_selector,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
 }
 
 func (m *ClusterSelector) Reset()         { *m = ClusterSelector{} }
 func (m *ClusterSelector) String() string { return proto.CompactTextString(m) }
 func (*ClusterSelector) ProtoMessage()    {}
 func (*ClusterSelector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{4}
+	return fileDescriptor_6ca43acbd26ca19e, []int{0}
 }
 func (m *ClusterSelector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ClusterSelector.Unmarshal(m, b)
@@ -241,24 +68,97 @@ func (m *ClusterSelector) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ClusterSelector proto.InternalMessageInfo
 
-func (m *ClusterSelector) GetLabelSelector() *LabelSelector {
+func (m *ClusterSelector) GetLabels() map[string]string {
 	if m != nil {
-		return m.LabelSelector
+		return m.Labels
 	}
 	return nil
 }
 
-func (m *ClusterSelector) GetClusterSelector() *ResourceSelector {
+func (m *ClusterSelector) GetClusters() []*ResourceRef {
 	if m != nil {
-		return m.ClusterSelector
+		return m.Clusters
 	}
 	return nil
 }
 
-// global selector used to select resources from any set of clusters, namespaces, and/or labels
+//
+//Global selector used to select resources from any set of clusters, namespaces, and/or labels
+//
+//Specifies a method by which to select pods within a mesh for the application of rules and policies.
+//
+//Only one of (labels + namespaces) or (resource refs) may be provided. If all three are provided, it will be
+//considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
+//
+//Valid:
+//1.
+//selector:
+//labels:
+//foo: bar
+//hello: world
+//namespaces:
+//- default
+//2.
+//selector:
+//refs:
+//- name: foo
+//namespace: bar
+//
+//Invalid:
+//1.
+//selector:
+//labels:
+//foo: bar
+//hello: world
+//namespaces:
+//- default
+//refs:
+//- name: foo
+//namespace: bar
+//
+//By default labels will select across all namespaces, unless a list of namespaces is provided, in which case
+//it will only select from those. An empty or nil list is equal to AllNamespaces.
+//
+//If no labels are given, and only namespaces, the full list of resources from the namespace will be selected.
+//
+//The following selector will select all resources with the following labels in every namespace:
+//
+//selector:
+//labels:
+//foo: bar
+//hello: world
+//
+//Whereas the next selector will only select from the specified namespaces (foo, bar):
+//
+//selector:
+//labels:
+//foo: bar
+//hello: world
+//namespaces
+//- foo
+//- bar
+//
+//This final selector will select all resources of a given type in the target namespace (foo):
+//
+//selector
+//namespaces
+//- foo
 type Selector struct {
-	ClusterSelector      *ClusterSelector `protobuf:"bytes,1,opt,name=cluster_selector,json=clusterSelector,proto3" json:"cluster_selector,omitempty"`
-	ServiceSelector      *ServiceSelector `protobuf:"bytes,2,opt,name=service_selector,json=serviceSelector,proto3" json:"service_selector,omitempty"`
+	// map of labels to match against
+	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// list of namespaces to search
+	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	// apply the selector to one or more services by adding their refs here
+	Refs []*ResourceRef `protobuf:"bytes,3,rep,name=refs,proto3" json:"refs,omitempty"`
+	//
+	//Specifies the cluster in which the preceding resources should be matched.
+	//
+	//The behavior of this field is as follows:
+	//
+	//1. If left out (nil) only the local cluster will be selected
+	//2. If present, but not filled in (empty struct), will match all clusters
+	//3. If present, and has non-nil fields, see `ClusterSelector` definition above for behavior.
+	Clusters             *ClusterSelector `protobuf:"bytes,4,opt,name=clusters,proto3" json:"clusters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
@@ -268,7 +168,7 @@ func (m *Selector) Reset()         { *m = Selector{} }
 func (m *Selector) String() string { return proto.CompactTextString(m) }
 func (*Selector) ProtoMessage()    {}
 func (*Selector) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6ca43acbd26ca19e, []int{5}
+	return fileDescriptor_6ca43acbd26ca19e, []int{1}
 }
 func (m *Selector) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Selector.Unmarshal(m, b)
@@ -288,28 +188,39 @@ func (m *Selector) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Selector proto.InternalMessageInfo
 
-func (m *Selector) GetClusterSelector() *ClusterSelector {
+func (m *Selector) GetLabels() map[string]string {
 	if m != nil {
-		return m.ClusterSelector
+		return m.Labels
 	}
 	return nil
 }
 
-func (m *Selector) GetServiceSelector() *ServiceSelector {
+func (m *Selector) GetNamespaces() []string {
 	if m != nil {
-		return m.ServiceSelector
+		return m.Namespaces
+	}
+	return nil
+}
+
+func (m *Selector) GetRefs() []*ResourceRef {
+	if m != nil {
+		return m.Refs
+	}
+	return nil
+}
+
+func (m *Selector) GetClusters() *ClusterSelector {
+	if m != nil {
+		return m.Clusters
 	}
 	return nil
 }
 
 func init() {
-	proto.RegisterType((*LabelSelector)(nil), "core.zephyr.solo.io.LabelSelector")
-	proto.RegisterMapType((map[string]string)(nil), "core.zephyr.solo.io.LabelSelector.LabelsToMatchEntry")
-	proto.RegisterType((*ResourceSelector)(nil), "core.zephyr.solo.io.ResourceSelector")
-	proto.RegisterType((*NamespaceSelector)(nil), "core.zephyr.solo.io.NamespaceSelector")
-	proto.RegisterType((*ServiceSelector)(nil), "core.zephyr.solo.io.ServiceSelector")
 	proto.RegisterType((*ClusterSelector)(nil), "core.zephyr.solo.io.ClusterSelector")
+	proto.RegisterMapType((map[string]string)(nil), "core.zephyr.solo.io.ClusterSelector.LabelsEntry")
 	proto.RegisterType((*Selector)(nil), "core.zephyr.solo.io.Selector")
+	proto.RegisterMapType((map[string]string)(nil), "core.zephyr.solo.io.Selector.LabelsEntry")
 }
 
 func init() {
@@ -317,33 +228,26 @@ func init() {
 }
 
 var fileDescriptor_6ca43acbd26ca19e = []byte{
-	// 438 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0x51, 0x6b, 0xd4, 0x40,
-	0x14, 0x85, 0x99, 0x5d, 0x2d, 0xdd, 0x5b, 0x6a, 0xd6, 0xe8, 0xc3, 0xd2, 0x07, 0x59, 0x82, 0x4a,
-	0x7d, 0x68, 0x42, 0x5b, 0x04, 0x29, 0x3e, 0xa8, 0x45, 0x41, 0xb4, 0x5a, 0xa6, 0x3e, 0x09, 0xb2,
-	0xcc, 0x0e, 0xb7, 0x4d, 0xec, 0x6c, 0x67, 0x98, 0x99, 0x2c, 0xc4, 0xdf, 0x24, 0xe2, 0xef, 0xf1,
-	0xd7, 0x48, 0x32, 0xd9, 0xc9, 0x66, 0x37, 0x74, 0xe9, 0x5b, 0xe6, 0x24, 0xe7, 0x9b, 0x73, 0xc2,
-	0xbd, 0xf0, 0xf6, 0x2a, 0xb3, 0x69, 0x3e, 0x8d, 0xb9, 0x9c, 0x25, 0x46, 0x0a, 0x79, 0x90, 0xc9,
-	0x64, 0x86, 0x26, 0x3d, 0x50, 0x5a, 0xfe, 0x44, 0x6e, 0x4d, 0xc2, 0x54, 0x96, 0x70, 0xa9, 0x31,
-	0x99, 0x1f, 0x32, 0xa1, 0x52, 0x76, 0x98, 0x18, 0x14, 0xc8, 0xad, 0xd4, 0xb1, 0xd2, 0xd2, 0xca,
-	0xf0, 0x51, 0xf9, 0x36, 0xfe, 0x85, 0x2a, 0x2d, 0x74, 0x5c, 0x32, 0xe2, 0x4c, 0xee, 0xbd, 0xd8,
-	0x04, 0xd1, 0x78, 0xe9, 0xfc, 0xd1, 0x5f, 0x02, 0xbb, 0x9f, 0xd9, 0x14, 0xc5, 0x45, 0xcd, 0x0d,
-	0x7f, 0x40, 0x20, 0x4a, 0xc1, 0x4c, 0xac, 0x9c, 0xcc, 0x98, 0xe5, 0xe9, 0x88, 0x8c, 0xfb, 0xfb,
-	0x3b, 0x47, 0x2f, 0xe3, 0x8e, 0xbb, 0xe2, 0x96, 0xd9, 0x9d, 0xcc, 0x37, 0x79, 0x56, 0xfa, 0xde,
-	0xdf, 0x58, 0x5d, 0xd0, 0x5d, 0xb1, 0xac, 0xed, 0xbd, 0x81, 0x70, 0xfd, 0xa3, 0x70, 0x08, 0xfd,
-	0x6b, 0x2c, 0x46, 0x64, 0x4c, 0xf6, 0x07, 0xb4, 0x7c, 0x0c, 0x1f, 0xc3, 0xfd, 0x39, 0x13, 0x39,
-	0x8e, 0x7a, 0x95, 0xe6, 0x0e, 0x27, 0xbd, 0x57, 0x24, 0x3a, 0x87, 0x21, 0x45, 0x23, 0x73, 0xcd,
-	0xd1, 0x87, 0x7e, 0x0d, 0xdb, 0x06, 0xf5, 0x3c, 0xe3, 0x68, 0xea, 0xb4, 0xe3, 0xce, 0xb4, 0x0b,
-	0x23, 0xc5, 0x4b, 0xea, 0x1d, 0xd1, 0x31, 0x3c, 0xfc, 0xc2, 0x66, 0x68, 0x14, 0x5b, 0x42, 0x3e,
-	0x01, 0xb8, 0x59, 0x88, 0x0e, 0x3a, 0xa0, 0x4b, 0x4a, 0xf4, 0x8f, 0x40, 0x70, 0xe1, 0x08, 0xde,
-	0x73, 0x02, 0x5b, 0xae, 0x6d, 0xd5, 0x64, 0xe7, 0x28, 0xda, 0xfc, 0xcb, 0x68, 0xed, 0x08, 0x4f,
-	0x61, 0xa0, 0xeb, 0x74, 0x66, 0x74, 0xaf, 0xb2, 0x3f, 0xbb, 0xb5, 0x83, 0x27, 0x34, 0xbe, 0xf0,
-	0x43, 0x2b, 0x74, 0xbf, 0xa2, 0x3c, 0xef, 0xa4, 0xac, 0x15, 0x6e, 0x95, 0xfb, 0x43, 0x20, 0x38,
-	0x15, 0xb9, 0xb1, 0xa8, 0x7d, 0xb9, 0x8f, 0xf0, 0xa0, 0x8a, 0x3a, 0x59, 0x8c, 0xe0, 0x1d, 0x4a,
-	0xba, 0x21, 0xf0, 0xa8, 0x73, 0x18, 0x72, 0x47, 0x6f, 0x60, 0x77, 0xaa, 0x1c, 0xf0, 0x76, 0xb8,
-	0xe8, 0x37, 0x81, 0x6d, 0x8f, 0xff, 0xda, 0x81, 0x77, 0x59, 0x9f, 0x76, 0xe2, 0x57, 0x9a, 0xae,
-	0xd1, 0x4b, 0x60, 0x3d, 0x2c, 0x0d, 0xb0, 0x77, 0x0b, 0x70, 0x65, 0x2e, 0x68, 0x60, 0xda, 0xc2,
-	0xbb, 0xb3, 0xef, 0x9f, 0x36, 0xee, 0xbe, 0xba, 0xbe, 0xf2, 0xab, 0xbb, 0x72, 0x41, 0xb3, 0xc9,
-	0xb6, 0x50, 0x68, 0xa6, 0x5b, 0xd5, 0x32, 0x1f, 0xff, 0x0f, 0x00, 0x00, 0xff, 0xff, 0x83, 0x8a,
-	0xf3, 0x9e, 0x51, 0x04, 0x00, 0x00,
+	// 325 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x92, 0x31, 0x4f, 0x02, 0x31,
+	0x14, 0xc7, 0xd3, 0x03, 0x09, 0x94, 0x41, 0x53, 0x1d, 0x2e, 0x0c, 0xe6, 0x42, 0x1c, 0x60, 0xa0,
+	0x15, 0x74, 0x50, 0xe3, 0x20, 0x1a, 0x13, 0x13, 0x75, 0xa9, 0x9b, 0x5b, 0x69, 0x1e, 0xdc, 0x49,
+	0xa1, 0x4d, 0xdb, 0x23, 0x39, 0x3f, 0x8d, 0x1f, 0xca, 0x0f, 0x64, 0xb8, 0x23, 0x48, 0xc8, 0x45,
+	0x18, 0xdc, 0xda, 0xd7, 0xf7, 0xff, 0xf5, 0xfd, 0x5f, 0xfe, 0x78, 0x38, 0x49, 0x7c, 0x9c, 0x8e,
+	0xa8, 0xd4, 0x33, 0xe6, 0xb4, 0xd2, 0xbd, 0x44, 0xb3, 0x19, 0xb8, 0xb8, 0x67, 0xac, 0xfe, 0x00,
+	0xe9, 0x1d, 0x13, 0x26, 0x61, 0x52, 0x5b, 0x60, 0x8b, 0xbe, 0x50, 0x26, 0x16, 0x7d, 0xe6, 0x40,
+	0x81, 0xf4, 0xda, 0x52, 0x63, 0xb5, 0xd7, 0xe4, 0x78, 0xf9, 0x4a, 0x3f, 0xc1, 0xc4, 0x99, 0xa5,
+	0x4b, 0x06, 0x4d, 0x74, 0xab, 0xbb, 0x0b, 0x62, 0x61, 0x5c, 0xe8, 0xdb, 0xdf, 0x08, 0x1f, 0x3e,
+	0xa8, 0xd4, 0x79, 0xb0, 0x6f, 0x2b, 0x32, 0x79, 0xc2, 0x35, 0x25, 0x46, 0xa0, 0x5c, 0x88, 0xa2,
+	0x4a, 0xa7, 0x39, 0x38, 0xa7, 0x25, 0x9f, 0xd0, 0x2d, 0x15, 0x7d, 0xc9, 0x25, 0x8f, 0x73, 0x6f,
+	0x33, 0xbe, 0xd2, 0x93, 0x5b, 0x5c, 0x97, 0x45, 0x9b, 0x0b, 0x83, 0x9c, 0x15, 0x95, 0xb2, 0x38,
+	0x38, 0x9d, 0x5a, 0x09, 0x1c, 0xc6, 0x7c, 0xad, 0x68, 0x5d, 0xe3, 0xe6, 0x06, 0x94, 0x1c, 0xe1,
+	0xca, 0x14, 0xb2, 0x10, 0x45, 0xa8, 0xd3, 0xe0, 0xcb, 0x23, 0x39, 0xc1, 0x07, 0x0b, 0xa1, 0x52,
+	0x08, 0x83, 0xbc, 0x56, 0x5c, 0x6e, 0x82, 0x2b, 0xd4, 0xfe, 0x0a, 0x70, 0x7d, 0xed, 0x67, 0xb8,
+	0xe5, 0xa7, 0x5b, 0x3a, 0xc3, 0x9f, 0x46, 0x4e, 0x31, 0x9e, 0x8b, 0x19, 0x38, 0x23, 0x24, 0x14,
+	0x56, 0x1a, 0x7c, 0xa3, 0x42, 0x2e, 0x71, 0xd5, 0xc2, 0xd8, 0x85, 0x95, 0x3d, 0x4d, 0xe6, 0xdd,
+	0xe4, 0x6e, 0x63, 0x3d, 0xd5, 0x08, 0x75, 0x9a, 0x83, 0xb3, 0x7d, 0x56, 0xfd, 0x2f, 0x2b, 0xba,
+	0x7f, 0x7d, 0x7f, 0xde, 0x19, 0x3f, 0x33, 0x9d, 0xac, 0xd3, 0xb3, 0x35, 0xd4, 0x6f, 0x98, 0x7c,
+	0x66, 0xc0, 0x8d, 0x6a, 0x79, 0x9e, 0x2e, 0x7e, 0x02, 0x00, 0x00, 0xff, 0xff, 0xce, 0x47, 0xe1,
+	0xd7, 0xd4, 0x02, 0x00, 0x00,
 }

@@ -6,8 +6,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
@@ -40,7 +41,9 @@ type istioMeshScanner struct {
 	imageNameParser docker.ImageNameParser
 }
 
-func (i *istioMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment) (*mp_v1alpha1.Mesh, error) {
+func (i *istioMeshScanner) ScanDeployment(_ context.Context,
+	deployment *k8s_apps_v1.Deployment) (*discoveryv1alpha1.Mesh, error) {
+
 	pilot, err := i.detectPilotDeployment(deployment)
 	if err != nil {
 		return nil, err
@@ -48,22 +51,22 @@ func (i *istioMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_app
 		return nil, nil
 	}
 
-	return &mp_v1alpha1.Mesh{
+	return &discoveryv1alpha1.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      pilot.Name(),
 			Namespace: env.DefaultWriteNamespace,
 			Labels:    DiscoveryLabels,
 		},
-		Spec: v1alpha1_types.MeshSpec{
-			MeshType: &v1alpha1_types.MeshSpec_Istio{
-				Istio: &v1alpha1_types.IstioMesh{
-					Installation: &v1alpha1_types.MeshInstallation{
+		Spec: discovery_types.MeshSpec{
+			MeshType: &discovery_types.MeshSpec_Istio{
+				Istio: &discovery_types.IstioMesh{
+					Installation: &discovery_types.MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               pilot.Version,
 					},
 				},
 			},
-			Cluster: &v1alpha1_types.ResourceRef{
+			Cluster: &core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.DefaultWriteNamespace,
 			},

@@ -12,9 +12,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core/mocks"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh-workload"
 	mock_mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh-workload/mocks"
@@ -34,7 +35,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		clusterName                 = "clusterName"
 		meshWorkloadFinder          controller.PodEventHandler
 		pod                         = &corev1.Pod{}
-		discoveredMeshWorkload      *v1alpha1.MeshWorkload
+		discoveredMeshWorkload      *discoveryv1alpha1.MeshWorkload
 		loggerSink, testLogger      = test_logging.NewInMemoryLogger()
 		notFoundErr                 = &k8s_errs.StatusError{
 			ErrStatus: metav1.Status{
@@ -56,13 +57,13 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			mockLocalMeshWorkloadClient,
 			mockLocalMeshClient,
 			[]mesh_workload.MeshWorkloadScanner{mockMeshWorkloadScanner})
-		discoveredMeshWorkload = &v1alpha1.MeshWorkload{
+		discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
-			Spec: types.MeshWorkloadSpec{
-				KubeController: &types.ResourceRef{
+			Spec: discovery_types.MeshWorkloadSpec{
+				KubeController: &core_types.ResourceRef{
 					Namespace: "controller-namespace",
 				},
 			},
@@ -72,14 +73,14 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	It("should create MeshWorkload if Istio injected workload found", func() {
 		meshName := "meshName"
 		meshNamespace := "meshNamespace"
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: meshName, Namespace: meshNamespace},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
-		meshSpec := &types.ResourceRef{
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
+		meshSpec := &core_types.ResourceRef{
 			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: meshNamespace,
@@ -110,13 +111,13 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should log warning if non-fatal error while scanning workloads", func() {
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		expectedErr := eris.New("error")
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, expectedErr)
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, nil)
@@ -141,25 +142,25 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should create new MeshWorkload if Istio injected workload updated", func() {
-		newDiscoveredMeshWorkload := &v1alpha1.MeshWorkload{
+		newDiscoveredMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
-			Spec: types.MeshWorkloadSpec{
-				KubeController: &types.ResourceRef{
+			Spec: discovery_types.MeshWorkloadSpec{
+				KubeController: &core_types.ResourceRef{
 					Namespace: "controller-namespace",
 				},
 			},
 		}
 		newPod := &corev1.Pod{}
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, nil)
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(newDiscoveredMeshWorkload, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
@@ -171,25 +172,25 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should do nothing if MeshWorkload unchanged", func() {
 		newNamespace := "new-controller-namespace"
-		newDiscoveredMeshWorkload := &v1alpha1.MeshWorkload{
+		newDiscoveredMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
-			Spec: types.MeshWorkloadSpec{
-				KubeController: &types.ResourceRef{
+			Spec: discovery_types.MeshWorkloadSpec{
+				KubeController: &core_types.ResourceRef{
 					Namespace: newNamespace,
 				},
 			},
 		}
 		newPod := &corev1.Pod{}
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, nil)
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(newDiscoveredMeshWorkload, nil)
 		objKey, _ := client.ObjectKeyFromObject(newDiscoveredMeshWorkload)
@@ -232,13 +233,13 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should create new MeshWorkload if pod is now Istio injected", func() {
 		newPod := &corev1.Pod{}
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, nil)
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(discoveredMeshWorkload, nil)
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
@@ -250,25 +251,25 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should log warnings for non-fatal errors on update", func() {
-		newDiscoveredMeshWorkload := &v1alpha1.MeshWorkload{
+		newDiscoveredMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
 			},
-			Spec: types.MeshWorkloadSpec{
-				KubeController: &types.ResourceRef{
+			Spec: discovery_types.MeshWorkloadSpec{
+				KubeController: &core_types.ResourceRef{
 					Namespace: "controller-namespace",
 				},
 			},
 		}
 		newPod := &corev1.Pod{}
-		mesh := v1alpha1.Mesh{
-			Spec: types.MeshSpec{
-				Cluster: &types.ResourceRef{Name: clusterName},
+		mesh := discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
-		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, errors.New(""))
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(newDiscoveredMeshWorkload, errors.New(""))
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)

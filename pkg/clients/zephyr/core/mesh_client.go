@@ -3,7 +3,7 @@ package zephyr_core
 import (
 	"context"
 
-	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
+	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

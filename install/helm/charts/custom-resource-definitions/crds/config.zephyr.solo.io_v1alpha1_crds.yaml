@@ -6,14 +6,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: routingrules.config.zephyr.solo.io
+  name: trafficpolicies.config.zephyr.solo.io
 spec:
   group: config.zephyr.solo.io
   names:
-    kind: RoutingRule
-    listKind: RoutingRuleList
-    plural: routingrules
-    singular: routingrule
+    kind: TrafficPolicy
+    listKind: TrafficPolicyList
+    plural: trafficpolicies
+    singular: trafficpolicy
   scope: Namespaced
   subresources:
     status: {}
@@ -31,14 +31,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: securityrules.config.zephyr.solo.io
+  name: accesscontrolpolicies.config.zephyr.solo.io
 spec:
   group: config.zephyr.solo.io
   names:
-    kind: SecurityRule
-    listKind: SecurityRuleList
-    plural: securityrules
-    singular: securityrule
+    kind: AccessControlPolicy
+    listKind: AccessControlPolicyList
+    plural: accesscontrolpolicies
+    singular: accesscontrolpolicy
   scope: Namespaced
   subresources:
     status: {}
@@ -56,14 +56,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: meshgroupcertificatesigningrequests.config.zephyr.solo.io
+  name: meshgroups.config.zephyr.solo.io
 spec:
   group: config.zephyr.solo.io
   names:
-    kind: MeshGroupCertificateSigningRequest
-    listKind: MeshGroupCertificateSigningRequestList
-    plural: meshgroupcertificatesigningrequests
-    singular: meshgroupcertificatesigningrequest
+    kind: MeshGroup
+    listKind: MeshGroupList
+    plural: meshgroups
+    singular: meshgroup
   scope: Namespaced
   subresources:
     status: {}

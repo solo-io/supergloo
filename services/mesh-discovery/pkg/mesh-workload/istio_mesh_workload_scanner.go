@@ -8,8 +8,9 @@ import (
 	pb_types "github.com/gogo/protobuf/types"
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/constants"
@@ -53,7 +54,7 @@ type istioMeshWorkloadScanner struct {
 	deploymentFetcher OwnerFetcher
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*v1alpha1.MeshWorkload, error) {
+func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
 	if !i.isIstioPod(pod) {
 		return nil, nil
 	}
@@ -61,14 +62,14 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 	if err != nil {
 		return nil, err
 	}
-	return &v1alpha1.MeshWorkload{
+	return &discoveryv1alpha1.MeshWorkload{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
 			Namespace: env.DefaultWriteNamespace,
 			Labels:    DiscoveryLabels,
 		},
-		Spec: types.MeshWorkloadSpec{
-			KubeController: &types.ResourceRef{
+		Spec: discovery_types.MeshWorkloadSpec{
+			KubeController: &core_types.ResourceRef{
 				Kind:      &pb_types.StringValue{Value: deployment.Kind},
 				Name:      deployment.Name,
 				Namespace: deployment.Namespace,

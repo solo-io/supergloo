@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core/mocks"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/common/concurrency"
 	mock_concurrency "github.com/solo-io/mesh-projects/pkg/common/concurrency/mocks"
 	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"

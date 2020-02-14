@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core/mocks"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mesh_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
 	mock_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/mocks"
 	"k8s.io/apimachinery/pkg/api/errors"

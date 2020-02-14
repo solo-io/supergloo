@@ -1,0 +1,59 @@
+syntax = "proto3";
+package discovery.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+import "mesh-projects/api/core/v1alpha1/health.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/*
+Meshes represent a currently registered service mesh.
+*/
+message MeshSpec {
+    oneof mesh_type {
+        IstioMesh istio = 1;
+        AwsAppMesh aws_app_mesh = 2;
+        LinkerdMesh linkerd = 3;
+        ConsulConnectMesh consul_connect = 4;
+    }
+
+    core.zephyr.solo.io.ResourceRef cluster = 5;
+}
+
+message MeshStatus {
+
+}
+
+
+message MeshInstallation {
+    // where the control plane has been installed
+    string installation_namespace = 1;
+
+    // version of the mesh which has been installed
+    // Note that the version may be "latest"
+    string version = 2;
+}
+
+// Mesh object representing an installed Istio control plane
+message IstioMesh {
+    MeshInstallation installation = 1;
+}
+
+// Mesh object representing AWS App Mesh
+message AwsAppMesh {
+    MeshInstallation installation = 1;
+    // The AWS region the AWS App Mesh control plane resources exist in.
+    string region = 2;
+}
+
+// Mesh object representing an installed Linkerd control plane
+message LinkerdMesh {
+    MeshInstallation installation = 1;
+}
+
+message ConsulConnectMesh {
+    MeshInstallation installation = 1;
+}
+

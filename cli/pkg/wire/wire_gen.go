@@ -27,7 +27,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -49,7 +51,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	kubernetesClusterClient, err := kube.NewKubernetesClusterClient(masterConfig)
+	kubernetesClusterClient, err := discovery_core.NewGeneratedKubernetesClusterClient(masterConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
 	clientsFactory := DefaultClientsFactoryProvider()
 	kubeLoader := common_config.DefaultKubeLoaderProvider(optionsOptions)
-	registrationCmd := register.ClusterRegistrationCmd(kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
 	imageNameParser := docker.NewImageNameParser()
@@ -89,5 +91,18 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader)
 	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
+	return command
+}
+
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader) *cobra.Command {
+	optionsOptions := options.NewOptionsProvider()
+	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
+	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
+	versionCommand := version.VersionCmd(out, clientsFactory, optionsOptions)
+	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, kubeLoader, imageNameParser, fileReader)
+	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
+	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
+	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
 	return command
 }

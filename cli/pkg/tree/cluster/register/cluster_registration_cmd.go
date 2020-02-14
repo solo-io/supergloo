@@ -1,6 +1,7 @@
 package register
 
 import (
+	"context"
 	"io"
 
 	"github.com/google/wire"
@@ -18,6 +19,7 @@ var RegistrationSet = wire.NewSet(
 )
 
 func ClusterRegistrationCmd(
+	ctx context.Context,
 	kubeClientsFactory common.KubeClientsFactory,
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
@@ -30,7 +32,7 @@ func ClusterRegistrationCmd(
 		Short: cliconstants.ClusterRegisterCommand.Short,
 		Long:  cliconstants.ClusterRegisterCommand.Long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RegisterCluster(clientsFactory, kubeClientsFactory, opts, out, kubeLoader)
+			return RegisterCluster(ctx, clientsFactory, kubeClientsFactory, opts, out, kubeLoader)
 		},
 	}
 

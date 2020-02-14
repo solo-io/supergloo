@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 )
 
@@ -23,7 +23,7 @@ var _ = Describe("Cluster Root Cmd", func() {
 	})
 
 	It("complains if it is invoked without a subcommand", func() {
-		output, err := cli_mocks.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("cluster --kubeconfig foo")
+		output, err := cli_test.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("cluster --kubeconfig foo")
 		Expect(output).To(BeEmpty())
 
 		nonTerminalCommandErrorBuilder := cli_util.NonTerminalCommand("cluster")

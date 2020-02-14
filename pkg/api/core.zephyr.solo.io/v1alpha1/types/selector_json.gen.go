@@ -17,50 +17,6 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for LabelSelector
-func (this *LabelSelector) MarshalJSON() ([]byte, error) {
-	str, err := SelectorMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for LabelSelector
-func (this *LabelSelector) UnmarshalJSON(b []byte) error {
-	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for ResourceSelector
-func (this *ResourceSelector) MarshalJSON() ([]byte, error) {
-	str, err := SelectorMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ResourceSelector
-func (this *ResourceSelector) UnmarshalJSON(b []byte) error {
-	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for NamespaceSelector
-func (this *NamespaceSelector) MarshalJSON() ([]byte, error) {
-	str, err := SelectorMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for NamespaceSelector
-func (this *NamespaceSelector) UnmarshalJSON(b []byte) error {
-	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for ServiceSelector
-func (this *ServiceSelector) MarshalJSON() ([]byte, error) {
-	str, err := SelectorMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ServiceSelector
-func (this *ServiceSelector) UnmarshalJSON(b []byte) error {
-	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for ClusterSelector
 func (this *ClusterSelector) MarshalJSON() ([]byte, error) {
 	str, err := SelectorMarshaler.MarshalToString(this)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -40,7 +41,7 @@ type necessaryMocks struct {
 	manifestBuilder        *mock_operator.MockInstallerManifestBuilder
 	fileReader             *cli_mocks.MockFileReader
 
-	meshctl cli_mocks.MockMeshctl
+	meshctl cli_test.MockMeshctl
 }
 
 var _ = Describe("Cluster Operations", func() {
@@ -85,7 +86,7 @@ var _ = Describe("Cluster Operations", func() {
 				return operatorManager
 			}
 
-			meshctl := cli_mocks.MockMeshctl{
+			meshctl := cli_test.MockMeshctl{
 				MockController: ctrl,
 				Ctx:            ctx,
 				Clients: common.Clients{

@@ -6,8 +6,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
@@ -40,7 +41,9 @@ type linkerdMeshScanner struct {
 	imageNameParser docker.ImageNameParser
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment) (*mp_v1alpha1.Mesh, error) {
+func (l *linkerdMeshScanner) ScanDeployment(_ context.Context,
+	deployment *k8s_apps_v1.Deployment) (*discoveryv1alpha1.Mesh, error) {
+
 	linkerdController, err := l.detectLinkerdController(deployment)
 
 	if err != nil {
@@ -51,22 +54,22 @@ func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_a
 		return nil, nil
 	}
 
-	return &mp_v1alpha1.Mesh{
+	return &discoveryv1alpha1.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      linkerdController.name(),
 			Namespace: env.DefaultWriteNamespace,
 			Labels:    DiscoveryLabels,
 		},
-		Spec: v1alpha1_types.MeshSpec{
-			MeshType: &v1alpha1_types.MeshSpec_Linkerd{
-				Linkerd: &v1alpha1_types.LinkerdMesh{
-					Installation: &v1alpha1_types.MeshInstallation{
+		Spec: discovery_types.MeshSpec{
+			MeshType: &discovery_types.MeshSpec_Linkerd{
+				Linkerd: &discovery_types.LinkerdMesh{
+					Installation: &discovery_types.MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               linkerdController.version,
 					},
 				},
 			},
-			Cluster: &v1alpha1_types.ResourceRef{
+			Cluster: &core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
 				Namespace: env.DefaultWriteNamespace,
 			},

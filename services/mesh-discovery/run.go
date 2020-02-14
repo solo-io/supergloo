@@ -3,7 +3,7 @@ package mesh_discovery
 import (
 	"context"
 
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 
 	"github.com/solo-io/go-utils/contextutils"

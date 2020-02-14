@@ -4,58 +4,108 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.i
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 
-// select resources by their labels
-message LabelSelector {
-    map<string, string> labels_to_match = 1;
-}
-
-// select resources individually
-message ResourceSelector {
-    // apply the selector to one or more services by adding their refs here
-    repeated ResourceRef services = 1;
-}
-
-// select all resources in these namespaces
-message NamespaceSelector {
-    // list of namespaces to search
-    repeated string namespaces = 1;
-}
-
 /*
-    specifies a method by which to select pods
-    within a mesh for the application of rules and policies
+    Clusters are represented in Service Mesh Hub using a KubernetesCluster custom resource, which has the canonical
+    name, connection/authentication information, as well as other imporant metadata about the cluster. The following
+    selector uses the `KubernetesCluster` custom resoruces to aid in selecting resources from multiple kubernetes
+    clusters simultaneously. Therefore, the labels and resoruce reference fields in the `ClusterSelector` refer to
+    our `KubernetesCluster` resources, which as mentioned earlier represent real clusters
 
-    Precedence:
-    1. LabelSelector
-    2. NamespaceSelector
-    3. ResourceSelector
-*/
-message ServiceSelector {
+    These `KubernetesCluster` resources currently all live in the install namespace of the Service Mesh Hub management
+    plane. This may change at some point in the future, and if it does, we may add a namespaces field to the selector
+    below.
 
-    LabelSelector labels = 1;
-
-    ResourceSelector resources = 4;
-
-    NamespaceSelector namespaces = 3;
-}
-
-/*
-    Precedence:
-    1. LabelSelector
-    2. ResourceSelector
+    Only one of (labels) or (resource refs) may be provided. If both are provided, it will be
+    considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
 */
 message ClusterSelector {
-    // specify the type of selector to use with selectorType
     // select clusters by their labels
-    LabelSelector label_selector = 1;
+    map<string, string> labels = 1;
 
-    // select clusters by their names
-    ResourceSelector cluster_selector = 4;
+    // apply the selector to one or more services by adding their refs here
+    repeated ResourceRef clusters = 2;
 }
 
-// global selector used to select resources from any set of clusters, namespaces, and/or labels
-message Selector {
-    ClusterSelector cluster_selector = 1;
+/*
+    Global selector used to select resources from any set of clusters, namespaces, and/or labels
 
-    ServiceSelector service_selector = 2;
+    Specifies a method by which to select pods within a mesh for the application of rules and policies.
+
+    Only one of (labels + namespaces) or (resource refs) may be provided. If all three are provided, it will be
+    considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
+
+    Valid:
+        1.
+            selector:
+                labels:
+                    foo: bar
+                    hello: world
+                namespaces:
+                - default
+        2.
+            selector:
+                refs:
+                - name: foo
+                  namespace: bar
+
+    Invalid:
+        1.
+            selector:
+                labels:
+                    foo: bar
+                    hello: world
+                namespaces:
+                - default
+                refs:
+                - name: foo
+                  namespace: bar
+
+    By default labels will select across all namespaces, unless a list of namespaces is provided, in which case
+    it will only select from those. An empty or nil list is equal to AllNamespaces.
+
+    If no labels are given, and only namespaces, the full list of resources from the namespace will be selected.
+
+    The following selector will select all resources with the following labels in every namespace:
+
+    selector:
+        labels:
+            foo: bar
+            hello: world
+
+    Whereas the next selector will only select from the specified namespaces (foo, bar):
+
+    selector:
+        labels:
+            foo: bar
+            hello: world
+        namespaces
+        - foo
+        - bar
+
+    This final selector will select all resources of a given type in the target namespace (foo):
+
+    selector
+        namespaces
+        - foo
+*/
+message Selector {
+    // map of labels to match against
+    map<string, string> labels = 1;
+
+    // list of namespaces to search
+    repeated string namespaces = 2;
+
+    // apply the selector to one or more services by adding their refs here
+    repeated ResourceRef refs = 3;
+
+    /*
+        Specifies the cluster in which the preceding resources should be matched.
+
+        The behavior of this field is as follows:
+
+        1. If left out (nil) only the local cluster will be selected
+        2. If present, but not filled in (empty struct), will match all clusters
+        3. If present, and has non-nil fields, see `ClusterSelector` definition above for behavior.
+    */
+    ClusterSelector clusters = 4;
 }

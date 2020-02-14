@@ -10,8 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh-workload"
@@ -53,14 +54,14 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	})
 
 	It("should scan pod", func() {
-		expectedMeshWorkload := &v1alpha1.MeshWorkload{
+		expectedMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: env.DefaultWriteNamespace,
 				Labels:    mesh_workload.DiscoveryLabels,
 			},
-			Spec: types.MeshWorkloadSpec{
-				KubeController: &types.ResourceRef{
+			Spec: discovery_types.MeshWorkloadSpec{
+				KubeController: &core_types.ResourceRef{
 					Kind:      &pb_types.StringValue{Value: deployment.Kind},
 					Name:      deployment.Name,
 					Namespace: deployment.Namespace,

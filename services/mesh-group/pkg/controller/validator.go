@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 )
 
 var (
@@ -77,11 +79,13 @@ func (m *meshGroupValidator) Validate(ctx context.Context, mg *v1alpha1.MeshGrou
 	}, nil
 }
 
-func getMeshesForRefs(refs []*types.ResourceRef, meshList *v1alpha1.MeshList) ([]*v1alpha1.Mesh, error) {
-	var result []*v1alpha1.Mesh
+func getMeshesForRefs(refs []*core_types.ResourceRef,
+	meshList *discoveryv1alpha1.MeshList) ([]*discoveryv1alpha1.Mesh, error) {
+
+	var result []*discoveryv1alpha1.Mesh
 	var invalidRefs []string
 	for _, ref := range refs {
-		var foundMesh *v1alpha1.Mesh
+		var foundMesh *discoveryv1alpha1.Mesh
 		for _, mesh := range meshList.Items {
 			if mesh.GetName() == ref.GetName() && mesh.GetNamespace() == ref.GetNamespace() {
 				foundMesh = &mesh
