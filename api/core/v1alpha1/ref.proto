@@ -22,6 +22,6 @@ message ResourceRef {
     string namespace = 4;
 
     // (optional) the cluster in which the object lives
-    // if left empty will assume the curent cluster
+    // if left empty will assume the current cluster
     google.protobuf.StringValue cluster = 5;
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
 )
 
 var (
@@ -42,10 +42,10 @@ type MeshGroupValidator interface {
 }
 
 type meshGroupValidator struct {
-	meshClient discovery.LocalMeshClient
+	meshClient zephyr_core.MeshClient
 }
 
-func MeshGroupValidatorProvider(meshClient discovery.LocalMeshClient) MeshGroupValidator {
+func MeshGroupValidatorProvider(meshClient zephyr_core.MeshClient) MeshGroupValidator {
 	return &meshGroupValidator{
 		meshClient: meshClient,
 	}

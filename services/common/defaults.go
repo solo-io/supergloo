@@ -11,5 +11,5 @@ var (
 		an empty string as a name, so this is meant to be an known alternative which will not
 		clash with any kubernetes names.
 	*/
-	LocalClusterName = "$local$"
+	LocalClusterName = "local"
 )

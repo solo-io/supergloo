@@ -36,7 +36,7 @@ type ResourceRef struct {
 	// if left empty it will default to the namespace of the object referencing it.
 	Namespace string `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// (optional) the cluster in which the object lives
-	// if left empty will assume the curent cluster
+	// if left empty will assume the current cluster
 	Cluster              *types.StringValue `protobuf:"bytes,5,opt,name=cluster,proto3" json:"cluster,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`

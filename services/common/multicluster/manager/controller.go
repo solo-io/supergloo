@@ -89,11 +89,11 @@ func NewAsyncManagerControllerFromLocal(ctx context.Context, mgr manager.Manager
 	return mcMgr
 }
 
-func (a *AsyncManagerController) AsyncManagerInformer() AsyncManagerInformer {
-	return a
+func (m *AsyncManagerController) AsyncManagerInformer() AsyncManagerInformer {
+	return m
 }
-func (a *AsyncManagerController) KubeConfigHandler() KubeConfigHandler {
-	return a
+func (m *AsyncManagerController) KubeConfigHandler() KubeConfigHandler {
+	return m
 }
 
 // default constructor for AsyncManagerController, mostly used for testing

@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
 	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -18,7 +18,7 @@ import (
 
 var (
 	MeshGroupProviderSet = wire.NewSet(
-		discovery.NewLocalMeshClient,
+		zephyr_core.NewMeshClient,
 		MeshGroupValidatorProvider,
 		MeshGroupEventHandlerProvider,
 	)

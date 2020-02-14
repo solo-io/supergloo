@@ -11,7 +11,7 @@ import (
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	mock_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mocks"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -21,7 +21,7 @@ var _ = Describe("validator", func() {
 	var (
 		ctrl       *gomock.Controller
 		validator  controller.MeshGroupValidator
-		meshClient *mock_discovery.MockLocalMeshClient
+		meshClient *mock_core.MockMeshClient
 		ctx        context.Context
 
 		testErr = eris.New("hello")
@@ -29,7 +29,7 @@ var _ = Describe("validator", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		meshClient = mock_discovery.NewMockLocalMeshClient(ctrl)
+		meshClient = mock_core.NewMockMeshClient(ctrl)
 		validator = controller.MeshGroupValidatorProvider(meshClient)
 		ctx = context.TODO()
 	})

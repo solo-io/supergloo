@@ -10,30 +10,30 @@ import (
 
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/consul"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/istio"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/linkerd"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/consul"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/istio"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/linkerd"
 )
 
 // Injectors from wire.go:
 
-func InitializeMeshDiscovery(ctx context.Context) (MeshDiscoveryContext, error) {
+func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
+	imageNameParser := docker.NewImageNameParser()
 	config, err := wire.LocalKubeConfigProvider()
 	if err != nil {
-		return MeshDiscoveryContext{}, err
+		return DiscoveryContext{}, err
 	}
 	asyncManager, err := wire.LocalManagerProvider(ctx, config)
 	if err != nil {
-		return MeshDiscoveryContext{}, err
+		return DiscoveryContext{}, err
 	}
 	asyncManagerController := wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
-	imageNameParser := docker.NewImageNameParser()
-	istioMeshFinder := istio.NewIstioMeshFinder(imageNameParser)
-	consulConnectInstallationFinder := consul.NewConsulConnectInstallationFinder(imageNameParser)
-	consulConnectMeshFinder := consul.NewConsulMeshFinder(imageNameParser, consulConnectInstallationFinder)
-	linkerdMeshFinder := linkerd.NewLinkerdMeshFinder(imageNameParser)
-	meshDiscoveryContext := MeshDiscoveryContextProvider(multiClusterDependencies, istioMeshFinder, consulConnectMeshFinder, linkerdMeshFinder)
-	return meshDiscoveryContext, nil
+	istioMeshScanner := istio.NewIstioMeshScanner(imageNameParser)
+	consulConnectInstallationScanner := consul.NewConsulConnectInstallationScanner(imageNameParser)
+	consulConnectMeshScanner := consul.NewConsulMeshScanner(imageNameParser, consulConnectInstallationScanner)
+	linkerdMeshScanner := linkerd.NewLinkerdMeshScanner(imageNameParser)
+	discoveryContext := DiscoveryContextProvider(imageNameParser, multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner)
+	return discoveryContext, nil
 }

@@ -8,8 +8,8 @@ package wire
 import (
 	"context"
 
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/core"
 	"github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery"
 	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
 )
 
@@ -27,8 +27,8 @@ func InitializeMeshGroup(ctx context.Context) (MeshGroupContext, error) {
 	asyncManagerController := wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
-	localMeshClient := discovery.NewLocalMeshClient(asyncManager)
-	meshGroupValidator := controller.MeshGroupValidatorProvider(localMeshClient)
+	meshClient := zephyr_core.NewMeshClient(asyncManager)
+	meshGroupValidator := controller.MeshGroupValidatorProvider(meshClient)
 	meshGroupEventHandler := controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
 	meshGroupContext := MeshGroupContextProvider(multiClusterDependencies, meshGroupEventHandler)
 	return meshGroupContext, nil
