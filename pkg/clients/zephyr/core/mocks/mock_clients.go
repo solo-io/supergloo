@@ -136,6 +136,20 @@ func (mr *MockMeshWorkloadClientMockRecorder) Create(ctx, mesh interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Create), ctx, mesh)
 }
 
+// Update mocks base method
+func (m *MockMeshWorkloadClient) Update(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockMeshWorkloadClientMockRecorder) Update(ctx, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Update), ctx, mesh)
+}
+
 // Delete mocks base method
 func (m *MockMeshWorkloadClient) Delete(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()

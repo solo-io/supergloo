@@ -171,6 +171,36 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	})
 
 	It("should do nothing if MeshWorkload unchanged", func() {
+		newDiscoveredMeshWorkload := &v1alpha1.MeshWorkload{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "name",
+				Namespace: "namespace",
+			},
+			Spec: types.MeshWorkloadSpec{
+				KubeController: &types.ResourceRef{
+					Namespace: "controller-namespace",
+				},
+			},
+		}
+		newPod := &corev1.Pod{}
+		mesh := v1alpha1.Mesh{
+			Spec: types.MeshSpec{
+				Cluster: &types.ResourceRef{Name: clusterName},
+			},
+			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
+		}
+		meshList := &v1alpha1.MeshList{Items: []v1alpha1.Mesh{mesh}}
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(discoveredMeshWorkload, nil)
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(newDiscoveredMeshWorkload, nil)
+		objKey, _ := client.ObjectKeyFromObject(newDiscoveredMeshWorkload)
+		mockLocalMeshWorkloadClient.EXPECT().Get(ctx, objKey).Return(nil, notFoundErr)
+		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, newDiscoveredMeshWorkload).Return(nil)
+		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
+		err := meshWorkloadFinder.Update(pod, newPod)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should update MeshWorkload if changed", func() {
 		newNamespace := "new-controller-namespace"
 		newDiscoveredMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
@@ -197,6 +227,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().Get(ctx, objKey).Return(nil, notFoundErr)
 		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, newDiscoveredMeshWorkload).Return(nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
+		mockLocalMeshWorkloadClient.EXPECT().Update(ctx, newDiscoveredMeshWorkload).Return(nil)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
 	})

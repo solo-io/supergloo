@@ -114,7 +114,7 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 			return nil
 		} else {
 			// TODO: delete
-			return d.createMeshWorkloadIfNotExists(newMeshWorkload)
+			return d.localMeshWorkloadClient.Update(d.ctx, newMeshWorkload)
 		}
 	}
 }

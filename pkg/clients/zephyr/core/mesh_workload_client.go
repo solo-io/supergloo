@@ -12,20 +12,24 @@ func NewMeshWorkloadClient(client client.Client) MeshWorkloadClient {
 }
 
 type meshWorkloadClient struct {
-	kubeClient client.Client
+	dynamicClient client.Client
+}
+
+func (m *meshWorkloadClient) Update(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
+	return m.dynamicClient.Update(ctx, mesh)
 }
 
 func (m *meshWorkloadClient) Create(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
-	return m.kubeClient.Create(ctx, mesh)
+	return m.dynamicClient.Create(ctx, mesh)
 }
 
 func (m *meshWorkloadClient) Delete(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
-	return m.kubeClient.Delete(ctx, mesh)
+	return m.dynamicClient.Delete(ctx, mesh)
 }
 
 func (m *meshWorkloadClient) Get(ctx context.Context, objKey client.ObjectKey) (*v1alpha1.MeshWorkload, error) {
 	mesh := v1alpha1.MeshWorkload{}
-	err := m.kubeClient.Get(ctx, objKey, &mesh)
+	err := m.dynamicClient.Get(ctx, objKey, &mesh)
 	if err != nil {
 		return nil, err
 	}
