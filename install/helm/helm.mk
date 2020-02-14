@@ -6,7 +6,7 @@ HELM_SYNC_DIR := $(HELM_OUTPUT_DIR)/helm
 CHARTS_DIR := $(HELM_ROOTDIR)/charts
 PACKAGED_CHARTS_DIR := $(HELM_SYNC_DIR)/charts
 # list of SMH component directories, must be a subdirectory in install/helm/charts/
-CHARTS := mesh-discovery mesh-group custom-resource-definitions
+CHARTS := $(COMPONENTS) custom-resource-definitions
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 # TAGGED_VERSION := $(shell git describe --tags)

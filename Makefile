@@ -17,6 +17,8 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
+COMPONENTS := mesh-discovery mesh-group
+
 # include helm makefile so it can be ran from the root
 include install/helm/helm.mk
 
@@ -174,9 +176,15 @@ upload-github-release-assets: build-cli
 .PHONY: docker docker-push
 docker: mesh-discovery-docker mesh-group-docker
 
+# $(1) name of component
+define docker_push
+docker push quay.io/solo-io/$(1):$(VERSION);
+endef
+
 # Depends on DOCKER_IMAGES, which is set to docker if RELEASE is "true", otherwise empty (making this a no-op).
 # This prevents executing the dependent targets if RELEASE is not true, while still enabling `make docker`
 # to be used for local testing.
 # docker-push is intended to be run by CI
 docker-push: docker
-	docker push quay.io/solo-io/mesh-discovery:$(VERSION)
+	$(foreach component,$(COMPONENTS),$(call docker_push,$(component)))
+
