@@ -57,6 +57,8 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 				return InstallErr(err)
 			}
 			if err := kubeClients.HelmInstaller.Install(&helminstall.InstallerConfig{
+				KubeConfig:         opts.Root.KubeConfig,
+				KubeContext:        opts.Root.KubeContext,
 				DryRun:             opts.SmhInstall.DryRun,
 				Verbose:            opts.Root.Verbose,
 				InstallNamespace:   opts.Root.WriteNamespace,

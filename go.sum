@@ -781,8 +781,8 @@ github.com/solo-io/autopilot v0.1.1-0.20200210221921-d2a29041d577 h1:XdgQ94p0BcC
 github.com/solo-io/autopilot v0.1.1-0.20200210221921-d2a29041d577/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
 github.com/solo-io/go-utils v0.11.7/go.mod h1:D5lbi4EyIMq+T5gzjJacu0Ou4Z1brL7g2YYYYgYBJso=
 github.com/solo-io/go-utils v0.13.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
-github.com/solo-io/go-utils v0.13.4 h1:OMmO8jOZky3RSzPLGyZr+CYGa+PYm43KO40Ke+j6QLM=
-github.com/solo-io/go-utils v0.13.4/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
+github.com/solo-io/go-utils v0.14.0 h1:y7iCqfQLFujS1UDdMKU+PjYoKD4CH07YicDZddL+/Is=
+github.com/solo-io/go-utils v0.14.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/protoc-gen-ext v0.0.7 h1:s9uFGtAoSsXL7vukWKPgofkxzHUeje7m6+0C3rYA2fU=
 github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/reporting-client v0.1.3 h1:qaUgvN2MXAl6NgqaLxZLd3xCE+5lQrCDz57nqtQmSDM=

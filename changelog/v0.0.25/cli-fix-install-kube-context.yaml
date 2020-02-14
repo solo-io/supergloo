@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix an install bug where Helm uses the user's current kube context for installation.
+    issueLink: https://github.com/solo-io/mesh-projects/issues/179
