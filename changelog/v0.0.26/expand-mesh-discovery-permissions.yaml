@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Set mesh-discovery to ClusterRole and expand permissions.
+    issueLink: https://github.com/solo-io/mesh-projects/issues/193
