@@ -53,7 +53,7 @@ func Run(ctx context.Context) {
 		discoveryContext.MultiClusterDeps,
 
 		// need to be sure to register the v1alpha1 CRDs with the controller runtime
-		[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddSchemeV1Alpha1},
+		[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
 
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "discovery-controller",
