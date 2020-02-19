@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/wire"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -16,8 +17,13 @@ import (
 
 type IstioInstallationCmd *cobra.Command
 
-var IstioInstallationProviderSet = wire.NewSet(
-	BuildIstioInstallationCmd,
+var (
+	IstioInstallationProviderSet = wire.NewSet(
+		BuildIstioInstallationCmd,
+	)
+	ContextNotFound = func(contextName string) error {
+		return eris.Errorf("Context '%s' not found in kubeconfig file", contextName)
+	}
 )
 
 func BuildIstioInstallationCmd(
@@ -64,7 +70,7 @@ func buildIstioInstaller(
 	fileReader common.FileReader,
 ) (IstioInstaller, error) {
 
-	restClientGetter := kubeLoader.RESTClientGetter(kubeConfigPath)
+	restClientGetter := kubeLoader.RESTClientGetter(kubeConfigPath, kubeContext)
 	unstructuredKubeClient := clients.UnstructuredKubeClientFactory(restClientGetter)
 
 	rawCfg, err := kubeLoader.GetRawConfigForContext(kubeConfigPath, kubeContext)
@@ -76,7 +82,11 @@ func buildIstioInstaller(
 	if contextName == "" {
 		contextName = rawCfg.CurrentContext
 	}
-	clusterName := rawCfg.Contexts[contextName].Cluster
+	context, ok := rawCfg.Contexts[contextName]
+	if !ok {
+		return nil, ContextNotFound(contextName)
+	}
+	clusterName := context.Cluster
 
 	operatorManager := clients.IstioClients.OperatorManagerFactory(
 		unstructuredKubeClient,

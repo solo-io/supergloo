@@ -11,7 +11,13 @@ type deploymentClient struct {
 	client client.Client
 }
 
-func NewDeploymentClient(client client.Client) *deploymentClient {
+type DeploymentClientFactory func(client client.Client) DeploymentClient
+
+func DeploymentClientFactoryProvider() DeploymentClientFactory {
+	return NewDeploymentClient
+}
+
+func NewDeploymentClient(client client.Client) DeploymentClient {
 	return &deploymentClient{client: client}
 }
 

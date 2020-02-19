@@ -4,7 +4,7 @@ package controller
 import (
 	"context"
 
-	. "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
+	security_zephyr_solo_io_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/autopilot/pkg/events"
@@ -14,41 +14,41 @@ import (
 )
 
 type MeshGroupCertificateSigningRequestEventHandler interface {
-	Create(obj *MeshGroupCertificateSigningRequest) error
-	Update(old, new *MeshGroupCertificateSigningRequest) error
-	Delete(obj *MeshGroupCertificateSigningRequest) error
-	Generic(obj *MeshGroupCertificateSigningRequest) error
+	Create(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	Update(old, new *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	Delete(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	Generic(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
 }
 
 type MeshGroupCertificateSigningRequestEventHandlerFuncs struct {
-	OnCreate  func(obj *MeshGroupCertificateSigningRequest) error
-	OnUpdate  func(old, new *MeshGroupCertificateSigningRequest) error
-	OnDelete  func(obj *MeshGroupCertificateSigningRequest) error
-	OnGeneric func(obj *MeshGroupCertificateSigningRequest) error
+	OnCreate  func(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	OnUpdate  func(old, new *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	OnDelete  func(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
+	OnGeneric func(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error
 }
 
-func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Create(obj *MeshGroupCertificateSigningRequest) error {
+func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Create(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Delete(obj *MeshGroupCertificateSigningRequest) error {
+func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Delete(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Update(objOld, objNew *MeshGroupCertificateSigningRequest) error {
+func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Update(objOld, objNew *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Generic(obj *MeshGroupCertificateSigningRequest) error {
+func (f *MeshGroupCertificateSigningRequestEventHandlerFuncs) Generic(obj *security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ type MeshGroupCertificateSigningRequestControllerImpl struct {
 }
 
 func NewMeshGroupCertificateSigningRequestController(name string, mgr manager.Manager) (MeshGroupCertificateSigningRequestController, error) {
-	if err := AddToScheme(mgr.GetScheme()); err != nil {
+	if err := security_zephyr_solo_io_v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func NewMeshGroupCertificateSigningRequestController(name string, mgr manager.Ma
 
 func (c *MeshGroupCertificateSigningRequestControllerImpl) AddEventHandler(ctx context.Context, h MeshGroupCertificateSigningRequestEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericMeshGroupCertificateSigningRequestHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &MeshGroupCertificateSigningRequest{}, handler, predicates...); err != nil {
+	if err := c.watcher.Watch(ctx, &security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
@@ -91,7 +91,7 @@ type genericMeshGroupCertificateSigningRequestHandler struct {
 }
 
 func (h genericMeshGroupCertificateSigningRequestHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*MeshGroupCertificateSigningRequest)
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroupCertificateSigningRequest handler received event for %T", object)
 	}
@@ -99,7 +99,7 @@ func (h genericMeshGroupCertificateSigningRequestHandler) Create(object runtime.
 }
 
 func (h genericMeshGroupCertificateSigningRequestHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*MeshGroupCertificateSigningRequest)
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroupCertificateSigningRequest handler received event for %T", object)
 	}
@@ -107,11 +107,11 @@ func (h genericMeshGroupCertificateSigningRequestHandler) Delete(object runtime.
 }
 
 func (h genericMeshGroupCertificateSigningRequestHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*MeshGroupCertificateSigningRequest)
+	objOld, ok := old.(*security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroupCertificateSigningRequest handler received event for %T", old)
 	}
-	objNew, ok := new.(*MeshGroupCertificateSigningRequest)
+	objNew, ok := new.(*security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroupCertificateSigningRequest handler received event for %T", new)
 	}
@@ -119,7 +119,7 @@ func (h genericMeshGroupCertificateSigningRequestHandler) Update(old, new runtim
 }
 
 func (h genericMeshGroupCertificateSigningRequestHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*MeshGroupCertificateSigningRequest)
+	obj, ok := object.(*security_zephyr_solo_io_v1alpha1.MeshGroupCertificateSigningRequest)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroupCertificateSigningRequest handler received event for %T", object)
 	}

@@ -4,7 +4,7 @@ package controller
 import (
 	"context"
 
-	. "k8s.io/api/apps/v1"
+	apps_v1 "k8s.io/api/apps/v1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/autopilot/pkg/events"
@@ -14,41 +14,41 @@ import (
 )
 
 type DeploymentEventHandler interface {
-	Create(obj *Deployment) error
-	Update(old, new *Deployment) error
-	Delete(obj *Deployment) error
-	Generic(obj *Deployment) error
+	Create(obj *apps_v1.Deployment) error
+	Update(old, new *apps_v1.Deployment) error
+	Delete(obj *apps_v1.Deployment) error
+	Generic(obj *apps_v1.Deployment) error
 }
 
 type DeploymentEventHandlerFuncs struct {
-	OnCreate  func(obj *Deployment) error
-	OnUpdate  func(old, new *Deployment) error
-	OnDelete  func(obj *Deployment) error
-	OnGeneric func(obj *Deployment) error
+	OnCreate  func(obj *apps_v1.Deployment) error
+	OnUpdate  func(old, new *apps_v1.Deployment) error
+	OnDelete  func(obj *apps_v1.Deployment) error
+	OnGeneric func(obj *apps_v1.Deployment) error
 }
 
-func (f *DeploymentEventHandlerFuncs) Create(obj *Deployment) error {
+func (f *DeploymentEventHandlerFuncs) Create(obj *apps_v1.Deployment) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *DeploymentEventHandlerFuncs) Delete(obj *Deployment) error {
+func (f *DeploymentEventHandlerFuncs) Delete(obj *apps_v1.Deployment) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *DeploymentEventHandlerFuncs) Update(objOld, objNew *Deployment) error {
+func (f *DeploymentEventHandlerFuncs) Update(objOld, objNew *apps_v1.Deployment) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *DeploymentEventHandlerFuncs) Generic(obj *Deployment) error {
+func (f *DeploymentEventHandlerFuncs) Generic(obj *apps_v1.Deployment) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ type DeploymentControllerImpl struct {
 }
 
 func NewDeploymentController(name string, mgr manager.Manager) (DeploymentController, error) {
-	if err := AddToScheme(mgr.GetScheme()); err != nil {
+	if err := apps_v1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func NewDeploymentController(name string, mgr manager.Manager) (DeploymentContro
 
 func (c *DeploymentControllerImpl) AddEventHandler(ctx context.Context, h DeploymentEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericDeploymentHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &Deployment{}, handler, predicates...); err != nil {
+	if err := c.watcher.Watch(ctx, &apps_v1.Deployment{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
@@ -91,7 +91,7 @@ type genericDeploymentHandler struct {
 }
 
 func (h genericDeploymentHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*Deployment)
+	obj, ok := object.(*apps_v1.Deployment)
 	if !ok {
 		return errors.Errorf("internal error: Deployment handler received event for %T", object)
 	}
@@ -99,7 +99,7 @@ func (h genericDeploymentHandler) Create(object runtime.Object) error {
 }
 
 func (h genericDeploymentHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*Deployment)
+	obj, ok := object.(*apps_v1.Deployment)
 	if !ok {
 		return errors.Errorf("internal error: Deployment handler received event for %T", object)
 	}
@@ -107,11 +107,11 @@ func (h genericDeploymentHandler) Delete(object runtime.Object) error {
 }
 
 func (h genericDeploymentHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*Deployment)
+	objOld, ok := old.(*apps_v1.Deployment)
 	if !ok {
 		return errors.Errorf("internal error: Deployment handler received event for %T", old)
 	}
-	objNew, ok := new.(*Deployment)
+	objNew, ok := new.(*apps_v1.Deployment)
 	if !ok {
 		return errors.Errorf("internal error: Deployment handler received event for %T", new)
 	}
@@ -119,7 +119,7 @@ func (h genericDeploymentHandler) Update(old, new runtime.Object) error {
 }
 
 func (h genericDeploymentHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*Deployment)
+	obj, ok := object.(*apps_v1.Deployment)
 	if !ok {
 		return errors.Errorf("internal error: Deployment handler received event for %T", object)
 	}

@@ -1,35 +1,84 @@
 package wire
 
 import (
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mesh_consul "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/consul"
-	mesh_istio "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/istio"
-	mesh_linkerd "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/linkerd"
+	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
+	mesh_consul "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/consul"
+	mesh_istio "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/istio"
+	mesh_linkerd "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/linkerd"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 )
 
 // just used to package everything up for wire
 type DiscoveryContext struct {
-	ImageParser      docker.ImageNameParser
-	MultiClusterDeps multicluster.MultiClusterDependencies
-	// Mesh discovery
+	MultiClusterDeps    multicluster.MultiClusterDependencies
+	ClientFactories     ClientFactories
+	ControllerFactories ControllerFactories
+	MeshDiscovery       MeshDiscovery
+}
+
+type ClientFactories struct {
+	ReplicaSetClientFactory   kubernetes_apps.ReplicaSetClientFactory
+	DeploymentClientFactory   kubernetes_apps.DeploymentClientFactory
+	OwnerFetcherClientFactory mesh_workload.OwnerFetcherFactory
+	ServiceClientFactory      kubernetes_core.ServiceClientFactory
+	MeshServiceClientFactory  discovery_core.MeshServiceClientFactory
+	MeshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory
+}
+
+type ControllerFactories struct {
+	DeploymentControllerFactory   controllers.DeploymentControllerFactory
+	PodControllerFactory          controllers.PodControllerFactory
+	ServiceControllerFactory      controllers.ServiceControllerFactory
+	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
+}
+
+type MeshDiscovery struct {
 	IstioMeshScanner         mesh_istio.IstioMeshScanner
 	ConsulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner
 	LinkerdMeshScanner       mesh_linkerd.LinkerdMeshScanner
 }
 
 func DiscoveryContextProvider(
-	imageParser docker.ImageNameParser,
 	multiClusterDeps multicluster.MultiClusterDependencies,
 	istioMeshScanner mesh_istio.IstioMeshScanner,
 	consulConnectMeshScanner mesh_consul.ConsulConnectMeshScanner,
 	linkerdMeshScanner mesh_linkerd.LinkerdMeshScanner,
+	replicaSetClientFactory kubernetes_apps.ReplicaSetClientFactory,
+	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
+	ownerFetcherClientFactory mesh_workload.OwnerFetcherFactory,
+	serviceClientFactory kubernetes_core.ServiceClientFactory,
+	meshServiceClientFactory discovery_core.MeshServiceClientFactory,
+	meshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory,
+	podControllerFactory controllers.PodControllerFactory,
+	serviceControllerFactory controllers.ServiceControllerFactory,
+	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
+	deploymentControllerFactory controllers.DeploymentControllerFactory,
 ) DiscoveryContext {
+
 	return DiscoveryContext{
-		ImageParser:              imageParser,
-		MultiClusterDeps:         multiClusterDeps,
-		IstioMeshScanner:         istioMeshScanner,
-		ConsulConnectMeshScanner: consulConnectMeshScanner,
-		LinkerdMeshScanner:       linkerdMeshScanner,
+		MultiClusterDeps: multiClusterDeps,
+		ClientFactories: ClientFactories{
+			ReplicaSetClientFactory:   replicaSetClientFactory,
+			DeploymentClientFactory:   deploymentClientFactory,
+			OwnerFetcherClientFactory: ownerFetcherClientFactory,
+			ServiceClientFactory:      serviceClientFactory,
+			MeshServiceClientFactory:  meshServiceClientFactory,
+			MeshWorkloadClientFactory: meshWorkloadClientFactory,
+		},
+		ControllerFactories: ControllerFactories{
+			DeploymentControllerFactory:   deploymentControllerFactory,
+			PodControllerFactory:          podControllerFactory,
+			ServiceControllerFactory:      serviceControllerFactory,
+			MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
+		},
+		MeshDiscovery: MeshDiscovery{
+			IstioMeshScanner:         istioMeshScanner,
+			ConsulConnectMeshScanner: consulConnectMeshScanner,
+			LinkerdMeshScanner:       linkerdMeshScanner,
+		},
 	}
 }

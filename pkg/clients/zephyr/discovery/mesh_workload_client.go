@@ -7,6 +7,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type MeshWorkloadClientFactory func(client client.Client) MeshWorkloadClient
+
+func MeshWorkloadClientFactoryProvider() MeshWorkloadClientFactory {
+	return NewMeshWorkloadClient
+}
+
 func NewMeshWorkloadClient(client client.Client) MeshWorkloadClient {
 	return &meshWorkloadClient{client}
 }
@@ -34,4 +40,13 @@ func (m *meshWorkloadClient) Get(ctx context.Context, objKey client.ObjectKey) (
 		return nil, err
 	}
 	return &mesh, nil
+}
+
+func (m *meshWorkloadClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshWorkloadList, error) {
+	list := v1alpha1.MeshWorkloadList{}
+	err := m.dynamicClient.List(ctx, &list, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &list, nil
 }

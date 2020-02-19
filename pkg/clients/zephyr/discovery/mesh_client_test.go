@@ -9,14 +9,26 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	mock_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh/mocks"
 	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
+	k8s_apps_v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+func BuildDeployment(objMeta metav1.ObjectMeta) *k8s_apps_v1.Deployment {
+	return &k8s_apps_v1.Deployment{
+		ObjectMeta: objMeta,
+	}
+}
+
+func BuildMesh(objMeta metav1.ObjectMeta) *v1alpha1.Mesh {
+	return &v1alpha1.Mesh{
+		ObjectMeta: objMeta,
+	}
+}
 
 var _ = Describe("Local mesh client", func() {
 	var (
@@ -41,7 +53,7 @@ var _ = Describe("Local mesh client", func() {
 			Name:      "test-mesh",
 			Namespace: "ns",
 		}
-		mesh := mock_discovery.BuildMesh(meshObjectMeta)
+		mesh := BuildMesh(meshObjectMeta)
 
 		mgr.
 			EXPECT().
@@ -106,8 +118,8 @@ var _ = Describe("Local mesh client", func() {
 			Return(client)
 
 		k8sNotFoundErr := &errors.StatusError{
-			ErrStatus: v1.Status{
-				Reason: v1.StatusReasonNotFound,
+			ErrStatus: metav1.Status{
+				Reason: metav1.StatusReasonNotFound,
 			},
 		}
 		client.

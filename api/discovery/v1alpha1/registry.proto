@@ -19,10 +19,15 @@ message MeshServiceSpec {
        The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
     */
 
-    core.zephyr.solo.io.ResourceRef service = 1;
+    KubeService kube_service = 1;
 
     // The mesh with which this service is associated
     core.zephyr.solo.io.ResourceRef mesh = 2;
+}
+
+message KubeService {
+    core.zephyr.solo.io.ResourceRef ref = 1;
+    map<string, string> selector_labels = 2;
 }
 
 message MeshServiceStatus {
@@ -41,10 +46,24 @@ message MeshWorkloadSpec {
 
        The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
     */
-    core.zephyr.solo.io.ResourceRef kube_controller = 1;
+    core.zephyr.solo.io.ResourceRef kube_controller_ref = 1;
+
+    KubePod kube_pod = 3;
 
     // The mesh with which this workload is associated
     core.zephyr.solo.io.ResourceRef mesh = 2;
+
+}
+
+message KubePod {
+
+    // these are the labels directly from the pods that this controller owns
+    // NB: these are NEITHER the matchLabels nor the labels on the controller itself.
+    // we need these to determine which services are backed by this workload, and
+    // the service backing is determined by the pod labels
+    map<string, string> labels = 3;
+
+    string service_account_name = 4;
 }
 
 message MeshWorkloadStatus {

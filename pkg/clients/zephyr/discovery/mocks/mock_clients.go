@@ -179,6 +179,26 @@ func (mr *MockMeshWorkloadClientMockRecorder) Get(ctx, objKey interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Get), ctx, objKey)
 }
 
+// List mocks base method
+func (m *MockMeshWorkloadClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshWorkloadList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.MeshWorkloadList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockMeshWorkloadClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshWorkloadClient)(nil).List), varargs...)
+}
+
 // MockKubernetesClusterClient is a mock of KubernetesClusterClient interface
 type MockKubernetesClusterClient struct {
 	ctrl     *gomock.Controller
@@ -214,4 +234,80 @@ func (m *MockKubernetesClusterClient) Create(ctx context.Context, cluster *v1alp
 func (mr *MockKubernetesClusterClientMockRecorder) Create(ctx, cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockKubernetesClusterClient)(nil).Create), ctx, cluster)
+}
+
+// MockMeshServiceClient is a mock of MeshServiceClient interface
+type MockMeshServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshServiceClientMockRecorder
+}
+
+// MockMeshServiceClientMockRecorder is the mock recorder for MockMeshServiceClient
+type MockMeshServiceClientMockRecorder struct {
+	mock *MockMeshServiceClient
+}
+
+// NewMockMeshServiceClient creates a new mock instance
+func NewMockMeshServiceClient(ctrl *gomock.Controller) *MockMeshServiceClient {
+	mock := &MockMeshServiceClient{ctrl: ctrl}
+	mock.recorder = &MockMeshServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshServiceClient) EXPECT() *MockMeshServiceClientMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method
+func (m *MockMeshServiceClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha1.MeshService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.MeshService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockMeshServiceClientMockRecorder) Get(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMeshServiceClient)(nil).Get), ctx, key)
+}
+
+// Create mocks base method
+func (m *MockMeshServiceClient) Create(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, meshService}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockMeshServiceClientMockRecorder) Create(ctx, meshService interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, meshService}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshServiceClient)(nil).Create), varargs...)
+}
+
+// Update mocks base method
+func (m *MockMeshServiceClient) Update(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, meshService}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockMeshServiceClientMockRecorder) Update(ctx, meshService interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, meshService}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshServiceClient)(nil).Update), varargs...)
 }

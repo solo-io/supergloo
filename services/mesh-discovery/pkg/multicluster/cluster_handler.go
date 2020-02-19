@@ -3,17 +3,19 @@ package multicluster
 import (
 	"context"
 
-	"github.com/hashicorp/go-multierror"
+	controller4 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/pkg/common/concurrency"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
+	controller2 "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
-	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh-workload"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
+	mesh_service "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-service"
+	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/wire"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
@@ -31,26 +33,22 @@ var (
 // cluster that SMH runs in. This should be handled by this constructor implementation
 func NewDiscoveryClusterHandler(
 	ctx context.Context,
-	imageParser docker.ImageNameParser,
 	localManager mc_manager.AsyncManager,
-	deploymentControllerFactory controllers.DeploymentControllerFactory,
 	localMeshClient zephyr_core.MeshClient,
 	meshScanners []mesh.MeshScanner,
-	podControllerFactory controllers.PodControllerFactory,
+	meshWorkloadScannerFactories []mesh_workload.MeshWorkloadScannerFactory,
 	localMeshWorkloadClient zephyr_core.MeshWorkloadClient,
-	safeMapBuilder func() concurrency.ThreadSafeMap,
+	discoveryContext wire.DiscoveryContext,
 ) (mc_manager.AsyncManagerHandler, error) {
 
 	handler := &discoveryClusterHandler{
-		clusterNameToDeploymentController: safeMapBuilder(),
-		deploymentControllerFactory:       deploymentControllerFactory,
-		localMeshClient:                   localMeshClient,
-		meshScanners:                      meshScanners,
-		podControllerFactory:              podControllerFactory,
-		localMeshWorkloadClient:           localMeshWorkloadClient,
-		ctx:                               ctx,
-		localManager:                      localManager,
-		imageParser:                       imageParser,
+		localMeshClient:              localMeshClient,
+		meshScanners:                 meshScanners,
+		localMeshWorkloadClient:      localMeshWorkloadClient,
+		ctx:                          ctx,
+		localManager:                 localManager,
+		meshWorkloadScannerFactories: meshWorkloadScannerFactories,
+		discoveryContext:             discoveryContext,
 	}
 
 	// be sure that we are also watching our local cluster
@@ -63,92 +61,131 @@ func NewDiscoveryClusterHandler(
 }
 
 type discoveryClusterHandler struct {
-	clusterNameToDeploymentController concurrency.ThreadSafeMap
-	localManager                      mc_manager.AsyncManager
-	deploymentControllerFactory       controllers.DeploymentControllerFactory
-	localMeshClient                   zephyr_core.MeshClient
-	meshScanners                      []mesh.MeshScanner
-	podControllerFactory              controllers.PodControllerFactory
-	localMeshWorkloadClient           zephyr_core.MeshWorkloadClient
-	eventHandlers                     []*controller.DeploymentEventHandler
-	ctx                               context.Context
-	imageParser                       docker.ImageNameParser
+	ctx              context.Context
+	localManager     mc_manager.AsyncManager
+	discoveryContext wire.DiscoveryContext
+
+	// clients that are instantiated already
+	localMeshClient         zephyr_core.MeshClient
+	localMeshWorkloadClient zephyr_core.MeshWorkloadClient
+
+	// scanners
+	meshScanners                 []mesh.MeshScanner
+	meshWorkloadScannerFactories []mesh_workload.MeshWorkloadScannerFactory
+}
+
+type clusterDependentDeps struct {
+	deploymentController   controller.DeploymentController
+	podController          controller2.PodController
+	meshWorkloadScanners   []mesh_workload.MeshWorkloadScanner
+	serviceController      controller2.ServiceController
+	meshWorkloadController controller4.MeshWorkloadController
+	serviceClient          kubernetes_core.ServiceClient
+	meshWorkloadClient     zephyr_core.MeshWorkloadClient
+	meshServiceClient      zephyr_core.MeshServiceClient
 }
 
 func (m *discoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clusterName string) error {
-	var multiErr *multierror.Error
-	err := m.initializeDeploymentController(mgr, clusterName)
+	initializedDeps, err := m.initializeClusterDependentDeps(mgr, clusterName)
 	if err != nil {
-		multierror.Append(multiErr, err)
+		return err
 	}
-	err = m.initializePodController(mgr, clusterName)
+
+	meshFinder := mesh.NewMeshFinder(
+		m.ctx,
+		clusterName,
+		m.meshScanners,
+		m.localMeshClient,
+	)
+
+	meshWorkloadFinder := mesh_workload.NewMeshWorkloadFinder(
+		m.ctx,
+		clusterName,
+		m.localMeshWorkloadClient,
+		m.localMeshClient,
+		initializedDeps.meshWorkloadScanners,
+	)
+
+	meshServiceFinder := mesh_service.NewMeshServiceFinder(
+		m.ctx,
+		clusterName,
+		env.DefaultWriteNamespace,
+		initializedDeps.serviceClient,
+		initializedDeps.meshServiceClient,
+		initializedDeps.meshWorkloadClient,
+	)
+
+	err = meshFinder.StartDiscovery(initializedDeps.deploymentController, ObjectPredicates)
 	if err != nil {
-		multierror.Append(multiErr, err)
+		return err
 	}
-	return err
+
+	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podController, ObjectPredicates)
+	if err != nil {
+		return err
+	}
+
+	err = meshServiceFinder.StartDiscovery(initializedDeps.serviceController, initializedDeps.meshWorkloadController)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *discoveryClusterHandler) ClusterRemoved(clusterName string) error {
 	// TODO: Not deleting any entities for now
-	m.clusterNameToDeploymentController.Delete(clusterName)
-	return nil
-	//mesh, err := m.localMeshClient.Get(m.ctx, client.ObjectKey{
-	//	Namespace: env.DefaultWriteNamespace,
-	//	Name:      name,
-	//})
-	//
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = m.localMeshClient.Delete(m.ctx, mesh)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//m.clusterNameToDeploymentController.Delete(name)
-	//return nil
-}
-
-func (m *discoveryClusterHandler) initializeDeploymentController(mgr mc_manager.AsyncManager, clusterName string) error {
-	// build a deployment controller that can receive events for the cluster that `mgr` can talk to
-	deploymentController, err := m.deploymentControllerFactory.Build(mgr, clusterName)
-	if err != nil {
-		return err
-	}
-	err = deploymentController.AddEventHandler(
-		m.ctx,
-		mesh.DefaultMeshFinder(m.ctx, clusterName, m.meshScanners, m.localMeshClient),
-		ObjectPredicates...,
-	)
-	if err != nil {
-		return err
-	}
-	m.clusterNameToDeploymentController.Store(clusterName, deploymentController)
 	return nil
 }
 
-func (m *discoveryClusterHandler) initializePodController(mgr mc_manager.AsyncManager, clusterName string) error {
-	// build a deployment controller that can receive events for the cluster that `mgr` can talk to
-	podController, err := m.podControllerFactory.Build(mgr, clusterName)
+func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.AsyncManager, clusterName string) (*clusterDependentDeps, error) {
+	deploymentController, err := m.discoveryContext.ControllerFactories.DeploymentControllerFactory.Build(mgr, clusterName)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	meshWorkloadFinder := mesh_workload.DefaultMeshWorkloadFinder(
-		clusterName,
-		m.ctx,
-		m.localMeshWorkloadClient,
-		m.localMeshClient,
-		mgr.Manager().GetClient(),
-		m.imageParser,
-	)
-	err = podController.AddEventHandler(
-		m.ctx,
-		meshWorkloadFinder,
-		ObjectPredicates...,
-	)
+
+	podController, err := m.discoveryContext.ControllerFactories.PodControllerFactory.Build(mgr, clusterName)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	serviceController, err := m.discoveryContext.ControllerFactories.ServiceControllerFactory.Build(mgr, clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	// ensure that the mesh workload client is watching our local cluster- use the local manager
+	meshWorkloadController, err := m.discoveryContext.ControllerFactories.MeshWorkloadControllerFactory.Build(m.localManager, clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	remoteClient := mgr.Manager().GetClient()
+	var meshWorkloadScanners []mesh_workload.MeshWorkloadScanner
+	for _, scannerFactory := range m.meshWorkloadScannerFactories {
+		ownerFetcher := m.discoveryContext.ClientFactories.OwnerFetcherClientFactory(
+			m.discoveryContext.ClientFactories.DeploymentClientFactory(remoteClient),
+			m.discoveryContext.ClientFactories.ReplicaSetClientFactory(remoteClient),
+		)
+
+		meshWorkloadScanners = append(meshWorkloadScanners, scannerFactory(ownerFetcher))
+	}
+
+	serviceClient := m.discoveryContext.ClientFactories.ServiceClientFactory(remoteClient)
+
+	// these clients operate against the local cluster, so we use the local manager's client
+	localClient := m.localManager.Manager().GetClient()
+	meshServiceClient := m.discoveryContext.ClientFactories.MeshServiceClientFactory(localClient)
+	meshWorkloadClient := m.discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
+
+	return &clusterDependentDeps{
+		deploymentController:   deploymentController,
+		podController:          podController,
+		meshWorkloadScanners:   meshWorkloadScanners,
+		serviceController:      serviceController,
+		meshWorkloadController: meshWorkloadController,
+		serviceClient:          serviceClient,
+		meshWorkloadClient:     meshWorkloadClient,
+		meshServiceClient:      meshServiceClient,
+	}, nil
 }

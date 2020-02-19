@@ -55,7 +55,7 @@ var _ = Describe("Cluster Operations", func() {
 			kubeLoader := cli_mocks.NewMockKubeLoader(ctrl)
 			restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 
-			kubeLoader.EXPECT().RESTClientGetter(kubeConfigPath).Return(restClientGetter)
+			kubeLoader.EXPECT().RESTClientGetter(kubeConfigPath, "").Return(restClientGetter)
 			kubeLoader.EXPECT().GetRawConfigForContext(kubeConfigPath, "").Return(clientcmdapi.Config{
 				CurrentContext: "minikube",
 				Contexts: map[string]*clientcmdapi.Context{

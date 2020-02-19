@@ -24,20 +24,22 @@ var (
 	removeProtocol = regexp.MustCompile("http[s]?:/{2}")
 )
 
-func NewRESTClientGetter(kubeLoader KubeLoader, kubeConfigPath string) resource.RESTClientGetter {
+func NewRESTClientGetter(kubeLoader KubeLoader, kubeConfigPath, kubeContext string) resource.RESTClientGetter {
 	return &restClientGetter{
 		kubeLoader:     kubeLoader,
 		kubeConfigPath: kubeConfigPath,
+		kubeContext:    kubeContext,
 	}
 }
 
 type restClientGetter struct {
 	kubeLoader     KubeLoader
 	kubeConfigPath string
+	kubeContext    string
 }
 
 func (r *restClientGetter) ToRESTConfig() (*rest.Config, error) {
-	return r.kubeLoader.GetRestConfigForContext(r.kubeConfigPath, "")
+	return r.kubeLoader.GetRestConfigForContext(r.kubeConfigPath, r.kubeContext)
 }
 
 //

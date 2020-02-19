@@ -580,6 +580,7 @@ github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de/go.mod h1:zAbeS9
 github.com/lithammer/dedent v1.1.0/go.mod h1:jrXYCQtgg0nJiN+StA2KgR7w6CiQNv9Fd/Z9BP0jIOc=
 github.com/lyft/protoc-gen-star v0.4.14 h1:HUkD4H4dYFIgu3Bns/3N6J5GmKHCEGnhYBwNu3fvXgA=
 github.com/lyft/protoc-gen-star v0.4.14/go.mod h1:mE8fbna26u7aEA2QCVvvfBU/ZrPgocG1206xAFPcs94=
+github.com/lyft/protoc-gen-validate v0.1.0/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
@@ -650,6 +651,7 @@ github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de/go.mod h1:kJun4WP5gFuH
 github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
+github.com/mwitkow/go-proto-validators v0.3.0/go.mod h1:ej0Qp0qMgHN/KtDyUt+Q1/tA7a5VarXUOUxD+oeD30w=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=
 github.com/nicolai86/scaleway-sdk v1.10.2-0.20180628010248-798f60e20bb2/go.mod h1:TLb2Sg7HQcgGdloNxkrmtgDNR9uVYF3lfdFIN4Ro6Sk=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
@@ -733,6 +735,8 @@ github.com/prometheus/procfs v0.0.5 h1:3+auTFlqw+ZaQYJARz6ArODtkaIwtvBTx3N2NehQl
 github.com/prometheus/procfs v0.0.5/go.mod h1:4A/X28fw3Fc593LaREMrKMqOKvUAntwMDaekg4FpcdQ=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/pseudomuto/protoc-gen-doc v1.0.0/go.mod h1:fwtQAY9erXp3mC92O8OTECnDlJT2r0Ff4KSEKbGEmy0=
+github.com/pseudomuto/protoc-gen-doc v1.3.0/go.mod h1:fwtQAY9erXp3mC92O8OTECnDlJT2r0Ff4KSEKbGEmy0=
+github.com/pseudomuto/protokit v0.2.0/go.mod h1:2PdH30hxVHsup8KpBTOXTBeMVhJZVio3Q8ViKSAXT0Q=
 github.com/radovskyb/watcher v1.0.2/go.mod h1:78okwvY5wPdzcb1UYnip1pvrZNIVEIh/Cm+ZuvsUYIg=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uYEyJGbgTkfkS4+E/PavXkNJcbFIpEtjt2B0KDQ5+9M=
@@ -777,8 +781,8 @@ github.com/softlayer/softlayer-go v0.0.0-20180806151055-260589d94c7d/go.mod h1:C
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/solo-io/anyvendor v0.0.1 h1:csAXLNLkUQWlr/ll4tgmc+Id9kHw2ibncf35weg03mI=
 github.com/solo-io/anyvendor v0.0.1/go.mod h1:SLucIeU8qBOYI82BveNVn2LzZFcMWJSCf8Kd1S4Jcr4=
-github.com/solo-io/autopilot v0.1.1-0.20200210221921-d2a29041d577 h1:XdgQ94p0BcCmXYyKRVywpbSJSaBbriG2nPSEb961Cb0=
-github.com/solo-io/autopilot v0.1.1-0.20200210221921-d2a29041d577/go.mod h1:ChONxgEh+B2WxCOiX79u+gd2+5sABOwD3EG4cKtR6KA=
+github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca h1:XwzCObyu/uc0Ix0uRhgBZdZwAmmKnzdjHGwugpy2P4g=
+github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca/go.mod h1:SKXxNBgN8iSKOL60m4GENyWrm8FiwSKowZ+ppmudHD4=
 github.com/solo-io/go-utils v0.11.7/go.mod h1:D5lbi4EyIMq+T5gzjJacu0Ou4Z1brL7g2YYYYgYBJso=
 github.com/solo-io/go-utils v0.13.0/go.mod h1:pA8kwWDNlJueffTcC1BYddTerO8zpUUGl5/7JGeC5iU=
 github.com/solo-io/go-utils v0.14.0 h1:y7iCqfQLFujS1UDdMKU+PjYoKD4CH07YicDZddL+/Is=
@@ -1136,7 +1140,7 @@ honnef.co/go/tools v0.0.1-2019.2.3 h1:3JgtbtFHMiCmsznwGVTUWbgGov+pVqnlf1dEJTNAXe
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
 istio.io/gogo-genproto v0.0.0-20190124151557-6d926a6e6feb/go.mod h1:eIDJ6jNk/IeJz6ODSksHl5Aiczy5JUq6vFhJWI5OtiI=
 istio.io/gogo-genproto v0.0.0-20191009201739-17d570f95998/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=
-istio.io/tools v0.0.0-20200128155652-36eceb1fcb9d/go.mod h1:6u5K87o8AZvfCdPhr0M60yuZR5/4pPCOCiokv7P+I+0=
+istio.io/tools v0.0.0-20200214155848-b0036b2c2d76/go.mod h1:6u5K87o8AZvfCdPhr0M60yuZR5/4pPCOCiokv7P+I+0=
 k8s.io/api v0.17.2 h1:NF1UFXcKN7/OOv1uxdRz3qfra8AHsPav5M93hlV9+Dc=
 k8s.io/api v0.17.2/go.mod h1:BS9fjjLc4CMuqfSO8vgbHPKMt5+SF0ET6u/RVDihTo4=
 k8s.io/apiextensions-apiserver v0.17.2 h1:cP579D2hSZNuO/rZj9XFRzwJNYb41DbNANJb6Kolpss=

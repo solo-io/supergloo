@@ -56,7 +56,9 @@ func (u *unstructuredKubeClient) Create(namespace string, resources []*resource.
 		}
 	}
 
-	return createdResources, multiErr
+	// Note: Go has typed nils, so doing just `return multiErr` will result in a panic due to dereferenced nil
+	// I discovered this after painstaking debugging
+	return createdResources, multiErr.ErrorOrNil()
 }
 
 func (u *unstructuredKubeClient) Delete(namespace string, resources []*resource.Info) (deletedResources []*resource.Info, err error) {

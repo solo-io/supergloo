@@ -3,14 +3,12 @@ package mesh_discovery
 import (
 	"context"
 
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
-
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/common/concurrency"
+	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/mesh"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
+	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
 	md_multicluster "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/wire"
 	"go.uber.org/zap"
@@ -19,29 +17,36 @@ import (
 func Run(ctx context.Context) {
 	logger := contextutils.LoggerFrom(ctx)
 
+	// >:(
+	// the default global zap logger, which controller-runtime uses, is a no-op logger
+	// https://github.com/uber-go/zap/blob/5dab9368974ab1352e4245f9d33e5bce4c23a034/global.go#L41
+	zap.ReplaceGlobals(logger.Desugar())
+
 	// build all the objects needed for multicluster operations
 	discoveryContext, err := wire.InitializeDiscovery(ctx)
 	if err != nil {
 		logger.Fatalw("error initializing discovery clients", zap.Error(err))
 	}
 
+	localManager := discoveryContext.MultiClusterDeps.LocalManager
+
 	// this is our main entrypoint for mesh-discovery
 	// when it detects a new cluster get registered, it builds a deployment controller
 	// with the controller factory, and attaches the given mesh finders to it
 	deploymentHandler, err := md_multicluster.NewDiscoveryClusterHandler(
 		ctx,
-		discoveryContext.ImageParser,
-		discoveryContext.MultiClusterDeps.LocalManager,
-		controllers.NewDeploymentControllerFactory(),
-		zephyr_core.NewMeshClient(discoveryContext.MultiClusterDeps.LocalManager),
+		localManager,
+		zephyr_core.NewMeshClient(localManager),
 		[]mesh.MeshScanner{
-			discoveryContext.IstioMeshScanner,
-			discoveryContext.ConsulConnectMeshScanner,
-			discoveryContext.LinkerdMeshScanner,
+			discoveryContext.MeshDiscovery.IstioMeshScanner,
+			discoveryContext.MeshDiscovery.ConsulConnectMeshScanner,
+			discoveryContext.MeshDiscovery.LinkerdMeshScanner,
 		},
-		controllers.NewPodControllerFactory(),
+		[]mesh_workload.MeshWorkloadScannerFactory{
+			mesh_workload.NewIstioMeshWorkloadScanner,
+		},
 		zephyr_core.NewMeshWorkloadClient(discoveryContext.MultiClusterDeps.LocalManager.Manager().GetClient()),
-		concurrency.NewThreadSafeMap,
+		discoveryContext,
 	)
 
 	if err != nil {

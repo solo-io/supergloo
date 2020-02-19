@@ -67,15 +67,15 @@ func (mr *MockKubeLoaderMockRecorder) GetRestConfigForContext(arg0, arg1 interfa
 }
 
 // RESTClientGetter mocks base method
-func (m *MockKubeLoader) RESTClientGetter(arg0 string) resource.RESTClientGetter {
+func (m *MockKubeLoader) RESTClientGetter(arg0, arg1 string) resource.RESTClientGetter {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RESTClientGetter", arg0)
+	ret := m.ctrl.Call(m, "RESTClientGetter", arg0, arg1)
 	ret0, _ := ret[0].(resource.RESTClientGetter)
 	return ret0
 }
 
 // RESTClientGetter indicates an expected call of RESTClientGetter
-func (mr *MockKubeLoaderMockRecorder) RESTClientGetter(arg0 interface{}) *gomock.Call {
+func (mr *MockKubeLoaderMockRecorder) RESTClientGetter(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTClientGetter", reflect.TypeOf((*MockKubeLoader)(nil).RESTClientGetter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTClientGetter", reflect.TypeOf((*MockKubeLoader)(nil).RESTClientGetter), arg0, arg1)
 }

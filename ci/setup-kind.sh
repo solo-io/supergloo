@@ -8,6 +8,7 @@
 #
 # The management plane will have the appropriate secret for communicating with the target cluster
 # Your kube context will be left pointing to the management plane cluster
+# The target cluster will have Istio set up in the istio-system namespace in its demo profile
 #
 # To clean up **ALL** of your kind clusters, run this script as: `bash ci/setup-kind.sh cleanup`
 # I had some trouble with the docker VM running out of disk space- run this cleanup step often if you can
@@ -36,3 +37,5 @@ ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubec
 make meshctl -B
 
 ./_output/meshctl cluster register --remote-context kind-$remoteCluster --remote-cluster-name target-cluster
+
+./_output/meshctl istio install --profile=demo --context kind-$remoteCluster

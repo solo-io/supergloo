@@ -11,7 +11,13 @@ type replicaSetClient struct {
 	client client.Client
 }
 
-func NewReplicaSetClient(client client.Client) *replicaSetClient {
+type ReplicaSetClientFactory func(client client.Client) ReplicaSetClient
+
+func ReplicaSetClientFactoryProvider() ReplicaSetClientFactory {
+	return NewReplicaSetClient
+}
+
+func NewReplicaSetClient(client client.Client) ReplicaSetClient {
 	return &replicaSetClient{client: client}
 }
 

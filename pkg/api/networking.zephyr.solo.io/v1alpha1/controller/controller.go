@@ -4,7 +4,7 @@ package controller
 import (
 	"context"
 
-	. "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_zephyr_solo_io_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/autopilot/pkg/events"
@@ -14,41 +14,41 @@ import (
 )
 
 type TrafficPolicyEventHandler interface {
-	Create(obj *TrafficPolicy) error
-	Update(old, new *TrafficPolicy) error
-	Delete(obj *TrafficPolicy) error
-	Generic(obj *TrafficPolicy) error
+	Create(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	Update(old, new *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	Delete(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	Generic(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
 }
 
 type TrafficPolicyEventHandlerFuncs struct {
-	OnCreate  func(obj *TrafficPolicy) error
-	OnUpdate  func(old, new *TrafficPolicy) error
-	OnDelete  func(obj *TrafficPolicy) error
-	OnGeneric func(obj *TrafficPolicy) error
+	OnCreate  func(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	OnUpdate  func(old, new *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	OnDelete  func(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
+	OnGeneric func(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error
 }
 
-func (f *TrafficPolicyEventHandlerFuncs) Create(obj *TrafficPolicy) error {
+func (f *TrafficPolicyEventHandlerFuncs) Create(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *TrafficPolicyEventHandlerFuncs) Delete(obj *TrafficPolicy) error {
+func (f *TrafficPolicyEventHandlerFuncs) Delete(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *TrafficPolicyEventHandlerFuncs) Update(objOld, objNew *TrafficPolicy) error {
+func (f *TrafficPolicyEventHandlerFuncs) Update(objOld, objNew *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *TrafficPolicyEventHandlerFuncs) Generic(obj *TrafficPolicy) error {
+func (f *TrafficPolicyEventHandlerFuncs) Generic(obj *networking_zephyr_solo_io_v1alpha1.TrafficPolicy) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -64,7 +64,7 @@ type TrafficPolicyControllerImpl struct {
 }
 
 func NewTrafficPolicyController(name string, mgr manager.Manager) (TrafficPolicyController, error) {
-	if err := AddToScheme(mgr.GetScheme()); err != nil {
+	if err := networking_zephyr_solo_io_v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func NewTrafficPolicyController(name string, mgr manager.Manager) (TrafficPolicy
 
 func (c *TrafficPolicyControllerImpl) AddEventHandler(ctx context.Context, h TrafficPolicyEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericTrafficPolicyHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &TrafficPolicy{}, handler, predicates...); err != nil {
+	if err := c.watcher.Watch(ctx, &networking_zephyr_solo_io_v1alpha1.TrafficPolicy{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
@@ -91,7 +91,7 @@ type genericTrafficPolicyHandler struct {
 }
 
 func (h genericTrafficPolicyHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*TrafficPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
 	}
@@ -99,7 +99,7 @@ func (h genericTrafficPolicyHandler) Create(object runtime.Object) error {
 }
 
 func (h genericTrafficPolicyHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*TrafficPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
 	}
@@ -107,11 +107,11 @@ func (h genericTrafficPolicyHandler) Delete(object runtime.Object) error {
 }
 
 func (h genericTrafficPolicyHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*TrafficPolicy)
+	objOld, ok := old.(*networking_zephyr_solo_io_v1alpha1.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", old)
 	}
-	objNew, ok := new.(*TrafficPolicy)
+	objNew, ok := new.(*networking_zephyr_solo_io_v1alpha1.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", new)
 	}
@@ -119,7 +119,7 @@ func (h genericTrafficPolicyHandler) Update(old, new runtime.Object) error {
 }
 
 func (h genericTrafficPolicyHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*TrafficPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
 	}
@@ -127,41 +127,41 @@ func (h genericTrafficPolicyHandler) Generic(object runtime.Object) error {
 }
 
 type AccessControlPolicyEventHandler interface {
-	Create(obj *AccessControlPolicy) error
-	Update(old, new *AccessControlPolicy) error
-	Delete(obj *AccessControlPolicy) error
-	Generic(obj *AccessControlPolicy) error
+	Create(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	Update(old, new *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	Delete(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	Generic(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
 }
 
 type AccessControlPolicyEventHandlerFuncs struct {
-	OnCreate  func(obj *AccessControlPolicy) error
-	OnUpdate  func(old, new *AccessControlPolicy) error
-	OnDelete  func(obj *AccessControlPolicy) error
-	OnGeneric func(obj *AccessControlPolicy) error
+	OnCreate  func(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	OnUpdate  func(old, new *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	OnDelete  func(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
+	OnGeneric func(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) Create(obj *AccessControlPolicy) error {
+func (f *AccessControlPolicyEventHandlerFuncs) Create(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) Delete(obj *AccessControlPolicy) error {
+func (f *AccessControlPolicyEventHandlerFuncs) Delete(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) Update(objOld, objNew *AccessControlPolicy) error {
+func (f *AccessControlPolicyEventHandlerFuncs) Update(objOld, objNew *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *AccessControlPolicyEventHandlerFuncs) Generic(obj *AccessControlPolicy) error {
+func (f *AccessControlPolicyEventHandlerFuncs) Generic(obj *networking_zephyr_solo_io_v1alpha1.AccessControlPolicy) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -177,7 +177,7 @@ type AccessControlPolicyControllerImpl struct {
 }
 
 func NewAccessControlPolicyController(name string, mgr manager.Manager) (AccessControlPolicyController, error) {
-	if err := AddToScheme(mgr.GetScheme()); err != nil {
+	if err := networking_zephyr_solo_io_v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 
@@ -192,7 +192,7 @@ func NewAccessControlPolicyController(name string, mgr manager.Manager) (AccessC
 
 func (c *AccessControlPolicyControllerImpl) AddEventHandler(ctx context.Context, h AccessControlPolicyEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericAccessControlPolicyHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &AccessControlPolicy{}, handler, predicates...); err != nil {
+	if err := c.watcher.Watch(ctx, &networking_zephyr_solo_io_v1alpha1.AccessControlPolicy{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
@@ -204,7 +204,7 @@ type genericAccessControlPolicyHandler struct {
 }
 
 func (h genericAccessControlPolicyHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*AccessControlPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.AccessControlPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
 	}
@@ -212,7 +212,7 @@ func (h genericAccessControlPolicyHandler) Create(object runtime.Object) error {
 }
 
 func (h genericAccessControlPolicyHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*AccessControlPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.AccessControlPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
 	}
@@ -220,11 +220,11 @@ func (h genericAccessControlPolicyHandler) Delete(object runtime.Object) error {
 }
 
 func (h genericAccessControlPolicyHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*AccessControlPolicy)
+	objOld, ok := old.(*networking_zephyr_solo_io_v1alpha1.AccessControlPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", old)
 	}
-	objNew, ok := new.(*AccessControlPolicy)
+	objNew, ok := new.(*networking_zephyr_solo_io_v1alpha1.AccessControlPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", new)
 	}
@@ -232,7 +232,7 @@ func (h genericAccessControlPolicyHandler) Update(old, new runtime.Object) error
 }
 
 func (h genericAccessControlPolicyHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*AccessControlPolicy)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.AccessControlPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessControlPolicy handler received event for %T", object)
 	}
@@ -240,41 +240,41 @@ func (h genericAccessControlPolicyHandler) Generic(object runtime.Object) error 
 }
 
 type MeshGroupEventHandler interface {
-	Create(obj *MeshGroup) error
-	Update(old, new *MeshGroup) error
-	Delete(obj *MeshGroup) error
-	Generic(obj *MeshGroup) error
+	Create(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	Update(old, new *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	Delete(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	Generic(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
 }
 
 type MeshGroupEventHandlerFuncs struct {
-	OnCreate  func(obj *MeshGroup) error
-	OnUpdate  func(old, new *MeshGroup) error
-	OnDelete  func(obj *MeshGroup) error
-	OnGeneric func(obj *MeshGroup) error
+	OnCreate  func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	OnUpdate  func(old, new *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	OnDelete  func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+	OnGeneric func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
 }
 
-func (f *MeshGroupEventHandlerFuncs) Create(obj *MeshGroup) error {
+func (f *MeshGroupEventHandlerFuncs) Create(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Delete(obj *MeshGroup) error {
+func (f *MeshGroupEventHandlerFuncs) Delete(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Update(objOld, objNew *MeshGroup) error {
+func (f *MeshGroupEventHandlerFuncs) Update(objOld, objNew *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Generic(obj *MeshGroup) error {
+func (f *MeshGroupEventHandlerFuncs) Generic(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
@@ -290,7 +290,7 @@ type MeshGroupControllerImpl struct {
 }
 
 func NewMeshGroupController(name string, mgr manager.Manager) (MeshGroupController, error) {
-	if err := AddToScheme(mgr.GetScheme()); err != nil {
+	if err := networking_zephyr_solo_io_v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 
@@ -305,7 +305,7 @@ func NewMeshGroupController(name string, mgr manager.Manager) (MeshGroupControll
 
 func (c *MeshGroupControllerImpl) AddEventHandler(ctx context.Context, h MeshGroupEventHandler, predicates ...predicate.Predicate) error {
 	handler := genericMeshGroupHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &MeshGroup{}, handler, predicates...); err != nil {
+	if err := c.watcher.Watch(ctx, &networking_zephyr_solo_io_v1alpha1.MeshGroup{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
@@ -317,7 +317,7 @@ type genericMeshGroupHandler struct {
 }
 
 func (h genericMeshGroupHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*MeshGroup)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
 	}
@@ -325,7 +325,7 @@ func (h genericMeshGroupHandler) Create(object runtime.Object) error {
 }
 
 func (h genericMeshGroupHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*MeshGroup)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
 	}
@@ -333,11 +333,11 @@ func (h genericMeshGroupHandler) Delete(object runtime.Object) error {
 }
 
 func (h genericMeshGroupHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*MeshGroup)
+	objOld, ok := old.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroup handler received event for %T", old)
 	}
-	objNew, ok := new.(*MeshGroup)
+	objNew, ok := new.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroup handler received event for %T", new)
 	}
@@ -345,7 +345,7 @@ func (h genericMeshGroupHandler) Update(old, new runtime.Object) error {
 }
 
 func (h genericMeshGroupHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*MeshGroup)
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
 	if !ok {
 		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
 	}
