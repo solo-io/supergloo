@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
+	"strings"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
@@ -178,6 +180,12 @@ func writeKubeConfigToMaster(
 	remoteContext := remoteKubeCtx.Contexts[remoteContextName]
 	remoteCluster := remoteKubeCtx.Clusters[remoteContext.Cluster]
 
+	// hacky step for running locally in KIND
+	err = hackClusterConfigForLocalTestingInKIND(remoteCluster, remoteContextName, registerOpts.LocalClusterDomainOverride)
+	if err != nil {
+		return nil, err
+	}
+
 	secret, err := kubeconfig.KubeConfigToSecret(
 		registerOpts.RemoteClusterName,
 		writeNamespace,
@@ -218,6 +226,36 @@ func writeKubeConfigToMaster(
 	}
 
 	return secret, nil
+}
+
+// if:
+//   * we are operating against a context named "kind-", AND
+//   * the server appears to point to localhost, AND
+//   * the --local-cluster-domain-override flag is populated with a value
+//
+// then we rewrite the server config to communicate over the value of `--local-cluster-domain-override`, which
+// resolves to the host machine of docker. We also need to skip TLS verification
+// and zero-out the cert data, because the cert on the remote cluster's API server wasn't
+// issued for the domain contained in the value of `--local-cluster-domain-override`.
+//
+// this function call is a no-op if those conditions are not met
+func hackClusterConfigForLocalTestingInKIND(remoteCluster *api.Cluster, remoteContextName string, clusterDomainOverride string) error {
+	serverUrl, err := url.Parse(remoteCluster.Server)
+	if err != nil {
+		return err
+	}
+
+	if strings.HasPrefix(remoteContextName, "kind-") &&
+		(serverUrl.Hostname() == "127.0.0.1" || serverUrl.Hostname() == "localhost") &&
+		clusterDomainOverride != "" {
+
+		remoteCluster.Server = fmt.Sprintf("https://%s:%s", clusterDomainOverride, serverUrl.Port())
+		remoteCluster.InsecureSkipTLSVerify = true
+		remoteCluster.CertificateAuthority = ""
+		remoteCluster.CertificateAuthorityData = []byte("")
+	}
+
+	return nil
 }
 
 // write the KubernetesCluster resource to the master cluster

@@ -29,6 +29,7 @@ include install/helm/helm.mk
 # Important to clean before pushing new releases. Dockerfiles and binaries may not update properly
 .PHONY: clean
 clean: helm-clean
+	rm -rf $(OUTPUT_DIR)
 
 #----------------------------------------------------------------------------------
 # Repo setup

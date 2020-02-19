@@ -1,10 +1,12 @@
 HELM_DIR := install/helm
 HELM_ROOTDIR := $(shell pwd)/$(HELM_DIR)
-HELM_OUTPUT_DIR ?= $(HELM_ROOTDIR)/_output
-HELM_SYNC_DIR := $(HELM_OUTPUT_DIR)/helm
+
+OUTPUT_DIR ?= $(ROOTDIR)/_output
+HELM_OUTPUT_DIR ?= $(OUTPUT_DIR)/helm
+
 # Helm chart sources
 CHARTS_DIR := $(HELM_ROOTDIR)/charts
-PACKAGED_CHARTS_DIR := $(HELM_SYNC_DIR)/charts
+PACKAGED_CHARTS_DIR := $(HELM_OUTPUT_DIR)/charts
 # list of SMH component directories, must be a subdirectory in install/helm/charts/
 CHARTS := $(COMPONENTS) custom-resource-definitions
 RELEASE := "true"
@@ -80,7 +82,7 @@ copy-dependencies:
 .PHONY: save-helm
 save-helm:
 ifeq ($(RELEASE),"true")
-	gsutil -m rsync -r $(HELM_SYNC_DIR)/charts gs://service-mesh-hub/
+	gsutil -m rsync -r $(HELM_OUTPUT_DIR)/charts gs://service-mesh-hub/
 else
 	echo "Not a release, skipping uploading to GCS."
 endif
@@ -99,8 +101,8 @@ package-index-app-helm: package-index-components-helm copy-dependencies package-
 # must be executed during build prior to indexing helm repo to maintain prior versions in repo
 .PHONY: fetch-helm
 fetch-helm:
-	mkdir -p $(HELM_SYNC_DIR)
-	gsutil -m rsync -r gs://mesh-projects-helm/ $(HELM_SYNC_DIR)
+	mkdir -p $(HELM_OUTPUT_DIR)
+	gsutil -m rsync -r gs://mesh-projects-helm/ $(HELM_OUTPUT_DIR)
 
 # upload Helm chart to GCR as an OCI image
 .PHONY: push-chart-to-registry

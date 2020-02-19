@@ -30,10 +30,11 @@ type Cluster struct {
 }
 
 type Register struct {
-	RemoteClusterName    string
-	RemoteWriteNamespace string
-	RemoteContext        string
-	RemoteKubeConfig     string
+	RemoteClusterName          string
+	RemoteWriteNamespace       string
+	RemoteContext              string
+	RemoteKubeConfig           string
+	LocalClusterDomainOverride string
 }
 
 type Istio struct {

@@ -61,8 +61,7 @@ func NewMultiClusterHandler(ctx context.Context,
 func (c *multiClusterHandler) Create(s *v1.Secret) error {
 	resync, err := c.clusterMembership.AddMemberCluster(c.ctx, s)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Errorf("error adding member cluster for "+
-			"secret %s.%s", s.GetName(), s.GetNamespace())
+		contextutils.LoggerFrom(c.ctx).Errorf("error adding member cluster for secret %s.%s: %s", s.GetName(), s.GetNamespace(), err.Error())
 		if resync {
 			return err
 		}
@@ -100,7 +99,7 @@ func (c *multiClusterHandler) Update(old, new *v1.Secret) error {
 func (c *multiClusterHandler) Delete(s *v1.Secret) error {
 	resync, err := c.clusterMembership.DeleteMemberCluster(c.ctx, s)
 	if err != nil {
-		contextutils.LoggerFrom(c.ctx).Errorf("error adding member cluster for "+
+		contextutils.LoggerFrom(c.ctx).Errorf("error deleting member cluster for "+
 			"secret %s.%s", s.GetName(), s.GetNamespace())
 		if resync {
 			return err

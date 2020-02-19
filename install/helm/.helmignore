@@ -17,3 +17,4 @@
 .idea/
 *.tmproj
 .vscode/
+*-template.yaml

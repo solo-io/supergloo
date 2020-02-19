@@ -1,0 +1,10 @@
+changelog:
+- type: FIX
+  description: Unify _output directories in Makefile
+  issueLink: https://github.com/solo-io/mesh-projects/issues/192
+- type: FIX
+  description: Ensure that the toplevel _output directory gets cleaned by `make clean`
+  issueLink: https://github.com/solo-io/mesh-projects/issues/191
+- type: FIX
+  description: Enable locally testing mesh discovery through KinD
+  issueLink: https://github.com/solo-io/mesh-projects/issues/199
