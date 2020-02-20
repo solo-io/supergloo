@@ -9,24 +9,24 @@ kind: Deployment
 metadata:
   labels:
     app: service-mesh-hub
-    service-mesh-hub: mesh-group
-  name: mesh-group
+    service-mesh-hub: mesh-networking
+  name: mesh-networking
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service-mesh-hub: mesh-group
+      service-mesh-hub: mesh-networking
   template:
     metadata:
       labels:
-        service-mesh-hub: mesh-group
+        service-mesh-hub: mesh-networking
     spec:
-      serviceAccountName: mesh-group
+      serviceAccountName: mesh-networking
       containers:
         - image: {{ template "image" $image }}
           imagePullPolicy: {{ $image.pullPolicy }}
-          name: mesh-group
+          name: mesh-networking
           env:
             - name: POD_NAMESPACE
               valueFrom:

@@ -15,7 +15,7 @@ import (
 	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

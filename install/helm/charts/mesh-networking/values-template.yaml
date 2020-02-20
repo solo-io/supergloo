@@ -7,4 +7,4 @@ global:
 deployment:
   image:
     tag: %version%
-    repository: mesh-group
+    repository: mesh-networking

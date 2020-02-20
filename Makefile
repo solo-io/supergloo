@@ -17,7 +17,7 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
-COMPONENTS := mesh-discovery mesh-group
+COMPONENTS := mesh-discovery mesh-networking
 
 # include helm makefile so it can be ran from the root
 include install/helm/helm.mk
@@ -112,19 +112,19 @@ mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
 
 
 #----------------------------------------------------------------------------------
-# Mesh Group
+# Mesh Networking
 #----------------------------------------------------------------------------------
-MESH_GROUP=mesh-group
-MESH_GROUP_DIR=services/$(MESH_GROUP)
-MESH_GROUP_OUTPUT_DIR=$(ROOTDIR)/$(MESH_GROUP_DIR)/_output
-MESH_GROUP_SOURCES=$(shell find $(MESH_GROUP_DIR) -name "*.go" | grep -v test | grep -v generated.go)
+MESH_NETWORKING=mesh-networking
+MESH_NETWORKING_DIR=services/$(MESH_NETWORKING)
+MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
+MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(MESH_GROUP_OUTPUT_DIR)/mesh-group-linux-amd64: $(MESH_GROUP_SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_GROUP_DIR)/cmd/main.go
+$(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/cmd/main.go
 
-.PHONY: mesh-group-docker
-mesh-group-docker: $(MESH_GROUP_OUTPUT_DIR)/mesh-group-linux-amd64
-	$(call build_container,$(MESH_GROUP))
+.PHONY: mesh-networking-docker
+mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
+	$(call build_container,$(MESH_NETWORKING))
 
 #----------------------------------------------------------------------------------
 # meshctl
@@ -177,7 +177,7 @@ upload-github-release-assets: build-cli
 #---------
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker mesh-group-docker
+docker: mesh-discovery-docker mesh-networking-docker
 
 # $(1) name of component
 define docker_push

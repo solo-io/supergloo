@@ -10,8 +10,8 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	mg_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
-	mock_controller "github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller/mocks"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
+	mock_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller/mocks"
 )
 
 var _ = Describe("controller", func() {

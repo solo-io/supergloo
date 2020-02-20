@@ -1,4 +1,4 @@
-package mesh_group
+package mesh_networking
 
 import (
 	"context"
@@ -8,14 +8,17 @@ import (
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
-	mg_multicluster "github.com/solo-io/mesh-projects/services/mesh-group/pkg/multicluster"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/wire"
+	"github.com/solo-io/mesh-projects/services/internal/config"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
+	mg_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func Run(ctx context.Context) {
+func Run(rootCtx context.Context) {
+	ctx := config.CreateRootContext(rootCtx, "mesh-group")
+
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations

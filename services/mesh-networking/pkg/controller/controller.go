@@ -26,7 +26,9 @@ var (
 
 func NewMeshGroupControllerStarter(
 	handler controller.MeshGroupEventHandler,
-	predicates ...predicate.Predicate) mc_manager.AsyncManagerStartOptionsFunc {
+	predicates ...predicate.Predicate,
+) mc_manager.AsyncManagerStartOptionsFunc {
+
 	return func(ctx context.Context, mgr manager.Manager) error {
 		ctrl, err := controller.NewMeshGroupController(common.LocalClusterName, mgr)
 		if err != nil {

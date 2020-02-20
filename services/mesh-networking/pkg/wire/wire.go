@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/wire"
 	multicluster_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
 )
 
 func InitializeMeshGroup(ctx context.Context) (MeshGroupContext, error) {

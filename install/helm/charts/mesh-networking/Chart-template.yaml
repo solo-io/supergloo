@@ -1,6 +1,6 @@
 apiVersion: v2
-description: mesh-group Helm chart for Kubernetes
-name: mesh-group
+description: mesh-networking Helm chart for Kubernetes
+name: mesh-networking
 version: %version%
 home: https://solo.io
 icon: ""

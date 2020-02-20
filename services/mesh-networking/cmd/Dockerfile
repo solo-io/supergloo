@@ -6,6 +6,6 @@ RUN apk upgrade --update-cache \
     && apk add ca-certificates \
     && rm -rf /var/cache/apk/*
 
-COPY mesh-group-linux-amd64 /usr/local/bin/mesh-group
+COPY mesh-networking-linux-amd64 /usr/local/bin/mesh-networking
 
-ENTRYPOINT ["/usr/local/bin/mesh-group"]
+ENTRYPOINT ["/usr/local/bin/mesh-networking"]

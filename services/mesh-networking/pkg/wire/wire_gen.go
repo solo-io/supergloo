@@ -10,7 +10,7 @@ import (
 
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	"github.com/solo-io/mesh-projects/services/mesh-group/pkg/controller"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
 )
 
 // Injectors from wire.go:

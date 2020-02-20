@@ -7,6 +7,7 @@ import (
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	"github.com/solo-io/mesh-projects/services/internal/config"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
 	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
 	md_multicluster "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster"
@@ -14,13 +15,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func Run(ctx context.Context) {
-	logger := contextutils.LoggerFrom(ctx)
+func Run(rootCtx context.Context) {
+	ctx := config.CreateRootContext(rootCtx, "mesh-discovery")
 
-	// >:(
-	// the default global zap logger, which controller-runtime uses, is a no-op logger
-	// https://github.com/uber-go/zap/blob/5dab9368974ab1352e4245f9d33e5bce4c23a034/global.go#L41
-	zap.ReplaceGlobals(logger.Desugar())
+	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations
 	discoveryContext, err := wire.InitializeDiscovery(ctx)
