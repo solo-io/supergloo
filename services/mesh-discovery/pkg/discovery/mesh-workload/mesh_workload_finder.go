@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/logging"
 	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
@@ -124,19 +125,31 @@ func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
 }
 
 func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
-	var multiErr *multierror.Error
-	var discoveredMeshWorkload *discoveryv1alpha1.MeshWorkload
-	var err error
+	var (
+		multiErr               *multierror.Error
+		discoveredMeshWorkload *discoveryv1alpha1.MeshWorkload
+	)
 	for _, meshWorkloadScanner := range d.meshWorkloadScanners {
-		discoveredMeshWorkload, err = meshWorkloadScanner.ScanPod(d.ctx, pod)
+		discoveredMeshWorkloadRef, objectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
 		if err != nil {
 			multiErr = multierror.Append(multiErr, err)
 		}
-		if discoveredMeshWorkload != nil {
-			err = d.populateMeshResourceRef(d.ctx, discoveredMeshWorkload)
+		if discoveredMeshWorkloadRef != nil {
+			meshRef, err := d.createMeshResourceRef(d.ctx)
 			if err != nil {
 				multiErr = multierror.Append(multiErr, err)
 				return nil, multiErr.ErrorOrNil()
+			}
+			discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
+				ObjectMeta: objectMeta,
+				Spec: discovery_types.MeshWorkloadSpec{
+					KubeControllerRef: discoveredMeshWorkloadRef,
+					KubePod: &discovery_types.KubePod{
+						Labels:             pod.Labels,
+						ServiceAccountName: pod.Spec.ServiceAccountName,
+					},
+					Mesh: meshRef,
+				},
 			}
 			break
 		}
@@ -149,32 +162,33 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discover
 	if err != nil {
 		return err
 	}
-	_, err = d.localMeshWorkloadClient.Get(d.ctx, objectKey)
+	mw, err := d.localMeshWorkloadClient.Get(d.ctx, objectKey)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return d.localMeshWorkloadClient.Create(d.ctx, discoveredWorkload)
 		}
 		return err
 	}
-	return d.localMeshWorkloadClient.Update(d.ctx, discoveredWorkload)
+	// Need to do this, as we need metadata from previous object, (ResourceVersion), for update
+	mw.Spec = discoveredWorkload.Spec
+	return d.localMeshWorkloadClient.Update(d.ctx, mw)
 }
 
-func (d *meshWorkloadFinder) populateMeshResourceRef(ctx context.Context, discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
+func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_types.ResourceRef, error) {
 	meshList, err := d.localMeshClient.List(ctx, &client.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// assume at most one instance of Istio per cluster, thus it must be the Mesh for the MeshWorkload if it exists
 	for _, mesh := range meshList.Items {
 		if mesh.Spec.Cluster.Name == d.clusterName {
-			discoveredWorkload.Spec.Mesh = &core_types.ResourceRef{
+			return &core_types.ResourceRef{
 				Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
 				Cluster:   &pb_types.StringValue{Value: d.clusterName},
-			}
-			return nil
+			}, nil
 		}
 	}
-	return nil
+	return nil, nil
 }

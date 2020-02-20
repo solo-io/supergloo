@@ -3,10 +3,11 @@ package mesh_workload
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
@@ -26,9 +27,9 @@ type OwnerFetcher interface {
 }
 
 // check a pod to see if it represents a mesh workload
-// if it does, produce the appropriate MeshWorkload CR instance corresponding to it
+// if it does, produce the appropriate controller reference, and object meta corresponding to it
 type MeshWorkloadScanner interface {
-	ScanPod(context.Context, *corev1.Pod) (*v1alpha1.MeshWorkload, error)
+	ScanPod(context.Context, *corev1.Pod) (*core_types.ResourceRef, metav1.ObjectMeta, error)
 }
 
 // these need to be constructed on the fly when a cluster is added, because the ownerFetcher will need to talk to that cluster

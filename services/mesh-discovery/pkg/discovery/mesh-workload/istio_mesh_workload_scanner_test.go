@@ -68,9 +68,10 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 		}
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
-		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, pod)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(meshWorkload).To(Equal(expectedMeshWorkload))
+		controllerRef, meta, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(controllerRef).To(Equal(expectedMeshWorkload.Spec.KubeControllerRef))
+		Expect(meta).To(Equal(expectedMeshWorkload.ObjectMeta))
 	})
 
 	It("should return nil if not istio injected pod", func() {
@@ -82,15 +83,15 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		meshWorkload, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod)
-		Expect(err).ToNot(HaveOccurred())
+		meshWorkload, _, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
 	})
 
 	It("should return error if error fetching deployment", func() {
 		expectedErr := eris.New("error")
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(nil, expectedErr)
-		_, err := meshWorkloadScanner.ScanPod(ctx, pod)
+		_, _, err := meshWorkloadScanner.ScanPod(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})
 })

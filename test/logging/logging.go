@@ -16,7 +16,7 @@ const (
 )
 
 type TestLogger struct {
-	sink   *memorySink
+	sink   *MemorySink
 	logger *zap.SugaredLogger
 }
 
@@ -24,16 +24,16 @@ func (t *TestLogger) Logger() *zap.SugaredLogger {
 	return t.logger
 }
 
-func (t *TestLogger) Sink() *memorySink {
+func (t *TestLogger) Sink() *MemorySink {
 	return t.sink
 }
 
-func (t *TestLogger) EXPECT() *logMatcher {
+func (t *TestLogger) EXPECT() *LogMatcher {
 	return newLogMatcher(t.sink)
 }
 
 func NewTestLogger() *TestLogger {
-	sink := &memorySink{new(zaptest.Buffer)}
+	sink := &MemorySink{new(zaptest.Buffer)}
 	core := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), sink, zapcore.DebugLevel)
 	logger := zap.New(core)
 	return &TestLogger{
@@ -44,63 +44,63 @@ func NewTestLogger() *TestLogger {
 
 type logEntry map[string]interface{}
 
-func newLogMatcher(sink *memorySink) *logMatcher {
+func newLogMatcher(sink *MemorySink) *LogMatcher {
 	var entries []logEntry
 	for _, v := range sink.Lines() {
 		obj := logEntry{}
 		Expect(json.Unmarshal([]byte(v), &obj)).NotTo(HaveOccurred())
 		entries = append(entries, obj)
 	}
-	return &logMatcher{entries: entries}
+	return &LogMatcher{entries: entries}
 }
 
-type logMatcher struct {
+type LogMatcher struct {
 	entries []logEntry
 }
 
-func (l *logMatcher) NumEntries(num int) *logMatcher {
+func (l *LogMatcher) NumEntries(num int) *LogMatcher {
 	Expect(l.entries).To(HaveLen(num))
 	return l
 }
 
-func (l *logMatcher) Entry(index int) *entryMatcher {
+func (l *LogMatcher) Entry(index int) *EntryMatcher {
 	Expect(l.entries).To(BeNumerically("<=", index), "index must be within range of the # of "+
 		"avaiable entries")
-	return &entryMatcher{entry: l.entries[index]}
+	return &EntryMatcher{entry: l.entries[index]}
 }
 
-func (l *logMatcher) LastEntry() *entryMatcher {
-	return &entryMatcher{entry: l.entries[len(l.entries)-1]}
+func (l *LogMatcher) LastEntry() *EntryMatcher {
+	return &EntryMatcher{entry: l.entries[len(l.entries)-1]}
 }
 
-func (l *logMatcher) FirstEntry() *entryMatcher {
-	return &entryMatcher{entry: l.entries[0]}
+func (l *LogMatcher) FirstEntry() *EntryMatcher {
+	return &EntryMatcher{entry: l.entries[0]}
 }
 
-type entryMatcher struct {
+type EntryMatcher struct {
 	entry logEntry
 }
 
-func (e *entryMatcher) HaveMessage(msg string) *entryMatcher {
+func (e *EntryMatcher) HaveMessage(msg string) *EntryMatcher {
 	Expect(e.entry).To(HaveKey(MsgEntryType))
 	result := e.entry[MsgEntryType]
 	Expect(result).To(Equal(msg))
 	return e
 }
 
-func (e *entryMatcher) HaveError(err error) *entryMatcher {
+func (e *EntryMatcher) HaveError(err error) *EntryMatcher {
 	Expect(e.entry).To(HaveKey(ErrorEntryType))
 	result := e.entry[ErrorEntryType]
 	Expect(result).To(Equal(err.Error()))
 	return e
 }
 
-func (e *entryMatcher) Have(key string, val interface{}) *entryMatcher {
+func (e *EntryMatcher) Have(key string, val interface{}) *EntryMatcher {
 	Expect(e.entry).To(HaveKeyWithValue(key, val))
 	return e
 }
 
-func (e *entryMatcher) Level(level zapcore.Level) *entryMatcher {
+func (e *EntryMatcher) Level(level zapcore.Level) *EntryMatcher {
 	Expect(e.entry).To(HaveKey(LevelEntryType))
 	result := e.entry[LevelEntryType]
 	Expect(result).To(Equal(level.String()))
@@ -108,8 +108,8 @@ func (e *entryMatcher) Level(level zapcore.Level) *entryMatcher {
 }
 
 // for testing
-type memorySink struct {
+type MemorySink struct {
 	*zaptest.Buffer
 }
 
-func (s *memorySink) Close() error { return nil }
+func (s *MemorySink) Close() error { return nil }

@@ -7,12 +7,10 @@ import (
 
 	pb_types "github.com/gogo/protobuf/types"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/constants"
 	core_v1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -35,33 +33,24 @@ type istioMeshWorkloadScanner struct {
 	deploymentFetcher OwnerFetcher
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
+func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*core_types.ResourceRef, metav1.ObjectMeta, error) {
 	if !i.isIstioPod(pod) {
-		return nil, nil
+		return nil, metav1.ObjectMeta{}, nil
 	}
 	deployment, err := i.deploymentFetcher.GetDeployment(ctx, pod)
 	if err != nil {
-		return nil, err
+		return nil, metav1.ObjectMeta{}, err
 	}
-	return &discoveryv1alpha1.MeshWorkload{
-		ObjectMeta: v1.ObjectMeta{
+	return &core_types.ResourceRef{
+			Kind:      &pb_types.StringValue{Value: deployment.Kind},
+			Name:      deployment.Name,
+			Namespace: deployment.Namespace,
+			Cluster:   &pb_types.StringValue{Value: pod.ClusterName},
+		}, metav1.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
 			Namespace: env.DefaultWriteNamespace,
 			Labels:    DiscoveryLabels,
-		},
-		Spec: discovery_types.MeshWorkloadSpec{
-			KubeControllerRef: &core_types.ResourceRef{
-				Kind:      &pb_types.StringValue{Value: deployment.Kind},
-				Name:      deployment.Name,
-				Namespace: deployment.Namespace,
-				Cluster:   &pb_types.StringValue{Value: pod.ClusterName},
-			},
-			KubePod: &discovery_types.KubePod{
-				Labels:             pod.Labels,
-				ServiceAccountName: pod.Spec.ServiceAccountName,
-			},
-		},
-	}, nil
+		}, nil
 }
 
 // iterate through pod's containers and check for one with name containing "istio" and "proxy"
