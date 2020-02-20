@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -79,14 +78,14 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if owner ref for Pod not found", func() {
 		f := false
-		podWithoutOwner := proto.Clone(pod).(*corev1.Pod)
+		podWithoutOwner := *pod
 		podWithoutOwner.OwnerReferences = []metav1.OwnerReference{
 			{
 				Controller: &f,
 				Name:       replicaSetName,
 			},
 		}
-		_, err := ownerFetcher.GetDeployment(ctx, podWithoutOwner)
+		_, err := ownerFetcher.GetDeployment(ctx, &podWithoutOwner)
 		Expect(err).To(testutils.HaveInErrorChain(
 			mesh_workload.ControllerOwnerNotFound(namespace, podWithoutOwner.Name, podWithoutOwner.TypeMeta.Kind)))
 	})
@@ -100,14 +99,14 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if owner ref for ReplicaSet not found", func() {
 		f := false
-		replicaSetWithoutOwner := proto.Clone(replicaSet).(*appsv1.ReplicaSet)
+		replicaSetWithoutOwner := *replicaSet
 		replicaSetWithoutOwner.OwnerReferences = []metav1.OwnerReference{
 			{
 				Controller: &f,
 				Name:       replicaSetName,
 			},
 		}
-		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(replicaSetWithoutOwner, nil)
+		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(&replicaSetWithoutOwner, nil)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(
 			mesh_workload.ControllerOwnerNotFound(namespace, replicaSetWithoutOwner.Name, replicaSetWithoutOwner.TypeMeta.Kind)))
