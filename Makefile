@@ -18,7 +18,6 @@ LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 COMPONENTS := mesh-discovery mesh-networking
-
 # include helm makefile so it can be ran from the root
 include install/helm/helm.mk
 
@@ -103,11 +102,11 @@ MESH_DISCOVERY_DIR=services/$(MESH_DISCOVERY)
 MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
+$(MESH_DISCOVERY_OUTPUT_DIR)/$(MESH_DISCOVERY)-linux-amd64: $(MESH_DISCOVERY_SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/cmd/main.go
 
-.PHONY: mesh-discovery-docker
-mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
+.PHONY: $(MESH_DISCOVERY)-docker
+$(MESH_DISCOVERY)-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/$(MESH_DISCOVERY)-linux-amd64
 	$(call build_container,$(MESH_DISCOVERY))
 
 
@@ -119,11 +118,11 @@ MESH_NETWORKING_DIR=services/$(MESH_NETWORKING)
 MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
 MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOURCES)
+$(MESH_NETWORKING_OUTPUT_DIR)/$(MESH_NETWORKING)-linux-amd64: $(MESH_NETWORKING_SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/cmd/main.go
 
-.PHONY: mesh-networking-docker
-mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
+.PHONY: $(MESH_NETWORKING)-docker
+$(MESH_NETWORKING)-docker: $(MESH_NETWORKING_OUTPUT_DIR)/$(MESH_NETWORKING)-linux-amd64
 	$(call build_container,$(MESH_NETWORKING))
 
 #----------------------------------------------------------------------------------
@@ -177,7 +176,7 @@ upload-github-release-assets: build-cli
 #---------
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker mesh-networking-docker
+docker: $(MESH_DISCOVERY)-docker $(MESH_NETWORKING)-docker
 
 # $(1) name of component
 define docker_push

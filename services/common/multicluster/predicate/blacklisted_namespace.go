@@ -9,8 +9,11 @@ import (
 var (
 	KubeBlacklistedNamespaces = sets.NewString(
 		"kube-system",
-		"istio-system",
+	)
+
+	IstioBlackListedNamespaces = sets.NewString(
 		"istio-operator",
+		"istio-system",
 	)
 )
 

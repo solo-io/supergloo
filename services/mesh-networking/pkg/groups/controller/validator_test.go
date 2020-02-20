@@ -1,4 +1,4 @@
-package controller_test
+package group_controller_test
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
+	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,7 +23,7 @@ var _ = Describe("validator", func() {
 
 	var (
 		ctrl       *gomock.Controller
-		validator  controller.MeshGroupValidator
+		validator  group_controller.MeshGroupValidator
 		meshClient *mock_core.MockMeshClient
 		ctx        context.Context
 
@@ -33,7 +33,7 @@ var _ = Describe("validator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		validator = controller.MeshGroupValidatorProvider(meshClient)
+		validator = group_controller.MeshGroupValidatorProvider(meshClient)
 		ctx = context.TODO()
 	})
 
@@ -63,7 +63,7 @@ var _ = Describe("validator", func() {
 			},
 		})
 		Expect(err).To(HaveOccurred())
-		Expect(err).To(HaveInErrorChain(controller.InvalidMeshRefsError([]string{
+		Expect(err).To(HaveInErrorChain(group_controller.InvalidMeshRefsError([]string{
 			fmt.Sprintf("%s.%s", ref.GetName(), ref.GetNamespace()),
 		})))
 		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
@@ -94,7 +94,7 @@ var _ = Describe("validator", func() {
 			},
 		})
 		Expect(err).To(HaveOccurred())
-		Expect(err).To(HaveInErrorChain(controller.OnlyIstioSupportedError(mesh.Name)))
+		Expect(err).To(HaveInErrorChain(group_controller.OnlyIstioSupportedError(mesh.Name)))
 		Expect(status).To(Equal(v1alpha1_types.MeshGroupStatus{
 			Config: v1alpha1_types.MeshGroupStatus_INVALID,
 		}))

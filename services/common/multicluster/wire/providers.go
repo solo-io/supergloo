@@ -1,4 +1,4 @@
-package wire
+package mc_wire
 
 import (
 	"context"
@@ -9,18 +9,25 @@ import (
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mc_watcher "github.com/solo-io/mesh-projects/services/common/multicluster/watcher"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // package up all the dependencies needed to build an instance of `MultiClusterDependencies`,
 // which should be considered to be the only output type you need to consume from this provider set
 var MulticlusterProviderSet = wire.NewSet(
-	LocalKubeConfigProvider,
-	LocalManagerProvider,
+	ClusterProviderSet,
 	AsyncManagerFactoryProvider,
 	AsyncManagerControllerProvider,
 	LocalManagerStarterProvider,
 	MulticlusterDependenciesProvider,
+)
+
+// Used for operators which do not have any multi cluster dependencies, such as the csr-agent
+var ClusterProviderSet = wire.NewSet(
+	LocalKubeConfigProvider,
+	LocalManagerProvider,
+	DynamicClientProvider,
 )
 
 func LocalKubeConfigProvider() (*rest.Config, error) {
@@ -38,6 +45,10 @@ func LocalManagerProvider(ctx context.Context, cfg *rest.Config) (mc_manager.Asy
 	}
 
 	return mc_manager.NewAsyncManager(ctx, mgr), nil
+}
+
+func DynamicClientProvider(mgr mc_manager.AsyncManager) client.Client {
+	return mgr.Manager().GetClient()
 }
 
 func AsyncManagerFactoryProvider() mc_manager.AsyncManagerFactory {

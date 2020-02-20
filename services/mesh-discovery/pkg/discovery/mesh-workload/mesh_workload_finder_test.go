@@ -36,7 +36,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshWorkloadFinder          controller.PodEventHandler
 		pod                         = &corev1.Pod{}
 		discoveredMeshWorkload      *discoveryv1alpha1.MeshWorkload
-		loggerSink, testLogger      = test_logging.NewInMemoryLogger()
+		testLogger                  = test_logging.NewTestLogger()
 		notFoundErr                 = &k8s_errs.StatusError{
 			ErrStatus: metav1.Status{
 				Reason: metav1.StatusReasonNotFound,
@@ -46,7 +46,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	BeforeEach(func() {
 		ctrl := gomock.NewController(GinkgoT())
-		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger)
+		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		mockLocalMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
 		mockLocalMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshWorkloadScanner = mock_mesh_workload.NewMockMeshWorkloadScanner(ctrl)
@@ -107,7 +107,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(HaveLen(1))
 		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
 
 	It("should log warning if non-fatal error while scanning workloads", func() {
@@ -126,7 +126,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil)
 		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, discoveredMeshWorkload).Return(nil)
 		_ = meshWorkloadFinder.Create(pod)
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingNonFatal))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingNonFatal))
 	})
 
 	It("should return error if fatal error while populating Mesh resource ref", func() {
@@ -138,7 +138,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(HaveLen(1))
 		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
+		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
 	})
 
 	It("should create new MeshWorkload if Istio injected workload updated", func() {
@@ -240,7 +240,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(HaveLen(1))
 		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
+		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
 	})
 
 	It("should return error if error processing new pod", func() {
@@ -253,7 +253,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		Expect(ok).To(BeTrue())
 		Expect(multierr.Errors).To(HaveLen(1))
 		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
+		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
 	})
 
 	It("should return nil if old and new Pods are not mesh injected", func() {
@@ -306,6 +306,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(loggerSink.String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingNonFatal))
+		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingNonFatal)
 	})
 })

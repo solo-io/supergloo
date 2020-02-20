@@ -1,4 +1,4 @@
-package controller_test
+package group_controller_test
 
 import (
 	"context"
@@ -10,14 +10,14 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	mg_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
-	mock_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller/mocks"
+	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
+	mock_group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller/mocks"
 )
 
 var _ = Describe("controller", func() {
 	var (
 		ctrl      *gomock.Controller
-		validator *mock_controller.MockMeshGroupValidator
+		validator *mock_group_controller.MockMeshGroupValidator
 		handler   mg_controller.MeshGroupEventHandler
 		ctx       context.Context
 
@@ -26,9 +26,9 @@ var _ = Describe("controller", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		validator = mock_controller.NewMockMeshGroupValidator(ctrl)
+		validator = mock_group_controller.NewMockMeshGroupValidator(ctrl)
 		ctx = context.TODO()
-		handler = controller.MeshGroupEventHandlerProvider(ctx, validator)
+		handler = group_controller.MeshGroupEventHandlerProvider(ctx, validator)
 	})
 
 	AfterEach(func() {

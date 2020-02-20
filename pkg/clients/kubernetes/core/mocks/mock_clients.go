@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/core/v1"
+	v10 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -54,4 +55,71 @@ func (mr *MockServiceClientMockRecorder) List(ctx interface{}, options ...interf
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockServiceClient)(nil).List), varargs...)
+}
+
+// MockSecretsClient is a mock of SecretsClient interface
+type MockSecretsClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockSecretsClientMockRecorder
+}
+
+// MockSecretsClientMockRecorder is the mock recorder for MockSecretsClient
+type MockSecretsClientMockRecorder struct {
+	mock *MockSecretsClient
+}
+
+// NewMockSecretsClient creates a new mock instance
+func NewMockSecretsClient(ctrl *gomock.Controller) *MockSecretsClient {
+	mock := &MockSecretsClient{ctrl: ctrl}
+	mock.recorder = &MockSecretsClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockSecretsClient) EXPECT() *MockSecretsClientMockRecorder {
+	return m.recorder
+}
+
+// Update mocks base method
+func (m *MockSecretsClient) Update(ctx context.Context, csr *v1.Secret) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, csr)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockSecretsClientMockRecorder) Update(ctx, csr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSecretsClient)(nil).Update), ctx, csr)
+}
+
+// Get mocks base method
+func (m *MockSecretsClient) Get(ctx context.Context, name, namespace string) (*v1.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
+	ret0, _ := ret[0].(*v1.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockSecretsClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSecretsClient)(nil).Get), ctx, name, namespace)
+}
+
+// List mocks base method
+func (m *MockSecretsClient) List(ctx context.Context, opts v10.ListOptions) (*v1.SecretList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, opts)
+	ret0, _ := ret[0].(*v1.SecretList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockSecretsClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSecretsClient)(nil).List), ctx, opts)
 }

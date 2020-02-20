@@ -1,55 +1,43 @@
 package mesh_networking
 
 import (
-	"context"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
 	"github.com/solo-io/mesh-projects/services/internal/config"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
-	mg_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
+	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func Run(rootCtx context.Context) {
-	ctx := config.CreateRootContext(rootCtx, "mesh-group")
+func Run() {
+	ctx := config.CreateRootContext(nil, "mesh-networking")
 
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations
-	meshDiscoveryContext, err := wire.InitializeMeshGroup(ctx)
+	meshNetworkingContext, err := wire.InitializeMeshNetworking(ctx)
 	if err != nil {
-		logger.Fatalw("error initializing mesh group clients", zap.Error(err))
-	}
-
-	// this is our main entrypoint for mesh-grouping
-	addClusterHandler, err := mg_multicluster.NewMeshGroupClusterHandler(
-		ctx,
-		meshDiscoveryContext.MultiClusterDeps.LocalManager,
-	)
-	if err != nil {
-		logger.Fatalw("error initializing mesh group cluster handler", zap.Error(err))
+		logger.Fatalw("error initializing mesh networking clients", zap.Error(err))
 	}
 
 	// block until we die; RIP
 	err = multicluster.SetupAndStartLocalManager(
-		meshDiscoveryContext.MultiClusterDeps,
+		meshNetworkingContext.MultiClusterDeps,
 		[]mc_manager.AsyncManagerStartOptionsFunc{
 			// start the mesh group event handler watching only the default write namespace, make this configurable?
-			controller.NewMeshGroupControllerStarter(
-				meshDiscoveryContext.MeshGroupEventHandler,
+			group_controller.NewMeshGroupControllerStarter(
+				meshNetworkingContext.MeshGroupEventHandler,
 				mc_predicate.WhitelistedNamespacePredicateProvider(sets.NewString(env.DefaultWriteNamespace)),
-				controller.IgnoreStatusUpdatePredicate(ctx),
+				group_controller.IgnoreStatusUpdatePredicate(ctx),
 			),
 		},
 		[]multicluster.NamedAsyncManagerHandler{{
-			Name:                "mesh-group-controller",
-			AsyncManagerHandler: addClusterHandler,
+			Name:                "mesh-networking-multicluster-controller",
+			AsyncManagerHandler: meshNetworkingContext.MeshNetworkingClusterHandler,
 		}},
 	)
 

@@ -1,4 +1,4 @@
-package controller
+package group_controller_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -20,7 +21,7 @@ var _ = Describe("predicate", func() {
 
 	BeforeEach(func() {
 		ctx = context.TODO()
-		statusPredicate = IgnoreStatusUpdatePredicate(ctx)
+		statusPredicate = group_controller.IgnoreStatusUpdatePredicate(ctx)
 	})
 
 	Context("update", func() {

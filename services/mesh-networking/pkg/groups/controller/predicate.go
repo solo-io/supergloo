@@ -1,4 +1,4 @@
-package controller
+package group_controller
 
 import (
 	"context"
@@ -42,16 +42,16 @@ func (p *ignoreStatusPredicate) Update(event event.UpdateEvent) bool {
 	oldObject, ok := event.ObjectOld.(*v1alpha1.MeshGroup)
 	if !ok {
 		// Appending the link as it is the only field on the meta which will contain the type of the object passed in
-		logger.Warnf("Object %s.%s of type was passed into a predicate which only accepts MeshGroups. link %s",
-			event.MetaOld.GetName(), event.MetaOld.GetNamespace(), event.MetaOld.GetSelfLink())
+		logger.Warnf("Object %s.%s of type was passed into a predicate which only accepts MeshGroups. GVK: %s",
+			event.MetaNew.GetName(), event.MetaNew.GetNamespace(), event.ObjectNew.GetObjectKind().GroupVersionKind())
 		// this should never happen, if accidentally applied to the wrong controller, let it through
 		return true
 	}
 	newObject, ok := event.ObjectNew.(*v1alpha1.MeshGroup)
 	if !ok {
 		// Appending the link as it is the only field on the meta which will contain the type of the object passed in
-		logger.Warnf("Object %s.%s of type was passed into a predicate which only accepts MeshGroups. link %s",
-			event.MetaOld.GetName(), event.MetaOld.GetNamespace(), event.MetaOld.GetSelfLink())
+		logger.Warnf("Object %s.%s of type was passed into a predicate which only accepts MeshGroups. GVK: %s",
+			event.MetaOld.GetName(), event.MetaOld.GetNamespace(), event.ObjectNew.GetObjectKind().GroupVersionKind())
 		// this should never happen, if accidentally applied to the wrong controller, let it through
 		return true
 	}

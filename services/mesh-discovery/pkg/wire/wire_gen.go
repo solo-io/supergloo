@@ -12,7 +12,7 @@ import (
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
-	"github.com/solo-io/mesh-projects/services/common/multicluster/wire"
+	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/consul"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/istio"
@@ -23,17 +23,17 @@ import (
 // Injectors from wire.go:
 
 func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
-	config, err := wire.LocalKubeConfigProvider()
+	config, err := mc_wire.LocalKubeConfigProvider()
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	asyncManager, err := wire.LocalManagerProvider(ctx, config)
+	asyncManager, err := mc_wire.LocalManagerProvider(ctx, config)
 	if err != nil {
 		return DiscoveryContext{}, err
 	}
-	asyncManagerController := wire.AsyncManagerControllerProvider(ctx, asyncManager)
-	asyncManagerStartOptionsFunc := wire.LocalManagerStarterProvider(asyncManagerController)
-	multiClusterDependencies := wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
+	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
+	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	imageNameParser := docker.NewImageNameParser()
 	istioMeshScanner := istio.NewIstioMeshScanner(imageNameParser)
 	consulConnectInstallationScanner := consul.NewConsulConnectInstallationScanner(imageNameParser)

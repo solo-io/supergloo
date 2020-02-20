@@ -1,4 +1,4 @@
-package controller_test
+package zephyr_networking_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestController(t *testing.T) {
+func TestNetworking(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Controller Suite")
+	RunSpecs(t, "Networking Suite")
 }

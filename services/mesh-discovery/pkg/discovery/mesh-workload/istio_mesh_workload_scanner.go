@@ -56,6 +56,10 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 				Namespace: deployment.Namespace,
 				Cluster:   &pb_types.StringValue{Value: pod.ClusterName},
 			},
+			KubePod: &discovery_types.KubePod{
+				Labels:             pod.Labels,
+				ServiceAccountName: pod.Spec.ServiceAccountName,
+			},
 		},
 	}, nil
 }

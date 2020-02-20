@@ -56,7 +56,7 @@ func (d *meshWorkloadFinder) StartDiscovery(podController controller.PodControll
 }
 
 func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod, d.clusterName)
 	pod.SetClusterName(d.clusterName)
 	discoveredMeshWorkload, err := d.discoverMeshWorkload(pod)
 	if err != nil && discoveredMeshWorkload == nil {
@@ -68,11 +68,11 @@ func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
 		logger.Debugf("MeshWorkload not found for pod %s/%s", pod.Namespace, pod.Name)
 		return nil
 	}
-	return d.createMeshWorkloadIfNotExists(discoveredMeshWorkload)
+	return d.createOrUpdateWorkload(discoveredMeshWorkload)
 }
 
 func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new, d.clusterName)
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)
 	oldMeshWorkload, err := d.discoverMeshWorkload(old)
@@ -95,7 +95,7 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 		return nil
 	} else if oldMeshWorkload == nil && newMeshWorkload != nil {
 		// existing pod is now mesh-injected
-		return d.createMeshWorkloadIfNotExists(newMeshWorkload)
+		return d.createOrUpdateWorkload(newMeshWorkload)
 	} else if oldMeshWorkload != nil && newMeshWorkload == nil {
 		// existing pod is no longer mesh-injected
 		// TODO: delete
@@ -112,13 +112,13 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 }
 
 func (d *meshWorkloadFinder) Delete(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod, d.clusterName)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
 func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod, d.clusterName)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil
 }
@@ -144,18 +144,19 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 	return discoveredMeshWorkload, multiErr.ErrorOrNil()
 }
 
-func (d *meshWorkloadFinder) createMeshWorkloadIfNotExists(discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
+func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {
 	objectKey, err := client.ObjectKeyFromObject(discoveredWorkload)
 	if err != nil {
 		return err
 	}
 	_, err = d.localMeshWorkloadClient.Get(d.ctx, objectKey)
-	if errors.IsNotFound(err) {
-		return d.localMeshWorkloadClient.Create(d.ctx, discoveredWorkload)
-	} else if err != nil {
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return d.localMeshWorkloadClient.Create(d.ctx, discoveredWorkload)
+		}
 		return err
 	}
-	return nil
+	return d.localMeshWorkloadClient.Update(d.ctx, discoveredWorkload)
 }
 
 func (d *meshWorkloadFinder) populateMeshResourceRef(ctx context.Context, discoveredWorkload *discoveryv1alpha1.MeshWorkload) error {

@@ -5,6 +5,16 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
+)
+
+const (
+	EventTypeKey      = "event_type"
+	ClusterNameKey    = "cluster_name"
+	GroupVersionKind  = "group_version_kind"
+	ResourceName      = "resource_name"
+	ResourceNamespace = "resource_namespace"
 )
 
 type EventType int
@@ -16,19 +26,40 @@ const (
 	GenericEvent
 )
 
-func BuildEventLogger(ctx context.Context, eventType EventType, clusterName string) *zap.SugaredLogger {
-	logger := contextutils.LoggerFrom(ctx).With("cluster_name", clusterName)
-	switch eventType {
+func (e EventType) String() string {
+	switch e {
 	case CreateEvent:
-		logger = logger.With("event_type", "create")
+		return "create"
 	case UpdateEvent:
-		logger = logger.With("event_type", "update")
+		return "udpate"
 	case DeleteEvent:
-		logger = logger.With("event_type", "delete")
+		return "delete"
 	case GenericEvent:
-		logger = logger.With("event_type", "generic")
+		return "generic"
 	default:
-		logger = logger.With("event_type", "unknown")
+		return "unknown"
 	}
+}
+
+func BuildEventLogger(ctx context.Context, eventType EventType, obj runtime.Object, clusterName string) *zap.SugaredLogger {
+	logger := contextutils.LoggerFrom(ctx).With(
+		zap.String(EventTypeKey, eventType.String()),
+		zap.String(GroupVersionKind, obj.GetObjectKind().GroupVersionKind().String()),
+	)
+	if clusterName != "" {
+		logger = logger.With(zap.String(ClusterNameKey, clusterName))
+	} else {
+		logger = logger.With(zap.String(ClusterNameKey, "local"))
+	}
+	accessor := meta.NewAccessor()
+	name, err := accessor.Name(obj)
+	if err == nil {
+		logger = logger.With(ResourceName, name)
+	}
+	namespace, err := accessor.Namespace(obj)
+	if err == nil {
+		logger = logger.With(ResourceNamespace, namespace)
+	}
+
 	return logger
 }

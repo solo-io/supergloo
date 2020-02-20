@@ -64,6 +64,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					Namespace: deployment.Namespace,
 					Cluster:   &pb_types.StringValue{Value: pod.ObjectMeta.ClusterName},
 				},
+				KubePod: &discovery_types.KubePod{},
 			},
 		}
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)

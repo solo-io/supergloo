@@ -21,8 +21,13 @@ import (
 
 var (
 	// visible for testing
-	ObjectPredicates = []predicate.Predicate{
+	MeshPredicates = []predicate.Predicate{
 		mc_predicate.BlacklistedNamespacePredicateProvider(mc_predicate.KubeBlacklistedNamespaces),
+	}
+	MeshWorkloadPredicates = []predicate.Predicate{
+		mc_predicate.BlacklistedNamespacePredicateProvider(
+			mc_predicate.IstioBlackListedNamespaces.Union(mc_predicate.KubeBlacklistedNamespaces),
+		),
 	}
 )
 
@@ -115,12 +120,12 @@ func (m *discoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clus
 		initializedDeps.meshWorkloadClient,
 	)
 
-	err = meshFinder.StartDiscovery(initializedDeps.deploymentController, ObjectPredicates)
+	err = meshFinder.StartDiscovery(initializedDeps.deploymentController, MeshPredicates)
 	if err != nil {
 		return err
 	}
 
-	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podController, ObjectPredicates)
+	err = meshWorkloadFinder.StartDiscovery(initializedDeps.podController, MeshWorkloadPredicates)
 	if err != nil {
 		return err
 	}

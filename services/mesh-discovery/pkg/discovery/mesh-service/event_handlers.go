@@ -21,22 +21,22 @@ type ServiceEventHandler struct {
 }
 
 func (s *ServiceEventHandler) Create(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, s.ClusterName).Debugf("Handling event: %+v", obj)
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Debugf("Handling event")
 	return s.HandleServiceUpsert(obj)
 }
 
 func (s *ServiceEventHandler) Update(old, new *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, s.ClusterName).Debugf("Handling event: old %+v new %+v", old, new)
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, new, s.ClusterName).Debugf("Handling event")
 	return s.HandleServiceUpsert(new)
 }
 
 func (s *ServiceEventHandler) Delete(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, s.ClusterName).Warnf("Ignoring delete event: %+v", obj)
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Warnf("Ignoring event")
 	return nil
 }
 
 func (s *ServiceEventHandler) Generic(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, s.ClusterName).Errorf("Ignoring generic event: %+v", obj)
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Errorf("Ignoring event")
 	return nil
 }
 
@@ -47,21 +47,21 @@ type MeshWorkloadEventHandler struct {
 }
 
 func (m *MeshWorkloadEventHandler) Create(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, m.ClusterName).Debugf("Handling event: %+v", obj)
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Debugf("Handling event")
 	return m.HandleMeshWorkloadUpsert(obj)
 }
 
 func (m *MeshWorkloadEventHandler) Update(old, new *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, m.ClusterName).Debugf("Handling event: old %+v new %+v", old, new)
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, new, m.ClusterName).Debugf("Handling event")
 	return m.HandleMeshWorkloadUpsert(new)
 }
 
 func (m *MeshWorkloadEventHandler) Delete(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, m.ClusterName).Debugf("Ignoring delete event:: %+v", obj)
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Debugf("Ignoring event")
 	return nil
 }
 
 func (m *MeshWorkloadEventHandler) Generic(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, m.ClusterName).Errorf("Ignoring generic event: %+v", obj)
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Errorf("Ignoring event")
 	return nil
 }

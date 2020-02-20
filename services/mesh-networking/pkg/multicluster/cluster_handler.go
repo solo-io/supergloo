@@ -1,4 +1,4 @@
-package multicluster
+package networking_multicluster
 
 import (
 	"context"
@@ -8,14 +8,16 @@ import (
 )
 
 // this is the main entrypoint for all mesh-group multi cluster logic
-func NewMeshGroupClusterHandler(
+func NewMeshNetworkingClusterHandler(
 	ctx context.Context,
 	localManager mc_manager.AsyncManager,
+	csrControllerFactory CSRControllerFactory,
 ) (mc_manager.AsyncManagerHandler, error) {
 
-	handler := &meshDiscoveryClusterHandler{
-		ctx:          ctx,
-		localManager: localManager,
+	handler := &meshNetworkingClusterHandler{
+		ctx:                  ctx,
+		localManager:         localManager,
+		csrControllerFactory: csrControllerFactory,
 	}
 
 	// be sure that we are also watching our local cluster
@@ -27,15 +29,16 @@ func NewMeshGroupClusterHandler(
 	return handler, nil
 }
 
-type meshDiscoveryClusterHandler struct {
-	localManager mc_manager.AsyncManager
-	ctx          context.Context
+type meshNetworkingClusterHandler struct {
+	ctx                  context.Context
+	localManager         mc_manager.AsyncManager
+	csrControllerFactory CSRControllerFactory
 }
 
-func (m *meshDiscoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clusterName string) error {
+func (m *meshNetworkingClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clusterName string) error {
 	return nil
 }
 
-func (m *meshDiscoveryClusterHandler) ClusterRemoved(clusterName string) error {
+func (m *meshNetworkingClusterHandler) ClusterRemoved(clusterName string) error {
 	return nil
 }

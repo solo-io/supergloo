@@ -9,27 +9,33 @@ import (
 	"context"
 
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/controller"
+	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
+	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
+	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
 )
 
 // Injectors from wire.go:
 
-func InitializeMeshGroup(ctx context.Context) (MeshGroupContext, error) {
-	config, err := wire.LocalKubeConfigProvider()
+func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
+	config, err := mc_wire.LocalKubeConfigProvider()
 	if err != nil {
-		return MeshGroupContext{}, err
+		return MeshNetworkingContext{}, err
 	}
-	asyncManager, err := wire.LocalManagerProvider(ctx, config)
+	asyncManager, err := mc_wire.LocalManagerProvider(ctx, config)
 	if err != nil {
-		return MeshGroupContext{}, err
+		return MeshNetworkingContext{}, err
 	}
-	asyncManagerController := wire.AsyncManagerControllerProvider(ctx, asyncManager)
-	asyncManagerStartOptionsFunc := wire.LocalManagerStarterProvider(asyncManagerController)
-	multiClusterDependencies := wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
+	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
+	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
+	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	meshClient := discovery_core.NewMeshClient(asyncManager)
-	meshGroupValidator := controller.MeshGroupValidatorProvider(meshClient)
-	meshGroupEventHandler := controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
-	meshGroupContext := MeshGroupContextProvider(multiClusterDependencies, meshGroupEventHandler)
-	return meshGroupContext, nil
+	meshGroupValidator := group_controller.MeshGroupValidatorProvider(meshClient)
+	meshGroupEventHandler := group_controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
+	csrControllerFactory := networking_multicluster.NewCSRControllerFactory()
+	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(ctx, asyncManager, csrControllerFactory)
+	if err != nil {
+		return MeshNetworkingContext{}, err
+	}
+	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, meshGroupEventHandler, asyncManagerHandler)
+	return meshNetworkingContext, nil
 }

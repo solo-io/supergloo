@@ -85,8 +85,8 @@ var _ = Describe("Cluster Handler", func() {
 		meshWorkloadControllerFactory.EXPECT().Build(localAsyncManager, common.LocalClusterName).
 			Return(meshWorkloadController, nil)
 
-		deploymentController.EXPECT().AddEventHandler(ctx, expectedMeshFinder, multicluster.ObjectPredicates)
-		podController.EXPECT().AddEventHandler(ctx, expectedMeshWorkloadFinder, multicluster.ObjectPredicates)
+		deploymentController.EXPECT().AddEventHandler(ctx, expectedMeshFinder, multicluster.MeshPredicates)
+		podController.EXPECT().AddEventHandler(ctx, expectedMeshWorkloadFinder, multicluster.MeshWorkloadPredicates)
 
 		deploymentClient := mock_kubernetes_apps.NewMockDeploymentClient(ctrl)
 		replicaSetClient := mock_kubernetes_apps.NewMockReplicaSetClient(ctrl)

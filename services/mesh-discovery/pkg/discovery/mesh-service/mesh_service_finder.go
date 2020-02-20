@@ -93,7 +93,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *corev1.Service) error {
 
 // handle non-delete events
 func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *v1alpha1.MeshWorkload) error {
-	podLabels := meshWorkload.Spec.KubePod.Labels
+	podLabels := meshWorkload.Spec.GetKubePod().GetLabels()
 
 	// the `AreLabelsInWhiteList` check later on has undesirable behavior when the "whitelist" is empty,
 	// so just handle that manually now- if the pod has no labels, the service cannot select it
@@ -123,7 +123,7 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(service *corev1.Service, m
 		return false
 	}
 
-	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.KubePod.Labels)
+	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.GetKubePod().GetLabels())
 }
 
 func (m *meshServiceFinder) buildMeshService(service *corev1.Service, meshRef *core_types.ResourceRef) *v1alpha1.MeshService {
