@@ -30,6 +30,17 @@ func (this *MeshServiceSpec) UnmarshalJSON(b []byte) error {
 	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for Federation
+func (this *Federation) MarshalJSON() ([]byte, error) {
+	str, err := RegistryMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Federation
+func (this *Federation) UnmarshalJSON(b []byte) error {
+	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for KubeService
 func (this *KubeService) MarshalJSON() ([]byte, error) {
 	str, err := RegistryMarshaler.MarshalToString(this)
@@ -60,6 +71,17 @@ func (this *MeshWorkloadSpec) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for MeshWorkloadSpec
 func (this *MeshWorkloadSpec) UnmarshalJSON(b []byte) error {
+	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for FederatedService
+func (this *FederatedService) MarshalJSON() ([]byte, error) {
+	str, err := RegistryMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for FederatedService
+func (this *FederatedService) UnmarshalJSON(b []byte) error {
 	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
