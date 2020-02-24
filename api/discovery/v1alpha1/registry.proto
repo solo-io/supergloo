@@ -35,7 +35,7 @@ message MeshServiceSpec {
 
 message Federation {
     string multicluster_dns_name = 1;
-    repeated core.zephyr.solo.io.ResourceRef destination_meshes = 2;
+    repeated core.zephyr.solo.io.ResourceRef federated_to_workloads = 2;
 }
 
 message KubeService {
@@ -65,13 +65,6 @@ message MeshWorkloadSpec {
 
     // The mesh with which this workload is associated
     core.zephyr.solo.io.ResourceRef mesh = 2;
-
-    repeated FederatedService federated_services = 4;
-}
-
-message FederatedService {
-    string multicluster_dns_name = 1;
-    core.zephyr.solo.io.ResourceRef mesh_service_ref = 2;
 }
 
 message KubePod {
