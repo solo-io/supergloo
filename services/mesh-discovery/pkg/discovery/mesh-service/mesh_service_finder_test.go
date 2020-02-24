@@ -15,7 +15,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/env"
 	mesh_service "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-service"
 	mock_corev1 "github.com/solo-io/mesh-projects/test/mocks/corev1"
-	mock_zephyr_core "github.com/solo-io/mesh-projects/test/mocks/zephyr/core"
+	mock_zephyr_discovery "github.com/solo-io/mesh-projects/test/mocks/zephyr/discovery"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,7 @@ type mocks struct {
 	meshServiceClient      *discovery_mocks.MockMeshServiceClient
 	meshWorkloadClient     *discovery_mocks.MockMeshWorkloadClient
 	serviceController      *mock_corev1.MockServiceController
-	meshWorkloadController *mock_zephyr_core.MockMeshWorkloadController
+	meshWorkloadController *mock_zephyr_discovery.MockMeshWorkloadController
 
 	meshServiceFinder mesh_service.MeshServiceFinder
 
@@ -55,7 +55,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		serviceController := mock_corev1.NewMockServiceController(ctrl)
-		meshWorkloadController := mock_zephyr_core.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
 
 		var serviceCallback func(service *corev1.Service) error
 		var meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error

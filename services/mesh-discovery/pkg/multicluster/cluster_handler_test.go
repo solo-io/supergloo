@@ -22,7 +22,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/wire"
 	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	mock_corev1 "github.com/solo-io/mesh-projects/test/mocks/corev1"
-	mock_zephyr_core "github.com/solo-io/mesh-projects/test/mocks/zephyr/core"
+	mock_zephyr_discovery "github.com/solo-io/mesh-projects/test/mocks/zephyr/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -51,7 +51,7 @@ var _ = Describe("Cluster Handler", func() {
 		serviceControllerFactory := mock_controllers.NewMockServiceControllerFactory(ctrl)
 		meshWorkloadControllerFactory := mock_controllers.NewMockMeshWorkloadControllerFactory(ctrl)
 		serviceController := mock_corev1.NewMockServiceController(ctrl)
-		meshWorkloadController := mock_zephyr_core.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
 		serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
 		meshServiceClient := mock_core.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := mock_core.NewMockMeshWorkloadClient(ctrl)
