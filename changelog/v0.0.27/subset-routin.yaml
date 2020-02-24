@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Discover subsets for the purpose of subset routing.
+  issueLink: https://github.com/solo-io/mesh-projects/issues/197

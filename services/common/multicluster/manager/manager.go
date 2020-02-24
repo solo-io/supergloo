@@ -6,6 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/mesh-projects/services/common/constants"
 	"github.com/solo-io/mesh-projects/services/internal/errutils"
 	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
@@ -62,7 +63,10 @@ func (a *asyncManagerFactory) New(parentCtx context.Context, cfg *rest.Config,
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.WithCancel(parentCtx)
+	// preload the ctx with the cluster name, as well as preload the logger with the cluster name
+	ctx, cancel := context.WithCancel(contextutils.WithLoggerValues(
+		context.WithValue(parentCtx, constants.CLUSTER, opts.Cluster), zap.String(constants.CLUSTER, opts.Cluster),
+	))
 	return &asyncManager{
 		mgr:      mgr,
 		ctx:      ctx,
@@ -79,6 +83,7 @@ type asyncManager struct {
 }
 
 type AsyncManagerOptions struct {
+	Cluster                string
 	Namespace              string
 	MetricsBindAddress     string
 	HealthProbeBindAddress string

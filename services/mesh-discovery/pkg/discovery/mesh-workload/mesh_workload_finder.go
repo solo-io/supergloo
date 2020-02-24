@@ -57,8 +57,8 @@ func (d *meshWorkloadFinder) StartDiscovery(podController controller.PodControll
 }
 
 func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod, d.clusterName)
 	pod.SetClusterName(d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod)
 	discoveredMeshWorkload, err := d.discoverMeshWorkload(pod)
 	if err != nil && discoveredMeshWorkload == nil {
 		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
@@ -73,9 +73,9 @@ func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
 }
 
 func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new, d.clusterName)
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new)
 	oldMeshWorkload, err := d.discoverMeshWorkload(old)
 	if err != nil && oldMeshWorkload == nil {
 		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
@@ -113,13 +113,15 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 }
 
 func (d *meshWorkloadFinder) Delete(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod, d.clusterName)
+	pod.SetClusterName(d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
 func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod, d.clusterName)
+	pod.SetClusterName(d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil
 }
@@ -170,7 +172,9 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discover
 		return err
 	}
 	// Need to do this, as we need metadata from previous object, (ResourceVersion), for update
+
 	mw.Spec = discoveredWorkload.Spec
+	mw.Labels = discoveredWorkload.Labels
 	return d.localMeshWorkloadClient.Update(d.ctx, mw)
 }
 

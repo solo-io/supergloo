@@ -50,7 +50,7 @@ func (d *meshFinder) StartDiscovery(deploymentController controller.DeploymentCo
 }
 
 func (d *meshFinder) Create(deployment *k8s_api_v1.Deployment) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, deployment, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, deployment)
 
 	deployment.SetClusterName(d.clusterName)
 
@@ -73,7 +73,7 @@ func (d *meshFinder) Create(deployment *k8s_api_v1.Deployment) error {
 }
 
 func (d *meshFinder) Update(old, new *k8s_api_v1.Deployment) error {
-	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new, d.clusterName)
+	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new)
 
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)

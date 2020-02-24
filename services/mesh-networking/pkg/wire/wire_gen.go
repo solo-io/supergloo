@@ -32,7 +32,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	meshGroupValidator := group_controller.MeshGroupValidatorProvider(meshClient)
 	meshGroupEventHandler := group_controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
 	csrControllerFactory := networking_multicluster.NewCSRControllerFactory()
-	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(ctx, asyncManager, csrControllerFactory)
+	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(asyncManager, csrControllerFactory)
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}

@@ -30,6 +30,17 @@ func (this *MeshServiceSpec) UnmarshalJSON(b []byte) error {
 	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for MeshServiceSpec_Subset
+func (this *MeshServiceSpec_Subset) MarshalJSON() ([]byte, error) {
+	str, err := RegistryMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for MeshServiceSpec_Subset
+func (this *MeshServiceSpec_Subset) UnmarshalJSON(b []byte) error {
+	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for Federation
 func (this *Federation) MarshalJSON() ([]byte, error) {
 	str, err := RegistryMarshaler.MarshalToString(this)

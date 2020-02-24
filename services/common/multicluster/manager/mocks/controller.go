@@ -5,6 +5,7 @@
 package mock_mc_manager
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,31 +37,31 @@ func (m *MockKubeConfigHandler) EXPECT() *MockKubeConfigHandlerMockRecorder {
 }
 
 // ClusterAdded mocks base method
-func (m *MockKubeConfigHandler) ClusterAdded(cfg *rest.Config, name string) error {
+func (m *MockKubeConfigHandler) ClusterAdded(cfg *rest.Config, clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterAdded", cfg, name)
+	ret := m.ctrl.Call(m, "ClusterAdded", cfg, clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ClusterAdded indicates an expected call of ClusterAdded
-func (mr *MockKubeConfigHandlerMockRecorder) ClusterAdded(cfg, name interface{}) *gomock.Call {
+func (mr *MockKubeConfigHandlerMockRecorder) ClusterAdded(cfg, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterAdded", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterAdded), cfg, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterAdded", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterAdded), cfg, clusterName)
 }
 
 // ClusterRemoved mocks base method
-func (m *MockKubeConfigHandler) ClusterRemoved(name string) error {
+func (m *MockKubeConfigHandler) ClusterRemoved(cluster string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterRemoved", name)
+	ret := m.ctrl.Call(m, "ClusterRemoved", cluster)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ClusterRemoved indicates an expected call of ClusterRemoved
-func (mr *MockKubeConfigHandlerMockRecorder) ClusterRemoved(name interface{}) *gomock.Call {
+func (mr *MockKubeConfigHandlerMockRecorder) ClusterRemoved(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRemoved", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterRemoved), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRemoved", reflect.TypeOf((*MockKubeConfigHandler)(nil).ClusterRemoved), cluster)
 }
 
 // MockAsyncManagerHandler is a mock of AsyncManagerHandler interface
@@ -87,31 +88,31 @@ func (m *MockAsyncManagerHandler) EXPECT() *MockAsyncManagerHandlerMockRecorder 
 }
 
 // ClusterAdded mocks base method
-func (m *MockAsyncManagerHandler) ClusterAdded(mgr mc_manager.AsyncManager, name string) error {
+func (m *MockAsyncManagerHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterAdded", mgr, name)
+	ret := m.ctrl.Call(m, "ClusterAdded", ctx, mgr, clusterName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ClusterAdded indicates an expected call of ClusterAdded
-func (mr *MockAsyncManagerHandlerMockRecorder) ClusterAdded(mgr, name interface{}) *gomock.Call {
+func (mr *MockAsyncManagerHandlerMockRecorder) ClusterAdded(ctx, mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterAdded", reflect.TypeOf((*MockAsyncManagerHandler)(nil).ClusterAdded), mgr, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterAdded", reflect.TypeOf((*MockAsyncManagerHandler)(nil).ClusterAdded), ctx, mgr, clusterName)
 }
 
 // ClusterRemoved mocks base method
-func (m *MockAsyncManagerHandler) ClusterRemoved(name string) error {
+func (m *MockAsyncManagerHandler) ClusterRemoved(cluster string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClusterRemoved", name)
+	ret := m.ctrl.Call(m, "ClusterRemoved", cluster)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ClusterRemoved indicates an expected call of ClusterRemoved
-func (mr *MockAsyncManagerHandlerMockRecorder) ClusterRemoved(name interface{}) *gomock.Call {
+func (mr *MockAsyncManagerHandlerMockRecorder) ClusterRemoved(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRemoved", reflect.TypeOf((*MockAsyncManagerHandler)(nil).ClusterRemoved), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterRemoved", reflect.TypeOf((*MockAsyncManagerHandler)(nil).ClusterRemoved), cluster)
 }
 
 // MockAsyncManagerInformer is a mock of AsyncManagerInformer interface

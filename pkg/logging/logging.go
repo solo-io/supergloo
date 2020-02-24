@@ -41,16 +41,12 @@ func (e EventType) String() string {
 	}
 }
 
-func BuildEventLogger(ctx context.Context, eventType EventType, obj runtime.Object, clusterName string) *zap.SugaredLogger {
+func BuildEventLogger(ctx context.Context, eventType EventType, obj runtime.Object) *zap.SugaredLogger {
 	logger := contextutils.LoggerFrom(ctx).With(
 		zap.String(EventTypeKey, eventType.String()),
 		zap.String(GroupVersionKind, obj.GetObjectKind().GroupVersionKind().String()),
 	)
-	if clusterName != "" {
-		logger = logger.With(zap.String(ClusterNameKey, clusterName))
-	} else {
-		logger = logger.With(zap.String(ClusterNameKey, "local"))
-	}
+
 	accessor := meta.NewAccessor()
 	name, err := accessor.Name(obj)
 	if err == nil {

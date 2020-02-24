@@ -13,7 +13,7 @@ import (
 	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	discovery_mocks "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
-	service_discovery_rename "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-service"
+	mesh_service "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-service"
 	mock_corev1 "github.com/solo-io/mesh-projects/test/mocks/corev1"
 	mock_zephyr_core "github.com/solo-io/mesh-projects/test/mocks/zephyr/core"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +29,7 @@ type mocks struct {
 	serviceController      *mock_corev1.MockServiceController
 	meshWorkloadController *mock_zephyr_core.MockMeshWorkloadController
 
-	meshServiceFinder service_discovery_rename.MeshServiceFinder
+	meshServiceFinder mesh_service.MeshServiceFinder
 
 	serviceCallback      func(service *corev1.Service) error
 	meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error
@@ -64,7 +64,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		serviceController.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, serviceEventHandler *service_discovery_rename.ServiceEventHandler) error {
+			DoAndReturn(func(ctx context.Context, serviceEventHandler *mesh_service.ServiceEventHandler) error {
 				serviceCallback = serviceEventHandler.HandleServiceUpsert
 				return nil
 			})
@@ -72,12 +72,12 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshWorkloadController.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
-			DoAndReturn(func(ctx context.Context, mwEventHandler *service_discovery_rename.MeshWorkloadEventHandler) error {
+			DoAndReturn(func(ctx context.Context, mwEventHandler *mesh_service.MeshWorkloadEventHandler) error {
 				meshWorkloadCallback = mwEventHandler.HandleMeshWorkloadUpsert
 				return nil
 			})
 
-		meshServiceFinder := service_discovery_rename.NewMeshServiceFinder(
+		meshServiceFinder := mesh_service.NewMeshServiceFinder(
 			ctx,
 			clusterName,
 			env.DefaultWriteNamespace,
@@ -115,6 +115,22 @@ var _ = Describe("Mesh Service Finder", func() {
 					KubePod: &discovery_types.KubePod{
 						Labels: map[string]string{
 							"label":                "value",
+							"version":              "v1",
+							"istio-injected-label": "doesn't matter",
+						},
+					},
+					Mesh: &core_types.ResourceRef{
+						Name:      "istio-test-mesh",
+						Namespace: "isito-system",
+					},
+				},
+			}
+			meshWorkloadEventV2 := &v1alpha1.MeshWorkload{
+				Spec: discovery_types.MeshWorkloadSpec{
+					KubePod: &discovery_types.KubePod{
+						Labels: map[string]string{
+							"label":                "value",
+							"version":              "v2",
 							"istio-injected-label": "doesn't matter",
 						},
 					},
@@ -157,6 +173,14 @@ var _ = Describe("Mesh Service Finder", func() {
 					Items: []corev1.Service{wrongService, rightService},
 				}, nil)
 
+			mocks.meshWorkloadClient.
+				EXPECT().
+				List(ctx).
+				Return(&v1alpha1.MeshWorkloadList{Items: []v1alpha1.MeshWorkload{
+					*meshWorkloadEvent,
+					*meshWorkloadEventV2,
+				}}, nil)
+
 			mocks.meshServiceClient.
 				EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -171,6 +195,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.DefaultWriteNamespace,
+						Labels:    mesh_service.DiscoveryLabels(clusterName),
 					},
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.KubeService{
@@ -182,6 +207,11 @@ var _ = Describe("Mesh Service Finder", func() {
 							SelectorLabels: rightService.Spec.Selector,
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
+						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+							"version": {
+								Values: []string{"v1", "v2"},
+							},
+						},
 					},
 				}).
 				Return(nil)
@@ -343,6 +373,11 @@ var _ = Describe("Mesh Service Finder", func() {
 					Items: []corev1.Service{wrongService, rightService},
 				}, nil)
 
+			mocks.meshWorkloadClient.
+				EXPECT().
+				List(ctx).
+				Return(&v1alpha1.MeshWorkloadList{Items: nil}, nil)
+
 			mocks.meshServiceClient.
 				EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -404,12 +439,28 @@ var _ = Describe("Mesh Service Finder", func() {
 					},
 				},
 			}
-			rightWorkload := &v1alpha1.MeshWorkload{
+			rightWorkloadV1 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
 					KubePod: &discovery_types.KubePod{
 						Labels: map[string]string{
-							"app":   "test-app",
-							"track": "canary",
+							"app":     "test-app",
+							"track":   "canary",
+							"version": "v1",
+						},
+					},
+					Mesh: &core_types.ResourceRef{
+						Name:      "istio-test-mesh",
+						Namespace: "isito-system",
+					},
+				},
+			}
+			rightWorkloadV2 := &v1alpha1.MeshWorkload{
+				Spec: discovery_types.MeshWorkloadSpec{
+					KubePod: &discovery_types.KubePod{
+						Labels: map[string]string{
+							"app":     "test-app",
+							"track":   "canary",
+							"version": "v2",
 						},
 					},
 					Mesh: &core_types.ResourceRef{
@@ -427,7 +478,8 @@ var _ = Describe("Mesh Service Finder", func() {
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{
 						*wrongWorkload,
-						*rightWorkload,
+						*rightWorkloadV1,
+						*rightWorkloadV2,
 					},
 				}, nil)
 
@@ -445,6 +497,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.DefaultWriteNamespace,
+						Labels:    mesh_service.DiscoveryLabels(clusterName),
 					},
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.KubeService{
@@ -455,7 +508,12 @@ var _ = Describe("Mesh Service Finder", func() {
 							},
 							SelectorLabels: serviceEvent.Spec.Selector,
 						},
-						Mesh: rightWorkload.Spec.Mesh,
+						Mesh: rightWorkloadV1.Spec.Mesh,
+						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
+							"version": {
+								Values: []string{"v1", "v2"},
+							},
+						},
 					},
 				}).
 				Return(nil)

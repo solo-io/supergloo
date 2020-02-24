@@ -85,9 +85,10 @@ message RetryPolicy {
 message MultiDestination {
     message WeightedDestination {
         core.zephyr.solo.io.ResourceRef destination = 1;
-
         // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route
         uint32 weight = 2;
+        // Subset routing is currently only supported on Istio
+        map<string, string> subset = 3;
     }
 
     repeated WeightedDestination destinations = 1;

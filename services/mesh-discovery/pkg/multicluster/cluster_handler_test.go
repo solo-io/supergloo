@@ -95,10 +95,10 @@ var _ = Describe("Cluster Handler", func() {
 		dynamicClient := mock_controller_runtime.NewMockClient(ctrl)
 
 		localAsyncManager.EXPECT().Manager().Return(mockK8sManager).Times(2)
+		localAsyncManager.EXPECT().Context().Return(ctx)
 		mockK8sManager.EXPECT().GetClient().Return(dynamicClient).Times(2)
 
 		clusterHandler, err := multicluster.NewDiscoveryClusterHandler(
-			ctx,
 			localAsyncManager,
 			localMeshClient,
 			[]mesh.MeshScanner{},

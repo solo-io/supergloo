@@ -21,22 +21,22 @@ type ServiceEventHandler struct {
 }
 
 func (s *ServiceEventHandler) Create(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Debugf("Handling event")
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj).Debugf("Handling event")
 	return s.HandleServiceUpsert(obj)
 }
 
 func (s *ServiceEventHandler) Update(old, new *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, new, s.ClusterName).Debugf("Handling event")
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, new).Debugf("Handling event")
 	return s.HandleServiceUpsert(new)
 }
 
 func (s *ServiceEventHandler) Delete(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Warnf("Ignoring event")
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj).Warnf("Ignoring event")
 	return nil
 }
 
 func (s *ServiceEventHandler) Generic(obj *corev1.Service) error {
-	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj, s.ClusterName).Errorf("Ignoring event")
+	logging.BuildEventLogger(s.Ctx, logging.CreateEvent, obj).Errorf("Ignoring event")
 	return nil
 }
 
@@ -47,21 +47,21 @@ type MeshWorkloadEventHandler struct {
 }
 
 func (m *MeshWorkloadEventHandler) Create(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Debugf("Handling event")
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj).Debugf("Handling event")
 	return m.HandleMeshWorkloadUpsert(obj)
 }
 
 func (m *MeshWorkloadEventHandler) Update(old, new *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, new, m.ClusterName).Debugf("Handling event")
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, new).Debugf("Handling event")
 	return m.HandleMeshWorkloadUpsert(new)
 }
 
 func (m *MeshWorkloadEventHandler) Delete(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Debugf("Ignoring event")
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj).Debugf("Ignoring event")
 	return nil
 }
 
 func (m *MeshWorkloadEventHandler) Generic(obj *v1alpha1.MeshWorkload) error {
-	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj, m.ClusterName).Errorf("Ignoring event")
+	logging.BuildEventLogger(m.Ctx, logging.CreateEvent, obj).Errorf("Ignoring event")
 	return nil
 }

@@ -109,7 +109,8 @@ var _ = Describe("mc_manager", func() {
 					asyncMgrFactory.EXPECT().New(ctx, cfg, gomock.Any()).
 						Return(asyncMgr, nil)
 					asyncMgr.EXPECT().Start().Return(nil)
-					managerHandler.EXPECT().ClusterAdded(asyncMgr, clusterName).Return(constErr)
+					asyncMgr.EXPECT().Context().Return(ctx)
+					managerHandler.EXPECT().ClusterAdded(ctx, asyncMgr, clusterName).Return(constErr)
 					err := configHandler.ClusterAdded(cfg, clusterName)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(HaveInErrorChain(InformerAddFailedError(constErr, handlerName, clusterName)))
@@ -121,7 +122,8 @@ var _ = Describe("mc_manager", func() {
 					asyncMgrFactory.EXPECT().New(ctx, cfg, gomock.Any()).
 						Return(asyncMgr, nil)
 					asyncMgr.EXPECT().Start().Return(nil)
-					managerHandler.EXPECT().ClusterAdded(asyncMgr, clusterName).Return(nil).Times(2)
+					asyncMgr.EXPECT().Context().Return(ctx).Times(2)
+					managerHandler.EXPECT().ClusterAdded(ctx, asyncMgr, clusterName).Return(nil).Times(2)
 					err = configHandler.ClusterAdded(cfg, clusterName)
 					Expect(err).NotTo(HaveOccurred())
 				})

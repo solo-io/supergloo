@@ -33,16 +33,16 @@ var (
 // these functions are intended to be used as callbacks for a resource watcher, where the
 // resources represent KubeConfigs
 type KubeConfigHandler interface {
-	ClusterAdded(cfg *rest.Config, name string) error
-	ClusterRemoved(name string) error
+	ClusterAdded(cfg *rest.Config, clusterName string) error
+	ClusterRemoved(cluster string) error
 }
 
 // These functions are intended to be used as an extension to the KubeConfigHandler.
 // Only one manager needs to be created per cluster, so these callbacks will be
 // called when a manager has been created for a given cluster
 type AsyncManagerHandler interface {
-	ClusterAdded(mgr AsyncManager, name string) error
-	ClusterRemoved(name string) error
+	ClusterAdded(ctx context.Context, mgr AsyncManager, clusterName string) error
+	ClusterRemoved(cluster string) error
 }
 
 // these functions are intended to be used as callbacks for a resource watcher, where the
@@ -120,33 +120,35 @@ func (m *AsyncManagerController) RemoveHandler(name string) error {
 	return nil
 }
 
-func (m *AsyncManagerController) ClusterAdded(cfg *rest.Config, name string) error {
-	mgr, err := m.factory.New(m.ctx, cfg, AsyncManagerOptions{})
+func (m *AsyncManagerController) ClusterAdded(cfg *rest.Config, clusterName string) error {
+	mgr, err := m.factory.New(m.ctx, cfg, AsyncManagerOptions{
+		Cluster: clusterName,
+	})
 	if err != nil {
-		return AsyncManagerFactoryError(err, name)
+		return AsyncManagerFactoryError(err, clusterName)
 	}
 	if err := mgr.Start(); err != nil {
-		return AsyncManagerStartError(err, name)
+		return AsyncManagerStartError(err, clusterName)
 	}
 	for handlerName, handler := range m.handlers.ListHandlersByName() {
-		if err := handler.ClusterAdded(mgr, name); err != nil {
-			return InformerAddFailedError(err, handlerName, name)
+		if err := handler.ClusterAdded(mgr.Context(), mgr, clusterName); err != nil {
+			return InformerAddFailedError(err, handlerName, clusterName)
 		}
 	}
-	return m.managers.SetManager(name, mgr)
+	return m.managers.SetManager(clusterName, mgr)
 }
 
-func (m *AsyncManagerController) ClusterRemoved(name string) error {
-	mgr, ok := m.managers.GetManager(name)
+func (m *AsyncManagerController) ClusterRemoved(cluster string) error {
+	mgr, ok := m.managers.GetManager(cluster)
 	if !ok {
-		return NoManagerForClusterError(name)
+		return NoManagerForClusterError(cluster)
 	}
 	mgr.Stop()
 	for handlerName, handler := range m.handlers.ListHandlersByName() {
-		if err := handler.ClusterRemoved(name); err != nil {
-			return InformerDeleteFailedError(err, handlerName, name)
+		if err := handler.ClusterRemoved(cluster); err != nil {
+			return InformerDeleteFailedError(err, handlerName, cluster)
 		}
 	}
-	m.managers.RemoveManager(name)
+	m.managers.RemoveManager(cluster)
 	return nil
 }

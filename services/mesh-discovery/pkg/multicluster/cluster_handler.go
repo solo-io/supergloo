@@ -37,7 +37,6 @@ var (
 // note that as a first step, the local manager should be registered so that we can detect meshes in the same
 // cluster that SMH runs in. This should be handled by this constructor implementation
 func NewDiscoveryClusterHandler(
-	ctx context.Context,
 	localManager mc_manager.AsyncManager,
 	localMeshClient zephyr_core.MeshClient,
 	meshScanners []mesh.MeshScanner,
@@ -50,14 +49,13 @@ func NewDiscoveryClusterHandler(
 		localMeshClient:              localMeshClient,
 		meshScanners:                 meshScanners,
 		localMeshWorkloadClient:      localMeshWorkloadClient,
-		ctx:                          ctx,
 		localManager:                 localManager,
 		meshWorkloadScannerFactories: meshWorkloadScannerFactories,
 		discoveryContext:             discoveryContext,
 	}
 
 	// be sure that we are also watching our local cluster
-	err := handler.ClusterAdded(localManager, common.LocalClusterName)
+	err := handler.ClusterAdded(localManager.Context(), localManager, common.LocalClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +64,6 @@ func NewDiscoveryClusterHandler(
 }
 
 type discoveryClusterHandler struct {
-	ctx              context.Context
 	localManager     mc_manager.AsyncManager
 	discoveryContext wire.DiscoveryContext
 
@@ -90,21 +87,21 @@ type clusterDependentDeps struct {
 	meshServiceClient      zephyr_core.MeshServiceClient
 }
 
-func (m *discoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clusterName string) error {
+func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
 	initializedDeps, err := m.initializeClusterDependentDeps(mgr, clusterName)
 	if err != nil {
 		return err
 	}
 
 	meshFinder := mesh.NewMeshFinder(
-		m.ctx,
+		ctx,
 		clusterName,
 		m.meshScanners,
 		m.localMeshClient,
 	)
 
 	meshWorkloadFinder := mesh_workload.NewMeshWorkloadFinder(
-		m.ctx,
+		ctx,
 		clusterName,
 		m.localMeshWorkloadClient,
 		m.localMeshClient,
@@ -112,7 +109,7 @@ func (m *discoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clus
 	)
 
 	meshServiceFinder := mesh_service.NewMeshServiceFinder(
-		m.ctx,
+		ctx,
 		clusterName,
 		env.DefaultWriteNamespace,
 		initializedDeps.serviceClient,
@@ -138,7 +135,7 @@ func (m *discoveryClusterHandler) ClusterAdded(mgr mc_manager.AsyncManager, clus
 	return nil
 }
 
-func (m *discoveryClusterHandler) ClusterRemoved(clusterName string) error {
+func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
 	// TODO: Not deleting any entities for now
 	return nil
 }

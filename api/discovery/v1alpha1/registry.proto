@@ -24,7 +24,13 @@ message MeshServiceSpec {
     // The mesh with which this service is associated
     core.zephyr.solo.io.ResourceRef mesh = 2;
 
-    Federation federation = 3;
+    message Subset {
+        repeated string values = 1;
+    }
+
+    map<string, Subset> subsets = 3;
+
+    Federation federation = 4;
 }
 
 message Federation {

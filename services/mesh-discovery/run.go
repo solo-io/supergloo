@@ -32,7 +32,6 @@ func Run(rootCtx context.Context) {
 	// when it detects a new cluster get registered, it builds a deployment controller
 	// with the controller factory, and attaches the given mesh finders to it
 	deploymentHandler, err := md_multicluster.NewDiscoveryClusterHandler(
-		ctx,
 		localManager,
 		zephyr_core.NewMeshClient(localManager),
 		[]mesh.MeshScanner{
