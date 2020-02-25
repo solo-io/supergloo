@@ -5,7 +5,12 @@ import (
 
 	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+func LocalClientProvider(localManager mc_manager.AsyncManager) client.Client {
+	return localManager.Manager().GetClient()
+}
 
 // this is the main entrypoint for all mesh-group multi cluster logic
 func NewMeshNetworkingClusterHandler(

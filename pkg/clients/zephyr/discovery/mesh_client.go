@@ -4,12 +4,15 @@ import (
 	"context"
 
 	mp_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewMeshClient(mgr mc_manager.AsyncManager) MeshClient {
-	return &meshClient{mgr.Manager().GetClient()}
+func NewMeshClientFactoryProvider() MeshClientFactory {
+	return NewMeshClient
+}
+
+func NewMeshClient(client client.Client) MeshClient {
+	return &meshClient{client: client}
 }
 
 type meshClient struct {

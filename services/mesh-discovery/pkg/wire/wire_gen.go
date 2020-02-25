@@ -49,6 +49,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	serviceControllerFactory := controllers.NewServiceControllerFactory()
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
 	deploymentControllerFactory := controllers.NewDeploymentControllerFactory()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, deploymentControllerFactory)
+	meshClientFactory := discovery_core.NewMeshClientFactoryProvider()
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, deploymentControllerFactory, meshClientFactory)
 	return discoveryContext, nil
 }

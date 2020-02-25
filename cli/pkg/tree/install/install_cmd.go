@@ -3,14 +3,12 @@ package install
 import (
 	"os"
 
-	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
-
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -82,7 +80,7 @@ func validateArgs(cmd *cobra.Command, _ []string) error {
 	// validate version, prefix with 'v' if not already
 	version, _ := cmd.Flags().GetString("version")
 	if version != "" {
-		if !cli_util.ValidReleaseSemver(version) {
+		if !common.ValidReleaseSemver(version) {
 			return InvalidVersionErr(version)
 		}
 	}

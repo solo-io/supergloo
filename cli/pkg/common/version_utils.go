@@ -1,4 +1,4 @@
-package cli_util
+package common
 
 import (
 	"strings"

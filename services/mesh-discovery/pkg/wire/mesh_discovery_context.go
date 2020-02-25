@@ -27,6 +27,7 @@ type ClientFactories struct {
 	ServiceClientFactory      kubernetes_core.ServiceClientFactory
 	MeshServiceClientFactory  discovery_core.MeshServiceClientFactory
 	MeshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory
+	MeshClientFactory         discovery_core.MeshClientFactory
 }
 
 type ControllerFactories struct {
@@ -57,6 +58,7 @@ func DiscoveryContextProvider(
 	serviceControllerFactory controllers.ServiceControllerFactory,
 	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
 	deploymentControllerFactory controllers.DeploymentControllerFactory,
+	meshClientFactory discovery_core.MeshClientFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -68,6 +70,7 @@ func DiscoveryContextProvider(
 			ServiceClientFactory:      serviceClientFactory,
 			MeshServiceClientFactory:  meshServiceClientFactory,
 			MeshWorkloadClientFactory: meshWorkloadClientFactory,
+			MeshClientFactory:         meshClientFactory,
 		},
 		ControllerFactories: ControllerFactories{
 			DeploymentControllerFactory:   deploymentControllerFactory,

@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	cli_util "github.com/solo-io/mesh-projects/cli/pkg/util"
 )
 
 var _ = Describe("Cluster Root Cmd", func() {
@@ -26,7 +26,7 @@ var _ = Describe("Cluster Root Cmd", func() {
 		output, err := cli_test.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("cluster --kubeconfig foo")
 		Expect(output).To(BeEmpty())
 
-		nonTerminalCommandErrorBuilder := cli_util.NonTerminalCommand("cluster")
+		nonTerminalCommandErrorBuilder := common.NonTerminalCommand("cluster")
 		nonTerminalErr := nonTerminalCommandErrorBuilder(nil, nil)
 		Expect(err).To(testutils.HaveInErrorChain(nonTerminalErr))
 	})

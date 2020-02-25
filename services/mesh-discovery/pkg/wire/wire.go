@@ -32,6 +32,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		controllers.NewPodControllerFactory,
 		controllers.NewServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,
+		discovery_core.NewMeshClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,

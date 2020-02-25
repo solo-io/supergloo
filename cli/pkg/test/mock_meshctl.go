@@ -25,7 +25,6 @@ type MockMeshctl struct {
 	// safe to leave nil if not needed
 	MasterKubeConfig *rest.Config
 
-	// safe to leave as nil if not needed
 	Ctx context.Context
 
 	Clients common.Clients

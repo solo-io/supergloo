@@ -9,6 +9,8 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_clients.go
 
+type MeshClientFactory func(client client.Client) MeshClient
+
 type MeshClient interface {
 	Create(ctx context.Context, mesh *discoveryv1alpha1.Mesh) error
 	Delete(ctx context.Context, mesh *discoveryv1alpha1.Mesh) error

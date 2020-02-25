@@ -3,13 +3,13 @@ package multicluster
 import (
 	"context"
 
-	controller4 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	discovery_controllers "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
-	controller2 "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
+	corev1_controllers "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
@@ -38,13 +38,23 @@ var (
 // cluster that SMH runs in. This should be handled by this constructor implementation
 func NewDiscoveryClusterHandler(
 	localManager mc_manager.AsyncManager,
-	localMeshClient zephyr_core.MeshClient,
 	meshScanners []mesh.MeshScanner,
 	meshWorkloadScannerFactories []mesh_workload.MeshWorkloadScannerFactory,
-	localMeshWorkloadClient zephyr_core.MeshWorkloadClient,
 	discoveryContext wire.DiscoveryContext,
 ) (mc_manager.AsyncManagerHandler, error) {
 
+	// these clients operate against the local cluster, so we use the local manager's client
+	localClient := localManager.Manager().GetClient()
+	localMeshServiceClient := discoveryContext.ClientFactories.MeshServiceClientFactory(localClient)
+	localMeshWorkloadClient := discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
+	localMeshClient := discoveryContext.ClientFactories.MeshClientFactory(localClient)
+
+	localMeshWorkloadController, err := discoveryContext.ControllerFactories.MeshWorkloadControllerFactory.Build(localManager, common.LocalClusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
 		localMeshClient:              localMeshClient,
 		meshScanners:                 meshScanners,
@@ -52,10 +62,12 @@ func NewDiscoveryClusterHandler(
 		localManager:                 localManager,
 		meshWorkloadScannerFactories: meshWorkloadScannerFactories,
 		discoveryContext:             discoveryContext,
+		localMeshServiceClient:       localMeshServiceClient,
+		localMeshWorkloadController:  localMeshWorkloadController,
 	}
 
 	// be sure that we are also watching our local cluster
-	err := handler.ClusterAdded(localManager.Context(), localManager, common.LocalClusterName)
+	err = handler.ClusterAdded(localManager.Context(), localManager, common.LocalClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +79,13 @@ type discoveryClusterHandler struct {
 	localManager     mc_manager.AsyncManager
 	discoveryContext wire.DiscoveryContext
 
-	// clients that are instantiated already
+	// clients that operate against the local cluster
 	localMeshClient         zephyr_core.MeshClient
 	localMeshWorkloadClient zephyr_core.MeshWorkloadClient
+	localMeshServiceClient  zephyr_core.MeshServiceClient
+
+	// controllers that operate against the local cluster
+	localMeshWorkloadController discovery_controllers.MeshWorkloadController
 
 	// scanners
 	meshScanners                 []mesh.MeshScanner
@@ -77,14 +93,11 @@ type discoveryClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	deploymentController   controller.DeploymentController
-	podController          controller2.PodController
-	meshWorkloadScanners   []mesh_workload.MeshWorkloadScanner
-	serviceController      controller2.ServiceController
-	meshWorkloadController controller4.MeshWorkloadController
-	serviceClient          kubernetes_core.ServiceClient
-	meshWorkloadClient     zephyr_core.MeshWorkloadClient
-	meshServiceClient      zephyr_core.MeshServiceClient
+	deploymentController controller.DeploymentController
+	podController        corev1_controllers.PodController
+	meshWorkloadScanners []mesh_workload.MeshWorkloadScanner
+	serviceController    corev1_controllers.ServiceController
+	serviceClient        kubernetes_core.ServiceClient
 }
 
 func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -113,8 +126,8 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		clusterName,
 		env.DefaultWriteNamespace,
 		initializedDeps.serviceClient,
-		initializedDeps.meshServiceClient,
-		initializedDeps.meshWorkloadClient,
+		m.localMeshServiceClient,
+		m.localMeshWorkloadClient,
 	)
 
 	err = meshFinder.StartDiscovery(initializedDeps.deploymentController, MeshPredicates)
@@ -127,7 +140,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		return err
 	}
 
-	err = meshServiceFinder.StartDiscovery(initializedDeps.serviceController, initializedDeps.meshWorkloadController)
+	err = meshServiceFinder.StartDiscovery(initializedDeps.serviceController, m.localMeshWorkloadController)
 	if err != nil {
 		return err
 	}
@@ -156,12 +169,6 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 		return nil, err
 	}
 
-	// ensure that the mesh workload client is watching our local cluster- use the local manager
-	meshWorkloadController, err := m.discoveryContext.ControllerFactories.MeshWorkloadControllerFactory.Build(m.localManager, clusterName)
-	if err != nil {
-		return nil, err
-	}
-
 	remoteClient := mgr.Manager().GetClient()
 	var meshWorkloadScanners []mesh_workload.MeshWorkloadScanner
 	for _, scannerFactory := range m.meshWorkloadScannerFactories {
@@ -175,19 +182,11 @@ func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.
 
 	serviceClient := m.discoveryContext.ClientFactories.ServiceClientFactory(remoteClient)
 
-	// these clients operate against the local cluster, so we use the local manager's client
-	localClient := m.localManager.Manager().GetClient()
-	meshServiceClient := m.discoveryContext.ClientFactories.MeshServiceClientFactory(localClient)
-	meshWorkloadClient := m.discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
-
 	return &clusterDependentDeps{
-		deploymentController:   deploymentController,
-		podController:          podController,
-		meshWorkloadScanners:   meshWorkloadScanners,
-		serviceController:      serviceController,
-		meshWorkloadController: meshWorkloadController,
-		serviceClient:          serviceClient,
-		meshWorkloadClient:     meshWorkloadClient,
-		meshServiceClient:      meshServiceClient,
+		deploymentController: deploymentController,
+		podController:        podController,
+		meshWorkloadScanners: meshWorkloadScanners,
+		serviceController:    serviceController,
+		serviceClient:        serviceClient,
 	}, nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/internal/config"
@@ -33,7 +32,6 @@ func Run(rootCtx context.Context) {
 	// with the controller factory, and attaches the given mesh finders to it
 	deploymentHandler, err := md_multicluster.NewDiscoveryClusterHandler(
 		localManager,
-		zephyr_core.NewMeshClient(localManager),
 		[]mesh.MeshScanner{
 			discoveryContext.MeshDiscovery.IstioMeshScanner,
 			discoveryContext.MeshDiscovery.ConsulConnectMeshScanner,
@@ -42,7 +40,6 @@ func Run(rootCtx context.Context) {
 		[]mesh_workload.MeshWorkloadScannerFactory{
 			mesh_workload.NewIstioMeshWorkloadScanner,
 		},
-		zephyr_core.NewMeshWorkloadClient(discoveryContext.MultiClusterDeps.LocalManager.Manager().GetClient()),
 		discoveryContext,
 	)
 

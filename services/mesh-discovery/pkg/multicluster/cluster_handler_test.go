@@ -100,14 +100,12 @@ var _ = Describe("Cluster Handler", func() {
 
 		clusterHandler, err := multicluster.NewDiscoveryClusterHandler(
 			localAsyncManager,
-			localMeshClient,
 			[]mesh.MeshScanner{},
 			[]mesh_workload.MeshWorkloadScannerFactory{
 				func(_ mesh_workload.OwnerFetcher) mesh_workload.IstioMeshWorkloadScanner {
 					return meshWorkloadScanner
 				},
 			},
-			localMeshWorkloadClient,
 			wire.DiscoveryContext{
 				ClientFactories: wire.ClientFactories{
 					DeploymentClientFactory: func(_ client.Client) kubernetes_apps.DeploymentClient {
@@ -127,6 +125,9 @@ var _ = Describe("Cluster Handler", func() {
 					},
 					MeshWorkloadClientFactory: func(_ client.Client) discovery_core.MeshWorkloadClient {
 						return meshWorkloadClient
+					},
+					MeshClientFactory: func(_ client.Client) discovery_core.MeshClient {
+						return localMeshClient
 					},
 				},
 				ControllerFactories: wire.ControllerFactories{

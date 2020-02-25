@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -45,8 +44,6 @@ var _ = Describe("Local mesh client", func() {
 	})
 
 	It("forwards on operations to the dynamic client", func() {
-		mgr := mock_mc_manager.NewMockAsyncManager(ctrl)
-		k8s_mgr := mock_controller_runtime.NewMockManager(ctrl)
 		client := mock_controller_runtime.NewMockClient(ctrl)
 
 		meshObjectMeta := controllerruntime.ObjectMeta{
@@ -54,16 +51,6 @@ var _ = Describe("Local mesh client", func() {
 			Namespace: "ns",
 		}
 		mesh := BuildMesh(meshObjectMeta)
-
-		mgr.
-			EXPECT().
-			Manager().
-			Return(k8s_mgr)
-
-		k8s_mgr.
-			EXPECT().
-			GetClient().
-			Return(client)
 
 		client.EXPECT().Create(ctx, mesh).Return(nil)
 		client.
@@ -84,7 +71,7 @@ var _ = Describe("Local mesh client", func() {
 
 		client.EXPECT().Delete(ctx, mesh).Return(nil)
 
-		localMeshClient := zephyr_core.NewMeshClient(mgr)
+		localMeshClient := zephyr_core.NewMeshClient(client)
 		Expect(localMeshClient.Create(ctx, mesh)).To(BeNil())
 
 		returnedMesh, err := localMeshClient.Get(ctx, client2.ObjectKey{
@@ -98,24 +85,12 @@ var _ = Describe("Local mesh client", func() {
 	})
 
 	It("does not return an error from get if the object is not found", func() {
-		mgr := mock_mc_manager.NewMockAsyncManager(ctrl)
-		k8s_mgr := mock_controller_runtime.NewMockManager(ctrl)
 		client := mock_controller_runtime.NewMockClient(ctrl)
 
 		meshObjectMeta := controllerruntime.ObjectMeta{
 			Name:      "test-mesh",
 			Namespace: "ns",
 		}
-
-		mgr.
-			EXPECT().
-			Manager().
-			Return(k8s_mgr)
-
-		k8s_mgr.
-			EXPECT().
-			GetClient().
-			Return(client)
 
 		k8sNotFoundErr := &errors.StatusError{
 			ErrStatus: metav1.Status{
@@ -130,7 +105,7 @@ var _ = Describe("Local mesh client", func() {
 			}, gomock.Any()).
 			Return(k8sNotFoundErr)
 
-		localMeshClient := zephyr_core.NewMeshClient(mgr)
+		localMeshClient := zephyr_core.NewMeshClient(client)
 		returnedMesh, err := localMeshClient.Get(ctx, client2.ObjectKey{
 			Name:      meshObjectMeta.Name,
 			Namespace: meshObjectMeta.Namespace,
