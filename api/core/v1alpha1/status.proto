@@ -1,0 +1,21 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+// a status set by Service Mesh Hub while processing a resource
+message ComputedStatus {
+    enum Status {
+        UNKNOWN = 0;
+        ACCEPTED = 1;
+        INVALID = 2;
+        PROCESSING_ERROR = 3;
+    }
+
+    Status status = 1;
+
+    // human-readable message to be surfaced to the user
+    string message = 2;
+}

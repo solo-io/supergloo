@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 import "mesh-projects/api/core/v1alpha1/health.proto";
+import "mesh-projects/api/core/v1alpha1/status.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -76,4 +77,6 @@ message MeshGroupStatus {
     }
 
     ConfigStatus config = 2;
+
+    core.zephyr.solo.io.ComputedStatus federation_status = 3;
 }
