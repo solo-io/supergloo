@@ -22,9 +22,9 @@ type MeshClient interface {
 }
 
 type MeshWorkloadClient interface {
-	Create(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
-	Update(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
-	Delete(ctx context.Context, mesh *discoveryv1alpha1.MeshWorkload) error
+	Create(ctx context.Context, meshWorkload *discoveryv1alpha1.MeshWorkload) error
+	Update(ctx context.Context, meshWorkload *discoveryv1alpha1.MeshWorkload) error
+	Delete(ctx context.Context, meshWorkload *discoveryv1alpha1.MeshWorkload) error
 	// if the MeshWorkload is not found, returns an error on which k8s.io/apimachinery/pkg/api/errors::IsNotFound should return true
 	Get(ctx context.Context, objKey client.ObjectKey) (*discoveryv1alpha1.MeshWorkload, error)
 	List(ctx context.Context, opts ...client.ListOption) (*discoveryv1alpha1.MeshWorkloadList, error)
@@ -39,4 +39,5 @@ type MeshServiceClient interface {
 	Get(ctx context.Context, key client.ObjectKey) (*discoveryv1alpha1.MeshService, error)
 	Create(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.CreateOption) error
 	Update(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.UpdateOption) error
+	UpdateStatus(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.UpdateOption) error
 }

@@ -26,6 +26,8 @@ message MeshGroupSpec {
     */
     core.zephyr.solo.io.ResourceRef trust_bundle_ref = 3;
 
+    Federation federation = 4;
+
     /*
         Shared trust is a mesh group trust model requiring a shared root certificate, as well as shared identity
         between all entities which wish to communicate within the mesh group.
@@ -50,9 +52,18 @@ message MeshGroupSpec {
     message LimitedTrust {}
 
     oneof trust_model {
-        SharedTrust shared = 4;
-        LimitedTrust limited = 5;
+        SharedTrust shared = 5;
+        LimitedTrust limited = 6;
     }
+}
+
+message Federation {
+    enum Mode {
+        // federate everything to everybody
+        PERMISSIVE = 0;
+    }
+
+    Mode mode = 1;
 }
 
 message MeshGroupStatus {

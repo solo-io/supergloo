@@ -52,6 +52,17 @@ func (this *MeshGroupSpec_LimitedTrust) UnmarshalJSON(b []byte) error {
 	return MeshGroupUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for Federation
+func (this *Federation) MarshalJSON() ([]byte, error) {
+	str, err := MeshGroupMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Federation
+func (this *Federation) UnmarshalJSON(b []byte) error {
+	return MeshGroupUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshGroupStatus
 func (this *MeshGroupStatus) MarshalJSON() ([]byte, error) {
 	str, err := MeshGroupMarshaler.MarshalToString(this)

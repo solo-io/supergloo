@@ -9,20 +9,20 @@ import (
 )
 
 func NewMeshGroupClient(dynamicClient client.Client) MeshGroupClient {
-	return &certificateSigningRequestClient{dynamicClient: dynamicClient}
+	return &meshGroupClient{dynamicClient: dynamicClient}
 }
 
-type certificateSigningRequestClient struct {
+type meshGroupClient struct {
 	dynamicClient client.Client
 }
 
-func (c *certificateSigningRequestClient) Get(
+func (m *meshGroupClient) Get(
 	ctx context.Context,
 	name, namespace string,
 ) (*networkingv1alpha1.MeshGroup, error) {
 
 	csr := networkingv1alpha1.MeshGroup{}
-	err := c.dynamicClient.Get(ctx, client.ObjectKey{
+	err := m.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
 	}, &csr)
@@ -32,15 +32,19 @@ func (c *certificateSigningRequestClient) Get(
 	return &csr, nil
 }
 
-func (c *certificateSigningRequestClient) List(
+func (m *meshGroupClient) List(
 	ctx context.Context,
 	opts v1.ListOptions,
 ) (*networkingv1alpha1.MeshGroupList, error) {
 
 	list := networkingv1alpha1.MeshGroupList{}
-	err := c.dynamicClient.List(ctx, &list, &client.ListOptions{Raw: &opts})
+	err := m.dynamicClient.List(ctx, &list, &client.ListOptions{Raw: &opts})
 	if err != nil {
 		return nil, err
 	}
 	return &list, nil
+}
+
+func (m *meshGroupClient) UpdateStatus(ctx context.Context, meshGroup *networkingv1alpha1.MeshGroup, opts ...client.UpdateOption) error {
+	return m.dynamicClient.Status().Update(ctx, meshGroup, opts...)
 }

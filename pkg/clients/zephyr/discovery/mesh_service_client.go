@@ -40,3 +40,7 @@ func (m *meshServiceClient) Create(ctx context.Context, meshService *v1alpha1.Me
 func (m *meshServiceClient) Update(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
 	return m.client.Update(ctx, meshService, options...)
 }
+
+func (m *meshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
+	return m.client.Status().Update(ctx, meshService, options...)
+}

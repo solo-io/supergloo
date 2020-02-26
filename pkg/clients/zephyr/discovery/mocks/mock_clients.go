@@ -123,45 +123,45 @@ func (m *MockMeshWorkloadClient) EXPECT() *MockMeshWorkloadClientMockRecorder {
 }
 
 // Create mocks base method
-func (m *MockMeshWorkloadClient) Create(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
+func (m *MockMeshWorkloadClient) Create(ctx context.Context, meshWorkload *v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, mesh)
+	ret := m.ctrl.Call(m, "Create", ctx, meshWorkload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create
-func (mr *MockMeshWorkloadClientMockRecorder) Create(ctx, mesh interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadClientMockRecorder) Create(ctx, meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Create), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Create), ctx, meshWorkload)
 }
 
 // Update mocks base method
-func (m *MockMeshWorkloadClient) Update(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
+func (m *MockMeshWorkloadClient) Update(ctx context.Context, meshWorkload *v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, mesh)
+	ret := m.ctrl.Call(m, "Update", ctx, meshWorkload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update
-func (mr *MockMeshWorkloadClientMockRecorder) Update(ctx, mesh interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadClientMockRecorder) Update(ctx, meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Update), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Update), ctx, meshWorkload)
 }
 
 // Delete mocks base method
-func (m *MockMeshWorkloadClient) Delete(ctx context.Context, mesh *v1alpha1.MeshWorkload) error {
+func (m *MockMeshWorkloadClient) Delete(ctx context.Context, meshWorkload *v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, mesh)
+	ret := m.ctrl.Call(m, "Delete", ctx, meshWorkload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockMeshWorkloadClientMockRecorder) Delete(ctx, mesh interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadClientMockRecorder) Delete(ctx, meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Delete), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadClient)(nil).Delete), ctx, meshWorkload)
 }
 
 // Get mocks base method
@@ -310,4 +310,23 @@ func (mr *MockMeshServiceClientMockRecorder) Update(ctx, meshService interface{}
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, meshService}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshServiceClient)(nil).Update), varargs...)
+}
+
+// UpdateStatus mocks base method
+func (m *MockMeshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, meshService}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus
+func (mr *MockMeshServiceClientMockRecorder) UpdateStatus(ctx, meshService interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, meshService}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).UpdateStatus), varargs...)
 }
