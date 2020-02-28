@@ -36,13 +36,13 @@ var _ = Describe("csr client", func() {
 		var (
 			mockClient       *mock_controller_runtime.MockClient
 			mockStatusWriter *mock_controller_runtime.MockStatusWriter
-			csrClient        zephyr_security.CertificateSigningRequestClient
+			csrClient        zephyr_security.MeshGroupCertificateSigningRequestClient
 		)
 
 		BeforeEach(func() {
 			mockClient = mock_controller_runtime.NewMockClient(ctrl)
 			mockStatusWriter = mock_controller_runtime.NewMockStatusWriter(ctrl)
-			csrClient = zephyr_security.NewCertificateSigningRequestClient(mockClient)
+			csrClient = zephyr_security.NewMeshGroupCertificateSigningRequestClient(mockClient)
 		})
 
 		Context("update", func() {
@@ -64,14 +64,7 @@ var _ = Describe("csr client", func() {
 				}
 				mockClient.EXPECT().Status().Return(mockStatusWriter)
 				mockStatusWriter.EXPECT().Update(ctx, csr).Return(testErr)
-				Expect(csrClient.UpdateStatus(ctx, &csr.Status, &csr.ObjectMeta)).To(Equal(testErr))
-			})
-
-			It("will return a nil args error if either the status or object meta are nil", func() {
-				Expect(csrClient.UpdateStatus(ctx, nil, &metav1.ObjectMeta{})).
-					To(Equal(zephyr_security.NilArgsError))
-				Expect(csrClient.UpdateStatus(ctx, &security_types.MeshGroupCertificateSigningRequestStatus{}, nil)).
-					To(Equal(zephyr_security.NilArgsError))
+				Expect(csrClient.UpdateStatus(ctx, csr)).To(Equal(testErr))
 			})
 		})
 

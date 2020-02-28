@@ -32,6 +32,10 @@ func (t *TestLogger) EXPECT() *LogMatcher {
 	return newLogMatcher(t.sink)
 }
 
+func (t *TestLogger) NumLogEntries() int {
+	return len(t.sink.Lines())
+}
+
 func NewTestLogger() *TestLogger {
 	sink := &MemorySink{new(zaptest.Buffer)}
 	core := zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()), sink, zapcore.DebugLevel)
@@ -64,7 +68,7 @@ func (l *LogMatcher) NumEntries(num int) *LogMatcher {
 }
 
 func (l *LogMatcher) Entry(index int) *EntryMatcher {
-	Expect(l.entries).To(BeNumerically("<=", index), "index must be within range of the # of "+
+	Expect(index).To(BeNumerically("<", len(l.entries)), "index must be within range of the # of "+
 		"avaiable entries")
 	return &EntryMatcher{entry: l.entries[index]}
 }

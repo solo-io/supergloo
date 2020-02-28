@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: mesh-networking-clusterrole
+rules:
+- apiGroups: ["networking.zephyr.solo.io"]
+  resources: ["meshgroups", "meshgroups/status"]
+  verbs: ["*"]
+- apiGroups: ["discovery.zephyr.solo.io"]
+  resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]
+  verbs: ["*"]
+- apiGroups: ["security.zephyr.solo.io"]
+  resources: ["meshgroupcertificatesigningrequests", "meshgroupcertificatesigningrequests/status"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["*"]

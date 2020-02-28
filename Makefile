@@ -17,7 +17,7 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
-COMPONENTS := mesh-discovery mesh-networking
+COMPONENTS := mesh-discovery mesh-networking csr-agent
 # include helm makefile so it can be ran from the root
 include install/helm/helm.mk
 
@@ -97,33 +97,45 @@ endef
 #----------------------------------------------------------------------------------
 # Mesh Discovery
 #----------------------------------------------------------------------------------
-MESH_DISCOVERY=mesh-discovery
-MESH_DISCOVERY_DIR=services/$(MESH_DISCOVERY)
+MESH_DISCOVERY_DIR=services/mesh-discovery
 MESH_DISCOVERY_OUTPUT_DIR=$(ROOTDIR)/$(MESH_DISCOVERY_DIR)/_output
 MESH_DISCOVERY_SOURCES=$(shell find $(MESH_DISCOVERY_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(MESH_DISCOVERY_OUTPUT_DIR)/$(MESH_DISCOVERY)-linux-amd64: $(MESH_DISCOVERY_SOURCES)
+$(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64: $(MESH_DISCOVERY_SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_DISCOVERY_DIR)/cmd/main.go
 
-.PHONY: $(MESH_DISCOVERY)-docker
-$(MESH_DISCOVERY)-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/$(MESH_DISCOVERY)-linux-amd64
-	$(call build_container,$(MESH_DISCOVERY))
+.PHONY: mesh-discovery-docker
+mesh-discovery-docker: $(MESH_DISCOVERY_OUTPUT_DIR)/mesh-discovery-linux-amd64
+	$(call build_container,mesh-discovery)
 
 
 #----------------------------------------------------------------------------------
 # Mesh Networking
 #----------------------------------------------------------------------------------
-MESH_NETWORKING=mesh-networking
-MESH_NETWORKING_DIR=services/$(MESH_NETWORKING)
+MESH_NETWORKING_DIR=services/mesh-networking
 MESH_NETWORKING_OUTPUT_DIR=$(ROOTDIR)/$(MESH_NETWORKING_DIR)/_output
 MESH_NETWORKING_SOURCES=$(shell find $(MESH_NETWORKING_DIR) -name "*.go" | grep -v test | grep -v generated.go)
 
-$(MESH_NETWORKING_OUTPUT_DIR)/$(MESH_NETWORKING)-linux-amd64: $(MESH_NETWORKING_SOURCES)
+$(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOURCES)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(MESH_NETWORKING_DIR)/cmd/main.go
 
-.PHONY: $(MESH_NETWORKING)-docker
-$(MESH_NETWORKING)-docker: $(MESH_NETWORKING_OUTPUT_DIR)/$(MESH_NETWORKING)-linux-amd64
-	$(call build_container,$(MESH_NETWORKING))
+.PHONY: mesh-networking-docker
+mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
+	$(call build_container,mesh-networking)
+
+#----------------------------------------------------------------------------------
+# Csr Agent
+#----------------------------------------------------------------------------------
+CSR_AGENT_DIR=services/csr-agent
+CSR_AGENT_OUTPUT_DIR=$(ROOTDIR)/$(CSR_AGENT_DIR)/_output
+CSR_AGENT_SOURCES=$(shell find $(CSR_AGENT_DIR) -name "*.go" | grep -v test | grep -v generated.go)
+
+$(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64: $(CSR_AGENT_SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CSR_AGENT_DIR)/cmd/main.go
+
+.PHONY: csr-agent-docker
+csr-agent-docker: $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64
+	$(call build_container,csr-agent)
 
 #----------------------------------------------------------------------------------
 # meshctl
@@ -176,7 +188,7 @@ upload-github-release-assets: build-cli
 #---------
 
 .PHONY: docker docker-push
-docker: $(MESH_DISCOVERY)-docker $(MESH_NETWORKING)-docker
+docker: mesh-discovery-docker mesh-networking-docker csr-agent-docker
 
 # $(1) name of component
 define docker_push
@@ -189,4 +201,3 @@ endef
 # docker-push is intended to be run by CI
 docker-push: docker
 	$(foreach component,$(COMPONENTS),$(call docker_push,$(component)))
-

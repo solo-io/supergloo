@@ -16,7 +16,8 @@ import (
 )
 
 // build an instance of the meshctl implementation
-func BuildCli(ctx context.Context,
+func BuildCli(
+	ctx context.Context,
 	opts *options.Options,
 	usageReporter usageclient.Client,
 	clusterCmd clusterroot.ClusterCommand,

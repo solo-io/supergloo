@@ -1,4 +1,4 @@
-package discovery_core_test
+package zephyr_discovery_test
 
 import (
 	"context"

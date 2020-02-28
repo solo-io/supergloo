@@ -63,6 +63,7 @@ steps:
   dir: &dir "/workspace/mesh-projects"
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
+
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['fetch-helm']
   env:

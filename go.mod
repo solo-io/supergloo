@@ -3,13 +3,10 @@ module github.com/solo-io/mesh-projects
 go 1.13
 
 require (
-	cloud.google.com/go v0.45.1 // indirect
-	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/avast/retry-go v2.4.3+incompatible
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
-	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-test/deep v1.0.3 // indirect
@@ -19,14 +16,12 @@ require (
 	github.com/google/wire v0.4.0
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/gorilla/handlers v1.4.2 // indirect
-	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.7
-	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect
@@ -39,18 +34,12 @@ require (
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
-	golang.org/x/tools v0.0.0-20191212051200-825cb0626375 // indirect
-	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
-	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
-	google.golang.org/grpc v1.25.1 // indirect
+	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.0.0 // indirect
 	k8s.io/apimachinery v0.17.2
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/code-generator v0.17.2
-	k8s.io/kubectl v0.0.0 // indirect
 	sigs.k8s.io/controller-runtime v0.4.0
 )
 

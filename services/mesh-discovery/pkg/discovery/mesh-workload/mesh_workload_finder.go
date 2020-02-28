@@ -113,14 +113,12 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 }
 
 func (d *meshWorkloadFinder) Delete(pod *corev1.Pod) error {
-	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
 func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
-	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil

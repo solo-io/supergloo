@@ -8,7 +8,7 @@ package wire
 import (
 	"context"
 
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
@@ -29,11 +29,11 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	client := mc_wire.DynamicClientProvider(asyncManager)
-	meshClient := discovery_core.NewMeshClient(client)
+	meshClient := zephyr_discovery.NewMeshClient(client)
 	meshGroupValidator := group_controller.MeshGroupValidatorProvider(meshClient)
 	meshGroupEventHandler := group_controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
-	csrControllerFactory := networking_multicluster.NewCSRControllerFactory()
-	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(asyncManager, csrControllerFactory)
+	meshGroupCertificateSigningRequestControllerFactory := networking_multicluster.NewMeshGroupCertificateSigningRequestControllerFactory()
+	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(ctx, asyncManager, meshGroupCertificateSigningRequestControllerFactory)
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}

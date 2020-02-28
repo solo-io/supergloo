@@ -17,8 +17,12 @@ type secretsClient struct {
 	dynamicClient client.Client
 }
 
-func (c *secretsClient) Update(ctx context.Context, csr *corev1.Secret) error {
-	return c.dynamicClient.Update(ctx, csr)
+func (c *secretsClient) Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
+	return c.dynamicClient.Create(ctx, secret, opts...)
+}
+
+func (c *secretsClient) Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
+	return c.dynamicClient.Update(ctx, secret, opts...)
 }
 
 func (c *secretsClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {

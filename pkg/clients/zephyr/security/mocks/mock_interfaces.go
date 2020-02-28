@@ -10,36 +10,54 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockCertificateSigningRequestClient is a mock of CertificateSigningRequestClient interface
-type MockCertificateSigningRequestClient struct {
+// MockMeshGroupCertificateSigningRequestClient is a mock of MeshGroupCertificateSigningRequestClient interface
+type MockMeshGroupCertificateSigningRequestClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockCertificateSigningRequestClientMockRecorder
+	recorder *MockMeshGroupCertificateSigningRequestClientMockRecorder
 }
 
-// MockCertificateSigningRequestClientMockRecorder is the mock recorder for MockCertificateSigningRequestClient
-type MockCertificateSigningRequestClientMockRecorder struct {
-	mock *MockCertificateSigningRequestClient
+// MockMeshGroupCertificateSigningRequestClientMockRecorder is the mock recorder for MockMeshGroupCertificateSigningRequestClient
+type MockMeshGroupCertificateSigningRequestClientMockRecorder struct {
+	mock *MockMeshGroupCertificateSigningRequestClient
 }
 
-// NewMockCertificateSigningRequestClient creates a new mock instance
-func NewMockCertificateSigningRequestClient(ctrl *gomock.Controller) *MockCertificateSigningRequestClient {
-	mock := &MockCertificateSigningRequestClient{ctrl: ctrl}
-	mock.recorder = &MockCertificateSigningRequestClientMockRecorder{mock}
+// NewMockMeshGroupCertificateSigningRequestClient creates a new mock instance
+func NewMockMeshGroupCertificateSigningRequestClient(ctrl *gomock.Controller) *MockMeshGroupCertificateSigningRequestClient {
+	mock := &MockMeshGroupCertificateSigningRequestClient{ctrl: ctrl}
+	mock.recorder = &MockMeshGroupCertificateSigningRequestClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCertificateSigningRequestClient) EXPECT() *MockCertificateSigningRequestClientMockRecorder {
+func (m *MockMeshGroupCertificateSigningRequestClient) EXPECT() *MockMeshGroupCertificateSigningRequestClientMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method
+func (m *MockMeshGroupCertificateSigningRequestClient) Create(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, csr}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) Create(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, csr}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).Create), varargs...)
+}
+
 // Update mocks base method
-func (m *MockCertificateSigningRequestClient) Update(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error {
+func (m *MockMeshGroupCertificateSigningRequestClient) Update(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -51,16 +69,16 @@ func (m *MockCertificateSigningRequestClient) Update(ctx context.Context, csr *v
 }
 
 // Update indicates an expected call of Update
-func (mr *MockCertificateSigningRequestClientMockRecorder) Update(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) Update(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).Update), varargs...)
 }
 
 // UpdateStatus mocks base method
-func (m *MockCertificateSigningRequestClient) UpdateStatus(ctx context.Context, csrStatus *types.MeshGroupCertificateSigningRequestStatus, objMeta *v1.ObjectMeta, opts ...client.UpdateOption) error {
+func (m *MockMeshGroupCertificateSigningRequestClient) UpdateStatus(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, csrStatus, objMeta}
+	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -70,14 +88,14 @@ func (m *MockCertificateSigningRequestClient) UpdateStatus(ctx context.Context, 
 }
 
 // UpdateStatus indicates an expected call of UpdateStatus
-func (mr *MockCertificateSigningRequestClientMockRecorder) UpdateStatus(ctx, csrStatus, objMeta interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) UpdateStatus(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, csrStatus, objMeta}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).UpdateStatus), varargs...)
+	varargs := append([]interface{}{ctx, csr}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).UpdateStatus), varargs...)
 }
 
 // Get mocks base method
-func (m *MockCertificateSigningRequestClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.MeshGroupCertificateSigningRequest, error) {
+func (m *MockMeshGroupCertificateSigningRequestClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.MeshGroupCertificateSigningRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
 	ret0, _ := ret[0].(*v1alpha1.MeshGroupCertificateSigningRequest)
@@ -86,13 +104,13 @@ func (m *MockCertificateSigningRequestClient) Get(ctx context.Context, name, nam
 }
 
 // Get indicates an expected call of Get
-func (mr *MockCertificateSigningRequestClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).Get), ctx, name, namespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).Get), ctx, name, namespace)
 }
 
 // List mocks base method
-func (m *MockCertificateSigningRequestClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MeshGroupCertificateSigningRequestList, error) {
+func (m *MockMeshGroupCertificateSigningRequestClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MeshGroupCertificateSigningRequestList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, opts)
 	ret0, _ := ret[0].(*v1alpha1.MeshGroupCertificateSigningRequestList)
@@ -101,13 +119,13 @@ func (m *MockCertificateSigningRequestClient) List(ctx context.Context, opts v1.
 }
 
 // List indicates an expected call of List
-func (mr *MockCertificateSigningRequestClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).List), ctx, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).List), ctx, opts)
 }
 
 // Delete mocks base method
-func (m *MockCertificateSigningRequestClient) Delete(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.DeleteOption) error {
+func (m *MockMeshGroupCertificateSigningRequestClient) Delete(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -119,8 +137,8 @@ func (m *MockCertificateSigningRequestClient) Delete(ctx context.Context, csr *v
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockCertificateSigningRequestClientMockRecorder) Delete(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockMeshGroupCertificateSigningRequestClientMockRecorder) Delete(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCertificateSigningRequestClient)(nil).Delete), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshGroupCertificateSigningRequestClient)(nil).Delete), varargs...)
 }

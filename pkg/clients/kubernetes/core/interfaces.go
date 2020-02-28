@@ -17,7 +17,8 @@ type ServiceClient interface {
 }
 
 type SecretsClient interface {
-	Update(ctx context.Context, csr *corev1.Secret) error
+	Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error
+	Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error
 	Get(ctx context.Context, name, namespace string) (*corev1.Secret, error)
 	List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error)
 }

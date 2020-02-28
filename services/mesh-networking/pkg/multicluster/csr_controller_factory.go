@@ -5,13 +5,12 @@ import (
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 )
 
-// given a manager that can talk to a cluster and a name for that cluster, produce a `CertificateSigningRequestController`
-type CSRControllerFactory func(
+type MeshGroupCertificateSigningRequestControllerFactory func(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (cert_controller.MeshGroupCertificateSigningRequestController, error)
 
-func NewCSRControllerFactory() CSRControllerFactory {
+func NewMeshGroupCertificateSigningRequestControllerFactory() MeshGroupCertificateSigningRequestControllerFactory {
 	return func(
 		mgr mc_manager.AsyncManager,
 		clusterName string,

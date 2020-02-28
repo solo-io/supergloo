@@ -1,7 +1,7 @@
-kind: RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: mesh-networking-role-binding
+  name: mesh-networking-clusterrole-binding
   labels:
     app: service-mesh-hub
     service-mesh-hub: mesh-networking
@@ -10,6 +10,6 @@ subjects:
     name: mesh-networking
     namespace: {{ .Release.Namespace }}
 roleRef:
-  kind: Role
-  name: mesh-networking-role
+  kind: ClusterRole
+  name: mesh-networking-clusterrole
   apiGroup: rbac.authorization.k8s.io

@@ -23,33 +23,6 @@ var (
 	}
 )
 
-//go:generate mockgen -source manager.go -destination ./mocks/async_manager.go
-
-/*
-	This interface is meant to represent an asynchronous wrapper on top of a controller-runtime manager.
-	It comes with opinionated ways to start and stop managers in go routines, as well as check their error
-	status
-*/
-type AsyncManager interface {
-	// returns the manager associated with the async manager
-	Manager() manager.Manager
-	// returns the context of the async manager
-	Context() context.Context
-	// returns the err which has occured
-	Error() error
-	// returns the channel which is closed when an err occurs
-	GotError() <-chan struct{}
-	// start the async manager, does not block, will signal the `GotError()` channel if an error occurs
-	Start(opts ...AsyncManagerStartOptionsFunc) error
-	// stops the async manager, does not block
-	Stop()
-}
-
-type AsyncManagerFactory interface {
-	New(parentCtx context.Context, cfg *rest.Config,
-		opts AsyncManagerOptions) (AsyncManager, error)
-}
-
 func NewAsyncManagerFactory() AsyncManagerFactory {
 	return &asyncManagerFactory{}
 }

@@ -1,10 +1,8 @@
-global:
-  image:
-    registry: quay.io/solo-io
-    pullPolicy: IfNotPresent
-  stats:
-    enabled: true
 deployment:
   image:
     tag: %version%
     repository: mesh-discovery
+    registry: quay.io/solo-io
+    pullPolicy: IfNotPresent
+  stats:
+    enabled: true

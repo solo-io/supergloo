@@ -3,12 +3,13 @@ package mc_manager
 import (
 	"context"
 
+	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/mesh-projects/services/common"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
-
-//go:generate mockgen -source controller.go -destination ./mocks/controller.go
 
 var (
 	AsyncManagerFactoryError = func(err error, cluster string) error {
@@ -28,29 +29,9 @@ var (
 	NoManagerForClusterError = func(cluster string) error {
 		return eris.Errorf("could not find manager for cluster %s", cluster)
 	}
+
+	noClientErr = eris.New("no client")
 )
-
-// these functions are intended to be used as callbacks for a resource watcher, where the
-// resources represent KubeConfigs
-type KubeConfigHandler interface {
-	ClusterAdded(cfg *rest.Config, clusterName string) error
-	ClusterRemoved(cluster string) error
-}
-
-// These functions are intended to be used as an extension to the KubeConfigHandler.
-// Only one manager needs to be created per cluster, so these callbacks will be
-// called when a manager has been created for a given cluster
-type AsyncManagerHandler interface {
-	ClusterAdded(ctx context.Context, mgr AsyncManager, clusterName string) error
-	ClusterRemoved(cluster string) error
-}
-
-// these functions are intended to be used as callbacks for a resource watcher, where the
-// resources are async managers for a given kubeconfig/cluster
-type AsyncManagerInformer interface {
-	AddHandler(informer AsyncManagerHandler, name string) error
-	RemoveHandler(name string) error
-}
 
 /*
 	The AsyncManagerController is meant as utility struct to async receive kube configs, and then create an AsyncManager
@@ -151,4 +132,24 @@ func (m *AsyncManagerController) ClusterRemoved(cluster string) error {
 	}
 	m.managers.RemoveManager(cluster)
 	return nil
+}
+
+func (m *AsyncManagerController) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, bool) {
+	// TODO: unify this
+	if clusterName == common.LocalClusterName {
+		clusterName = ""
+	}
+	var mgr AsyncManager
+	err := retry.Do(func() error {
+		var ok bool
+		mgr, ok = m.managers.GetManager(clusterName)
+		if !ok {
+			return noClientErr
+		}
+		return nil
+	}, opts...)
+	if err != nil {
+		return nil, false
+	}
+	return mgr.Manager().GetClient(), true
 }

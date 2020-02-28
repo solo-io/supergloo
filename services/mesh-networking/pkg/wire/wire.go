@@ -15,7 +15,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	wire.Build(
 		multicluster_wire.MulticlusterProviderSet,
 		group_controller.MeshGroupProviderSet,
-		networking_multicluster.NewCSRControllerFactory,
+		networking_multicluster.NewMeshGroupCertificateSigningRequestControllerFactory,
 		networking_multicluster.NewMeshNetworkingClusterHandler,
 		MeshNetworkingContextProvider,
 	)

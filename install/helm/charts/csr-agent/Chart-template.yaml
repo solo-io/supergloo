@@ -1,0 +1,14 @@
+apiVersion: v2
+description: csr-agent Helm chart for Kubernetes
+name: csr-agent
+version: %version%
+home: https://solo.io
+icon: ""
+sources:
+  - https://github.com/solo-io/mesh-projects
+keywords:
+  - kubernetes
+  - istio
+  - mesh
+  - servicemesh
+  - servicemeshhub

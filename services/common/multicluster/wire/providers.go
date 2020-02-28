@@ -59,6 +59,10 @@ func AsyncManagerControllerProvider(ctx context.Context, localManager mc_manager
 	return mc_manager.NewAsyncManagerControllerFromLocal(ctx, localManager.Manager(), mc_manager.NewAsyncManagerFactory())
 }
 
+func DynamicClientGetterProvider(controller *mc_manager.AsyncManagerController) mc_manager.DynamicClientGetter {
+	return controller
+}
+
 func MulticlusterDependenciesProvider(
 	ctx context.Context,
 	localManager mc_manager.AsyncManager,
@@ -66,7 +70,6 @@ func MulticlusterDependenciesProvider(
 	localManagerStarter mc_manager.AsyncManagerStartOptionsFunc,
 ) multicluster.MultiClusterDependencies {
 	return multicluster.MultiClusterDependencies{
-
 		LocalManager:         localManager,
 		AsyncManagerInformer: asyncManagerController.AsyncManagerInformer(),
 		KubeConfigHandler:    asyncManagerController.KubeConfigHandler(),

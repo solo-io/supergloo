@@ -80,18 +80,42 @@ func (m *MockSecretsClient) EXPECT() *MockSecretsClientMockRecorder {
 	return m.recorder
 }
 
-// Update mocks base method
-func (m *MockSecretsClient) Update(ctx context.Context, csr *v1.Secret) error {
+// Create mocks base method
+func (m *MockSecretsClient) Create(ctx context.Context, secret *v1.Secret, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, csr)
+	varargs := []interface{}{ctx, secret}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockSecretsClientMockRecorder) Create(ctx, secret interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, secret}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSecretsClient)(nil).Create), varargs...)
+}
+
+// Update mocks base method
+func (m *MockSecretsClient) Update(ctx context.Context, secret *v1.Secret, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, secret}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update
-func (mr *MockSecretsClientMockRecorder) Update(ctx, csr interface{}) *gomock.Call {
+func (mr *MockSecretsClientMockRecorder) Update(ctx, secret interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSecretsClient)(nil).Update), ctx, csr)
+	varargs := append([]interface{}{ctx, secret}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSecretsClient)(nil).Update), varargs...)
 }
 
 // Get mocks base method

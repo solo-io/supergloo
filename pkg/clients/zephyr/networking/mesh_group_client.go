@@ -45,6 +45,10 @@ func (m *meshGroupClient) List(
 	return &list, nil
 }
 
-func (m *meshGroupClient) UpdateStatus(ctx context.Context, meshGroup *networkingv1alpha1.MeshGroup, opts ...client.UpdateOption) error {
-	return m.dynamicClient.Status().Update(ctx, meshGroup, opts...)
+func (m *meshGroupClient) UpdateStatus(
+	ctx context.Context,
+	mg *networkingv1alpha1.MeshGroup,
+	opts ...client.UpdateOption,
+) error {
+	return m.dynamicClient.Status().Update(ctx, mg, opts...)
 }

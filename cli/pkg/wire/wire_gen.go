@@ -27,7 +27,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
@@ -51,7 +51,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	kubernetesClusterClient, err := discovery_core.NewGeneratedKubernetesClusterClient(masterConfig)
+	kubernetesClusterClient, err := zephyr_discovery.NewGeneratedKubernetesClusterClient(masterConfig)
 	if err != nil {
 		return nil, err
 	}

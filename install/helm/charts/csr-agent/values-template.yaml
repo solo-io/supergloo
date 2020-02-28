@@ -1,0 +1,8 @@
+deployment:
+  image:
+    tag: %version%
+    repository: csr-agent
+    registry: quay.io/solo-io
+    pullPolicy: IfNotPresent
+  stats:
+    enabled: true

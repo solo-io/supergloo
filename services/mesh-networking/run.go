@@ -1,6 +1,8 @@
 package mesh_networking
 
 import (
+	"context"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
@@ -13,9 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func Run() {
-	ctx := config.CreateRootContext(nil, "mesh-networking")
-
+func Run(ctx context.Context) {
+	ctx = config.CreateRootContext(ctx, "mesh-networking")
 	logger := contextutils.LoggerFrom(ctx)
 
 	// build all the objects needed for multicluster operations
