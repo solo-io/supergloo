@@ -22,3 +22,9 @@ type SecretsClient interface {
 	Get(ctx context.Context, name, namespace string) (*corev1.Secret, error)
 	List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error)
 }
+
+type ConfigMapClient interface {
+	Create(ctx context.Context, configMap *corev1.ConfigMap) error
+	Get(ctx context.Context, objKey client.ObjectKey) (*corev1.ConfigMap, error)
+	Update(ctx context.Context, configMap *corev1.ConfigMap) error
+}

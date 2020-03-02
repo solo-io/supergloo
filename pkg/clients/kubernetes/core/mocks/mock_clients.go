@@ -147,3 +147,69 @@ func (mr *MockSecretsClientMockRecorder) List(ctx, opts interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSecretsClient)(nil).List), ctx, opts)
 }
+
+// MockConfigMapClient is a mock of ConfigMapClient interface
+type MockConfigMapClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockConfigMapClientMockRecorder
+}
+
+// MockConfigMapClientMockRecorder is the mock recorder for MockConfigMapClient
+type MockConfigMapClientMockRecorder struct {
+	mock *MockConfigMapClient
+}
+
+// NewMockConfigMapClient creates a new mock instance
+func NewMockConfigMapClient(ctrl *gomock.Controller) *MockConfigMapClient {
+	mock := &MockConfigMapClient{ctrl: ctrl}
+	mock.recorder = &MockConfigMapClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockConfigMapClient) EXPECT() *MockConfigMapClientMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method
+func (m *MockConfigMapClient) Create(ctx context.Context, configMap *v1.ConfigMap) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, configMap)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockConfigMapClientMockRecorder) Create(ctx, configMap interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfigMapClient)(nil).Create), ctx, configMap)
+}
+
+// Get mocks base method
+func (m *MockConfigMapClient) Get(ctx context.Context, objKey client.ObjectKey) (*v1.ConfigMap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, objKey)
+	ret0, _ := ret[0].(*v1.ConfigMap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockConfigMapClientMockRecorder) Get(ctx, objKey interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfigMapClient)(nil).Get), ctx, objKey)
+}
+
+// Update mocks base method
+func (m *MockConfigMapClient) Update(ctx context.Context, configMap *v1.ConfigMap) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, configMap)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockConfigMapClientMockRecorder) Update(ctx, configMap interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConfigMapClient)(nil).Update), ctx, configMap)
+}

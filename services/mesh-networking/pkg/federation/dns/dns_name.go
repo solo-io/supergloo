@@ -10,5 +10,3 @@ import (
 func BuildMulticlusterDnsName(kubeServiceRef *core_types.ResourceRef, serviceClusterName string) string {
 	return fmt.Sprintf("%s.%s.%s", kubeServiceRef.GetName(), kubeServiceRef.GetNamespace(), serviceClusterName)
 }
-
-// TODO: Generate IP addresses in this package https://github.com/solo-io/mesh-projects/issues/219
