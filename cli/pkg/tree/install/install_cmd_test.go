@@ -26,6 +26,7 @@ var _ = Describe("Install", func() {
 		meshctl           *cli_test.MockMeshctl
 		mockHelmInstaller *mock_helminstall.MockInstaller
 	)
+
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
@@ -38,6 +39,10 @@ var _ = Describe("Install", func() {
 			KubeLoader:     mockKubeLoader,
 			Ctx:            ctx,
 		}
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should set default values for flags", func() {

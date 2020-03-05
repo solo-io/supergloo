@@ -32,8 +32,7 @@ var (
 )
 
 // this is the main entrypoint for discovery
-// when a cluster is registered, we handle that event and spin up a new deployment controller for that cluster
-// that new deployment controller processes Deployment events from that cluster.
+// when a cluster is registered, we handle that event and spin up new resource controllers for that cluster
 // note that as a first step, the local manager should be registered so that we can detect meshes in the same
 // cluster that SMH runs in. This should be handled by this constructor implementation
 func NewDiscoveryClusterHandler(

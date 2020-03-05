@@ -25,10 +25,8 @@ type meshGroupValidator struct {
 	meshClient zephyr_core.MeshClient
 }
 
-func MeshGroupValidatorProvider(meshClient zephyr_core.MeshClient) MeshGroupValidator {
-	return &meshGroupValidator{
-		meshClient: meshClient,
-	}
+func NewMeshGroupValidator(meshClient zephyr_core.MeshClient) MeshGroupValidator {
+	return &meshGroupValidator{meshClient: meshClient}
 }
 
 func (m *meshGroupValidator) Validate(ctx context.Context, mg *v1alpha1.MeshGroup) (types.MeshGroupStatus, error) {

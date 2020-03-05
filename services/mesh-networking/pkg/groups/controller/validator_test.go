@@ -33,7 +33,7 @@ var _ = Describe("validator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		validator = group_controller.MeshGroupValidatorProvider(meshClient)
+		validator = group_controller.NewMeshGroupValidator(meshClient)
 		ctx = context.TODO()
 	})
 

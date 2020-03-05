@@ -26,7 +26,6 @@ message MeshStatus {
 
 }
 
-
 message MeshInstallation {
     // where the control plane has been installed
     string installation_namespace = 1;

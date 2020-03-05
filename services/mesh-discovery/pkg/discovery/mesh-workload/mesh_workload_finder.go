@@ -106,7 +106,6 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 		if oldMeshWorkload.Spec.Equal(newMeshWorkload.Spec) {
 			return nil
 		} else {
-			// TODO: delete
 			return d.localMeshWorkloadClient.Update(d.ctx, newMeshWorkload)
 		}
 	}

@@ -25,7 +25,7 @@ var (
 	DiscoveryLabels = func(cluster string) map[string]string {
 		return map[string]string{
 			constants.DISCOVERED_BY: constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:     constants.ISTIO,
+			constants.MESH_TYPE:     core_types.MeshType_ISTIO.String(),
 			constants.CLUSTER:       cluster,
 		}
 	}
@@ -202,7 +202,8 @@ func (m *meshServiceFinder) buildMeshService(
 					Namespace: service.GetNamespace(),
 					Cluster:   &protobuf_types.StringValue{Value: m.clusterName},
 				},
-				SelectorLabels: service.Spec.Selector,
+				WorkloadSelectorLabels: service.Spec.Selector,
+				Labels:                 service.GetLabels(),
 			},
 			Mesh:    meshRef,
 			Subsets: subsets,

@@ -1,5 +1,9 @@
 package common
 
+import (
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+)
+
 var (
 	OwnerLabels = map[string]string{
 		"owner": "service-mesh-hub",
@@ -13,3 +17,10 @@ var (
 	*/
 	LocalClusterName = "local"
 )
+
+// Return true if userSuppliedRef's cluster name is the empty string and computedRef's cluster name is LocalClusterName
+// This asymmetry is a result of allowing the user to omit the cluster name as shorthand for the cluster on which ServiceMeshHub
+// is installed, but our computed configuration uses LocalClusterName as the cluster name.
+func AreResourcesOnLocalCluster(userSuppliedRef *core_types.ResourceRef, computedRef *core_types.ResourceRef) bool {
+	return userSuppliedRef.GetCluster().GetValue() == "" && computedRef.GetCluster().GetValue() == LocalClusterName
+}

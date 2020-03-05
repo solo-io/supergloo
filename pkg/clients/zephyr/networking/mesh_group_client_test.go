@@ -39,7 +39,6 @@ var _ = Describe("mesh group client", func() {
 
 		BeforeEach(func() {
 			mockClient = mock_controller_runtime.NewMockClient(ctrl)
-
 			mgClient = zephyr_networking.NewMeshGroupClient(mockClient)
 		})
 

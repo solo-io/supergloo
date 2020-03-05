@@ -1,0 +1,591 @@
+package istio_translator_test
+
+import (
+	"context"
+
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
+	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mocks"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
+	"github.com/solo-io/mesh-projects/services/common"
+	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
+	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	api_v1beta1 "istio.io/api/networking/v1beta1"
+	client_v1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var _ = Describe("IstioTranslator", func() {
+	var (
+		ctrl                         *gomock.Controller
+		istioTrafficPolicyTranslator *istio_translator.IstioTrafficPolicyTranslator
+		ctx                          context.Context
+		mockDynamicClientGetter      *mock_mc_manager.MockDynamicClientGetter
+		mockMeshClient               *mock_core.MockMeshClient
+		mockMeshServiceClient        *mock_core.MockMeshServiceClient
+		mockVirtualServiceClient     *mock_istio_networking.MockVirtualServiceClient
+	)
+	BeforeEach(func() {
+		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
+		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
+		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
+		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
+		mockVirtualServiceClient = mock_istio_networking.NewMockVirtualServiceClient(ctrl)
+		istioTrafficPolicyTranslator = istio_translator.NewIstioTrafficPolicyTranslator(
+			mockDynamicClientGetter,
+			mockMeshClient,
+			mockMeshServiceClient,
+			func(client client.Client) istio_networking.VirtualServiceClient {
+				return mockVirtualServiceClient
+			},
+		)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
+	})
+
+	Context("should translate TrafficPolicies into VirtualService and upsert", func() {
+		var (
+			clusterName            string
+			meshObjKey             client.ObjectKey
+			meshServiceObjKey      client.ObjectKey
+			kubeServiceObjKey      client.ObjectKey
+			mesh                   *discovery_v1alpha1.Mesh
+			meshService            *discovery_v1alpha1.MeshService
+			trafficPolicy          []*v1alpha1.TrafficPolicy
+			computedVirtualService *client_v1beta1.VirtualService
+		)
+		BeforeEach(func() {
+			clusterName = "clusterName"
+			meshObjKey = client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
+			meshServiceObjKey = client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
+			kubeServiceObjKey = client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
+			meshServiceFederationMCDnsName := "multiclusterDNSname"
+			meshService = &discovery_v1alpha1.MeshService{
+				ObjectMeta: v1.ObjectMeta{
+					Name:        meshServiceObjKey.Name,
+					Namespace:   meshServiceObjKey.Namespace,
+					ClusterName: "clustername",
+				},
+				Spec: discovery_types.MeshServiceSpec{
+					Mesh: &core_types.ResourceRef{
+						Name:      meshObjKey.Name,
+						Namespace: meshObjKey.Namespace,
+					},
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      kubeServiceObjKey.Name,
+							Namespace: kubeServiceObjKey.Namespace,
+						},
+					},
+					Federation: &discovery_types.Federation{
+						MulticlusterDnsName: meshServiceFederationMCDnsName,
+					},
+				},
+			}
+			mesh = &discovery_v1alpha1.Mesh{
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+					MeshType: &discovery_types.MeshSpec_Istio{
+						Istio: &discovery_types.IstioMesh{},
+					},
+				},
+			}
+			trafficPolicy = []*v1alpha1.TrafficPolicy{{
+				Spec: networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_types.HttpMatcher{
+						{
+							PathSpecifier: &networking_types.HttpMatcher_Exact{
+								Exact: "path",
+							},
+							Method: networking_types.HttpMethod_GET,
+						},
+						{
+							Headers: []*networking_types.HeaderMatcher{
+								{
+									Name:        "name3",
+									Value:       "[a-z]+",
+									Regex:       true,
+									InvertMatch: true,
+								},
+							},
+							Method: networking_types.HttpMethod_POST,
+						},
+					},
+				}},
+			}
+			computedVirtualService = &client_v1beta1.VirtualService{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
+					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
+				},
+				Spec: api_v1beta1.VirtualService{
+					Hosts: []string{meshServiceObjKey.Name + "." + meshServiceObjKey.Namespace},
+					Http: []*api_v1beta1.HTTPRoute{
+						{
+							Match: []*api_v1beta1.HTTPMatchRequest{
+								{
+									Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
+									Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
+								},
+								{
+									Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
+									WithoutHeaders: map[string]*api_v1beta1.StringMatch{
+										"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
+			mockDynamicClientGetter.EXPECT().GetClientForCluster(clusterName).Return(nil, true)
+		})
+
+		It("should upsert VirtualService", func() {
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(ctx, meshService, mesh, trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+	})
+
+	It("should translate TrafficPolicies into VirtualService", func() {
+		kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
+		meshServiceMCDnsName := "meshservicemcdnsname"
+		meshService := &discovery_v1alpha1.MeshService{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "name",
+				Namespace: "namespace",
+			},
+			Spec: discovery_types.MeshServiceSpec{
+				Federation: &discovery_types.Federation{MulticlusterDnsName: meshServiceMCDnsName},
+				KubeService: &discovery_types.KubeService{
+					Ref: &core_types.ResourceRef{
+						Name:      kubeServiceObjKey.Name,
+						Namespace: kubeServiceObjKey.Namespace,
+					},
+				},
+			},
+		}
+		trafficPolicy := []*v1alpha1.TrafficPolicy{{
+			Spec: networking_types.TrafficPolicySpec{
+				HttpRequestMatchers: []*networking_types.HttpMatcher{
+					{
+						PathSpecifier: &networking_types.HttpMatcher_Exact{
+							Exact: "path",
+						},
+						Method: networking_types.HttpMethod_GET,
+					},
+					{
+						Headers: []*networking_types.HeaderMatcher{
+							{
+								Name:        "name3",
+								Value:       "[a-z]+",
+								Regex:       true,
+								InvertMatch: true,
+							},
+						},
+						Method: networking_types.HttpMethod_POST,
+					},
+				},
+			}},
+		}
+		expectedVirtualService := &client_v1beta1.VirtualService{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      kubeServiceObjKey.Name,
+				Namespace: kubeServiceObjKey.Namespace,
+			},
+			Spec: api_v1beta1.VirtualService{
+				Hosts: []string{meshService.GetName() + "." + meshService.GetNamespace()},
+				Http: []*api_v1beta1.HTTPRoute{
+					{
+						Match: []*api_v1beta1.HTTPMatchRequest{
+							{
+								Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
+								Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
+							},
+							{
+								Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
+								WithoutHeaders: map[string]*api_v1beta1.StringMatch{
+									"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		virtualService, err := istioTrafficPolicyTranslator.TranslateIntoVirtualService(meshService, trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(virtualService).To(Equal(expectedVirtualService))
+	})
+
+	It("should translate HTTP RequestMatchers", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				HttpRequestMatchers: []*networking_types.HttpMatcher{
+					{
+						PathSpecifier: &networking_types.HttpMatcher_Exact{
+							Exact: "path",
+						},
+						Method: networking_types.HttpMethod_GET,
+					},
+					{
+						Headers: []*networking_types.HeaderMatcher{
+							{
+								Name:        "name3",
+								Value:       "[a-z]+",
+								Regex:       true,
+								InvertMatch: true,
+							},
+						},
+						Method: networking_types.HttpMethod_POST,
+					},
+				},
+			},
+		}
+		expectedRequestMatchers := []*api_v1beta1.HTTPMatchRequest{
+			{
+				Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
+				Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
+			},
+			{
+				Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
+				WithoutHeaders: map[string]*api_v1beta1.StringMatch{
+					"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+				},
+			},
+		}
+		matchers, err := istioTrafficPolicyTranslator.TranslateRequestMatchers(trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(matchers).To(Equal(expectedRequestMatchers))
+	})
+
+	It("should translate HttpMatcher exact path specifiers", func() {
+		httpMatcher := &networking_types.HttpMatcher{
+			PathSpecifier: &networking_types.HttpMatcher_Exact{
+				Exact: "path",
+			},
+		}
+		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}}
+		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(specifier).To(Equal(expected))
+	})
+
+	It("should translate HttpMatcher prefix path specifiers", func() {
+		httpMatcher := &networking_types.HttpMatcher{
+			PathSpecifier: &networking_types.HttpMatcher_Prefix{
+				Prefix: "prefix",
+			},
+		}
+		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}}
+		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(specifier).To(Equal(expected))
+	})
+
+	It("should translate HttpMatcher regex path specifiers", func() {
+		httpMatcher := &networking_types.HttpMatcher{
+			PathSpecifier: &networking_types.HttpMatcher_Regex{
+				Regex: "*",
+			},
+		}
+		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}}
+		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(specifier).To(Equal(expected))
+	})
+
+	It("should translate QueryParameterMatchers", func() {
+		matchers := []*networking_types.QueryParameterMatcher{
+			{
+				Name:  "qp1",
+				Value: "qpv1",
+				Regex: false,
+			},
+			{
+				Name:  "qp2",
+				Value: "qpv2",
+				Regex: true,
+			},
+		}
+		expectedQueryParamMatcher := map[string]*api_v1beta1.StringMatch{
+			"qp1": {
+				MatchType: &api_v1beta1.StringMatch_Exact{Exact: "qpv1"},
+			},
+			"qp2": {
+				MatchType: &api_v1beta1.StringMatch_Regex{Regex: "qpv2"},
+			},
+		}
+		Expect(istioTrafficPolicyTranslator.TranslateRequestMatcherQueryParams(matchers)).To(Equal(expectedQueryParamMatcher))
+	})
+
+	It("should translate HeaderMatchers", func() {
+		matchers := []*networking_types.HeaderMatcher{
+			{
+				Name:        "name1",
+				Value:       "value1",
+				Regex:       false,
+				InvertMatch: false,
+			},
+			{
+				Name:        "name2",
+				Value:       "*",
+				Regex:       true,
+				InvertMatch: false,
+			},
+			{
+				Name:        "name3",
+				Value:       "[a-z]+",
+				Regex:       true,
+				InvertMatch: true,
+			},
+		}
+		expectedHeaderMatchers := map[string]*api_v1beta1.StringMatch{
+			"name1": {MatchType: &api_v1beta1.StringMatch_Exact{Exact: "value1"}},
+			"name2": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}},
+		}
+		expectedInverseHeaderMatchers := map[string]*api_v1beta1.StringMatch{
+			"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+		}
+		headerMatchers, inverseHeaderMatchers := istioTrafficPolicyTranslator.TranslateRequestMatcherHeaders(matchers)
+		Expect(headerMatchers).To(Equal(expectedHeaderMatchers))
+		Expect(inverseHeaderMatchers).To(Equal(expectedInverseHeaderMatchers))
+	})
+
+	It("should translate TrafficShift without subsets", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				TrafficShift: &networking_types.MultiDestination{
+					Destinations: []*networking_types.MultiDestination_WeightedDestination{
+						{
+							Destination: &core_types.ResourceRef{
+								Name:      "name",
+								Namespace: "namespace",
+								Cluster:   &types.StringValue{Value: "remote-cluster-1"},
+							},
+							Weight: 50,
+						},
+					},
+				},
+			},
+		}
+		meshServiceDnsName := "name.namespace.cluster"
+		meshService := &discovery_v1alpha1.MeshService{
+			Spec: discovery_types.MeshServiceSpec{
+				KubeService: &discovery_types.KubeService{
+					Ref: &core_types.ResourceRef{
+						Cluster: &types.StringValue{Value: "remote-cluster-2"},
+					},
+				},
+				Federation: &discovery_types.Federation{MulticlusterDnsName: meshServiceDnsName},
+			},
+		}
+		expectedDestination := []*api_v1beta1.HTTPRouteDestination{
+			{
+				Destination: &api_v1beta1.Destination{
+					Host: meshServiceDnsName,
+				},
+				Weight: 50,
+			},
+		}
+		Expect(istioTrafficPolicyTranslator.TranslateTrafficShift(meshService, trafficPolicy)).To(Equal(expectedDestination))
+	})
+
+	It("should translate Retries", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				Retries: &networking_types.RetryPolicy{
+					Attempts:      5,
+					PerTryTimeout: &types.Duration{Seconds: 2},
+				},
+			},
+		}
+		expectedRetry := &api_v1beta1.HTTPRetry{
+			Attempts:      5,
+			PerTryTimeout: &types.Duration{Seconds: 2},
+		}
+		Expect(istioTrafficPolicyTranslator.TranslateRetries(trafficPolicy)).To(Equal(expectedRetry))
+	})
+
+	It("should translate FaultInjection of type Delay of type Exponential", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				FaultInjection: &networking_types.FaultInjection{
+					FaultInjectionType: &networking_types.FaultInjection_Delay_{
+						Delay: &networking_types.FaultInjection_Delay{
+							HttpDelayType: &networking_types.FaultInjection_Delay_ExponentialDelay{
+								ExponentialDelay: &types.Duration{Seconds: 2},
+							},
+						},
+					},
+					Percentage: 50,
+				},
+			},
+		}
+		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
+			Delay: &api_v1beta1.HTTPFaultInjection_Delay{
+				HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
+				Percentage:    &api_v1beta1.Percent{Value: 50},
+			}}
+		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(injection).To(Equal(expectedHttpFaultInjection))
+	})
+
+	It("should translate FaultInjection of type Delay of type Fixed", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				FaultInjection: &networking_types.FaultInjection{
+					FaultInjectionType: &networking_types.FaultInjection_Delay_{
+						Delay: &networking_types.FaultInjection_Delay{
+							HttpDelayType: &networking_types.FaultInjection_Delay_FixedDelay{
+								FixedDelay: &types.Duration{Seconds: 2},
+							},
+						},
+					},
+					Percentage: 50,
+				},
+			},
+		}
+		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
+			Delay: &api_v1beta1.HTTPFaultInjection_Delay{
+				HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: &types.Duration{Seconds: 2}},
+				Percentage:    &api_v1beta1.Percent{Value: 50},
+			}}
+		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(injection).To(Equal(expectedHttpFaultInjection))
+	})
+
+	It("should translate FaultInjection of type Abort", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				FaultInjection: &networking_types.FaultInjection{
+					FaultInjectionType: &networking_types.FaultInjection_Abort_{
+						Abort: &networking_types.FaultInjection_Abort{
+							ErrorType: &networking_types.FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+						},
+					},
+					Percentage: 50,
+				},
+			},
+		}
+		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
+			Abort: &api_v1beta1.HTTPFaultInjection_Abort{
+				ErrorType:  &api_v1beta1.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: 404},
+				Percentage: &api_v1beta1.Percent{Value: 50},
+			},
+		}
+		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(injection).To(Equal(expectedHttpFaultInjection))
+	})
+
+	It("should translate Mirror with local hostname", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				Mirror: &networking_types.Mirror{
+					Destination: &core_types.ResourceRef{
+						Name:      "name",
+						Namespace: "namespace",
+					},
+				},
+			},
+		}
+		kubeServiceName := "kube-service-name"
+		kubeServiceNamespace := "kube-service-namespace"
+		meshService := &discovery_v1alpha1.MeshService{
+			Spec: discovery_types.MeshServiceSpec{
+				KubeService: &discovery_types.KubeService{
+					Ref: &core_types.ResourceRef{
+						Name:      kubeServiceName,
+						Namespace: kubeServiceNamespace,
+						Cluster:   &types.StringValue{Value: common.LocalClusterName},
+					},
+				},
+			},
+		}
+		expectedDestination := &api_v1beta1.Destination{
+			Host: kubeServiceName + "." + kubeServiceNamespace,
+		}
+		Expect(istioTrafficPolicyTranslator.TranslateMirror(meshService, trafficPolicy)).To(Equal(expectedDestination))
+	})
+
+	It("should translate HeaderManipulation", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				HeaderManipulation: &networking_types.HeaderManipulation{
+					AppendRequestHeaders:  map[string]string{"a": "b"},
+					RemoveRequestHeaders:  []string{"3", "4"},
+					AppendResponseHeaders: map[string]string{"foo": "bar"},
+					RemoveResponseHeaders: []string{"1", "2"},
+				},
+			},
+		}
+		expectedTrafficPolicy := &api_v1beta1.Headers{
+			Request: &api_v1beta1.Headers_HeaderOperations{
+				Add:    map[string]string{"a": "b"},
+				Remove: []string{"3", "4"},
+			},
+			Response: &api_v1beta1.Headers_HeaderOperations{
+				Add:    map[string]string{"foo": "bar"},
+				Remove: []string{"1", "2"},
+			},
+		}
+		manipulation := istioTrafficPolicyTranslator.TranslateHeaderManipulation(trafficPolicy)
+		Expect(manipulation).To(Equal(expectedTrafficPolicy))
+	})
+
+	It("should translate CorsPolicy", func() {
+		trafficPolicy := &v1alpha1.TrafficPolicy{
+			Spec: networking_types.TrafficPolicySpec{
+				CorsPolicy: &networking_types.CorsPolicy{
+					AllowOrigins: []*networking_types.StringMatch{
+						{MatchType: &networking_types.StringMatch_Exact{Exact: "exact"}},
+						{MatchType: &networking_types.StringMatch_Prefix{Prefix: "prefix"}},
+						{MatchType: &networking_types.StringMatch_Regex{Regex: "regex"}},
+					},
+					AllowMethods:     []string{"GET", "POST"},
+					AllowHeaders:     []string{"Header1", "Header2"},
+					ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
+					MaxAge:           &types.Duration{Seconds: 1},
+					AllowCredentials: &types.BoolValue{Value: false},
+				},
+			},
+		}
+		expectedIstioCorsPolicy := &api_v1beta1.CorsPolicy{
+			AllowOrigins: []*api_v1beta1.StringMatch{
+				{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "exact"}},
+				{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}},
+				{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "regex"}},
+			},
+			AllowMethods:     []string{"GET", "POST"},
+			AllowHeaders:     []string{"Header1", "Header2"},
+			ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
+			MaxAge:           &types.Duration{Seconds: 1},
+			AllowCredentials: &types.BoolValue{Value: false},
+		}
+		translatedCorsPolicy, err := istioTrafficPolicyTranslator.TranslateCorsPolicy(trafficPolicy)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(translatedCorsPolicy).To(Equal(expectedIstioCorsPolicy))
+	})
+})

@@ -33,6 +33,10 @@ var _ = Describe("ServerVersion", func() {
 		serverVersionClient = server.NewServerVersionClient(namespace, kubeConfigClient, imageNameParser)
 	})
 
+	AfterEach(func() {
+		ctrl.Finish()
+	})
+
 	It("GetServerVersion should parse image repository, registry, and tag correctly", func() {
 		image1 := "gcr.io/service-mesh-hub/foo/bar/mesh-discovery:latest"
 		image2 := "gcr.io/service-mesh-hub/boo/baz/mesh-discovery:latest"

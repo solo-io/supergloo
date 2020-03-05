@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Implement TrafficPolicy translation, which includes validation and detection of conflicts with existing TrafficPolicies.
+    issueLink: https://github.com/solo-io/mesh-projects/issues/196

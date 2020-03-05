@@ -1,0 +1,252 @@
+package preprocess_test
+
+import (
+	"context"
+
+	types1 "github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
+	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
+	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var _ = Describe("Merger", func() {
+	var (
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		trafficPolicyMerger     preprocess.TrafficPolicyMerger
+		mockMeshServiceSelector *mock_preprocess.MockMeshServiceSelector
+		mockMeshClient          *mock_core.MockMeshClient
+		mockTrafficPolicyClient *mock_zephyr_networking.MockTrafficPolicyClient
+	)
+
+	BeforeEach(func() {
+		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
+		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
+		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
+		mockTrafficPolicyClient = mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
+		trafficPolicyMerger = preprocess.NewTrafficPolicyMerger(
+			mockMeshServiceSelector,
+			mockMeshClient,
+			mockTrafficPolicyClient,
+		)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
+	})
+
+	It("should merge TrafficPolicy specs by MeshService", func() {
+		meshServiceName1 := "meshServiceName1"
+		meshServiceNamespace1 := "meshServiceNamespace1"
+		clusterName1 := "clusterName1"
+		meshName1 := "meshname1"
+		meshNamespace1 := "meshnamespace1"
+		meshServiceName2 := "meshServiceName2"
+		meshServiceNamespace2 := "meshServiceNamespace2"
+		clusterName2 := "clusterName2"
+		meshName2 := "meshname2"
+		meshNamespace2 := "meshnamespace2"
+		meshClusterName1 := "mesh-cluster-name-1"
+		meshClusterName2 := "mesh-cluster-name-2"
+		httpMatcher1 := &networking_v1alpha1_types.HttpMatcher{
+			Method: networking_v1alpha1_types.HttpMethod_GET,
+		}
+		httpMatcher2 := &networking_v1alpha1_types.HttpMatcher{
+			Method: networking_v1alpha1_types.HttpMethod_POST,
+		}
+		httpMatcher3 := &networking_v1alpha1_types.HttpMatcher{
+			Method: networking_v1alpha1_types.HttpMethod_PUT,
+		}
+		tp1 := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
+					},
+				},
+				RequestTimeout:      &types1.Duration{Seconds: 1},
+				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_ACCEPTED,
+					Message: "",
+				},
+			},
+		}
+		tp2 := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
+						{Name: meshServiceName2, Namespace: meshServiceNamespace2},
+					},
+				},
+				RequestTimeout:      &types1.Duration{Seconds: 1},
+				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_ACCEPTED,
+					Message: "",
+				},
+			},
+		}
+		tp3 := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName2, Namespace: meshServiceNamespace2},
+					},
+				},
+				Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
+				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_ACCEPTED,
+					Message: "",
+				},
+			},
+		}
+		tp4 := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
+					},
+				},
+				FaultInjection: &networking_v1alpha1_types.FaultInjection{
+					Percentage: 50,
+				},
+				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_ACCEPTED,
+					Message: "",
+				},
+			},
+		}
+		ignoredTP := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
+						{Name: meshServiceName2, Namespace: meshServiceNamespace2},
+					},
+				},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_CONFLICT,
+					Message: "",
+				},
+			},
+		}
+		meshServiceKey1 := keys.MeshServiceMultiClusterKey{
+			Name:        meshServiceName1,
+			Namespace:   meshServiceNamespace1,
+			ClusterName: meshClusterName1,
+		}
+		meshServiceKey2 := keys.MeshServiceMultiClusterKey{
+			Name:        meshServiceName2,
+			Namespace:   meshServiceNamespace2,
+			ClusterName: meshClusterName2,
+		}
+		meshServices := []*v1alpha1.MeshService{
+			{
+				ObjectMeta: v1.ObjectMeta{
+					Name:        meshServiceName1,
+					Namespace:   meshServiceNamespace1,
+					ClusterName: clusterName1,
+				},
+				Spec: types.MeshServiceSpec{
+					Mesh: &core_types.ResourceRef{
+						Name:      meshName1,
+						Namespace: meshNamespace1,
+					},
+				},
+			},
+			{
+				ObjectMeta: v1.ObjectMeta{
+					Name:        meshServiceName2,
+					Namespace:   meshServiceNamespace2,
+					ClusterName: clusterName2,
+				},
+				Spec: types.MeshServiceSpec{
+					Mesh: &core_types.ResourceRef{
+						Name:      meshName2,
+						Namespace: meshNamespace2,
+					},
+				},
+			},
+		}
+		/*** GetMatchingMeshServices() ***/
+		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, ignoredTP}}
+		mockTrafficPolicyClient.EXPECT().List(ctx).Return(trafficPolicyList, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp1.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp2.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp3.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[1]}, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp4.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, ignoredTP.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
+		/*** buildKeyForMeshService ***/
+		mesh1 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
+		mesh2 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
+		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(5)
+		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
+		mergedTrafficPolicy1 := []*networking_v1alpha1.TrafficPolicy{
+			{
+				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2},
+					RequestTimeout:      &types1.Duration{Seconds: 1},
+				},
+			},
+			{
+				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
+					FaultInjection: &networking_v1alpha1_types.FaultInjection{
+						Percentage: 50,
+					},
+				},
+			},
+		}
+		mergedTrafficPolicy2 := []*networking_v1alpha1.TrafficPolicy{
+			{
+				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
+					RequestTimeout:      &types1.Duration{Seconds: 1},
+					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
+				},
+			},
+			{
+				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher3},
+					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
+				},
+			},
+		}
+		policiesByMeshService, err := trafficPolicyMerger.MergeTrafficPoliciesForMeshServices(ctx, meshServices)
+		Expect(err).To(BeNil())
+		Expect(policiesByMeshService).To(HaveKeyWithValue(meshServiceKey1, mergedTrafficPolicy1))
+		Expect(policiesByMeshService).To(HaveKeyWithValue(meshServiceKey2, mergedTrafficPolicy2))
+	})
+})

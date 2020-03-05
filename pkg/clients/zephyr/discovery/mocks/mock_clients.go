@@ -330,3 +330,23 @@ func (mr *MockMeshServiceClientMockRecorder) UpdateStatus(ctx, meshService inter
 	varargs := append([]interface{}{ctx, meshService}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockMeshServiceClient)(nil).UpdateStatus), varargs...)
 }
+
+// List mocks base method
+func (m *MockMeshServiceClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshServiceList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.MeshServiceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockMeshServiceClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshServiceClient)(nil).List), varargs...)
+}

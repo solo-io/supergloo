@@ -28,6 +28,7 @@ import (
 
 var _ = Describe("MeshWorkloadFinder", func() {
 	var (
+		ctrl                        *gomock.Controller
 		ctx                         context.Context
 		mockLocalMeshWorkloadClient *mock_core.MockMeshWorkloadClient
 		mockLocalMeshClient         *mock_core.MockMeshClient
@@ -45,7 +46,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 	)
 
 	BeforeEach(func() {
-		ctrl := gomock.NewController(GinkgoT())
+		ctrl = gomock.NewController(GinkgoT())
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		mockLocalMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
 		mockLocalMeshClient = mock_core.NewMockMeshClient(ctrl)
@@ -68,6 +69,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				},
 			},
 		}
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should create MeshWorkload if Istio injected workload found", func() {
@@ -133,9 +138,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
 			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, expectedErr)
-		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().Get(ctx, objKey).Return(nil, notFoundErr)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil)
@@ -219,9 +221,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
 			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
-		objKey, _ := client.ObjectKeyFromObject(newDiscoveredMeshWorkload)
-		mockLocalMeshWorkloadClient.EXPECT().Get(ctx, objKey).Return(nil, notFoundErr)
-		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, newDiscoveredMeshWorkload).Return(nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
@@ -260,11 +259,8 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
 			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
-		objKey, _ := client.ObjectKeyFromObject(newDiscoveredMeshWorkload)
-		mockLocalMeshWorkloadClient.EXPECT().Get(ctx, objKey).Return(nil, notFoundErr)
 		newDiscoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		newDiscoveredMeshWorkload.Spec.Mesh = meshSpec
-		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, newDiscoveredMeshWorkload).Return(nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		mockLocalMeshWorkloadClient.EXPECT().Update(ctx, newDiscoveredMeshWorkload).Return(nil)
 		err := meshWorkloadFinder.Update(pod, newPod)
@@ -327,7 +323,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		discoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshWorkloadClient.EXPECT().Create(ctx, discoveredMeshWorkload).Return(nil)
-		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
+		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
 	})

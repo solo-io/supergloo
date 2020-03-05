@@ -41,6 +41,15 @@ func (m *meshServiceClient) Update(ctx context.Context, meshService *v1alpha1.Me
 	return m.client.Update(ctx, meshService, options...)
 }
 
+func (m *meshServiceClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshServiceList, error) {
+	list := v1alpha1.MeshServiceList{}
+	err := m.client.List(ctx, &list, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &list, nil
+}
+
 func (m *meshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
 	return m.client.Status().Update(ctx, meshService, options...)
 }

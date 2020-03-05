@@ -2,37 +2,21 @@ syntax = "proto3";
 package core.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
 
+import "google/protobuf/wrappers.proto";
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 
-/*
-    Clusters are represented in Service Mesh Hub using a KubernetesCluster custom resource, which has the canonical
-    name, connection/authentication information, as well as other imporant metadata about the cluster. The following
-    selector uses the `KubernetesCluster` custom resoruces to aid in selecting resources from multiple kubernetes
-    clusters simultaneously. Therefore, the labels and resoruce reference fields in the `ClusterSelector` refer to
-    our `KubernetesCluster` resources, which as mentioned earlier represent real clusters
-
-    These `KubernetesCluster` resources currently all live in the install namespace of the Service Mesh Hub management
-    plane. This may change at some point in the future, and if it does, we may add a namespaces field to the selector
-    below.
-
-    Only one of (labels) or (resource refs) may be provided. If both are provided, it will be
-    considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
-*/
-message ClusterSelector {
-    // select clusters by their labels
-    map<string, string> labels = 1;
-
-    // apply the selector to one or more services by adding their refs here
-    repeated ResourceRef clusters = 2;
-}
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 /*
     Global selector used to select resources from any set of clusters, namespaces, and/or labels
 
     Specifies a method by which to select pods within a mesh for the application of rules and policies.
 
-    Only one of (labels + namespaces) or (resource refs) may be provided. If all three are provided, it will be
+    Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
     considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
+
+    Currently only selection on the local cluster is supported, indicated by a nil cluster field.
 
     Valid:
         1.
@@ -42,6 +26,7 @@ message ClusterSelector {
                     hello: world
                 namespaces:
                 - default
+                cluster: "cluster-name"
         2.
             selector:
                 refs:
@@ -56,6 +41,7 @@ message ClusterSelector {
                     hello: world
                 namespaces:
                 - default
+                cluster: "cluster-name"
                 refs:
                 - name: foo
                   namespace: bar
@@ -65,14 +51,14 @@ message ClusterSelector {
 
     If no labels are given, and only namespaces, the full list of resources from the namespace will be selected.
 
-    The following selector will select all resources with the following labels in every namespace:
+    The following selector will select all resources with the following labels in every namespace, in the local cluster:
 
     selector:
         labels:
             foo: bar
             hello: world
 
-    Whereas the next selector will only select from the specified namespaces (foo, bar):
+    Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:
 
     selector:
         labels:
@@ -82,7 +68,7 @@ message ClusterSelector {
         - foo
         - bar
 
-    This final selector will select all resources of a given type in the target namespace (foo):
+    This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:
 
     selector
         namespaces
@@ -95,17 +81,10 @@ message Selector {
     // list of namespaces to search
     repeated string namespaces = 2;
 
-    // apply the selector to one or more services by adding their refs here
-    repeated ResourceRef refs = 3;
+    // If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster
+    google.protobuf.StringValue cluster = 3;
 
-    /*
-        Specifies the cluster in which the preceding resources should be matched.
-
-        The behavior of this field is as follows:
-
-        1. If left out (nil) only the local cluster will be selected
-        2. If present, but not filled in (empty struct), will match all clusters
-        3. If present, and has non-nil fields, see `ClusterSelector` definition above for behavior.
-    */
-    ClusterSelector clusters = 4;
+    // Apply the selector to one or more services by adding their refs here.
+    // If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
+    repeated ResourceRef refs = 4;
 }

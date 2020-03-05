@@ -18,12 +18,18 @@ var _ = Describe("MeshWorkloadClient", func() {
 		meshWorkloadClient zephyr_core.MeshWorkloadClient
 		mockKubeClient     *mock_controller_runtime.MockClient
 		ctx                context.Context
+		ctrl               *gomock.Controller
 	)
+
 	BeforeEach(func() {
-		ctrl := gomock.NewController(GinkgoT())
+		ctrl = gomock.NewController(GinkgoT())
 		mockKubeClient = mock_controller_runtime.NewMockClient(ctrl)
 		meshWorkloadClient = zephyr_core.NewMeshWorkloadClient(mockKubeClient)
 		ctx = context.TODO()
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should get mesh workload", func() {

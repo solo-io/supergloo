@@ -12,6 +12,7 @@ message ComputedStatus {
         ACCEPTED = 1;
         INVALID = 2;
         PROCESSING_ERROR = 3;
+        CONFLICT = 4;
     }
 
     Status status = 1;

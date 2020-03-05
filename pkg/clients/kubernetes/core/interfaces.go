@@ -11,6 +11,7 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_clients.go
 
 type ServiceClient interface {
+	Get(ctx context.Context, name, namespace string) (*corev1.Service, error)
 	// include client.InNamespace(ns) in the options varargs list to specify a namespace
 	// always returns a non-nil ServiceList, but its Items field may be empty
 	List(ctx context.Context, options ...client.ListOption) (*corev1.ServiceList, error)

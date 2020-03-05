@@ -37,6 +37,21 @@ func (m *MockServiceClient) EXPECT() *MockServiceClientMockRecorder {
 	return m.recorder
 }
 
+// Get mocks base method
+func (m *MockServiceClient) Get(ctx context.Context, name, namespace string) (*v1.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
+	ret0, _ := ret[0].(*v1.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockServiceClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockServiceClient)(nil).Get), ctx, name, namespace)
+}
+
 // List mocks base method
 func (m *MockServiceClient) List(ctx context.Context, options ...client.ListOption) (*v1.ServiceList, error) {
 	m.ctrl.T.Helper()

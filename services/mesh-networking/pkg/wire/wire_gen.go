@@ -8,10 +8,14 @@ package wire
 import (
 	"context"
 
+	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
+	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
+	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 )
 
 // Injectors from wire.go:
@@ -30,13 +34,31 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	meshClient := zephyr_discovery.NewMeshClient(client)
-	meshGroupValidator := group_controller.MeshGroupValidatorProvider(meshClient)
-	meshGroupEventHandler := group_controller.MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
+	meshGroupValidator := MeshGroupValidatorProvider(meshClient)
+	meshGroupEventHandler := MeshGroupEventHandlerProvider(ctx, meshGroupValidator)
 	meshGroupCertificateSigningRequestControllerFactory := networking_multicluster.NewMeshGroupCertificateSigningRequestControllerFactory()
 	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(ctx, asyncManager, meshGroupCertificateSigningRequestControllerFactory)
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
-	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, meshGroupEventHandler, asyncManagerHandler)
+	meshServiceClient := zephyr_discovery.NewMeshServiceClient(client)
+	meshServiceSelector := preprocess.NewMeshServiceSelector(meshServiceClient)
+	trafficPolicyClient := zephyr_networking.NewTrafficPolicyClient(client)
+	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(meshServiceSelector, meshClient, trafficPolicyClient)
+	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(meshServiceSelector, trafficPolicyMerger)
+	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
+	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
+	istioTranslator := istio_translator.DefaultIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, virtualServiceClientFactory)
+	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator)
+	trafficPolicyController, err := LocalTrafficPolicyControllerProvider(asyncManager)
+	if err != nil {
+		return MeshNetworkingContext{}, err
+	}
+	meshServiceController, err := LocalMeshServiceControllerProvider(asyncManager)
+	if err != nil {
+		return MeshNetworkingContext{}, err
+	}
+	trafficPolicyTranslator := traffic_policy_translator.NewTrafficPolicyTranslator(ctx, trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyController, meshServiceController)
+	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, meshGroupEventHandler, asyncManagerHandler, trafficPolicyTranslator)
 	return meshNetworkingContext, nil
 }

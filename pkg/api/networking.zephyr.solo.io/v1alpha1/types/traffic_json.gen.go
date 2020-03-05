@@ -8,6 +8,7 @@ import (
 	fmt "fmt"
 	math "math"
 
+	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
@@ -38,6 +39,17 @@ func (this *TrafficPolicyStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for TrafficPolicyStatus
 func (this *TrafficPolicyStatus) UnmarshalJSON(b []byte) error {
+	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for TrafficPolicyStatus_TranslatorError
+func (this *TrafficPolicyStatus_TranslatorError) MarshalJSON() ([]byte, error) {
+	str, err := TrafficMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TrafficPolicyStatus_TranslatorError
+func (this *TrafficPolicyStatus_TranslatorError) UnmarshalJSON(b []byte) error {
 	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -129,14 +141,14 @@ func (this *CorsPolicy) UnmarshalJSON(b []byte) error {
 	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for Matcher
-func (this *Matcher) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for HttpMatcher
+func (this *HttpMatcher) MarshalJSON() ([]byte, error) {
 	str, err := TrafficMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for Matcher
-func (this *Matcher) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for HttpMatcher
+func (this *HttpMatcher) UnmarshalJSON(b []byte) error {
 	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -170,6 +182,17 @@ func (this *QueryParameterMatcher) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for QueryParameterMatcher
 func (this *QueryParameterMatcher) UnmarshalJSON(b []byte) error {
+	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for Mirror
+func (this *Mirror) MarshalJSON() ([]byte, error) {
+	str, err := TrafficMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Mirror
+func (this *Mirror) UnmarshalJSON(b []byte) error {
 	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

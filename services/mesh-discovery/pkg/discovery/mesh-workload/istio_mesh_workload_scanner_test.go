@@ -23,6 +23,7 @@ import (
 
 var _ = Describe("MeshWorkloadScanner", func() {
 	var (
+		ctrl                *gomock.Controller
 		ctx                 context.Context
 		mockOwnerFetcher    *mock_mesh_workload.MockOwnerFetcher
 		meshWorkloadScanner mesh_workload.MeshWorkloadScanner
@@ -44,10 +45,14 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		}
 	)
 	BeforeEach(func() {
-		ctrl := gomock.NewController(GinkgoT())
+		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
 		meshWorkloadScanner = mesh_workload.NewIstioMeshWorkloadScanner(mockOwnerFetcher)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should scan pod", func() {

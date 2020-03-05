@@ -39,9 +39,7 @@ var _ = Describe("secrets client", func() {
 
 		BeforeEach(func() {
 			mockClient = mock_controller_runtime.NewMockClient(ctrl)
-
 			secretClient = kubernetes_core.NewSecretsClient(mockClient)
-
 		})
 
 		It("can call update with the proper args", func() {

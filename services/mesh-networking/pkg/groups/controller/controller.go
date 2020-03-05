@@ -3,25 +3,15 @@ package group_controller
 import (
 	"context"
 
-	"github.com/google/wire"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-)
-
-var (
-	MeshGroupProviderSet = wire.NewSet(
-		zephyr_core.NewMeshClient,
-		MeshGroupValidatorProvider,
-		MeshGroupEventHandlerProvider,
-	)
 )
 
 func NewMeshGroupControllerStarter(
@@ -39,16 +29,13 @@ func NewMeshGroupControllerStarter(
 	}
 }
 
-func MeshGroupEventHandlerProvider(ctx context.Context, validator MeshGroupValidator) controller.MeshGroupEventHandler {
-	return &meshGroupEventHandler{
-		ctx:       ctx,
-		validator: validator,
-	}
-}
-
 type meshGroupEventHandler struct {
 	validator MeshGroupValidator
 	ctx       context.Context
+}
+
+func NewMeshGroupEventHandler(ctx context.Context, validator MeshGroupValidator) *meshGroupEventHandler {
+	return &meshGroupEventHandler{ctx: ctx, validator: validator}
 }
 
 func (m *meshGroupEventHandler) Create(obj *v1alpha1.MeshGroup) error {

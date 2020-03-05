@@ -17,7 +17,7 @@ var (
 	DiscoveryLabels = func(cluster string) map[string]string {
 		return map[string]string{
 			constants.DISCOVERED_BY: constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:     constants.ISTIO,
+			constants.MESH_TYPE:     core_types.MeshType_ISTIO.String(),
 			constants.CLUSTER:       cluster,
 		}
 	}

@@ -7,15 +7,25 @@ import "google/protobuf/wrappers.proto";
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 import "mesh-projects/api/core/v1alpha1/selector.proto";
+import "mesh-projects/api/core/v1alpha1/status.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 // a routing rule applies some L7 routing features to an existing mesh
 // routing rules specify the following:
 // for all requests:
 // - originating from from **source pods**
-// - sent to **destination pods**
+// - sent to **destination services**
 // - matching one or more **request matcher**
 // apply the specified TrafficPolicySpec
 // the routing configuration that will be applied to the mesh(es)
+//
+// Throughout the documentation below, the term "destination" or "destination service" refers to
+// the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
+//
+// NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
+// the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 message TrafficPolicySpec {
     // requests originating from these pods will have the rule applied
     // leave empty to have all pods in the mesh apply these rules
@@ -23,16 +33,17 @@ message TrafficPolicySpec {
     // > Note: Source Selectors are ignored when TrafficPolicys are
     // applied to pods in a Linkerd mesh. TrafficPolicys will apply to
     // all selected destinations in Linkerd, regardless of the source.
-    core.zephyr.solo.io.Selector source_selector = 1;
+    //    core.zephyr.solo.io.Selector source_selector = 1;
 
-    // requests destined for these pods will have the rule applied
-    // leave empty to apply to all destination pods in the mesh
+    // requests destined for these k8s services will have the rule applied
+    // leave empty to apply to all destination k8s services in the mesh
     core.zephyr.solo.io.Selector destination_selector = 2;
 
-    // if specified, this rule will only apply to http requests
-    // in the mesh matching these parameters
-    // note that Linkerd only supports matching on Request Path and Method
-    Matcher request_matchers = 3;
+    // If specified, this rule will only apply to http requests matching these conditions.
+    // Within a single matcher, all conditions must be satisfied for a match to occur.
+    // Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
+    // NB: Linkerd only supports matching on Request Path and Method
+    repeated HttpMatcher http_request_matchers = 3;
 
     // a routing rule can have one of several types
     // Note: types imported from istio will be replaced with our own
@@ -58,14 +69,20 @@ message TrafficPolicySpec {
 
     // Mirror HTTP traffic to a another destination. Traffic will still be sent
     // to its original destination as normal.
-    core.zephyr.solo.io.ResourceRef mirror = 9;
+    Mirror mirror = 9;
 
     // manipulate request and response headers
     HeaderManipulation header_manipulation = 10;
 }
 
 message TrafficPolicyStatus {
-
+    message TranslatorError {
+        // ID representing a translator that translates TrafficPolicy to Mesh-specific config
+        string translator_id = 1;
+        string error_message = 2;
+    }
+    core.zephyr.solo.io.ComputedStatus computed_status = 1;
+    repeated TranslatorError translator_errors = 2;
 }
 
 // RetryPolicy contains mesh-specific retry configuration
@@ -122,11 +139,6 @@ message FaultInjection {
             // $hide_from_docs
             google.protobuf.Duration exponential_delay = 3;
         }
-
-        // Percentage of requests on which the delay will be injected.
-        // value from 0.0 to 100.0
-        double percentage = 5;
-
     }
 
     // The _httpStatus_ field is used to indicate the HTTP status code to
@@ -192,8 +204,8 @@ message CorsPolicy {
     google.protobuf.BoolValue allow_credentials = 6;
 }
 
-// Parameters for matching routes
-message Matcher {
+// Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
+message HttpMatcher {
     oneof path_specifier {
         // If specified, the route is a prefix rule meaning that the prefix must
         // match the beginning of the *:path* header.
@@ -211,22 +223,15 @@ message Matcher {
         string regex = 3;
     }
 
-    // Specifies a set of headers that the route should match on. The router will
-    // check the request’s headers against all the specified headers in the route
-    // config. A match will happen if all the headers in the route are present in
-    // the request with the same values (or based on presence if the value field
-    // is not in the config).
+    // Specifies a set of headers which requests must match in entirety (all headers must match).
     repeated HeaderMatcher headers = 6;
 
-    // Specifies a set of URL query parameters on which the route should
-    // match. The router will check the query string from the *path* header
-    // against all the specified query parameters. If the number of specified
-    // query parameters is nonzero, they all must match the *path* header's
-    // query string for a match to occur.
+    // Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
+    // The router will check the query string from the *path* header against all the specified query parameters
     repeated QueryParameterMatcher query_parameters = 7;
 
-    // HTTP Method/Verb(s) to match on. If none specified, the matcher will ignore the HTTP Method
-    repeated string methods = 8;
+    // HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
+    HttpMethod method = 8;
 }
 
 // Describes how to match a given string in HTTP headers. Match is
@@ -282,4 +287,19 @@ message QueryParameterMatcher {
     // the right of the equals sign in "key=value") must match the regex.
     // E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
     bool regex = 3;
+}
+
+message Mirror {
+    // Destination to mirror traffic to
+    core.zephyr.solo.io.ResourceRef destination = 1;
+    // Percentage of traffic to mirror. If absent, 100% will be mirrored.
+    // Values range between 0 and 100
+    double percentage = 2;
+}
+
+enum HttpMethod {
+    GET = 0;
+    POST = 1;
+    PUT = 2;
+    DELETE = 3;
 }

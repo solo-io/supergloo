@@ -28,7 +28,7 @@ var _ = Describe("controller", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		validator = mock_group_controller.NewMockMeshGroupValidator(ctrl)
 		ctx = context.TODO()
-		handler = group_controller.MeshGroupEventHandlerProvider(ctx, validator)
+		handler = group_controller.NewMeshGroupEventHandler(ctx, validator)
 	})
 
 	AfterEach(func() {

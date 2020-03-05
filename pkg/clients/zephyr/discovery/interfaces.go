@@ -40,4 +40,5 @@ type MeshServiceClient interface {
 	Create(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.CreateOption) error
 	Update(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.UpdateOption) error
 	UpdateStatus(ctx context.Context, meshService *discoveryv1alpha1.MeshService, options ...client.UpdateOption) error
+	List(ctx context.Context, opts ...client.ListOption) (*discoveryv1alpha1.MeshServiceList, error)
 }

@@ -156,6 +156,10 @@ var _ = Describe("Mesh Service Finder", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "right-service",
 					Namespace: "ns1",
+					Labels: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
+					},
 				},
 				Spec: corev1.ServiceSpec{
 					Selector: map[string]string{
@@ -204,7 +208,8 @@ var _ = Describe("Mesh Service Finder", func() {
 								Namespace: rightService.GetNamespace(),
 								Cluster:   &protobuf_types.StringValue{Value: clusterName},
 							},
-							SelectorLabels: rightService.Spec.Selector,
+							WorkloadSelectorLabels: rightService.Spec.Selector,
+							Labels:                 rightService.GetLabels(),
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
 						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
@@ -396,7 +401,7 @@ var _ = Describe("Mesh Service Finder", func() {
 								Namespace: rightService.GetNamespace(),
 								Cluster:   &protobuf_types.StringValue{Value: clusterName},
 							},
-							SelectorLabels: rightService.Spec.Selector,
+							WorkloadSelectorLabels: rightService.Spec.Selector,
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
 					},
@@ -422,6 +427,10 @@ var _ = Describe("Mesh Service Finder", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-svc",
 					Namespace: "my-ns",
+					Labels: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
+					},
 				},
 			}
 
@@ -506,7 +515,8 @@ var _ = Describe("Mesh Service Finder", func() {
 								Namespace: serviceEvent.GetNamespace(),
 								Cluster:   &protobuf_types.StringValue{Value: clusterName},
 							},
-							SelectorLabels: serviceEvent.Spec.Selector,
+							WorkloadSelectorLabels: serviceEvent.Spec.Selector,
+							Labels:                 serviceEvent.GetLabels(),
 						},
 						Mesh: rightWorkloadV1.Spec.Mesh,
 						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{

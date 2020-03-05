@@ -4,9 +4,11 @@
 package types
 
 import (
+	bytes "bytes"
 	fmt "fmt"
 	math "math"
 
+	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	types1 "github.com/gogo/protobuf/types"
 	types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -23,29 +25,60 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type HttpMethod int32
+
+const (
+	HttpMethod_GET    HttpMethod = 0
+	HttpMethod_POST   HttpMethod = 1
+	HttpMethod_PUT    HttpMethod = 2
+	HttpMethod_DELETE HttpMethod = 3
+)
+
+var HttpMethod_name = map[int32]string{
+	0: "GET",
+	1: "POST",
+	2: "PUT",
+	3: "DELETE",
+}
+
+var HttpMethod_value = map[string]int32{
+	"GET":    0,
+	"POST":   1,
+	"PUT":    2,
+	"DELETE": 3,
+}
+
+func (x HttpMethod) String() string {
+	return proto.EnumName(HttpMethod_name, int32(x))
+}
+
+func (HttpMethod) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_a8bc42f1f1b5bdd7, []int{0}
+}
+
 // a routing rule applies some L7 routing features to an existing mesh
 // routing rules specify the following:
 // for all requests:
 // - originating from from **source pods**
-// - sent to **destination pods**
+// - sent to **destination services**
 // - matching one or more **request matcher**
 // apply the specified TrafficPolicySpec
 // the routing configuration that will be applied to the mesh(es)
+//
+// Throughout the documentation below, the term "destination" or "destination service" refers to
+// the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
+//
+// NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
+// the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 type TrafficPolicySpec struct {
-	// requests originating from these pods will have the rule applied
-	// leave empty to have all pods in the mesh apply these rules
-	//
-	// > Note: Source Selectors are ignored when TrafficPolicys are
-	// applied to pods in a Linkerd mesh. TrafficPolicys will apply to
-	// all selected destinations in Linkerd, regardless of the source.
-	SourceSelector *types.Selector `protobuf:"bytes,1,opt,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	// requests destined for these pods will have the rule applied
-	// leave empty to apply to all destination pods in the mesh
+	// requests destined for these k8s services will have the rule applied
+	// leave empty to apply to all destination k8s services in the mesh
 	DestinationSelector *types.Selector `protobuf:"bytes,2,opt,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
-	// if specified, this rule will only apply to http requests
-	// in the mesh matching these parameters
-	// note that Linkerd only supports matching on Request Path and Method
-	RequestMatchers *Matcher `protobuf:"bytes,3,opt,name=request_matchers,json=requestMatchers,proto3" json:"request_matchers,omitempty"`
+	// If specified, this rule will only apply to http requests matching these conditions.
+	// Within a single matcher, all conditions must be satisfied for a match to occur.
+	// Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
+	// NB: Linkerd only supports matching on Request Path and Method
+	HttpRequestMatchers []*HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
 	// enables traffic shifting, i.e. to reroute requests to a different service,
 	// to a subset of pods based on their label, and/or split traffic between multiple services
 	TrafficShift *MultiDestination `protobuf:"bytes,4,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
@@ -61,7 +94,7 @@ type TrafficPolicySpec struct {
 	CorsPolicy *CorsPolicy `protobuf:"bytes,8,opt,name=cors_policy,json=corsPolicy,proto3" json:"cors_policy,omitempty"`
 	// Mirror HTTP traffic to a another destination. Traffic will still be sent
 	// to its original destination as normal.
-	Mirror *types.ResourceRef `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
+	Mirror *Mirror `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
 	// manipulate request and response headers
 	HeaderManipulation   *HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
@@ -93,13 +126,6 @@ func (m *TrafficPolicySpec) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_TrafficPolicySpec proto.InternalMessageInfo
 
-func (m *TrafficPolicySpec) GetSourceSelector() *types.Selector {
-	if m != nil {
-		return m.SourceSelector
-	}
-	return nil
-}
-
 func (m *TrafficPolicySpec) GetDestinationSelector() *types.Selector {
 	if m != nil {
 		return m.DestinationSelector
@@ -107,9 +133,9 @@ func (m *TrafficPolicySpec) GetDestinationSelector() *types.Selector {
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetRequestMatchers() *Matcher {
+func (m *TrafficPolicySpec) GetHttpRequestMatchers() []*HttpMatcher {
 	if m != nil {
-		return m.RequestMatchers
+		return m.HttpRequestMatchers
 	}
 	return nil
 }
@@ -149,7 +175,7 @@ func (m *TrafficPolicySpec) GetCorsPolicy() *CorsPolicy {
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetMirror() *types.ResourceRef {
+func (m *TrafficPolicySpec) GetMirror() *Mirror {
 	if m != nil {
 		return m.Mirror
 	}
@@ -164,9 +190,11 @@ func (m *TrafficPolicySpec) GetHeaderManipulation() *HeaderManipulation {
 }
 
 type TrafficPolicyStatus struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	ComputedStatus       *types.ComputedStatus                  `protobuf:"bytes,1,opt,name=computed_status,json=computedStatus,proto3" json:"computed_status,omitempty"`
+	TranslatorErrors     []*TrafficPolicyStatus_TranslatorError `protobuf:"bytes,2,rep,name=translator_errors,json=translatorErrors,proto3" json:"translator_errors,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                               `json:"-"`
+	XXX_unrecognized     []byte                                 `json:"-"`
+	XXX_sizecache        int32                                  `json:"-"`
 }
 
 func (m *TrafficPolicyStatus) Reset()         { *m = TrafficPolicyStatus{} }
@@ -192,6 +220,67 @@ func (m *TrafficPolicyStatus) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_TrafficPolicyStatus proto.InternalMessageInfo
+
+func (m *TrafficPolicyStatus) GetComputedStatus() *types.ComputedStatus {
+	if m != nil {
+		return m.ComputedStatus
+	}
+	return nil
+}
+
+func (m *TrafficPolicyStatus) GetTranslatorErrors() []*TrafficPolicyStatus_TranslatorError {
+	if m != nil {
+		return m.TranslatorErrors
+	}
+	return nil
+}
+
+type TrafficPolicyStatus_TranslatorError struct {
+	// ID representing a translator that translates TrafficPolicy to Mesh-specific config
+	TranslatorId         string   `protobuf:"bytes,1,opt,name=translator_id,json=translatorId,proto3" json:"translator_id,omitempty"`
+	ErrorMessage         string   `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicyStatus_TranslatorError) Reset()         { *m = TrafficPolicyStatus_TranslatorError{} }
+func (m *TrafficPolicyStatus_TranslatorError) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicyStatus_TranslatorError) ProtoMessage()    {}
+func (*TrafficPolicyStatus_TranslatorError) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a8bc42f1f1b5bdd7, []int{1, 0}
+}
+func (m *TrafficPolicyStatus_TranslatorError) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicyStatus_TranslatorError.Unmarshal(m, b)
+}
+func (m *TrafficPolicyStatus_TranslatorError) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicyStatus_TranslatorError.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicyStatus_TranslatorError) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicyStatus_TranslatorError.Merge(m, src)
+}
+func (m *TrafficPolicyStatus_TranslatorError) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicyStatus_TranslatorError.Size(m)
+}
+func (m *TrafficPolicyStatus_TranslatorError) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicyStatus_TranslatorError.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicyStatus_TranslatorError proto.InternalMessageInfo
+
+func (m *TrafficPolicyStatus_TranslatorError) GetTranslatorId() string {
+	if m != nil {
+		return m.TranslatorId
+	}
+	return ""
+}
+
+func (m *TrafficPolicyStatus_TranslatorError) GetErrorMessage() string {
+	if m != nil {
+		return m.ErrorMessage
+	}
+	return ""
+}
 
 // RetryPolicy contains mesh-specific retry configuration
 // Different meshes support different Retry features
@@ -384,6 +473,7 @@ var xxx_messageInfo_FaultInjection proto.InternalMessageInfo
 
 type isFaultInjection_FaultInjectionType interface {
 	isFaultInjection_FaultInjectionType()
+	Equal(interface{}) bool
 }
 
 type FaultInjection_Delay_ struct {
@@ -439,13 +529,10 @@ type FaultInjection_Delay struct {
 	// Types that are valid to be assigned to HttpDelayType:
 	//	*FaultInjection_Delay_FixedDelay
 	//	*FaultInjection_Delay_ExponentialDelay
-	HttpDelayType isFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
-	// Percentage of requests on which the delay will be injected.
-	// value from 0.0 to 100.0
-	Percentage           float64  `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	HttpDelayType        isFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
+	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
+	XXX_unrecognized     []byte                               `json:"-"`
+	XXX_sizecache        int32                                `json:"-"`
 }
 
 func (m *FaultInjection_Delay) Reset()         { *m = FaultInjection_Delay{} }
@@ -474,6 +561,7 @@ var xxx_messageInfo_FaultInjection_Delay proto.InternalMessageInfo
 
 type isFaultInjection_Delay_HttpDelayType interface {
 	isFaultInjection_Delay_HttpDelayType()
+	Equal(interface{}) bool
 }
 
 type FaultInjection_Delay_FixedDelay struct {
@@ -505,13 +593,6 @@ func (m *FaultInjection_Delay) GetExponentialDelay() *types1.Duration {
 		return x.ExponentialDelay
 	}
 	return nil
-}
-
-func (m *FaultInjection_Delay) GetPercentage() float64 {
-	if m != nil {
-		return m.Percentage
-	}
-	return 0
 }
 
 // XXX_OneofWrappers is for the internal use of the proto package.
@@ -561,6 +642,7 @@ var xxx_messageInfo_FaultInjection_Abort proto.InternalMessageInfo
 
 type isFaultInjection_Abort_ErrorType interface {
 	isFaultInjection_Abort_ErrorType()
+	Equal(interface{}) bool
 }
 
 type FaultInjection_Abort_HttpStatus struct {
@@ -752,129 +834,123 @@ func (m *CorsPolicy) GetAllowCredentials() *types1.BoolValue {
 	return nil
 }
 
-// Parameters for matching routes
-type Matcher struct {
+// Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
+type HttpMatcher struct {
 	// Types that are valid to be assigned to PathSpecifier:
-	//	*Matcher_Prefix
-	//	*Matcher_Exact
-	//	*Matcher_Regex
-	PathSpecifier isMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
-	// Specifies a set of headers that the route should match on. The router will
-	// check the request’s headers against all the specified headers in the route
-	// config. A match will happen if all the headers in the route are present in
-	// the request with the same values (or based on presence if the value field
-	// is not in the config).
+	//	*HttpMatcher_Prefix
+	//	*HttpMatcher_Exact
+	//	*HttpMatcher_Regex
+	PathSpecifier isHttpMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
+	// Specifies a set of headers which requests must match in entirety (all headers must match).
 	Headers []*HeaderMatcher `protobuf:"bytes,6,rep,name=headers,proto3" json:"headers,omitempty"`
-	// Specifies a set of URL query parameters on which the route should
-	// match. The router will check the query string from the *path* header
-	// against all the specified query parameters. If the number of specified
-	// query parameters is nonzero, they all must match the *path* header's
-	// query string for a match to occur.
+	// Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
+	// The router will check the query string from the *path* header against all the specified query parameters
 	QueryParameters []*QueryParameterMatcher `protobuf:"bytes,7,rep,name=query_parameters,json=queryParameters,proto3" json:"query_parameters,omitempty"`
-	// HTTP Method/Verb(s) to match on. If none specified, the matcher will ignore the HTTP Method
-	Methods              []string `protobuf:"bytes,8,rep,name=methods,proto3" json:"methods,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	// HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
+	Method               HttpMethod `protobuf:"varint,8,opt,name=method,proto3,enum=networking.zephyr.solo.io.HttpMethod" json:"method,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
 }
 
-func (m *Matcher) Reset()         { *m = Matcher{} }
-func (m *Matcher) String() string { return proto.CompactTextString(m) }
-func (*Matcher) ProtoMessage()    {}
-func (*Matcher) Descriptor() ([]byte, []int) {
+func (m *HttpMatcher) Reset()         { *m = HttpMatcher{} }
+func (m *HttpMatcher) String() string { return proto.CompactTextString(m) }
+func (*HttpMatcher) ProtoMessage()    {}
+func (*HttpMatcher) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a8bc42f1f1b5bdd7, []int{7}
 }
-func (m *Matcher) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Matcher.Unmarshal(m, b)
+func (m *HttpMatcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HttpMatcher.Unmarshal(m, b)
 }
-func (m *Matcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Matcher.Marshal(b, m, deterministic)
+func (m *HttpMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HttpMatcher.Marshal(b, m, deterministic)
 }
-func (m *Matcher) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Matcher.Merge(m, src)
+func (m *HttpMatcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HttpMatcher.Merge(m, src)
 }
-func (m *Matcher) XXX_Size() int {
-	return xxx_messageInfo_Matcher.Size(m)
+func (m *HttpMatcher) XXX_Size() int {
+	return xxx_messageInfo_HttpMatcher.Size(m)
 }
-func (m *Matcher) XXX_DiscardUnknown() {
-	xxx_messageInfo_Matcher.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Matcher proto.InternalMessageInfo
-
-type isMatcher_PathSpecifier interface {
-	isMatcher_PathSpecifier()
+func (m *HttpMatcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_HttpMatcher.DiscardUnknown(m)
 }
 
-type Matcher_Prefix struct {
+var xxx_messageInfo_HttpMatcher proto.InternalMessageInfo
+
+type isHttpMatcher_PathSpecifier interface {
+	isHttpMatcher_PathSpecifier()
+	Equal(interface{}) bool
+}
+
+type HttpMatcher_Prefix struct {
 	Prefix string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
 }
-type Matcher_Exact struct {
+type HttpMatcher_Exact struct {
 	Exact string `protobuf:"bytes,2,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
 }
-type Matcher_Regex struct {
+type HttpMatcher_Regex struct {
 	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
 }
 
-func (*Matcher_Prefix) isMatcher_PathSpecifier() {}
-func (*Matcher_Exact) isMatcher_PathSpecifier()  {}
-func (*Matcher_Regex) isMatcher_PathSpecifier()  {}
+func (*HttpMatcher_Prefix) isHttpMatcher_PathSpecifier() {}
+func (*HttpMatcher_Exact) isHttpMatcher_PathSpecifier()  {}
+func (*HttpMatcher_Regex) isHttpMatcher_PathSpecifier()  {}
 
-func (m *Matcher) GetPathSpecifier() isMatcher_PathSpecifier {
+func (m *HttpMatcher) GetPathSpecifier() isHttpMatcher_PathSpecifier {
 	if m != nil {
 		return m.PathSpecifier
 	}
 	return nil
 }
 
-func (m *Matcher) GetPrefix() string {
-	if x, ok := m.GetPathSpecifier().(*Matcher_Prefix); ok {
+func (m *HttpMatcher) GetPrefix() string {
+	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Prefix); ok {
 		return x.Prefix
 	}
 	return ""
 }
 
-func (m *Matcher) GetExact() string {
-	if x, ok := m.GetPathSpecifier().(*Matcher_Exact); ok {
+func (m *HttpMatcher) GetExact() string {
+	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Exact); ok {
 		return x.Exact
 	}
 	return ""
 }
 
-func (m *Matcher) GetRegex() string {
-	if x, ok := m.GetPathSpecifier().(*Matcher_Regex); ok {
+func (m *HttpMatcher) GetRegex() string {
+	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Regex); ok {
 		return x.Regex
 	}
 	return ""
 }
 
-func (m *Matcher) GetHeaders() []*HeaderMatcher {
+func (m *HttpMatcher) GetHeaders() []*HeaderMatcher {
 	if m != nil {
 		return m.Headers
 	}
 	return nil
 }
 
-func (m *Matcher) GetQueryParameters() []*QueryParameterMatcher {
+func (m *HttpMatcher) GetQueryParameters() []*QueryParameterMatcher {
 	if m != nil {
 		return m.QueryParameters
 	}
 	return nil
 }
 
-func (m *Matcher) GetMethods() []string {
+func (m *HttpMatcher) GetMethod() HttpMethod {
 	if m != nil {
-		return m.Methods
+		return m.Method
 	}
-	return nil
+	return HttpMethod_GET
 }
 
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*Matcher) XXX_OneofWrappers() []interface{} {
+func (*HttpMatcher) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*Matcher_Prefix)(nil),
-		(*Matcher_Exact)(nil),
-		(*Matcher_Regex)(nil),
+		(*HttpMatcher_Prefix)(nil),
+		(*HttpMatcher_Exact)(nil),
+		(*HttpMatcher_Regex)(nil),
 	}
 }
 
@@ -917,6 +993,7 @@ var xxx_messageInfo_StringMatch proto.InternalMessageInfo
 
 type isStringMatch_MatchType interface {
 	isStringMatch_MatchType()
+	Equal(interface{}) bool
 }
 
 type StringMatch_Exact struct {
@@ -1107,9 +1184,60 @@ func (m *QueryParameterMatcher) GetRegex() bool {
 	return false
 }
 
+type Mirror struct {
+	// Destination to mirror traffic to
+	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
+	// Percentage of traffic to mirror. If absent, 100% will be mirrored.
+	// Values range between 0 and 100
+	Percentage           float64  `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Mirror) Reset()         { *m = Mirror{} }
+func (m *Mirror) String() string { return proto.CompactTextString(m) }
+func (*Mirror) ProtoMessage()    {}
+func (*Mirror) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a8bc42f1f1b5bdd7, []int{11}
+}
+func (m *Mirror) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Mirror.Unmarshal(m, b)
+}
+func (m *Mirror) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Mirror.Marshal(b, m, deterministic)
+}
+func (m *Mirror) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Mirror.Merge(m, src)
+}
+func (m *Mirror) XXX_Size() int {
+	return xxx_messageInfo_Mirror.Size(m)
+}
+func (m *Mirror) XXX_DiscardUnknown() {
+	xxx_messageInfo_Mirror.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Mirror proto.InternalMessageInfo
+
+func (m *Mirror) GetDestination() *types.ResourceRef {
+	if m != nil {
+		return m.Destination
+	}
+	return nil
+}
+
+func (m *Mirror) GetPercentage() float64 {
+	if m != nil {
+		return m.Percentage
+	}
+	return 0
+}
+
 func init() {
+	proto.RegisterEnum("networking.zephyr.solo.io.HttpMethod", HttpMethod_name, HttpMethod_value)
 	proto.RegisterType((*TrafficPolicySpec)(nil), "networking.zephyr.solo.io.TrafficPolicySpec")
 	proto.RegisterType((*TrafficPolicyStatus)(nil), "networking.zephyr.solo.io.TrafficPolicyStatus")
+	proto.RegisterType((*TrafficPolicyStatus_TranslatorError)(nil), "networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError")
 	proto.RegisterType((*RetryPolicy)(nil), "networking.zephyr.solo.io.RetryPolicy")
 	proto.RegisterType((*MultiDestination)(nil), "networking.zephyr.solo.io.MultiDestination")
 	proto.RegisterType((*MultiDestination_WeightedDestination)(nil), "networking.zephyr.solo.io.MultiDestination.WeightedDestination")
@@ -1121,10 +1249,11 @@ func init() {
 	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.HeaderManipulation.AppendRequestHeadersEntry")
 	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.HeaderManipulation.AppendResponseHeadersEntry")
 	proto.RegisterType((*CorsPolicy)(nil), "networking.zephyr.solo.io.CorsPolicy")
-	proto.RegisterType((*Matcher)(nil), "networking.zephyr.solo.io.Matcher")
+	proto.RegisterType((*HttpMatcher)(nil), "networking.zephyr.solo.io.HttpMatcher")
 	proto.RegisterType((*StringMatch)(nil), "networking.zephyr.solo.io.StringMatch")
 	proto.RegisterType((*HeaderMatcher)(nil), "networking.zephyr.solo.io.HeaderMatcher")
 	proto.RegisterType((*QueryParameterMatcher)(nil), "networking.zephyr.solo.io.QueryParameterMatcher")
+	proto.RegisterType((*Mirror)(nil), "networking.zephyr.solo.io.Mirror")
 }
 
 func init() {
@@ -1132,86 +1261,987 @@ func init() {
 }
 
 var fileDescriptor_a8bc42f1f1b5bdd7 = []byte{
-	// 1282 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x57, 0xdd, 0x6e, 0x1b, 0x45,
-	0x14, 0x6e, 0xec, 0xd8, 0x49, 0x8e, 0x63, 0xc7, 0x99, 0xfc, 0x74, 0x6b, 0x89, 0xaa, 0x35, 0x2a,
-	0x4a, 0x85, 0xba, 0xa6, 0x05, 0xa1, 0x82, 0x90, 0x20, 0x6e, 0x49, 0x8c, 0xaa, 0x88, 0x74, 0x52,
-	0x51, 0x09, 0x24, 0x56, 0x93, 0xf5, 0xb1, 0x3d, 0x74, 0xbd, 0xb3, 0x9d, 0x19, 0x27, 0x36, 0x12,
-	0x12, 0xd7, 0x70, 0xc5, 0x15, 0xb7, 0x3c, 0x0b, 0x37, 0x3c, 0x03, 0x6f, 0x83, 0x76, 0x66, 0xd7,
-	0x5e, 0xc7, 0xae, 0xdd, 0xd0, 0xbb, 0x9d, 0x33, 0xe7, 0xfb, 0xe6, 0xfc, 0xcf, 0x2c, 0x1c, 0x75,
-	0xb9, 0xee, 0x0d, 0xce, 0x5d, 0x5f, 0xf4, 0x1b, 0x4a, 0x04, 0xe2, 0x01, 0x17, 0x8d, 0x3e, 0xaa,
-	0xde, 0x83, 0x48, 0x8a, 0x9f, 0xd0, 0xd7, 0xaa, 0xc1, 0x22, 0xde, 0x08, 0x51, 0x5f, 0x0a, 0xf9,
-	0x8a, 0x87, 0xdd, 0xc6, 0xc5, 0x43, 0x16, 0x44, 0x3d, 0xf6, 0xb0, 0xa1, 0x25, 0xeb, 0x74, 0xb8,
-	0xef, 0x46, 0x52, 0x68, 0x41, 0x6e, 0x4d, 0x54, 0xdc, 0x9f, 0x31, 0xea, 0x8d, 0xa4, 0x1b, 0xd3,
-	0xb9, 0x5c, 0xd4, 0x6e, 0x77, 0x85, 0xe8, 0x06, 0xd8, 0x30, 0x8a, 0xe7, 0x83, 0x4e, 0xa3, 0x3d,
-	0x90, 0x4c, 0x73, 0x11, 0x5a, 0xe8, 0xec, 0xfe, 0xa5, 0x64, 0x51, 0x84, 0x52, 0x25, 0xfb, 0xf7,
-	0x67, 0xed, 0xf1, 0x85, 0xc4, 0x89, 0x25, 0x12, 0x3b, 0x89, 0xaa, 0xbb, 0x4c, 0x55, 0x61, 0x80,
-	0xbe, 0x16, 0xd2, 0xea, 0xd7, 0x7f, 0x2b, 0xc2, 0xf6, 0x0b, 0xeb, 0xc7, 0xa9, 0x08, 0xb8, 0x3f,
-	0x3a, 0x8b, 0xd0, 0x27, 0x47, 0xb0, 0xa5, 0xc4, 0x40, 0xfa, 0xe8, 0xa5, 0xea, 0xce, 0xca, 0x9d,
-	0x95, 0x83, 0xd2, 0xa3, 0xf7, 0xdc, 0x98, 0xed, 0x8a, 0x7f, 0xee, 0x59, 0xa2, 0x44, 0x2b, 0x16,
-	0x95, 0xae, 0xc9, 0x29, 0xec, 0xb6, 0x51, 0x69, 0x1e, 0x1a, 0x6f, 0x27, 0x64, 0xb9, 0xb7, 0x21,
-	0xdb, 0xc9, 0x40, 0xc7, 0x8c, 0x27, 0x50, 0x95, 0xf8, 0x7a, 0x80, 0x4a, 0x7b, 0x7d, 0xa6, 0xfd,
-	0x1e, 0x4a, 0xe5, 0xe4, 0x0d, 0x5b, 0xdd, 0x7d, 0x63, 0x02, 0xdc, 0x13, 0xab, 0x4a, 0xb7, 0x12,
-	0x6c, 0xb2, 0x56, 0xe4, 0x14, 0xca, 0x49, 0x16, 0x3d, 0xd5, 0xe3, 0x1d, 0xed, 0xac, 0x1a, 0xae,
-	0x0f, 0x17, 0x71, 0x0d, 0x02, 0xcd, 0x9f, 0x4e, 0x4c, 0xa3, 0x9b, 0x09, 0xc3, 0x59, 0x4c, 0x40,
-	0x28, 0x6c, 0x75, 0xd8, 0x20, 0xd0, 0x1e, 0x0f, 0xe3, 0x14, 0x70, 0x11, 0x3a, 0x05, 0xc3, 0x79,
-	0x7f, 0x01, 0xe7, 0x51, 0x8c, 0xf8, 0x26, 0x05, 0xd0, 0x4a, 0x67, 0x6a, 0x4d, 0x9a, 0x90, 0x1a,
-	0xee, 0x69, 0xde, 0x47, 0x31, 0xd0, 0x4e, 0xd1, 0x70, 0xde, 0x72, 0x6d, 0xe5, 0xb8, 0x69, 0xe5,
-	0xb8, 0x4f, 0x93, 0xca, 0xa2, 0x95, 0x04, 0xf1, 0xc2, 0x02, 0xc8, 0x57, 0xb0, 0x26, 0x51, 0x4b,
-	0x8e, 0xca, 0x59, 0x33, 0xd8, 0x0f, 0x16, 0xd8, 0x43, 0x51, 0xcb, 0x91, 0xad, 0x07, 0x9a, 0xc2,
-	0xc8, 0x11, 0x94, 0x7c, 0x21, 0x95, 0x17, 0x19, 0xb9, 0xb3, 0x6e, 0x58, 0xee, 0x2d, 0x60, 0x79,
-	0x22, 0xa4, 0x4a, 0x48, 0xc0, 0x1f, 0x7f, 0x93, 0xc7, 0x50, 0xec, 0x73, 0x29, 0x85, 0x74, 0x36,
-	0x0c, 0xc5, 0x9d, 0xb9, 0x65, 0x40, 0xd1, 0xd6, 0x12, 0xc5, 0x0e, 0x4d, 0xf4, 0xc9, 0x8f, 0xb0,
-	0xd3, 0x43, 0xd6, 0x46, 0xe9, 0xf5, 0x59, 0xc8, 0xa3, 0x41, 0x60, 0x5c, 0x75, 0xc0, 0xd0, 0x3c,
-	0x58, 0x60, 0x49, 0xcb, 0xa0, 0x4e, 0x32, 0x20, 0x4a, 0x7a, 0x33, 0xb2, 0xfa, 0x1e, 0xec, 0x4c,
-	0xf7, 0x82, 0x66, 0x7a, 0xa0, 0xea, 0x01, 0x94, 0x32, 0x01, 0x21, 0x35, 0x58, 0x67, 0x5a, 0x63,
-	0x3f, 0xd2, 0xca, 0x74, 0x45, 0x81, 0x8e, 0xd7, 0xe4, 0x10, 0xb6, 0x22, 0x94, 0x9e, 0x96, 0xa3,
-	0x71, 0xa6, 0x72, 0xcb, 0x32, 0x55, 0x8e, 0x50, 0xbe, 0x90, 0xa3, 0x24, 0x51, 0xf5, 0xdf, 0xf3,
-	0x50, 0xbd, 0x5a, 0x63, 0xc4, 0x87, 0xcd, 0x4c, 0x37, 0xc4, 0xe7, 0xe6, 0x0f, 0x4a, 0x8f, 0xbe,
-	0xbc, 0x46, 0x99, 0xba, 0x2f, 0x91, 0x77, 0x7b, 0x1a, 0xdb, 0x53, 0xa5, 0x9b, 0x25, 0xad, 0xfd,
-	0x91, 0x83, 0x9d, 0x39, 0x5a, 0xa4, 0x09, 0xa5, 0x8c, 0x5e, 0x32, 0x09, 0x96, 0x67, 0x2d, 0x0b,
-	0x22, 0xfb, 0x50, 0xbc, 0x34, 0xd4, 0x26, 0x1e, 0x65, 0x9a, 0xac, 0x88, 0x0f, 0x45, 0x35, 0x38,
-	0x57, 0xa8, 0x9d, 0xbc, 0x71, 0xe9, 0xd9, 0x3b, 0xba, 0xe4, 0x9e, 0x19, 0xb6, 0xaf, 0x43, 0x2d,
-	0x47, 0x34, 0xa1, 0xae, 0x7d, 0x06, 0xa5, 0x8c, 0x98, 0x54, 0x21, 0xff, 0x0a, 0x47, 0xc6, 0x8f,
-	0x0d, 0x1a, 0x7f, 0x92, 0x5d, 0x28, 0x5c, 0xb0, 0x60, 0x80, 0xc6, 0xb8, 0x0d, 0x6a, 0x17, 0x9f,
-	0xe7, 0x1e, 0xaf, 0xd4, 0xff, 0xcd, 0x43, 0x65, 0xba, 0x3b, 0xc9, 0x31, 0x14, 0xda, 0x18, 0xb0,
-	0x51, 0x12, 0x88, 0xc6, 0x5b, 0xf7, 0xb5, 0xfb, 0x34, 0x86, 0xb5, 0x6e, 0x50, 0x8b, 0x8f, 0x89,
-	0xd8, 0xb9, 0x90, 0x69, 0x89, 0x5c, 0x83, 0xe8, 0x30, 0x86, 0xc5, 0x44, 0x06, 0x4f, 0x6e, 0x03,
-	0x44, 0x28, 0x7d, 0x0c, 0x35, 0xeb, 0xa2, 0x19, 0x37, 0x2b, 0x34, 0x23, 0xa9, 0xfd, 0xbd, 0x02,
-	0x05, 0x73, 0x36, 0xf9, 0x02, 0x4a, 0x1d, 0x3e, 0xc4, 0xb6, 0x67, 0x3d, 0x58, 0x56, 0x9b, 0xad,
-	0x1b, 0x14, 0x8c, 0xbe, 0x45, 0xb7, 0x60, 0x1b, 0x87, 0x91, 0x08, 0x31, 0xd4, 0x9c, 0x05, 0x09,
-	0x47, 0x7e, 0x39, 0x47, 0x35, 0x83, 0xb2, 0x4c, 0x4b, 0x2c, 0x6e, 0x6e, 0xc3, 0x56, 0x4f, 0xeb,
-	0xc8, 0x1e, 0xe1, 0xe9, 0x51, 0x84, 0xb5, 0xc7, 0x50, 0x30, 0x6e, 0x93, 0xbb, 0x50, 0x32, 0x7b,
-	0xca, 0x74, 0xa7, 0x99, 0xd8, 0x85, 0xd8, 0xd0, 0x58, 0x68, 0x3b, 0xb6, 0xb9, 0x09, 0x80, 0xf1,
-	0xc4, 0x30, 0xc8, 0xe6, 0x3e, 0xec, 0x5e, 0x19, 0xc9, 0x46, 0x5e, 0xff, 0x73, 0x15, 0xc8, 0xec,
-	0x64, 0x20, 0x9f, 0xc2, 0x4d, 0x89, 0x7d, 0x71, 0x81, 0x9e, 0x44, 0x15, 0x89, 0x50, 0xa1, 0x67,
-	0x67, 0x85, 0x72, 0x36, 0xef, 0xe4, 0x0f, 0x36, 0xe8, 0x9e, 0xdd, 0xa6, 0xc9, 0xae, 0xa5, 0x50,
-	0xe4, 0xd7, 0x15, 0xb8, 0x19, 0x5f, 0xdb, 0x61, 0x7b, 0x16, 0x58, 0x36, 0xc5, 0xdd, 0xba, 0xd6,
-	0x88, 0x72, 0x0f, 0x0d, 0xd9, 0x95, 0x63, 0x6c, 0x65, 0xef, 0xb1, 0x79, 0x7b, 0xe4, 0x13, 0xd8,
-	0x1f, 0x9b, 0x6e, 0xef, 0x8b, 0xd4, 0x80, 0x8a, 0xb1, 0x7c, 0x37, 0xb5, 0xdc, 0x6c, 0xa6, 0xa8,
-	0x5f, 0x60, 0x7f, 0x6c, 0xf7, 0x34, 0x6a, 0xcb, 0x98, 0x7d, 0xfc, 0xff, 0xcc, 0xce, 0x9e, 0x61,
-	0xad, 0xde, 0x65, 0x73, 0xb6, 0x6a, 0x2d, 0xa8, 0xbd, 0xd9, 0xd3, 0xeb, 0x34, 0x6b, 0xed, 0x18,
-	0x6e, 0xbd, 0xf1, 0xf0, 0x6b, 0x75, 0xfd, 0x3f, 0x39, 0x80, 0xc9, 0xed, 0x45, 0x9e, 0x41, 0x99,
-	0x05, 0x81, 0xb8, 0xf4, 0x84, 0xe4, 0x5d, 0x1e, 0xc6, 0x37, 0x68, 0x7e, 0xc9, 0x0d, 0x7a, 0xa6,
-	0x25, 0x0f, 0xbb, 0xe6, 0x9d, 0x41, 0x37, 0x0d, 0xf8, 0x5b, 0x8b, 0x25, 0xef, 0xa7, 0x64, 0x7d,
-	0xd4, 0x3d, 0xd1, 0x56, 0x4e, 0xce, 0xa4, 0xc6, 0x2a, 0x9d, 0x58, 0xd9, 0x44, 0x29, 0xcd, 0x44,
-	0x3e, 0xa3, 0x94, 0xe6, 0xed, 0x1e, 0x54, 0xe2, 0xc6, 0xca, 0x94, 0xd9, 0xaa, 0xd1, 0x2a, 0x5b,
-	0x69, 0xaa, 0xf6, 0x08, 0xd6, 0xfa, 0x6c, 0xe8, 0xa5, 0x8d, 0xb6, 0xf0, 0x2e, 0x2a, 0xf6, 0xd9,
-	0xf0, 0xb0, 0x8b, 0xe4, 0x18, 0xb6, 0xed, 0xf9, 0xbe, 0xc4, 0xb6, 0x6d, 0x5c, 0x95, 0xbc, 0x39,
-	0x6a, 0x33, 0xe8, 0xa6, 0x10, 0xc1, 0x77, 0x71, 0xec, 0x68, 0xd5, 0x80, 0x9e, 0x4c, 0x30, 0xf5,
-	0xbf, 0x72, 0xb0, 0x96, 0xbc, 0xb6, 0x88, 0x03, 0xc5, 0x48, 0x62, 0x87, 0x0f, 0x6d, 0x12, 0x5a,
-	0x37, 0x68, 0xb2, 0x26, 0xfb, 0x50, 0xc0, 0x21, 0xf3, 0xed, 0x24, 0x8c, 0x37, 0xec, 0x32, 0x96,
-	0x4b, 0xec, 0xe2, 0xd0, 0x0c, 0x19, 0x23, 0x37, 0x4b, 0xd2, 0x84, 0xb5, 0xd4, 0xe5, 0xa2, 0x49,
-	0xc5, 0xc1, 0x5b, 0x94, 0xa8, 0x7d, 0x02, 0xa6, 0x40, 0xf2, 0x03, 0x54, 0x5f, 0x0f, 0x50, 0x8e,
-	0xbc, 0x88, 0x49, 0xd6, 0x47, 0x1d, 0x93, 0xd9, 0xbc, 0x7e, 0xb4, 0x80, 0xec, 0x79, 0x0c, 0x39,
-	0x4d, 0x11, 0xe3, 0x77, 0xe5, 0xeb, 0x29, 0xb1, 0x22, 0x0e, 0xac, 0xa5, 0xe9, 0x5d, 0x37, 0x39,
-	0x49, 0x97, 0xcd, 0x2a, 0x54, 0x22, 0xa6, 0x7b, 0x9e, 0x8a, 0xd0, 0xe7, 0x1d, 0x8e, 0xb2, 0x8e,
-	0x50, 0xca, 0x54, 0xcb, 0x24, 0x16, 0x2b, 0xd3, 0xb1, 0x98, 0x44, 0x2f, 0x37, 0x1b, 0xbd, 0x79,
-	0x51, 0x8a, 0xa7, 0xa0, 0x79, 0x23, 0xdb, 0x69, 0x27, 0xa1, 0x3c, 0x15, 0x09, 0x42, 0x60, 0x35,
-	0x64, 0x7d, 0x4c, 0x3a, 0xc2, 0x7c, 0xcf, 0x6f, 0x89, 0x58, 0x3a, 0x39, 0x60, 0x3d, 0x4d, 0xc2,
-	0x5d, 0xd8, 0xe4, 0xe1, 0x05, 0xca, 0xe4, 0x25, 0x6e, 0x06, 0xf1, 0x3a, 0x2d, 0x59, 0x99, 0x39,
-	0xa4, 0xfe, 0x12, 0xf6, 0xe6, 0x06, 0xec, 0x5d, 0xcf, 0x6e, 0x9e, 0x7d, 0xff, 0x7c, 0xe9, 0x6f,
-	0x5b, 0xf4, 0xaa, 0x7b, 0xe5, 0xd7, 0xed, 0x4a, 0x32, 0x33, 0x7f, 0x72, 0xa3, 0x08, 0xd5, 0x79,
-	0xd1, 0x54, 0xf4, 0xc7, 0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0xbf, 0xf0, 0xc2, 0x8c, 0x12, 0x0e,
-	0x00, 0x00,
+	// 1470 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0xcb, 0x6e, 0xdb, 0x46,
+	0x17, 0xb6, 0x24, 0x4b, 0xb6, 0x8f, 0x6c, 0x49, 0x1e, 0x5f, 0xa2, 0x08, 0xf8, 0x03, 0x47, 0x41,
+	0x7e, 0x38, 0x6d, 0x43, 0x35, 0x69, 0x50, 0x24, 0x45, 0x6f, 0x56, 0xec, 0xd8, 0x41, 0x62, 0xc4,
+	0xa1, 0xdd, 0x06, 0x48, 0x80, 0x12, 0x34, 0x75, 0x24, 0xb1, 0x26, 0x39, 0xcc, 0xcc, 0xc8, 0xb6,
+	0x0a, 0x14, 0xe8, 0xbe, 0xab, 0xae, 0xba, 0xef, 0xaa, 0x9b, 0x3e, 0x40, 0x9f, 0xa0, 0xe8, 0xae,
+	0xcf, 0xd0, 0x27, 0x29, 0xe6, 0x42, 0x8b, 0x92, 0x15, 0x39, 0x6e, 0xba, 0xe3, 0x9c, 0x39, 0xdf,
+	0x77, 0xce, 0x9c, 0xdb, 0x0c, 0xe1, 0x51, 0xc7, 0x17, 0xdd, 0xde, 0xa1, 0xe5, 0xd1, 0xb0, 0xc1,
+	0x69, 0x40, 0x6f, 0xfb, 0xb4, 0x11, 0x22, 0xef, 0xde, 0x8e, 0x19, 0xfd, 0x16, 0x3d, 0xc1, 0x1b,
+	0x6e, 0xec, 0x37, 0x22, 0x14, 0x27, 0x94, 0x1d, 0xf9, 0x51, 0xa7, 0x71, 0x7c, 0xc7, 0x0d, 0xe2,
+	0xae, 0x7b, 0xa7, 0x21, 0x98, 0xdb, 0x6e, 0xfb, 0x9e, 0x15, 0x33, 0x2a, 0x28, 0xb9, 0x3a, 0x50,
+	0xb1, 0xbe, 0xc3, 0xb8, 0xdb, 0x67, 0x96, 0xa4, 0xb3, 0x7c, 0x5a, 0xbb, 0xd6, 0xa1, 0xb4, 0x13,
+	0x60, 0x43, 0x29, 0x1e, 0xf6, 0xda, 0x8d, 0x56, 0x8f, 0xb9, 0xc2, 0xa7, 0x91, 0x86, 0x9e, 0xdf,
+	0x3f, 0x61, 0x6e, 0x1c, 0x23, 0xe3, 0x66, 0xff, 0xd6, 0x79, 0x7f, 0x3c, 0xca, 0x70, 0xe0, 0x09,
+	0xc3, 0xb6, 0x51, 0xb5, 0x2e, 0x52, 0xe5, 0x18, 0xa0, 0x27, 0x28, 0x33, 0xfa, 0x1f, 0x5c, 0xa8,
+	0x2f, 0x5c, 0xd1, 0x4b, 0x1c, 0x59, 0xee, 0xd0, 0x0e, 0x55, 0x9f, 0x0d, 0xf9, 0xa5, 0xa5, 0xf5,
+	0xbf, 0xf2, 0xb0, 0x78, 0xa0, 0x63, 0xb1, 0x47, 0x03, 0xdf, 0xeb, 0xef, 0xc7, 0xe8, 0x91, 0x3d,
+	0x58, 0x6e, 0x21, 0x17, 0x7e, 0xa4, 0x4e, 0xea, 0x24, 0x76, 0xab, 0xd9, 0xb5, 0xcc, 0x7a, 0xf1,
+	0xee, 0xff, 0x2c, 0x69, 0x66, 0x24, 0x50, 0xd6, 0xbe, 0x51, 0xb2, 0x97, 0x52, 0xd0, 0x44, 0x48,
+	0x5e, 0xc2, 0x4a, 0x57, 0x88, 0xd8, 0x61, 0xf8, 0xba, 0x87, 0x5c, 0x38, 0xa1, 0x2b, 0xbc, 0x2e,
+	0x32, 0x5e, 0xcd, 0xad, 0xe5, 0xd6, 0x8b, 0x77, 0xff, 0x6f, 0xbd, 0x31, 0x03, 0xd6, 0x8e, 0x10,
+	0xf1, 0xae, 0x56, 0xb7, 0x97, 0x24, 0x89, 0xad, 0x39, 0x8c, 0x8c, 0x93, 0x3d, 0x58, 0x30, 0xe9,
+	0x74, 0x78, 0xd7, 0x6f, 0x8b, 0xea, 0xb4, 0x72, 0xf3, 0xfd, 0x09, 0x9c, 0xbb, 0xbd, 0x40, 0xf8,
+	0x9b, 0x03, 0x3f, 0xed, 0x79, 0xc3, 0xb0, 0x2f, 0x09, 0x88, 0x0d, 0xe5, 0xb6, 0xdb, 0x0b, 0x84,
+	0xe3, 0x47, 0x32, 0xb6, 0x3e, 0x8d, 0xaa, 0x79, 0xc5, 0x79, 0x6b, 0x02, 0xe7, 0x23, 0x89, 0x78,
+	0x9c, 0x00, 0xec, 0x52, 0x7b, 0x68, 0x4d, 0x9a, 0x50, 0x4e, 0x0e, 0x2f, 0xfc, 0x10, 0x69, 0x4f,
+	0x54, 0x0b, 0x8a, 0xf3, 0xaa, 0xa5, 0x4b, 0xc8, 0x4a, 0x4a, 0xc8, 0xda, 0x34, 0x25, 0x66, 0x97,
+	0x0c, 0xe2, 0x40, 0x03, 0xc8, 0x97, 0x30, 0xc3, 0x50, 0x30, 0x1f, 0x79, 0x75, 0x46, 0x61, 0x27,
+	0xc5, 0xcd, 0x46, 0xc1, 0xfa, 0x3a, 0xa9, 0x76, 0x02, 0x23, 0x8f, 0xa0, 0xe8, 0x51, 0xc6, 0x9d,
+	0x58, 0xc9, 0xab, 0xb3, 0x8a, 0xe5, 0xe6, 0x04, 0x96, 0x87, 0x94, 0x71, 0x43, 0x02, 0xde, 0xd9,
+	0x37, 0x79, 0x00, 0x85, 0xd0, 0x67, 0x8c, 0xb2, 0xea, 0x9c, 0xa2, 0xb8, 0x3e, 0x29, 0xd8, 0x4a,
+	0xd1, 0x36, 0x00, 0xf2, 0x0d, 0x2c, 0x75, 0xd1, 0x6d, 0x21, 0x73, 0x42, 0x37, 0xf2, 0xe3, 0x5e,
+	0xa0, 0xce, 0x5a, 0x05, 0xc5, 0x73, 0x7b, 0x52, 0x21, 0x28, 0xd4, 0x6e, 0x0a, 0x64, 0x93, 0xee,
+	0x39, 0x59, 0xfd, 0xb7, 0x2c, 0x2c, 0x0d, 0x97, 0xb4, 0x6a, 0x03, 0xf2, 0x14, 0xca, 0x1e, 0x0d,
+	0xe3, 0x9e, 0xc0, 0x96, 0xa3, 0x3b, 0xa3, 0x9a, 0x51, 0x36, 0x6f, 0x8c, 0xad, 0xe7, 0x87, 0x46,
+	0x57, 0xa3, 0xed, 0x92, 0x37, 0xb4, 0x26, 0x47, 0xb0, 0x28, 0x98, 0x1b, 0xf1, 0xc0, 0x15, 0x94,
+	0x39, 0x28, 0x4f, 0xc6, 0xab, 0x59, 0x55, 0xcc, 0x9f, 0x4f, 0x38, 0xc3, 0x18, 0xc7, 0xa4, 0xcc,
+	0xf0, 0x6c, 0xa9, 0x40, 0x55, 0xc4, 0xb0, 0x80, 0xd7, 0x5e, 0x41, 0x79, 0x44, 0x89, 0xdc, 0x50,
+	0x45, 0x9f, 0xd8, 0xf7, 0x5b, 0xea, 0x2c, 0x73, 0xaa, 0x8e, 0x8d, 0xf0, 0x71, 0x4b, 0x2a, 0x29,
+	0xcf, 0x9c, 0x10, 0x39, 0x77, 0x3b, 0xa8, 0x1a, 0x78, 0xce, 0x9e, 0x57, 0xc2, 0x5d, 0x2d, 0xab,
+	0x07, 0x50, 0x4c, 0x95, 0x0a, 0xa9, 0xc1, 0xac, 0x2b, 0x04, 0x86, 0xb1, 0xd0, 0xf1, 0xc9, 0xdb,
+	0x67, 0x6b, 0xb2, 0x01, 0xe5, 0x18, 0x99, 0x23, 0x58, 0xff, 0xac, 0x86, 0xb3, 0x17, 0xd5, 0xf0,
+	0x42, 0x8c, 0xec, 0x80, 0xf5, 0x4d, 0x09, 0xd7, 0x7f, 0xcc, 0x41, 0x65, 0xb4, 0xfb, 0x88, 0x07,
+	0xf3, 0xa9, 0xa1, 0x21, 0xed, 0xca, 0x38, 0x7e, 0x71, 0x89, 0x06, 0xb6, 0x5e, 0xa0, 0xdf, 0xe9,
+	0x0a, 0x6c, 0x0d, 0x35, 0x75, 0x9a, 0xb4, 0xf6, 0x53, 0x16, 0x96, 0xc6, 0x68, 0x91, 0x26, 0x14,
+	0x53, 0x7a, 0xa6, 0x26, 0xd6, 0xc6, 0xd6, 0x84, 0x8d, 0x9c, 0xf6, 0x98, 0x87, 0x36, 0xb6, 0xed,
+	0x34, 0x88, 0xac, 0x42, 0xe1, 0x44, 0x51, 0xab, 0x78, 0x2c, 0xd8, 0x66, 0x45, 0x3c, 0x28, 0xf0,
+	0xde, 0x21, 0x47, 0x61, 0xe6, 0xdc, 0x93, 0x77, 0x3c, 0x92, 0xb5, 0xaf, 0xd8, 0xb6, 0x22, 0xc1,
+	0xfa, 0xb6, 0xa1, 0xae, 0x3d, 0x80, 0x62, 0x4a, 0x4c, 0x2a, 0x90, 0x3b, 0xc2, 0xbe, 0xa9, 0x07,
+	0xf9, 0x49, 0x96, 0x21, 0x7f, 0xec, 0x06, 0xbd, 0x24, 0xfd, 0x7a, 0xf1, 0x49, 0xf6, 0x7e, 0xa6,
+	0xfe, 0x7b, 0x0e, 0x4a, 0xc3, 0x73, 0x8b, 0x6c, 0x43, 0xbe, 0x85, 0x81, 0xdb, 0x37, 0x81, 0x68,
+	0xbc, 0xf5, 0xc4, 0xb3, 0x36, 0x25, 0x6c, 0x67, 0xca, 0xd6, 0x78, 0x49, 0xe4, 0x1e, 0x52, 0x96,
+	0x94, 0xc8, 0x25, 0x88, 0x36, 0x24, 0x4c, 0x12, 0x29, 0x3c, 0xb9, 0x06, 0x10, 0x23, 0xf3, 0x30,
+	0x12, 0xb2, 0x84, 0xe5, 0x20, 0xce, 0xd8, 0x29, 0x49, 0xed, 0x97, 0x0c, 0xe4, 0x95, 0x6d, 0xf2,
+	0x29, 0x14, 0xdb, 0xfe, 0x29, 0xb6, 0x1c, 0x7d, 0x82, 0x8b, 0x6a, 0x73, 0x67, 0xca, 0x06, 0xa5,
+	0xaf, 0xd1, 0x3b, 0xb0, 0x88, 0xa7, 0x31, 0x8d, 0x30, 0x12, 0xbe, 0x1b, 0x18, 0x8e, 0xdc, 0xc5,
+	0x1c, 0x95, 0x14, 0x4a, 0x31, 0x35, 0x17, 0xa1, 0xac, 0x6e, 0x3b, 0x45, 0xe1, 0x88, 0x7e, 0x8c,
+	0xb5, 0xfb, 0x90, 0x57, 0xc7, 0x22, 0xd7, 0xa1, 0xa8, 0xf6, 0xcc, 0x08, 0x92, 0x77, 0x55, 0x5e,
+	0x3a, 0x22, 0x85, 0x7a, 0x20, 0x34, 0xe7, 0x01, 0x74, 0xdb, 0x4a, 0x64, 0x73, 0x15, 0x96, 0x47,
+	0x2e, 0x23, 0x25, 0xaf, 0xff, 0x3c, 0x0d, 0xe4, 0xfc, 0x48, 0x24, 0x1f, 0xc3, 0x15, 0x86, 0x21,
+	0x3d, 0x46, 0x87, 0x21, 0x8f, 0x69, 0xc4, 0xd1, 0xd1, 0x43, 0x92, 0x57, 0xe7, 0xd7, 0x72, 0xeb,
+	0x73, 0xf6, 0x8a, 0xde, 0xb6, 0xcd, 0xae, 0xa6, 0xe0, 0xe4, 0x87, 0x0c, 0x5c, 0x91, 0x2f, 0x97,
+	0xa8, 0x75, 0x1e, 0xb8, 0xa0, 0x8a, 0x77, 0xe7, 0x52, 0xb3, 0xd9, 0xda, 0x50, 0x64, 0x23, 0x66,
+	0x74, 0xe5, 0xae, 0xb8, 0xe3, 0xf6, 0xc8, 0x3d, 0x58, 0x3d, 0x73, 0x5d, 0xdf, 0x94, 0x89, 0x03,
+	0x25, 0xe5, 0xf9, 0x72, 0xe2, 0xb9, 0xda, 0x4c, 0x50, 0xdf, 0xc3, 0xea, 0x99, 0xdf, 0xc3, 0xa8,
+	0xb2, 0x72, 0x7b, 0xfb, 0xdf, 0xb9, 0x9d, 0xb6, 0xa1, 0xbd, 0x5e, 0x76, 0xc7, 0x6c, 0xd5, 0x76,
+	0xa0, 0xf6, 0xe6, 0x93, 0x5e, 0xa6, 0x19, 0x6b, 0xdb, 0x70, 0xf5, 0x8d, 0xc6, 0x2f, 0xd5, 0xd5,
+	0x7f, 0x64, 0x01, 0x06, 0xf7, 0x36, 0x79, 0x02, 0x0b, 0x6e, 0x10, 0xd0, 0x13, 0x87, 0x32, 0xbf,
+	0xe3, 0x47, 0xf2, 0xed, 0x70, 0xd1, 0x9b, 0x6b, 0x5f, 0x30, 0x3f, 0xea, 0xa8, 0x17, 0x96, 0x3d,
+	0xaf, 0xc0, 0xcf, 0x34, 0x56, 0x5e, 0x29, 0x9a, 0x2c, 0x44, 0xd1, 0xa5, 0x2d, 0x7d, 0xe7, 0xcd,
+	0x19, 0xa5, 0x5d, 0x2d, 0x1b, 0x28, 0x25, 0x99, 0xc8, 0xa5, 0x94, 0x92, 0xbc, 0xdd, 0x84, 0x92,
+	0x6c, 0x9c, 0x54, 0x99, 0x4d, 0x2b, 0xad, 0x05, 0x2d, 0x4d, 0xd4, 0xee, 0xc2, 0x4c, 0xe8, 0x9e,
+	0x3a, 0x49, 0xeb, 0x4f, 0xbc, 0x6b, 0x0a, 0xa1, 0x7b, 0xba, 0xd1, 0x41, 0xb2, 0x0d, 0x8b, 0xda,
+	0xbe, 0xc7, 0xb0, 0xa5, 0x1b, 0x93, 0x9b, 0xd7, 0x56, 0xed, 0x1c, 0xba, 0x49, 0x69, 0xf0, 0xb5,
+	0x8c, 0x9d, 0x5d, 0x51, 0xa0, 0x87, 0x03, 0x4c, 0xfd, 0xcf, 0x2c, 0x14, 0x53, 0xef, 0x4f, 0x52,
+	0x85, 0x42, 0xcc, 0xb0, 0xed, 0x9f, 0xea, 0x44, 0xec, 0x4c, 0xd9, 0x66, 0x4d, 0x56, 0x21, 0x8f,
+	0xa7, 0xae, 0xa7, 0xa7, 0x9d, 0xdc, 0xd0, 0x4b, 0x29, 0x67, 0xd8, 0xc1, 0x53, 0x35, 0x48, 0x94,
+	0x5c, 0x2d, 0x49, 0x13, 0x66, 0x92, 0x63, 0x17, 0x54, 0x3a, 0xd6, 0xdf, 0xa2, 0x4c, 0xf5, 0x23,
+	0x38, 0x01, 0x92, 0x57, 0x50, 0x79, 0xdd, 0x43, 0xd6, 0x77, 0x62, 0x97, 0xb9, 0x21, 0x0a, 0x49,
+	0xa6, 0x73, 0xfb, 0xe1, 0x04, 0xb2, 0xe7, 0x12, 0xb2, 0x97, 0x20, 0x12, 0xd2, 0xf2, 0xeb, 0x21,
+	0x31, 0x27, 0x9f, 0x41, 0x41, 0xa7, 0x58, 0x3d, 0x12, 0x4b, 0x13, 0x1f, 0x89, 0x2a, 0x44, 0x4a,
+	0xd9, 0x36, 0xa0, 0x66, 0x05, 0x4a, 0xb1, 0x2b, 0xba, 0x0e, 0x8f, 0xd1, 0xf3, 0xdb, 0x3e, 0xb2,
+	0x3a, 0x42, 0x31, 0x55, 0x56, 0x83, 0x80, 0x65, 0x86, 0x03, 0x36, 0x08, 0x71, 0xf6, 0x7c, 0x88,
+	0xc7, 0x85, 0x52, 0x8e, 0x4b, 0xf5, 0x3b, 0xa1, 0xc7, 0x22, 0x83, 0x85, 0xa1, 0x70, 0x11, 0x02,
+	0xd3, 0x91, 0x1b, 0xa2, 0x69, 0x1d, 0xf5, 0x3d, 0xbe, 0x77, 0xa4, 0x74, 0x60, 0x60, 0x36, 0xc9,
+	0xd4, 0x75, 0x98, 0xf7, 0xa3, 0x63, 0x64, 0xe6, 0xa7, 0x45, 0x4d, 0xec, 0x59, 0xbb, 0xa8, 0x65,
+	0xca, 0x48, 0xfd, 0x05, 0xac, 0x8c, 0x8d, 0xea, 0xbb, 0xda, 0xae, 0x07, 0x50, 0xd0, 0xaf, 0xe7,
+	0xff, 0xe4, 0x95, 0x32, 0x7c, 0x91, 0x66, 0x47, 0x2f, 0xd2, 0xf7, 0xee, 0x01, 0x0c, 0x32, 0x49,
+	0x66, 0x20, 0xb7, 0xbd, 0x75, 0x50, 0x99, 0x22, 0xb3, 0x30, 0xbd, 0xf7, 0x6c, 0xff, 0xa0, 0x92,
+	0x91, 0xa2, 0xbd, 0xaf, 0x0e, 0x2a, 0x59, 0x02, 0x50, 0xd8, 0xdc, 0x7a, 0xba, 0x75, 0xb0, 0x55,
+	0xc9, 0x35, 0x5f, 0xfc, 0xfa, 0xf7, 0xb5, 0xcc, 0xcb, 0xe7, 0x17, 0xfe, 0x8a, 0xc7, 0x47, 0x9d,
+	0x91, 0xdf, 0xf1, 0x11, 0xc7, 0x53, 0x7f, 0xe7, 0xfd, 0x18, 0xf9, 0x61, 0x41, 0xb5, 0xe8, 0x47,
+	0xff, 0x04, 0x00, 0x00, 0xff, 0xff, 0xd1, 0xde, 0x59, 0x16, 0xe6, 0x0f, 0x00, 0x00,
+}
+
+func (this *TrafficPolicySpec) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.DestinationSelector.Equal(that1.DestinationSelector) {
+		return false
+	}
+	if len(this.HttpRequestMatchers) != len(that1.HttpRequestMatchers) {
+		return false
+	}
+	for i := range this.HttpRequestMatchers {
+		if !this.HttpRequestMatchers[i].Equal(that1.HttpRequestMatchers[i]) {
+			return false
+		}
+	}
+	if !this.TrafficShift.Equal(that1.TrafficShift) {
+		return false
+	}
+	if !this.FaultInjection.Equal(that1.FaultInjection) {
+		return false
+	}
+	if !this.RequestTimeout.Equal(that1.RequestTimeout) {
+		return false
+	}
+	if !this.Retries.Equal(that1.Retries) {
+		return false
+	}
+	if !this.CorsPolicy.Equal(that1.CorsPolicy) {
+		return false
+	}
+	if !this.Mirror.Equal(that1.Mirror) {
+		return false
+	}
+	if !this.HeaderManipulation.Equal(that1.HeaderManipulation) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicyStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicyStatus)
+	if !ok {
+		that2, ok := that.(TrafficPolicyStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.ComputedStatus.Equal(that1.ComputedStatus) {
+		return false
+	}
+	if len(this.TranslatorErrors) != len(that1.TranslatorErrors) {
+		return false
+	}
+	for i := range this.TranslatorErrors {
+		if !this.TranslatorErrors[i].Equal(that1.TranslatorErrors[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicyStatus_TranslatorError) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicyStatus_TranslatorError)
+	if !ok {
+		that2, ok := that.(TrafficPolicyStatus_TranslatorError)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TranslatorId != that1.TranslatorId {
+		return false
+	}
+	if this.ErrorMessage != that1.ErrorMessage {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *RetryPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RetryPolicy)
+	if !ok {
+		that2, ok := that.(RetryPolicy)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Attempts != that1.Attempts {
+		return false
+	}
+	if !this.PerTryTimeout.Equal(that1.PerTryTimeout) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MultiDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MultiDestination)
+	if !ok {
+		that2, ok := that.(MultiDestination)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Destinations) != len(that1.Destinations) {
+		return false
+	}
+	for i := range this.Destinations {
+		if !this.Destinations[i].Equal(that1.Destinations[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MultiDestination_WeightedDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MultiDestination_WeightedDestination)
+	if !ok {
+		that2, ok := that.(MultiDestination_WeightedDestination)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Destination.Equal(that1.Destination) {
+		return false
+	}
+	if this.Weight != that1.Weight {
+		return false
+	}
+	if len(this.Subset) != len(that1.Subset) {
+		return false
+	}
+	for i := range this.Subset {
+		if this.Subset[i] != that1.Subset[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection)
+	if !ok {
+		that2, ok := that.(FaultInjection)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.FaultInjectionType == nil {
+		if this.FaultInjectionType != nil {
+			return false
+		}
+	} else if this.FaultInjectionType == nil {
+		return false
+	} else if !this.FaultInjectionType.Equal(that1.FaultInjectionType) {
+		return false
+	}
+	if this.Percentage != that1.Percentage {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay_)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Delay.Equal(that1.Delay) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort_)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Abort.Equal(that1.Abort) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.HttpDelayType == nil {
+		if this.HttpDelayType != nil {
+			return false
+		}
+	} else if this.HttpDelayType == nil {
+		return false
+	} else if !this.HttpDelayType.Equal(that1.HttpDelayType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay_FixedDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay_FixedDelay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay_FixedDelay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.FixedDelay.Equal(that1.FixedDelay) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Delay_ExponentialDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Delay_ExponentialDelay)
+	if !ok {
+		that2, ok := that.(FaultInjection_Delay_ExponentialDelay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.ExponentialDelay.Equal(that1.ExponentialDelay) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.ErrorType == nil {
+		if this.ErrorType != nil {
+			return false
+		}
+	} else if this.ErrorType == nil {
+		return false
+	} else if !this.ErrorType.Equal(that1.ErrorType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *FaultInjection_Abort_HttpStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*FaultInjection_Abort_HttpStatus)
+	if !ok {
+		that2, ok := that.(FaultInjection_Abort_HttpStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.HttpStatus != that1.HttpStatus {
+		return false
+	}
+	return true
+}
+func (this *HeaderManipulation) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HeaderManipulation)
+	if !ok {
+		that2, ok := that.(HeaderManipulation)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
+		return false
+	}
+	for i := range this.RemoveResponseHeaders {
+		if this.RemoveResponseHeaders[i] != that1.RemoveResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendResponseHeaders) != len(that1.AppendResponseHeaders) {
+		return false
+	}
+	for i := range this.AppendResponseHeaders {
+		if this.AppendResponseHeaders[i] != that1.AppendResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.RemoveRequestHeaders) != len(that1.RemoveRequestHeaders) {
+		return false
+	}
+	for i := range this.RemoveRequestHeaders {
+		if this.RemoveRequestHeaders[i] != that1.RemoveRequestHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendRequestHeaders) != len(that1.AppendRequestHeaders) {
+		return false
+	}
+	for i := range this.AppendRequestHeaders {
+		if this.AppendRequestHeaders[i] != that1.AppendRequestHeaders[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *CorsPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CorsPolicy)
+	if !ok {
+		that2, ok := that.(CorsPolicy)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.AllowOrigins) != len(that1.AllowOrigins) {
+		return false
+	}
+	for i := range this.AllowOrigins {
+		if !this.AllowOrigins[i].Equal(that1.AllowOrigins[i]) {
+			return false
+		}
+	}
+	if len(this.AllowMethods) != len(that1.AllowMethods) {
+		return false
+	}
+	for i := range this.AllowMethods {
+		if this.AllowMethods[i] != that1.AllowMethods[i] {
+			return false
+		}
+	}
+	if len(this.AllowHeaders) != len(that1.AllowHeaders) {
+		return false
+	}
+	for i := range this.AllowHeaders {
+		if this.AllowHeaders[i] != that1.AllowHeaders[i] {
+			return false
+		}
+	}
+	if len(this.ExposeHeaders) != len(that1.ExposeHeaders) {
+		return false
+	}
+	for i := range this.ExposeHeaders {
+		if this.ExposeHeaders[i] != that1.ExposeHeaders[i] {
+			return false
+		}
+	}
+	if !this.MaxAge.Equal(that1.MaxAge) {
+		return false
+	}
+	if !this.AllowCredentials.Equal(that1.AllowCredentials) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *HttpMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HttpMatcher)
+	if !ok {
+		that2, ok := that.(HttpMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.PathSpecifier == nil {
+		if this.PathSpecifier != nil {
+			return false
+		}
+	} else if this.PathSpecifier == nil {
+		return false
+	} else if !this.PathSpecifier.Equal(that1.PathSpecifier) {
+		return false
+	}
+	if len(this.Headers) != len(that1.Headers) {
+		return false
+	}
+	for i := range this.Headers {
+		if !this.Headers[i].Equal(that1.Headers[i]) {
+			return false
+		}
+	}
+	if len(this.QueryParameters) != len(that1.QueryParameters) {
+		return false
+	}
+	for i := range this.QueryParameters {
+		if !this.QueryParameters[i].Equal(that1.QueryParameters[i]) {
+			return false
+		}
+	}
+	if this.Method != that1.Method {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *HttpMatcher_Prefix) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HttpMatcher_Prefix)
+	if !ok {
+		that2, ok := that.(HttpMatcher_Prefix)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Prefix != that1.Prefix {
+		return false
+	}
+	return true
+}
+func (this *HttpMatcher_Exact) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HttpMatcher_Exact)
+	if !ok {
+		that2, ok := that.(HttpMatcher_Exact)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Exact != that1.Exact {
+		return false
+	}
+	return true
+}
+func (this *HttpMatcher_Regex) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HttpMatcher_Regex)
+	if !ok {
+		that2, ok := that.(HttpMatcher_Regex)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	return true
+}
+func (this *StringMatch) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StringMatch)
+	if !ok {
+		that2, ok := that.(StringMatch)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.MatchType == nil {
+		if this.MatchType != nil {
+			return false
+		}
+	} else if this.MatchType == nil {
+		return false
+	} else if !this.MatchType.Equal(that1.MatchType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *StringMatch_Exact) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StringMatch_Exact)
+	if !ok {
+		that2, ok := that.(StringMatch_Exact)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Exact != that1.Exact {
+		return false
+	}
+	return true
+}
+func (this *StringMatch_Prefix) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StringMatch_Prefix)
+	if !ok {
+		that2, ok := that.(StringMatch_Prefix)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Prefix != that1.Prefix {
+		return false
+	}
+	return true
+}
+func (this *StringMatch_Regex) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*StringMatch_Regex)
+	if !ok {
+		that2, ok := that.(StringMatch_Regex)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	return true
+}
+func (this *HeaderMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HeaderMatcher)
+	if !ok {
+		that2, ok := that.(HeaderMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if this.InvertMatch != that1.InvertMatch {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *QueryParameterMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryParameterMatcher)
+	if !ok {
+		that2, ok := that.(QueryParameterMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *Mirror) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*Mirror)
+	if !ok {
+		that2, ok := that.(Mirror)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Destination.Equal(that1.Destination) {
+		return false
+	}
+	if this.Percentage != that1.Percentage {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
 }

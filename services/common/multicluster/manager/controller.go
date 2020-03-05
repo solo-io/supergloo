@@ -11,6 +11,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
+const (
+	DefaultClientGetterRetryAttempts = 6
+)
+
 var (
 	AsyncManagerFactoryError = func(err error, cluster string) error {
 		return eris.Wrapf(err, "failed to create new async manager for %s", cluster)
@@ -140,6 +144,10 @@ func (m *AsyncManagerController) GetClientForCluster(clusterName string, opts ..
 		clusterName = ""
 	}
 	var mgr AsyncManager
+
+	// prepend default Option so it can be overridden by input opts
+	opts = append([]retry.Option{retry.Attempts(DefaultClientGetterRetryAttempts)}, opts...)
+
 	err := retry.Do(func() error {
 		var ok bool
 		mgr, ok = m.managers.GetManager(clusterName)

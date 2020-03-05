@@ -18,13 +18,18 @@ var _ = Describe("ReplicaSetClient", func() {
 		replicaSetClient kubernetes_apps.ReplicaSetClient
 		mockKubeClient   *mock_controller_runtime.MockClient
 		ctx              context.Context
+		ctrl             *gomock.Controller
 	)
 
 	BeforeEach(func() {
-		ctrl := gomock.NewController(GinkgoT())
+		ctrl = gomock.NewController(GinkgoT())
 		mockKubeClient = mock_controller_runtime.NewMockClient(ctrl)
 		replicaSetClient = kubernetes_apps.NewReplicaSetClient(mockKubeClient)
 		ctx = context.TODO()
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should get replicaSet", func() {

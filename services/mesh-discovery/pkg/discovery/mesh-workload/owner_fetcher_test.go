@@ -18,6 +18,7 @@ import (
 
 var _ = Describe("OwnerFetcher", func() {
 	var (
+		ctrl                 *gomock.Controller
 		ctx                  context.Context
 		ownerFetcher         mesh_workload.OwnerFetcher
 		mockDeploymentClient *mock_apps.MockDeploymentClient
@@ -60,11 +61,15 @@ var _ = Describe("OwnerFetcher", func() {
 		}
 	)
 	BeforeEach(func() {
-		ctrl := gomock.NewController(GinkgoT())
+		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockDeploymentClient = mock_apps.NewMockDeploymentClient(ctrl)
 		mockReplicaSetClient = mock_apps.NewMockReplicaSetClient(ctrl)
 		ownerFetcher = mesh_workload.NewOwnerFetcher(mockDeploymentClient, mockReplicaSetClient)
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("should get deployment", func() {

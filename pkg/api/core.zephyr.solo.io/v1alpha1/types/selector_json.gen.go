@@ -8,25 +8,16 @@ import (
 	fmt "fmt"
 	math "math"
 
+	_ "github.com/gogo/protobuf/gogoproto"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
+	_ "github.com/gogo/protobuf/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-// MarshalJSON is a custom marshaler for ClusterSelector
-func (this *ClusterSelector) MarshalJSON() ([]byte, error) {
-	str, err := SelectorMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ClusterSelector
-func (this *ClusterSelector) UnmarshalJSON(b []byte) error {
-	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
 
 // MarshalJSON is a custom marshaler for Selector
 func (this *Selector) MarshalJSON() ([]byte, error) {

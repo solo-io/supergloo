@@ -34,6 +34,8 @@ require (
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	go.uber.org/zap v1.13.0
+	istio.io/api v0.0.0-20200213230120-00efe7317328
+	istio.io/client-go v0.0.0-20200212163417-ad75bb5565ef
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2

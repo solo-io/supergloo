@@ -41,7 +41,10 @@ message Federation {
 
 message KubeService {
     core.zephyr.solo.io.ResourceRef ref = 1;
-    map<string, string> selector_labels = 2;
+    // selectors for the set of pods targeted by the k8s Service
+    map<string, string> workload_selector_labels = 2;
+    // labels on the underyling k8s Service itself
+    map<string, string> labels = 3;
 }
 
 message MeshServiceStatus {
