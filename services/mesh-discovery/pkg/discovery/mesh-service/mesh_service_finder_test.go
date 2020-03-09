@@ -199,7 +199,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.DefaultWriteNamespace,
-						Labels:    mesh_service.DiscoveryLabels(clusterName),
+						Labels:    mesh_service.DiscoveryLabels(clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.KubeService{
@@ -506,7 +506,7 @@ var _ = Describe("Mesh Service Finder", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.DefaultWriteNamespace,
-						Labels:    mesh_service.DiscoveryLabels(clusterName),
+						Labels:    mesh_service.DiscoveryLabels(clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.KubeService{

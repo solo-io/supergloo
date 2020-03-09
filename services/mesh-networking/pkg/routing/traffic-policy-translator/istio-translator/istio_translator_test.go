@@ -16,6 +16,7 @@ import (
 	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mocks"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/common"
+	"github.com/solo-io/mesh-projects/services/common/constants"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	api_v1beta1 "istio.io/api/networking/v1beta1"
@@ -24,10 +25,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type testContext struct {
+	clusterName            string
+	meshObjKey             client.ObjectKey
+	meshServiceObjKey      client.ObjectKey
+	kubeServiceObjKey      client.ObjectKey
+	mesh                   *discovery_v1alpha1.Mesh
+	meshService            *discovery_v1alpha1.MeshService
+	trafficPolicy          []*v1alpha1.TrafficPolicy
+	computedVirtualService *client_v1beta1.VirtualService
+}
+
 var _ = Describe("IstioTranslator", func() {
 	var (
 		ctrl                         *gomock.Controller
-		istioTrafficPolicyTranslator *istio_translator.IstioTrafficPolicyTranslator
+		istioTrafficPolicyTranslator istio_translator.IstioTranslator
 		ctx                          context.Context
 		mockDynamicClientGetter      *mock_mc_manager.MockDynamicClientGetter
 		mockMeshClient               *mock_core.MockMeshClient
@@ -50,33 +62,22 @@ var _ = Describe("IstioTranslator", func() {
 			},
 		)
 	})
-
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
 	Context("should translate TrafficPolicies into VirtualService and upsert", func() {
-		var (
-			clusterName            string
-			meshObjKey             client.ObjectKey
-			meshServiceObjKey      client.ObjectKey
-			kubeServiceObjKey      client.ObjectKey
-			mesh                   *discovery_v1alpha1.Mesh
-			meshService            *discovery_v1alpha1.MeshService
-			trafficPolicy          []*v1alpha1.TrafficPolicy
-			computedVirtualService *client_v1beta1.VirtualService
-		)
-		BeforeEach(func() {
-			clusterName = "clusterName"
-			meshObjKey = client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
-			meshServiceObjKey = client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
-			kubeServiceObjKey = client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
+		setupTestContext := func() *testContext {
+			clusterName := "clusterName"
+			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
+			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
+			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
 			meshServiceFederationMCDnsName := "multiclusterDNSname"
-			meshService = &discovery_v1alpha1.MeshService{
+			meshService := &discovery_v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:        meshServiceObjKey.Name,
 					Namespace:   meshServiceObjKey.Namespace,
-					ClusterName: "clustername",
+					ClusterName: clusterName,
 				},
 				Spec: discovery_types.MeshServiceSpec{
 					Mesh: &core_types.ResourceRef{
@@ -87,6 +88,7 @@ var _ = Describe("IstioTranslator", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      kubeServiceObjKey.Name,
 							Namespace: kubeServiceObjKey.Namespace,
+							Cluster:   &types.StringValue{Value: clusterName},
 						},
 					},
 					Federation: &discovery_types.Federation{
@@ -94,7 +96,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mesh = &discovery_v1alpha1.Mesh{
+			mesh := &discovery_v1alpha1.Mesh{
 				Spec: discovery_types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
 						Name: clusterName,
@@ -104,30 +106,12 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			trafficPolicy = []*v1alpha1.TrafficPolicy{{
+			trafficPolicy := []*v1alpha1.TrafficPolicy{{
 				Spec: networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*networking_types.HttpMatcher{
-						{
-							PathSpecifier: &networking_types.HttpMatcher_Exact{
-								Exact: "path",
-							},
-							Method: networking_types.HttpMethod_GET,
-						},
-						{
-							Headers: []*networking_types.HeaderMatcher{
-								{
-									Name:        "name3",
-									Value:       "[a-z]+",
-									Regex:       true,
-									InvertMatch: true,
-								},
-							},
-							Method: networking_types.HttpMethod_POST,
-						},
-					},
+					HttpRequestMatchers: []*networking_types.HttpMatcher{},
 				}},
 			}
-			computedVirtualService = &client_v1beta1.VirtualService{
+			computedVirtualService := &client_v1beta1.VirtualService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
 					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
@@ -136,456 +120,720 @@ var _ = Describe("IstioTranslator", func() {
 					Hosts: []string{meshServiceObjKey.Name + "." + meshServiceObjKey.Namespace},
 					Http: []*api_v1beta1.HTTPRoute{
 						{
-							Match: []*api_v1beta1.HTTPMatchRequest{
-								{
-									Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
-									Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
-								},
-								{
-									Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
-									WithoutHeaders: map[string]*api_v1beta1.StringMatch{
-										"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
-									},
-								},
-							},
+							Match: []*api_v1beta1.HTTPMatchRequest{},
 						},
 					},
 				},
 			}
 			mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
 			mockDynamicClientGetter.EXPECT().GetClientForCluster(clusterName).Return(nil, true)
-		})
+			return &testContext{
+				clusterName:            clusterName,
+				meshObjKey:             meshObjKey,
+				meshServiceObjKey:      meshServiceObjKey,
+				kubeServiceObjKey:      kubeServiceObjKey,
+				mesh:                   mesh,
+				meshService:            meshService,
+				trafficPolicy:          trafficPolicy,
+				computedVirtualService: computedVirtualService,
+			}
+		}
 
 		It("should upsert VirtualService", func() {
+			testContext := setupTestContext()
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, computedVirtualService).
+				Upsert(ctx, testContext.computedVirtualService).
 				Return(nil)
-			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(ctx, meshService, mesh, trafficPolicy)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx,
+				testContext.meshService,
+				testContext.mesh,
+				testContext.trafficPolicy)
 			Expect(translatorError).To(BeNil())
 		})
-	})
 
-	It("should translate TrafficPolicies into VirtualService", func() {
-		kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
-		meshServiceMCDnsName := "meshservicemcdnsname"
-		meshService := &discovery_v1alpha1.MeshService{
-			ObjectMeta: v1.ObjectMeta{
-				Name:      "name",
-				Namespace: "namespace",
-			},
-			Spec: discovery_types.MeshServiceSpec{
-				Federation: &discovery_types.Federation{MulticlusterDnsName: meshServiceMCDnsName},
-				KubeService: &discovery_types.KubeService{
-					Ref: &core_types.ResourceRef{
-						Name:      kubeServiceObjKey.Name,
-						Namespace: kubeServiceObjKey.Namespace,
-					},
+		It("should translate CorsPolicy", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.CorsPolicy = &networking_types.CorsPolicy{
+				AllowOrigins: []*networking_types.StringMatch{
+					{MatchType: &networking_types.StringMatch_Exact{Exact: "exact"}},
+					{MatchType: &networking_types.StringMatch_Prefix{Prefix: "prefix"}},
+					{MatchType: &networking_types.StringMatch_Regex{Regex: "regex"}},
 				},
-			},
-		}
-		trafficPolicy := []*v1alpha1.TrafficPolicy{{
-			Spec: networking_types.TrafficPolicySpec{
-				HttpRequestMatchers: []*networking_types.HttpMatcher{
-					{
-						PathSpecifier: &networking_types.HttpMatcher_Exact{
-							Exact: "path",
-						},
-						Method: networking_types.HttpMethod_GET,
-					},
-					{
-						Headers: []*networking_types.HeaderMatcher{
-							{
-								Name:        "name3",
-								Value:       "[a-z]+",
-								Regex:       true,
-								InvertMatch: true,
-							},
-						},
-						Method: networking_types.HttpMethod_POST,
-					},
+				AllowMethods:     []string{"GET", "POST"},
+				AllowHeaders:     []string{"Header1", "Header2"},
+				ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
+				MaxAge:           &types.Duration{Seconds: 1},
+				AllowCredentials: &types.BoolValue{Value: false},
+			}
+			testContext.computedVirtualService.Spec.Http[0].CorsPolicy = &api_v1beta1.CorsPolicy{
+				AllowOrigins: []*api_v1beta1.StringMatch{
+					{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "exact"}},
+					{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}},
+					{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "regex"}},
 				},
-			}},
-		}
-		expectedVirtualService := &client_v1beta1.VirtualService{
-			ObjectMeta: v1.ObjectMeta{
-				Name:      kubeServiceObjKey.Name,
-				Namespace: kubeServiceObjKey.Namespace,
-			},
-			Spec: api_v1beta1.VirtualService{
-				Hosts: []string{meshService.GetName() + "." + meshService.GetNamespace()},
-				Http: []*api_v1beta1.HTTPRoute{
+				AllowMethods:     []string{"GET", "POST"},
+				AllowHeaders:     []string{"Header1", "Header2"},
+				ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
+				MaxAge:           &types.Duration{Seconds: 1},
+				AllowCredentials: &types.BoolValue{Value: false},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HeaderManipulation", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HeaderManipulation = &networking_types.HeaderManipulation{
+				AppendRequestHeaders:  map[string]string{"a": "b"},
+				RemoveRequestHeaders:  []string{"3", "4"},
+				AppendResponseHeaders: map[string]string{"foo": "bar"},
+				RemoveResponseHeaders: []string{"1", "2"},
+			}
+			testContext.computedVirtualService.Spec.Http[0].Headers = &api_v1beta1.Headers{
+				Request: &api_v1beta1.Headers_HeaderOperations{
+					Add:    map[string]string{"a": "b"},
+					Remove: []string{"3", "4"},
+				},
+				Response: &api_v1beta1.Headers_HeaderOperations{
+					Add:    map[string]string{"foo": "bar"},
+					Remove: []string{"1", "2"},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate Mirror destination on same cluster", func() {
+			testContext := setupTestContext()
+			destName := "name"
+			destNamespace := "namespace"
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					Cluster:   &types.StringValue{Value: testContext.clusterName},
+				},
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Mirror = &api_v1beta1.Destination{
+				Host: destName + "." + destNamespace,
+			}
+			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      destName,
+				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
+				constants.CLUSTER:                testContext.clusterName,
+			})
+			meshServiceList := &discovery_v1alpha1.MeshServiceList{
+				Items: []discovery_v1alpha1.MeshService{
 					{
-						Match: []*api_v1beta1.HTTPMatchRequest{
-							{
-								Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
-								Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
-							},
-							{
-								Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
-								WithoutHeaders: map[string]*api_v1beta1.StringMatch{
-									"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
 								},
 							},
 						},
 					},
 				},
-			},
-		}
-		virtualService, err := istioTrafficPolicyTranslator.TranslateIntoVirtualService(meshService, trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(virtualService).To(Equal(expectedVirtualService))
-	})
+			}
+			mockMeshServiceClient.
+				EXPECT().
+				List(ctx, destinationKey).
+				Return(meshServiceList, nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate HTTP RequestMatchers", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				HttpRequestMatchers: []*networking_types.HttpMatcher{
+		It("should translate Mirror destination on same *local* cluster", func() {
+			testContext := setupTestContext()
+			destName := "name"
+			destNamespace := "namespace"
+			testContext.meshService.Spec.GetKubeService().GetRef().GetCluster().Value = common.LocalClusterName
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					// omit cluster to specify local cluster
+				},
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Mirror = &api_v1beta1.Destination{
+				Host: destName + "." + destNamespace,
+			}
+			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      destName,
+				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
+				constants.CLUSTER:                common.LocalClusterName,
+			})
+			meshServiceList := &discovery_v1alpha1.MeshServiceList{
+				Items: []discovery_v1alpha1.MeshService{
 					{
-						PathSpecifier: &networking_types.HttpMatcher_Exact{
-							Exact: "path",
-						},
-						Method: networking_types.HttpMethod_GET,
-					},
-					{
-						Headers: []*networking_types.HeaderMatcher{
-							{
-								Name:        "name3",
-								Value:       "[a-z]+",
-								Regex:       true,
-								InvertMatch: true,
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
+								},
 							},
 						},
-						Method: networking_types.HttpMethod_POST,
 					},
 				},
-			},
-		}
-		expectedRequestMatchers := []*api_v1beta1.HTTPMatchRequest{
-			{
-				Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
-				Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
-			},
-			{
-				Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
-				WithoutHeaders: map[string]*api_v1beta1.StringMatch{
-					"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+			}
+			mockMeshServiceClient.
+				EXPECT().
+				List(ctx, destinationKey).
+				Return(meshServiceList, nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate Mirror destination on remote cluster", func() {
+			testContext := setupTestContext()
+			multiClusterDnsName := "multicluster-dns-name"
+			destName := "name"
+			destNamespace := "namespace"
+			remoteClusterName := "remote-cluster"
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					Cluster:   &types.StringValue{Value: remoteClusterName},
 				},
-			},
-		}
-		matchers, err := istioTrafficPolicyTranslator.TranslateRequestMatchers(trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(matchers).To(Equal(expectedRequestMatchers))
-	})
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Mirror = &api_v1beta1.Destination{
+				Host: multiClusterDnsName,
+			}
+			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      destName,
+				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
+				constants.CLUSTER:                remoteClusterName,
+			})
+			meshServiceList := &discovery_v1alpha1.MeshServiceList{
+				Items: []discovery_v1alpha1.MeshService{
+					{
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
+								},
+							},
+							Federation: &discovery_types.Federation{
+								MulticlusterDnsName: multiClusterDnsName,
+							},
+						},
+					},
+				},
+			}
+			mockMeshServiceClient.
+				EXPECT().
+				List(ctx, destinationKey).
+				Return(meshServiceList, nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate HttpMatcher exact path specifiers", func() {
-		httpMatcher := &networking_types.HttpMatcher{
-			PathSpecifier: &networking_types.HttpMatcher_Exact{
-				Exact: "path",
-			},
-		}
-		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}}
-		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(specifier).To(Equal(expected))
-	})
+		It("should translate FaultInjection of type Abort", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
+				FaultInjectionType: &networking_types.FaultInjection_Abort_{
+					Abort: &networking_types.FaultInjection_Abort{
+						ErrorType: &networking_types.FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+					},
+				},
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Fault = &api_v1beta1.HTTPFaultInjection{
+				Abort: &api_v1beta1.HTTPFaultInjection_Abort{
+					ErrorType:  &api_v1beta1.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: 404},
+					Percentage: &api_v1beta1.Percent{Value: 50},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate HttpMatcher prefix path specifiers", func() {
-		httpMatcher := &networking_types.HttpMatcher{
-			PathSpecifier: &networking_types.HttpMatcher_Prefix{
-				Prefix: "prefix",
-			},
-		}
-		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}}
-		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(specifier).To(Equal(expected))
-	})
+		It("should translate FaultInjection of type Delay of type Fixed", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
+				FaultInjectionType: &networking_types.FaultInjection_Delay_{
+					Delay: &networking_types.FaultInjection_Delay{
+						HttpDelayType: &networking_types.FaultInjection_Delay_FixedDelay{
+							FixedDelay: &types.Duration{Seconds: 2},
+						},
+					},
+				},
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Fault = &api_v1beta1.HTTPFaultInjection{
+				Delay: &api_v1beta1.HTTPFaultInjection_Delay{
+					HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: &types.Duration{Seconds: 2}},
+					Percentage:    &api_v1beta1.Percent{Value: 50},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate HttpMatcher regex path specifiers", func() {
-		httpMatcher := &networking_types.HttpMatcher{
-			PathSpecifier: &networking_types.HttpMatcher_Regex{
-				Regex: "*",
-			},
-		}
-		expected := &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}}
-		specifier, err := istioTrafficPolicyTranslator.TranslateRequestMatcherPathSpecifier(httpMatcher)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(specifier).To(Equal(expected))
-	})
+		It("should translate FaultInjection of type Delay of type Exponential", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
+				FaultInjectionType: &networking_types.FaultInjection_Delay_{
+					Delay: &networking_types.FaultInjection_Delay{
+						HttpDelayType: &networking_types.FaultInjection_Delay_ExponentialDelay{
+							ExponentialDelay: &types.Duration{Seconds: 2},
+						},
+					},
+				},
+				Percentage: 50,
+			}
+			testContext.computedVirtualService.Spec.Http[0].Fault = &api_v1beta1.HTTPFaultInjection{
+				Delay: &api_v1beta1.HTTPFaultInjection_Delay{
+					HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
+					Percentage:    &api_v1beta1.Percent{Value: 50},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate QueryParameterMatchers", func() {
-		matchers := []*networking_types.QueryParameterMatcher{
-			{
-				Name:  "qp1",
-				Value: "qpv1",
-				Regex: false,
-			},
-			{
-				Name:  "qp2",
-				Value: "qpv2",
-				Regex: true,
-			},
-		}
-		expectedQueryParamMatcher := map[string]*api_v1beta1.StringMatch{
-			"qp1": {
-				MatchType: &api_v1beta1.StringMatch_Exact{Exact: "qpv1"},
-			},
-			"qp2": {
-				MatchType: &api_v1beta1.StringMatch_Regex{Regex: "qpv2"},
-			},
-		}
-		Expect(istioTrafficPolicyTranslator.TranslateRequestMatcherQueryParams(matchers)).To(Equal(expectedQueryParamMatcher))
-	})
+		It("should translate Retries", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.Retries = &networking_types.RetryPolicy{
+				Attempts:      5,
+				PerTryTimeout: &types.Duration{Seconds: 2},
+			}
+			testContext.computedVirtualService.Spec.Http[0].Retries = &api_v1beta1.HTTPRetry{
+				Attempts:      5,
+				PerTryTimeout: &types.Duration{Seconds: 2},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate HeaderMatchers", func() {
-		matchers := []*networking_types.HeaderMatcher{
-			{
-				Name:        "name1",
-				Value:       "value1",
-				Regex:       false,
-				InvertMatch: false,
-			},
-			{
-				Name:        "name2",
-				Value:       "*",
-				Regex:       true,
-				InvertMatch: false,
-			},
-			{
-				Name:        "name3",
-				Value:       "[a-z]+",
-				Regex:       true,
-				InvertMatch: true,
-			},
-		}
-		expectedHeaderMatchers := map[string]*api_v1beta1.StringMatch{
-			"name1": {MatchType: &api_v1beta1.StringMatch_Exact{Exact: "value1"}},
-			"name2": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}},
-		}
-		expectedInverseHeaderMatchers := map[string]*api_v1beta1.StringMatch{
-			"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
-		}
-		headerMatchers, inverseHeaderMatchers := istioTrafficPolicyTranslator.TranslateRequestMatcherHeaders(matchers)
-		Expect(headerMatchers).To(Equal(expectedHeaderMatchers))
-		Expect(inverseHeaderMatchers).To(Equal(expectedInverseHeaderMatchers))
-	})
+		It("should translate HeaderMatchers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				Headers: []*networking_types.HeaderMatcher{
+					{
+						Name:        "name1",
+						Value:       "value1",
+						Regex:       false,
+						InvertMatch: false,
+					},
+					{
+						Name:        "name2",
+						Value:       "*",
+						Regex:       true,
+						InvertMatch: false,
+					},
+					{
+						Name:        "name3",
+						Value:       "[a-z]+",
+						Regex:       true,
+						InvertMatch: true,
+					},
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Headers: map[string]*api_v1beta1.StringMatch{
+						"name1": {MatchType: &api_v1beta1.StringMatch_Exact{Exact: "value1"}},
+						"name2": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}},
+					},
+					WithoutHeaders: map[string]*api_v1beta1.StringMatch{
+						"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
+					},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate TrafficShift without subsets", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				TrafficShift: &networking_types.MultiDestination{
-					Destinations: []*networking_types.MultiDestination_WeightedDestination{
+		It("should translate QueryParamMatchers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				QueryParameters: []*networking_types.QueryParameterMatcher{
+					{
+						Name:  "qp1",
+						Value: "qpv1",
+						Regex: false,
+					},
+					{
+						Name:  "qp2",
+						Value: "qpv2",
+						Regex: true,
+					},
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					QueryParams: map[string]*api_v1beta1.StringMatch{
+						"qp1": {
+							MatchType: &api_v1beta1.StringMatch_Exact{Exact: "qpv1"},
+						},
+						"qp2": {
+							MatchType: &api_v1beta1.StringMatch_Regex{Regex: "qpv2"},
+						},
+					},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HttpMatcher regex path specifiers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				PathSpecifier: &networking_types.HttpMatcher_Regex{
+					Regex: "*",
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HttpMatcher prefix path specifiers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					Prefix: "prefix",
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HttpMatcher exact path specifiers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				PathSpecifier: &networking_types.HttpMatcher_Exact{
+					Exact: "path",
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HTTP RequestMatchers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
+				{
+					PathSpecifier: &networking_types.HttpMatcher_Exact{
+						Exact: "path",
+					},
+					Method: networking_types.HttpMethod_GET,
+				},
+				{
+					Headers: []*networking_types.HeaderMatcher{
 						{
-							Destination: &core_types.ResourceRef{
-								Name:      "name",
-								Namespace: "namespace",
-								Cluster:   &types.StringValue{Value: "remote-cluster-1"},
-							},
-							Weight: 50,
+							Name:        "name3",
+							Value:       "[a-z]+",
+							Regex:       true,
+							InvertMatch: true,
 						},
 					},
+					Method: networking_types.HttpMethod_POST,
 				},
-			},
-		}
-		meshServiceDnsName := "name.namespace.cluster"
-		meshService := &discovery_v1alpha1.MeshService{
-			Spec: discovery_types.MeshServiceSpec{
-				KubeService: &discovery_types.KubeService{
-					Ref: &core_types.ResourceRef{
-						Cluster: &types.StringValue{Value: "remote-cluster-2"},
+			}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "GET"}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "path"}},
+				},
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "POST"}},
+					WithoutHeaders: map[string]*api_v1beta1.StringMatch{
+						"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
 					},
 				},
-				Federation: &discovery_types.Federation{MulticlusterDnsName: meshServiceDnsName},
-			},
-		}
-		expectedDestination := []*api_v1beta1.HTTPRouteDestination{
-			{
-				Destination: &api_v1beta1.Destination{
-					Host: meshServiceDnsName,
-				},
-				Weight: 50,
-			},
-		}
-		Expect(istioTrafficPolicyTranslator.TranslateTrafficShift(meshService, trafficPolicy)).To(Equal(expectedDestination))
-	})
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 
-	It("should translate Retries", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				Retries: &networking_types.RetryPolicy{
-					Attempts:      5,
-					PerTryTimeout: &types.Duration{Seconds: 2},
-				},
-			},
-		}
-		expectedRetry := &api_v1beta1.HTTPRetry{
-			Attempts:      5,
-			PerTryTimeout: &types.Duration{Seconds: 2},
-		}
-		Expect(istioTrafficPolicyTranslator.TranslateRetries(trafficPolicy)).To(Equal(expectedRetry))
-	})
-
-	It("should translate FaultInjection of type Delay of type Exponential", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
-					FaultInjectionType: &networking_types.FaultInjection_Delay_{
-						Delay: &networking_types.FaultInjection_Delay{
-							HttpDelayType: &networking_types.FaultInjection_Delay_ExponentialDelay{
-								ExponentialDelay: &types.Duration{Seconds: 2},
-							},
+		It("should translate TrafficShift without subsets", func() {
+			testContext := setupTestContext()
+			destName := "name"
+			destNamespace := "namespace"
+			multiClusterDnsName := "multicluster-dns-name"
+			destCluster := &types.StringValue{Value: "remote-cluster-1"}
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
+				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+					{
+						Destination: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
+							Cluster:   destCluster,
 						},
+						Weight: 50,
 					},
-					Percentage: 50,
 				},
-			},
-		}
-		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
-			Delay: &api_v1beta1.HTTPFaultInjection_Delay{
-				HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
-				Percentage:    &api_v1beta1.Percent{Value: 50},
-			}}
-		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(injection).To(Equal(expectedHttpFaultInjection))
-	})
-
-	It("should translate FaultInjection of type Delay of type Fixed", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
-					FaultInjectionType: &networking_types.FaultInjection_Delay_{
-						Delay: &networking_types.FaultInjection_Delay{
-							HttpDelayType: &networking_types.FaultInjection_Delay_FixedDelay{
-								FixedDelay: &types.Duration{Seconds: 2},
+			}
+			testContext.computedVirtualService.Spec.Http[0].Route = []*api_v1beta1.HTTPRouteDestination{
+				{
+					Destination: &api_v1beta1.Destination{
+						Host: multiClusterDnsName,
+					},
+					Weight: 50,
+				},
+			}
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      destName,
+				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
+				constants.CLUSTER:                destCluster.GetValue(),
+			})
+			meshServiceList := &discovery_v1alpha1.MeshServiceList{
+				Items: []discovery_v1alpha1.MeshService{
+					{
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
+								},
+							},
+							Federation: &discovery_types.Federation{
+								MulticlusterDnsName: multiClusterDnsName,
 							},
 						},
 					},
-					Percentage: 50,
 				},
-			},
-		}
-		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
-			Delay: &api_v1beta1.HTTPFaultInjection_Delay{
-				HttpDelayType: &api_v1beta1.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: &types.Duration{Seconds: 2}},
-				Percentage:    &api_v1beta1.Percent{Value: 50},
-			}}
-		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(injection).To(Equal(expectedHttpFaultInjection))
+			}
+			mockMeshServiceClient.
+				EXPECT().
+				List(ctx, destinationKey).
+				Return(meshServiceList, nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
 	})
 
-	It("should translate FaultInjection of type Abort", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
-					FaultInjectionType: &networking_types.FaultInjection_Abort_{
-						Abort: &networking_types.FaultInjection_Abort{
-							ErrorType: &networking_types.FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+	Describe("should return translator errors", func() {
+		setupTestContext := func() *testContext {
+			clusterName := "clusterName"
+			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
+			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
+			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
+			meshServiceFederationMCDnsName := "multiclusterDNSname"
+			meshService := &discovery_v1alpha1.MeshService{
+				ObjectMeta: v1.ObjectMeta{
+					Name:        meshServiceObjKey.Name,
+					Namespace:   meshServiceObjKey.Namespace,
+					ClusterName: clusterName,
+				},
+				Spec: discovery_types.MeshServiceSpec{
+					Mesh: &core_types.ResourceRef{
+						Name:      meshObjKey.Name,
+						Namespace: meshObjKey.Namespace,
+					},
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      kubeServiceObjKey.Name,
+							Namespace: kubeServiceObjKey.Namespace,
+							Cluster:   &types.StringValue{Value: clusterName},
 						},
 					},
-					Percentage: 50,
-				},
-			},
-		}
-		expectedHttpFaultInjection := &api_v1beta1.HTTPFaultInjection{
-			Abort: &api_v1beta1.HTTPFaultInjection_Abort{
-				ErrorType:  &api_v1beta1.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: 404},
-				Percentage: &api_v1beta1.Percent{Value: 50},
-			},
-		}
-		injection, err := istioTrafficPolicyTranslator.TranslateFaultInjection(trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(injection).To(Equal(expectedHttpFaultInjection))
-	})
-
-	It("should translate Mirror with local hostname", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				Mirror: &networking_types.Mirror{
-					Destination: &core_types.ResourceRef{
-						Name:      "name",
-						Namespace: "namespace",
+					Federation: &discovery_types.Federation{
+						MulticlusterDnsName: meshServiceFederationMCDnsName,
 					},
 				},
-			},
-		}
-		kubeServiceName := "kube-service-name"
-		kubeServiceNamespace := "kube-service-namespace"
-		meshService := &discovery_v1alpha1.MeshService{
-			Spec: discovery_types.MeshServiceSpec{
-				KubeService: &discovery_types.KubeService{
-					Ref: &core_types.ResourceRef{
-						Name:      kubeServiceName,
-						Namespace: kubeServiceNamespace,
-						Cluster:   &types.StringValue{Value: common.LocalClusterName},
+			}
+			mesh := &discovery_v1alpha1.Mesh{
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+					MeshType: &discovery_types.MeshSpec_Istio{
+						Istio: &discovery_types.IstioMesh{},
 					},
 				},
-			},
+			}
+			trafficPolicy := []*v1alpha1.TrafficPolicy{{
+				Spec: networking_types.TrafficPolicySpec{
+					HttpRequestMatchers: []*networking_types.HttpMatcher{},
+				}},
+			}
+			return &testContext{
+				clusterName:       clusterName,
+				meshObjKey:        meshObjKey,
+				meshServiceObjKey: meshServiceObjKey,
+				kubeServiceObjKey: kubeServiceObjKey,
+				mesh:              mesh,
+				meshService:       meshService,
+				trafficPolicy:     trafficPolicy,
+			}
 		}
-		expectedDestination := &api_v1beta1.Destination{
-			Host: kubeServiceName + "." + kubeServiceNamespace,
-		}
-		Expect(istioTrafficPolicyTranslator.TranslateMirror(meshService, trafficPolicy)).To(Equal(expectedDestination))
-	})
 
-	It("should translate HeaderManipulation", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				HeaderManipulation: &networking_types.HeaderManipulation{
-					AppendRequestHeaders:  map[string]string{"a": "b"},
-					RemoveRequestHeaders:  []string{"3", "4"},
-					AppendResponseHeaders: map[string]string{"foo": "bar"},
-					RemoveResponseHeaders: []string{"1", "2"},
+		It("should return error if multiple MeshServices found for name/namespace/cluster", func() {
+			testContext := setupTestContext()
+			multiClusterDnsName := "multicluster-dns-name"
+			destName := "name"
+			destNamespace := "namespace"
+			remoteClusterName := "remote-cluster"
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					Cluster:   &types.StringValue{Value: remoteClusterName},
 				},
-			},
-		}
-		expectedTrafficPolicy := &api_v1beta1.Headers{
-			Request: &api_v1beta1.Headers_HeaderOperations{
-				Add:    map[string]string{"a": "b"},
-				Remove: []string{"3", "4"},
-			},
-			Response: &api_v1beta1.Headers_HeaderOperations{
-				Add:    map[string]string{"foo": "bar"},
-				Remove: []string{"1", "2"},
-			},
-		}
-		manipulation := istioTrafficPolicyTranslator.TranslateHeaderManipulation(trafficPolicy)
-		Expect(manipulation).To(Equal(expectedTrafficPolicy))
-	})
-
-	It("should translate CorsPolicy", func() {
-		trafficPolicy := &v1alpha1.TrafficPolicy{
-			Spec: networking_types.TrafficPolicySpec{
-				CorsPolicy: &networking_types.CorsPolicy{
-					AllowOrigins: []*networking_types.StringMatch{
-						{MatchType: &networking_types.StringMatch_Exact{Exact: "exact"}},
-						{MatchType: &networking_types.StringMatch_Prefix{Prefix: "prefix"}},
-						{MatchType: &networking_types.StringMatch_Regex{Regex: "regex"}},
+				Percentage: 50,
+			}
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      destName,
+				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
+				constants.CLUSTER:                remoteClusterName,
+			})
+			meshServiceList := &discovery_v1alpha1.MeshServiceList{
+				Items: []discovery_v1alpha1.MeshService{
+					{
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
+								},
+							},
+							Federation: &discovery_types.Federation{
+								MulticlusterDnsName: multiClusterDnsName,
+							},
+						},
 					},
-					AllowMethods:     []string{"GET", "POST"},
-					AllowHeaders:     []string{"Header1", "Header2"},
-					ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
-					MaxAge:           &types.Duration{Seconds: 1},
-					AllowCredentials: &types.BoolValue{Value: false},
+					{
+						Spec: discovery_types.MeshServiceSpec{
+							KubeService: &discovery_types.KubeService{
+								Ref: &core_types.ResourceRef{
+									Name:      destName,
+									Namespace: destNamespace,
+								},
+							},
+							Federation: &discovery_types.Federation{
+								MulticlusterDnsName: multiClusterDnsName,
+							},
+						},
+					},
 				},
-			},
-		}
-		expectedIstioCorsPolicy := &api_v1beta1.CorsPolicy{
-			AllowOrigins: []*api_v1beta1.StringMatch{
-				{MatchType: &api_v1beta1.StringMatch_Exact{Exact: "exact"}},
-				{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}},
-				{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "regex"}},
-			},
-			AllowMethods:     []string{"GET", "POST"},
-			AllowHeaders:     []string{"Header1", "Header2"},
-			ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
-			MaxAge:           &types.Duration{Seconds: 1},
-			AllowCredentials: &types.BoolValue{Value: false},
-		}
-		translatedCorsPolicy, err := istioTrafficPolicyTranslator.TranslateCorsPolicy(trafficPolicy)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(translatedCorsPolicy).To(Equal(expectedIstioCorsPolicy))
+			}
+			mockMeshServiceClient.
+				EXPECT().
+				List(ctx, destinationKey).
+				Return(meshServiceList, nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError.ErrorMessage).To(ContainSubstring(
+				istio_translator.MultipleMeshServicesFound(destName, destNamespace, remoteClusterName).Error()))
+		})
 	})
 })

@@ -20,7 +20,7 @@ var (
 		discovery_core.NewMeshServiceClient,
 		networking_core.NewTrafficPolicyClient,
 		istio_networking.VirtualServiceClientFactoryProvider,
-		istio_translator.DefaultIstioTrafficPolicyTranslator,
+		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,

@@ -22,11 +22,13 @@ import (
 )
 
 var (
-	DiscoveryLabels = func(cluster string) map[string]string {
+	DiscoveryLabels = func(cluster, kubeServiceName, kubeServiceNamespace string) map[string]string {
 		return map[string]string{
-			constants.DISCOVERED_BY: constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:     core_types.MeshType_ISTIO.String(),
-			constants.CLUSTER:       cluster,
+			constants.DISCOVERED_BY:          constants.MESH_WORKLOAD_DISCOVERY,
+			constants.MESH_TYPE:              core_types.MeshType_ISTIO.String(),
+			constants.KUBE_SERVICE_NAME:      kubeServiceName,
+			constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
+			constants.CLUSTER:                cluster,
 		}
 	}
 
@@ -193,7 +195,7 @@ func (m *meshServiceFinder) buildMeshService(
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.buildMeshServiceName(service),
 			Namespace: m.writeNamespace,
-			Labels:    DiscoveryLabels(m.clusterName),
+			Labels:    DiscoveryLabels(m.clusterName, service.GetName(), service.GetNamespace()),
 		},
 		Spec: discovery_types.MeshServiceSpec{
 			KubeService: &discovery_types.KubeService{
