@@ -102,7 +102,7 @@ package-index-app-helm: package-index-components-helm copy-dependencies package-
 .PHONY: fetch-helm
 fetch-helm:
 	mkdir -p $(HELM_OUTPUT_DIR)
-	gsutil -m rsync -r gs://mesh-projects-helm/ $(HELM_OUTPUT_DIR)
+	gsutil -m rsync -r gs://service-mesh-hub/ $(HELM_OUTPUT_DIR)
 
 # upload Helm chart to GCR as an OCI image
 .PHONY: push-chart-to-registry
