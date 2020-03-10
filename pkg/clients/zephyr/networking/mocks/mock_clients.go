@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -53,18 +52,23 @@ func (mr *MockMeshGroupClientMockRecorder) Get(ctx, name, namespace interface{})
 }
 
 // List mocks base method
-func (m *MockMeshGroupClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MeshGroupList, error) {
+func (m *MockMeshGroupClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshGroupList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, opts)
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].(*v1alpha1.MeshGroupList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List
-func (mr *MockMeshGroupClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
+func (mr *MockMeshGroupClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshGroupClient)(nil).List), ctx, opts)
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshGroupClient)(nil).List), varargs...)
 }
 
 // UpdateStatus mocks base method

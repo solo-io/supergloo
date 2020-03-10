@@ -1,4 +1,4 @@
-package zephyr_networking_test
+package istio_federation_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestNetworking(t *testing.T) {
+func TestIstio(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Networking Suite")
+	RunSpecs(t, "Istio Suite")
 }

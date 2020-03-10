@@ -4,7 +4,6 @@ import (
 	"context"
 
 	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -34,11 +33,11 @@ func (m *meshGroupClient) Get(
 
 func (m *meshGroupClient) List(
 	ctx context.Context,
-	opts v1.ListOptions,
+	opts ...client.ListOption,
 ) (*networkingv1alpha1.MeshGroupList, error) {
 
 	list := networkingv1alpha1.MeshGroupList{}
-	err := m.dynamicClient.List(ctx, &list, &client.ListOptions{Raw: &opts})
+	err := m.dynamicClient.List(ctx, &list, opts...)
 	if err != nil {
 		return nil, err
 	}
