@@ -5,6 +5,7 @@ import (
 	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/common"
@@ -19,16 +20,18 @@ var (
 	TrafficPolicyProviderSet = wire.NewSet(
 		discovery_core.NewMeshServiceClient,
 		networking_core.NewTrafficPolicyClient,
+		kubernetes_core.ServiceClientFactoryProvider,
 		istio_networking.VirtualServiceClientFactoryProvider,
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
-		preprocess.NewTrafficPolicyPreprocessor,
-		preprocess.NewTrafficPolicyMerger,
 		mc_wire.DynamicClientGetterProvider,
 		LocalTrafficPolicyControllerProvider,
 		LocalMeshServiceControllerProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslator,
+		preprocess.NewTrafficPolicyPreprocessor,
+		preprocess.NewTrafficPolicyMerger,
 		preprocess.NewMeshServiceSelector,
+		preprocess.NewTrafficPolicyValidator,
 	)
 )
 

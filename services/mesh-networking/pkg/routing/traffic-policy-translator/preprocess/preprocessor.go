@@ -11,15 +11,18 @@ import (
 type trafficPolicyPreprocessor struct {
 	meshServiceSelector MeshServiceSelector
 	merger              TrafficPolicyMerger
+	validator           TrafficPolicyValidator
 }
 
 func NewTrafficPolicyPreprocessor(
 	meshServiceSelector MeshServiceSelector,
 	merger TrafficPolicyMerger,
+	validator TrafficPolicyValidator,
 ) TrafficPolicyPreprocessor {
 	return &trafficPolicyPreprocessor{
 		meshServiceSelector: meshServiceSelector,
 		merger:              merger,
+		validator:           validator,
 	}
 }
 
@@ -36,6 +39,10 @@ func (d *trafficPolicyPreprocessor) PreprocessTrafficPolicy(
 	ctx context.Context,
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 ) (map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy, error) {
+	err := d.validator.Validate(ctx, trafficPolicy)
+	if err != nil {
+		return nil, err
+	}
 	meshServices, err := d.meshServiceSelector.GetMatchingMeshServices(
 		ctx,
 		trafficPolicy.Spec.GetDestinationSelector(),

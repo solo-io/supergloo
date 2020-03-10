@@ -53,6 +53,21 @@ func (mr *MockMeshServiceSelectorMockRecorder) GetMatchingMeshServices(ctx, sele
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMatchingMeshServices", reflect.TypeOf((*MockMeshServiceSelector)(nil).GetMatchingMeshServices), ctx, selector)
 }
 
+// GetBackingMeshService mocks base method
+func (m *MockMeshServiceSelector) GetBackingMeshService(ctx context.Context, kubeServiceName, kubeServiceNamespace, kubeServiceCluster string) (*v1alpha1.MeshService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBackingMeshService", ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
+	ret0, _ := ret[0].(*v1alpha1.MeshService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBackingMeshService indicates an expected call of GetBackingMeshService
+func (mr *MockMeshServiceSelectorMockRecorder) GetBackingMeshService(ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackingMeshService", reflect.TypeOf((*MockMeshServiceSelector)(nil).GetBackingMeshService), ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
+}
+
 // MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface
 type MockTrafficPolicyPreprocessor struct {
 	ctrl     *gomock.Controller
@@ -142,4 +157,41 @@ func (m *MockTrafficPolicyMerger) MergeTrafficPoliciesForMeshServices(ctx contex
 func (mr *MockTrafficPolicyMergerMockRecorder) MergeTrafficPoliciesForMeshServices(ctx, meshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MergeTrafficPoliciesForMeshServices", reflect.TypeOf((*MockTrafficPolicyMerger)(nil).MergeTrafficPoliciesForMeshServices), ctx, meshServices)
+}
+
+// MockTrafficPolicyValidator is a mock of TrafficPolicyValidator interface
+type MockTrafficPolicyValidator struct {
+	ctrl     *gomock.Controller
+	recorder *MockTrafficPolicyValidatorMockRecorder
+}
+
+// MockTrafficPolicyValidatorMockRecorder is the mock recorder for MockTrafficPolicyValidator
+type MockTrafficPolicyValidatorMockRecorder struct {
+	mock *MockTrafficPolicyValidator
+}
+
+// NewMockTrafficPolicyValidator creates a new mock instance
+func NewMockTrafficPolicyValidator(ctrl *gomock.Controller) *MockTrafficPolicyValidator {
+	mock := &MockTrafficPolicyValidator{ctrl: ctrl}
+	mock.recorder = &MockTrafficPolicyValidatorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockTrafficPolicyValidator) EXPECT() *MockTrafficPolicyValidatorMockRecorder {
+	return m.recorder
+}
+
+// Validate mocks base method
+func (m *MockTrafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *v1alpha10.TrafficPolicy) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Validate", ctx, trafficPolicy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Validate indicates an expected call of Validate
+func (mr *MockTrafficPolicyValidatorMockRecorder) Validate(ctx, trafficPolicy interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockTrafficPolicyValidator)(nil).Validate), ctx, trafficPolicy)
 }

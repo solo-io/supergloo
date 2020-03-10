@@ -23,6 +23,7 @@ var _ = Describe("Merger", func() {
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
 		mockMerger              *mock_preprocess.MockTrafficPolicyMerger
+		mockValidator           *mock_preprocess.MockTrafficPolicyValidator
 		mockMeshServiceSelector *mock_preprocess.MockMeshServiceSelector
 		preprocessor            preprocess.TrafficPolicyPreprocessor
 	)
@@ -32,9 +33,11 @@ var _ = Describe("Merger", func() {
 		ctx = context.TODO()
 		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
 		mockMerger = mock_preprocess.NewMockTrafficPolicyMerger(ctrl)
+		mockValidator = mock_preprocess.NewMockTrafficPolicyValidator(ctrl)
 		preprocessor = preprocess.NewTrafficPolicyPreprocessor(
 			mockMeshServiceSelector,
 			mockMerger,
+			mockValidator,
 		)
 	})
 
@@ -61,6 +64,7 @@ var _ = Describe("Merger", func() {
 			EXPECT().
 			MergeTrafficPoliciesForMeshServices(ctx, ms).
 			Return(expectedMergedTPs, nil)
+		mockValidator.EXPECT().Validate(ctx, tp).Return(nil)
 		mergedTPs, err := preprocessor.PreprocessTrafficPolicy(ctx, tp)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(mergedTPs).To(Equal(expectedMergedTPs))
@@ -84,6 +88,7 @@ var _ = Describe("Merger", func() {
 			EXPECT().
 			MergeTrafficPoliciesForMeshServices(ctx, ms).
 			Return(nil, errors.TrafficPolicyConflictError)
+		mockValidator.EXPECT().Validate(ctx, tp).Return(nil)
 		_, err := preprocessor.PreprocessTrafficPolicy(ctx, tp)
 		Expect(err).To(testutils.HaveInErrorChain(errors.TrafficPolicyConflictError))
 	})

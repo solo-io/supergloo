@@ -11,9 +11,9 @@ import (
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common"
-	"github.com/solo-io/mesh-projects/services/common/constants"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	api_v1beta1 "istio.io/api/networking/v1beta1"
 	client_v1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,43 +24,30 @@ const (
 	TranslatorId = "istio-translator"
 )
 
-var (
-	MultipleMeshServicesFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_SERVICE_NAME, name,
-			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.CLUSTER, clusterName)
-	}
-	MeshServiceNotFound = func(name, namespace, clusterName string) error {
-		return eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
-			constants.KUBE_SERVICE_NAME, name,
-			constants.KUBE_SERVICE_NAMESPACE, namespace,
-			constants.CLUSTER, clusterName)
-	}
-)
-
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewIstioTrafficPolicyTranslator(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshServiceSelector preprocess.MeshServiceSelector,
 	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory,
 ) IstioTranslator {
 	return &istioTrafficPolicyTranslator{
 		dynamicClientGetter:         dynamicClientGetter,
 		meshClient:                  meshClient,
 		meshServiceClient:           meshServiceClient,
+		meshServiceSelector:         meshServiceSelector,
 		virtualServiceClientFactory: virtualServiceClientFactory,
 	}
 }
 
-// visible for testing
 type istioTrafficPolicyTranslator struct {
 	dynamicClientGetter         mc_manager.DynamicClientGetter
 	meshClient                  zephyr_discovery.MeshClient
 	meshServiceClient           zephyr_discovery.MeshServiceClient
 	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory
+	meshServiceSelector         preprocess.MeshServiceSelector
 }
 
 /*
@@ -453,26 +440,11 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	meshService *discovery_v1alpha1.MeshService,
 	destination *core_types.ResourceRef,
 ) (string, error) {
-	destinationClusterName := destination.GetCluster().GetValue()
-	if destination.GetCluster().GetValue() == "" {
-		destinationClusterName = common.LocalClusterName
-	}
-	destinationKey := client.MatchingLabels(map[string]string{
-		constants.KUBE_SERVICE_NAME:      destination.GetName(),
-		constants.KUBE_SERVICE_NAMESPACE: destination.GetNamespace(),
-		constants.CLUSTER:                destinationClusterName,
-	})
-	meshServiceList, err := i.meshServiceClient.List(ctx, destinationKey)
+	destinationMeshService, err := i.meshServiceSelector.GetBackingMeshService(
+		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster().GetValue())
 	if err != nil {
 		return "", err
 	}
-	// there should only be a single MeshService with the kube Service name/namespace/cluster key
-	if len(meshServiceList.Items) > 1 {
-		return "", MultipleMeshServicesFound(destination.GetName(), destination.GetNamespace(), destinationClusterName)
-	} else if len(meshServiceList.Items) < 1 {
-		return "", MeshServiceNotFound(destination.GetName(), destination.GetNamespace(), destinationClusterName)
-	}
-	destinationMeshService := meshServiceList.Items[0]
 	if common.AreResourcesOnLocalCluster(destination, meshService.Spec.GetKubeService().GetRef()) ||
 		destination.GetCluster().GetValue() == meshService.Spec.GetKubeService().GetRef().GetCluster().GetValue() {
 		// destination is on the same cluster as the MeshService's k8s Service

@@ -10,6 +10,8 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/services/common"
+	"github.com/solo-io/mesh-projects/services/common/constants"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -18,10 +20,50 @@ var (
 	KubeServiceNotFound         = func(name, namespace string) error {
 		return eris.Errorf("Kubernetes Service with name: %s, namespace: %s not found", name, namespace)
 	}
+	MultipleMeshServicesFound = func(name, namespace, clusterName string) error {
+		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
+			constants.KUBE_SERVICE_NAME, name,
+			constants.KUBE_SERVICE_NAMESPACE, namespace,
+			constants.CLUSTER, clusterName)
+	}
+	MeshServiceNotFound = func(name, namespace, clusterName string) error {
+		return eris.Errorf("No MeshService found with labels %s=%s, %s=%s, %s=%s",
+			constants.KUBE_SERVICE_NAME, name,
+			constants.KUBE_SERVICE_NAMESPACE, namespace,
+			constants.CLUSTER, clusterName)
+	}
 )
 
 type meshServiceSelector struct {
 	meshServiceClient zephyr_discovery.MeshServiceClient
+}
+
+func (m *meshServiceSelector) GetBackingMeshService(
+	ctx context.Context,
+	kubeServiceName string,
+	kubeServiceNamespace string,
+	kubeServiceCluster string,
+) (*discovery_v1alpha1.MeshService, error) {
+	destinationClusterName := kubeServiceCluster
+	if destinationClusterName == "" {
+		destinationClusterName = common.LocalClusterName
+	}
+	destinationKey := client.MatchingLabels(map[string]string{
+		constants.KUBE_SERVICE_NAME:      kubeServiceName,
+		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
+		constants.CLUSTER:                destinationClusterName,
+	})
+	meshServiceList, err := m.meshServiceClient.List(ctx, destinationKey)
+	if err != nil {
+		return nil, err
+	}
+	// there should only be a single MeshService with the kube Service name/namespace/cluster key
+	if len(meshServiceList.Items) > 1 {
+		return nil, MultipleMeshServicesFound(kubeServiceName, kubeServiceNamespace, destinationClusterName)
+	} else if len(meshServiceList.Items) < 1 {
+		return nil, MeshServiceNotFound(kubeServiceName, kubeServiceNamespace, destinationClusterName)
+	}
+	return &meshServiceList.Items[0], nil
 }
 
 func NewMeshServiceSelector(meshServiceClient zephyr_discovery.MeshServiceClient) MeshServiceSelector {

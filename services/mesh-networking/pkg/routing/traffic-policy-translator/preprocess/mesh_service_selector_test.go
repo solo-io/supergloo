@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/common"
+	"github.com/solo-io/mesh-projects/services/common/constants"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -203,6 +204,58 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshServices, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))
+		})
+	})
+
+	Describe("get backing MeshService", func() {
+		It("should return MeshService if found", func() {
+			serviceName := "kubeServiceName"
+			serviceNamespace := "kubeServiceNamespace"
+			serviceCluster := "destinationClusterName"
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      serviceName,
+				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				constants.CLUSTER:                serviceCluster,
+			})
+			expectedMeshService := v1alpha1.MeshService{}
+			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+				&v1alpha1.MeshServiceList{
+					Items: []v1alpha1.MeshService{expectedMeshService}}, nil)
+			meshService, err := meshServiceSelector.GetBackingMeshService(ctx, serviceName, serviceNamespace, serviceCluster)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(meshService).To(Equal(&expectedMeshService))
+		})
+
+		It("should throw error if multiple MeshServices found", func() {
+			serviceName := "kubeServiceName"
+			serviceNamespace := "kubeServiceNamespace"
+			serviceCluster := "destinationClusterName"
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      serviceName,
+				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				constants.CLUSTER:                serviceCluster,
+			})
+			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+				&v1alpha1.MeshServiceList{
+					Items: []v1alpha1.MeshService{{}, {}}}, nil)
+			_, err := meshServiceSelector.GetBackingMeshService(ctx, serviceName, serviceNamespace, serviceCluster)
+			Expect(err).To(testutils.HaveInErrorChain(preprocess.MultipleMeshServicesFound(serviceName, serviceNamespace, serviceCluster)))
+		})
+
+		It("should throw error if multiple MeshServices found", func() {
+			serviceName := "kubeServiceName"
+			serviceNamespace := "kubeServiceNamespace"
+			serviceCluster := "destinationClusterName"
+			destinationKey := client.MatchingLabels(map[string]string{
+				constants.KUBE_SERVICE_NAME:      serviceName,
+				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
+				constants.CLUSTER:                serviceCluster,
+			})
+			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+				&v1alpha1.MeshServiceList{
+					Items: []v1alpha1.MeshService{}}, nil)
+			_, err := meshServiceSelector.GetBackingMeshService(ctx, serviceName, serviceNamespace, serviceCluster)
+			Expect(err).To(testutils.HaveInErrorChain(preprocess.MeshServiceNotFound(serviceName, serviceNamespace, serviceCluster)))
 		})
 	})
 })

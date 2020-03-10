@@ -45,10 +45,11 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	meshServiceSelector := preprocess.NewMeshServiceSelector(meshServiceClient)
 	trafficPolicyClient := zephyr_networking.NewTrafficPolicyClient(client)
 	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(meshServiceSelector, meshClient, trafficPolicyClient)
-	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(meshServiceSelector, trafficPolicyMerger)
+	trafficPolicyValidator := preprocess.NewTrafficPolicyValidator(meshServiceClient, meshServiceSelector)
+	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(meshServiceSelector, trafficPolicyMerger, trafficPolicyValidator)
 	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
 	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
-	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, virtualServiceClientFactory)
+	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, meshServiceSelector, virtualServiceClientFactory)
 	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator)
 	trafficPolicyController, err := LocalTrafficPolicyControllerProvider(asyncManager)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -16,9 +17,9 @@ import (
 	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mocks"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/common"
-	"github.com/solo-io/mesh-projects/services/common/constants"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	api_v1beta1 "istio.io/api/networking/v1beta1"
 	client_v1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,6 +46,7 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshClient               *mock_core.MockMeshClient
 		mockMeshServiceClient        *mock_core.MockMeshServiceClient
 		mockVirtualServiceClient     *mock_istio_networking.MockVirtualServiceClient
+		mockMeshServiceSelector      *mock_preprocess.MockMeshServiceSelector
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
@@ -53,10 +55,12 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
 		mockVirtualServiceClient = mock_istio_networking.NewMockVirtualServiceClient(ctrl)
+		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
 		istioTrafficPolicyTranslator = istio_translator.NewIstioTrafficPolicyTranslator(
 			mockDynamicClientGetter,
 			mockMeshClient,
 			mockMeshServiceClient,
+			mockMeshServiceSelector,
 			func(client client.Client) istio_networking.VirtualServiceClient {
 				return mockVirtualServiceClient
 			},
@@ -219,11 +223,12 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			destName := "name"
 			destNamespace := "namespace"
+			destCluster := &types.StringValue{Value: testContext.clusterName}
 			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
-					Cluster:   &types.StringValue{Value: testContext.clusterName},
+					Cluster:   destCluster,
 				},
 				Percentage: 50,
 			}
@@ -231,29 +236,20 @@ var _ = Describe("IstioTranslator", func() {
 				Host: destName + "." + destNamespace,
 			}
 			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
-			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      destName,
-				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
-				constants.CLUSTER:                testContext.clusterName,
-			})
-			meshServiceList := &discovery_v1alpha1.MeshServiceList{
-				Items: []discovery_v1alpha1.MeshService{
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
 						},
 					},
 				},
 			}
-			mockMeshServiceClient.
+			mockMeshServiceSelector.
 				EXPECT().
-				List(ctx, destinationKey).
-				Return(meshServiceList, nil)
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
 				Upsert(ctx, testContext.computedVirtualService).
@@ -280,29 +276,20 @@ var _ = Describe("IstioTranslator", func() {
 				Host: destName + "." + destNamespace,
 			}
 			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
-			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      destName,
-				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
-				constants.CLUSTER:                common.LocalClusterName,
-			})
-			meshServiceList := &discovery_v1alpha1.MeshServiceList{
-				Items: []discovery_v1alpha1.MeshService{
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
 						},
 					},
 				},
 			}
-			mockMeshServiceClient.
+			mockMeshServiceSelector.
 				EXPECT().
-				List(ctx, destinationKey).
-				Return(meshServiceList, nil)
+				GetBackingMeshService(ctx, destName, destNamespace, "").
+				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
 				Upsert(ctx, testContext.computedVirtualService).
@@ -330,32 +317,21 @@ var _ = Describe("IstioTranslator", func() {
 				Host: multiClusterDnsName,
 			}
 			testContext.computedVirtualService.Spec.Http[0].MirrorPercentage = &api_v1beta1.Percent{Value: 50.0}
-			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      destName,
-				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
-				constants.CLUSTER:                remoteClusterName,
-			})
-			meshServiceList := &discovery_v1alpha1.MeshServiceList{
-				Items: []discovery_v1alpha1.MeshService{
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
-							Federation: &discovery_types.Federation{
-								MulticlusterDnsName: multiClusterDnsName,
-							},
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
 						},
 					},
+					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceClient.
+			mockMeshServiceSelector.
 				EXPECT().
-				List(ctx, destinationKey).
-				Return(meshServiceList, nil)
+				GetBackingMeshService(ctx, destName, destNamespace, remoteClusterName).
+				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
 				Upsert(ctx, testContext.computedVirtualService).
@@ -498,6 +474,52 @@ var _ = Describe("IstioTranslator", func() {
 					WithoutHeaders: map[string]*api_v1beta1.StringMatch{
 						"name3": {MatchType: &api_v1beta1.StringMatch_Regex{Regex: "[a-z]+"}},
 					},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HttpMatcher exact path specifiers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				PathSpecifier: &networking_types.HttpMatcher_Regex{
+					Regex: "*",
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Regex{Regex: "*"}},
+				},
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				Upsert(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate HttpMatcher prefix path specifiers", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{{
+				Method: networking_types.HttpMethod_GET,
+				PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					Prefix: "prefix",
+				},
+			}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1beta1.HTTPMatchRequest{
+				{
+					Method: &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Exact{Exact: networking_types.HttpMethod_GET.String()}},
+					Uri:    &api_v1beta1.StringMatch{MatchType: &api_v1beta1.StringMatch_Prefix{Prefix: "prefix"}},
 				},
 			}
 			mockVirtualServiceClient.
@@ -685,32 +707,21 @@ var _ = Describe("IstioTranslator", func() {
 					Weight: 50,
 				},
 			}
-			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      destName,
-				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
-				constants.CLUSTER:                destCluster.GetValue(),
-			})
-			meshServiceList := &discovery_v1alpha1.MeshServiceList{
-				Items: []discovery_v1alpha1.MeshService{
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
-							Federation: &discovery_types.Federation{
-								MulticlusterDnsName: multiClusterDnsName,
-							},
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
 						},
 					},
+					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceClient.
+			mockMeshServiceSelector.
 				EXPECT().
-				List(ctx, destinationKey).
-				Return(meshServiceList, nil)
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
 				Upsert(ctx, testContext.computedVirtualService).
@@ -779,7 +790,6 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should return error if multiple MeshServices found for name/namespace/cluster", func() {
 			testContext := setupTestContext()
-			multiClusterDnsName := "multicluster-dns-name"
 			destName := "name"
 			destNamespace := "namespace"
 			remoteClusterName := "remote-cluster"
@@ -791,49 +801,14 @@ var _ = Describe("IstioTranslator", func() {
 				},
 				Percentage: 50,
 			}
-			destinationKey := client.MatchingLabels(map[string]string{
-				constants.KUBE_SERVICE_NAME:      destName,
-				constants.KUBE_SERVICE_NAMESPACE: destNamespace,
-				constants.CLUSTER:                remoteClusterName,
-			})
-			meshServiceList := &discovery_v1alpha1.MeshServiceList{
-				Items: []discovery_v1alpha1.MeshService{
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
-							Federation: &discovery_types.Federation{
-								MulticlusterDnsName: multiClusterDnsName,
-							},
-						},
-					},
-					{
-						Spec: discovery_types.MeshServiceSpec{
-							KubeService: &discovery_types.KubeService{
-								Ref: &core_types.ResourceRef{
-									Name:      destName,
-									Namespace: destNamespace,
-								},
-							},
-							Federation: &discovery_types.Federation{
-								MulticlusterDnsName: multiClusterDnsName,
-							},
-						},
-					},
-				},
-			}
-			mockMeshServiceClient.
+			err := eris.New("mesh-service-selector-error")
+			mockMeshServiceSelector.
 				EXPECT().
-				List(ctx, destinationKey).
-				Return(meshServiceList, nil)
+				GetBackingMeshService(ctx, destName, destNamespace, remoteClusterName).
+				Return(nil, err)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
-			Expect(translatorError.ErrorMessage).To(ContainSubstring(
-				istio_translator.MultipleMeshServicesFound(destName, destNamespace, remoteClusterName).Error()))
+			Expect(translatorError.ErrorMessage).To(ContainSubstring(err.Error()))
 		})
 	})
 })
