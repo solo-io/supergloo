@@ -70,6 +70,7 @@ helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
 helm \
   -n service-mesh-hub \
   install service-mesh-hub \
+  --set=csr-agent.enabled=true \
   ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
 # generate the meshctl binary, register the remote cluster, and install Istio onto the remote cluster
@@ -79,4 +80,5 @@ make meshctl -B
   --remote-cluster-name target-cluster \
   --local-cluster-domain-override host.docker.internal
 
-./_output/meshctl istio install --profile=demo --context kind-$remoteCluster
+./_output/meshctl istio install --profile=default --context kind-$remoteCluster
+./_output/meshctl istio install --profile=minimal --context kind-$managementPlane
