@@ -41,21 +41,23 @@ func (e EventType) String() string {
 	}
 }
 
-func BuildEventLogger(ctx context.Context, eventType EventType, obj runtime.Object) *zap.SugaredLogger {
-	logger := contextutils.LoggerFrom(ctx).With(
+func EventContext(ctx context.Context, eventType EventType, obj runtime.Object) context.Context {
+	ctx = contextutils.WithLoggerValues(ctx,
 		zap.String(EventTypeKey, eventType.String()),
 		zap.String(GroupVersionKind, obj.GetObjectKind().GroupVersionKind().String()),
 	)
-
 	accessor := meta.NewAccessor()
 	name, err := accessor.Name(obj)
 	if err == nil {
-		logger = logger.With(ResourceName, name)
+		ctx = contextutils.WithLoggerValues(ctx, zap.String(ResourceName, name))
 	}
 	namespace, err := accessor.Namespace(obj)
 	if err == nil {
-		logger = logger.With(ResourceNamespace, namespace)
+		ctx = contextutils.WithLoggerValues(ctx, zap.String(ResourceNamespace, namespace))
 	}
+	return ctx
+}
 
-	return logger
+func BuildEventLogger(ctx context.Context, eventType EventType, obj runtime.Object) *zap.SugaredLogger {
+	return contextutils.LoggerFrom(EventContext(ctx, eventType, obj))
 }

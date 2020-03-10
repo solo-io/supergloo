@@ -51,7 +51,7 @@ type ErrorReport struct {
 	Err       error
 }
 
-func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot snapshot.MeshNetworkingSnapshot, meshClient discovery_core.MeshClient) (PerMeshMetadata, []ErrorReport) {
+func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.MeshNetworkingSnapshot, meshClient discovery_core.MeshClient) (PerMeshMetadata, []ErrorReport) {
 	var errors []ErrorReport
 
 	perMeshResources := PerMeshMetadata{
@@ -59,7 +59,7 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot snapshot.Mes
 	}
 
 	// set up `meshNameToWorkloads`
-	for _, workload := range snapshot.CurrentState.MeshWorkloads {
+	for _, workload := range snapshot.MeshWorkloads {
 		meshName := workload.Spec.GetMesh().GetName()
 		meshResources := perMeshResources.GetOrInitialize(meshName)
 
@@ -67,7 +67,7 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot snapshot.Mes
 	}
 
 	// set up `meshNameToServices`
-	for _, service := range snapshot.CurrentState.MeshServices {
+	for _, service := range snapshot.MeshServices {
 		meshName := service.Spec.GetMesh().GetName()
 		meshResources := perMeshResources.GetOrInitialize(meshName)
 
@@ -75,7 +75,7 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot snapshot.Mes
 	}
 
 	// set up `meshNameToClusterName`
-	for _, group := range snapshot.CurrentState.MeshGroups {
+	for _, group := range snapshot.MeshGroups {
 		var multiErr *multierror.Error
 
 		for _, memberMesh := range group.Spec.Meshes {

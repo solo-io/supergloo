@@ -19,11 +19,13 @@ func Run(ctx context.Context) {
 		logger.Fatalw("error initializing discovery clients", zap.Error(err))
 	}
 
-	if err = csrAgentContext.CsrController.AddEventHandler(
+	istioCsrHandler := csrAgentContext.MeshGroupCSRDataSourceFactory(
 		ctx,
-		csrAgentContext.CsrHandler,
-	); err != nil {
-		logger.Fatalw("error adding event handler", zap.Error(err))
+		csrAgentContext.CsrClient,
+		csrAgentContext.CsrAgentIstioProcessor,
+	)
+	if err = csrAgentContext.CsrController.AddEventHandler(ctx, istioCsrHandler); err != nil {
+		logger.Fatalw("error MeshGroupCSR handler", zap.Error(err))
 	}
 
 	if err = csrAgentContext.Manager.Start(); err != nil {

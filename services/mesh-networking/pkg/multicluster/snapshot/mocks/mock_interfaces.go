@@ -10,89 +10,196 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	snapshot "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
 )
 
-// MockSnapshotValidator is a mock of SnapshotValidator interface
-type MockSnapshotValidator struct {
+// MockMeshNetworkingSnapshotValidator is a mock of MeshNetworkingSnapshotValidator interface
+type MockMeshNetworkingSnapshotValidator struct {
 	ctrl     *gomock.Controller
-	recorder *MockSnapshotValidatorMockRecorder
+	recorder *MockMeshNetworkingSnapshotValidatorMockRecorder
 }
 
-// MockSnapshotValidatorMockRecorder is the mock recorder for MockSnapshotValidator
-type MockSnapshotValidatorMockRecorder struct {
-	mock *MockSnapshotValidator
+// MockMeshNetworkingSnapshotValidatorMockRecorder is the mock recorder for MockMeshNetworkingSnapshotValidator
+type MockMeshNetworkingSnapshotValidatorMockRecorder struct {
+	mock *MockMeshNetworkingSnapshotValidator
 }
 
-// NewMockSnapshotValidator creates a new mock instance
-func NewMockSnapshotValidator(ctrl *gomock.Controller) *MockSnapshotValidator {
-	mock := &MockSnapshotValidator{ctrl: ctrl}
-	mock.recorder = &MockSnapshotValidatorMockRecorder{mock}
+// NewMockMeshNetworkingSnapshotValidator creates a new mock instance
+func NewMockMeshNetworkingSnapshotValidator(ctrl *gomock.Controller) *MockMeshNetworkingSnapshotValidator {
+	mock := &MockMeshNetworkingSnapshotValidator{ctrl: ctrl}
+	mock.recorder = &MockMeshNetworkingSnapshotValidatorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockSnapshotValidator) EXPECT() *MockSnapshotValidatorMockRecorder {
+func (m *MockMeshNetworkingSnapshotValidator) EXPECT() *MockMeshNetworkingSnapshotValidatorMockRecorder {
 	return m.recorder
 }
 
-// Validate mocks base method
-func (m *MockSnapshotValidator) Validate(arg0 snapshot.MeshNetworkingSnapshot) bool {
+// ValidateMeshGroupUpsert mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshGroupUpsert(ctx context.Context, obj *v1alpha10.MeshGroup, snapshot *snapshot.MeshNetworkingSnapshot) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Validate", arg0)
+	ret := m.ctrl.Call(m, "ValidateMeshGroupUpsert", ctx, obj, snapshot)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// Validate indicates an expected call of Validate
-func (mr *MockSnapshotValidatorMockRecorder) Validate(arg0 interface{}) *gomock.Call {
+// ValidateMeshGroupUpsert indicates an expected call of ValidateMeshGroupUpsert
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshGroupUpsert(ctx, obj, snapshot interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockSnapshotValidator)(nil).Validate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshGroupUpsert", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshGroupUpsert), ctx, obj, snapshot)
 }
 
-// MockNetworkingSnapshotGenerator is a mock of NetworkingSnapshotGenerator interface
-type MockNetworkingSnapshotGenerator struct {
+// ValidateMeshGroupDelete mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshGroupDelete(ctx context.Context, obj *v1alpha10.MeshGroup, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMeshGroupDelete", ctx, obj, snapshot)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateMeshGroupDelete indicates an expected call of ValidateMeshGroupDelete
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshGroupDelete(ctx, obj, snapshot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshGroupDelete", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshGroupDelete), ctx, obj, snapshot)
+}
+
+// ValidateMeshServiceUpsert mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshServiceUpsert(ctx context.Context, obj *v1alpha1.MeshService, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMeshServiceUpsert", ctx, obj, snapshot)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateMeshServiceUpsert indicates an expected call of ValidateMeshServiceUpsert
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshServiceUpsert(ctx, obj, snapshot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshServiceUpsert", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshServiceUpsert), ctx, obj, snapshot)
+}
+
+// ValidateMeshServiceDelete mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshServiceDelete(ctx context.Context, obj *v1alpha1.MeshService, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMeshServiceDelete", ctx, obj, snapshot)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateMeshServiceDelete indicates an expected call of ValidateMeshServiceDelete
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshServiceDelete(ctx, obj, snapshot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshServiceDelete", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshServiceDelete), ctx, obj, snapshot)
+}
+
+// ValidateMeshWorkloadUpsert mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshWorkloadUpsert(ctx context.Context, obj *v1alpha1.MeshWorkload, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMeshWorkloadUpsert", ctx, obj, snapshot)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateMeshWorkloadUpsert indicates an expected call of ValidateMeshWorkloadUpsert
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshWorkloadUpsert(ctx, obj, snapshot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshWorkloadUpsert", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshWorkloadUpsert), ctx, obj, snapshot)
+}
+
+// ValidateMeshWorkloadDelete mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshWorkloadDelete(ctx context.Context, obj *v1alpha1.MeshWorkload, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMeshWorkloadDelete", ctx, obj, snapshot)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateMeshWorkloadDelete indicates an expected call of ValidateMeshWorkloadDelete
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshWorkloadDelete(ctx, obj, snapshot interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshWorkloadDelete", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshWorkloadDelete), ctx, obj, snapshot)
+}
+
+// MockMeshNetworkingSnapshotGenerator is a mock of MeshNetworkingSnapshotGenerator interface
+type MockMeshNetworkingSnapshotGenerator struct {
 	ctrl     *gomock.Controller
-	recorder *MockNetworkingSnapshotGeneratorMockRecorder
+	recorder *MockMeshNetworkingSnapshotGeneratorMockRecorder
 }
 
-// MockNetworkingSnapshotGeneratorMockRecorder is the mock recorder for MockNetworkingSnapshotGenerator
-type MockNetworkingSnapshotGeneratorMockRecorder struct {
-	mock *MockNetworkingSnapshotGenerator
+// MockMeshNetworkingSnapshotGeneratorMockRecorder is the mock recorder for MockMeshNetworkingSnapshotGenerator
+type MockMeshNetworkingSnapshotGeneratorMockRecorder struct {
+	mock *MockMeshNetworkingSnapshotGenerator
 }
 
-// NewMockNetworkingSnapshotGenerator creates a new mock instance
-func NewMockNetworkingSnapshotGenerator(ctrl *gomock.Controller) *MockNetworkingSnapshotGenerator {
-	mock := &MockNetworkingSnapshotGenerator{ctrl: ctrl}
-	mock.recorder = &MockNetworkingSnapshotGeneratorMockRecorder{mock}
+// NewMockMeshNetworkingSnapshotGenerator creates a new mock instance
+func NewMockMeshNetworkingSnapshotGenerator(ctrl *gomock.Controller) *MockMeshNetworkingSnapshotGenerator {
+	mock := &MockMeshNetworkingSnapshotGenerator{ctrl: ctrl}
+	mock.recorder = &MockMeshNetworkingSnapshotGeneratorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockNetworkingSnapshotGenerator) EXPECT() *MockNetworkingSnapshotGeneratorMockRecorder {
+func (m *MockMeshNetworkingSnapshotGenerator) EXPECT() *MockMeshNetworkingSnapshotGeneratorMockRecorder {
 	return m.recorder
 }
 
 // RegisterListener mocks base method
-func (m *MockNetworkingSnapshotGenerator) RegisterListener(arg0 snapshot.SnapshotListener) {
+func (m *MockMeshNetworkingSnapshotGenerator) RegisterListener(arg0 snapshot.MeshNetworkingSnapshotListener) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "RegisterListener", arg0)
 }
 
 // RegisterListener indicates an expected call of RegisterListener
-func (mr *MockNetworkingSnapshotGeneratorMockRecorder) RegisterListener(arg0 interface{}) *gomock.Call {
+func (mr *MockMeshNetworkingSnapshotGeneratorMockRecorder) RegisterListener(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterListener", reflect.TypeOf((*MockNetworkingSnapshotGenerator)(nil).RegisterListener), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterListener", reflect.TypeOf((*MockMeshNetworkingSnapshotGenerator)(nil).RegisterListener), arg0)
 }
 
 // StartPushingSnapshots mocks base method
-func (m *MockNetworkingSnapshotGenerator) StartPushingSnapshots(ctx context.Context, snapshotFrequency time.Duration) {
+func (m *MockMeshNetworkingSnapshotGenerator) StartPushingSnapshots(ctx context.Context, snapshotFrequency time.Duration) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "StartPushingSnapshots", ctx, snapshotFrequency)
 }
 
 // StartPushingSnapshots indicates an expected call of StartPushingSnapshots
-func (mr *MockNetworkingSnapshotGeneratorMockRecorder) StartPushingSnapshots(ctx, snapshotFrequency interface{}) *gomock.Call {
+func (mr *MockMeshNetworkingSnapshotGeneratorMockRecorder) StartPushingSnapshots(ctx, snapshotFrequency interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartPushingSnapshots", reflect.TypeOf((*MockNetworkingSnapshotGenerator)(nil).StartPushingSnapshots), ctx, snapshotFrequency)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartPushingSnapshots", reflect.TypeOf((*MockMeshNetworkingSnapshotGenerator)(nil).StartPushingSnapshots), ctx, snapshotFrequency)
+}
+
+// MockMeshNetworkingSnapshotListener is a mock of MeshNetworkingSnapshotListener interface
+type MockMeshNetworkingSnapshotListener struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshNetworkingSnapshotListenerMockRecorder
+}
+
+// MockMeshNetworkingSnapshotListenerMockRecorder is the mock recorder for MockMeshNetworkingSnapshotListener
+type MockMeshNetworkingSnapshotListenerMockRecorder struct {
+	mock *MockMeshNetworkingSnapshotListener
+}
+
+// NewMockMeshNetworkingSnapshotListener creates a new mock instance
+func NewMockMeshNetworkingSnapshotListener(ctrl *gomock.Controller) *MockMeshNetworkingSnapshotListener {
+	mock := &MockMeshNetworkingSnapshotListener{ctrl: ctrl}
+	mock.recorder = &MockMeshNetworkingSnapshotListenerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshNetworkingSnapshotListener) EXPECT() *MockMeshNetworkingSnapshotListenerMockRecorder {
+	return m.recorder
+}
+
+// Sync mocks base method
+func (m *MockMeshNetworkingSnapshotListener) Sync(arg0 context.Context, arg1 *snapshot.MeshNetworkingSnapshot) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Sync", arg0, arg1)
+}
+
+// Sync indicates an expected call of Sync
+func (mr *MockMeshNetworkingSnapshotListenerMockRecorder) Sync(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sync", reflect.TypeOf((*MockMeshNetworkingSnapshotListener)(nil).Sync), arg0, arg1)
 }

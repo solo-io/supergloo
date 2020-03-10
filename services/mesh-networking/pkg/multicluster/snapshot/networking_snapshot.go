@@ -5,21 +5,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/solo-io/go-utils/contextutils"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controllers "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controllers "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	"go.uber.org/zap"
 )
 
 type MeshNetworkingSnapshot struct {
-	// the current state of the world
-	CurrentState Resources
-
-	// specific resources that have changed since the last snapshot
-	Delta Delta
-}
-
-type Resources struct {
 	MeshServices  []*discovery_v1alpha1.MeshService
 	MeshGroups    []*networking_v1alpha1.MeshGroup
 	MeshWorkloads []*discovery_v1alpha1.MeshWorkload
@@ -46,43 +40,33 @@ type UpdatedResources struct {
 	MeshWorkloads []UpdatedMeshWorkload
 }
 
-type Delta struct {
-	Created Resources
-	Updated UpdatedResources
-	Deleted Resources
-}
-
-type SnapshotListener func(context.Context, MeshNetworkingSnapshot)
-
-// an implementation of `NetworkingSnapshotGenerator` that is guaranteed to only ever push
-// snapshots that are considered valid by the `SnapshotValidator` to its listeners
-func NewNetworkingSnapshotGenerator(
+// an implementation of `MeshNetworkingSnapshotGenerator` that is guaranteed to only ever push
+// snapshots that are considered valid by the `MeshNetworkingSnapshotValidator` to its listeners
+func NewMeshNetworkingSnapshotGenerator(
 	ctx context.Context,
-	snapshotValidator SnapshotValidator,
+	snapshotValidator MeshNetworkingSnapshotValidator,
 	meshServiceController discovery_controllers.MeshServiceController,
 	meshGroupController networking_controllers.MeshGroupController,
 	meshWorkloadController discovery_controllers.MeshWorkloadController,
-) NetworkingSnapshotGenerator {
+) (MeshNetworkingSnapshotGenerator, error) {
 	generator := &networkingSnapshotGenerator{
 		snapshotValidator: snapshotValidator,
 		snapshot:          MeshNetworkingSnapshot{},
 	}
 
-	meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
+	err := meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshServices := append([]*discovery_v1alpha1.MeshService{}, generator.snapshot.CurrentState.MeshServices...)
+			updatedMeshServices := append([]*discovery_v1alpha1.MeshService{}, generator.snapshot.MeshServices...)
 			updatedMeshServices = append(updatedMeshServices, obj)
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshServices = updatedMeshServices
-
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			updatedSnapshot.MeshServices = updatedMeshServices
+			if generator.snapshotValidator.ValidateMeshServiceUpsert(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Created.MeshServices = append(generator.snapshot.Delta.Created.MeshServices, obj)
 			}
 
 			return nil
@@ -92,7 +76,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshServices []*discovery_v1alpha1.MeshService
-			for _, existingMeshService := range generator.snapshot.CurrentState.MeshServices {
+			for _, existingMeshService := range generator.snapshot.MeshServices {
 				if existingMeshService.GetName() == old.GetName() && existingMeshService.GetNamespace() == old.GetNamespace() {
 					updatedMeshServices = append(updatedMeshServices, new)
 				} else {
@@ -101,15 +85,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshServices = updatedMeshServices
+			updatedSnapshot.MeshServices = updatedMeshServices
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshServiceUpsert(ctx, new, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Updated.MeshServices = append(generator.snapshot.Delta.Updated.MeshServices, UpdatedMeshService{
-					Old: old,
-					New: new,
-				})
 			}
 
 			return nil
@@ -119,7 +99,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshServices []*discovery_v1alpha1.MeshService
-			for _, meshService := range generator.snapshot.CurrentState.MeshServices {
+			for _, meshService := range generator.snapshot.MeshServices {
 				if meshService.GetName() == obj.GetName() && meshService.GetNamespace() == obj.GetNamespace() {
 					continue
 				}
@@ -128,12 +108,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshServices = updatedMeshServices
+			updatedSnapshot.MeshServices = updatedMeshServices
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshServiceDelete(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Deleted.MeshServices = append(generator.snapshot.Delta.Deleted.MeshServices, obj)
 			}
 
 			return nil
@@ -142,22 +121,24 @@ func NewNetworkingSnapshotGenerator(
 			return nil
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	meshGroupController.AddEventHandler(ctx, &networking_controllers.MeshGroupEventHandlerFuncs{
+	err = meshGroupController.AddEventHandler(ctx, &networking_controllers.MeshGroupEventHandlerFuncs{
 		OnCreate: func(obj *networking_v1alpha1.MeshGroup) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshGroups := append([]*networking_v1alpha1.MeshGroup{}, generator.snapshot.CurrentState.MeshGroups...)
+			updatedMeshGroups := append([]*networking_v1alpha1.MeshGroup{}, generator.snapshot.MeshGroups...)
 			updatedMeshGroups = append(updatedMeshGroups, obj)
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshGroups = updatedMeshGroups
+			updatedSnapshot.MeshGroups = updatedMeshGroups
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshGroupUpsert(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Created.MeshGroups = append(generator.snapshot.Delta.Created.MeshGroups, obj)
 			}
 
 			return nil
@@ -167,7 +148,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshGroups []*networking_v1alpha1.MeshGroup
-			for _, existingMeshGroup := range generator.snapshot.CurrentState.MeshGroups {
+			for _, existingMeshGroup := range generator.snapshot.MeshGroups {
 				if existingMeshGroup.GetName() == old.GetName() && existingMeshGroup.GetNamespace() == old.GetNamespace() {
 					updatedMeshGroups = append(updatedMeshGroups, new)
 				} else {
@@ -176,15 +157,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshGroups = updatedMeshGroups
+			updatedSnapshot.MeshGroups = updatedMeshGroups
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshGroupUpsert(ctx, new, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Updated.MeshGroups = append(generator.snapshot.Delta.Updated.MeshGroups, UpdatedMeshGroup{
-					Old: old,
-					New: new,
-				})
 			}
 
 			return nil
@@ -194,7 +171,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshGroups []*networking_v1alpha1.MeshGroup
-			for _, meshGroup := range generator.snapshot.CurrentState.MeshGroups {
+			for _, meshGroup := range generator.snapshot.MeshGroups {
 				if meshGroup.GetName() == obj.GetName() && meshGroup.GetNamespace() == obj.GetNamespace() {
 					continue
 				}
@@ -203,12 +180,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshGroups = updatedMeshGroups
+			updatedSnapshot.MeshGroups = updatedMeshGroups
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshGroupDelete(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Deleted.MeshGroups = append(generator.snapshot.Delta.Deleted.MeshGroups, obj)
 			}
 
 			return nil
@@ -217,22 +193,24 @@ func NewNetworkingSnapshotGenerator(
 			return nil
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	meshWorkloadController.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
+	err = meshWorkloadController.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshWorkloads := append([]*discovery_v1alpha1.MeshWorkload{}, generator.snapshot.CurrentState.MeshWorkloads...)
+			updatedMeshWorkloads := append([]*discovery_v1alpha1.MeshWorkload{}, generator.snapshot.MeshWorkloads...)
 			updatedMeshWorkloads = append(updatedMeshWorkloads, obj)
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshWorkloads = updatedMeshWorkloads
+			updatedSnapshot.MeshWorkloads = updatedMeshWorkloads
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshWorkloadUpsert(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Created.MeshWorkloads = append(generator.snapshot.Delta.Created.MeshWorkloads, obj)
 			}
 
 			return nil
@@ -242,7 +220,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshWorkloads []*discovery_v1alpha1.MeshWorkload
-			for _, existingMeshWorkload := range generator.snapshot.CurrentState.MeshWorkloads {
+			for _, existingMeshWorkload := range generator.snapshot.MeshWorkloads {
 				if existingMeshWorkload.GetName() == old.GetName() && existingMeshWorkload.GetNamespace() == old.GetNamespace() {
 					updatedMeshWorkloads = append(updatedMeshWorkloads, new)
 				} else {
@@ -251,15 +229,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshWorkloads = updatedMeshWorkloads
+			updatedSnapshot.MeshWorkloads = updatedMeshWorkloads
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshWorkloadUpsert(ctx, new, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Updated.MeshWorkloads = append(generator.snapshot.Delta.Updated.MeshWorkloads, UpdatedMeshWorkload{
-					Old: old,
-					New: new,
-				})
 			}
 
 			return nil
@@ -269,7 +243,7 @@ func NewNetworkingSnapshotGenerator(
 			defer generator.snapshotMutex.Unlock()
 
 			var updatedMeshWorkloads []*discovery_v1alpha1.MeshWorkload
-			for _, meshWorkload := range generator.snapshot.CurrentState.MeshWorkloads {
+			for _, meshWorkload := range generator.snapshot.MeshWorkloads {
 				if meshWorkload.GetName() == obj.GetName() && meshWorkload.GetNamespace() == obj.GetNamespace() {
 					continue
 				}
@@ -278,12 +252,11 @@ func NewNetworkingSnapshotGenerator(
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.CurrentState.MeshWorkloads = updatedMeshWorkloads
+			updatedSnapshot.MeshWorkloads = updatedMeshWorkloads
 
-			if generator.snapshotValidator.Validate(updatedSnapshot) {
+			if generator.snapshotValidator.ValidateMeshWorkloadDelete(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
-				generator.snapshot.Delta.Deleted.MeshWorkloads = append(generator.snapshot.Delta.Deleted.MeshWorkloads, obj)
 			}
 
 			return nil
@@ -292,25 +265,30 @@ func NewNetworkingSnapshotGenerator(
 			return nil
 		},
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return generator
+	return generator, nil
 }
 
 type networkingSnapshotGenerator struct {
-	snapshotValidator SnapshotValidator
+	snapshotValidator MeshNetworkingSnapshotValidator
 
-	listeners     []SnapshotListener
+	listeners     []MeshNetworkingSnapshotListener
 	listenerMutex sync.Mutex
 
 	// important that snapshot is NOT a reference- we depend on being able to copy it
 	// and change fields without mutating the real thing
 	// accesses to `isSnapshotPushNeeded` should be gated on the `snapshotMutex`
-	snapshot             MeshNetworkingSnapshot
+	snapshot MeshNetworkingSnapshot
+	// version of the snapshot being sent, will appear in the logger context values
+	version              uint
 	isSnapshotPushNeeded bool
 	snapshotMutex        sync.Mutex
 }
 
-func (f *networkingSnapshotGenerator) RegisterListener(listener SnapshotListener) {
+func (f *networkingSnapshotGenerator) RegisterListener(listener MeshNetworkingSnapshotListener) {
 	f.listenerMutex.Lock()
 	defer f.listenerMutex.Unlock()
 
@@ -318,32 +296,34 @@ func (f *networkingSnapshotGenerator) RegisterListener(listener SnapshotListener
 }
 
 func (f *networkingSnapshotGenerator) StartPushingSnapshots(ctx context.Context, snapshotFrequency time.Duration) {
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(snapshotFrequency):
-				f.snapshotMutex.Lock()
-				f.listenerMutex.Lock()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(snapshotFrequency):
+			f.snapshotMutex.Lock()
+			f.listenerMutex.Lock()
 
-				if f.isSnapshotPushNeeded {
-					for _, listener := range f.listeners {
-						listener(ctx, f.snapshot)
-					}
-
-					f.isSnapshotPushNeeded = false
-
-					// reset the Delta so that we don't cross-pollute Deltas across multiple snapshots
-					f.snapshot.Delta = Delta{}
+			if f.isSnapshotPushNeeded {
+				f.version++
+				snapshotContext := contextutils.WithLoggerValues(ctx,
+					zap.Uint("snapshot_version", f.version),
+					zap.Int("num_mesh_services", len(f.snapshot.MeshServices)),
+					zap.Int("num_mesh_workloads", len(f.snapshot.MeshWorkloads)),
+					zap.Int("num_mesh_groups", len(f.snapshot.MeshGroups)),
+				)
+				for _, listener := range f.listeners {
+					listener.Sync(snapshotContext, &f.snapshot)
 				}
 
-				// important to unlock the mutexes in the same order as they were locked here
-				// it's a runtime error to attempt to unlock an already unlocked mutex
-				// if the order is changed here, a race condition could cause a repeated unlock
-				f.snapshotMutex.Unlock()
-				f.listenerMutex.Unlock()
+				f.isSnapshotPushNeeded = false
 			}
+
+			// important to unlock the mutexes in the same order as they were locked here
+			// it's a runtime error to attempt to unlock an already unlocked mutex
+			// if the order is changed here, a race condition could cause a repeated unlock
+			f.snapshotMutex.Unlock()
+			f.listenerMutex.Unlock()
 		}
-	}()
+	}
 }

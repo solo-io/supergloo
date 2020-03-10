@@ -10,7 +10,6 @@ import (
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
@@ -24,7 +23,6 @@ var (
 		istio_networking.VirtualServiceClientFactoryProvider,
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
-		mc_wire.DynamicClientGetterProvider,
 		LocalTrafficPolicyControllerProvider,
 		LocalMeshServiceControllerProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslator,

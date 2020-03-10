@@ -12,7 +12,7 @@ import (
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	"github.com/solo-io/mesh-projects/pkg/security/certgen"
 	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	csr_agent_controller "github.com/solo-io/mesh-projects/services/csr-agent/pkg/controller"
+	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
 )
 
 // Injectors from wire.go:
@@ -26,18 +26,18 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	if err != nil {
 		return CsrAgentContext{}, err
 	}
-	client := mc_wire.DynamicClientProvider(asyncManager)
-	meshGroupCertificateSigningRequestClient := zephyr_security.NewMeshGroupCertificateSigningRequestClient(client)
-	secretsClient := kubernetes_core.NewSecretsClient(client)
-	signer := certgen.NewSigner()
-	certClient := csr_agent_controller.NewCertClient(secretsClient, signer)
-	meshGroupCertificateSigningRequestProcessor := csr_agent_controller.NewCsrAgentIstioProcessor(meshGroupCertificateSigningRequestClient, secretsClient, certClient, signer)
-	predicate := csr_agent_controller.CsrAgentPredicateProvider(ctx)
-	meshGroupCertificateSigningRequestEventHandler := csr_agent_controller.NewCsrAgentEventHandler(ctx, meshGroupCertificateSigningRequestClient, meshGroupCertificateSigningRequestProcessor, predicate)
-	meshGroupCertificateSigningRequestController, err := csr_agent_controller.CsrControllerProviderLocal(asyncManager)
+	meshGroupCertificateSigningRequestController, err := csr_generator.CsrControllerProviderLocal(asyncManager)
 	if err != nil {
 		return CsrAgentContext{}, err
 	}
-	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, meshGroupCertificateSigningRequestEventHandler, meshGroupCertificateSigningRequestController)
+	meshGroupCSRDataSourceFactory := csr_generator.NewMeshGroupCSRDataSourceFactory()
+	client := mc_wire.DynamicClientProvider(asyncManager)
+	meshGroupCSRClient := zephyr_security.NewMeshGroupCSRClient(client)
+	secretsClient := kubernetes_core.NewSecretsClient(client)
+	signer := certgen.NewSigner()
+	certClient := csr_generator.NewCertClient(secretsClient, signer)
+	istioCSRGenerator := csr_generator.NewIstioCSRGenerator(meshGroupCSRClient, secretsClient, certClient, signer)
+	meshGroupCSRProcessor := csr_generator.NewCsrAgentIstioProcessor(istioCSRGenerator)
+	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, meshGroupCertificateSigningRequestController, meshGroupCSRDataSourceFactory, meshGroupCSRProcessor, meshGroupCSRClient)
 	return csrAgentContext, nil
 }

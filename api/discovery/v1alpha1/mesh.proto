@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.s
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 import "mesh-projects/api/core/v1alpha1/health.proto";
+import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -38,6 +39,31 @@ message MeshInstallation {
 // Mesh object representing an installed Istio control plane
 message IstioMesh {
     MeshInstallation installation = 1;
+
+    message CitadelInfo {
+        /*
+            istio trust domain used for https/spiffe identity.
+            https://spiffe.io/spiffe/concepts/#trust-domain
+            https://istio.io/docs/reference/glossary/#identity
+
+            If empty will default to "cluster.local"
+        */
+        string trust_domain = 1;
+
+        /*
+            istio-citadel namespace, used to determine identity for istio CA cert.
+            If empty will default to MeshInstallation.installation_namespace
+        */
+        string citadel_namespace = 2;
+
+        /*
+            istio-citadel service account, used to determine identity for istio CA cert.
+            If empty will default to "istio-citadel"
+        */
+        string citadel_service_account = 3;
+    }
+
+    CitadelInfo citadel_info = 2;
 }
 
 // Mesh object representing AWS App Mesh

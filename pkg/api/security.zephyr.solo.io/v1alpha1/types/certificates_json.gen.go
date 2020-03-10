@@ -31,6 +31,17 @@ func (this *MeshGroupCertificateSigningRequestSpec) UnmarshalJSON(b []byte) erro
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for CertConfig
+func (this *CertConfig) MarshalJSON() ([]byte, error) {
+	str, err := CertificatesMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for CertConfig
+func (this *CertConfig) UnmarshalJSON(b []byte) error {
+	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshGroupCertificateSigningResponse
 func (this *MeshGroupCertificateSigningResponse) MarshalJSON() ([]byte, error) {
 	str, err := CertificatesMarshaler.MarshalToString(this)

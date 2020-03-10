@@ -36,13 +36,13 @@ var _ = Describe("csr client", func() {
 		var (
 			mockClient       *mock_controller_runtime.MockClient
 			mockStatusWriter *mock_controller_runtime.MockStatusWriter
-			csrClient        zephyr_security.MeshGroupCertificateSigningRequestClient
+			csrClient        zephyr_security.MeshGroupCSRClient
 		)
 
 		BeforeEach(func() {
 			mockClient = mock_controller_runtime.NewMockClient(ctrl)
 			mockStatusWriter = mock_controller_runtime.NewMockStatusWriter(ctrl)
-			csrClient = zephyr_security.NewMeshGroupCertificateSigningRequestClient(mockClient)
+			csrClient = zephyr_security.NewMeshGroupCSRClient(mockClient)
 		})
 
 		Context("update", func() {

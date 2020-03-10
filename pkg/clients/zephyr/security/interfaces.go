@@ -10,7 +10,7 @@ import (
 
 //go:generate mockgen -destination ./mocks/mock_interfaces.go -source ./interfaces.go
 
-type MeshGroupCertificateSigningRequestClient interface {
+type MeshGroupCSRClient interface {
 	Create(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.CreateOption) error
 	Update(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error
 	UpdateStatus(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error

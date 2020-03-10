@@ -15,21 +15,8 @@ message MeshGroupCertificateSigningRequestSpec {
     // Base64-encoded PKCS#10 CSR data
     bytes csr_data = 1;
 
-    /*
-        list of hostnames and IPs to generate a certificate for.
-        This can also be set to the identity running the workload,
-        like kubernetes service account.
+    CertConfig cert_config = 2;
 
-        Generally for an istio CA this will take the values:
-            1. spiffe://cluster.local/ns/istio-system/sa/citadel
-            2. localhost
-
-        The cluster.local may be replaced by the root of trust domain for the mesh
-    */
-    repeated string hosts = 2;
-
-    // Organization for this certificate.
-    string org = 3;
 
     /*
         Reference to the mesh group which this CSR corresponds to. This is important as it allows the Mesh Group
@@ -40,8 +27,26 @@ message MeshGroupCertificateSigningRequestSpec {
         it can be retrieved when the cert is going to expire.
         TODO: Decide how exactly we want to store this data.
     */
-    core.zephyr.solo.io.ResourceRef mesh_group_ref = 4;
+    core.zephyr.solo.io.ResourceRef mesh_group_ref = 3;
 
+}
+
+message CertConfig {
+    /*
+         list of hostnames and IPs to generate a certificate for.
+         This can also be set to the identity running the workload,
+         like kubernetes service account.
+
+         Generally for an istio CA this will take the values:
+             1. spiffe://cluster.local/ns/istio-system/sa/citadel
+             2. localhost
+
+         The cluster.local may be replaced by the root of trust domain for the mesh
+     */
+    repeated string hosts = 2;
+
+    // Organization for this certificate.
+    string org = 3;
 
     // In the future, the type of mesh, and level of trust will need to be specified here,
     // but for the time being we are only supporting shared trust in istio.

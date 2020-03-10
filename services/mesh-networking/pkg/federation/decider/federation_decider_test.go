@@ -42,25 +42,23 @@ var _ = Describe("Federation Decider", func() {
 
 	It("doesn't federate anything for a group with only one member", func() {
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshGroups: []*networking_v1alpha1.MeshGroup{{
-					Spec: networking_types.MeshGroupSpec{
-						Meshes: []*core_types.ResourceRef{{
-							Name:      "mesh-1",
-							Namespace: env.DefaultWriteNamespace,
-						}},
-						Federation: &networking_types.Federation{
-							Mode: networking_types.Federation_PERMISSIVE,
-						},
+			MeshGroups: []*networking_v1alpha1.MeshGroup{{
+				Spec: networking_types.MeshGroupSpec{
+					Meshes: []*core_types.ResourceRef{{
+						Name:      "mesh-1",
+						Namespace: env.DefaultWriteNamespace,
+					}},
+					Federation: &networking_types.Federation{
+						Mode: networking_types.Federation_PERMISSIVE,
 					},
-				}},
-			},
+				},
+			}},
 		}
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 
 		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
-		groupCopy := *snapshot.CurrentState.MeshGroups[0]
+		groupCopy := *snapshot.MeshGroups[0]
 		groupCopy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
@@ -84,7 +82,7 @@ var _ = Describe("Federation Decider", func() {
 		decider := decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
 			return strategies.NewPermissiveFederation(meshServiceClient), nil
 		})
-		decider.DecideFederation(ctx, snapshot)
+		decider.DecideFederation(ctx, &snapshot)
 	})
 
 	/************************
@@ -173,87 +171,85 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshGroups: []*networking_v1alpha1.MeshGroup{
-					{
-						Spec: networking_types.MeshGroupSpec{
-							Meshes: []*core_types.ResourceRef{
-								{
-									Name:      "mesh-1",
-									Namespace: env.DefaultWriteNamespace,
-								},
-								{
-									Name:      "mesh-2",
-									Namespace: env.DefaultWriteNamespace,
-								},
-								{
-									Name:      "mesh-3",
-									Namespace: env.DefaultWriteNamespace,
-								},
-							},
-							Federation: nil, // should default to the permissive mode for demo purposes
-						},
-					},
-					{
-						Spec: networking_types.MeshGroupSpec{
-							Meshes: []*core_types.ResourceRef{{
-								Name:      "mesh-4",
-								Namespace: env.DefaultWriteNamespace,
-							}},
-							Federation: &networking_types.Federation{
-								Mode: networking_types.Federation_PERMISSIVE,
-							},
-						},
-					},
-				},
-				MeshServices: []*discovery_v1alpha1.MeshService{meshService1, meshService2, meshService3, meshService4},
-				MeshWorkloads: []*discovery_v1alpha1.MeshWorkload{
-					{
-						ObjectMeta: v1.ObjectMeta{
-							Name:      "mesh-workload-1-mesh-1",
-							Namespace: env.DefaultWriteNamespace,
-						},
-						Spec: types.MeshWorkloadSpec{
-							Mesh: &core_types.ResourceRef{
+			MeshGroups: []*networking_v1alpha1.MeshGroup{
+				{
+					Spec: networking_types.MeshGroupSpec{
+						Meshes: []*core_types.ResourceRef{
+							{
 								Name:      "mesh-1",
 								Namespace: env.DefaultWriteNamespace,
 							},
-						},
-					},
-					{
-						ObjectMeta: v1.ObjectMeta{
-							Name:      "mesh-workload-2-mesh-2",
-							Namespace: env.DefaultWriteNamespace,
-						},
-						Spec: types.MeshWorkloadSpec{
-							Mesh: &core_types.ResourceRef{
+							{
 								Name:      "mesh-2",
 								Namespace: env.DefaultWriteNamespace,
 							},
-						},
-					},
-					{
-						ObjectMeta: v1.ObjectMeta{
-							Name:      "mesh-workload-3-mesh-3",
-							Namespace: env.DefaultWriteNamespace,
-						},
-						Spec: types.MeshWorkloadSpec{
-							Mesh: &core_types.ResourceRef{
+							{
 								Name:      "mesh-3",
 								Namespace: env.DefaultWriteNamespace,
 							},
 						},
+						Federation: nil, // should default to the permissive mode for demo purposes
 					},
-					{
-						ObjectMeta: v1.ObjectMeta{
-							Name:      "mesh-workload-4-mesh-4",
+				},
+				{
+					Spec: networking_types.MeshGroupSpec{
+						Meshes: []*core_types.ResourceRef{{
+							Name:      "mesh-4",
+							Namespace: env.DefaultWriteNamespace,
+						}},
+						Federation: &networking_types.Federation{
+							Mode: networking_types.Federation_PERMISSIVE,
+						},
+					},
+				},
+			},
+			MeshServices: []*discovery_v1alpha1.MeshService{meshService1, meshService2, meshService3, meshService4},
+			MeshWorkloads: []*discovery_v1alpha1.MeshWorkload{
+				{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "mesh-workload-1-mesh-1",
+						Namespace: env.DefaultWriteNamespace,
+					},
+					Spec: types.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Name:      "mesh-1",
 							Namespace: env.DefaultWriteNamespace,
 						},
-						Spec: types.MeshWorkloadSpec{
-							Mesh: &core_types.ResourceRef{
-								Name:      "mesh-4",
-								Namespace: env.DefaultWriteNamespace,
-							},
+					},
+				},
+				{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "mesh-workload-2-mesh-2",
+						Namespace: env.DefaultWriteNamespace,
+					},
+					Spec: types.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Name:      "mesh-2",
+							Namespace: env.DefaultWriteNamespace,
+						},
+					},
+				},
+				{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "mesh-workload-3-mesh-3",
+						Namespace: env.DefaultWriteNamespace,
+					},
+					Spec: types.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Name:      "mesh-3",
+							Namespace: env.DefaultWriteNamespace,
+						},
+					},
+				},
+				{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      "mesh-workload-4-mesh-4",
+						Namespace: env.DefaultWriteNamespace,
+					},
+					Spec: types.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Name:      "mesh-4",
+							Namespace: env.DefaultWriteNamespace,
 						},
 					},
 				},
@@ -265,7 +261,7 @@ var _ = Describe("Federation Decider", func() {
 		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
 
 		// EXPECTs for group 1
-		group1Copy := *snapshot.CurrentState.MeshGroups[0]
+		group1Copy := *snapshot.MeshGroups[0]
 		group1Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
@@ -274,7 +270,7 @@ var _ = Describe("Federation Decider", func() {
 			Return(nil)
 
 		// EXPECTs for group 2
-		group2Copy := *snapshot.CurrentState.MeshGroups[1]
+		group2Copy := *snapshot.MeshGroups[1]
 		group2Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
@@ -411,7 +407,7 @@ var _ = Describe("Federation Decider", func() {
 			Return(nil)
 
 		decider := decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, strategies.GetFederationStrategyFromMode)
-		decider.DecideFederation(ctx, snapshot)
+		decider.DecideFederation(ctx, &snapshot)
 	})
 
 	It("marks all groups in the snapshot as having a processing error if we can't set up the precomputed data", func() {
@@ -453,11 +449,9 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshGroups:    []*networking_v1alpha1.MeshGroup{group1, group2},
-				MeshServices:  []*discovery_v1alpha1.MeshService{},
-				MeshWorkloads: []*discovery_v1alpha1.MeshWorkload{},
-			},
+			MeshGroups:    []*networking_v1alpha1.MeshGroup{group1, group2},
+			MeshServices:  []*discovery_v1alpha1.MeshService{},
+			MeshWorkloads: []*discovery_v1alpha1.MeshWorkload{},
 		}
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
@@ -499,6 +493,6 @@ var _ = Describe("Federation Decider", func() {
 			return nil, nil
 		}
 
-		decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, strategyDecider).DecideFederation(ctx, snapshot)
+		decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, strategyDecider).DecideFederation(ctx, &snapshot)
 	})
 })

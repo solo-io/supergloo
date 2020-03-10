@@ -78,16 +78,9 @@ message MeshGroupStatus {
     */
     core.zephyr.solo.io.HealthStatus health = 1;
 
-    enum ConfigStatus {
-        // config was processed properly, and no error(s) were found
-        VALID = 0;
-        // config was processed properly, and error(s) were found
-        INVALID = 1;
-        // config could not be processed properly
-        PROCESSING_ERROR = 2;
-    }
+    core.zephyr.solo.io.ComputedStatus federation_status = 2;
 
-    ConfigStatus config = 2;
+    core.zephyr.solo.io.ComputedStatus certificate_status = 3;
 
-    core.zephyr.solo.io.ComputedStatus federation_status = 3;
+    core.zephyr.solo.io.ComputedStatus config_status = 4;
 }

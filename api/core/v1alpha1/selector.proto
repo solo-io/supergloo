@@ -73,6 +73,11 @@ option (gogoproto.equal_all) = true;
     selector
         namespaces
         - foo
+        - bar
+        labels:
+            hello: world
+
+
 */
 message Selector {
     // map of labels to match against

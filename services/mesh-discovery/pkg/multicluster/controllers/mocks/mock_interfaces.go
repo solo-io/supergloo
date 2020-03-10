@@ -128,6 +128,44 @@ func (mr *MockMeshWorkloadControllerFactoryMockRecorder) Build(mgr, clusterName 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshWorkloadControllerFactory)(nil).Build), mgr, clusterName)
 }
 
+// MockMeshServiceControllerFactory is a mock of MeshServiceControllerFactory interface
+type MockMeshServiceControllerFactory struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshServiceControllerFactoryMockRecorder
+}
+
+// MockMeshServiceControllerFactoryMockRecorder is the mock recorder for MockMeshServiceControllerFactory
+type MockMeshServiceControllerFactoryMockRecorder struct {
+	mock *MockMeshServiceControllerFactory
+}
+
+// NewMockMeshServiceControllerFactory creates a new mock instance
+func NewMockMeshServiceControllerFactory(ctrl *gomock.Controller) *MockMeshServiceControllerFactory {
+	mock := &MockMeshServiceControllerFactory{ctrl: ctrl}
+	mock.recorder = &MockMeshServiceControllerFactoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMeshServiceControllerFactory) EXPECT() *MockMeshServiceControllerFactoryMockRecorder {
+	return m.recorder
+}
+
+// Build mocks base method
+func (m *MockMeshServiceControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceController, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
+	ret0, _ := ret[0].(controller.MeshServiceController)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Build indicates an expected call of Build
+func (mr *MockMeshServiceControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshServiceControllerFactory)(nil).Build), mgr, clusterName)
+}
+
 // MockServiceControllerFactory is a mock of ServiceControllerFactory interface
 type MockServiceControllerFactory struct {
 	ctrl     *gomock.Controller

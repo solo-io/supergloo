@@ -2,7 +2,6 @@ package snapshot_test
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/golang/mock/gomock"
@@ -23,9 +22,8 @@ var _ = Describe("Networking Snapshot", func() {
 		ctrl *gomock.Controller
 		ctx  context.Context
 
-		eventuallyTimeout   = time.Second
-		consistentlyTimeout = time.Millisecond * 100 // don't want to make our tests take a ton of time to run
-		pollFrequency       = time.Millisecond
+		eventuallyTimeout = time.Second
+		pollFrequency     = time.Millisecond
 
 		meshService1 = &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
@@ -52,14 +50,12 @@ var _ = Describe("Networking Snapshot", func() {
 
 	It("can receive events", func() {
 		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
-			},
+			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
 		}
 
-		validator := mock_snapshot.NewMockSnapshotValidator(ctrl)
+		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService1, &updatedSnapshot).
 			Return(true)
 
 		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
@@ -79,46 +75,41 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator := snapshot.NewNetworkingSnapshotGenerator(
+		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			meshServiceController,
 			meshGroupController,
 			meshWorkloadController,
 		)
+		Expect(err).NotTo(HaveOccurred())
 
-		didReceiveSnapshot := false
-		var boolMutex sync.Mutex
-		generator.RegisterListener(func(ctx context.Context, networkingSnapshot snapshot.MeshNetworkingSnapshot) {
-			boolMutex.Lock()
-			defer boolMutex.Unlock()
-			didReceiveSnapshot = true
+		didReceiveSnapshot := make(chan struct{})
+		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
+		listener.EXPECT().
+			Sync(gomock.Any(), &updatedSnapshot).
+			DoAndReturn(func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
+				didReceiveSnapshot <- struct{}{}
+			})
 
-			Expect(networkingSnapshot.CurrentState.MeshServices).To(HaveLen(1))
-			Expect(networkingSnapshot.CurrentState.MeshServices[0]).To(Equal(meshService1))
-			Expect(networkingSnapshot.Delta.Created.MeshServices).To(HaveLen(1))
-			Expect(networkingSnapshot.Delta.Created.MeshServices[0]).To(Equal(meshService1))
-		})
+		generator.RegisterListener(listener)
 
-		generator.StartPushingSnapshots(ctx, pollFrequency)
+		go func() {
+			defer GinkgoRecover()
+			generator.StartPushingSnapshots(ctx, pollFrequency)
+		}()
 
-		Eventually(func() bool {
-			boolMutex.Lock()
-			defer boolMutex.Unlock()
-			return didReceiveSnapshot
-		}, eventuallyTimeout, pollFrequency).Should(BeTrue(), "Should eventually receive a snapshot")
+		Eventually(didReceiveSnapshot, eventuallyTimeout, pollFrequency).Should(Receive())
 	})
 
 	It("should not push snapshots if nothing has changed", func() {
 		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
-			},
+			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
 		}
 
-		validator := mock_snapshot.NewMockSnapshotValidator(ctrl)
+		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService1, &updatedSnapshot).
 			Return(true)
 
 		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
@@ -138,57 +129,52 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator := snapshot.NewNetworkingSnapshotGenerator(
+		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			meshServiceController,
 			meshGroupController,
 			meshWorkloadController,
 		)
+		Expect(err).NotTo(HaveOccurred())
 
-		numReceivedSnapshots := 0
-		var counterMutex sync.Mutex
-		generator.RegisterListener(func(ctx context.Context, networkingSnapshot snapshot.MeshNetworkingSnapshot) {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			numReceivedSnapshots += 1
+		didReceiveSnapshot := make(chan struct{})
+		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
+		listener.EXPECT().
+			Sync(gomock.Any(), &updatedSnapshot).
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+				didReceiveSnapshot <- struct{}{}
+			})
+		generator.RegisterListener(listener)
 
-			Expect(networkingSnapshot.CurrentState.MeshServices).To(HaveLen(1))
-			Expect(networkingSnapshot.CurrentState.MeshServices[0]).To(Equal(meshService1))
-			Expect(networkingSnapshot.Delta.Created.MeshServices).To(HaveLen(1))
-			Expect(networkingSnapshot.Delta.Created.MeshServices[0]).To(Equal(meshService1))
-		})
+		go func() {
+			defer GinkgoRecover()
+			generator.StartPushingSnapshots(ctx, pollFrequency)
+		}()
 
-		generator.StartPushingSnapshots(ctx, pollFrequency)
-
-		Eventually(func() int {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			return numReceivedSnapshots
-		}, eventuallyTimeout, pollFrequency).Should(BeNumerically(">=", 1), "Should eventually receive a snapshot")
-		Consistently(func() int {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			return numReceivedSnapshots
-		}, consistentlyTimeout, pollFrequency).Should(Equal(1), "No further snapshots should be received")
+		Eventually(
+			didReceiveSnapshot,
+			eventuallyTimeout,
+			pollFrequency,
+		).Should(Receive(), "should receive the first snapshot")
+		Consistently(didReceiveSnapshot).ShouldNot(Receive(), "should not receive any further snapshots")
 	})
 
 	It("can aggregate multiple events that roll in close to each other", func() {
-		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
-			},
+		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
+			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
 		}
 
-		validator := mock_snapshot.NewMockSnapshotValidator(ctrl)
+		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService1, originalSnapshot).
 			Return(true)
 
-		updatedSnapshot.CurrentState.MeshServices = append(updatedSnapshot.CurrentState.MeshServices, meshService2)
-		updatedSnapshot.Delta.Created.MeshServices = append(updatedSnapshot.Delta.Created.MeshServices, meshService1)
+		updatedSnapshot := &snapshot.MeshNetworkingSnapshot{
+			MeshServices: append(originalSnapshot.MeshServices, meshService2),
+		}
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService2, updatedSnapshot).
 			Return(true)
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
@@ -210,58 +196,54 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator := snapshot.NewNetworkingSnapshotGenerator(
+		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			meshServiceController,
 			meshGroupController,
 			meshWorkloadController,
 		)
+		Expect(err).NotTo(HaveOccurred())
 
-		didReceiveSnapshot := false
-		var boolMutex sync.Mutex
-		generator.RegisterListener(func(ctx context.Context, networkingSnapshot snapshot.MeshNetworkingSnapshot) {
-			Expect(didReceiveSnapshot).To(Equal(false), "Should only receive one snapshot in this test")
-			boolMutex.Lock()
-			defer boolMutex.Unlock()
-			didReceiveSnapshot = true
+		didReceiveSnapshot := make(chan struct{})
+		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
+		listener.EXPECT().
+			Sync(gomock.Any(), updatedSnapshot).
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+				didReceiveSnapshot <- struct{}{}
+			})
 
-			Expect(networkingSnapshot.CurrentState.MeshServices).To(HaveLen(2))
-			Expect(networkingSnapshot.CurrentState.MeshServices[0]).To(Equal(meshService1))
-			Expect(networkingSnapshot.CurrentState.MeshServices[1]).To(Equal(meshService2))
-			Expect(networkingSnapshot.Delta.Created.MeshServices).To(HaveLen(2))
-			Expect(networkingSnapshot.Delta.Created.MeshServices[0]).To(Equal(meshService1))
-			Expect(networkingSnapshot.Delta.Created.MeshServices[1]).To(Equal(meshService2))
-		})
+		generator.RegisterListener(listener)
 
-		generator.StartPushingSnapshots(ctx, time.Millisecond*500)
+		go func() {
+			defer GinkgoRecover()
+			generator.StartPushingSnapshots(ctx, pollFrequency)
+		}()
 
 		capturedEventHandler.OnCreate(meshService1)
 		capturedEventHandler.OnCreate(meshService2)
 
-		Eventually(func() bool {
-			boolMutex.Lock()
-			defer boolMutex.Unlock()
-			return didReceiveSnapshot
-		}, eventuallyTimeout, pollFrequency).Should(BeTrue(), "Should eventually receive a snapshot")
+		Eventually(
+			didReceiveSnapshot,
+			eventuallyTimeout,
+			pollFrequency,
+		).Should(Receive(), "Should eventually receive a snapshot")
 	})
 
 	It("can accurately swap out updated resources from the current state of the world", func() {
-		updatedSnapshot := snapshot.MeshNetworkingSnapshot{
-			CurrentState: snapshot.Resources{
-				MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
-			},
+		originalSnapshot := &snapshot.MeshNetworkingSnapshot{
+			MeshServices: []*discovery_v1alpha1.MeshService{meshService1},
 		}
-
-		validator := mock_snapshot.NewMockSnapshotValidator(ctrl)
+		validator := mock_snapshot.NewMockMeshNetworkingSnapshotValidator(ctrl)
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService1, originalSnapshot).
 			Return(true)
 
-		updatedSnapshot.CurrentState.MeshServices = append(updatedSnapshot.CurrentState.MeshServices, meshService2)
-		updatedSnapshot.Delta.Created.MeshServices = append(updatedSnapshot.Delta.Created.MeshServices, meshService1)
+		updatedSnapshot := &snapshot.MeshNetworkingSnapshot{
+			MeshServices: append(originalSnapshot.MeshServices, meshService2),
+		}
 		validator.EXPECT().
-			Validate(updatedSnapshot).
+			ValidateMeshServiceUpsert(gomock.Any(), meshService2, updatedSnapshot).
 			Return(true)
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
@@ -283,71 +265,68 @@ var _ = Describe("Networking Snapshot", func() {
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		generator := snapshot.NewNetworkingSnapshotGenerator(
+		generator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
 			ctx,
 			validator,
 			meshServiceController,
 			meshGroupController,
 			meshWorkloadController,
 		)
+		Expect(err).NotTo(HaveOccurred())
 
 		updatedService := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
-				Name:      "updated-name",
+				Name:      "ms-2",
 				Namespace: env.DefaultWriteNamespace,
 			},
 		}
 
-		numSnapshot := 0
-		var counterMutex sync.Mutex
-		generator.RegisterListener(func(ctx context.Context, networkingSnapshot snapshot.MeshNetworkingSnapshot) {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			numSnapshot += 1
+		didReceiveSnapshot := make(chan struct{})
+		listener := mock_snapshot.NewMockMeshNetworkingSnapshotListener(ctrl)
+		listener.EXPECT().
+			Sync(gomock.Any(), updatedSnapshot).
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+				didReceiveSnapshot <- struct{}{}
+			}).Times(1)
 
-			if numSnapshot == 1 {
-				Expect(networkingSnapshot.CurrentState.MeshServices).To(HaveLen(2))
-				Expect(networkingSnapshot.CurrentState.MeshServices[0]).To(Equal(meshService1))
-				Expect(networkingSnapshot.CurrentState.MeshServices[1]).To(Equal(meshService2))
-				Expect(networkingSnapshot.Delta.Created.MeshServices).To(HaveLen(2))
-				Expect(networkingSnapshot.Delta.Created.MeshServices[0]).To(Equal(meshService1))
-				Expect(networkingSnapshot.Delta.Created.MeshServices[1]).To(Equal(meshService2))
-			} else if numSnapshot == 2 {
-				Expect(networkingSnapshot.CurrentState.MeshServices).To(HaveLen(2))
-				Expect(networkingSnapshot.CurrentState.MeshServices[0]).To(Equal(meshService1))
-				Expect(networkingSnapshot.CurrentState.MeshServices[1]).To(Equal(updatedService))
-				Expect(networkingSnapshot.Delta.Created.MeshServices).To(HaveLen(0))
-				Expect(networkingSnapshot.Delta.Updated.MeshServices).To(HaveLen(1))
-				Expect(networkingSnapshot.Delta.Updated.MeshServices[0].New).To(Equal(updatedService))
-				Expect(networkingSnapshot.Delta.Updated.MeshServices[0].Old).To(Equal(meshService2))
-			} else {
-				Fail("Should not receive more than two snapshots")
-			}
-		})
+		generator.RegisterListener(listener)
 
-		generator.StartPushingSnapshots(ctx, time.Second)
+		newSnapshot := &snapshot.MeshNetworkingSnapshot{
+			MeshServices: []*discovery_v1alpha1.MeshService{
+				updatedSnapshot.MeshServices[0],
+				updatedService,
+			},
+		}
+		validator.EXPECT().
+			ValidateMeshServiceUpsert(ctx, updatedService, newSnapshot).
+			Return(true)
+
+		listener.EXPECT().
+			Sync(gomock.Any(), newSnapshot).
+			DoAndReturn(func(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
+				didReceiveSnapshot <- struct{}{}
+			}).Times(1)
+
+		go func() {
+			defer GinkgoRecover()
+			generator.StartPushingSnapshots(ctx, pollFrequency)
+		}()
 
 		capturedEventHandler.OnCreate(meshService1)
 		capturedEventHandler.OnCreate(meshService2)
 
-		Eventually(func() int {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			return numSnapshot
-		}, eventuallyTimeout*2, pollFrequency).Should(Equal(1), "Should eventually receive a first snapshot")
-
-		updatedSnapshot.CurrentState.MeshServices[1] = updatedService
-		updatedSnapshot.Delta = snapshot.Delta{}
-		validator.EXPECT().
-			Validate(updatedSnapshot).
-			Return(true)
+		Eventually(
+			didReceiveSnapshot,
+			eventuallyTimeout*2,
+			pollFrequency,
+		).Should(Receive(), "Should eventually receive a first snapshot")
 
 		capturedEventHandler.OnUpdate(meshService2, updatedService)
 
-		Eventually(func() int {
-			counterMutex.Lock()
-			defer counterMutex.Unlock()
-			return numSnapshot
-		}, eventuallyTimeout*2, pollFrequency).Should(Equal(2), "Should eventually receive a second snapshot")
+		Eventually(
+			didReceiveSnapshot,
+			eventuallyTimeout*2,
+			pollFrequency,
+		).Should(Receive(), "Should eventually receive a second snapshot")
 	})
 })

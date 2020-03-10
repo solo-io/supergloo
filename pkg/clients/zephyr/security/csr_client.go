@@ -8,22 +8,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type MeshGroupCertificateSigningRequestClientFactory func(client client.Client) MeshGroupCertificateSigningRequestClient
+type MeshGroupCSRClientFactory func(client client.Client) MeshGroupCSRClient
 
-func MeshGroupCertificateSigningRequestClientFactoryProvider() MeshGroupCertificateSigningRequestClientFactory {
-	return NewMeshGroupCertificateSigningRequestClient
+func MeshGroupCSRClientFactoryProvider() MeshGroupCSRClientFactory {
+	return NewMeshGroupCSRClient
 }
 
-func NewMeshGroupCertificateSigningRequestClient(dynamicClient client.Client) MeshGroupCertificateSigningRequestClient {
-	return &meshGroupCertificateSigningRequestClient{dynamicClient: dynamicClient}
+func NewMeshGroupCSRClient(dynamicClient client.Client) MeshGroupCSRClient {
+	return &meshGroupCSRClient{dynamicClient: dynamicClient}
 }
 
-type meshGroupCertificateSigningRequestClient struct {
+type meshGroupCSRClient struct {
 	cluster       string
 	dynamicClient client.Client
 }
 
-func (m *meshGroupCertificateSigningRequestClient) Create(
+func (m *meshGroupCSRClient) Create(
 	ctx context.Context,
 	csr *v1alpha1.MeshGroupCertificateSigningRequest,
 	opts ...client.CreateOption,
@@ -31,7 +31,7 @@ func (m *meshGroupCertificateSigningRequestClient) Create(
 	return m.dynamicClient.Create(ctx, csr, opts...)
 }
 
-func (m *meshGroupCertificateSigningRequestClient) Update(
+func (m *meshGroupCSRClient) Update(
 	ctx context.Context,
 	csr *v1alpha1.MeshGroupCertificateSigningRequest,
 	opts ...client.UpdateOption,
@@ -39,7 +39,7 @@ func (m *meshGroupCertificateSigningRequestClient) Update(
 	return m.dynamicClient.Update(ctx, csr, opts...)
 }
 
-func (m *meshGroupCertificateSigningRequestClient) UpdateStatus(
+func (m *meshGroupCSRClient) UpdateStatus(
 	ctx context.Context,
 	csr *v1alpha1.MeshGroupCertificateSigningRequest,
 	opts ...client.UpdateOption,
@@ -47,14 +47,14 @@ func (m *meshGroupCertificateSigningRequestClient) UpdateStatus(
 	return m.dynamicClient.Status().Update(ctx, csr, opts...)
 }
 
-func (m *meshGroupCertificateSigningRequestClient) Delete(ctx context.Context,
+func (m *meshGroupCSRClient) Delete(ctx context.Context,
 	csr *v1alpha1.MeshGroupCertificateSigningRequest,
 	opts ...client.DeleteOption,
 ) error {
 	return m.dynamicClient.Delete(ctx, csr, opts...)
 }
 
-func (m *meshGroupCertificateSigningRequestClient) Get(
+func (m *meshGroupCSRClient) Get(
 	ctx context.Context,
 	name, namespace string,
 ) (*v1alpha1.MeshGroupCertificateSigningRequest, error) {
@@ -70,7 +70,7 @@ func (m *meshGroupCertificateSigningRequestClient) Get(
 	return &csr, nil
 }
 
-func (m *meshGroupCertificateSigningRequestClient) List(
+func (m *meshGroupCSRClient) List(
 	ctx context.Context,
 	opts metav1.ListOptions,
 ) (*v1alpha1.MeshGroupCertificateSigningRequestList, error) {

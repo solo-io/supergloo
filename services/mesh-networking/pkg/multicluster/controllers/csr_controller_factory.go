@@ -6,12 +6,12 @@ import (
 )
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `CertificateSigningRequestController`
-type MeshGroupCertificateSigningRequestControllerFactory func(
+type MeshGroupCSRControllerFactory func(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (cert_controller.MeshGroupCertificateSigningRequestController, error)
 
-func NewMeshGroupCertificateSigningRequestControllerFactory() MeshGroupCertificateSigningRequestControllerFactory {
+func NewMeshGroupCSRControllerFactory() MeshGroupCSRControllerFactory {
 	return func(
 		mgr mc_manager.AsyncManager,
 		clusterName string,

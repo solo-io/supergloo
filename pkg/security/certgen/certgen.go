@@ -30,6 +30,10 @@ const (
 	certificateRequest = "CERTIFICATE REQUEST"
 )
 
+func YearDuration() time.Duration {
+	return time.Until(time.Now().AddDate(1, 0, 0))
+}
+
 var InvalidKeyFormattingError = func(err error) error {
 	return eris.Wrapf(err, "unable to decode private key, currently only supporting PKCS1 encrypted keys")
 }

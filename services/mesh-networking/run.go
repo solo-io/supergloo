@@ -4,15 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	mc_predicate "github.com/solo-io/mesh-projects/services/common/multicluster/predicate"
 	"github.com/solo-io/mesh-projects/services/internal/config"
-	group_controller "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/groups/controller"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func Run(ctx context.Context) {
@@ -24,7 +20,12 @@ func Run(ctx context.Context) {
 	if err != nil {
 		logger.Fatalw("error initializing mesh networking clients", zap.Error(err))
 	}
-
+	if err = meshNetworkingContext.MeshNetworkingSnapshotContext.StartListening(
+		ctx,
+		meshNetworkingContext.MultiClusterDeps.LocalManager,
+	); err != nil {
+		logger.Fatalw("error initializing mesh networking snapshot listener", zap.Error(err))
+	}
 	// start the TrafficPolicyTranslator
 	err = meshNetworkingContext.TrafficPolicyTranslator.Start(ctx)
 	if err != nil {
@@ -35,12 +36,7 @@ func Run(ctx context.Context) {
 	err = multicluster.SetupAndStartLocalManager(
 		meshNetworkingContext.MultiClusterDeps,
 		[]mc_manager.AsyncManagerStartOptionsFunc{
-			// start the mesh group event handler watching only the default write namespace, make this configurable?
-			group_controller.NewMeshGroupControllerStarter(
-				meshNetworkingContext.MeshGroupEventHandler,
-				mc_predicate.WhitelistedNamespacePredicateProvider(sets.NewString(env.DefaultWriteNamespace)),
-				group_controller.IgnoreStatusUpdatePredicate(ctx),
-			),
+			multicluster.AddAllV1Alpha1ToScheme,
 		},
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "mesh-networking-multicluster-controller",

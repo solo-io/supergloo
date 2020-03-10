@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/wire"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -14,6 +15,11 @@ import (
 )
 
 var (
+	FederationSet = wire.NewSet(
+		NewFederationDecider,
+		NewFederationSnapshotListener,
+	)
+
 	UnsupportedFederationMode = "Unsupported federation_mode"
 	ErrorUpdatingMeshServices = func(err error) string {
 		return fmt.Sprintf("Error while updating mesh services' federation metadata: %s", err.Error())
@@ -22,6 +28,20 @@ var (
 		return fmt.Sprintf("Error while loading mesh metadata to determine federation resolution: %s", err.Error())
 	}
 )
+
+func NewFederationSnapshotListener(decider FederationDecider) FederationSnapshotListener {
+	return &snapshot.MeshNetworkingSnapshotListenerFunc{
+		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
+			decider.DecideFederation(ctx, snap)
+		},
+	}
+}
+
+type FederationSnapshotListener snapshot.MeshNetworkingSnapshotListener
+
+type FederationDecider interface {
+	DecideFederation(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot)
+}
 
 func NewFederationDecider(
 	meshServiceClient discovery_core.MeshServiceClient,
@@ -44,7 +64,7 @@ type federationDecider struct {
 	federationStrategyChooser strategies.FederationStrategyChooser
 }
 
-func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnapshot snapshot.MeshNetworkingSnapshot) {
+func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnapshot *snapshot.MeshNetworkingSnapshot) {
 	logger := contextutils.LoggerFrom(ctx)
 
 	perMeshMetadata, errorReports := strategies.BuildPerMeshMetadataFromSnapshot(ctx, networkingSnapshot, f.meshClient)

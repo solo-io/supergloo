@@ -89,6 +89,11 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //selector
 //namespaces
 //- foo
+//- bar
+//labels:
+//hello: world
+//
+//
 type Selector struct {
 	// map of labels to match against
 	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
