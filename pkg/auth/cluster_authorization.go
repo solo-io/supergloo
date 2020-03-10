@@ -1,7 +1,9 @@
 package auth
 
 import (
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	"context"
+
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	rbacapiv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -13,14 +15,6 @@ var (
 		ObjectMeta: metav1.ObjectMeta{Name: "cluster-admin"},
 	}}
 )
-
-// Given a way to authorize to a cluster, produce a new config that can authorize to that same cluster
-// using a newly-created service account token in that cluster.
-// Creates a service account in the target cluster with the name/namespace of `serviceAccountRef` and cluster-admin permissions
-//go:generate mockgen -destination ./mocks/mock_cluster_authorization.go github.com/solo-io/mesh-projects/pkg/auth ClusterAuthorization
-type ClusterAuthorization interface {
-	CreateAuthConfigForCluster(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (*rest.Config, error)
-}
 
 type clusterAuthorization struct {
 	configCreator          RemoteAuthorityConfigCreator
@@ -34,12 +28,14 @@ func NewClusterAuthorization(
 }
 
 func (c *clusterAuthorization) CreateAuthConfigForCluster(
+	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *core.ResourceRef) (*rest.Config, error) {
-	_, err := c.remoteAuthorityManager.ApplyRemoteServiceAccount(serviceAccountRef, ServiceAccountRoles)
+	serviceAccountRef *types.ResourceRef,
+) (*rest.Config, error) {
+	_, err := c.remoteAuthorityManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, ServiceAccountRoles)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.configCreator.ConfigFromRemoteServiceAccount(targetClusterCfg, serviceAccountRef)
+	return c.configCreator.ConfigFromRemoteServiceAccount(ctx, targetClusterCfg, serviceAccountRef)
 }

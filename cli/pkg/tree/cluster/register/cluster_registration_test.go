@@ -13,7 +13,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
+	cluster_internal "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -22,12 +22,14 @@ import (
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Cluster Operations", func() {
@@ -92,7 +94,7 @@ users:
     token: alphanumericgarbage
 `, server)
 			}
-			serviceAccountRef = &core.ResourceRef{
+			serviceAccountRef = &core_types.ResourceRef{
 				Name:      "test-cluster-name",
 				Namespace: "default",
 			}
@@ -128,8 +130,13 @@ users:
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -148,7 +155,7 @@ users:
 				Apply(secret).
 				Return(nil)
 
-			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,
@@ -191,13 +198,19 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
 			kubeLoader.
 				EXPECT().
 				GetRawConfigForContext(remoteKubeConfig, "").
 				Return(cxt, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -218,7 +231,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.KubernetesCluster{
+				Upsert(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.DefaultWriteNamespace,
@@ -262,13 +275,19 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
 			kubeLoader.
 				EXPECT().
 				GetRawConfigForContext(remoteKubeConfig, contextDEF).
 				Return(cxt, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -289,7 +308,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.KubernetesCluster{
+				Upsert(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.DefaultWriteNamespace,
@@ -366,14 +385,80 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(nil, testErr)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
 				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
 
 			Expect(err).To(Equal(testErr))
 			Expect(stdout).To(ContainSubstring(register.FailedToCreateAuthToken(serviceAccountRef, remoteKubeConfig, "")))
+		})
+
+		It("will fail if unable to verify kube cluster already exists", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+			testErr := eris.New("hello")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(targetRestConfig, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, testErr)
+
+			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(err).To(HaveInErrorChain(testErr))
+			Expect(stdout).To(ContainSubstring(register.FailedToCheckForPreviousKubeCluster))
+		})
+
+		It("will print previous command to run with --overwrite if kube cluster already exists", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(targetRestConfig, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, nil)
+
+			command := fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig)
+			stdout, err := meshctl.Invoke(command)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(stdout).To(ContainSubstring(`Cluster already registered; if you would like to update this cluster please run the previous command with the --overwrite flag:`))
 		})
 
 		It("will fail if unable to write secret", func() {
@@ -394,13 +479,19 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Return(targetRestConfig, nil)
 			authClient.
 				EXPECT().
-				CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).
+				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
 			kubeLoader.
 				EXPECT().
 				GetRawConfigForContext(remoteKubeConfig, "").
 				Return(cxt, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secretWriter.
 				EXPECT().
@@ -436,7 +527,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			stdout, err = meshctl.Invoke("cluster register --remote-cluster-name hello")
 			Expect(stdout).To(BeEmpty())
-			Expect(err).To(HaveInErrorChain(cluster_common.NoRemoteConfigSpecifiedError))
+			Expect(err).To(HaveInErrorChain(cluster_internal.NoRemoteConfigSpecifiedError))
 
 			configVerifier.EXPECT().Verify(kubeConfigPath, "").Return(testErr)
 
@@ -459,8 +550,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -481,7 +578,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			testErr := eris.New("test")
 
-			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,
@@ -509,8 +606,14 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
 			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, remoteContext).Return(targetRestConfig, nil)
-			authClient.EXPECT().CreateAuthConfigForCluster(targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
 			secret := &v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -529,7 +632,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Apply(secret).
 				Return(nil)
 
-			clusterClient.EXPECT().Create(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.DefaultWriteNamespace,

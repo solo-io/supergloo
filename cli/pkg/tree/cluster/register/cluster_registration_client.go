@@ -5,22 +5,28 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	cluster_common "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/common"
+	cluster_internal "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/internal"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	kubev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+const (
+	FailedToCheckForPreviousKubeCluster = "Could not get KubernetesCluster resource from master cluster"
 )
 
 var (
@@ -30,11 +36,11 @@ var (
 	FailedLoadingMasterConfig = func(err error) error {
 		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
 	}
-	FailedToCreateAuthToken = func(saRef *core.ResourceRef, remoteKubeConfig, remoteContext string) string {
+	FailedToCreateAuthToken = func(saRef *core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
 		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
 			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
 			"have been created and left in the cluster while a later step failed. \n",
-			saRef.Namespace, saRef.Name, remoteKubeConfig, remoteContext)
+			saRef.GetNamespace(), saRef.GetName(), remoteKubeConfig, remoteContext)
 	}
 	FailedToConvertToSecret = func(err error) error {
 		return eris.Wrap(err, "Could not convert kube config for new service account into secret")
@@ -58,10 +64,11 @@ func RegisterCluster(
 	kubeLoader common_config.KubeLoader,
 ) error {
 
-	if err := cluster_common.VerifyRemoteContextFlags(opts); err != nil {
+	if err := cluster_internal.VerifyRemoteContextFlags(opts); err != nil {
 		return err
 	}
-	if err := cluster_common.VerifyMasterCluster(clientsFactory, opts); err != nil {
+
+	if err := cluster_internal.VerifyMasterCluster(clientsFactory, opts); err != nil {
 		return err
 	}
 
@@ -101,7 +108,13 @@ func RegisterCluster(
 		return err
 	}
 
-	configForServiceAccount, err := generateServiceAccountConfig(out, remoteKubeClients, remoteCfg, registerOpts)
+	// if overwrite returns ok than the program should continue, else return
+	// The reason for the 2 return vars is that err may be nil and returned anyway
+	if ok, err := shouldOverwrite(ctx, out, opts, masterKubeClients); !ok {
+		return err
+	}
+
+	configForServiceAccount, err := generateServiceAccountConfig(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
 	if err != nil {
 		return err
 	}
@@ -126,35 +139,44 @@ func RegisterCluster(
 	}
 
 	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
-	fmt.Fprintf(out, "\nCluster %s is now registered in your Service Mesh Hub installation\n", registerOpts.RemoteClusterName)
+	fmt.Fprintf(
+		out,
+		"\nCluster %s is now registered in your Service Mesh Hub installation\n",
+		registerOpts.RemoteClusterName,
+	)
 
 	return nil
 }
 
-func generateServiceAccountConfig(
+func shouldOverwrite(
+	ctx context.Context,
 	out io.Writer,
-	kubeClients *common.KubeClients,
-	remoteAuthConfig *rest.Config,
-	registerOpts options.Register,
-) (*rest.Config, error) {
-
-	// the new cluster name doubles as the name for the service account we will auth as
-	serviceAccountRef := &core.ResourceRef{
-		Name:      registerOpts.RemoteClusterName,
-		Namespace: registerOpts.RemoteWriteNamespace,
+	opts *options.Options,
+	masterKubeClients *common.KubeClients,
+) (ok bool, err error) {
+	if !opts.Cluster.Register.Overwrite {
+		_, err = masterKubeClients.KubeClusterClient.Get(
+			ctx,
+			client.ObjectKey{
+				Name:      opts.Cluster.Register.RemoteClusterName,
+				Namespace: opts.Root.WriteNamespace,
+			},
+		)
+		if err != nil && !errors.IsNotFound(err) {
+			// if kube cluster does not exist for the given name, continue
+			fmt.Fprintf(out, FailedToCheckForPreviousKubeCluster)
+			return false, err
+		} else if err == nil {
+			// nil error signifying the object exists
+			setFlags := make([]string, 0, len(os.Args)+1)
+			copy(setFlags, os.Args)
+			setFlags = append(setFlags, fmt.Sprintf("--%s", options.ClusterRegisterOverwriteFlag))
+			fmt.Fprintf(out, "\nCluster already registered; if you would like to update this cluster please run the previous command with the --%s flag: \n\n"+
+				"$ %s\n", options.ClusterRegisterOverwriteFlag, strings.Join(setFlags, " "))
+			return false, nil
+		}
 	}
-	configForServiceAccount, err := kubeClients.ClusterAuthorization.
-		CreateAuthConfigForCluster(remoteAuthConfig, serviceAccountRef)
-	if err != nil {
-		fmt.Fprintf(out, FailedToCreateAuthToken(
-			serviceAccountRef,
-			registerOpts.RemoteKubeConfig,
-			registerOpts.RemoteContext,
-		))
-		return nil, err
-	}
-
-	return configForServiceAccount, nil
+	return true, nil
 }
 
 func writeKubeConfigToMaster(
@@ -228,6 +250,60 @@ func writeKubeConfigToMaster(
 	return secret, nil
 }
 
+// write the KubernetesCluster resource to the master cluster
+func writeKubeClusterToMaster(
+	ctx context.Context,
+	masterKubeClients *common.KubeClients,
+	writeNamespace string,
+	registerOpts options.Register,
+	secret *kubev1.Secret,
+) error {
+	cluster := &discoveryv1alpha1.KubernetesCluster{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      registerOpts.RemoteClusterName,
+			Namespace: writeNamespace,
+		},
+		Spec: discovery_types.KubernetesClusterSpec{
+			SecretRef: &core_types.ResourceRef{
+				Name:      secret.GetName(),
+				Namespace: secret.GetNamespace(),
+			},
+		},
+	}
+	err := masterKubeClients.KubeClusterClient.Upsert(ctx, cluster)
+	if err != nil {
+		return FailedToWriteKubeCluster(err)
+	}
+	return nil
+}
+
+func generateServiceAccountConfig(
+	ctx context.Context,
+	out io.Writer,
+	kubeClients *common.KubeClients,
+	remoteAuthConfig *rest.Config,
+	registerOpts options.Register,
+) (*rest.Config, error) {
+
+	// the new cluster name doubles as the name for the service account we will auth as
+	serviceAccountRef := &core_types.ResourceRef{
+		Name:      registerOpts.RemoteClusterName,
+		Namespace: registerOpts.RemoteWriteNamespace,
+	}
+	configForServiceAccount, err := kubeClients.ClusterAuthorization.
+		CreateAuthConfigForCluster(ctx, remoteAuthConfig, serviceAccountRef)
+	if err != nil {
+		fmt.Fprintf(out, FailedToCreateAuthToken(
+			serviceAccountRef,
+			registerOpts.RemoteKubeConfig,
+			registerOpts.RemoteContext,
+		))
+		return nil, err
+	}
+
+	return configForServiceAccount, nil
+}
+
 // if:
 //   * we are operating against a context named "kind-", AND
 //   * the server appears to point to localhost, AND
@@ -239,7 +315,10 @@ func writeKubeConfigToMaster(
 // issued for the domain contained in the value of `--local-cluster-domain-override`.
 //
 // this function call is a no-op if those conditions are not met
-func hackClusterConfigForLocalTestingInKIND(remoteCluster *api.Cluster, remoteContextName string, clusterDomainOverride string) error {
+func hackClusterConfigForLocalTestingInKIND(
+	remoteCluster *api.Cluster,
+	remoteContextName, clusterDomainOverride string,
+) error {
 	serverUrl, err := url.Parse(remoteCluster.Server)
 	if err != nil {
 		return err
@@ -255,32 +334,5 @@ func hackClusterConfigForLocalTestingInKIND(remoteCluster *api.Cluster, remoteCo
 		remoteCluster.CertificateAuthorityData = []byte("")
 	}
 
-	return nil
-}
-
-// write the KubernetesCluster resource to the master cluster
-func writeKubeClusterToMaster(
-	ctx context.Context,
-	masterKubeClients *common.KubeClients,
-	writeNamespace string,
-	registerOpts options.Register,
-	secret *kubev1.Secret,
-) error {
-
-	err := masterKubeClients.KubeClusterClient.Create(ctx, &discoveryv1alpha1.KubernetesCluster{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      registerOpts.RemoteClusterName,
-			Namespace: writeNamespace,
-		},
-		Spec: discovery_types.KubernetesClusterSpec{
-			SecretRef: &core_types.ResourceRef{
-				Name:      secret.GetName(),
-				Namespace: secret.GetNamespace(),
-			},
-		},
-	})
-	if err != nil {
-		return FailedToWriteKubeCluster(err)
-	}
 	return nil
 }

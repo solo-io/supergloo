@@ -21,6 +21,8 @@ func ClusterRootCmd(registerCmd register.RegistrationCmd) ClusterCommand {
 		Short: cliconstants.ClusterCommand.Short,
 		RunE:  common.NonTerminalCommand(cliconstants.ClusterCommand.Use),
 	}
-	cluster.AddCommand(registerCmd)
+	cluster.AddCommand(
+		registerCmd,
+	)
 	return cluster
 }

@@ -24,6 +24,16 @@ type SecretsClient interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error)
 }
 
+type ServiceAccountClient interface {
+	// create the service account in the namespace on the resource's ObjectMeta
+	Create(ctx context.Context, serviceAccount *corev1.ServiceAccount) error
+
+	Get(ctx context.Context, name, namespace string) (*corev1.ServiceAccount, error)
+
+	// update the service account in the namespace on the resource's ObjectMeta
+	Update(ctx context.Context, serviceAccount *corev1.ServiceAccount) error
+}
+
 type ConfigMapClient interface {
 	Create(ctx context.Context, configMap *corev1.ConfigMap) error
 	Get(ctx context.Context, objKey client.ObjectKey) (*corev1.ConfigMap, error)

@@ -22,6 +22,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
@@ -34,9 +35,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	wire.Build(
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
-		auth.NewServiceAccountClient,
+		kubernetes_core.NewGeneratedServiceAccountClient,
 		discovery_core.NewGeneratedKubernetesClusterClient,
-		auth.NewSecretClient,
+		kubernetes_core.NewGeneratedSecretsClient,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,

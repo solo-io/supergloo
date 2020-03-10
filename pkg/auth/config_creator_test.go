@@ -1,24 +1,25 @@
 package auth_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/auth"
-	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	kubeapiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
 
 var _ = Describe("Config creator", func() {
 	var (
+		ctx               context.Context
 		ctrl              *gomock.Controller
-		serviceAccountRef = &core.ResourceRef{
+		serviceAccountRef = &types.ResourceRef{
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}
@@ -39,6 +40,7 @@ var _ = Describe("Config creator", func() {
 	)
 
 	BeforeEach(func() {
+		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
 	})
 
@@ -47,24 +49,24 @@ var _ = Describe("Config creator", func() {
 	})
 
 	It("works when the service account is immediately ready", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_auth.NewMockSecretClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{}).
+			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
 			Return(&kubeapiv1.ServiceAccount{
 				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
 			}, nil)
 
 		secretClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, tokenSecretRef.Name, v1.GetOptions{}).
+			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
 			Return(secret, nil)
 
-		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(testKubeConfig, serviceAccountRef)
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
@@ -72,16 +74,16 @@ var _ = Describe("Config creator", func() {
 	})
 
 	It("works when the service account eventually has a secret attached to it", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_auth.NewMockSecretClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		attemptsRemaining := 3
 		saClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{}).
-			DoAndReturn(func(namespace, serviceAccountName string, opts v1.GetOptions) (*kubeapiv1.ServiceAccount, error) {
+			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
+			DoAndReturn(func(ctx context.Context, serviceAccountName, namespace string) (*kubeapiv1.ServiceAccount, error) {
 				attemptsRemaining -= 1
 				if attemptsRemaining > 0 {
 					return nil, errors.New("whoops not ready yet")
@@ -95,10 +97,10 @@ var _ = Describe("Config creator", func() {
 
 		secretClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, tokenSecretRef.Name, v1.GetOptions{}).
+			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
 			Return(secret, nil)
 
-		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(testKubeConfig, serviceAccountRef)
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(newCfg.TLSClientConfig.CertData).To(BeEmpty())
@@ -106,24 +108,24 @@ var _ = Describe("Config creator", func() {
 	})
 
 	It("returns an error when the secret is malformed", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_auth.NewMockSecretClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{}).
+			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
 			Return(&kubeapiv1.ServiceAccount{
 				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
 			}, nil)
 
 		secretClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, tokenSecretRef.Name, v1.GetOptions{}).
+			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
 			Return(&kubeapiv1.Secret{Data: map[string][]byte{"whoops wrong key": []byte("yikes")}}, nil)
 
-		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(testKubeConfig, serviceAccountRef)
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).To(Equal(auth.MalformedSecret))
 		Expect(err).To(HaveInErrorChain(auth.MalformedSecret))
@@ -131,14 +133,14 @@ var _ = Describe("Config creator", func() {
 	})
 
 	It("returns an error if the secret never appears", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
-		secretClient := mock_auth.NewMockSecretClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
+		secretClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 
 		remoteAuthConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, saClient)
 
 		saClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{}).
+			Get(ctx, serviceAccountRef.Name, serviceAccountRef.Namespace).
 			Return(&kubeapiv1.ServiceAccount{
 				Secrets: []kubeapiv1.ObjectReference{tokenSecretRef},
 			}, nil).
@@ -148,11 +150,11 @@ var _ = Describe("Config creator", func() {
 
 		secretClient.
 			EXPECT().
-			Get(serviceAccountRef.Namespace, tokenSecretRef.Name, v1.GetOptions{}).
+			Get(ctx, tokenSecretRef.Name, serviceAccountRef.Namespace).
 			Return(nil, testErr).
 			AnyTimes()
 
-		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(testKubeConfig, serviceAccountRef)
+		newCfg, err := remoteAuthConfigCreator.ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).To(HaveInErrorChain(auth.SecretNotReady(errors.New("test-err"))))
 		Expect(newCfg).To(BeNil())

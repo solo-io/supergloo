@@ -163,6 +163,72 @@ func (mr *MockSecretsClientMockRecorder) List(ctx, opts interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSecretsClient)(nil).List), ctx, opts)
 }
 
+// MockServiceAccountClient is a mock of ServiceAccountClient interface
+type MockServiceAccountClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockServiceAccountClientMockRecorder
+}
+
+// MockServiceAccountClientMockRecorder is the mock recorder for MockServiceAccountClient
+type MockServiceAccountClientMockRecorder struct {
+	mock *MockServiceAccountClient
+}
+
+// NewMockServiceAccountClient creates a new mock instance
+func NewMockServiceAccountClient(ctrl *gomock.Controller) *MockServiceAccountClient {
+	mock := &MockServiceAccountClient{ctrl: ctrl}
+	mock.recorder = &MockServiceAccountClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockServiceAccountClient) EXPECT() *MockServiceAccountClientMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method
+func (m *MockServiceAccountClient) Create(ctx context.Context, serviceAccount *v1.ServiceAccount) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, serviceAccount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockServiceAccountClientMockRecorder) Create(ctx, serviceAccount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockServiceAccountClient)(nil).Create), ctx, serviceAccount)
+}
+
+// Get mocks base method
+func (m *MockServiceAccountClient) Get(ctx context.Context, name, namespace string) (*v1.ServiceAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
+	ret0, _ := ret[0].(*v1.ServiceAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockServiceAccountClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockServiceAccountClient)(nil).Get), ctx, name, namespace)
+}
+
+// Update mocks base method
+func (m *MockServiceAccountClient) Update(ctx context.Context, serviceAccount *v1.ServiceAccount) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, serviceAccount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockServiceAccountClientMockRecorder) Update(ctx, serviceAccount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockServiceAccountClient)(nil).Update), ctx, serviceAccount)
+}
+
 // MockConfigMapClient is a mock of ConfigMapClient interface
 type MockConfigMapClient struct {
 	ctrl     *gomock.Controller

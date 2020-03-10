@@ -1,68 +1,63 @@
 package auth
 
 import (
+	"context"
+
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	k8sapiv1 "k8s.io/api/core/v1"
 	rbactypes "k8s.io/api/rbac/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_auth.go
-
-type ServiceAccountClient interface {
-	// create the service account in the namespace on the resource's ObjectMeta
-	Create(serviceAccount *k8sapiv1.ServiceAccount) (*k8sapiv1.ServiceAccount, error)
-
-	Get(namespace, name string, options metav1.GetOptions) (*k8sapiv1.ServiceAccount, error)
-
-	// update the service account in the namespace on the resource's ObjectMeta
-	Update(serviceAccount *k8sapiv1.ServiceAccount) (*k8sapiv1.ServiceAccount, error)
-}
-
-func NewServiceAccountClient(k kubernetes.Interface) ServiceAccountClient {
-	return &serviceAccountClient{coreV1: k.CoreV1()}
-}
-
-type serviceAccountClient struct {
-	coreV1 corev1.CoreV1Interface
-}
-
-func (s *serviceAccountClient) Create(serviceAccount *k8sapiv1.ServiceAccount) (*k8sapiv1.ServiceAccount, error) {
-	return s.coreV1.ServiceAccounts(serviceAccount.GetNamespace()).Create(serviceAccount)
-}
-
-func (s *serviceAccountClient) Get(namespace, name string, options metav1.GetOptions) (*k8sapiv1.ServiceAccount, error) {
-	return s.coreV1.ServiceAccounts(namespace).Get(name, options)
-}
-
-func (s *serviceAccountClient) Update(serviceAccount *k8sapiv1.ServiceAccount) (*k8sapiv1.ServiceAccount, error) {
-	return s.coreV1.ServiceAccounts(serviceAccount.GetNamespace()).Update(serviceAccount)
-}
-
-type SecretClient interface {
-	Get(namespace, name string, options metav1.GetOptions) (*k8sapiv1.Secret, error)
-}
-
-func NewSecretClient(k kubernetes.Interface) SecretClient {
-	return &secretClient{coreV1: k.CoreV1()}
-}
-
-type secretClient struct {
-	coreV1 corev1.CoreV1Interface
-}
-
-func (s *secretClient) Get(namespace, name string, options metav1.GetOptions) (*k8sapiv1.Secret, error) {
-	return s.coreV1.Secrets(namespace).Get(name, options)
-}
 
 type RbacClient interface {
 	// bind the given roles to the target service account at cluster scope
 	BindClusterRolesToServiceAccount(targetServiceAccount *k8sapiv1.ServiceAccount, roles []*rbactypes.ClusterRole) error
 }
 
+// create a kube config that can authorize to the target cluster as the service account from that target cluster
+type RemoteAuthorityConfigCreator interface {
+
+	// Returns a `*rest.Config` that points to the same cluster as `targetClusterCfg`, but authorizes itself using the
+	// bearer token belonging to the service account at `serviceAccountRef` in the target cluster
+	//
+	// NB: This function blocks the current go routine for up to 6 seconds while waiting for the service account's secret
+	// to appear, by performing an exponential backoff retry loop
+	ConfigFromRemoteServiceAccount(
+		ctx context.Context,
+		targetClusterCfg *rest.Config,
+		serviceAccountRef *core_types.ResourceRef,
+	) (*rest.Config, error)
+}
+
+// Given a way to authorize to a cluster, produce a new config that can authorize to that same cluster
+// using a newly-created service account token in that cluster.
+// Creates a service account in the target cluster with the name/namespace of `serviceAccountRef` and cluster-admin permissions
+type ClusterAuthorization interface {
+	CreateAuthConfigForCluster(
+		ctx context.Context,
+		targetClusterCfg *rest.Config,
+		serviceAccountRef *core_types.ResourceRef,
+	) (*rest.Config, error)
+}
+
+// Create a service account on a cluster that `targetClusterCfg` can reach
+// Set up that service account with the indicated cluster roles
+type RemoteAuthorityManager interface {
+	// creates a new service account in the cluster pointed to by the cfg at the name/namespace indicated by the ResourceRef,
+	// and assigns it the given ClusterRoles
+	// NB: if role assignment fails, the service account is left in the cluster; this is not an atomic operation
+	ApplyRemoteServiceAccount(
+		ctx context.Context,
+		newServiceAccountRef *core_types.ResourceRef,
+		roles []*rbactypes.ClusterRole,
+	) (*k8sapiv1.ServiceAccount, error)
+}
+
 type Clients struct {
-	ServiceAccountClient ServiceAccountClient
+	ServiceAccountClient kubernetes_core.ServiceAccountClient
 	RbacClient           RbacClient
-	SecretClient         SecretClient
+	SecretClient         kubernetes_core.SecretsClient
 }

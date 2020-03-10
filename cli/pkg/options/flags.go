@@ -48,6 +48,10 @@ func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 		"Create the namespace to install Service Mesh Hub into")
 }
 
+const (
+	ClusterRegisterOverwriteFlag = "overwrite"
+)
+
 func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
 	remoteClusterName := "remote-cluster-name"
@@ -66,6 +70,8 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 		"Set the path to the kubeconfig you would like to use for the remote cluster. Leave empty to use the default.")
 	flags.StringVar(&opts.Cluster.Register.LocalClusterDomainOverride, localClusterDomainOverride, "",
 		"Swap out the domain of the remote cluster's k8s API server for the value of this flag; used mainly for debugging locally in docker, where you may provide a value like 'host.docker.internal'")
+	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
+		"Overwrite any cluster registered with the cluster name provided")
 
 	// this flag is mainly for our own debugging purposes
 	// don't show it in usage messages

@@ -1,4 +1,4 @@
-package cluster_common
+package cluster_internal
 
 import (
 	"github.com/rotisserie/eris"

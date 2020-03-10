@@ -5,6 +5,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	k8sclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -44,4 +46,38 @@ func (c *secretsClient) List(ctx context.Context, opts metav1.ListOptions) (*cor
 		return nil, err
 	}
 	return &list, nil
+}
+
+func NewGeneratedSecretsClient(client kubernetes.Interface) SecretsClient {
+	return &secretsGeneratedClient{client: client.CoreV1()}
+}
+
+type secretsGeneratedClient struct {
+	client k8sclientv1.SecretsGetter
+}
+
+func (s *secretsGeneratedClient) Update(_ context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
+	updated, err := s.client.Secrets(secret.GetNamespace()).Update(secret)
+	if err != nil {
+		return err
+	}
+	*secret = *updated
+	return nil
+}
+
+func (s *secretsGeneratedClient) Create(_ context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
+	updated, err := s.client.Secrets(secret.GetNamespace()).Create(secret)
+	if err != nil {
+		return err
+	}
+	*secret = *updated
+	return nil
+}
+
+func (s *secretsGeneratedClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
+	return s.client.Secrets(namespace).Get(name, metav1.GetOptions{})
+}
+
+func (s *secretsGeneratedClient) List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error) {
+	return s.client.Secrets("").List(metav1.ListOptions{})
 }

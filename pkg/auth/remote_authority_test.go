@@ -1,14 +1,17 @@
 package auth_test
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	kubeapiv1 "k8s.io/api/core/v1"
 	rbacapiv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -17,8 +20,9 @@ import (
 
 var _ = Describe("Remote service account client", func() {
 	var (
+		ctx               context.Context
 		ctrl              *gomock.Controller
-		serviceAccountRef = &core.ResourceRef{
+		serviceAccountRef = &types.ResourceRef{
 			Name:      "test-sa",
 			Namespace: "test-ns",
 		}
@@ -32,6 +36,7 @@ var _ = Describe("Remote service account client", func() {
 	)
 
 	BeforeEach(func() {
+		ctx = context.TODO()
 		ctrl = gomock.NewController(GinkgoT())
 	})
 
@@ -40,7 +45,7 @@ var _ = Describe("Remote service account client", func() {
 	})
 
 	It("works", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
@@ -54,21 +59,21 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(serviceAccount).
-			Return(serviceAccount, nil)
+			Create(ctx, serviceAccount).
+			Return(nil)
 
 		rbacClient.
 			EXPECT().
 			BindClusterRolesToServiceAccount(serviceAccount, roles).
 			Return(nil)
 
-		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(sa).To(Equal(serviceAccount))
 	})
 
 	It("will try and update if create fails", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
@@ -82,21 +87,21 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(serviceAccount).
-			Return(nil, notFoundErr)
+			Create(ctx, serviceAccount).
+			Return(notFoundErr)
 
 		saClient.
 			EXPECT().
-			Update(serviceAccount).
-			Return(nil, testErr)
+			Update(ctx, serviceAccount).
+			Return(testErr)
 
-		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
 		Expect(err).To(HaveInErrorChain(testErr))
 		Expect(sa).To(BeNil())
 	})
 
 	It("reports an error if service account creation fails, on not IsAlreadyExists error", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
@@ -110,16 +115,16 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(serviceAccount).
-			Return(nil, testErr)
+			Create(ctx, serviceAccount).
+			Return(testErr)
 
-		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
 		Expect(err).To(HaveInErrorChain(testErr))
 		Expect(sa).To(BeNil())
 	})
 
 	It("reports an error if role binding fails", func() {
-		saClient := mock_auth.NewMockServiceAccountClient(ctrl)
+		saClient := mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		rbacClient := mock_auth.NewMockRbacClient(ctrl)
 
 		remoteAuthManager := auth.NewRemoteAuthorityManager(saClient, rbacClient)
@@ -133,15 +138,15 @@ var _ = Describe("Remote service account client", func() {
 
 		saClient.
 			EXPECT().
-			Create(serviceAccount).
-			Return(serviceAccount, nil)
+			Create(ctx, serviceAccount).
+			Return(nil)
 
 		rbacClient.
 			EXPECT().
 			BindClusterRolesToServiceAccount(serviceAccount, roles).
 			Return(testErr)
 
-		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(serviceAccountRef, roles)
+		sa, err := remoteAuthManager.ApplyRemoteServiceAccount(ctx, serviceAccountRef, roles)
 		Expect(err).To(HaveInErrorChain(testErr))
 		Expect(sa).To(BeNil())
 	})

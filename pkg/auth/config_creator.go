@@ -1,13 +1,14 @@
 package auth
 
 import (
+	"context"
 	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	k8sapiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -25,19 +26,10 @@ var (
 	}
 )
 
-// create a kube config that can authorize to the target cluster as the service account from that target cluster
-//go:generate mockgen -destination ./mocks/mock_remote_authority_config_creator.go github.com/solo-io/mesh-projects/pkg/auth RemoteAuthorityConfigCreator
-type RemoteAuthorityConfigCreator interface {
-
-	// Returns a `*rest.Config` that points to the same cluster as `targetClusterCfg`, but authorizes itself using the
-	// bearer token belonging to the service account at `serviceAccountRef` in the target cluster
-	//
-	// NB: This function blocks the current go routine for up to 6 seconds while waiting for the service account's secret
-	// to appear, by performing an exponential backoff retry loop
-	ConfigFromRemoteServiceAccount(targetClusterCfg *rest.Config, serviceAccountRef *core.ResourceRef) (*rest.Config, error)
-}
-
-func NewRemoteAuthorityConfigCreator(secretClient SecretClient, serviceAccountClient ServiceAccountClient) RemoteAuthorityConfigCreator {
+func NewRemoteAuthorityConfigCreator(
+	secretClient kubernetes_core.SecretsClient,
+	serviceAccountClient kubernetes_core.ServiceAccountClient,
+) RemoteAuthorityConfigCreator {
 	return &remoteAuthorityConfigCreator{
 		serviceAccountClient: serviceAccountClient,
 		secretClient:         secretClient,
@@ -45,16 +37,17 @@ func NewRemoteAuthorityConfigCreator(secretClient SecretClient, serviceAccountCl
 }
 
 type remoteAuthorityConfigCreator struct {
-	secretClient         SecretClient
-	serviceAccountClient ServiceAccountClient
+	secretClient         kubernetes_core.SecretsClient
+	serviceAccountClient kubernetes_core.ServiceAccountClient
 }
 
 func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
+	ctx context.Context,
 	targetClusterCfg *rest.Config,
-	serviceAccountRef *core.ResourceRef,
+	serviceAccountRef *core_types.ResourceRef,
 ) (*rest.Config, error) {
 
-	tokenSecret, err := r.waitForSecret(serviceAccountRef)
+	tokenSecret, err := r.waitForSecret(ctx, serviceAccountRef)
 	if err != nil {
 		return nil, SecretNotReady(err)
 	}
@@ -75,10 +68,16 @@ func (r *remoteAuthorityConfigCreator) ConfigFromRemoteServiceAccount(
 }
 
 func (r *remoteAuthorityConfigCreator) waitForSecret(
-	serviceAccountRef *core.ResourceRef) (foundSecret *k8sapiv1.Secret, err error) {
+	ctx context.Context,
+	serviceAccountRef *core_types.ResourceRef,
+) (foundSecret *k8sapiv1.Secret, err error) {
 
 	err = retry.Do(func() error {
-		serviceAccount, err := r.serviceAccountClient.Get(serviceAccountRef.Namespace, serviceAccountRef.Name, v1.GetOptions{})
+		serviceAccount, err := r.serviceAccountClient.Get(
+			ctx,
+			serviceAccountRef.Name,
+			serviceAccountRef.Namespace,
+		)
 		if err != nil {
 			return err
 		}
@@ -92,7 +91,7 @@ func (r *remoteAuthorityConfigCreator) waitForSecret(
 
 		secretName := serviceAccount.Secrets[0].Name
 
-		secret, err := r.secretClient.Get(serviceAccountRef.Namespace, secretName, v1.GetOptions{})
+		secret, err := r.secretClient.Get(ctx, secretName, serviceAccountRef.Namespace)
 		if err != nil {
 			return err
 		}

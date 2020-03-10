@@ -1,21 +1,23 @@
 package auth_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
-	"github.com/solo-io/solo-kit/pkg/api/v1/resources/core"
 	"k8s.io/client-go/rest"
 )
 
 var _ = Describe("Cluster authorization", func() {
 	var (
 		ctrl              *gomock.Controller
-		serviceAccountRef = &core.ResourceRef{
+		ctx               context.Context
+		serviceAccountRef = &types.ResourceRef{
 			Name:      "test-service-account",
 			Namespace: "test-ns",
 		}
@@ -33,6 +35,7 @@ var _ = Describe("Cluster authorization", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
 	})
 
 	AfterEach(func() {
@@ -47,15 +50,15 @@ var _ = Describe("Cluster authorization", func() {
 
 		mockRemoteAuthorityManager.
 			EXPECT().
-			ApplyRemoteServiceAccount(serviceAccountRef, auth.ServiceAccountRoles).
+			ApplyRemoteServiceAccount(ctx, serviceAccountRef, auth.ServiceAccountRoles).
 			Return(nil, nil)
 
 		mockConfigCreator.
 			EXPECT().
-			ConfigFromRemoteServiceAccount(testKubeConfig, serviceAccountRef).
+			ConfigFromRemoteServiceAccount(ctx, testKubeConfig, serviceAccountRef).
 			Return(serviceAccountKubeConfig, nil)
 
-		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(testKubeConfig, serviceAccountRef)
+		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(err).NotTo(HaveOccurred(), "An error should not have occurred")
 		Expect(outputConfig).To(Equal(serviceAccountKubeConfig), "Should have returned the expected kube config")
@@ -71,10 +74,10 @@ var _ = Describe("Cluster authorization", func() {
 
 		mockRemoteAuthorityManager.
 			EXPECT().
-			ApplyRemoteServiceAccount(serviceAccountRef, auth.ServiceAccountRoles).
+			ApplyRemoteServiceAccount(ctx, serviceAccountRef, auth.ServiceAccountRoles).
 			Return(nil, testErr)
 
-		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(testKubeConfig, serviceAccountRef)
+		outputConfig, err := clusterAuthClient.CreateAuthConfigForCluster(ctx, testKubeConfig, serviceAccountRef)
 
 		Expect(outputConfig).To(BeNil(), "Should not have created a new config")
 		Expect(err).To(Equal(testErr), "Should have reported the expected error")

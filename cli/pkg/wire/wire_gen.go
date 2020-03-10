@@ -27,6 +27,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/reporting-client/pkg/client"
@@ -42,9 +43,9 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	if err != nil {
 		return nil, err
 	}
-	secretClient := auth.NewSecretClient(clientset)
-	serviceAccountClient := auth.NewServiceAccountClient(clientset)
-	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretClient, serviceAccountClient)
+	secretsClient := kubernetes_core.NewGeneratedSecretsClient(clientset)
+	serviceAccountClient := kubernetes_core.NewGeneratedServiceAccountClient(clientset)
+	remoteAuthorityConfigCreator := auth.NewRemoteAuthorityConfigCreator(secretsClient, serviceAccountClient)
 	rbacClient := auth.RbacClientProvider(clientset)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)

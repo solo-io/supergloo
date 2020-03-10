@@ -236,6 +236,69 @@ func (mr *MockKubernetesClusterClientMockRecorder) Create(ctx, cluster interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockKubernetesClusterClient)(nil).Create), ctx, cluster)
 }
 
+// Update mocks base method
+func (m *MockKubernetesClusterClient) Update(ctx context.Context, cluster *v1alpha1.KubernetesCluster) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, cluster)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockKubernetesClusterClientMockRecorder) Update(ctx, cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockKubernetesClusterClient)(nil).Update), ctx, cluster)
+}
+
+// Upsert mocks base method
+func (m *MockKubernetesClusterClient) Upsert(ctx context.Context, cluster *v1alpha1.KubernetesCluster) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Upsert", ctx, cluster)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Upsert indicates an expected call of Upsert
+func (mr *MockKubernetesClusterClientMockRecorder) Upsert(ctx, cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockKubernetesClusterClient)(nil).Upsert), ctx, cluster)
+}
+
+// Get mocks base method
+func (m *MockKubernetesClusterClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha1.KubernetesCluster, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.KubernetesCluster)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockKubernetesClusterClientMockRecorder) Get(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockKubernetesClusterClient)(nil).Get), ctx, key)
+}
+
+// List mocks base method
+func (m *MockKubernetesClusterClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.KubernetesClusterList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.KubernetesClusterList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockKubernetesClusterClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockKubernetesClusterClient)(nil).List), varargs...)
+}
+
 // MockMeshServiceClient is a mock of MeshServiceClient interface
 type MockMeshServiceClient struct {
 	ctrl     *gomock.Controller
