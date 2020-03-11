@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/solo-io/autopilot/codegen"
 	"github.com/solo-io/autopilot/codegen/model"
@@ -20,7 +21,14 @@ import (
 //go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_mesh_group_controller.go github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller MeshGroupController,TrafficPolicyController
 
 func main() {
-	log.Printf("starting generate")
+	log.Println("starting generate")
+
+	var renderClients bool
+	if os.Getenv("REGENERATE_CLIENTS") == "" {
+		log.Println("REGENERATE_CLIENTS is not set, skipping autopilot client gen")
+	} else {
+		renderClients = true
+	}
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
@@ -43,7 +51,7 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    true,
+				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
@@ -76,7 +84,7 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    true,
+				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
@@ -116,7 +124,7 @@ func main() {
 				RenderManifests:  true,
 				RenderTypes:      true,
 				RenderController: true,
-				RenderClients:    true,
+				RenderClients:    renderClients,
 				RenderProtos:     true,
 				ApiRoot:          "pkg/api",
 			},

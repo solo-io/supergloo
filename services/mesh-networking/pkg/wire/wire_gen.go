@@ -9,6 +9,7 @@ import (
 	"context"
 
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
+	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
@@ -17,6 +18,7 @@ import (
 	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
+	access_control_poilcy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-poilcy"
 	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -84,6 +86,12 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	meshGroupCertificateManager := cert_manager.NewMeshGroupCsrProcessor(dynamicClientGetter, meshClient, groupMeshFinder, meshGroupCSRClientFactory, istioCertConfigProducer)
 	groupMgcsrSnapshotListener := cert_manager.NewGroupMgcsrSnapshotListener(meshGroupCertificateManager, meshGroupClient)
 	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, meshGroupControllerFactory, meshNetworkingSnapshotValidator, groupMgcsrSnapshotListener)
-	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslator, meshNetworkingSnapshotContext)
+	accessControlPolicyController, err := LocalAccessControlPolicyProvider(asyncManager)
+	if err != nil {
+		return MeshNetworkingContext{}, err
+	}
+	authorizationPolicyClient := security.NewAuthorizationPolicyClient(client)
+	accessControlPolicyTranslator := access_control_poilcy.NewAccessControlPolicyTranslator(accessControlPolicyController, authorizationPolicyClient)
+	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslator, meshNetworkingSnapshotContext, accessControlPolicyTranslator)
 	return meshNetworkingContext, nil
 }

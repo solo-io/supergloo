@@ -34,6 +34,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		ClientFactoryProviderSet,
 		ControllerFactoryProviderSet,
 		TrafficPolicyProviderSet,
+		AccessControlPolicySet,
 		networking_multicluster.NewMeshNetworkingClusterHandler,
 		controllers.NewMeshServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,

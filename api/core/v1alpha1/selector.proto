@@ -93,3 +93,17 @@ message Selector {
     // If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
     repeated ResourceRef refs = 4;
 }
+
+/**
+    Special selector capable of selecting specific service identities. Useful for binding policy rules.
+*/
+message IdentitySelector {
+    // list of namespaces to search
+    repeated string namespaces = 1;
+
+    // If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster
+    google.protobuf.StringValue cluster = 2;
+
+    // List of service accounts within the given namespaces to select. If empty, all service accounts will be selected.
+    repeated string service_accounts = 3;
+}

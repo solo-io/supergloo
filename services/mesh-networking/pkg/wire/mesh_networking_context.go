@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
+	access_control_poilcy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-poilcy"
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -20,6 +21,7 @@ type MeshNetworkingContext struct {
 	MeshNetworkingClusterHandler  mc_manager.AsyncManagerHandler
 	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslator
 	MeshNetworkingSnapshotContext *MeshNetworkingSnapshotContext
+	AccessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator
 }
 
 func MeshNetworkingContextProvider(
@@ -27,6 +29,7 @@ func MeshNetworkingContextProvider(
 	meshNetworkingClusterHandler mc_manager.AsyncManagerHandler,
 	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslator,
 	meshNetworkingSnapshotContext *MeshNetworkingSnapshotContext,
+	accessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator,
 ) MeshNetworkingContext {
 	return MeshNetworkingContext{
 		MultiClusterDeps:              multiClusterDeps,

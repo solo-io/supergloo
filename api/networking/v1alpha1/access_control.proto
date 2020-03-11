@@ -3,6 +3,7 @@ package networking.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
 
 import "mesh-projects/api/core/v1alpha1/selector.proto";
+import "mesh-projects/api/core/v1alpha1/status.proto";
 
 // access control policies apply ALLOW policies to communication in a mesh
 // access control policies specify the following:
@@ -22,7 +23,7 @@ message AccessControlPolicySpec {
     // for fine-grained access control policies, ensure that your
     // service accounts properly reflect the desired
     // boundary for your access control policies
-    core.zephyr.solo.io.Selector source_selector = 2;
+    core.zephyr.solo.io.IdentitySelector source_selector = 2;
 
     // requests destined for these pods will have the rule applied
     // leave empty to apply to all destination pods in the mesh
@@ -48,6 +49,4 @@ message AccessControlPolicySpec {
     repeated string allowed_ports = 6;
 }
 
-message AccessControlPolicyStatus {
-
-}
+message AccessControlPolicyStatus {}

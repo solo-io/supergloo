@@ -32,6 +32,11 @@ func Run(ctx context.Context) {
 		logger.Fatalw("error initializing TrafficPolicyTranslator", zap.Error(err))
 	}
 
+	err = meshNetworkingContext.AccessControlPolicyTranslator.Start(ctx)
+	if err != nil {
+		logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
+	}
+
 	// block until we die; RIP
 	err = multicluster.SetupAndStartLocalManager(
 		meshNetworkingContext.MultiClusterDeps,
