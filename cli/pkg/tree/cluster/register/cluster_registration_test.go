@@ -458,7 +458,10 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			stdout, err := meshctl.Invoke(command)
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(stdout).To(ContainSubstring(`Cluster already registered; if you would like to update this cluster please run the previous command with the --overwrite flag:`))
+			Expect(stdout).To(Equal(`Cluster already registered; if you would like to update this cluster please run the previous command with the --overwrite flag: 
+
+$ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-name --remote-kubeconfig ~/.kube/target-config --overwrite
+`))
 		})
 
 		It("will fail if unable to write secret", func() {

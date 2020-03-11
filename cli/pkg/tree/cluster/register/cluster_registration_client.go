@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -17,6 +16,7 @@ import (
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	"github.com/spf13/pflag"
 	kubev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,6 +57,8 @@ var (
 
 func RegisterCluster(
 	ctx context.Context,
+	binaryName string,
+	flags *pflag.FlagSet,
 	clientsFactory common.ClientsFactory,
 	kubeClientsFactory common.KubeClientsFactory,
 	opts *options.Options,
@@ -110,7 +112,7 @@ func RegisterCluster(
 
 	// if overwrite returns ok than the program should continue, else return
 	// The reason for the 2 return vars is that err may be nil and returned anyway
-	if ok, err := shouldOverwrite(ctx, out, opts, masterKubeClients); !ok {
+	if ok, err := shouldOverwrite(ctx, binaryName, flags, out, opts, masterKubeClients); !ok {
 		return err
 	}
 
@@ -150,6 +152,8 @@ func RegisterCluster(
 
 func shouldOverwrite(
 	ctx context.Context,
+	binaryName string,
+	flags *pflag.FlagSet,
 	out io.Writer,
 	opts *options.Options,
 	masterKubeClients *common.KubeClients,
@@ -168,11 +172,16 @@ func shouldOverwrite(
 			return false, err
 		} else if err == nil {
 			// nil error signifying the object exists
-			setFlags := make([]string, 0, len(os.Args)+1)
-			copy(setFlags, os.Args)
-			setFlags = append(setFlags, fmt.Sprintf("--%s", options.ClusterRegisterOverwriteFlag))
-			fmt.Fprintf(out, "\nCluster already registered; if you would like to update this cluster please run the previous command with the --%s flag: \n\n"+
-				"$ %s\n", options.ClusterRegisterOverwriteFlag, strings.Join(setFlags, " "))
+			exampleCommand := []string{binaryName}
+
+			// using flags.Visit rather than mucking around with os.Args because we may be
+			// running in a test environment, where os.Args is the test invocation rather than meshctl
+			flags.Visit(func(flag *pflag.Flag) {
+				exampleCommand = append(exampleCommand, fmt.Sprintf("--%s %s", flag.Name, flag.Value))
+			})
+			exampleCommand = append(exampleCommand, fmt.Sprintf("--%s", options.ClusterRegisterOverwriteFlag))
+			fmt.Fprintf(out, "Cluster already registered; if you would like to update this cluster please run the previous command with the --%s flag: \n\n"+
+				"$ %s\n", options.ClusterRegisterOverwriteFlag, strings.Join(exampleCommand, " "))
 			return false, nil
 		}
 	}

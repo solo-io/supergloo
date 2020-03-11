@@ -33,6 +33,7 @@ require (
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
+	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.13.0
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
 	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0
