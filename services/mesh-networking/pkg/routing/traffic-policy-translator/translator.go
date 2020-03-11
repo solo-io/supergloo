@@ -11,6 +11,7 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/clients"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/logging"
@@ -170,9 +171,7 @@ func (t *trafficPolicyTranslator) translateMergedTrafficPolicies(
 		if err != nil {
 			return nil, err
 		}
-		mesh, err := t.meshClient.Get(t.ctx, client.ObjectKey{
-			Name:      meshService.Spec.GetMesh().GetName(),
-			Namespace: meshService.Spec.GetMesh().GetNamespace()})
+		mesh, err := t.meshClient.Get(t.ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}

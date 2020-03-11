@@ -8,11 +8,11 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/clients"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	networking_errors "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type trafficPolicyMerger struct {
@@ -263,9 +263,7 @@ func buildKeyForMeshService(
 	meshClient discovery_core.MeshClient,
 	meshService *discovery_v1alpha1.MeshService,
 ) (*keys.MeshServiceMultiClusterKey, error) {
-	mesh, err := meshClient.Get(ctx, client.ObjectKey{
-		Name:      meshService.Spec.GetMesh().GetName(),
-		Namespace: meshService.Spec.GetMesh().GetNamespace()})
+	mesh, err := meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}

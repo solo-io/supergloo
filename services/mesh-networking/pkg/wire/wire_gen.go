@@ -66,7 +66,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(meshServiceSelector, trafficPolicyMerger, trafficPolicyValidator)
 	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
 	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
-	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, meshServiceSelector, virtualServiceClientFactory)
+	destinationRuleClientFactory := istio_networking.DestinationRuleClientFactoryProvider()
+	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, meshServiceSelector, virtualServiceClientFactory, destinationRuleClientFactory)
 	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator)
 	trafficPolicyController, err := LocalTrafficPolicyControllerProvider(asyncManager)
 	if err != nil {

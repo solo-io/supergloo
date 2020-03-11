@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	v1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -132,58 +131,6 @@ func (mr *MockEnvoyFilterClientMockRecorder) Get(ctx, objKey interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEnvoyFilterClient)(nil).Get), ctx, objKey)
 }
 
-// MockDestinationRuleClient is a mock of DestinationRuleClient interface
-type MockDestinationRuleClient struct {
-	ctrl     *gomock.Controller
-	recorder *MockDestinationRuleClientMockRecorder
-}
-
-// MockDestinationRuleClientMockRecorder is the mock recorder for MockDestinationRuleClient
-type MockDestinationRuleClientMockRecorder struct {
-	mock *MockDestinationRuleClient
-}
-
-// NewMockDestinationRuleClient creates a new mock instance
-func NewMockDestinationRuleClient(ctrl *gomock.Controller) *MockDestinationRuleClient {
-	mock := &MockDestinationRuleClient{ctrl: ctrl}
-	mock.recorder = &MockDestinationRuleClientMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockDestinationRuleClient) EXPECT() *MockDestinationRuleClientMockRecorder {
-	return m.recorder
-}
-
-// Create mocks base method
-func (m *MockDestinationRuleClient) Create(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, destinationRule)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Create indicates an expected call of Create
-func (mr *MockDestinationRuleClientMockRecorder) Create(ctx, destinationRule interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDestinationRuleClient)(nil).Create), ctx, destinationRule)
-}
-
-// Get mocks base method
-func (m *MockDestinationRuleClient) Get(ctx context.Context, objKey client.ObjectKey) (*v1alpha3.DestinationRule, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, objKey)
-	ret0, _ := ret[0].(*v1alpha3.DestinationRule)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Get indicates an expected call of Get
-func (mr *MockDestinationRuleClientMockRecorder) Get(ctx, objKey interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDestinationRuleClient)(nil).Get), ctx, objKey)
-}
-
 // MockServiceEntryClient is a mock of ServiceEntryClient interface
 type MockServiceEntryClient struct {
 	ctrl     *gomock.Controller
@@ -260,10 +207,10 @@ func (m *MockVirtualServiceClient) EXPECT() *MockVirtualServiceClientMockRecorde
 }
 
 // Get mocks base method
-func (m *MockVirtualServiceClient) Get(ctx context.Context, key client.ObjectKey) (*v1beta1.VirtualService, error) {
+func (m *MockVirtualServiceClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha3.VirtualService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, key)
-	ret0, _ := ret[0].(*v1beta1.VirtualService)
+	ret0, _ := ret[0].(*v1alpha3.VirtualService)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -275,7 +222,7 @@ func (mr *MockVirtualServiceClientMockRecorder) Get(ctx, key interface{}) *gomoc
 }
 
 // Create mocks base method
-func (m *MockVirtualServiceClient) Create(ctx context.Context, virtualService *v1beta1.VirtualService, options ...client.CreateOption) error {
+func (m *MockVirtualServiceClient) Create(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, virtualService}
 	for _, a := range options {
@@ -294,7 +241,7 @@ func (mr *MockVirtualServiceClientMockRecorder) Create(ctx, virtualService inter
 }
 
 // Update mocks base method
-func (m *MockVirtualServiceClient) Update(ctx context.Context, virtualService *v1beta1.VirtualService, options ...client.UpdateOption) error {
+func (m *MockVirtualServiceClient) Update(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, virtualService}
 	for _, a := range options {
@@ -313,7 +260,7 @@ func (mr *MockVirtualServiceClientMockRecorder) Update(ctx, virtualService inter
 }
 
 // Upsert mocks base method
-func (m *MockVirtualServiceClient) Upsert(ctx context.Context, virtualService *v1beta1.VirtualService) error {
+func (m *MockVirtualServiceClient) Upsert(ctx context.Context, virtualService *v1alpha3.VirtualService) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Upsert", ctx, virtualService)
 	ret0, _ := ret[0].(error)
@@ -324,4 +271,89 @@ func (m *MockVirtualServiceClient) Upsert(ctx context.Context, virtualService *v
 func (mr *MockVirtualServiceClientMockRecorder) Upsert(ctx, virtualService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockVirtualServiceClient)(nil).Upsert), ctx, virtualService)
+}
+
+// MockDestinationRuleClient is a mock of DestinationRuleClient interface
+type MockDestinationRuleClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockDestinationRuleClientMockRecorder
+}
+
+// MockDestinationRuleClientMockRecorder is the mock recorder for MockDestinationRuleClient
+type MockDestinationRuleClientMockRecorder struct {
+	mock *MockDestinationRuleClient
+}
+
+// NewMockDestinationRuleClient creates a new mock instance
+func NewMockDestinationRuleClient(ctrl *gomock.Controller) *MockDestinationRuleClient {
+	mock := &MockDestinationRuleClient{ctrl: ctrl}
+	mock.recorder = &MockDestinationRuleClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockDestinationRuleClient) EXPECT() *MockDestinationRuleClientMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method
+func (m *MockDestinationRuleClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha3.DestinationRule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret0, _ := ret[0].(*v1alpha3.DestinationRule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockDestinationRuleClientMockRecorder) Get(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDestinationRuleClient)(nil).Get), ctx, key)
+}
+
+// Create mocks base method
+func (m *MockDestinationRuleClient) Create(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, destinationRule)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockDestinationRuleClientMockRecorder) Create(ctx, destinationRule interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDestinationRuleClient)(nil).Create), ctx, destinationRule)
+}
+
+// Update mocks base method
+func (m *MockDestinationRuleClient) Update(ctx context.Context, destinationRule *v1alpha3.DestinationRule, options ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, destinationRule}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockDestinationRuleClientMockRecorder) Update(ctx, destinationRule interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, destinationRule}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDestinationRuleClient)(nil).Update), varargs...)
+}
+
+// Upsert mocks base method
+func (m *MockDestinationRuleClient) Upsert(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Upsert", ctx, destinationRule)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Upsert indicates an expected call of Upsert
+func (mr *MockDestinationRuleClientMockRecorder) Upsert(ctx, destinationRule interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockDestinationRuleClient)(nil).Upsert), ctx, destinationRule)
 }

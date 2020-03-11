@@ -8,8 +8,8 @@ import (
 
 func ObjectMetaToResourceRef(objMeta v1.ObjectMeta) *core_types.ResourceRef {
 	return &core_types.ResourceRef{
-		Name:      objMeta.Name,
-		Namespace: objMeta.Namespace,
+		Name:      objMeta.GetName(),
+		Namespace: objMeta.GetNamespace(),
 	}
 }
 

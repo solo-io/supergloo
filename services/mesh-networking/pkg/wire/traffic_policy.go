@@ -21,6 +21,7 @@ var (
 		networking_core.NewTrafficPolicyClient,
 		kubernetes_core.ServiceClientFactoryProvider,
 		istio_networking.VirtualServiceClientFactoryProvider,
+		istio_networking.DestinationRuleClientFactoryProvider,
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		LocalTrafficPolicyControllerProvider,
