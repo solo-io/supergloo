@@ -36,6 +36,7 @@ func MeshNetworkingContextProvider(
 		MeshNetworkingClusterHandler:  meshNetworkingClusterHandler,
 		TrafficPolicyTranslator:       trafficPolicyTranslator,
 		MeshNetworkingSnapshotContext: meshNetworkingSnapshotContext,
+		AccessControlPolicyTranslator: accessControlPolicyTranslator,
 	}
 }
 

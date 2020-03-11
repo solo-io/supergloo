@@ -5,7 +5,7 @@ metadata:
   name: mesh-networking-clusterrole
 rules:
   - apiGroups: ["networking.zephyr.solo.io"]
-    resources: ["meshgroups", "meshgroups/status", "trafficpolicies", "trafficpolicies/status"]
+    resources: ["meshgroups", "meshgroups/status", "trafficpolicies", "trafficpolicies/status", "accesscontrolpolicies", "accesscontrolpolicies/status"]
     verbs: ["*"]
   - apiGroups: ["discovery.zephyr.solo.io"]
     resources: ["meshes", "meshworkloads","meshworkloads/status", "meshservices","meshservices/status"]
@@ -15,7 +15,10 @@ rules:
     verbs: ["*"]
   - apiGroups: ["networking.istio.io"]
     resources: ["virtualservices"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["*"]
+  - apiGroups: ["security.istio.io"]
+    resources: ["authorizationpolicies"]
+    verbs: ["*"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["*"]
