@@ -21,7 +21,7 @@ func NewReplicaSetClient(client client.Client) ReplicaSetClient {
 	return &replicaSetClient{client: client}
 }
 
-func (d *replicaSetClient) GetReplicaSet(ctx context.Context, objectKey client.ObjectKey) (*appsv1.ReplicaSet, error) {
+func (d *replicaSetClient) Get(ctx context.Context, objectKey client.ObjectKey) (*appsv1.ReplicaSet, error) {
 	replicaSet := &appsv1.ReplicaSet{}
 	err := d.client.Get(ctx, objectKey, replicaSet)
 	if err != nil {

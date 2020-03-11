@@ -36,19 +36,19 @@ func (m *MockDeploymentClient) EXPECT() *MockDeploymentClientMockRecorder {
 	return m.recorder
 }
 
-// GetDeployment mocks base method
-func (m *MockDeploymentClient) GetDeployment(ctx context.Context, objectKey client.ObjectKey) (*v1.Deployment, error) {
+// Get mocks base method
+func (m *MockDeploymentClient) Get(ctx context.Context, objectKey client.ObjectKey) (*v1.Deployment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDeployment", ctx, objectKey)
+	ret := m.ctrl.Call(m, "Get", ctx, objectKey)
 	ret0, _ := ret[0].(*v1.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetDeployment indicates an expected call of GetDeployment
-func (mr *MockDeploymentClientMockRecorder) GetDeployment(ctx, objectKey interface{}) *gomock.Call {
+// Get indicates an expected call of Get
+func (mr *MockDeploymentClientMockRecorder) Get(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployment", reflect.TypeOf((*MockDeploymentClient)(nil).GetDeployment), ctx, objectKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeploymentClient)(nil).Get), ctx, objectKey)
 }
 
 // MockReplicaSetClient is a mock of ReplicaSetClient interface
@@ -74,17 +74,17 @@ func (m *MockReplicaSetClient) EXPECT() *MockReplicaSetClientMockRecorder {
 	return m.recorder
 }
 
-// GetReplicaSet mocks base method
-func (m *MockReplicaSetClient) GetReplicaSet(ctx context.Context, objectKey client.ObjectKey) (*v1.ReplicaSet, error) {
+// Get mocks base method
+func (m *MockReplicaSetClient) Get(ctx context.Context, objectKey client.ObjectKey) (*v1.ReplicaSet, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetReplicaSet", ctx, objectKey)
+	ret := m.ctrl.Call(m, "Get", ctx, objectKey)
 	ret0, _ := ret[0].(*v1.ReplicaSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetReplicaSet indicates an expected call of GetReplicaSet
-func (mr *MockReplicaSetClientMockRecorder) GetReplicaSet(ctx, objectKey interface{}) *gomock.Call {
+// Get indicates an expected call of Get
+func (mr *MockReplicaSetClientMockRecorder) Get(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicaSet", reflect.TypeOf((*MockReplicaSetClient)(nil).GetReplicaSet), ctx, objectKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockReplicaSetClient)(nil).Get), ctx, objectKey)
 }

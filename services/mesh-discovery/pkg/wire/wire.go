@@ -23,7 +23,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		multicluster_wire.MulticlusterProviderSet,
 		docker.NewImageNameParser,
 		mesh_workload.OwnerFetcherFactoryProvider,
-		kubernetes_apps.DeploymentClientFactoryProvider,
+		kubernetes_apps.ControllerRuntimeDeploymentClientFactoryProvider,
 		kubernetes_apps.ReplicaSetClientFactoryProvider,
 		kubernetes_core.ServiceClientFactoryProvider,
 		discovery_core.MeshServiceClientFactoryProvider,

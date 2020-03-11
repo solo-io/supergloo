@@ -35,7 +35,7 @@ var _ = Describe("ReplicaSetClient", func() {
 	It("should get replicaSet", func() {
 		objectKey := client.ObjectKey{Namespace: "foo", Name: "bar"}
 		mockKubeClient.EXPECT().Get(ctx, objectKey, &appsv1.ReplicaSet{}).Return(nil)
-		_, err := replicaSetClient.GetReplicaSet(ctx, objectKey)
+		_, err := replicaSetClient.Get(ctx, objectKey)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -44,7 +44,7 @@ var _ = Describe("ReplicaSetClient", func() {
 		name := "bar"
 		objectKey := client.ObjectKey{Namespace: namespace, Name: name}
 		mockKubeClient.EXPECT().Get(ctx, objectKey, &appsv1.ReplicaSet{}).Return(errors.New(""))
-		_, err := replicaSetClient.GetReplicaSet(ctx, objectKey)
+		_, err := replicaSetClient.Get(ctx, objectKey)
 		Expect(err).To(HaveOccurred())
 	})
 })

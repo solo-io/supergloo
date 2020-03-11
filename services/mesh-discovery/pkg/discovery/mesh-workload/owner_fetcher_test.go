@@ -74,8 +74,8 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should get deployment", func() {
 		expectedDeployment := &appsv1.Deployment{}
-		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(replicaSet, nil)
-		mockDeploymentClient.EXPECT().GetDeployment(ctx, deploymentObjKey).Return(expectedDeployment, nil)
+		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(replicaSet, nil)
+		mockDeploymentClient.EXPECT().Get(ctx, deploymentObjKey).Return(expectedDeployment, nil)
 		deployment, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(expectedDeployment).To(Equal(deployment))
@@ -97,7 +97,7 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if can't fetch ReplicaSet for Pod", func() {
 		expectedErr := errors.New("can't fetch ReplicaSet")
-		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(nil, expectedErr)
+		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(nil, expectedErr)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})
@@ -111,7 +111,7 @@ var _ = Describe("OwnerFetcher", func() {
 				Name:       replicaSetName,
 			},
 		}
-		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(&replicaSetWithoutOwner, nil)
+		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(&replicaSetWithoutOwner, nil)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(
 			mesh_workload.ControllerOwnerNotFound(namespace, replicaSetWithoutOwner.Name, replicaSetWithoutOwner.TypeMeta.Kind)))
@@ -119,8 +119,8 @@ var _ = Describe("OwnerFetcher", func() {
 
 	It("should return error if can't fetch Deployment for ReplicaSet", func() {
 		expectedErr := errors.New("can't fetch Deployment")
-		mockReplicaSetClient.EXPECT().GetReplicaSet(ctx, replicaSetObjKey).Return(replicaSet, nil)
-		mockDeploymentClient.EXPECT().GetDeployment(ctx, deploymentObjKey).Return(nil, expectedErr)
+		mockReplicaSetClient.EXPECT().Get(ctx, replicaSetObjKey).Return(replicaSet, nil)
+		mockDeploymentClient.EXPECT().Get(ctx, deploymentObjKey).Return(nil, expectedErr)
 		_, err := ownerFetcher.GetDeployment(ctx, pod)
 		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
 	})

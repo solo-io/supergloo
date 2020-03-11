@@ -23,7 +23,7 @@ var _ = Describe("DeploymentClient", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockKubeClient = mock_controller_runtime.NewMockClient(ctrl)
-		deploymentClient = kubernetes_apps.NewDeploymentClient(mockKubeClient)
+		deploymentClient = kubernetes_apps.NewControllerRuntimeDeploymentClient(mockKubeClient)
 		ctx = context.TODO()
 	})
 
@@ -34,7 +34,7 @@ var _ = Describe("DeploymentClient", func() {
 	It("should get deployment", func() {
 		objectKey := client.ObjectKey{Namespace: "foo", Name: "bar"}
 		mockKubeClient.EXPECT().Get(ctx, objectKey, &appsv1.Deployment{}).Return(nil)
-		_, err := deploymentClient.GetDeployment(ctx, objectKey)
+		_, err := deploymentClient.Get(ctx, objectKey)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -43,7 +43,7 @@ var _ = Describe("DeploymentClient", func() {
 		name := "bar"
 		objectKey := client.ObjectKey{Namespace: namespace, Name: name}
 		mockKubeClient.EXPECT().Get(ctx, objectKey, &appsv1.Deployment{}).Return(errors.New(""))
-		_, err := deploymentClient.GetDeployment(ctx, objectKey)
+		_, err := deploymentClient.Get(ctx, objectKey)
 		Expect(err).To(HaveOccurred())
 	})
 })

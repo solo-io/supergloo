@@ -39,7 +39,7 @@ func (d *ownerFetcher) GetDeployment(ctx context.Context, pod *corev1.Pod) (*app
 	if err != nil {
 		return nil, err
 	}
-	replicaSet, err := d.replicaSetClient.GetReplicaSet(ctx, client.ObjectKey{Namespace: namespace, Name: replicaName})
+	replicaSet, err := d.replicaSetClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: replicaName})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (d *ownerFetcher) GetDeployment(ctx context.Context, pod *corev1.Pod) (*app
 	if err != nil {
 		return nil, err
 	}
-	deployment, err := d.deploymentClient.GetDeployment(ctx, client.ObjectKey{Namespace: namespace, Name: deploymentName})
+	deployment, err := d.deploymentClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: deploymentName})
 	if err != nil {
 		return nil, err
 	}
