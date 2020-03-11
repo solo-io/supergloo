@@ -133,13 +133,13 @@ var _ = Describe("Cluster Operations", func() {
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
 		mocks.operatorManager.EXPECT().Install().Return(nil)
-		mocks.manifestBuilder.EXPECT().GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
+		mocks.manifestBuilder.EXPECT().GetControlPlaneSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
 
 		demoControlPlaneResource := []*resource.Info{{
 			Name: "demo-control-plane",
 			Object: &unstructured.Unstructured{
 				Object: map[string]interface{}{
-					"kind": "IstioOperator",
+					"kind": "IstioControlPlane",
 				},
 			},
 		}}
@@ -158,7 +158,7 @@ var _ = Describe("Cluster Operations", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
 
-The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
+The IstioControlPlane has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
 `))
 	})
 
@@ -169,9 +169,10 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 
 		mocks.manifestBuilder.EXPECT().
 			Build(&options.IstioInstallationConfig{
-				CreateNamespace:        true,
-				CreateIstioOperatorCRD: true,
-				InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
+				CreateNamespace:            true,
+				CreateIstioControlPlaneCRD: true,
+				InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
+				IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
 			}).
 			Return(installationManifest, nil)
 
@@ -180,7 +181,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 		Expect(output).To(Equal(installationManifest + "\n"))
 	})
 
-	It("outputs the operator install manifest and the pre-configured IstioOperator spec, when provided, in dry-run mode", func() {
+	It("outputs the operator install manifest and the pre-configured IstioControlPlane spec, when provided, in dry-run mode", func() {
 		mocks := setupMocks()
 
 		installationManifest := "install-operator"
@@ -188,14 +189,15 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 
 		mocks.manifestBuilder.EXPECT().
 			Build(&options.IstioInstallationConfig{
-				CreateNamespace:        true,
-				CreateIstioOperatorCRD: true,
-				InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
+				CreateNamespace:            true,
+				CreateIstioControlPlaneCRD: true,
+				InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
+				IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
 			}).
 			Return(installationManifest, nil)
 
 		mocks.manifestBuilder.EXPECT().
-			GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).
+			GetControlPlaneSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).
 			Return(controlPlaneSpec, nil)
 
 		output, err := mocks.meshctl.Invoke("istio install --dry-run --profile=demo")
@@ -203,7 +205,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 		Expect(output).To(Equal(installationManifest + "\n\n---\n" + controlPlaneSpec + "\n"))
 	})
 
-	It("outputs the operator install manifest and the user-provided IstioOperator in dry-run mode", func() {
+	It("outputs the operator install manifest and the user-provided IstioControlPlane in dry-run mode", func() {
 		mocks := setupMocks()
 
 		installationManifest := "install-operator"
@@ -211,9 +213,10 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 
 		mocks.manifestBuilder.EXPECT().
 			Build(&options.IstioInstallationConfig{
-				CreateNamespace:        true,
-				CreateIstioOperatorCRD: true,
-				InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
+				CreateNamespace:            true,
+				CreateIstioControlPlaneCRD: true,
+				InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
+				IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
 			}).
 			Return(installationManifest, nil)
 
@@ -225,19 +228,19 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Read("/foo/bar").
 			Return([]byte(controlPlaneSpec), nil)
 
-		output, err := mocks.meshctl.Invoke("istio install --dry-run --operator-spec=/foo/bar")
+		output, err := mocks.meshctl.Invoke("istio install --dry-run --control-plane-spec=/foo/bar")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(installationManifest + "\n\n---\n" + controlPlaneSpec + "\n"))
 	})
 
-	It("reads an IstioOperator spec provided by the user", func() {
+	It("reads an IstioControlPlane spec provided by the user", func() {
 		mocks := setupMocks()
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
 		mocks.operatorManager.EXPECT().Install().Return(nil)
 
 		specFile := "/path/to/spec/file"
-		specContent := "this is my IstioOperator spec"
+		specContent := "this is my IstioControlPlane spec"
 
 		mocks.fileReader.EXPECT().Exists(specFile).Return(true, nil)
 		mocks.fileReader.EXPECT().Read(specFile).Return([]byte(specContent), nil)
@@ -246,7 +249,7 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Name: "custom-control-plane",
 			Object: &unstructured.Unstructured{
 				Object: map[string]interface{}{
-					"kind": "IstioOperator",
+					"kind": "IstioControlPlane",
 				},
 			},
 		}}
@@ -261,16 +264,16 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			Create(cliconstants.DefaultIstioOperatorNamespace, controlPlaneResource).
 			Return(nil, nil)
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --control-plane-spec %s", specFile))
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
 
-The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
+The IstioControlPlane has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
 `))
 	})
 
-	It("can install the operator without providing an IstioOperator spec", func() {
+	It("can install the operator without providing an IstioControlPlane spec", func() {
 		mocks := setupMocks()
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
@@ -281,16 +284,16 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
 
-The Istio operator has been installed to cluster 'cluster-name' in namespace 'istio-operator'. No IstioOperator custom resource was provided to meshctl, so Istio is currently not fully installed yet. Write a IstioOperator CR to cluster 'cluster-name' to complete your installation
+The Istio operator has been installed to cluster 'cluster-name' in namespace 'istio-operator'. No IstioControlPlane custom resource was provided to meshctl, so Istio is currently not fully installed yet. Write a IstioControlPlane CR to cluster 'cluster-name' to complete your installation
 `))
 	})
 
-	It("reports an error if you specify both --profile=demo and --operator-spec", func() {
+	It("reports an error if you specify both --profile=demo and --control-plane-spec", func() {
 		mocks := setupMocks()
 
 		specFile := "/path/to/spec/file"
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --profile=demo --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --profile=demo --control-plane-spec %s", specFile))
 
 		Expect(err).To(testutils.HaveInErrorChain(installcmd.ConflictingControlPlaneSettings))
 		Expect(output).To(BeEmpty())
@@ -302,13 +305,13 @@ The Istio operator has been installed to cluster 'cluster-name' in namespace 'is
 		demoControlPlaneSpec := "demo-control-plane"
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(false, nil)
-		mocks.manifestBuilder.EXPECT().GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
+		mocks.manifestBuilder.EXPECT().GetControlPlaneSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
 
 		demoControlPlaneResource := []*resource.Info{{
 			Name: "demo-control-plane",
 			Object: &unstructured.Unstructured{
 				Object: map[string]interface{}{
-					"kind": "IstioOperator",
+					"kind": "IstioControlPlane",
 				},
 			},
 		}}
@@ -327,11 +330,11 @@ The Istio operator has been installed to cluster 'cluster-name' in namespace 'is
 		Expect(err).NotTo(HaveOccurred())
 		Expect(output).To(Equal(`The Istio operator is already installed to cluster 'cluster-name' in namespace 'istio-operator' and is suitable for use. Continuing with the Istio installation.
 
-The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
+The IstioControlPlane has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
 `))
 	})
 
-	It("reports the appropriate error if the provided IstioOperator is unparseable", func() {
+	It("reports the appropriate error if the provided IstioControlPlane is unparseable", func() {
 		mocks := setupMocks()
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
@@ -348,27 +351,27 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 			BuildResources(cliconstants.DefaultIstioOperatorNamespace, specContent).
 			Return(nil, testErr)
 
-		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --operator-spec %s", specFile))
+		output, err := mocks.meshctl.Invoke(fmt.Sprintf("istio install --control-plane-spec %s", specFile))
 
 		Expect(err).To(testutils.HaveInErrorChain(installcmd.FailedToParseControlPlaneSettings(testErr)))
 		Expect(output).To(Equal("Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'\n"))
 	})
 
-	It("reports an error if there are multiple resources in the user-provided IstioOperator manifest", func() {
+	It("reports an error if there are multiple resources in the user-provided IstioControlPlane manifest", func() {
 		mocks := setupMocks()
 
 		demoControlPlaneSpec := "demo-control-plane"
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
 		mocks.operatorManager.EXPECT().Install().Return(nil)
-		mocks.manifestBuilder.EXPECT().GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
+		mocks.manifestBuilder.EXPECT().GetControlPlaneSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
 
 		demoControlPlaneResource := []*resource.Info{
 			{
 				Name: "demo-control-plane",
 				Object: &unstructured.Unstructured{
 					Object: map[string]interface{}{
-						"kind": "IstioOperator",
+						"kind": "IstioControlPlane",
 					},
 				},
 			},
@@ -392,14 +395,14 @@ The IstioOperator has been written to cluster 'cluster-name' in namespace 'istio
 		Expect(output).To(Equal("Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'\n"))
 	})
 
-	It("reports an error if the user provides some resource other than an IstioOperator", func() {
+	It("reports an error if the user provides some resource other than an IstioControlPlane", func() {
 		mocks := setupMocks()
 
 		demoControlPlaneSpec := "demo-control-plane"
 
 		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
 		mocks.operatorManager.EXPECT().Install().Return(nil)
-		mocks.manifestBuilder.EXPECT().GetOperatorSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
+		mocks.manifestBuilder.EXPECT().GetControlPlaneSpecWithProfile("demo", cliconstants.DefaultIstioOperatorNamespace).Return(demoControlPlaneSpec, nil)
 
 		demoControlPlaneResource := []*resource.Info{
 			{

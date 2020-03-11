@@ -12,8 +12,8 @@ type InstallerManifestBuilder interface {
 	// Based on the pending installation config, generate an appropriate installation manifest
 	Build(options *options.IstioInstallationConfig) (installationManifest string, err error)
 
-	// Generate an IstioOperator spec that sets up Istio with its demo profile
-	GetOperatorSpecWithProfile(profile, installationNamespace string) (string, error)
+	// Generate an IstioControlPlane spec that sets up Istio with its demo profile
+	GetControlPlaneSpecWithProfile(profile, installationNamespace string) (string, error)
 }
 
 func NewInstallerManifestBuilder() InstallerManifestBuilder {
@@ -39,7 +39,7 @@ func (i *installerManifestBuilder) Build(options *options.IstioInstallationConfi
 	return buffer.String(), nil
 }
 
-func (i *installerManifestBuilder) GetOperatorSpecWithProfile(profile, namespace string) (string, error) {
+func (i *installerManifestBuilder) GetControlPlaneSpecWithProfile(profile, namespace string) (string, error) {
 	tmpl := template.New("")
 	tmpl, err := tmpl.Parse(istioControlPlaneWithProfile)
 	if err != nil {
@@ -74,28 +74,53 @@ metadata:
   name: {{ .InstallNamespace }}
 ...
 {{- end }}
-{{- if .CreateIstioOperatorCRD }}
+{{- if .CreateIstioControlPlaneCRD }}
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: istiooperators.install.istio.io
+  name: istiocontrolplanes.install.istio.io
 spec:
   group: install.istio.io
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
+  names:
+    kind: IstioControlPlane
+    listKind: IstioControlPlaneList
+    plural: istiocontrolplanes
+    singular: istiocontrolplane
+    shortNames:
+    - icp
   scope: Namespaced
   subresources:
     status: {}
-  names:
-    kind: IstioOperator
-    listKind: IstioOperatorList
-    plural: istiooperators
-    singular: istiooperator
-    shortNames:
-    - iop
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values.
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase.
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        spec:
+          description: 'Specification of the desired state of the istio control plane resource.
+            More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+          type: object
+        status:
+          description: 'Status describes each of istio control plane component status at the current time.
+            0 means NONE, 1 means UPDATING, 2 means HEALTHY, 3 means ERROR, 4 means RECONCILING.
+            More info: https://github.com/istio/operator/blob/master/pkg/apis/istio/v1alpha2/v1alpha2.pb.html &
+            https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+          type: object
+  versions:
+  - name: v1alpha2
+    served: true
+    storage: true
 ...
 {{- end }}
 ---
@@ -207,7 +232,7 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - configmaps  
   - endpoints
   - events
   - namespaces
@@ -215,7 +240,7 @@ rules:
   - persistentvolumeclaims
   - secrets
   - services
-  - serviceaccounts
+  - serviceaccounts  
   verbs:
   - '*'
 ...
@@ -268,11 +293,11 @@ spec:
       serviceAccountName: istio-operator
       containers:
         - name: istio-operator
-          image: docker.io/istio/operator:1.5.0
+          image: docker.io/istio/operator:{{ .IstioOperatorVersion }}
           command:
-          - operator
+          - istio-operator
           - server
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           resources:
             limits:
               cpu: 200m
@@ -282,7 +307,7 @@ spec:
               memory: 128Mi
           env:
             - name: WATCH_NAMESPACE
-              value: {{ .InstallNamespace }}
+              value: ""
             - name: LEADER_ELECTION_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -298,8 +323,8 @@ spec:
 `
 
 var istioControlPlaneWithProfile = `
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
+apiVersion: install.istio.io/v1alpha2
+kind: IstioControlPlane
 metadata:
   namespace: {{ .InstallNamespace }}
   name: istiocontrolplane-{{ .Profile }}

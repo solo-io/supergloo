@@ -12,24 +12,24 @@ import (
 )
 
 var (
-	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Istio profile and provide an IstioOperator Custom Resource")
+	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Istio profile and provide an IstioControlPlane Custom Resource")
 	FailedToParseControlPlaneSettings = func(err error) error {
-		return eris.Wrap(err, "Failed to parse the provided IstioOperator resource")
+		return eris.Wrap(err, "Failed to parse the provided IstioControlPlane resource")
 	}
 	FailedToParseControlPlaneWithProfile = func(err error, profile string) error {
-		return eris.Wrapf(err, "Failed to parse the pre-configured IstioOperator with profile %s", profile)
+		return eris.Wrapf(err, "Failed to parse the pre-configured IstioControlPlane with profile %s", profile)
 	}
 	FailedToWriteControlPlane = func(err error) error {
-		return eris.Wrap(err, "Failed to write the provided IstioOperator resource")
+		return eris.Wrap(err, "Failed to write the provided IstioControlPlane resource")
 	}
 	TooManyControlPlaneResources = func(numResources int) error {
-		return eris.Errorf("Expected the IstioOperator manifest to have only a single resource, found %d", numResources)
+		return eris.Errorf("Expected the IstioControlPlane manifest to have only a single resource, found %d", numResources)
 	}
 	UnknownControlPlaneKind = func(kind string) error {
-		return eris.Errorf("Expected the manifest to contain an IstioOperator, but found %s", kind)
+		return eris.Errorf("Expected the manifest to contain an IstioControlPlane, but found %s", kind)
 	}
 
-	istioControlPlaneKind = "IstioOperator"
+	istioControlPlaneKind = "IstioControlPlane"
 )
 
 type IstioInstaller interface {
@@ -70,7 +70,7 @@ type istioInstaller struct {
 func (i *istioInstaller) Install() error {
 	namespace := i.istioInstallOptions.InstallationConfig.InstallNamespace
 
-	istioControlPlane, err := i.loadIstioOperator()
+	istioControlPlane, err := i.loadIstioControlPlane()
 	if err != nil {
 		return err
 	}
@@ -123,8 +123,8 @@ func (i *istioInstaller) installOperator(namespace string) error {
 	return nil
 }
 
-func (i *istioInstaller) loadIstioOperator() (string, error) {
-	userPath := i.istioInstallOptions.IstioOperatorManifestPath
+func (i *istioInstaller) loadIstioControlPlane() (string, error) {
+	userPath := i.istioInstallOptions.IstioControlPlaneManifestPath
 	profile := i.istioInstallOptions.Profile
 
 	if userPath != "" && profile != "" {
@@ -138,7 +138,7 @@ func (i *istioInstaller) loadIstioOperator() (string, error) {
 		}
 		return userSpecifiedControlPlane, nil
 	} else if profile != "" {
-		preConfiguredProfile, err := i.manifestBuilder.GetOperatorSpecWithProfile(profile, i.istioInstallOptions.InstallationConfig.InstallNamespace)
+		preConfiguredProfile, err := i.manifestBuilder.GetControlPlaneSpecWithProfile(profile, i.istioInstallOptions.InstallationConfig.InstallNamespace)
 		if err != nil {
 			return "", FailedToParseControlPlaneWithProfile(err, profile)
 		}
@@ -148,15 +148,15 @@ func (i *istioInstaller) loadIstioOperator() (string, error) {
 	return "", nil
 }
 
-// returns "", nil if the user did not provide an IstioOperator
+// returns "", nil if the user did not provide an IstioControlPlane
 func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
-	path := i.istioInstallOptions.IstioOperatorManifestPath
+	path := i.istioInstallOptions.IstioControlPlaneManifestPath
 
 	fileExists, err := i.fileReader.Exists(path)
 	if err != nil {
-		return "", eris.Wrapf(err, "Unexpected error while reading IstioOperator spec")
+		return "", eris.Wrapf(err, "Unexpected error while reading IstioControlPlane spec")
 	} else if !fileExists {
-		return "", eris.Errorf("Path to IstioOperator spec does not exist: %s", i.istioInstallOptions.IstioOperatorManifestPath)
+		return "", eris.Errorf("Path to IstioControlPlane spec does not exist: %s", i.istioInstallOptions.IstioControlPlaneManifestPath)
 	}
 
 	contents, err := i.fileReader.Read(path)
@@ -172,7 +172,7 @@ func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
 func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneToWrite string) error {
 	if istioControlPlaneToWrite == "" {
 		fmt.Fprintf(i.out,
-			"\nThe Istio operator has been installed to cluster '%s' in namespace '%s'. No IstioOperator custom resource was provided to meshctl, so Istio is currently not fully installed yet. Write a IstioOperator CR to cluster '%s' to complete your installation\n",
+			"\nThe Istio operator has been installed to cluster '%s' in namespace '%s'. No IstioControlPlane custom resource was provided to meshctl, so Istio is currently not fully installed yet. Write a IstioControlPlane CR to cluster '%s' to complete your installation\n",
 			i.clusterName,
 			namespace,
 			i.clusterName,
@@ -201,6 +201,6 @@ func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneT
 		return FailedToWriteControlPlane(err)
 	}
 
-	fmt.Fprintf(i.out, "\nThe IstioOperator has been written to cluster '%s' in namespace '%s'. The Istio operator should process it momentarily and install Istio.\n", i.clusterName, namespace)
+	fmt.Fprintf(i.out, "\nThe IstioControlPlane has been written to cluster '%s' in namespace '%s'. The Istio operator should process it momentarily and install Istio.\n", i.clusterName, namespace)
 	return nil
 }

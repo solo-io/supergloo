@@ -43,18 +43,21 @@ type Istio struct {
 }
 
 type IstioInstall struct {
-	InstallationConfig        IstioInstallationConfig
-	DryRun                    bool
-	IstioOperatorManifestPath string
-	Profile                   string
+	InstallationConfig            IstioInstallationConfig
+	DryRun                        bool
+	IstioControlPlaneManifestPath string
+	Profile                       string
 }
 
 type IstioInstallationConfig struct {
-	CreateNamespace        bool
-	CreateIstioOperatorCRD bool
+	CreateNamespace            bool
+	CreateIstioControlPlaneCRD bool
 
 	// will be defaulted to istio-operator if left blank
 	InstallNamespace string
+
+	// will be defaulted to `DefaultIstioOperatorVersion` if left blank
+	IstioOperatorVersion string
 }
 
 type Upgrade struct {

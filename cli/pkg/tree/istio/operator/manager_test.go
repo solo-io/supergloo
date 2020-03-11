@@ -29,9 +29,10 @@ var _ = Describe("Cluster Operations", func() {
 
 	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *options.IstioInstallationConfig {
 		return &options.IstioInstallationConfig{
-			CreateNamespace:        createNamespace,
-			CreateIstioOperatorCRD: createCRD,
-			InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
+			CreateNamespace:            createNamespace,
+			CreateIstioControlPlaneCRD: createCRD,
+			InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
+			IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
 		}
 	}
 
@@ -51,13 +52,15 @@ var _ = Describe("Cluster Operations", func() {
 			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 
 			installConfig := &options.IstioInstallationConfig{
-				CreateNamespace:        true,
-				CreateIstioOperatorCRD: true,
-				InstallNamespace:       "", // purposely left empty
+				CreateNamespace:            true,
+				CreateIstioControlPlaneCRD: true,
+				InstallNamespace:           "", // purposely left empty
+				IstioOperatorVersion:       "", // purposely left empty
 			}
 
 			installWithDefaults := *installConfig
 			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
+			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -138,6 +141,7 @@ var _ = Describe("Cluster Operations", func() {
 
 			installWithDefaults := *installConfig
 			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
+			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -206,7 +210,46 @@ var _ = Describe("Cluster Operations", func() {
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, cliconstants.DefaultIstioOperatorNamespace)))
+			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, cliconstants.DefaultIstioOperatorNamespace, cliconstants.DefaultIstioOperatorVersion)))
+		})
+
+		It("reports the proper error if the operator already exists at a different version than what was requested", func() {
+			kubeClient := mock_kube.NewMockUnstructuredKubeClient(ctrl)
+			manifestBuilder := mock_operator.NewMockInstallerManifestBuilder(ctrl)
+			deploymentClient := mock_server.NewMockDeploymentClient(ctrl)
+			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
+			installConfig := buildInstallConfigWithDefaults(false, false)
+
+			operatorManager := operator.NewManager(
+				kubeClient,
+				manifestBuilder,
+				deploymentClient,
+				imageNameParser,
+				installConfig,
+			)
+
+			deploymentClient.EXPECT().GetDeployments(cliconstants.DefaultIstioOperatorNamespace, "").Return(&appsv1.DeploymentList{
+				Items: []appsv1.Deployment{{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: cliconstants.DefaultIstioOperatorDeploymentName,
+					},
+					Spec: appsv1.DeploymentSpec{
+						Template: corev1.PodTemplateSpec{
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Image: "istio-operator-test-image:0.6.9",
+								}},
+							},
+						},
+					},
+				}},
+			}, nil)
+
+			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: "4.2.0"}, nil)
+
+			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
+			Expect(installNeeded).To(BeFalse())
+			Expect(err).To(testutils.HaveInErrorChain(operator.OperatorVersionMismatch(clusterName, installConfig.InstallNamespace, installConfig.IstioOperatorVersion, "4.2.0")))
 		})
 
 		It("reports that an installation is not needed if the operator is already installed at the requested version", func() {
