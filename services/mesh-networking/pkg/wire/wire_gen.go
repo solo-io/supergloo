@@ -77,7 +77,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
-	trafficPolicyTranslator := traffic_policy_translator.NewTrafficPolicyTranslator(ctx, trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyController, meshServiceController)
+	trafficPolicyTranslator := traffic_policy_translator.NewTrafficPolicyTranslator(trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyController, meshServiceController)
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
 	meshServiceControllerFactory := controllers.NewMeshServiceControllerFactory()
 	meshGroupControllerFactory := controller_factories.NewMeshGroupControllerFactory()

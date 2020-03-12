@@ -33,7 +33,7 @@ message TrafficPolicySpec {
     // > Note: Source Selectors are ignored when TrafficPolicys are
     // applied to pods in a Linkerd mesh. TrafficPolicys will apply to
     // all selected destinations in Linkerd, regardless of the source.
-    //    core.zephyr.solo.io.Selector source_selector = 1;
+    core.zephyr.solo.io.Selector source_selector = 1;
 
     // requests destined for these k8s services will have the rule applied
     // leave empty to apply to all destination k8s services in the mesh

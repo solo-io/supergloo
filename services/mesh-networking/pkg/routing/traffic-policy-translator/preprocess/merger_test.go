@@ -49,6 +49,7 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should merge TrafficPolicy specs by MeshService", func() {
+		// destinations
 		meshServiceName1 := "meshServiceName1"
 		meshServiceNamespace1 := "meshServiceNamespace1"
 		clusterName1 := "clusterName1"
@@ -61,6 +62,11 @@ var _ = Describe("Merger", func() {
 		meshNamespace2 := "meshnamespace2"
 		meshClusterName1 := "mesh-cluster-name-1"
 		meshClusterName2 := "mesh-cluster-name-2"
+		// sources
+		destNamespaces1 := []string{"namespace1"}
+		destLabels1 := map[string]string{"k1": "v1"}
+		destNamespaces2 := []string{"namespace2"}
+		destLabels2 := map[string]string{"k2": "v2"}
 		httpMatcher1 := &networking_v1alpha1_types.HttpMatcher{
 			Method: networking_v1alpha1_types.HttpMethod_GET,
 		}
@@ -72,6 +78,10 @@ var _ = Describe("Merger", func() {
 		}
 		tp1 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				SourceSelector: &core_types.Selector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
+				},
 				DestinationSelector: &core_types.Selector{
 					Refs: []*core_types.ResourceRef{
 						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
@@ -89,6 +99,10 @@ var _ = Describe("Merger", func() {
 		}
 		tp2 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				SourceSelector: &core_types.Selector{
+					Namespaces: destNamespaces2,
+					Labels:     destLabels2,
+				},
 				DestinationSelector: &core_types.Selector{
 					Refs: []*core_types.ResourceRef{
 						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
@@ -107,6 +121,10 @@ var _ = Describe("Merger", func() {
 		}
 		tp3 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				SourceSelector: &core_types.Selector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
+				},
 				DestinationSelector: &core_types.Selector{
 					Refs: []*core_types.ResourceRef{
 						{Name: meshServiceName2, Namespace: meshServiceNamespace2},
@@ -124,6 +142,10 @@ var _ = Describe("Merger", func() {
 		}
 		tp4 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				SourceSelector: &core_types.Selector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
+				},
 				DestinationSelector: &core_types.Selector{
 					Refs: []*core_types.ResourceRef{
 						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
@@ -133,6 +155,29 @@ var _ = Describe("Merger", func() {
 					Percentage: 50,
 				},
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
+			},
+			Status: networking_v1alpha1_types.TrafficPolicyStatus{
+				ComputedStatus: &core_types.ComputedStatus{
+					Status:  core_types.ComputedStatus_ACCEPTED,
+					Message: "",
+				},
+			},
+		}
+		tp5 := networking_v1alpha1.TrafficPolicy{
+			Spec: networking_v1alpha1_types.TrafficPolicySpec{
+				SourceSelector: &core_types.Selector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
+				},
+				DestinationSelector: &core_types.Selector{
+					Refs: []*core_types.ResourceRef{
+						{Name: meshServiceName1, Namespace: meshServiceNamespace1},
+					},
+				},
+				FaultInjection: &networking_v1alpha1_types.FaultInjection{
+					Percentage: 50,
+				},
+				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				ComputedStatus: &core_types.ComputedStatus{
@@ -158,14 +203,14 @@ var _ = Describe("Merger", func() {
 			},
 		}
 		meshServiceKey1 := keys.MeshServiceMultiClusterKey{
-			Name:        meshServiceName1,
-			Namespace:   meshServiceNamespace1,
-			ClusterName: meshClusterName1,
+			DestName:        meshServiceName1,
+			DestNamespace:   meshServiceNamespace1,
+			DestClusterName: meshClusterName1,
 		}
 		meshServiceKey2 := keys.MeshServiceMultiClusterKey{
-			Name:        meshServiceName2,
-			Namespace:   meshServiceNamespace2,
-			ClusterName: meshClusterName2,
+			DestName:        meshServiceName2,
+			DestNamespace:   meshServiceNamespace2,
+			DestClusterName: meshClusterName2,
 		}
 		meshServices := []*v1alpha1.MeshService{
 			{
@@ -196,7 +241,8 @@ var _ = Describe("Merger", func() {
 			},
 		}
 		/*** GetMatchingMeshServices() ***/
-		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, ignoredTP}}
+		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{
+			Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
 		mockTrafficPolicyClient.EXPECT().List(ctx).Return(trafficPolicyList, nil)
 		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp1.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
@@ -206,22 +252,45 @@ var _ = Describe("Merger", func() {
 			Return([]*v1alpha1.MeshService{meshServices[1]}, nil)
 		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp4.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
+		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp5.Spec.GetDestinationSelector()).
+			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
 		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, ignoredTP.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
 		/*** buildKeyForMeshService ***/
 		mesh1 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
 		mesh2 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
-		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(5)
+		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(6)
 		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
 		mergedTrafficPolicy1 := []*networking_v1alpha1.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2},
+					SourceSelector: &core_types.Selector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
+					},
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
+					RequestTimeout:      &types1.Duration{Seconds: 1},
+					FaultInjection: &networking_v1alpha1_types.FaultInjection{
+						Percentage: 50,
+					},
+				},
+			},
+			{
+				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					SourceSelector: &core_types.Selector{
+						Namespaces: destNamespaces2,
+						Labels:     destLabels2,
+					},
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
 				},
 			},
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					SourceSelector: &core_types.Selector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
+					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
 					FaultInjection: &networking_v1alpha1_types.FaultInjection{
 						Percentage: 50,
@@ -232,14 +301,21 @@ var _ = Describe("Merger", func() {
 		mergedTrafficPolicy2 := []*networking_v1alpha1.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
+					SourceSelector: &core_types.Selector{
+						Namespaces: destNamespaces2,
+						Labels:     destLabels2,
+					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
-					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
 				},
 			},
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher3},
+					SourceSelector: &core_types.Selector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
+					},
+					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
 				},
 			},

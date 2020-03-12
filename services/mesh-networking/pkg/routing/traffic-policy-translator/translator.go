@@ -22,7 +22,6 @@ import (
 )
 
 func NewTrafficPolicyTranslator(
-	ctx context.Context,
 	preprocessor preprocess.TrafficPolicyPreprocessor,
 	meshTranslators []TrafficPolicyMeshTranslator,
 	meshClient zephyr_discovery.MeshClient,
@@ -32,7 +31,6 @@ func NewTrafficPolicyTranslator(
 	meshServiceController discovery_controller.MeshServiceController,
 ) TrafficPolicyTranslator {
 	return &trafficPolicyTranslator{
-		ctx:                     ctx,
 		preprocessor:            preprocessor,
 		meshTranslators:         meshTranslators,
 		meshClient:              meshClient,
@@ -44,7 +42,6 @@ func NewTrafficPolicyTranslator(
 }
 
 type trafficPolicyTranslator struct {
-	ctx                     context.Context
 	preprocessor            preprocess.TrafficPolicyPreprocessor
 	meshTranslators         []TrafficPolicyMeshTranslator
 	meshClient              zephyr_discovery.MeshClient
@@ -57,11 +54,11 @@ type trafficPolicyTranslator struct {
 func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 	err := t.trafficPolicyController.AddEventHandler(ctx, &networking_controller.TrafficPolicyEventHandlerFuncs{
 		OnCreate: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(t.ctx, logging.CreateEvent, trafficPolicy)
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, trafficPolicy)
 			logger.Debugf("Handling event: %+v", trafficPolicy)
-			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(trafficPolicy)
+			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(ctx, trafficPolicy)
 			t.setStatus(err, translatorErrors, trafficPolicy)
-			err = t.trafficPolicyClient.UpdateStatus(t.ctx, trafficPolicy)
+			err = t.trafficPolicyClient.UpdateStatus(ctx, trafficPolicy)
 			if err != nil {
 				logger.Error("Error while handling TrafficPolicy create event", err)
 			}
@@ -69,11 +66,11 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 		},
 
 		OnUpdate: func(_, new *networking_v1alpha1.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(t.ctx, logging.UpdateEvent, new)
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
 			logger.Debugf("Handling event: %+v", new)
-			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(new)
+			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(ctx, new)
 			t.setStatus(err, translatorErrors, new)
-			err = t.trafficPolicyClient.UpdateStatus(t.ctx, new)
+			err = t.trafficPolicyClient.UpdateStatus(ctx, new)
 			if err != nil {
 				logger.Error("Error while handling TrafficPolicy update event", err)
 			}
@@ -81,13 +78,13 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 		},
 
 		OnDelete: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
-			logger := logging.BuildEventLogger(t.ctx, logging.DeleteEvent, trafficPolicy)
+			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, trafficPolicy)
 			logger.Warn("Ignoring event: %+v", trafficPolicy)
 			return nil
 		},
 
 		OnGeneric: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
-			logging.BuildEventLogger(t.ctx, logging.GenericEvent, trafficPolicy).
+			logging.BuildEventLogger(ctx, logging.GenericEvent, trafficPolicy).
 				Warn("Ignoring event: %+v", trafficPolicy)
 			return nil
 		},
@@ -101,7 +98,7 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 		OnCreate: func(meshService *v1alpha1.MeshService) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, meshService)
 			logger.Debugf("Handling event: %+v", meshService)
-			err := t.upsertPolicyResourcesForMeshService(meshService)
+			err := t.upsertPolicyResourcesForMeshService(ctx, meshService)
 			if err != nil {
 				logger.Error("Error while handling MeshService create event", err)
 			}
@@ -111,7 +108,7 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 		OnUpdate: func(_, new *v1alpha1.MeshService) error {
 			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
 			logger.Debugf("Handling event: %+v", new)
-			err := t.upsertPolicyResourcesForMeshService(new)
+			err := t.upsertPolicyResourcesForMeshService(ctx, new)
 			if err != nil {
 				logger.Error("Error while handling MeshService update event", err)
 			}
@@ -139,44 +136,47 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 
 // Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicy
 func (t *trafficPolicyTranslator) upsertPolicyResourcesForTrafficPolicy(
+	ctx context.Context,
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 ) ([]*types.TrafficPolicyStatus_TranslatorError, error) {
-	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPolicy(t.ctx, trafficPolicy)
+	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPolicy(ctx, trafficPolicy)
 	if err != nil {
 		return nil, err
 	}
-	return t.translateMergedTrafficPolicies(mergedTrafficPoliciesByMeshService)
+	return t.translateMergedTrafficPolicies(ctx, mergedTrafficPoliciesByMeshService)
 }
 
 // Compute and upsert all Mesh-specific configuration needed to reflect TrafficPolicies for the given MeshService
 func (t *trafficPolicyTranslator) upsertPolicyResourcesForMeshService(
+	ctx context.Context,
 	meshService *v1alpha1.MeshService,
 ) error {
-	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPoliciesForMeshService(t.ctx, meshService)
+	mergedTrafficPoliciesByMeshService, err := t.preprocessor.PreprocessTrafficPoliciesForMeshService(ctx, meshService)
 	if err != nil {
 		return err
 	}
 	// ignore Mesh specific statuses because there's no triggering TrafficPolicy whose status we can update
-	_, err = t.translateMergedTrafficPolicies(mergedTrafficPoliciesByMeshService)
+	_, err = t.translateMergedTrafficPolicies(ctx, mergedTrafficPoliciesByMeshService)
 	return err
 }
 
 func (t *trafficPolicyTranslator) translateMergedTrafficPolicies(
+	ctx context.Context,
 	mergedTrafficPoliciesByMeshService map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy,
 ) ([]*types.TrafficPolicyStatus_TranslatorError, error) {
 	var meshTypeStatuses []*types.TrafficPolicyStatus_TranslatorError
 	for meshServiceKey, mergedTrafficPolicies := range mergedTrafficPoliciesByMeshService {
-		meshServiceObjectKey := client.ObjectKey{Name: meshServiceKey.Name, Namespace: meshServiceKey.Namespace}
-		meshService, err := t.meshServiceClient.Get(t.ctx, meshServiceObjectKey)
+		meshServiceObjectKey := client.ObjectKey{Name: meshServiceKey.DestName, Namespace: meshServiceKey.DestNamespace}
+		meshService, err := t.meshServiceClient.Get(ctx, meshServiceObjectKey)
 		if err != nil {
 			return nil, err
 		}
-		mesh, err := t.meshClient.Get(t.ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}
 		for _, meshTranslator := range t.meshTranslators {
-			translatorError := meshTranslator.TranslateTrafficPolicy(t.ctx, meshService, mesh, mergedTrafficPolicies)
+			translatorError := meshTranslator.TranslateTrafficPolicy(ctx, meshService, mesh, mergedTrafficPolicies)
 			if translatorError != nil {
 				meshTypeStatuses = append(meshTypeStatuses, translatorError)
 			}

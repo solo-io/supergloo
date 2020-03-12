@@ -200,7 +200,9 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 	return virtualService, nil
 }
 
-func (i *istioTrafficPolicyTranslator) translateRequestMatchers(trafficPolicy *networking_v1alpha1.TrafficPolicy) ([]*api_v1alpha3.HTTPMatchRequest, error) {
+func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
+	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+) ([]*api_v1alpha3.HTTPMatchRequest, error) {
 	var translatedRequestMatcher []*api_v1alpha3.HTTPMatchRequest
 	matchers := trafficPolicy.Spec.GetHttpRequestMatchers()
 	if matchers != nil {
@@ -217,8 +219,19 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(trafficPolicy *n
 				QueryParams:    i.translateRequestMatcherQueryParams(matcher.GetQueryParameters()),
 				Headers:        headerMatchers,
 				WithoutHeaders: inverseHeaderMatchers,
+				SourceLabels:   trafficPolicy.Spec.GetSourceSelector().GetLabels(),
 			}
-			translatedRequestMatcher = append(translatedRequestMatcher, matchRequest)
+
+			if len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
+				for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetNamespaces() {
+					matchRequestWithNamespace := *matchRequest
+					matchRequestWithNamespace.SourceNamespace = namespace
+					translatedRequestMatcher = append(translatedRequestMatcher, &matchRequestWithNamespace)
+				}
+			} else {
+				translatedRequestMatcher = append(translatedRequestMatcher, matchRequest)
+			}
+
 		}
 	}
 	return translatedRequestMatcher, nil

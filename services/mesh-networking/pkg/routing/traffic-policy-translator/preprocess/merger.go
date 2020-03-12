@@ -94,7 +94,7 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 /*
 	Merge algorithm:
 		1. Sort TrafficPolicies by creation time ascending (to ensure determinism when surfacing conflicting TrafficPolicies)
-		2. Merge non-conflicting policies.
+		2. Merge non-conflicting policies keyed on Source selector and HttpMatcher
 		3. If conflict encountered, do not apply any of its configuration, update conflicting TrafficPolicy with CONFLICT status and continue.
 */
 func mergeTrafficPoliciesByMeshService(
@@ -107,12 +107,12 @@ func mergeTrafficPoliciesByMeshService(
 			return timestampA.Before(&timestampB)
 		})
 		// represents the merged TrafficPolicy
-		var trafficPolicyHTTPMatcherPairs []*HttpMatcherTrafficPolicyPair
+		var mergeableHttpTrafficPolicies []*MergeableHttpTrafficPolicy
 		for _, trafficPolicy := range trafficPolicies {
 			// ignore TrafficPolicy with bad statuses
 			if trafficPolicy.Status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_ACCEPTED {
-				updatedTrafficPolicyHTTPMatcherPairs, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, trafficPolicyHTTPMatcherPairs)
-				trafficPolicyHTTPMatcherPairs = updatedTrafficPolicyHTTPMatcherPairs
+				mergedHttpTrafficPolicies, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, mergeableHttpTrafficPolicies)
+				mergeableHttpTrafficPolicies = mergedHttpTrafficPolicies
 				if conflictErr != nil {
 					return nil, conflictErr
 				}
@@ -120,13 +120,14 @@ func mergeTrafficPoliciesByMeshService(
 		}
 		// convert map[HttpMatcher]TrafficPolicySpec to []TrafficPolicy by consolidating equivalent TrafficPolicySpecs by appending HttpMatchers
 		mergedTrafficPolicies := []*networking_v1alpha1.TrafficPolicy{}
-		for _, trafficPolicyHTTPMatcherPair := range trafficPolicyHTTPMatcherPairs {
+		for _, mergeableHttpTp := range mergeableHttpTrafficPolicies {
 			trafficPolicyExists := false
 			for _, mergedTrafficPolicy := range mergedTrafficPolicies {
-				// TrafficPolicySpec already exists, so just append to its HttpRequestMatchers
-				if areTrafficPolicyActionsEqual(trafficPolicyHTTPMatcherPair.TrafficPolicySpec, &mergedTrafficPolicy.Spec) {
+				// if spec containing TrafficPolicy rules already exists, with same Source selectors, just append to its HttpRequestMatchers
+				if mergeableHttpTp.SourceSelector.Equal(mergedTrafficPolicy.Spec.GetSourceSelector()) &&
+					areTrafficPolicyActionsEqual(mergeableHttpTp.TrafficPolicySpec, &mergedTrafficPolicy.Spec) {
 					mergedTrafficPolicy.Spec.HttpRequestMatchers =
-						append(mergedTrafficPolicy.Spec.GetHttpRequestMatchers(), trafficPolicyHTTPMatcherPair.HttpMatcher)
+						append(mergedTrafficPolicy.Spec.GetHttpRequestMatchers(), mergeableHttpTp.HttpMatcher)
 					trafficPolicyExists = true
 					break
 				}
@@ -134,11 +135,12 @@ func mergeTrafficPoliciesByMeshService(
 			// Create new merged TrafficPolicySpec
 			if !trafficPolicyExists {
 				newMergedTrafficPolicy := &networking_v1alpha1.TrafficPolicy{
-					Spec: *trafficPolicyHTTPMatcherPair.TrafficPolicySpec,
+					Spec: *mergeableHttpTp.TrafficPolicySpec,
 				}
 				mergedTrafficPolicies = append(mergedTrafficPolicies, newMergedTrafficPolicy)
 				newMergedTrafficPolicy.Spec.HttpRequestMatchers =
-					[]*networking_v1alpha1_types.HttpMatcher{trafficPolicyHTTPMatcherPair.HttpMatcher}
+					[]*networking_v1alpha1_types.HttpMatcher{mergeableHttpTp.HttpMatcher}
+				newMergedTrafficPolicy.Spec.SourceSelector = mergeableHttpTp.SourceSelector
 			}
 		}
 		trafficPoliciesByMeshService[meshServiceKey] = mergedTrafficPolicies
@@ -147,42 +149,46 @@ func mergeTrafficPoliciesByMeshService(
 }
 
 /*
-	Merge traffic policy into existing set of TrafficPolicy rules (represented as trafficPolicyHTTPMatcherPairs)
-	Two HTTP rules "conflict" if and only if they share an HttpMatcher (equality here is defined as an exact match for each HttpMatcher field)
-	and there exists a TrafficPolicy rule field that does not equal.
+	Merge trafficPolicy into existing set of TrafficPolicy rules (represented as trafficPolicyHTTPMatcherPairs)
+	Two HTTP policies "conflict" if and only if:
+		1) their source Selectors are equal
+        2) they share an HttpMatcher (equality here is defined as an exact match for each HttpMatcher field)
+		3) there exists a TrafficPolicy rule field (any field not including Source, Destination, or HttpMatcher) that does not equal
 */
 func mergeHttpTrafficPolicies(
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
-	trafficPolicyHTTPMatcherPairs []*HttpMatcherTrafficPolicyPair,
-) ([]*HttpMatcherTrafficPolicyPair, error) {
+	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
+) ([]*MergeableHttpTrafficPolicy, error) {
 	// We choose the N^2 comparison over implementing a Set data structure for HTTPMatchers
 	for _, httpMatcher := range trafficPolicy.Spec.GetHttpRequestMatchers() {
-		httpMatcherExists := false
-		for _, trafficPolicyHTTPMatcherPair := range trafficPolicyHTTPMatcherPairs {
-			if httpMatcher.Equal(trafficPolicyHTTPMatcherPair.HttpMatcher) {
-				mergedTrafficPolicySpec, err := mergeTrafficPolicySpec(trafficPolicyHTTPMatcherPair.TrafficPolicySpec, &trafficPolicy.Spec)
+		merged := false
+		for _, mergeableTp := range mergeableTrafficPolicies {
+			// attempt merging if Source selector and HttpMatcher are equal
+			if trafficPolicy.Spec.SourceSelector.Equal(mergeableTp.SourceSelector) && httpMatcher.Equal(mergeableTp.HttpMatcher) {
+				mergedTrafficPolicySpec, err := mergeTrafficPolicySpec(mergeableTp.TrafficPolicySpec, &trafficPolicy.Spec)
 				if err != nil {
 					return nil, err
 				}
 				// update existing TrafficPolicy with merged spec
-				trafficPolicyHTTPMatcherPair.TrafficPolicySpec = mergedTrafficPolicySpec
-				httpMatcherExists = true
+				mergeableTp.TrafficPolicySpec = mergedTrafficPolicySpec
+				merged = true
 				break
 			}
 		}
-		if !httpMatcherExists {
+		if !merged {
 			// copy all spec fields except HttpMatchers and Destination rules
 			newTPSpec, err := mergeTrafficPolicySpec(&networking_v1alpha1_types.TrafficPolicySpec{}, &trafficPolicy.Spec)
 			if err != nil {
 				return nil, err
 			}
-			trafficPolicyHTTPMatcherPairs = append(trafficPolicyHTTPMatcherPairs, &HttpMatcherTrafficPolicyPair{
+			mergeableTrafficPolicies = append(mergeableTrafficPolicies, &MergeableHttpTrafficPolicy{
 				HttpMatcher:       httpMatcher,
+				SourceSelector:    trafficPolicy.Spec.SourceSelector,
 				TrafficPolicySpec: newTPSpec,
 			})
 		}
 	}
-	return trafficPolicyHTTPMatcherPairs, nil
+	return mergeableTrafficPolicies, nil
 }
 
 // For fields that exist in that but not this, merge into this.
@@ -268,13 +274,14 @@ func buildKeyForMeshService(
 		return nil, err
 	}
 	return &keys.MeshServiceMultiClusterKey{
-		Name:        meshService.GetName(),
-		Namespace:   meshService.GetNamespace(),
-		ClusterName: mesh.Spec.GetCluster().GetName(),
+		DestName:        meshService.GetName(),
+		DestNamespace:   meshService.GetNamespace(),
+		DestClusterName: mesh.Spec.GetCluster().GetName(),
 	}, nil
 }
 
-type HttpMatcherTrafficPolicyPair struct {
+type MergeableHttpTrafficPolicy struct {
 	HttpMatcher       *networking_v1alpha1_types.HttpMatcher
+	SourceSelector    *core_types.Selector
 	TrafficPolicySpec *networking_v1alpha1_types.TrafficPolicySpec
 }

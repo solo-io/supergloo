@@ -75,7 +75,7 @@ var _ = Describe("IstioTranslator", func() {
 		ctrl.Finish()
 	})
 
-	Context("should translate TrafficPolicies into VirtualService and upsert", func() {
+	Context("should translate TrafficPolicies into VirtualService and DestinationRule and upsert", func() {
 		setupTestContext := func() *testContext {
 			clusterName := "clusterName"
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
@@ -662,6 +662,12 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HTTP RequestMatchers", func() {
 			testContext := setupTestContext()
+			labels := map[string]string{"env": "dev"}
+			namespaces := []string{"n1", "n2"}
+			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.Selector{
+				Labels:     labels,
+				Namespaces: namespaces,
+			}
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
 				{
 					PathSpecifier: &networking_types.HttpMatcher_Exact{
@@ -683,14 +689,32 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}},
+					Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
+					Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}},
+					SourceLabels:    labels,
+					SourceNamespace: namespaces[0],
+				},
+				{
+					Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
+					Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}},
+					SourceLabels:    labels,
+					SourceNamespace: namespaces[1],
 				},
 				{
 					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "POST"}},
 					WithoutHeaders: map[string]*api_v1alpha3.StringMatch{
 						"name3": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "[a-z]+"}},
 					},
+					SourceLabels:    labels,
+					SourceNamespace: namespaces[0],
+				},
+				{
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "POST"}},
+					WithoutHeaders: map[string]*api_v1alpha3.StringMatch{
+						"name3": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "[a-z]+"}},
+					},
+					SourceLabels:    labels,
+					SourceNamespace: namespaces[1],
 				},
 			}
 			mockVirtualServiceClient.

@@ -52,7 +52,6 @@ var _ = Describe("Translator", func() {
 		mockTrafficPolicyController = mock_zephyr_networking.NewMockTrafficPolicyController(ctrl)
 		mockMeshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
 		translator = traffic_policy_translator.NewTrafficPolicyTranslator(
-			ctx,
 			mockPreprocessor,
 			[]traffic_policy_translator.TrafficPolicyMeshTranslator{mockIstioTranslator},
 			mockMeshClient,
@@ -100,13 +99,13 @@ var _ = Describe("Translator", func() {
 
 		It("handle create for TrafficPolicy", func() {
 			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				Name:      "name",
-				Namespace: "namespace",
+				DestName:      "name",
+				DestNamespace: "namespace",
 			}
 			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
@@ -143,13 +142,13 @@ var _ = Describe("Translator", func() {
 
 		It("should return translator specific error statuses", func() {
 			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				Name:      "name",
-				Namespace: "namespace",
+				DestName:      "name",
+				DestNamespace: "namespace",
 			}
 			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
@@ -216,10 +215,10 @@ var _ = Describe("Translator", func() {
 
 		It("should upsert policy resources for MeshService", func() {
 			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				Name:      "name",
-				Namespace: "namespace",
+				DestName:      "name",
+				DestNamespace: "namespace",
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
 			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{meshServiceMCKey: {}}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
