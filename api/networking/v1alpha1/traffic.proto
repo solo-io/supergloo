@@ -297,9 +297,18 @@ message Mirror {
     double percentage = 2;
 }
 
-enum HttpMethod {
+message HttpMethod {
+    HttpMethodValue method = 1;
+}
+
+enum HttpMethodValue {
     GET = 0;
     POST = 1;
     PUT = 2;
     DELETE = 3;
+    HEAD = 4;
+    CONNECT = 5;
+    OPTIONS = 6;
+    TRACE = 7;
+    PATCH = 8;
 }

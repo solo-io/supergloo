@@ -68,13 +68,13 @@ var _ = Describe("Merger", func() {
 		destNamespaces2 := []string{"namespace2"}
 		destLabels2 := map[string]string{"k2": "v2"}
 		httpMatcher1 := &networking_v1alpha1_types.HttpMatcher{
-			Method: networking_v1alpha1_types.HttpMethod_GET,
+			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_GET},
 		}
 		httpMatcher2 := &networking_v1alpha1_types.HttpMatcher{
-			Method: networking_v1alpha1_types.HttpMethod_POST,
+			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_POST},
 		}
 		httpMatcher3 := &networking_v1alpha1_types.HttpMatcher{
-			Method: networking_v1alpha1_types.HttpMethod_PUT,
+			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_PUT},
 		}
 		tp1 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{

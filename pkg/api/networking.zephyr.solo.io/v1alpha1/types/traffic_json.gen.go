@@ -196,6 +196,17 @@ func (this *Mirror) UnmarshalJSON(b []byte) error {
 	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for HttpMethod
+func (this *HttpMethod) MarshalJSON() ([]byte, error) {
+	str, err := TrafficMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for HttpMethod
+func (this *HttpMethod) UnmarshalJSON(b []byte) error {
+	return TrafficUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	TrafficMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	TrafficUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

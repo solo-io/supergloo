@@ -161,43 +161,65 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 		},
 	}
 	for _, trafficPolicy := range trafficPolicies {
-		fault, err := i.translateFaultInjection(trafficPolicy)
+		httpRoutes, err := i.translateIntoHTTPRoutes(ctx, meshService, trafficPolicy)
 		if err != nil {
 			return nil, err
 		}
-		corsPolicy, err := i.translateCorsPolicy(trafficPolicy)
-		if err != nil {
-			return nil, err
-		}
-		requestMatchers, err := i.translateRequestMatchers(trafficPolicy)
-		if err != nil {
-			return nil, err
-		}
-		var mirrorPercentage *api_v1alpha3.Percent
-		if trafficPolicy.Spec.GetMirror() != nil {
-			mirrorPercentage = &api_v1alpha3.Percent{Value: trafficPolicy.Spec.GetMirror().GetPercentage()}
-		}
-		mirror, err := i.translateMirror(ctx, meshService, trafficPolicy)
-		if err != nil {
-			return nil, err
-		}
-		trafficShift, err := i.translateTrafficShift(ctx, meshService, trafficPolicy)
-		if err != nil {
-			return nil, err
-		}
-		virtualService.Spec.Http = append(virtualService.Spec.GetHttp(), &api_v1alpha3.HTTPRoute{
-			Match:            requestMatchers,
-			Route:            trafficShift,
-			Timeout:          trafficPolicy.Spec.GetRequestTimeout(),
-			Fault:            fault,
-			CorsPolicy:       corsPolicy,
-			Retries:          i.translateRetries(trafficPolicy),
-			MirrorPercentage: mirrorPercentage,
-			Mirror:           mirror,
-			Headers:          i.translateHeaderManipulation(trafficPolicy),
-		})
+		virtualService.Spec.Http = httpRoutes
 	}
 	return virtualService, nil
+}
+
+func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
+	ctx context.Context,
+	meshService *discovery_v1alpha1.MeshService,
+	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+) ([]*api_v1alpha3.HTTPRoute, error) {
+	var err error
+	var faultInjection *api_v1alpha3.HTTPFaultInjection
+	var corsPolicy *api_v1alpha3.CorsPolicy
+	var requestMatchers []*api_v1alpha3.HTTPMatchRequest
+	var mirrorPercentage *api_v1alpha3.Percent
+	var mirror *api_v1alpha3.Destination
+	var trafficShift []*api_v1alpha3.HTTPRouteDestination
+	if faultInjection, err = i.translateFaultInjection(trafficPolicy); err != nil {
+		return nil, err
+	}
+	if corsPolicy, err = i.translateCorsPolicy(trafficPolicy); err != nil {
+		return nil, err
+	}
+	if requestMatchers, err = i.translateRequestMatchers(trafficPolicy); err != nil {
+		return nil, err
+	}
+	if trafficPolicy.Spec.GetMirror() != nil {
+		mirrorPercentage = &api_v1alpha3.Percent{Value: trafficPolicy.Spec.GetMirror().GetPercentage()}
+	}
+	if mirror, err = i.translateMirror(ctx, meshService, trafficPolicy); err != nil {
+		return nil, err
+	}
+	if trafficShift, err = i.translateTrafficShift(ctx, meshService, trafficPolicy); err != nil {
+		return nil, err
+	}
+	retries := i.translateRetries(trafficPolicy)
+	headerManipulation := i.translateHeaderManipulation(trafficPolicy)
+	// flatten HTTPMatchRequests, i.e. create an HTTPRoute per HTTPMatchRequest
+	// this facilitates sorting the HTTPRoutes to produce a well-defined ordering of precedence
+	httpRoutes := make([]*api_v1alpha3.HTTPRoute, 0, len(requestMatchers))
+	for _, requestMatcher := range requestMatchers {
+		httpRoutes = append(httpRoutes, &api_v1alpha3.HTTPRoute{
+			Match:            []*api_v1alpha3.HTTPMatchRequest{requestMatcher},
+			Route:            trafficShift,
+			Timeout:          trafficPolicy.Spec.GetRequestTimeout(),
+			Fault:            faultInjection,
+			CorsPolicy:       corsPolicy,
+			Retries:          retries,
+			MirrorPercentage: mirrorPercentage,
+			Mirror:           mirror,
+			Headers:          headerManipulation,
+		})
+	}
+	sort.Sort(SpecificitySortableRoutes(httpRoutes))
+	return httpRoutes, nil
 }
 
 func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
@@ -213,15 +235,18 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 			if err != nil {
 				return nil, err
 			}
+			var method *api_v1alpha3.StringMatch
+			if matcher.GetMethod() != nil {
+				method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: matcher.GetMethod().GetMethod().String()}}
+			}
 			matchRequest := &api_v1alpha3.HTTPMatchRequest{
 				Uri:            uriMatcher,
-				Method:         &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: matcher.GetMethod().String()}},
+				Method:         method,
 				QueryParams:    i.translateRequestMatcherQueryParams(matcher.GetQueryParameters()),
 				Headers:        headerMatchers,
 				WithoutHeaders: inverseHeaderMatchers,
 				SourceLabels:   trafficPolicy.Spec.GetSourceSelector().GetLabels(),
 			}
-
 			if len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
 				for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetNamespaces() {
 					matchRequestWithNamespace := *matchRequest
@@ -231,7 +256,6 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 			} else {
 				translatedRequestMatcher = append(translatedRequestMatcher, matchRequest)
 			}
-
 		}
 	}
 	return translatedRequestMatcher, nil
