@@ -45,6 +45,9 @@ kubectl create ns service-mesh-hub
 # register all our CRDs in the management plane
 ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
 
+# register all the CRDs in the target cluster too
+ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
+
 # make all the docker images
 # write the output to a temp file so that we can grab the image names out of it
 # also ensure we clean up the file once we're done
@@ -59,7 +62,7 @@ trap cleanup EXIT
 
 # grab the image names out of the `make docker` output
 # the kind cluster name is just $managementPlane, not kind-$managementPlane; the latter is how kubectl is aware of it
-sed -nE 's|Successfully tagged (.*$)|\1|p' $tempFile | while read f; do kind load docker-image --name $managementPlane $f; done
+sed -nE 's|Successfully tagged (.*$)|\1|p' $tempFile | while read f; do kind load docker-image --name $managementPlane $f; kind load docker-image --name $remoteCluster $f; done
 
 # package up Helm
 make package-index-app-helm -B
@@ -77,6 +80,8 @@ make meshctl -B
 ./_output/meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
-  --local-cluster-domain-override host.docker.internal
+  --local-cluster-domain-override host.docker.internal \
+  --dev-csr-agent-chart
 
-./_output/meshctl istio install --profile=demo --context kind-$remoteCluster
+#./_output/meshctl istio install --profile=default --context kind-$remoteCluster
+#./_output/meshctl istio install --profile=minimal --context kind-$managementPlane

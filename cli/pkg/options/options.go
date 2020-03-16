@@ -36,6 +36,7 @@ type Register struct {
 	RemoteKubeConfig           string
 	LocalClusterDomainOverride string
 	Overwrite                  bool
+	UseDevCsrAgentChart        bool
 }
 
 type Istio struct {

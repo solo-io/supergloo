@@ -1,7 +1,9 @@
 package install
 
 import (
-	"os"
+	"fmt"
+	"io"
+	"io/ioutil"
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
@@ -9,6 +11,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/helmutil"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/semver"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -33,10 +37,10 @@ var (
 )
 
 func HelmInstallerProvider(helmClient helminstall.HelmClient, kubeClient kubernetes.Interface) helminstall.Installer {
-	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), os.Stdout)
+	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 }
 
-func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFactory, kubeLoader common_config.KubeLoader) InstallCommand {
+func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFactory, kubeLoader common_config.KubeLoader, out io.Writer) InstallCommand {
 	cmd := &cobra.Command{
 		Use:     cliconstants.InstallCommand.Use,
 		Short:   cliconstants.InstallCommand.Short,
@@ -50,7 +54,7 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 			if err != nil {
 				return err
 			}
-			chartUri, err := GetChartUri(opts.SmhInstall.HelmChartOverride, opts.SmhInstall.Version)
+			chartUri, err := helmutil.GetChartUri(opts.SmhInstall.HelmChartOverride, opts.SmhInstall.Version)
 			if err != nil {
 				return InstallErr(err)
 			}
@@ -69,6 +73,8 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 			}); err != nil {
 				return InstallErr(err)
 			}
+
+			fmt.Fprintf(out, "Service Mesh Hub has been installed to namespace %s\n", opts.Root.WriteNamespace)
 			return nil
 		},
 	}
@@ -80,7 +86,7 @@ func validateArgs(cmd *cobra.Command, _ []string) error {
 	// validate version, prefix with 'v' if not already
 	version, _ := cmd.Flags().GetString("version")
 	if version != "" {
-		if !common.ValidReleaseSemver(version) {
+		if !semver.ValidReleaseSemver(version) {
 			return InvalidVersionErr(version)
 		}
 	}

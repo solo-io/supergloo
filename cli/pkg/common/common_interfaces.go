@@ -8,11 +8,13 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/mesh-projects/pkg/version"
 	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 )
@@ -21,10 +23,11 @@ import (
 
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
-	ClusterAuthorization auth.ClusterAuthorization
-	SecretWriter         SecretWriter
-	HelmInstaller        helminstall.Installer
-	KubeClusterClient    discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
+	ClusterAuthorization  auth.ClusterAuthorization
+	SecretWriter          SecretWriter
+	HelmInstaller         helminstall.Installer
+	KubeClusterClient     discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
+	DeployedVersionFinder version.DeployedVersionFinder
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -36,7 +39,8 @@ type Clients struct {
 	UnstructuredKubeClientFactory kube.UnstructuredKubeClientFactory
 	DeploymentClient              server.DeploymentClient
 
-	IstioClients IstioClients
+	IstioClients               IstioClients
+	ClusterRegistrationClients ClusterRegistrationClients
 }
 
 func IstioClientsProvider(manifestBuilder operator.InstallerManifestBuilder, operatorManagerFactory operator.OperatorManagerFactory) IstioClients {
@@ -49,6 +53,16 @@ func IstioClientsProvider(manifestBuilder operator.InstallerManifestBuilder, ope
 type IstioClients struct {
 	OperatorManifestBuilder operator.InstallerManifestBuilder
 	OperatorManagerFactory  operator.OperatorManagerFactory
+}
+
+func ClusterRegistrationClientsProvider(csrAgentInstallerFactory register.CsrAgentInstallerFactory) ClusterRegistrationClients {
+	return ClusterRegistrationClients{
+		CsrAgentInstallerFactory: csrAgentInstallerFactory,
+	}
+}
+
+type ClusterRegistrationClients struct {
+	CsrAgentInstallerFactory register.CsrAgentInstallerFactory
 }
 
 type ClientsFactory func(opts *options.Options) (*Clients, error)
@@ -67,6 +81,7 @@ func ClientsProvider(
 	unstructuredKubeClientFactory kube.UnstructuredKubeClientFactory,
 	deploymentClient server.DeploymentClient,
 	istioClients IstioClients,
+	clusterRegistrationClients ClusterRegistrationClients,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -75,6 +90,7 @@ func ClientsProvider(
 		DeploymentClient:              deploymentClient,
 		ReleaseAssetHelper:            assetHelper,
 		IstioClients:                  istioClients,
+		ClusterRegistrationClients:    clusterRegistrationClients,
 	}
 }
 
@@ -84,12 +100,14 @@ func KubeClientsProvider(
 	writer SecretWriter,
 	helmInstaller helminstall.Installer,
 	kubeClusterClient discovery_core.KubernetesClusterClient,
+	deployedVersionFinder version.DeployedVersionFinder,
 ) *KubeClients {
 	return &KubeClients{
-		ClusterAuthorization: authorization,
-		SecretWriter:         writer,
-		HelmInstaller:        helmInstaller,
-		KubeClusterClient:    kubeClusterClient,
+		ClusterAuthorization:  authorization,
+		SecretWriter:          writer,
+		HelmInstaller:         helmInstaller,
+		KubeClusterClient:     kubeClusterClient,
+		DeployedVersionFinder: deployedVersionFinder,
 	}
 }
 

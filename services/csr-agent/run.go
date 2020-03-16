@@ -36,6 +36,6 @@ func Run(ctx context.Context) {
 	case <-ctx.Done():
 		return
 	case <-csrAgentContext.Manager.GotError():
-		logger.Fatalw("the local manager encountered an error", zap.Error(err))
+		logger.Fatalw("the local manager encountered an error", zap.Error(csrAgentContext.Manager.Error()))
 	}
 }

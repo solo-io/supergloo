@@ -8,13 +8,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/installutils/helminstall"
-	mock_helminstall "github.com/solo-io/go-utils/installutils/helminstall/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	mock_go_utils "github.com/solo-io/mesh-projects/test/mocks/go-utils"
 	"k8s.io/client-go/rest"
 )
 
@@ -24,13 +24,13 @@ var _ = Describe("Install", func() {
 		ctx               context.Context
 		mockKubeLoader    *cli_mocks.MockKubeLoader
 		meshctl           *cli_test.MockMeshctl
-		mockHelmInstaller *mock_helminstall.MockInstaller
+		mockHelmInstaller *mock_go_utils.MockInstaller
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockHelmInstaller = mock_helminstall.NewMockInstaller(ctrl)
+		mockHelmInstaller = mock_go_utils.NewMockInstaller(ctrl)
 		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,

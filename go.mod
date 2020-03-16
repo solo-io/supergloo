@@ -28,7 +28,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/rotisserie/eris v0.2.0
 	github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca
-	github.com/solo-io/go-utils v0.14.0
+	github.com/solo-io/go-utils v0.15.0
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0

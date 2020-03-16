@@ -12,6 +12,7 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	cluster_internal "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/internal"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -27,6 +28,7 @@ import (
 
 const (
 	FailedToCheckForPreviousKubeCluster = "Could not get KubernetesCluster resource from master cluster"
+	CsrAgentReleaseName                 = "csr-agent"
 )
 
 var (
@@ -141,6 +143,31 @@ func RegisterCluster(
 	}
 
 	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
+
+	clients, err := clientsFactory(opts)
+	if err != nil {
+		return eris.Errorf("Unexpected error: Clients should have already been built, but failed to build again")
+	}
+
+	csrAgentInstaller := clients.ClusterRegistrationClients.CsrAgentInstallerFactory(remoteKubeClients.HelmInstaller, masterKubeClients.DeployedVersionFinder)
+	err = csrAgentInstaller.Install(
+		ctx,
+		&csr.CsrAgentInstallOptions{
+			KubeConfig:           remoteConfigPath,
+			KubeContext:          remoteContext,
+			ClusterName:          registerOpts.RemoteClusterName,
+			SmhInstallNamespace:  opts.Root.WriteNamespace,
+			UseDevCsrAgentChart:  registerOpts.UseDevCsrAgentChart,
+			ReleaseName:          CsrAgentReleaseName,
+			RemoteWriteNamespace: registerOpts.RemoteWriteNamespace,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(out, "Successfully set up CSR agent...\n")
+
 	fmt.Fprintf(
 		out,
 		"\nCluster %s is now registered in your Service Mesh Hub installation\n",

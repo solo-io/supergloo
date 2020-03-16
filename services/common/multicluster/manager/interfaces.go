@@ -43,7 +43,7 @@ type AsyncManager interface {
 	Manager() manager.Manager
 	// returns the context of the async manager
 	Context() context.Context
-	// returns the err which has occured
+	// returns the err which has occurred
 	Error() error
 	// returns the channel which is closed when an err occurs
 	GotError() <-chan struct{}

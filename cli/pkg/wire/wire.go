@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
@@ -22,9 +23,11 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	version2 "github.com/solo-io/mesh-projects/pkg/version"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -38,11 +41,14 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_core.NewGeneratedServiceAccountClient,
 		discovery_core.NewGeneratedKubernetesClusterClient,
 		kubernetes_core.NewGeneratedSecretsClient,
+		kubernetes_apps.NewGeneratedDeploymentClient,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
 		common.DefaultSecretWriterProvider,
 		auth.NewClusterAuthorization,
+		docker.NewImageNameParser,
+		version2.NewDeployedVersionFinder,
 		helminstall.DefaultHelmClient,
 		install.HelmInstallerProvider,
 		common.KubeClientsProvider,
@@ -61,6 +67,8 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 		server.NewDeploymentClient,
 		operator.NewInstallerManifestBuilder,
 		common.IstioClientsProvider,
+		register.NewCsrAgentInstallerFactory,
+		common.ClusterRegistrationClientsProvider,
 		operator.NewOperatorManagerFactory,
 		common.ClientsProvider,
 	)

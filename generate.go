@@ -19,6 +19,7 @@ import (
 //go:generate mockgen -package mock_corev1 -destination ./test/mocks/corev1/mock_service_controller.go github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller ServiceController
 //go:generate mockgen -package mock_zephyr_discovery -destination ./test/mocks/zephyr/discovery/mock_mesh_workload_controller.go github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller MeshWorkloadController,MeshServiceController
 //go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_mesh_group_controller.go github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller MeshGroupController,TrafficPolicyController
+//go:generate mockgen -package mock_go_utils -destination ./test/mocks/go-utils/mock_helm_install.go github.com/solo-io/go-utils/installutils/helminstall Installer
 
 func main() {
 	log.Println("starting generate")

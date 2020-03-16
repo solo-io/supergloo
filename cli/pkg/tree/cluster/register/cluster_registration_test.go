@@ -9,12 +9,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/installutils/helminstall"
 	. "github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	cluster_internal "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/internal"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	mock_csr "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr/mocks"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -22,6 +25,7 @@ import (
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	"github.com/solo-io/mesh-projects/pkg/version"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,14 +38,15 @@ import (
 
 var _ = Describe("Cluster Operations", func() {
 	var (
-		ctrl           *gomock.Controller
-		ctx            context.Context
-		secretWriter   *cli_mocks.MockSecretWriter
-		authClient     *mock_auth.MockClusterAuthorization
-		kubeLoader     *cli_mocks.MockKubeLoader
-		meshctl        *cli_test.MockMeshctl
-		configVerifier *cli_mocks.MockMasterKubeConfigVerifier
-		clusterClient  *mock_core.MockKubernetesClusterClient
+		ctrl              *gomock.Controller
+		ctx               context.Context
+		secretWriter      *cli_mocks.MockSecretWriter
+		authClient        *mock_auth.MockClusterAuthorization
+		kubeLoader        *cli_mocks.MockKubeLoader
+		meshctl           *cli_test.MockMeshctl
+		configVerifier    *cli_mocks.MockMasterKubeConfigVerifier
+		clusterClient     *mock_core.MockKubernetesClusterClient
+		csrAgentInstaller *mock_csr.MockCsrAgentInstaller
 	)
 
 	BeforeEach(func() {
@@ -53,6 +58,7 @@ var _ = Describe("Cluster Operations", func() {
 		kubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
 		clusterClient = mock_core.NewMockKubernetesClusterClient(ctrl)
+		csrAgentInstaller = mock_csr.NewMockCsrAgentInstaller(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
@@ -61,6 +67,11 @@ var _ = Describe("Cluster Operations", func() {
 			},
 			Clients: common.Clients{
 				MasterClusterVerifier: configVerifier,
+				ClusterRegistrationClients: common.ClusterRegistrationClients{
+					CsrAgentInstallerFactory: func(_ helminstall.Installer, _ version.DeployedVersionFinder) csr.CsrAgentInstaller {
+						return csrAgentInstaller
+					},
+				},
 			},
 			MockController: ctrl,
 			KubeLoader:     kubeLoader,
@@ -155,6 +166,17 @@ users:
 				Apply(secret).
 				Return(nil)
 
+			csrAgentInstaller.EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					KubeContext:          "",
+					ClusterName:          clusterName,
+					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					ReleaseName:          register.CsrAgentReleaseName,
+					RemoteWriteNamespace: "default",
+				}).
+				Return(nil)
+
 			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
@@ -174,6 +196,7 @@ users:
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
+Successfully set up CSR agent...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -229,6 +252,16 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Apply(secret).
 				Return(nil)
 
+			csrAgentInstaller.
+				EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					ClusterName:          "test-cluster-name",
+					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					ReleaseName:          register.CsrAgentReleaseName,
+					RemoteWriteNamespace: "default",
+				})
+
 			clusterClient.
 				EXPECT().
 				Upsert(ctx, &v1alpha1.KubernetesCluster{
@@ -250,6 +283,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
+Successfully set up CSR agent...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -306,6 +340,17 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Apply(secret).
 				Return(nil)
 
+			csrAgentInstaller.
+				EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					KubeContext:          contextDEF,
+					ClusterName:          "test-cluster-name",
+					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					ReleaseName:          register.CsrAgentReleaseName,
+					RemoteWriteNamespace: "default",
+				})
+
 			clusterClient.
 				EXPECT().
 				Upsert(ctx, &v1alpha1.KubernetesCluster{
@@ -327,6 +372,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
+Successfully set up CSR agent...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -635,6 +681,17 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Apply(secret).
 				Return(nil)
 
+			csrAgentInstaller.
+				EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           localKubeConfig,
+					KubeContext:          remoteContext,
+					ClusterName:          clusterName,
+					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					ReleaseName:          register.CsrAgentReleaseName,
+					RemoteWriteNamespace: "default",
+				})
+
 			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
@@ -653,6 +710,77 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
+Successfully set up CSR agent...
+
+Cluster test-cluster-name is now registered in your Service Mesh Hub installation
+`))
+		})
+
+		It("can register with the CSR agent being installed from a dev chart", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			clusterName := "test-cluster-name"
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+
+			kubeLoader.EXPECT().GetRestConfigForContext(localKubeConfig, "").Return(targetRestConfig, nil)
+			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
+			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
+			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
+
+			secret := &v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
+					Name:      serviceAccountRef.Name,
+					Namespace: env.DefaultWriteNamespace,
+				},
+				Data: map[string][]byte{
+					clusterName: []byte(expectedKubeConfig(testServerABC)),
+				},
+				Type: v1.SecretTypeOpaque,
+			}
+
+			secretWriter.
+				EXPECT().
+				Apply(secret).
+				Return(nil)
+
+			csrAgentInstaller.EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					KubeContext:          "",
+					ClusterName:          clusterName,
+					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					ReleaseName:          register.CsrAgentReleaseName,
+					RemoteWriteNamespace: "default",
+					UseDevCsrAgentChart:  true,
+				}).
+				Return(nil)
+
+			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      clusterName,
+					Namespace: env.DefaultWriteNamespace,
+				},
+				Spec: discovery_types.KubernetesClusterSpec{
+					SecretRef: &core_types.ResourceRef{
+						Name:      secret.GetName(),
+						Namespace: secret.GetNamespace(),
+					},
+				},
+			}).Return(nil)
+
+			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name %s --dev-csr-agent-chart", remoteKubeConfig, localKubeConfig, clusterName))
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
+Successfully wrote kube config secret to master cluster...
+Successfully set up CSR agent...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))

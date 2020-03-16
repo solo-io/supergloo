@@ -1,4 +1,4 @@
-package install
+package helmutil
 
 import (
 	"fmt"
@@ -36,8 +36,10 @@ func GetChartUri(chartOverride, versionOverride string) (string, error) {
 		helmChartVersion = versionOverride
 	}
 
-	helmChartArchiveUri := fmt.Sprintf(cliconstants.HelmRepoTemplate, strings.TrimPrefix(helmChartVersion, "v"))
-	if chartOverride != "" {
+	var helmChartArchiveUri string
+	if chartOverride == "" {
+		helmChartArchiveUri = fmt.Sprintf(cliconstants.ServiceMeshHubChartUriTemplate, strings.TrimPrefix(helmChartVersion, "v"))
+	} else {
 		helmChartArchiveUri = chartOverride
 	}
 

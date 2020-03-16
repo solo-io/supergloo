@@ -10,7 +10,7 @@ import (
 func AddRootFlags(cmd *cobra.Command, options *Options) {
 	flags := cmd.PersistentFlags()
 	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", "service-mesh-hub",
-		"Specify the namespace where resources should be written")
+		"Specify the namespace where Service Mesh Hub resources should be written")
 	flags.StringVar(&options.Root.KubeConfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 		"Specify the kubeconfig for the current command")
 	flags.StringVar(&options.Root.KubeContext, "context", "",
@@ -59,6 +59,7 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	remoteContext := "remote-context"
 	remoteKubeconfig := "remote-kubeconfig"
 	localClusterDomainOverride := "local-cluster-domain-override"
+	devCsrAgentChartName := "dev-csr-agent-chart"
 
 	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
 		"Name of the cluster to be operated upon")
@@ -72,10 +73,12 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 		"Swap out the domain of the remote cluster's k8s API server for the value of this flag; used mainly for debugging locally in docker, where you may provide a value like 'host.docker.internal'")
 	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
 		"Overwrite any cluster registered with the cluster name provided")
+	flags.BoolVar(&opts.Cluster.Register.UseDevCsrAgentChart, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
 
 	// this flag is mainly for our own debugging purposes
 	// don't show it in usage messages
 	flags.Lookup(localClusterDomainOverride).Hidden = true
+	flags.Lookup(devCsrAgentChartName).Hidden = true
 
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }

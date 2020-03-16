@@ -1,7 +1,7 @@
 package version
 
 import (
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/semver"
 )
 
 var (
@@ -26,5 +26,5 @@ func init() {
 }
 
 func IsReleaseVersion() bool {
-	return Version != UndefinedVersion && common.ValidReleaseSemver(Version)
+	return Version != UndefinedVersion && semver.ValidReleaseSemver(Version)
 }
