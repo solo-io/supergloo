@@ -38,32 +38,32 @@ func (m *MockMeshNetworkingSnapshotValidator) EXPECT() *MockMeshNetworkingSnapsh
 	return m.recorder
 }
 
-// ValidateMeshGroupUpsert mocks base method
-func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshGroupUpsert(ctx context.Context, obj *v1alpha10.MeshGroup, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+// ValidateVirtualMeshUpsert mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateVirtualMeshUpsert(ctx context.Context, obj *v1alpha10.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateMeshGroupUpsert", ctx, obj, snapshot)
+	ret := m.ctrl.Call(m, "ValidateVirtualMeshUpsert", ctx, obj, snapshot)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// ValidateMeshGroupUpsert indicates an expected call of ValidateMeshGroupUpsert
-func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshGroupUpsert(ctx, obj, snapshot interface{}) *gomock.Call {
+// ValidateVirtualMeshUpsert indicates an expected call of ValidateVirtualMeshUpsert
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateVirtualMeshUpsert(ctx, obj, snapshot interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshGroupUpsert", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshGroupUpsert), ctx, obj, snapshot)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateVirtualMeshUpsert", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateVirtualMeshUpsert), ctx, obj, snapshot)
 }
 
-// ValidateMeshGroupDelete mocks base method
-func (m *MockMeshNetworkingSnapshotValidator) ValidateMeshGroupDelete(ctx context.Context, obj *v1alpha10.MeshGroup, snapshot *snapshot.MeshNetworkingSnapshot) bool {
+// ValidateVirtualMeshDelete mocks base method
+func (m *MockMeshNetworkingSnapshotValidator) ValidateVirtualMeshDelete(ctx context.Context, obj *v1alpha10.VirtualMesh, snapshot *snapshot.MeshNetworkingSnapshot) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateMeshGroupDelete", ctx, obj, snapshot)
+	ret := m.ctrl.Call(m, "ValidateVirtualMeshDelete", ctx, obj, snapshot)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// ValidateMeshGroupDelete indicates an expected call of ValidateMeshGroupDelete
-func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateMeshGroupDelete(ctx, obj, snapshot interface{}) *gomock.Call {
+// ValidateVirtualMeshDelete indicates an expected call of ValidateVirtualMeshDelete
+func (mr *MockMeshNetworkingSnapshotValidatorMockRecorder) ValidateVirtualMeshDelete(ctx, obj, snapshot interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMeshGroupDelete", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateMeshGroupDelete), ctx, obj, snapshot)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateVirtualMeshDelete", reflect.TypeOf((*MockMeshNetworkingSnapshotValidator)(nil).ValidateVirtualMeshDelete), ctx, obj, snapshot)
 }
 
 // ValidateMeshServiceUpsert mocks base method

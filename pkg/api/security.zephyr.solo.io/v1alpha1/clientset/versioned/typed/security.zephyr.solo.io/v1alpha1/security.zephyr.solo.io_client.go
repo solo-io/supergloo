@@ -26,7 +26,7 @@ import (
 
 type SecurityV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	MeshGroupCertificateSigningRequestsGetter
+	VirtualMeshCertificateSigningRequestsGetter
 }
 
 // SecurityV1alpha1Client is used to interact with features provided by the security.zephyr.solo.io group.
@@ -34,8 +34,8 @@ type SecurityV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *SecurityV1alpha1Client) MeshGroupCertificateSigningRequests(namespace string) MeshGroupCertificateSigningRequestInterface {
-	return newMeshGroupCertificateSigningRequests(c, namespace)
+func (c *SecurityV1alpha1Client) VirtualMeshCertificateSigningRequests(namespace string) VirtualMeshCertificateSigningRequestInterface {
+	return newVirtualMeshCertificateSigningRequests(c, namespace)
 }
 
 // NewForConfig creates a new SecurityV1alpha1Client for the given config.

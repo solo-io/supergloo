@@ -9,11 +9,11 @@ import "mesh-projects/api/core/v1alpha1/status.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-message MeshGroupSpec {
-    // User-provided display name for the mesh group.
+message VirtualMeshSpec {
+    // User-provided display name for the virtual mesh.
     string display_name = 1;
 
-    // The meshes contained in this group.
+    // The meshes contained in this virtual mesh.
     repeated core.zephyr.solo.io.ResourceRef meshes = 2;
 
     /*
@@ -29,8 +29,8 @@ message MeshGroupSpec {
     Federation federation = 4;
 
     /*
-        Shared trust is a mesh group trust model requiring a shared root certificate, as well as shared identity
-        between all entities which wish to communicate within the mesh group.
+        Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
+        between all entities which wish to communicate within the virtual mesh.
 
         The best current example of this would be the replicated control planes example from istio:
         https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
@@ -38,7 +38,7 @@ message MeshGroupSpec {
     message SharedTrust {}
 
     /*
-        Limited trust is a mesh group trust model which does not require all meshes sharing the same root certificate
+        Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
         or identity model. But rather, the limited trust creates trust between meshes running on different clusters
         by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
         between different have the following request path when communicating between clusters
@@ -47,7 +47,7 @@ message MeshGroupSpec {
         client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
 
         This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
-        addition of additional clusters into a mesh group.
+        addition of additional clusters into a virtual mesh.
     */
     message LimitedTrust {}
 
@@ -66,12 +66,12 @@ message Federation {
     Mode mode = 1;
 }
 
-message MeshGroupStatus {
+message VirtualMeshStatus {
     /*
-        0:  The state of the mesh group is unknown, this most likely means that the state is being calculated.
-        1:  The state of the mesh group is Good. All operations have been completed successfully, and all routing
+        0:  The state of the virtual mesh is unknown, this most likely means that the state is being calculated.
+        1:  The state of the virtual mesh is Good. All operations have been completed successfully, and all routing
             is enabled.
-        2:  The state of the mesh group is bad. Either a mesh group operation has failed, or some portion of
+        2:  The state of the virtual mesh is bad. Either a virtual mesh operation has failed, or some portion of
             inter-mesh routing is down.
 
         TODO: Enumerate further information below on the following states in a description message

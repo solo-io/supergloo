@@ -12,20 +12,20 @@ import (
 //go:generate mockgen -destination ./mocks/mock_interfaces.go -source ./interfaces.go
 
 /*
-	Plugins to configure the certificate info on a MeshGroupCertificateSigningRequest.
+	Plugins to configure the certificate info on a VirtualMeshCertificateSigningRequest.
 	At the moment the producers for each mesh (currently istio) are hardcoded into the handler itself.
 */
 type CertConfigProducer interface {
 	ConfigureCertificateInfo(
-		mg *networking_v1alpha1.MeshGroup,
+		vm *networking_v1alpha1.VirtualMesh,
 		mesh *discovery_v1alpha1.Mesh,
 	) (*security_types.CertConfig, error)
 }
 
-// MeshGroupCertificateManager is the higher level event handler interface for MeshGroups
-type MeshGroupCertificateManager interface {
-	InitializeCertificateForMeshGroup(
+// VirtualMeshCertificateManager is the higher level event handler interface for VirtualMeshes
+type VirtualMeshCertificateManager interface {
+	InitializeCertificateForVirtualMesh(
 		ctx context.Context,
-		new *networking_v1alpha1.MeshGroup,
-	) networking_types.MeshGroupStatus
+		new *networking_v1alpha1.VirtualMesh,
+	) networking_types.VirtualMeshStatus
 }

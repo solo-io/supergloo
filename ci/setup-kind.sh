@@ -83,5 +83,5 @@ make meshctl -B
   --local-cluster-domain-override host.docker.internal \
   --dev-csr-agent-chart
 
-#./_output/meshctl istio install --profile=default --context kind-$remoteCluster
-#./_output/meshctl istio install --profile=minimal --context kind-$managementPlane
+./_output/meshctl istio install --profile=default --context kind-$remoteCluster
+./_output/meshctl istio install --profile=minimal --context kind-$managementPlane

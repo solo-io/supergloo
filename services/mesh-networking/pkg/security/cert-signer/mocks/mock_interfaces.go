@@ -15,31 +15,31 @@ import (
 	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
 )
 
-// MockMeshGroupCertClient is a mock of MeshGroupCertClient interface
-type MockMeshGroupCertClient struct {
+// MockVirtualMeshCertClient is a mock of VirtualMeshCertClient interface
+type MockVirtualMeshCertClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupCertClientMockRecorder
+	recorder *MockVirtualMeshCertClientMockRecorder
 }
 
-// MockMeshGroupCertClientMockRecorder is the mock recorder for MockMeshGroupCertClient
-type MockMeshGroupCertClientMockRecorder struct {
-	mock *MockMeshGroupCertClient
+// MockVirtualMeshCertClientMockRecorder is the mock recorder for MockVirtualMeshCertClient
+type MockVirtualMeshCertClientMockRecorder struct {
+	mock *MockVirtualMeshCertClient
 }
 
-// NewMockMeshGroupCertClient creates a new mock instance
-func NewMockMeshGroupCertClient(ctrl *gomock.Controller) *MockMeshGroupCertClient {
-	mock := &MockMeshGroupCertClient{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupCertClientMockRecorder{mock}
+// NewMockVirtualMeshCertClient creates a new mock instance
+func NewMockVirtualMeshCertClient(ctrl *gomock.Controller) *MockVirtualMeshCertClient {
+	mock := &MockVirtualMeshCertClient{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshCertClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupCertClient) EXPECT() *MockMeshGroupCertClientMockRecorder {
+func (m *MockVirtualMeshCertClient) EXPECT() *MockVirtualMeshCertClientMockRecorder {
 	return m.recorder
 }
 
 // GetRootCaBundle mocks base method
-func (m *MockMeshGroupCertClient) GetRootCaBundle(ctx context.Context, meshRef *types.ResourceRef) (*cert_secrets.RootCaData, error) {
+func (m *MockVirtualMeshCertClient) GetRootCaBundle(ctx context.Context, meshRef *types.ResourceRef) (*cert_secrets.RootCaData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRootCaBundle", ctx, meshRef)
 	ret0, _ := ret[0].(*cert_secrets.RootCaData)
@@ -48,44 +48,44 @@ func (m *MockMeshGroupCertClient) GetRootCaBundle(ctx context.Context, meshRef *
 }
 
 // GetRootCaBundle indicates an expected call of GetRootCaBundle
-func (mr *MockMeshGroupCertClientMockRecorder) GetRootCaBundle(ctx, meshRef interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCertClientMockRecorder) GetRootCaBundle(ctx, meshRef interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRootCaBundle", reflect.TypeOf((*MockMeshGroupCertClient)(nil).GetRootCaBundle), ctx, meshRef)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRootCaBundle", reflect.TypeOf((*MockVirtualMeshCertClient)(nil).GetRootCaBundle), ctx, meshRef)
 }
 
-// MockMeshGroupCSRSigner is a mock of MeshGroupCSRSigner interface
-type MockMeshGroupCSRSigner struct {
+// MockVirtualMeshCSRSigner is a mock of VirtualMeshCSRSigner interface
+type MockVirtualMeshCSRSigner struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupCSRSignerMockRecorder
+	recorder *MockVirtualMeshCSRSignerMockRecorder
 }
 
-// MockMeshGroupCSRSignerMockRecorder is the mock recorder for MockMeshGroupCSRSigner
-type MockMeshGroupCSRSignerMockRecorder struct {
-	mock *MockMeshGroupCSRSigner
+// MockVirtualMeshCSRSignerMockRecorder is the mock recorder for MockVirtualMeshCSRSigner
+type MockVirtualMeshCSRSignerMockRecorder struct {
+	mock *MockVirtualMeshCSRSigner
 }
 
-// NewMockMeshGroupCSRSigner creates a new mock instance
-func NewMockMeshGroupCSRSigner(ctrl *gomock.Controller) *MockMeshGroupCSRSigner {
-	mock := &MockMeshGroupCSRSigner{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupCSRSignerMockRecorder{mock}
+// NewMockVirtualMeshCSRSigner creates a new mock instance
+func NewMockVirtualMeshCSRSigner(ctrl *gomock.Controller) *MockVirtualMeshCSRSigner {
+	mock := &MockVirtualMeshCSRSigner{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshCSRSignerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupCSRSigner) EXPECT() *MockMeshGroupCSRSignerMockRecorder {
+func (m *MockVirtualMeshCSRSigner) EXPECT() *MockVirtualMeshCSRSignerMockRecorder {
 	return m.recorder
 }
 
 // Sign mocks base method
-func (m *MockMeshGroupCSRSigner) Sign(ctx context.Context, obj *v1alpha1.MeshGroupCertificateSigningRequest) *types0.MeshGroupCertificateSigningRequestStatus {
+func (m *MockVirtualMeshCSRSigner) Sign(ctx context.Context, obj *v1alpha1.VirtualMeshCertificateSigningRequest) *types0.VirtualMeshCertificateSigningRequestStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Sign", ctx, obj)
-	ret0, _ := ret[0].(*types0.MeshGroupCertificateSigningRequestStatus)
+	ret0, _ := ret[0].(*types0.VirtualMeshCertificateSigningRequestStatus)
 	return ret0
 }
 
 // Sign indicates an expected call of Sign
-func (mr *MockMeshGroupCSRSignerMockRecorder) Sign(ctx, obj interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRSignerMockRecorder) Sign(ctx, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sign", reflect.TypeOf((*MockMeshGroupCSRSigner)(nil).Sign), ctx, obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sign", reflect.TypeOf((*MockVirtualMeshCSRSigner)(nil).Sign), ctx, obj)
 }

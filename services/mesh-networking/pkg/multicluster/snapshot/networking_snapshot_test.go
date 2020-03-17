@@ -65,8 +65,8 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		meshGroupController := mock_zephyr_networking.NewMockMeshGroupController(ctrl)
-		meshGroupController.EXPECT().
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -79,7 +79,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			meshServiceController,
-			meshGroupController,
+			virtualMeshController,
 			meshWorkloadController,
 		)
 		Expect(err).NotTo(HaveOccurred())
@@ -119,8 +119,8 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		meshGroupController := mock_zephyr_networking.NewMockMeshGroupController(ctrl)
-		meshGroupController.EXPECT().
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -133,7 +133,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			meshServiceController,
-			meshGroupController,
+			virtualMeshController,
 			meshWorkloadController,
 		)
 		Expect(err).NotTo(HaveOccurred())
@@ -186,8 +186,8 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		meshGroupController := mock_zephyr_networking.NewMockMeshGroupController(ctrl)
-		meshGroupController.EXPECT().
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -200,7 +200,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			meshServiceController,
-			meshGroupController,
+			virtualMeshController,
 			meshWorkloadController,
 		)
 		Expect(err).NotTo(HaveOccurred())
@@ -255,8 +255,8 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		meshGroupController := mock_zephyr_networking.NewMockMeshGroupController(ctrl)
-		meshGroupController.EXPECT().
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
@@ -269,7 +269,7 @@ var _ = Describe("Networking Snapshot", func() {
 			ctx,
 			validator,
 			meshServiceController,
-			meshGroupController,
+			virtualMeshController,
 			meshWorkloadController,
 		)
 		Expect(err).NotTo(HaveOccurred())

@@ -18,8 +18,7 @@ import (
 //go:generate mockgen -package mock_cli_runtime -destination ./test/mocks/cli_runtime/mock_rest_client_getter.go k8s.io/cli-runtime/pkg/resource RESTClientGetter
 //go:generate mockgen -package mock_corev1 -destination ./test/mocks/corev1/mock_service_controller.go github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller ServiceController
 //go:generate mockgen -package mock_zephyr_discovery -destination ./test/mocks/zephyr/discovery/mock_mesh_workload_controller.go github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller MeshWorkloadController,MeshServiceController
-//go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_mesh_group_controller.go github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller MeshGroupController,TrafficPolicyController
-//go:generate mockgen -package mock_go_utils -destination ./test/mocks/go-utils/mock_helm_install.go github.com/solo-io/go-utils/installutils/helminstall Installer
+//go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_virtual_mesh_controller.go github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller VirtualMeshController,TrafficPolicyController
 
 func main() {
 	log.Println("starting generate")
@@ -45,10 +44,10 @@ func main() {
 				Module: "github.com/solo-io/mesh-projects",
 				Resources: []model.Resource{
 					{
-						Kind:                 "MeshGroupCertificateSigningRequest",
+						Kind:                 "VirtualMeshCertificateSigningRequest",
 						RelativePathFromRoot: "pkg/api/security.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshGroupCertificateSigningRequestSpec"},
-						Status:               &model.Field{Type: "MeshGroupCertificateSigningRequestStatus"},
+						Spec:                 model.Field{Type: "VirtualMeshCertificateSigningRequestSpec"},
+						Status:               &model.Field{Type: "VirtualMeshCertificateSigningRequestStatus"},
 					},
 				},
 				RenderManifests:  true,
@@ -78,10 +77,10 @@ func main() {
 						Status:               &model.Field{Type: "AccessControlPolicyStatus"},
 					},
 					{
-						Kind:                 "MeshGroup",
+						Kind:                 "VirtualMesh",
 						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshGroupSpec"},
-						Status:               &model.Field{Type: "MeshGroupStatus"},
+						Spec:                 model.Field{Type: "VirtualMeshSpec"},
+						Status:               &model.Field{Type: "VirtualMeshStatus"},
 					},
 				},
 				RenderManifests:  true,

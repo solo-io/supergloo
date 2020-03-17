@@ -6,17 +6,17 @@ import (
 )
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `CertificateSigningRequestController`
-type MeshGroupCSRControllerFactory func(
+type VirtualMeshCSRControllerFactory func(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
-) (cert_controller.MeshGroupCertificateSigningRequestController, error)
+) (cert_controller.VirtualMeshCertificateSigningRequestController, error)
 
-func NewMeshGroupCSRControllerFactory() MeshGroupCSRControllerFactory {
+func NewVirtualMeshCSRControllerFactory() VirtualMeshCSRControllerFactory {
 	return func(
 		mgr mc_manager.AsyncManager,
 		clusterName string,
-	) (controller cert_controller.MeshGroupCertificateSigningRequestController, err error) {
+	) (controller cert_controller.VirtualMeshCertificateSigningRequestController, err error) {
 		// just directly return the generated autopilot implementation
-		return cert_controller.NewMeshGroupCertificateSigningRequestController(clusterName, mgr.Manager())
+		return cert_controller.NewVirtualMeshCertificateSigningRequestController(clusterName, mgr.Manager())
 	}
 }

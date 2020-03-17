@@ -12,38 +12,38 @@ import (
 	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
 )
 
-func DefaultRootCaName(mg *networking_v1alpha1.MeshGroup) string {
-	return fmt.Sprintf("%s-ca-certs", mg.GetName())
+func DefaultRootCaName(vm *networking_v1alpha1.VirtualMesh) string {
+	return fmt.Sprintf("%s-ca-certs", vm.GetName())
 }
 
-type meshGroupCertClient struct {
-	localSecretClient    kubernetes_core.SecretsClient
-	localMeshGroupClient zephyr_networking.MeshGroupClient
+type virtualMeshCertClient struct {
+	localSecretClient      kubernetes_core.SecretsClient
+	localVirtualMeshClient zephyr_networking.VirtualMeshClient
 }
 
-func NewMeshGroupCertClient(
+func NewVirtualMeshCertClient(
 	localSecretClient kubernetes_core.SecretsClient,
-	localMeshGroupClient zephyr_networking.MeshGroupClient) MeshGroupCertClient {
-	return &meshGroupCertClient{
-		localSecretClient:    localSecretClient,
-		localMeshGroupClient: localMeshGroupClient,
+	localVirtualMeshClient zephyr_networking.VirtualMeshClient) VirtualMeshCertClient {
+	return &virtualMeshCertClient{
+		localSecretClient:      localSecretClient,
+		localVirtualMeshClient: localVirtualMeshClient,
 	}
 }
 
-func (m *meshGroupCertClient) GetRootCaBundle(
+func (m *virtualMeshCertClient) GetRootCaBundle(
 	ctx context.Context,
 	meshRef *core_types.ResourceRef,
 ) (*cert_secrets.RootCaData, error) {
-	mg, err := m.localMeshGroupClient.Get(ctx, meshRef.GetName(), meshRef.GetNamespace())
+	vm, err := m.localVirtualMeshClient.Get(ctx, meshRef.GetName(), meshRef.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
 	trustBundleSecretRef := &core_types.ResourceRef{
-		Name:      DefaultRootCaName(mg),
+		Name:      DefaultRootCaName(vm),
 		Namespace: env.GetWriteNamespace(),
 	}
-	if mg.Spec.GetTrustBundleRef() != nil {
-		trustBundleSecretRef = mg.Spec.GetTrustBundleRef()
+	if vm.Spec.GetTrustBundleRef() != nil {
+		trustBundleSecretRef = vm.Spec.GetTrustBundleRef()
 	}
 	caSecret, err := m.localSecretClient.Get(ctx, trustBundleSecretRef.GetName(), trustBundleSecretRef.GetNamespace())
 	if err != nil {

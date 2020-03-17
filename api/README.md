@@ -12,10 +12,10 @@ configured directly by users, but rather discovered by service-mesh-hub. This cu
 2. **Networking**: Resources representing user configuration of the management plane. This currently includes:
     * `AccessControlPolicy`
     * `TrafficPolicy`
-    * `MeshGroup`
+    * `VirtualMesh`
 
 3. **Security**: Resources representing security entities and related workflows. Including:
-    * `MeshGroupCertificateSigningRequest`
+    * `VirtualMeshCertificateSigningRequest`
 
 4. **Core**: This group has no custom resources of it's own, but rather serves as a shared library of types. This allows
 the versions of the other groups to not be interdependent but rather jointly depend on a single core lib.

@@ -46,13 +46,13 @@ type FederationDecider interface {
 func NewFederationDecider(
 	meshServiceClient discovery_core.MeshServiceClient,
 	meshClient discovery_core.MeshClient,
-	meshGroupClient zephyr_networking.MeshGroupClient,
+	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	federationStrategyChooser strategies.FederationStrategyChooser,
 ) FederationDecider {
 	return &federationDecider{
 		meshServiceClient:         meshServiceClient,
 		meshClient:                meshClient,
-		meshGroupClient:           meshGroupClient,
+		virtualMeshClient:         virtualMeshClient,
 		federationStrategyChooser: federationStrategyChooser,
 	}
 }
@@ -60,7 +60,7 @@ func NewFederationDecider(
 type federationDecider struct {
 	meshServiceClient         discovery_core.MeshServiceClient
 	meshClient                discovery_core.MeshClient
-	meshGroupClient           zephyr_networking.MeshGroupClient
+	virtualMeshClient         zephyr_networking.VirtualMeshClient
 	federationStrategyChooser strategies.FederationStrategyChooser
 }
 
@@ -71,30 +71,30 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 
 	// log and update the status just for the ones that failed, then continue
 	if len(errorReports) > 0 {
-		for _, failedGroupReport := range errorReports {
-			failedGroupReport.MeshGroup.Status.FederationStatus = &core_types.ComputedStatus{
+		for _, failedVirtualMeshReport := range errorReports {
+			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &core_types.ComputedStatus{
 				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
-				Message: ErrorLoadingMeshMetadata(failedGroupReport.Err),
+				Message: ErrorLoadingMeshMetadata(failedVirtualMeshReport.Err),
 			}
 
-			f.updateMeshGroupStatus(ctx, failedGroupReport.MeshGroup)
+			f.updateVirtualMeshStatus(ctx, failedVirtualMeshReport.VirtualMesh)
 
-			logger.Errorf("Failed to load federation data for group %s: %s", failedGroupReport.MeshGroup.GetName(), failedGroupReport.Err.Error())
+			logger.Errorf("Failed to load federation data for virtual mesh %s: %s", failedVirtualMeshReport.VirtualMesh.GetName(), failedVirtualMeshReport.Err.Error())
 		}
 	}
 
-	for _, group := range perMeshMetadata.ResolvedMeshGroups {
-		f.federateGroup(
+	for _, vm := range perMeshMetadata.ResolvedVirtualMeshs {
+		f.federateVirtualMesh(
 			ctx,
-			group,
+			vm,
 			perMeshMetadata,
 		)
 	}
 }
 
-func (f *federationDecider) federateGroup(
+func (f *federationDecider) federateVirtualMesh(
 	ctx context.Context,
-	group *networking_v1alpha1.MeshGroup,
+	vm *networking_v1alpha1.VirtualMesh,
 	perMeshMetadata strategies.PerMeshMetadata,
 ) {
 	logger := contextutils.LoggerFrom(ctx)
@@ -102,42 +102,42 @@ func (f *federationDecider) federateGroup(
 	// if federation has not been explicitly set by the user, this expression will default the federation mode
 	// to PERMISSIVE, which probably isn't what we want long-term. Tracking that future change here:
 	// https://github.com/solo-io/mesh-projects/issues/222
-	federationMode := group.Spec.GetFederation().GetMode()
+	federationMode := vm.Spec.GetFederation().GetMode()
 
 	// determine what strategy we should use to federate
 	federationStrategy, err := f.federationStrategyChooser(federationMode, f.meshServiceClient)
 	if err != nil {
-		group.Status.FederationStatus = &core_types.ComputedStatus{
+		vm.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_INVALID,
 			Message: UnsupportedFederationMode,
 		}
-		f.updateMeshGroupStatus(ctx, group)
+		f.updateVirtualMeshStatus(ctx, vm)
 		return
 	}
 
 	// actually write our federation decision to the mesh services
-	err = federationStrategy.WriteFederationToServices(ctx, group, perMeshMetadata.MeshNameToMetadata)
+	err = federationStrategy.WriteFederationToServices(ctx, vm, perMeshMetadata.MeshNameToMetadata)
 	if err == nil {
-		group.Status.FederationStatus = &core_types.ComputedStatus{
+		vm.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
 	} else {
-		logger.Error("Recording error to mesh group %+v: %+v", group.ObjectMeta, err)
-		group.Status.FederationStatus = &core_types.ComputedStatus{
+		logger.Error("Recording error to virtual mesh %+v: %+v", vm.ObjectMeta, err)
+		vm.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),
 		}
 	}
 
-	f.updateMeshGroupStatus(ctx, group)
+	f.updateVirtualMeshStatus(ctx, vm)
 }
 
-// once the mesh group has had its federation status updated, call this function to write it into the cluster
-func (f *federationDecider) updateMeshGroupStatus(ctx context.Context, meshGroup *networking_v1alpha1.MeshGroup) {
+// once the virtual mesh has had its federation status updated, call this function to write it into the cluster
+func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	err := f.meshGroupClient.UpdateStatus(ctx, meshGroup)
+	err := f.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
 	if err != nil {
-		logger.Errorf("Error updating federation status on mesh group %+v", meshGroup.ObjectMeta)
+		logger.Errorf("Error updating federation status on virtual mesh %+v", virtualMesh.ObjectMeta)
 	}
 }

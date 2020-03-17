@@ -43,24 +43,24 @@ func MeshNetworkingContextProvider(
 type MeshNetworkingSnapshotContext struct {
 	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
 	MeshServiceControllerFactory  controllers.MeshServiceControllerFactory
-	MeshGroupControllerFactory    controller_factories.MeshGroupControllerFactory
+	VirtualMeshControllerFactory  controller_factories.VirtualMeshControllerFactory
 	SnapshotValidator             snapshot.MeshNetworkingSnapshotValidator
-	GroupMgcsrSnapshotListener    cert_manager.GroupMgcsrSnapshotListener
+	VMCSRSnapshotListener         cert_manager.VMCSRSnapshotListener
 }
 
 func MeshNetworkingSnapshotContextProvider(
 	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
 	meshServiceControllerFactory controllers.MeshServiceControllerFactory,
-	meshGroupControllerFactory controller_factories.MeshGroupControllerFactory,
+	virtualMeshControllerFactory controller_factories.VirtualMeshControllerFactory,
 	snapshotValidator snapshot.MeshNetworkingSnapshotValidator,
-	groupMgcsrSnapshotListener cert_manager.GroupMgcsrSnapshotListener,
+	vmcsrSnapshotListener cert_manager.VMCSRSnapshotListener,
 ) *MeshNetworkingSnapshotContext {
 	return &MeshNetworkingSnapshotContext{
 		MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
 		MeshServiceControllerFactory:  meshServiceControllerFactory,
-		MeshGroupControllerFactory:    meshGroupControllerFactory,
+		VirtualMeshControllerFactory:  virtualMeshControllerFactory,
 		SnapshotValidator:             snapshotValidator,
-		GroupMgcsrSnapshotListener:    groupMgcsrSnapshotListener,
+		VMCSRSnapshotListener:         vmcsrSnapshotListener,
 	}
 }
 
@@ -73,7 +73,7 @@ func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context, mgr 
 	if err != nil {
 		return err
 	}
-	mgCtrl, err := m.MeshGroupControllerFactory(mgr, common.LocalClusterName)
+	mgCtrl, err := m.VirtualMeshControllerFactory(mgr, common.LocalClusterName)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context, mgr 
 	if err != nil {
 		return err
 	}
-	listenerGenerator.RegisterListener(m.GroupMgcsrSnapshotListener)
+	listenerGenerator.RegisterListener(m.VMCSRSnapshotListener)
 	go func() { listenerGenerator.StartPushingSnapshots(ctx, time.Second) }()
 	return nil
 }

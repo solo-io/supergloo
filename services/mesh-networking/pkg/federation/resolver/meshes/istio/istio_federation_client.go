@@ -87,7 +87,7 @@ type istioFederationClient struct {
 
 func (i *istioFederationClient) FederateServiceSide(
 	ctx context.Context,
-	meshGroup *networking_v1alpha1.MeshGroup,
+	virtualMesh *networking_v1alpha1.VirtualMesh,
 	meshService *discovery_v1alpha1.MeshService,
 ) (eap dns.ExternalAccessPoint, err error) {
 	meshForService, dynamicClient, err := i.getClientForMesh(ctx, meshService.Spec.GetMesh())
@@ -102,19 +102,19 @@ func (i *istioFederationClient) FederateServiceSide(
 	installNamespace := meshForService.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
 
 	// Make sure the gateway is in a good state
-	err = i.ensureGatewayExists(ctx, dynamicClient, meshGroup.GetName(), meshService, installNamespace)
+	err = i.ensureGatewayExists(ctx, dynamicClient, virtualMesh.GetName(), meshService, installNamespace)
 	if err != nil {
 		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway for service %+v", meshService.ObjectMeta)
 	}
 
 	// ensure that the envoy filter exists
-	err = i.ensureEnvoyFilterExists(ctx, meshGroup.GetName(), dynamicClient, installNamespace, meshForService.Spec.GetCluster().GetName())
+	err = i.ensureEnvoyFilterExists(ctx, virtualMesh.GetName(), dynamicClient, installNamespace, meshForService.Spec.GetCluster().GetName())
 	if err != nil {
 		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %+v", meshService.ObjectMeta)
 	}
 
 	// finally, send back the external IP for the gateway we just set up
-	return i.determineExternalIpForGateway(ctx, meshGroup.GetName(), meshForService.Spec.GetCluster().GetName(), dynamicClient)
+	return i.determineExternalIpForGateway(ctx, virtualMesh.GetName(), meshForService.Spec.GetCluster().GetName(), dynamicClient)
 }
 
 func (i *istioFederationClient) FederateClientSide(
@@ -237,7 +237,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 
 func (i *istioFederationClient) determineExternalIpForGateway(
 	ctx context.Context,
-	meshGroupName, clusterName string,
+	virtualMeshName, clusterName string,
 	dynamicClient client.Client,
 ) (eap dns.ExternalAccessPoint, err error) {
 
@@ -250,9 +250,9 @@ func (i *istioFederationClient) determineExternalIpForGateway(
 	}
 
 	if len(gatewayServiceList.Items) == 0 {
-		return eap, eris.Errorf("No gateway for group %s has been initialized yet", meshGroupName)
+		return eap, eris.Errorf("No gateway for virtual mesh %s has been initialized yet", virtualMeshName)
 	} else if len(gatewayServiceList.Items) != 1 {
-		return eap, eris.Errorf("Istio gateway for group %s is in an unknown state with multiple services for the ingress gateway", meshGroupName)
+		return eap, eris.Errorf("Istio gateway for virtual mesh %s is in an unknown state with multiple services for the ingress gateway", virtualMeshName)
 	}
 
 	service := gatewayServiceList.Items[0]
@@ -266,7 +266,7 @@ func (i *istioFederationClient) determineExternalIpForGateway(
 
 func (i *istioFederationClient) ensureEnvoyFilterExists(
 	ctx context.Context,
-	groupName string,
+	vmName string,
 	dynamicClient client.Client,
 	installNamespace string,
 	clusterName string,
@@ -274,7 +274,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 
 	envoyFilterClient := i.envoyFilterClientFactory(dynamicClient)
 	computedRef := &core_types.ResourceRef{
-		Name:      fmt.Sprintf("smh-%s-filter", groupName),
+		Name:      fmt.Sprintf("smh-%s-filter", vmName),
 		Namespace: installNamespace,
 	}
 
@@ -317,7 +317,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 func (i *istioFederationClient) ensureGatewayExists(
 	ctx context.Context,
 	dynamicClient client.Client,
-	groupName string,
+	virtualMeshName string,
 	meshService *discovery_v1alpha1.MeshService,
 	installNamespace string,
 ) error {
@@ -325,7 +325,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 	gatewayClient := i.gatewayClientFactory(dynamicClient)
 
 	computedGatewayRef := &core_types.ResourceRef{
-		Name:      fmt.Sprintf("smh-group-%s-gateway", groupName),
+		Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMeshName),
 		Namespace: installNamespace,
 	}
 
@@ -396,7 +396,7 @@ func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *c
 	return mesh, dynamicClient, nil
 }
 
-// always use the same selector - we assert elsewhere that when a mesh joins a group it must have a gateway set up
+// always use the same selector - we assert elsewhere that when a mesh joins a virtual mesh it must have a gateway set up
 // so this will use the same gateway workload as was already set up
 func BuildGatewayWorkloadSelector() map[string]string {
 	return map[string]string{

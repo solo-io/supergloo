@@ -30,9 +30,9 @@ type MeshNameToMetadata map[string]*MeshMetadata
 type PerMeshMetadata struct {
 	MeshNameToMetadata MeshNameToMetadata
 
-	// all groups included here will have all their relevant data populated above
-	// i.e., if a group is included here, you can safely query the map above for its member meshes' data
-	ResolvedMeshGroups []*networking_v1alpha1.MeshGroup
+	// all virtual meshes included here will have all their relevant data populated above
+	// i.e., if a virtual mesh is included here, you can safely query the map above for its member meshes' data
+	ResolvedVirtualMeshs []*networking_v1alpha1.VirtualMesh
 }
 
 func (p PerMeshMetadata) GetOrInitialize(meshName string) *MeshMetadata {
@@ -47,8 +47,8 @@ func (p PerMeshMetadata) GetOrInitialize(meshName string) *MeshMetadata {
 }
 
 type ErrorReport struct {
-	MeshGroup *networking_v1alpha1.MeshGroup
-	Err       error
+	VirtualMesh *networking_v1alpha1.VirtualMesh
+	Err         error
 }
 
 func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.MeshNetworkingSnapshot, meshClient discovery_core.MeshClient) (PerMeshMetadata, []ErrorReport) {
@@ -75,10 +75,10 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.Me
 	}
 
 	// set up `meshNameToClusterName`
-	for _, group := range snapshot.MeshGroups {
+	for _, vm := range snapshot.VirtualMeshes {
 		var multiErr *multierror.Error
 
-		for _, memberMesh := range group.Spec.Meshes {
+		for _, memberMesh := range vm.Spec.Meshes {
 			resourcesForMesh := perMeshResources.GetOrInitialize(memberMesh.GetName())
 
 			if resourcesForMesh.ClusterName != "" {
@@ -99,11 +99,11 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.Me
 		}
 
 		if multiErr.ErrorOrNil() == nil {
-			perMeshResources.ResolvedMeshGroups = append(perMeshResources.ResolvedMeshGroups, group)
+			perMeshResources.ResolvedVirtualMeshs = append(perMeshResources.ResolvedVirtualMeshs, vm)
 		} else {
 			errors = append(errors, ErrorReport{
-				MeshGroup: group,
-				Err:       multiErr.ErrorOrNil(),
+				VirtualMesh: vm,
+				Err:         multiErr.ErrorOrNil(),
 			})
 		}
 	}

@@ -43,7 +43,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will return the errror if secret client does not return is not found", func() {
-		csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+		csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -59,7 +59,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to marshal into cert secret if secret is found", func() {
-		csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+		csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -76,7 +76,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to marshal into cert secret, will return data if successful", func() {
-		csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+		csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",
@@ -103,7 +103,7 @@ var _ = Describe("agent client", func() {
 	})
 
 	It("will attempt to create new secret if old one cannot be found", func() {
-		csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+		csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: "namespace",

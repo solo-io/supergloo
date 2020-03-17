@@ -32,13 +32,13 @@ var _ = Describe("Permissive Federation", func() {
 		ctrl.Finish()
 	})
 
-	It("doesn't federate anything for a group with only one member", func() {
+	It("doesn't federate anything for a virtual mesh with only one member", func() {
 		meshRef := &core_types.ResourceRef{
 			Name:      "mesh-1",
 			Namespace: env.DefaultWriteNamespace,
 		}
-		group := &networking_v1alpha1.MeshGroup{
-			Spec: networking_types.MeshGroupSpec{
+		vm := &networking_v1alpha1.VirtualMesh{
+			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{meshRef},
 				Federation: &networking_types.Federation{
 					Mode: networking_types.Federation_PERMISSIVE,
@@ -76,7 +76,7 @@ var _ = Describe("Permissive Federation", func() {
 			Update(ctx, &serviceCopy).
 			Return(nil)
 
-		err := strategies.NewPermissiveFederation(meshServiceClient).WriteFederationToServices(ctx, group, perMeshResources)
+		err := strategies.NewPermissiveFederation(meshServiceClient).WriteFederationToServices(ctx, vm, perMeshResources)
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

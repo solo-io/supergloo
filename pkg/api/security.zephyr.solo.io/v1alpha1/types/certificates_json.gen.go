@@ -20,14 +20,14 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for MeshGroupCertificateSigningRequestSpec
-func (this *MeshGroupCertificateSigningRequestSpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningRequestSpec
+func (this *VirtualMeshCertificateSigningRequestSpec) MarshalJSON() ([]byte, error) {
 	str, err := CertificatesMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshGroupCertificateSigningRequestSpec
-func (this *MeshGroupCertificateSigningRequestSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestSpec
+func (this *VirtualMeshCertificateSigningRequestSpec) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -42,14 +42,14 @@ func (this *CertConfig) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshGroupCertificateSigningResponse
-func (this *MeshGroupCertificateSigningResponse) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningResponse
+func (this *VirtualMeshCertificateSigningResponse) MarshalJSON() ([]byte, error) {
 	str, err := CertificatesMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshGroupCertificateSigningResponse
-func (this *MeshGroupCertificateSigningResponse) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningResponse
+func (this *VirtualMeshCertificateSigningResponse) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -64,14 +64,14 @@ func (this *ThirdPartyApprovalWorkflow) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for MeshGroupCertificateSigningRequestStatus
-func (this *MeshGroupCertificateSigningRequestStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningRequestStatus
+func (this *VirtualMeshCertificateSigningRequestStatus) MarshalJSON() ([]byte, error) {
 	str, err := CertificatesMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for MeshGroupCertificateSigningRequestStatus
-func (this *MeshGroupCertificateSigningRequestStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestStatus
+func (this *VirtualMeshCertificateSigningRequestStatus) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

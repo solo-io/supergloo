@@ -147,13 +147,13 @@ func (s *signer) GenCSR(options pki_util.CertOptions) (csr, privKey []byte, err 
 }
 
 /*
-	AppendRootCerts appends the root mesh group cert to the generated CaCert, It is yanked from the following Istio
+	AppendRootCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Istio
 	function:
 
 	https://github.com/istio/istio/blob/5218a80f97cb61ff4a02989b7d9f8c4fda50780f/security/pkg/pki/util/generate_csr.go#L95
 
 	Certificate chains are necessary to verify the authenticity of a certficicate, in this case the authenticity of
-	the generated Ca Certificate against the MeshGroup root cert
+	the generated Ca Certificate against the VirtualMesh root cert
 */
 func AppendRootCerts(caCert, rootCert []byte) []byte {
 	var caCertCopy []byte

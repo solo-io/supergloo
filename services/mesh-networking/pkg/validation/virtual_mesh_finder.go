@@ -1,4 +1,4 @@
-package group_validation
+package vm_validation
 
 import (
 	"context"
@@ -16,22 +16,25 @@ var (
 	}
 )
 
-type groupMeshFinder struct {
+type virtualMeshFinder struct {
 	meshClient zephyr_discovery.MeshClient
 }
 
-func NewGroupMeshFinder(meshClient zephyr_discovery.MeshClient) GroupMeshFinder {
-	return &groupMeshFinder{meshClient: meshClient}
+func NewVitualMeshFinder(meshClient zephyr_discovery.MeshClient) VirtualMeshFinder {
+	return &virtualMeshFinder{meshClient: meshClient}
 }
 
-func (g *groupMeshFinder) GetMeshesForGroup(ctx context.Context, mg *v1alpha1.MeshGroup) ([]*discoveryv1alpha1.Mesh, error) {
+func (g *virtualMeshFinder) GetMeshesForVirtualMesh(
+	ctx context.Context,
+	virtualMesh *v1alpha1.VirtualMesh,
+) ([]*discoveryv1alpha1.Mesh, error) {
 	meshList, err := g.meshClient.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 	var result []*discoveryv1alpha1.Mesh
 	var invalidRefs []string
-	for _, ref := range mg.Spec.GetMeshes() {
+	for _, ref := range virtualMesh.Spec.GetMeshes() {
 		var foundMesh *discoveryv1alpha1.Mesh
 		for _, mesh := range meshList.Items {
 			// thankx rob pike

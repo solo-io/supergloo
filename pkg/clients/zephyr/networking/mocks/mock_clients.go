@@ -13,68 +13,68 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMeshGroupClient is a mock of MeshGroupClient interface
-type MockMeshGroupClient struct {
+// MockVirtualMeshClient is a mock of VirtualMeshClient interface
+type MockVirtualMeshClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupClientMockRecorder
+	recorder *MockVirtualMeshClientMockRecorder
 }
 
-// MockMeshGroupClientMockRecorder is the mock recorder for MockMeshGroupClient
-type MockMeshGroupClientMockRecorder struct {
-	mock *MockMeshGroupClient
+// MockVirtualMeshClientMockRecorder is the mock recorder for MockVirtualMeshClient
+type MockVirtualMeshClientMockRecorder struct {
+	mock *MockVirtualMeshClient
 }
 
-// NewMockMeshGroupClient creates a new mock instance
-func NewMockMeshGroupClient(ctrl *gomock.Controller) *MockMeshGroupClient {
-	mock := &MockMeshGroupClient{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupClientMockRecorder{mock}
+// NewMockVirtualMeshClient creates a new mock instance
+func NewMockVirtualMeshClient(ctrl *gomock.Controller) *MockVirtualMeshClient {
+	mock := &MockVirtualMeshClient{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupClient) EXPECT() *MockMeshGroupClientMockRecorder {
+func (m *MockVirtualMeshClient) EXPECT() *MockVirtualMeshClientMockRecorder {
 	return m.recorder
 }
 
 // Get mocks base method
-func (m *MockMeshGroupClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.MeshGroup, error) {
+func (m *MockVirtualMeshClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.VirtualMesh, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
-	ret0, _ := ret[0].(*v1alpha1.MeshGroup)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get
-func (mr *MockMeshGroupClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+func (mr *MockVirtualMeshClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMeshGroupClient)(nil).Get), ctx, name, namespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockVirtualMeshClient)(nil).Get), ctx, name, namespace)
 }
 
 // List mocks base method
-func (m *MockMeshGroupClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshGroupList, error) {
+func (m *MockVirtualMeshClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualMeshList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "List", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.MeshGroupList)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMeshList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List
-func (mr *MockMeshGroupClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshGroupClient)(nil).List), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockVirtualMeshClient)(nil).List), varargs...)
 }
 
 // UpdateStatus mocks base method
-func (m *MockMeshGroupClient) UpdateStatus(ctx context.Context, meshGroup *v1alpha1.MeshGroup, opts ...client.UpdateOption) error {
+func (m *MockVirtualMeshClient) UpdateStatus(ctx context.Context, virtualMesh *v1alpha1.VirtualMesh, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, meshGroup}
+	varargs := []interface{}{ctx, virtualMesh}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -84,10 +84,10 @@ func (m *MockMeshGroupClient) UpdateStatus(ctx context.Context, meshGroup *v1alp
 }
 
 // UpdateStatus indicates an expected call of UpdateStatus
-func (mr *MockMeshGroupClientMockRecorder) UpdateStatus(ctx, meshGroup interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshClientMockRecorder) UpdateStatus(ctx, virtualMesh interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, meshGroup}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockMeshGroupClient)(nil).UpdateStatus), varargs...)
+	varargs := append([]interface{}{ctx, virtualMesh}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpdateStatus), varargs...)
 }
 
 // MockTrafficPolicyClient is a mock of TrafficPolicyClient interface

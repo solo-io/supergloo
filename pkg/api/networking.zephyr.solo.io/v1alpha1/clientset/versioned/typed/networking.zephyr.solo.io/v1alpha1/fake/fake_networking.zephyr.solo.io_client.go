@@ -32,12 +32,12 @@ func (c *FakeNetworkingV1alpha1) AccessControlPolicies(namespace string) v1alpha
 	return &FakeAccessControlPolicies{c, namespace}
 }
 
-func (c *FakeNetworkingV1alpha1) MeshGroups(namespace string) v1alpha1.MeshGroupInterface {
-	return &FakeMeshGroups{c, namespace}
-}
-
 func (c *FakeNetworkingV1alpha1) TrafficPolicies(namespace string) v1alpha1.TrafficPolicyInterface {
 	return &FakeTrafficPolicies{c, namespace}
+}
+
+func (c *FakeNetworkingV1alpha1) VirtualMeshes(namespace string) v1alpha1.VirtualMeshInterface {
+	return &FakeVirtualMeshes{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

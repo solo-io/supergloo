@@ -26,7 +26,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	cert_manager "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-manager"
 	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
-	group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
+	vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
 )
 
 // Injectors from wire.go:
@@ -43,17 +43,17 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
-	meshGroupCSRControllerFactory := controller_factories.NewMeshGroupCSRControllerFactory()
-	controllerFactories := NewControllerFactories(meshGroupCSRControllerFactory)
-	meshGroupCSRClientFactory := zephyr_security.MeshGroupCSRClientFactoryProvider()
-	clientFactories := NewClientFactories(meshGroupCSRClientFactory)
+	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()
+	controllerFactories := NewControllerFactories(virtualMeshCSRControllerFactory)
+	virtualMeshCSRClientFactory := zephyr_security.VirtualMeshCSRClientFactoryProvider()
+	clientFactories := NewClientFactories(virtualMeshCSRClientFactory)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	secretsClient := kubernetes_core.NewSecretsClient(client)
-	meshGroupClient := zephyr_networking.NewMeshGroupClient(client)
-	meshGroupCertClient := cert_signer.NewMeshGroupCertClient(secretsClient, meshGroupClient)
+	virtualMeshClient := zephyr_networking.NewVirtualMeshClient(client)
+	virtualMeshCertClient := cert_signer.NewVirtualMeshCertClient(secretsClient, virtualMeshClient)
 	signer := certgen.NewSigner()
-	meshGroupCSRDataSourceFactory := csr_generator.NewMeshGroupCSRDataSourceFactory()
-	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(asyncManager, controllerFactories, clientFactories, meshGroupCertClient, signer, meshGroupCSRDataSourceFactory)
+	virtualMeshCSRDataSourceFactory := csr_generator.NewVirtualMeshCSRDataSourceFactory()
+	asyncManagerHandler, err := networking_multicluster.NewMeshNetworkingClusterHandler(asyncManager, controllerFactories, clientFactories, virtualMeshCertClient, signer, virtualMeshCSRDataSourceFactory)
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
@@ -80,13 +80,13 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	trafficPolicyTranslator := traffic_policy_translator.NewTrafficPolicyTranslator(trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyController, meshServiceController)
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
 	meshServiceControllerFactory := controllers.NewMeshServiceControllerFactory()
-	meshGroupControllerFactory := controller_factories.NewMeshGroupControllerFactory()
-	groupMeshFinder := group_validation.NewGroupMeshFinder(meshClient)
-	meshNetworkingSnapshotValidator := group_validation.NewMeshGroupValidator(groupMeshFinder, meshGroupClient)
+	virtualMeshControllerFactory := controller_factories.NewVirtualMeshControllerFactory()
+	virtualMeshFinder := vm_validation.NewVitualMeshFinder(meshClient)
+	meshNetworkingSnapshotValidator := vm_validation.NewVirtualMeshValidator(virtualMeshFinder, virtualMeshClient)
 	istioCertConfigProducer := cert_manager.NewIstioCertConfigProducer()
-	meshGroupCertificateManager := cert_manager.NewMeshGroupCsrProcessor(dynamicClientGetter, meshClient, groupMeshFinder, meshGroupCSRClientFactory, istioCertConfigProducer)
-	groupMgcsrSnapshotListener := cert_manager.NewGroupMgcsrSnapshotListener(meshGroupCertificateManager, meshGroupClient)
-	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, meshGroupControllerFactory, meshNetworkingSnapshotValidator, groupMgcsrSnapshotListener)
+	virtualMeshCertificateManager := cert_manager.NewVirtualMeshCsrProcessor(dynamicClientGetter, meshClient, virtualMeshFinder, virtualMeshCSRClientFactory, istioCertConfigProducer)
+	vmcsrSnapshotListener := cert_manager.NewVMCSRSnapshotListener(virtualMeshCertificateManager, virtualMeshClient)
+	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, virtualMeshControllerFactory, meshNetworkingSnapshotValidator, vmcsrSnapshotListener)
 	accessControlPolicyController, err := LocalAccessControlPolicyProvider(asyncManager)
 	if err != nil {
 		return MeshNetworkingContext{}, err

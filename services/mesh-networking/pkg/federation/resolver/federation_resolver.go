@@ -32,14 +32,14 @@ func NewFederationResolver(
 	meshClient zephyr_discovery.MeshClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshGroupClient zephyr_networking.MeshGroupClient,
+	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	perMeshFederationClients PerMeshFederationClients,
 ) FederationResolver {
 	return &federationResolver{
 		meshClient:               meshClient,
 		meshWorkloadClient:       meshWorkloadClient,
 		meshServiceClient:        meshServiceClient,
-		meshGroupClient:          meshGroupClient,
+		virtualMeshClient:        virtualMeshClient,
 		perMeshFederationClients: perMeshFederationClients,
 	}
 }
@@ -48,7 +48,7 @@ type federationResolver struct {
 	meshClient               zephyr_discovery.MeshClient
 	meshWorkloadClient       zephyr_discovery.MeshWorkloadClient
 	meshServiceClient        zephyr_discovery.MeshServiceClient
-	meshGroupClient          zephyr_networking.MeshGroupClient
+	virtualMeshClient        zephyr_networking.VirtualMeshClient
 	perMeshFederationClients PerMeshFederationClients
 }
 
@@ -113,11 +113,7 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	return nil
 }
 
-func (f *federationResolver) federateToRemoteWorkload(
-	ctx context.Context,
-	meshService *discovery_v1alpha1.MeshService,
-	meshWorkloadRef *core_types.ResourceRef,
-) error {
+func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshService *discovery_v1alpha1.MeshService, meshWorkloadRef *core_types.ResourceRef) error {
 	workload, err := f.meshWorkloadClient.Get(ctx, client.ObjectKey{
 		Name:      meshWorkloadRef.GetName(),
 		Namespace: meshWorkloadRef.GetNamespace(),
@@ -142,7 +138,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 		return eris.Wrapf(err, "Could not load mesh for MeshService %+v", meshService.ObjectMeta)
 	}
 
-	meshGroup, err := f.getGroupContainingService(ctx, meshForService)
+	virtualMesh, err := f.getVirtualMeshContainingService(ctx, meshForService)
 	if err != nil {
 		return err
 	}
@@ -153,7 +149,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 	// set up gateway resources on the target cluster
 	switch meshForService.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio:
-		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(ctx, meshGroup, meshService)
+		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(ctx, virtualMesh, meshService)
 	default:
 		err = eris.Errorf("Unsupported mesh type for federation: %+v", meshForWorkload.Spec.MeshType)
 	}
@@ -176,22 +172,22 @@ func (f *federationResolver) federateToRemoteWorkload(
 	}
 }
 
-func (f *federationResolver) getGroupContainingService(
+func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
 	meshForService *discovery_v1alpha1.Mesh,
-) (*networking_v1alpha1.MeshGroup, error) {
-	meshGroups, err := f.meshGroupClient.List(ctx)
+) (*networking_v1alpha1.VirtualMesh, error) {
+	virtualMeshs, err := f.virtualMeshClient.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, meshGroup := range meshGroups.Items {
-		for _, mesh := range meshGroup.Spec.GetMeshes() {
+	for _, virtualMesh := range virtualMeshs.Items {
+		for _, mesh := range virtualMesh.Spec.GetMeshes() {
 			if mesh.GetName() == meshForService.GetName() && mesh.GetNamespace() == meshForService.GetNamespace() {
-				return &meshGroup, nil
+				return &virtualMesh, nil
 			}
 		}
 	}
 
-	return nil, eris.Errorf("No mesh group found containing mesh %s", meshForService.GetName())
+	return nil, eris.Errorf("No virtual mesh found containing mesh %s", meshForService.GetName())
 }

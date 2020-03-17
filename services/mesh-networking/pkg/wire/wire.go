@@ -17,17 +17,17 @@ import (
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	cert_manager "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-manager"
 	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
-	group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
+	vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
 )
 
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
 	wire.Build(
 		kubernetes_core.NewSecretsClient,
-		zephyr_networking.NewMeshGroupClient,
+		zephyr_networking.NewVirtualMeshClient,
 		discovery_core.NewMeshClient,
-		csr_generator.NewMeshGroupCSRDataSourceFactory,
-		group_validation.NewGroupMeshFinder,
-		cert_signer.NewMeshGroupCertClient,
+		csr_generator.NewVirtualMeshCSRDataSourceFactory,
+		vm_validation.NewVitualMeshFinder,
+		cert_signer.NewVirtualMeshCertClient,
 		multicluster_wire.MulticlusterProviderSet,
 		multicluster_wire.DynamicClientGetterProvider,
 		certgen.NewSigner,
@@ -38,9 +38,9 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		networking_multicluster.NewMeshNetworkingClusterHandler,
 		controllers.NewMeshServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,
-		controller_factories.NewMeshGroupControllerFactory,
-		group_validation.NewMeshGroupValidator,
-		cert_manager.GroupMgcsrSnapshotListenerSet,
+		controller_factories.NewVirtualMeshControllerFactory,
+		vm_validation.NewVirtualMeshValidator,
+		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,
 		MeshNetworkingContextProvider,
 	)

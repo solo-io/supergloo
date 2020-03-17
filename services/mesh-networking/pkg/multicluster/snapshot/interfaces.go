@@ -15,9 +15,9 @@ type MeshNetworkingSnapshotValidator interface {
 	// if the validator returns false, then:
 	//   * the snapshot should be considered invalid and not used
 	//   * error status(es) may have been written to the offending resource(s)
-	ValidateMeshGroupUpsert(ctx context.Context, obj *networking_v1alpha1.MeshGroup, snapshot *MeshNetworkingSnapshot) bool
+	ValidateVirtualMeshUpsert(ctx context.Context, obj *networking_v1alpha1.VirtualMesh, snapshot *MeshNetworkingSnapshot) bool
 
-	ValidateMeshGroupDelete(ctx context.Context, obj *networking_v1alpha1.MeshGroup, snapshot *MeshNetworkingSnapshot) bool
+	ValidateVirtualMeshDelete(ctx context.Context, obj *networking_v1alpha1.VirtualMesh, snapshot *MeshNetworkingSnapshot) bool
 
 	ValidateMeshServiceUpsert(ctx context.Context, obj *discovery_v1alpha1.MeshService, snapshot *MeshNetworkingSnapshot) bool
 

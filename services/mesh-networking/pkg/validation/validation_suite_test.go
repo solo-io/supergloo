@@ -1,4 +1,4 @@
-package group_validation_test
+package vm_validation_test
 
 import (
 	"testing"

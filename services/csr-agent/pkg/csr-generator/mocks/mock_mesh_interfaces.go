@@ -38,7 +38,7 @@ func (m *MockCertClient) EXPECT() *MockCertClientMockRecorder {
 }
 
 // EnsureSecretKey mocks base method
-func (m *MockCertClient) EnsureSecretKey(ctx context.Context, obj *v1alpha1.MeshGroupCertificateSigningRequest) (*cert_secrets.RootCaData, error) {
+func (m *MockCertClient) EnsureSecretKey(ctx context.Context, obj *v1alpha1.VirtualMeshCertificateSigningRequest) (*cert_secrets.RootCaData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureSecretKey", ctx, obj)
 	ret0, _ := ret[0].(*cert_secrets.RootCaData)
@@ -76,10 +76,10 @@ func (m *MockIstioCSRGenerator) EXPECT() *MockIstioCSRGeneratorMockRecorder {
 }
 
 // GenerateIstioCSR mocks base method
-func (m *MockIstioCSRGenerator) GenerateIstioCSR(ctx context.Context, obj *v1alpha1.MeshGroupCertificateSigningRequest) *types.MeshGroupCertificateSigningRequestStatus {
+func (m *MockIstioCSRGenerator) GenerateIstioCSR(ctx context.Context, obj *v1alpha1.VirtualMeshCertificateSigningRequest) *types.VirtualMeshCertificateSigningRequestStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateIstioCSR", ctx, obj)
-	ret0, _ := ret[0].(*types.MeshGroupCertificateSigningRequestStatus)
+	ret0, _ := ret[0].(*types.VirtualMeshCertificateSigningRequestStatus)
 	return ret0
 }
 
@@ -89,53 +89,53 @@ func (mr *MockIstioCSRGeneratorMockRecorder) GenerateIstioCSR(ctx, obj interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateIstioCSR", reflect.TypeOf((*MockIstioCSRGenerator)(nil).GenerateIstioCSR), ctx, obj)
 }
 
-// MockMeshGroupCSRProcessor is a mock of MeshGroupCSRProcessor interface
-type MockMeshGroupCSRProcessor struct {
+// MockVirtualMeshCSRProcessor is a mock of VirtualMeshCSRProcessor interface
+type MockVirtualMeshCSRProcessor struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupCSRProcessorMockRecorder
+	recorder *MockVirtualMeshCSRProcessorMockRecorder
 }
 
-// MockMeshGroupCSRProcessorMockRecorder is the mock recorder for MockMeshGroupCSRProcessor
-type MockMeshGroupCSRProcessorMockRecorder struct {
-	mock *MockMeshGroupCSRProcessor
+// MockVirtualMeshCSRProcessorMockRecorder is the mock recorder for MockVirtualMeshCSRProcessor
+type MockVirtualMeshCSRProcessorMockRecorder struct {
+	mock *MockVirtualMeshCSRProcessor
 }
 
-// NewMockMeshGroupCSRProcessor creates a new mock instance
-func NewMockMeshGroupCSRProcessor(ctrl *gomock.Controller) *MockMeshGroupCSRProcessor {
-	mock := &MockMeshGroupCSRProcessor{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupCSRProcessorMockRecorder{mock}
+// NewMockVirtualMeshCSRProcessor creates a new mock instance
+func NewMockVirtualMeshCSRProcessor(ctrl *gomock.Controller) *MockVirtualMeshCSRProcessor {
+	mock := &MockVirtualMeshCSRProcessor{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshCSRProcessorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupCSRProcessor) EXPECT() *MockMeshGroupCSRProcessorMockRecorder {
+func (m *MockVirtualMeshCSRProcessor) EXPECT() *MockVirtualMeshCSRProcessorMockRecorder {
 	return m.recorder
 }
 
 // ProcessUpsert mocks base method
-func (m *MockMeshGroupCSRProcessor) ProcessUpsert(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest) *types.MeshGroupCertificateSigningRequestStatus {
+func (m *MockVirtualMeshCSRProcessor) ProcessUpsert(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest) *types.VirtualMeshCertificateSigningRequestStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessUpsert", ctx, csr)
-	ret0, _ := ret[0].(*types.MeshGroupCertificateSigningRequestStatus)
+	ret0, _ := ret[0].(*types.VirtualMeshCertificateSigningRequestStatus)
 	return ret0
 }
 
 // ProcessUpsert indicates an expected call of ProcessUpsert
-func (mr *MockMeshGroupCSRProcessorMockRecorder) ProcessUpsert(ctx, csr interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRProcessorMockRecorder) ProcessUpsert(ctx, csr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessUpsert", reflect.TypeOf((*MockMeshGroupCSRProcessor)(nil).ProcessUpsert), ctx, csr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessUpsert", reflect.TypeOf((*MockVirtualMeshCSRProcessor)(nil).ProcessUpsert), ctx, csr)
 }
 
 // ProcessDelete mocks base method
-func (m *MockMeshGroupCSRProcessor) ProcessDelete(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest) *types.MeshGroupCertificateSigningRequestStatus {
+func (m *MockVirtualMeshCSRProcessor) ProcessDelete(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest) *types.VirtualMeshCertificateSigningRequestStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessDelete", ctx, csr)
-	ret0, _ := ret[0].(*types.MeshGroupCertificateSigningRequestStatus)
+	ret0, _ := ret[0].(*types.VirtualMeshCertificateSigningRequestStatus)
 	return ret0
 }
 
 // ProcessDelete indicates an expected call of ProcessDelete
-func (mr *MockMeshGroupCSRProcessorMockRecorder) ProcessDelete(ctx, csr interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRProcessorMockRecorder) ProcessDelete(ctx, csr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessDelete", reflect.TypeOf((*MockMeshGroupCSRProcessor)(nil).ProcessDelete), ctx, csr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessDelete", reflect.TypeOf((*MockVirtualMeshCSRProcessor)(nil).ProcessDelete), ctx, csr)
 }

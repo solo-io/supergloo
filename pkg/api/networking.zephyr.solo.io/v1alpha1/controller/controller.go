@@ -239,57 +239,57 @@ func (h genericAccessControlPolicyHandler) Generic(object runtime.Object) error 
 	return h.handler.Generic(obj)
 }
 
-type MeshGroupEventHandler interface {
-	Create(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	Update(old, new *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	Delete(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	Generic(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+type VirtualMeshEventHandler interface {
+	Create(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	Update(old, new *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	Delete(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	Generic(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
 }
 
-type MeshGroupEventHandlerFuncs struct {
-	OnCreate  func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	OnUpdate  func(old, new *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	OnDelete  func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
-	OnGeneric func(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error
+type VirtualMeshEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	OnUpdate  func(old, new *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	OnDelete  func(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
+	OnGeneric func(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error
 }
 
-func (f *MeshGroupEventHandlerFuncs) Create(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
+func (f *VirtualMeshEventHandlerFuncs) Create(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Delete(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
+func (f *VirtualMeshEventHandlerFuncs) Delete(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Update(objOld, objNew *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
+func (f *VirtualMeshEventHandlerFuncs) Update(objOld, objNew *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *MeshGroupEventHandlerFuncs) Generic(obj *networking_zephyr_solo_io_v1alpha1.MeshGroup) error {
+func (f *VirtualMeshEventHandlerFuncs) Generic(obj *networking_zephyr_solo_io_v1alpha1.VirtualMesh) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type MeshGroupController interface {
-	AddEventHandler(ctx context.Context, h MeshGroupEventHandler, predicates ...predicate.Predicate) error
+type VirtualMeshController interface {
+	AddEventHandler(ctx context.Context, h VirtualMeshEventHandler, predicates ...predicate.Predicate) error
 }
 
-type MeshGroupControllerImpl struct {
+type VirtualMeshControllerImpl struct {
 	watcher events.EventWatcher
 }
 
-func NewMeshGroupController(name string, mgr manager.Manager) (MeshGroupController, error) {
+func NewVirtualMeshController(name string, mgr manager.Manager) (VirtualMeshController, error) {
 	if err := networking_zephyr_solo_io_v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
@@ -298,56 +298,56 @@ func NewMeshGroupController(name string, mgr manager.Manager) (MeshGroupControll
 	if err != nil {
 		return nil, err
 	}
-	return &MeshGroupControllerImpl{
+	return &VirtualMeshControllerImpl{
 		watcher: w,
 	}, nil
 }
 
-func (c *MeshGroupControllerImpl) AddEventHandler(ctx context.Context, h MeshGroupEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericMeshGroupHandler{handler: h}
-	if err := c.watcher.Watch(ctx, &networking_zephyr_solo_io_v1alpha1.MeshGroup{}, handler, predicates...); err != nil {
+func (c *VirtualMeshControllerImpl) AddEventHandler(ctx context.Context, h VirtualMeshEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericVirtualMeshHandler{handler: h}
+	if err := c.watcher.Watch(ctx, &networking_zephyr_solo_io_v1alpha1.VirtualMesh{}, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericMeshGroupHandler implements a generic events.EventHandler
-type genericMeshGroupHandler struct {
-	handler MeshGroupEventHandler
+// genericVirtualMeshHandler implements a generic events.EventHandler
+type genericVirtualMeshHandler struct {
+	handler VirtualMeshEventHandler
 }
 
-func (h genericMeshGroupHandler) Create(object runtime.Object) error {
-	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
+func (h genericVirtualMeshHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.VirtualMesh)
 	if !ok {
-		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
+		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
 	}
 	return h.handler.Create(obj)
 }
 
-func (h genericMeshGroupHandler) Delete(object runtime.Object) error {
-	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
+func (h genericVirtualMeshHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.VirtualMesh)
 	if !ok {
-		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
+		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
 	}
 	return h.handler.Delete(obj)
 }
 
-func (h genericMeshGroupHandler) Update(old, new runtime.Object) error {
-	objOld, ok := old.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
+func (h genericVirtualMeshHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*networking_zephyr_solo_io_v1alpha1.VirtualMesh)
 	if !ok {
-		return errors.Errorf("internal error: MeshGroup handler received event for %T", old)
+		return errors.Errorf("internal error: VirtualMesh handler received event for %T", old)
 	}
-	objNew, ok := new.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
+	objNew, ok := new.(*networking_zephyr_solo_io_v1alpha1.VirtualMesh)
 	if !ok {
-		return errors.Errorf("internal error: MeshGroup handler received event for %T", new)
+		return errors.Errorf("internal error: VirtualMesh handler received event for %T", new)
 	}
 	return h.handler.Update(objOld, objNew)
 }
 
-func (h genericMeshGroupHandler) Generic(object runtime.Object) error {
-	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.MeshGroup)
+func (h genericVirtualMeshHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*networking_zephyr_solo_io_v1alpha1.VirtualMesh)
 	if !ok {
-		return errors.Errorf("internal error: MeshGroup handler received event for %T", object)
+		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
 	}
 	return h.handler.Generic(obj)
 }

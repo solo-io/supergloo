@@ -107,8 +107,8 @@ var _ = Describe("Istio Federation Decider", func() {
 					Mesh: nonIstioMeshRef,
 				},
 			}
-			meshGroup := &networking_v1alpha1.MeshGroup{
-				Spec: types2.MeshGroupSpec{
+			virtualMesh := &networking_v1alpha1.VirtualMesh{
+				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{nonIstioMeshRef},
 				},
 			}
@@ -119,7 +119,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				GetClientForCluster("linkerd").
 				Return(nil, true)
 
-			_, err := federationClient.FederateServiceSide(ctx, meshGroup, nonIstioMeshService)
+			_, err := federationClient.FederateServiceSide(ctx, virtualMesh, nonIstioMeshService)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(testutils.HaveInErrorChain(istio_federation.ServiceNotInIstio(nonIstioMeshService)))
 		})
@@ -194,12 +194,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			meshGroup := &networking_v1alpha1.MeshGroup{
+			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      "mesh-group-1",
+					Name:      "virtual-mesh-1",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types2.MeshGroupSpec{
+				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -211,14 +211,14 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nil, true)
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
-					Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			gatewayClient.EXPECT().
 				Create(ctx, &v1alpha3.Gateway{
 					ObjectMeta: v1.ObjectMeta{
-						Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+						Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 						Namespace: "istio-system",
 					},
 					Spec: alpha3.Gateway{
@@ -243,7 +243,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      fmt.Sprintf("smh-%s-filter", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
 				Spec: alpha3.EnvoyFilter{
@@ -302,7 +302,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
@@ -371,19 +371,19 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
 					Federation: &types.Federation{
-						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
+						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
 					},
 					KubeService: &types.KubeService{
 						Ref: backingKubeService,
 					},
 				},
 			}
-			meshGroup := &networking_v1alpha1.MeshGroup{
+			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      "mesh-group-1",
+					Name:      "virtual-mesh-1",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types2.MeshGroupSpec{
+				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -395,7 +395,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nil, true)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
 				Spec: alpha3.Gateway{
@@ -418,14 +418,14 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
-					Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
 				Return(gateway, nil)
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      fmt.Sprintf("smh-%s-filter", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
 				Spec: alpha3.EnvoyFilter{
@@ -481,7 +481,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
@@ -557,12 +557,12 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 				},
 			}
-			meshGroup := &networking_v1alpha1.MeshGroup{
+			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      "mesh-group-1",
+					Name:      "virtual-mesh-1",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				Spec: types2.MeshGroupSpec{
+				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
 				},
 			}
@@ -574,7 +574,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nil, true)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
 				Spec: alpha3.Gateway{
@@ -594,7 +594,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			}
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
-					Name:      fmt.Sprintf("smh-group-%s-gateway", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
 				Return(gateway, nil)
@@ -616,7 +616,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      fmt.Sprintf("smh-%s-filter", meshGroup.GetName()),
+					Name:      fmt.Sprintf("smh-%s-filter", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				},
 				Spec: alpha3.EnvoyFilter{
@@ -672,7 +672,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Port:    uint32(3000),
 				}, nil)
 
-			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			eap, err := federationClient.FederateServiceSide(ctx, virtualMesh, istioMeshService)
 			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
 			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())

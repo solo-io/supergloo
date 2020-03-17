@@ -1,4 +1,4 @@
-package group_validation
+package vm_validation
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 //go:generate mockgen -destination ./mocks/mock_interfaces.go -source ./interfaces.go
 
 /*
-	GroupMeshFinder is a higher-level client aimed at simplifying the finding of meshes on MeshGroups
+	VirtualMeshFinder is a higher-level client aimed at simplifying the finding of meshes on VirtualMeshes
 */
-type GroupMeshFinder interface {
-	GetMeshesForGroup(ctx context.Context, mg *networking_v1alpha1.MeshGroup) ([]*discoveryv1alpha1.Mesh, error)
+type VirtualMeshFinder interface {
+	GetMeshesForVirtualMesh(ctx context.Context, vm *networking_v1alpha1.VirtualMesh) ([]*discoveryv1alpha1.Mesh, error)
 }

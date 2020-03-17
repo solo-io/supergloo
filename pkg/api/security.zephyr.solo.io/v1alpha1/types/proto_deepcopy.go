@@ -18,13 +18,13 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 // DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
-func (in *MeshGroupCertificateSigningRequestSpec) DeepCopyInto(out *MeshGroupCertificateSigningRequestSpec) {
-	p := proto.Clone(in).(*MeshGroupCertificateSigningRequestSpec)
+func (in *VirtualMeshCertificateSigningRequestSpec) DeepCopyInto(out *VirtualMeshCertificateSigningRequestSpec) {
+	p := proto.Clone(in).(*VirtualMeshCertificateSigningRequestSpec)
 	*out = *p
 }
 
 // DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
-func (in *MeshGroupCertificateSigningRequestStatus) DeepCopyInto(out *MeshGroupCertificateSigningRequestStatus) {
-	p := proto.Clone(in).(*MeshGroupCertificateSigningRequestStatus)
+func (in *VirtualMeshCertificateSigningRequestStatus) DeepCopyInto(out *VirtualMeshCertificateSigningRequestStatus) {
+	p := proto.Clone(in).(*VirtualMeshCertificateSigningRequestStatus)
 	*out = *p
 }

@@ -26,18 +26,18 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	if err != nil {
 		return CsrAgentContext{}, err
 	}
-	meshGroupCertificateSigningRequestController, err := csr_generator.CsrControllerProviderLocal(asyncManager)
+	virtualMeshCertificateSigningRequestController, err := csr_generator.CsrControllerProviderLocal(asyncManager)
 	if err != nil {
 		return CsrAgentContext{}, err
 	}
-	meshGroupCSRDataSourceFactory := csr_generator.NewMeshGroupCSRDataSourceFactory()
+	virtualMeshCSRDataSourceFactory := csr_generator.NewVirtualMeshCSRDataSourceFactory()
 	client := mc_wire.DynamicClientProvider(asyncManager)
-	meshGroupCSRClient := zephyr_security.NewMeshGroupCSRClient(client)
+	virtualMeshCSRClient := zephyr_security.NewVirtualMeshCSRClient(client)
 	secretsClient := kubernetes_core.NewSecretsClient(client)
 	signer := certgen.NewSigner()
 	certClient := csr_generator.NewCertClient(secretsClient, signer)
-	istioCSRGenerator := csr_generator.NewIstioCSRGenerator(meshGroupCSRClient, secretsClient, certClient, signer)
-	meshGroupCSRProcessor := csr_generator.NewCsrAgentIstioProcessor(istioCSRGenerator)
-	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, meshGroupCertificateSigningRequestController, meshGroupCSRDataSourceFactory, meshGroupCSRProcessor, meshGroupCSRClient)
+	istioCSRGenerator := csr_generator.NewIstioCSRGenerator(virtualMeshCSRClient, secretsClient, certClient, signer)
+	virtualMeshCSRProcessor := csr_generator.NewCsrAgentIstioProcessor(istioCSRGenerator)
+	csrAgentContext := CsrAgentContextProvider(ctx, asyncManager, virtualMeshCertificateSigningRequestController, virtualMeshCSRDataSourceFactory, virtualMeshCSRProcessor, virtualMeshCSRClient)
 	return csrAgentContext, nil
 }

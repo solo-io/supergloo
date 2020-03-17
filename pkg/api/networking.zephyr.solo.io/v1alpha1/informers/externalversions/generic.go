@@ -55,10 +55,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=networking.zephyr.solo.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("accesscontrolpolicies"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().AccessControlPolicies().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("meshgroups"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().MeshGroups().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("trafficpolicies"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().TrafficPolicies().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("virtualmeshes"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Networking().V1alpha1().VirtualMeshes().Informer()}, nil
 
 	}
 

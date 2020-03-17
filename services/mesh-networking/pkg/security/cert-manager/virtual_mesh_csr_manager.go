@@ -18,7 +18,7 @@ import (
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
+	vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,29 +33,29 @@ var (
 	UnableToGatherCertConfigInfo = func(
 		err error,
 		mesh *discovery_v1alpha1.Mesh,
-		mg *networking_v1alpha1.MeshGroup,
+		vm *networking_v1alpha1.VirtualMesh,
 	) error {
-		return eris.Wrapf(err, "unable to produce cert config info for mesh %s in mesh group %s",
-			mesh.GetName(), mg.GetName())
+		return eris.Wrapf(err, "unable to produce cert config info for mesh %s in virtual mesh %s",
+			mesh.GetName(), vm.GetName())
 	}
 )
 
-type meshGroupCsrManager struct {
+type virtualMeshCsrManager struct {
 	meshClient              zephyr_discovery.MeshClient
-	meshRefFinder           group_validation.GroupMeshFinder
-	csrClientFactory        zephyr_security.MeshGroupCSRClientFactory
+	meshRefFinder           vm_validation.VirtualMeshFinder
+	csrClientFactory        zephyr_security.VirtualMeshCSRClientFactory
 	dynamicClientGetter     mc_manager.DynamicClientGetter
 	istioCertConfigProducer IstioCertConfigProducer
 }
 
-func NewMeshGroupCsrProcessor(
+func NewVirtualMeshCsrProcessor(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
-	meshRefFinder group_validation.GroupMeshFinder,
-	csrClientFactory zephyr_security.MeshGroupCSRClientFactory,
+	meshRefFinder vm_validation.VirtualMeshFinder,
+	csrClientFactory zephyr_security.VirtualMeshCSRClientFactory,
 	istioCertConfigProducer IstioCertConfigProducer,
-) MeshGroupCertificateManager {
-	return &meshGroupCsrManager{
+) VirtualMeshCertificateManager {
+	return &virtualMeshCsrManager{
 		meshClient:              meshClient,
 		dynamicClientGetter:     dynamicClientGetter,
 		csrClientFactory:        csrClientFactory,
@@ -64,34 +64,34 @@ func NewMeshGroupCsrProcessor(
 	}
 }
 
-func (m *meshGroupCsrManager) InitializeCertificateForMeshGroup(
+func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	ctx context.Context,
-	mg *networking_v1alpha1.MeshGroup,
-) networking_types.MeshGroupStatus {
-	meshes, err := m.meshRefFinder.GetMeshesForGroup(ctx, mg)
+	vm *networking_v1alpha1.VirtualMesh,
+) networking_types.VirtualMeshStatus {
+	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		mg.Status.CertificateStatus = &core_types.ComputedStatus{
+		vm.Status.CertificateStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_INVALID,
 			Message: err.Error(),
 		}
-		return mg.Status
+		return vm.Status
 	}
-	if err = m.attemptCsrCreate(ctx, mg, meshes); err != nil {
-		mg.Status.CertificateStatus = &core_types.ComputedStatus{
+	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
+		vm.Status.CertificateStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_INVALID,
 			Message: err.Error(),
 		}
-		return mg.Status
+		return vm.Status
 	}
-	mg.Status.CertificateStatus = &core_types.ComputedStatus{
+	vm.Status.CertificateStatus = &core_types.ComputedStatus{
 		Status: core_types.ComputedStatus_ACCEPTED,
 	}
-	return mg.Status
+	return vm.Status
 }
 
-func (m *meshGroupCsrManager) attemptCsrCreate(
+func (m *virtualMeshCsrManager) attemptCsrCreate(
 	ctx context.Context,
-	mg *networking_v1alpha1.MeshGroup,
+	vm *networking_v1alpha1.VirtualMesh,
 	meshes []*discovery_v1alpha1.Mesh,
 ) error {
 	for _, mesh := range meshes {
@@ -103,12 +103,12 @@ func (m *meshGroupCsrManager) attemptCsrCreate(
 		switch mesh.Spec.GetMeshType().(type) {
 		case *discovery_types.MeshSpec_Istio:
 			meshType = core_types.MeshType_ISTIO
-			certConfig, err = m.istioCertConfigProducer.ConfigureCertificateInfo(mg, mesh)
+			certConfig, err = m.istioCertConfigProducer.ConfigureCertificateInfo(vm, mesh)
 		default:
 			return UnsupportedMeshTypeError(mesh)
 		}
 		if err != nil {
-			return UnableToGatherCertConfigInfo(err, mesh, mg)
+			return UnableToGatherCertConfigInfo(err, mesh, vm)
 		}
 
 		clusterName := mesh.Spec.GetCluster().GetName()
@@ -118,7 +118,7 @@ func (m *meshGroupCsrManager) attemptCsrCreate(
 			return DynamicClientDoesNotExistForClusterError(clusterName)
 		}
 		csrClient := m.csrClientFactory(dynamicClient)
-		_, err = csrClient.Get(ctx, m.buildCsrName(strings.ToLower(meshType.String()), mg.GetName()), env.GetWriteNamespace())
+		_, err = csrClient.Get(ctx, m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()), env.GetWriteNamespace())
 		if !errors.IsNotFound(err) {
 			if err != nil {
 				return err
@@ -128,19 +128,19 @@ func (m *meshGroupCsrManager) attemptCsrCreate(
 			continue
 		}
 
-		if err = csrClient.Create(ctx, &security_v1alpha1.MeshGroupCertificateSigningRequest{
+		if err = csrClient.Create(ctx, &security_v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      m.buildCsrName(strings.ToLower(meshType.String()), mg.GetName()),
+				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
 				Namespace: env.GetWriteNamespace(),
 			},
-			Spec: security_types.MeshGroupCertificateSigningRequestSpec{
-				MeshGroupRef: &core_types.ResourceRef{
-					Name:      mg.GetName(),
-					Namespace: mg.GetNamespace(),
+			Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+				VirtualMeshRef: &core_types.ResourceRef{
+					Name:      vm.GetName(),
+					Namespace: vm.GetNamespace(),
 				},
 				CertConfig: certConfig,
 			},
-			Status: security_types.MeshGroupCertificateSigningRequestStatus{
+			Status: security_types.VirtualMeshCertificateSigningRequestStatus{
 				ComputedStatus: &core_types.ComputedStatus{
 					Message: "awaiting automated csr generation",
 				},
@@ -152,6 +152,6 @@ func (m *meshGroupCsrManager) attemptCsrCreate(
 	return nil
 }
 
-func (m *meshGroupCsrManager) buildCsrName(meshType, meshGroupName string) string {
-	return fmt.Sprintf("%s-%s-cert-request", meshType, meshGroupName)
+func (m *virtualMeshCsrManager) buildCsrName(meshType, virtualMeshName string) string {
+	return fmt.Sprintf("%s-%s-cert-request", meshType, virtualMeshName)
 }

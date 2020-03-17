@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	MeshGroupTrustBundleNotFoundMsg = func(err error, ref *core_types.ResourceRef) error {
-		return eris.Wrapf(err, "could not get root ca bundle associated with mesh group %s.%s", ref.GetName(),
+	VirtualMeshTrustBundleNotFoundMsg = func(err error, ref *core_types.ResourceRef) error {
+		return eris.Wrapf(err, "could not get root ca bundle associated with virtual mesh %s.%s", ref.GetName(),
 			ref.GetNamespace())
 	}
 	FailedToSignCertError = func(err error) error {
@@ -22,12 +22,12 @@ var (
 	}
 )
 
-func NewMeshGroupCSRSigningProcessor(signer MeshGroupCSRSigner) csr_generator.MeshGroupCSRProcessor {
-	return &csr_generator.MeshGroupCSRProcessorFuncs{
+func NewVirtualMeshCSRSigningProcessor(signer VirtualMeshCSRSigner) csr_generator.VirtualMeshCSRProcessor {
+	return &csr_generator.VirtualMeshCSRProcessorFuncs{
 		OnProcessUpsert: func(
 			ctx context.Context,
-			csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-		) *security_types.MeshGroupCertificateSigningRequestStatus {
+			csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+		) *security_types.VirtualMeshCertificateSigningRequestStatus {
 			return signer.Sign(ctx, csr)
 		},
 		OnProcessDelete: nil,
@@ -35,29 +35,29 @@ func NewMeshGroupCSRSigningProcessor(signer MeshGroupCSRSigner) csr_generator.Me
 }
 
 type certSinger struct {
-	mgCertClient MeshGroupCertClient
-	csrClient    zephyr_security.MeshGroupCSRClient
+	mgCertClient VirtualMeshCertClient
+	csrClient    zephyr_security.VirtualMeshCSRClient
 	signer       certgen.Signer
 }
 
-func NewMeshGroupCSRSigner(
-	mgCertClient MeshGroupCertClient,
-	csrClient zephyr_security.MeshGroupCSRClient,
+func NewVirtualMeshCSRSigner(
+	mgCertClient VirtualMeshCertClient,
+	csrClient zephyr_security.VirtualMeshCSRClient,
 	signer certgen.Signer,
-) MeshGroupCSRSigner {
+) VirtualMeshCSRSigner {
 	return &certSinger{mgCertClient: mgCertClient, csrClient: csrClient, signer: signer}
 }
 
 func (c *certSinger) Sign(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	if !c.shouldProcess(obj) {
 		return nil
 	}
-	certData, err := c.mgCertClient.GetRootCaBundle(ctx, obj.Spec.GetMeshGroupRef())
+	certData, err := c.mgCertClient.GetRootCaBundle(ctx, obj.Spec.GetVirtualMeshRef())
 	if err != nil {
-		wrapperErr := MeshGroupTrustBundleNotFoundMsg(err, obj.Spec.GetMeshGroupRef())
+		wrapperErr := VirtualMeshTrustBundleNotFoundMsg(err, obj.Spec.GetVirtualMeshRef())
 		obj.Status.ComputedStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_INVALID,
 			Message: wrapperErr.Error(),
@@ -83,7 +83,7 @@ func (c *certSinger) Sign(
 	}
 
 	// set the cert on the obj object to the cert, and update it
-	obj.Status.Response = &security_types.MeshGroupCertificateSigningResponse{
+	obj.Status.Response = &security_types.VirtualMeshCertificateSigningResponse{
 		CaCertificate:   cert,
 		RootCertificate: certData.RootCert,
 	}
@@ -93,7 +93,7 @@ func (c *certSinger) Sign(
 	return &obj.Status
 }
 
-func (c *certSinger) shouldProcess(csr *security_v1alpha1.MeshGroupCertificateSigningRequest) bool {
+func (c *certSinger) shouldProcess(csr *security_v1alpha1.VirtualMeshCertificateSigningRequest) bool {
 	// TODO: make this configurable so third party workflows can be enabled
 	switch {
 	// Third party approval is not in the correct state
@@ -103,8 +103,8 @@ func (c *certSinger) shouldProcess(csr *security_v1alpha1.MeshGroupCertificateSi
 	// CSR data has not yet been populated
 	case len(csr.Spec.GetCsrData()) == 0:
 		return false
-	// Mesh Group Ref hasn't been set
-	case csr.Spec.GetMeshGroupRef() == nil:
+	// virtual mesh Ref hasn't been set
+	case csr.Spec.GetVirtualMeshRef() == nil:
 		return false
 	// Both the ca cert and root cert have been populated
 	case len(csr.Status.GetResponse().GetCaCertificate()) != 0 &&
@@ -117,7 +117,7 @@ func (c *certSinger) shouldProcess(csr *security_v1alpha1.MeshGroupCertificateSi
 
 func (c *certSinger) ProcessDelete(
 	ctx context.Context,
-	csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) (computedStatus *security_types.MeshGroupCertificateSigningRequestStatus) {
+	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) (computedStatus *security_types.VirtualMeshCertificateSigningRequestStatus) {
 	return
 }

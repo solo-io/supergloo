@@ -11,24 +11,24 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// MeshGroupCertificateSigningRequest is the Schema for the meshGroupCertificateSigningRequest API
-type MeshGroupCertificateSigningRequest struct {
+// VirtualMeshCertificateSigningRequest is the Schema for the virtualMeshCertificateSigningRequest API
+type VirtualMeshCertificateSigningRequest struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshGroupCertificateSigningRequestSpec   `json:"spec,omitempty"`
-	Status MeshGroupCertificateSigningRequestStatus `json:"status,omitempty"`
+	Spec   VirtualMeshCertificateSigningRequestSpec   `json:"spec,omitempty"`
+	Status VirtualMeshCertificateSigningRequestStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MeshGroupCertificateSigningRequestList contains a list of MeshGroupCertificateSigningRequest
-type MeshGroupCertificateSigningRequestList struct {
+// VirtualMeshCertificateSigningRequestList contains a list of VirtualMeshCertificateSigningRequest
+type VirtualMeshCertificateSigningRequestList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshGroupCertificateSigningRequest `json:"items"`
+	Items           []VirtualMeshCertificateSigningRequest `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MeshGroupCertificateSigningRequest{}, &MeshGroupCertificateSigningRequestList{})
+	SchemeBuilder.Register(&VirtualMeshCertificateSigningRequest{}, &VirtualMeshCertificateSigningRequestList{})
 }

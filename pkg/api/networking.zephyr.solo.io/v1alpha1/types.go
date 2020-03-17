@@ -57,26 +57,26 @@ type AccessControlPolicyList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// MeshGroup is the Schema for the meshGroup API
-type MeshGroup struct {
+// VirtualMesh is the Schema for the virtualMesh API
+type VirtualMesh struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshGroupSpec   `json:"spec,omitempty"`
-	Status MeshGroupStatus `json:"status,omitempty"`
+	Spec   VirtualMeshSpec   `json:"spec,omitempty"`
+	Status VirtualMeshStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MeshGroupList contains a list of MeshGroup
-type MeshGroupList struct {
+// VirtualMeshList contains a list of VirtualMesh
+type VirtualMeshList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MeshGroup `json:"items"`
+	Items           []VirtualMesh `json:"items"`
 }
 
 func init() {
 	SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
 	SchemeBuilder.Register(&AccessControlPolicy{}, &AccessControlPolicyList{})
-	SchemeBuilder.Register(&MeshGroup{}, &MeshGroupList{})
+	SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
 }

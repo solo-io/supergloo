@@ -30,18 +30,6 @@ func (in *AccessControlPolicyStatus) DeepCopyInto(out *AccessControlPolicyStatus
 }
 
 // DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
-func (in *MeshGroupSpec) DeepCopyInto(out *MeshGroupSpec) {
-	p := proto.Clone(in).(*MeshGroupSpec)
-	*out = *p
-}
-
-// DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
-func (in *MeshGroupStatus) DeepCopyInto(out *MeshGroupStatus) {
-	p := proto.Clone(in).(*MeshGroupStatus)
-	*out = *p
-}
-
-// DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
 func (in *TrafficPolicySpec) DeepCopyInto(out *TrafficPolicySpec) {
 	p := proto.Clone(in).(*TrafficPolicySpec)
 	*out = *p
@@ -50,5 +38,17 @@ func (in *TrafficPolicySpec) DeepCopyInto(out *TrafficPolicySpec) {
 // DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
 func (in *TrafficPolicyStatus) DeepCopyInto(out *TrafficPolicyStatus) {
 	p := proto.Clone(in).(*TrafficPolicyStatus)
+	*out = *p
+}
+
+// DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
+func (in *VirtualMeshSpec) DeepCopyInto(out *VirtualMeshSpec) {
+	p := proto.Clone(in).(*VirtualMeshSpec)
+	*out = *p
+}
+
+// DeepCopyInto supports using AttributeManifest within kubernetes types, where deepcopy-gen is used.
+func (in *VirtualMeshStatus) DeepCopyInto(out *VirtualMeshStatus) {
+	p := proto.Clone(in).(*VirtualMeshStatus)
 	*out = *p
 }

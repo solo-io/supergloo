@@ -15,7 +15,7 @@ import (
 
 type MeshNetworkingSnapshot struct {
 	MeshServices  []*discovery_v1alpha1.MeshService
-	MeshGroups    []*networking_v1alpha1.MeshGroup
+	VirtualMeshes []*networking_v1alpha1.VirtualMesh
 	MeshWorkloads []*discovery_v1alpha1.MeshWorkload
 }
 
@@ -24,9 +24,9 @@ type UpdatedMeshService struct {
 	New *discovery_v1alpha1.MeshService
 }
 
-type UpdatedMeshGroup struct {
-	Old *networking_v1alpha1.MeshGroup
-	New *networking_v1alpha1.MeshGroup
+type UpdatedVirtualMesh struct {
+	Old *networking_v1alpha1.VirtualMesh
+	New *networking_v1alpha1.VirtualMesh
 }
 
 type UpdatedMeshWorkload struct {
@@ -36,7 +36,7 @@ type UpdatedMeshWorkload struct {
 
 type UpdatedResources struct {
 	MeshServices  []UpdatedMeshService
-	MeshGroups    []UpdatedMeshGroup
+	VirtualMeshes []UpdatedVirtualMesh
 	MeshWorkloads []UpdatedMeshWorkload
 }
 
@@ -46,7 +46,7 @@ func NewMeshNetworkingSnapshotGenerator(
 	ctx context.Context,
 	snapshotValidator MeshNetworkingSnapshotValidator,
 	meshServiceController discovery_controllers.MeshServiceController,
-	meshGroupController networking_controllers.MeshGroupController,
+	virtualMeshController networking_controllers.VirtualMeshController,
 	meshWorkloadController discovery_controllers.MeshWorkloadController,
 ) (MeshNetworkingSnapshotGenerator, error) {
 	generator := &networkingSnapshotGenerator{
@@ -125,71 +125,71 @@ func NewMeshNetworkingSnapshotGenerator(
 		return nil, err
 	}
 
-	err = meshGroupController.AddEventHandler(ctx, &networking_controllers.MeshGroupEventHandlerFuncs{
-		OnCreate: func(obj *networking_v1alpha1.MeshGroup) error {
+	err = virtualMeshController.AddEventHandler(ctx, &networking_controllers.VirtualMeshEventHandlerFuncs{
+		OnCreate: func(obj *networking_v1alpha1.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			updatedMeshGroups := append([]*networking_v1alpha1.MeshGroup{}, generator.snapshot.MeshGroups...)
-			updatedMeshGroups = append(updatedMeshGroups, obj)
+			updatedVirtualMeshes := append([]*networking_v1alpha1.VirtualMesh{}, generator.snapshot.VirtualMeshes...)
+			updatedVirtualMeshes = append(updatedVirtualMeshes, obj)
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.MeshGroups = updatedMeshGroups
+			updatedSnapshot.VirtualMeshes = updatedVirtualMeshes
 
-			if generator.snapshotValidator.ValidateMeshGroupUpsert(ctx, obj, &updatedSnapshot) {
+			if generator.snapshotValidator.ValidateVirtualMeshUpsert(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
 			}
 
 			return nil
 		},
-		OnUpdate: func(old, new *networking_v1alpha1.MeshGroup) error {
+		OnUpdate: func(old, new *networking_v1alpha1.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshGroups []*networking_v1alpha1.MeshGroup
-			for _, existingMeshGroup := range generator.snapshot.MeshGroups {
-				if existingMeshGroup.GetName() == old.GetName() && existingMeshGroup.GetNamespace() == old.GetNamespace() {
-					updatedMeshGroups = append(updatedMeshGroups, new)
+			var updatedVirtualMeshes []*networking_v1alpha1.VirtualMesh
+			for _, existingVirtualMesh := range generator.snapshot.VirtualMeshes {
+				if existingVirtualMesh.GetName() == old.GetName() && existingVirtualMesh.GetNamespace() == old.GetNamespace() {
+					updatedVirtualMeshes = append(updatedVirtualMeshes, new)
 				} else {
-					updatedMeshGroups = append(updatedMeshGroups, existingMeshGroup)
+					updatedVirtualMeshes = append(updatedVirtualMeshes, existingVirtualMesh)
 				}
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.MeshGroups = updatedMeshGroups
+			updatedSnapshot.VirtualMeshes = updatedVirtualMeshes
 
-			if generator.snapshotValidator.ValidateMeshGroupUpsert(ctx, new, &updatedSnapshot) {
+			if generator.snapshotValidator.ValidateVirtualMeshUpsert(ctx, new, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
 			}
 
 			return nil
 		},
-		OnDelete: func(obj *networking_v1alpha1.MeshGroup) error {
+		OnDelete: func(obj *networking_v1alpha1.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
 
-			var updatedMeshGroups []*networking_v1alpha1.MeshGroup
-			for _, meshGroup := range generator.snapshot.MeshGroups {
-				if meshGroup.GetName() == obj.GetName() && meshGroup.GetNamespace() == obj.GetNamespace() {
+			var updatedVirtualMeshes []*networking_v1alpha1.VirtualMesh
+			for _, virtualMesh := range generator.snapshot.VirtualMeshes {
+				if virtualMesh.GetName() == obj.GetName() && virtualMesh.GetNamespace() == obj.GetNamespace() {
 					continue
 				}
 
-				updatedMeshGroups = append(updatedMeshGroups, meshGroup)
+				updatedVirtualMeshes = append(updatedVirtualMeshes, virtualMesh)
 			}
 
 			updatedSnapshot := generator.snapshot
-			updatedSnapshot.MeshGroups = updatedMeshGroups
+			updatedSnapshot.VirtualMeshes = updatedVirtualMeshes
 
-			if generator.snapshotValidator.ValidateMeshGroupDelete(ctx, obj, &updatedSnapshot) {
+			if generator.snapshotValidator.ValidateVirtualMeshDelete(ctx, obj, &updatedSnapshot) {
 				generator.isSnapshotPushNeeded = true
 				generator.snapshot = updatedSnapshot
 			}
 
 			return nil
 		},
-		OnGeneric: func(obj *networking_v1alpha1.MeshGroup) error {
+		OnGeneric: func(obj *networking_v1alpha1.VirtualMesh) error {
 			return nil
 		},
 	})
@@ -310,7 +310,7 @@ func (f *networkingSnapshotGenerator) StartPushingSnapshots(ctx context.Context,
 					zap.Uint("snapshot_version", f.version),
 					zap.Int("num_mesh_services", len(f.snapshot.MeshServices)),
 					zap.Int("num_mesh_workloads", len(f.snapshot.MeshWorkloads)),
-					zap.Int("num_mesh_groups", len(f.snapshot.MeshGroups)),
+					zap.Int("num_virtual_meshs", len(f.snapshot.VirtualMeshes)),
 				)
 				for _, listener := range f.listeners {
 					listener.Sync(snapshotContext, &f.snapshot)

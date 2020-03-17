@@ -6,9 +6,9 @@ import (
 )
 
 type ClientFactories struct {
-	MeshGroupCSRClientFactory zephyr_security.MeshGroupCSRClientFactory
+	VirtualMeshCSRClientFactory zephyr_security.VirtualMeshCSRClientFactory
 }
 
 type ControllerFactories struct {
-	MeshGroupCSRControllerFactory controller_factories.MeshGroupCSRControllerFactory
+	VirtualMeshCSRControllerFactory controller_factories.VirtualMeshCSRControllerFactory
 }

@@ -27,8 +27,8 @@ import (
 type NetworkingV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	AccessControlPoliciesGetter
-	MeshGroupsGetter
 	TrafficPoliciesGetter
+	VirtualMeshesGetter
 }
 
 // NetworkingV1alpha1Client is used to interact with features provided by the networking.zephyr.solo.io group.
@@ -40,12 +40,12 @@ func (c *NetworkingV1alpha1Client) AccessControlPolicies(namespace string) Acces
 	return newAccessControlPolicies(c, namespace)
 }
 
-func (c *NetworkingV1alpha1Client) MeshGroups(namespace string) MeshGroupInterface {
-	return newMeshGroups(c, namespace)
-}
-
 func (c *NetworkingV1alpha1Client) TrafficPolicies(namespace string) TrafficPolicyInterface {
 	return newTrafficPolicies(c, namespace)
+}
+
+func (c *NetworkingV1alpha1Client) VirtualMeshes(namespace string) VirtualMeshInterface {
+	return newVirtualMeshes(c, namespace)
 }
 
 // NewForConfig creates a new NetworkingV1alpha1Client for the given config.

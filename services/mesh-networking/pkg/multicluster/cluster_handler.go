@@ -12,22 +12,22 @@ import (
 	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
 )
 
-// this is the main entrypoint for all mesh-group multi cluster logic
+// this is the main entrypoint for all virtual-mesh multi cluster logic
 func NewMeshNetworkingClusterHandler(
 	localManager mc_manager.AsyncManager,
 	controllerFactories *ControllerFactories,
 	clientFactories *ClientFactories,
-	meshGroupCertClient cert_signer.MeshGroupCertClient,
+	virtualMeshCertClient cert_signer.VirtualMeshCertClient,
 	signer certgen.Signer,
-	csrDataSourceFactory csr_generator.MeshGroupCSRDataSourceFactory,
+	csrDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory,
 ) (mc_manager.AsyncManagerHandler, error) {
 
 	handler := &meshNetworkingClusterHandler{
-		controllerFactories:  controllerFactories,
-		clientFactories:      clientFactories,
-		meshGroupCertClient:  meshGroupCertClient,
-		signer:               signer,
-		csrDataSourceFactory: csrDataSourceFactory,
+		controllerFactories:   controllerFactories,
+		clientFactories:       clientFactories,
+		virtualMeshCertClient: virtualMeshCertClient,
+		signer:                signer,
+		csrDataSourceFactory:  csrDataSourceFactory,
 	}
 
 	// be sure that we are also watching our local cluster
@@ -40,16 +40,16 @@ func NewMeshNetworkingClusterHandler(
 }
 
 type meshNetworkingClusterHandler struct {
-	controllerFactories  *ControllerFactories
-	clientFactories      *ClientFactories
-	meshGroupCertClient  cert_signer.MeshGroupCertClient
-	signer               certgen.Signer
-	csrDataSourceFactory csr_generator.MeshGroupCSRDataSourceFactory
+	controllerFactories   *ControllerFactories
+	clientFactories       *ClientFactories
+	virtualMeshCertClient cert_signer.VirtualMeshCertClient
+	signer                certgen.Signer
+	csrDataSourceFactory  csr_generator.VirtualMeshCSRDataSourceFactory
 }
 
 type clusterDependentDeps struct {
-	csrController cert_controller.MeshGroupCertificateSigningRequestController
-	csrClient     zephyr_security.MeshGroupCSRClient
+	csrController cert_controller.VirtualMeshCertificateSigningRequestController
+	csrClient     zephyr_security.VirtualMeshCSRClient
 }
 
 func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manager.AsyncManager, clusterName string) error {
@@ -58,8 +58,8 @@ func (m *meshNetworkingClusterHandler) ClusterAdded(ctx context.Context, mgr mc_
 		return err
 	}
 
-	certSigner := cert_signer.NewMeshGroupCSRSigner(m.meshGroupCertClient, clusterDeps.csrClient, m.signer)
-	mgcsrHandler := m.csrDataSourceFactory(ctx, clusterDeps.csrClient, cert_signer.NewMeshGroupCSRSigningProcessor(certSigner))
+	certSigner := cert_signer.NewVirtualMeshCSRSigner(m.virtualMeshCertClient, clusterDeps.csrClient, m.signer)
+	mgcsrHandler := m.csrDataSourceFactory(ctx, clusterDeps.csrClient, cert_signer.NewVirtualMeshCSRSigningProcessor(certSigner))
 	if err = clusterDeps.csrController.AddEventHandler(ctx, mgcsrHandler); err != nil {
 		return err
 	}
@@ -75,12 +75,12 @@ func (m *meshNetworkingClusterHandler) initializeClusterScopedDeps(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (*clusterDependentDeps, error) {
-	csrController, err := m.controllerFactories.MeshGroupCSRControllerFactory(mgr, clusterName)
+	csrController, err := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)
 	if err != nil {
 		return nil, err
 	}
 
-	csrClient := m.clientFactories.MeshGroupCSRClientFactory(mgr.Manager().GetClient())
+	csrClient := m.clientFactories.VirtualMeshCSRClientFactory(mgr.Manager().GetClient())
 
 	return &clusterDependentDeps{
 		csrController: csrController,

@@ -42,7 +42,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
@@ -63,7 +63,7 @@ var _ = Describe("Federation Decider", func() {
 			meshClient,
 			meshWorkloadClient,
 			meshServiceClient,
-			meshGroupClient,
+			virtualMeshClient,
 			federationClients,
 		).Start(ctx, meshServiceController)
 
@@ -93,7 +93,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
@@ -114,7 +114,7 @@ var _ = Describe("Federation Decider", func() {
 			meshClient,
 			meshWorkloadClient,
 			meshServiceClient,
-			meshGroupClient,
+			virtualMeshClient,
 			federationClients,
 		).Start(ctx, meshServiceController)
 
@@ -135,7 +135,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshWorkloadClient := mock_discovery_core.NewMockMeshWorkloadClient(ctrl)
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshFederationClient := mock_meshes.NewMockMeshFederationClient(ctrl)
 
 		federationClients := resolver.PerMeshFederationClients{
@@ -156,7 +156,7 @@ var _ = Describe("Federation Decider", func() {
 			meshClient,
 			meshWorkloadClient,
 			meshServiceClient,
-			meshGroupClient,
+			virtualMeshClient,
 			federationClients,
 		).Start(ctx, meshServiceController)
 
@@ -226,8 +226,8 @@ var _ = Describe("Federation Decider", func() {
 				Mesh: clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta),
 			},
 		}
-		meshGroupContainingService := &networking_v1alpha1.MeshGroup{
-			Spec: types2.MeshGroupSpec{
+		virtualMeshContainingService := &networking_v1alpha1.VirtualMesh{
+			Spec: types2.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta)},
 			},
 		}
@@ -243,17 +243,17 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
 			Return(serverMesh, nil)
-		meshGroupClient.EXPECT().
+		virtualMeshClient.EXPECT().
 			List(ctx).
-			Return(&networking_v1alpha1.MeshGroupList{
-				Items: []networking_v1alpha1.MeshGroup{*meshGroupContainingService},
+			Return(&networking_v1alpha1.VirtualMeshList{
+				Items: []networking_v1alpha1.VirtualMesh{*virtualMeshContainingService},
 			}, nil)
 		eap := dns.ExternalAccessPoint{
 			Address: externalAddress,
 			Port:    port,
 		}
 		meshFederationClient.EXPECT().
-			FederateServiceSide(ctx, meshGroupContainingService, federatedService).
+			FederateServiceSide(ctx, virtualMeshContainingService, federatedService).
 			Return(eap, nil)
 		meshFederationClient.EXPECT().
 			FederateClientSide(ctx, eap, federatedService, federatedToWorkload).

@@ -25,10 +25,10 @@ var _ = Describe("csr processor", func() {
 		ctrl         *gomock.Controller
 		ctx          context.Context
 		testLogger   *TestLogger
-		mgCertClient *mock_cert_signer.MockMeshGroupCertClient
-		csrClient    *mock_security_config.MockMeshGroupCSRClient
+		mgCertClient *mock_cert_signer.MockVirtualMeshCertClient
+		csrClient    *mock_security_config.MockVirtualMeshCSRClient
 		signer       *mock_certgen.MockSigner
-		csrProcessor cert_signer.MeshGroupCSRSigner
+		csrProcessor cert_signer.VirtualMeshCSRSigner
 
 		testErr = eris.New("hello")
 	)
@@ -37,10 +37,10 @@ var _ = Describe("csr processor", func() {
 		testLogger = NewTestLogger()
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		ctrl = gomock.NewController(GinkgoT())
-		mgCertClient = mock_cert_signer.NewMockMeshGroupCertClient(ctrl)
-		csrClient = mock_security_config.NewMockMeshGroupCSRClient(ctrl)
+		mgCertClient = mock_cert_signer.NewMockVirtualMeshCertClient(ctrl)
+		csrClient = mock_security_config.NewMockVirtualMeshCSRClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
-		csrProcessor = cert_signer.NewMeshGroupCSRSigner(mgCertClient, csrClient, signer)
+		csrProcessor = cert_signer.NewVirtualMeshCSRSigner(mgCertClient, csrClient, signer)
 	})
 
 	AfterEach(func() {
@@ -49,9 +49,9 @@ var _ = Describe("csr processor", func() {
 
 	Context("should process", func() {
 		It("will return false if cert is nil and request is denied", func() {
-			obj := &v1alpha1.MeshGroupCertificateSigningRequest{
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{
+			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{},
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
 					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
 						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_DENIED,
 					},
@@ -61,9 +61,9 @@ var _ = Describe("csr processor", func() {
 		})
 
 		It("will return false if CSR data has len 0", func() {
-			obj := &v1alpha1.MeshGroupCertificateSigningRequest{
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{
+			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{},
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
 					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
 						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
 					},
@@ -72,12 +72,12 @@ var _ = Describe("csr processor", func() {
 			Expect(csrProcessor.Sign(ctx, obj)).To(BeNil())
 		})
 
-		It("will return false if mesh group is nil", func() {
-			obj := &v1alpha1.MeshGroupCertificateSigningRequest{
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{
+		It("will return false if virtual mesh is nil", func() {
+			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
 					CsrData: []byte("hello"),
 				},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
 					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
 						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
 					},
@@ -87,16 +87,16 @@ var _ = Describe("csr processor", func() {
 		})
 
 		It("will return false if certs are filled in ", func() {
-			obj := &v1alpha1.MeshGroupCertificateSigningRequest{
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{
-					CsrData:      []byte("hello"),
-					MeshGroupRef: &core_types.ResourceRef{},
+			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					CsrData:        []byte("hello"),
+					VirtualMeshRef: &core_types.ResourceRef{},
 				},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
 					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
 						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
 					},
-					Response: &security_types.MeshGroupCertificateSigningResponse{
+					Response: &security_types.VirtualMeshCertificateSigningResponse{
 						CaCertificate:   []byte("hello"),
 						RootCertificate: []byte("hello"),
 					},
@@ -110,35 +110,35 @@ var _ = Describe("csr processor", func() {
 	Context("process", func() {
 
 		It("will return an error if root ca bundle cannot be found", func() {
-			csr := &v1alpha1.MeshGroupCertificateSigningRequest{
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{
-					MeshGroupRef: &core_types.ResourceRef{},
-					CsrData:      []byte("csr-data"),
+			csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					VirtualMeshRef: &core_types.ResourceRef{},
+					CsrData:        []byte("csr-data"),
 				},
 			}
 
 			mgCertClient.EXPECT().
-				GetRootCaBundle(ctx, csr.Spec.GetMeshGroupRef()).
+				GetRootCaBundle(ctx, csr.Spec.GetVirtualMeshRef()).
 				Return(nil, testErr)
 
 			status := csrProcessor.Sign(ctx, csr)
-			Expect(status).To(Equal(&security_types.MeshGroupCertificateSigningRequestStatus{
+			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
 				ComputedStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_INVALID,
-					Message: cert_signer.MeshGroupTrustBundleNotFoundMsg(testErr, csr.Spec.GetMeshGroupRef()).Error(),
+					Message: cert_signer.VirtualMeshTrustBundleNotFoundMsg(testErr, csr.Spec.GetVirtualMeshRef()).Error(),
 				},
 			}))
 		})
 
 		It("will return an error if cert cannot be generated from CSR", func() {
-			csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+			csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 				TypeMeta:   metav1.TypeMeta{},
 				ObjectMeta: metav1.ObjectMeta{},
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{
-					MeshGroupRef: &core_types.ResourceRef{},
-					CsrData:      []byte("csr-data"),
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					VirtualMeshRef: &core_types.ResourceRef{},
+					CsrData:        []byte("csr-data"),
 				},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{},
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{},
 			}
 
 			rootCaData := &cert_secrets.RootCaData{
@@ -150,7 +150,7 @@ var _ = Describe("csr processor", func() {
 			}
 
 			mgCertClient.EXPECT().
-				GetRootCaBundle(ctx, csr.Spec.GetMeshGroupRef()).
+				GetRootCaBundle(ctx, csr.Spec.GetVirtualMeshRef()).
 				Return(rootCaData, nil)
 
 			signer.EXPECT().
@@ -164,7 +164,7 @@ var _ = Describe("csr processor", func() {
 				).Return(nil, testErr)
 
 			status := csrProcessor.Sign(ctx, csr)
-			Expect(status).To(Equal(&security_types.MeshGroupCertificateSigningRequestStatus{
+			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
 				ComputedStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_INVALID,
 					Message: cert_signer.FailedToSignCertError(testErr).Error(),
@@ -173,14 +173,14 @@ var _ = Describe("csr processor", func() {
 		})
 
 		It("will return an error if cert cannot be generated from CSR", func() {
-			csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+			csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 				TypeMeta:   metav1.TypeMeta{},
 				ObjectMeta: metav1.ObjectMeta{},
-				Spec: security_types.MeshGroupCertificateSigningRequestSpec{
-					MeshGroupRef: &core_types.ResourceRef{},
-					CsrData:      []byte("csr-data"),
+				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
+					VirtualMeshRef: &core_types.ResourceRef{},
+					CsrData:        []byte("csr-data"),
 				},
-				Status: security_types.MeshGroupCertificateSigningRequestStatus{},
+				Status: security_types.VirtualMeshCertificateSigningRequestStatus{},
 			}
 
 			rootCaData := &cert_secrets.RootCaData{
@@ -192,7 +192,7 @@ var _ = Describe("csr processor", func() {
 			}
 
 			mgCertClient.EXPECT().
-				GetRootCaBundle(ctx, csr.Spec.GetMeshGroupRef()).
+				GetRootCaBundle(ctx, csr.Spec.GetVirtualMeshRef()).
 				Return(rootCaData, nil)
 
 			newCert := []byte("new-cert")
@@ -207,8 +207,8 @@ var _ = Describe("csr processor", func() {
 				).Return(newCert, nil)
 
 			status := csrProcessor.Sign(ctx, csr)
-			Expect(status).To(Equal(&security_types.MeshGroupCertificateSigningRequestStatus{
-				Response: &security_types.MeshGroupCertificateSigningResponse{
+			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
+				Response: &security_types.VirtualMeshCertificateSigningResponse{
 					CaCertificate:   newCert,
 					RootCertificate: rootCaData.RootCert,
 				},

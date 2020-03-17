@@ -11,7 +11,7 @@ import "google/protobuf/duration.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
-message MeshGroupCertificateSigningRequestSpec {
+message VirtualMeshCertificateSigningRequestSpec {
     // Base64-encoded PKCS#10 CSR data
     bytes csr_data = 1;
 
@@ -19,15 +19,15 @@ message MeshGroupCertificateSigningRequestSpec {
 
 
     /*
-        Reference to the mesh group which this CSR corresponds to. This is important as it allows the Mesh Group
+        Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh
         operator to know which trust bundle to use when signing the new certificates.
 
-        When the CSR is first created by the Mesh Group operator, this data will be added by it. However, during a cert
+        When the CSR is first created by the Virtual Mesh operator, this data will be added by it. However, during a cert
         rotation scenario this is not possible. Therefore, the csr-agent will write this data to the secret so that
         it can be retrieved when the cert is going to expire.
         TODO: Decide how exactly we want to store this data.
     */
-    core.zephyr.solo.io.ResourceRef mesh_group_ref = 3;
+    core.zephyr.solo.io.ResourceRef virtual_mesh_ref = 3;
 
 }
 
@@ -54,7 +54,7 @@ message CertConfig {
     core.zephyr.solo.io.MeshType mesh_type = 5;
 }
 
-message MeshGroupCertificateSigningResponse {
+message VirtualMeshCertificateSigningResponse {
     // If request was approved, the controller will place the issued certificate here.
     bytes ca_certificate = 1;
     // root cert shared by all clusters, safe to send over the wire
@@ -77,9 +77,9 @@ message ThirdPartyApprovalWorkflow {
     ApprovalStatus approval_status = 4;
 }
 
-message MeshGroupCertificateSigningRequestStatus {
+message VirtualMeshCertificateSigningRequestStatus {
     // Response from the certificate authority
-    MeshGroupCertificateSigningResponse response = 1;
+    VirtualMeshCertificateSigningResponse response = 1;
     // Workflow for approving Certificate Signing Requests
     ThirdPartyApprovalWorkflow third_party_approval = 2;
 

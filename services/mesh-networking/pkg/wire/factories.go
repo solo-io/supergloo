@@ -9,26 +9,26 @@ import (
 
 var (
 	ClientFactoryProviderSet = wire.NewSet(
-		zephyr_security.MeshGroupCSRClientFactoryProvider,
+		zephyr_security.VirtualMeshCSRClientFactoryProvider,
 		NewClientFactories,
 	)
 
 	ControllerFactoryProviderSet = wire.NewSet(
-		controller_factories.NewMeshGroupCSRControllerFactory,
+		controller_factories.NewVirtualMeshCSRControllerFactory,
 		NewControllerFactories,
 	)
 )
 
 func NewClientFactories(
-	MeshGroupCertificateSigningRequestClientFactory zephyr_security.MeshGroupCSRClientFactory,
+	VirtualMeshCertificateSigningRequestClientFactory zephyr_security.VirtualMeshCSRClientFactory,
 ) *networking_multicluster.ClientFactories {
 	return &networking_multicluster.ClientFactories{
-		MeshGroupCSRClientFactory: MeshGroupCertificateSigningRequestClientFactory,
+		VirtualMeshCSRClientFactory: VirtualMeshCertificateSigningRequestClientFactory,
 	}
 }
 
 func NewControllerFactories(
-	CSRControllerFactory controller_factories.MeshGroupCSRControllerFactory,
+	CSRControllerFactory controller_factories.VirtualMeshCSRControllerFactory,
 ) *networking_multicluster.ControllerFactories {
-	return &networking_multicluster.ControllerFactories{MeshGroupCSRControllerFactory: CSRControllerFactory}
+	return &networking_multicluster.ControllerFactories{VirtualMeshCSRControllerFactory: CSRControllerFactory}
 }

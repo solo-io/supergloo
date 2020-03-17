@@ -59,8 +59,11 @@ type AsyncManagerController struct {
 
 	The empty string "" is the string ID representation of the local cluster
 */
-func NewAsyncManagerControllerFromLocal(ctx context.Context, mgr manager.Manager,
-	factory AsyncManagerFactory) *AsyncManagerController {
+func NewAsyncManagerControllerFromLocal(
+	ctx context.Context,
+	mgr manager.Manager,
+	factory AsyncManagerFactory,
+) *AsyncManagerController {
 
 	ctxMgr := NewAsyncManager(ctx, mgr)
 

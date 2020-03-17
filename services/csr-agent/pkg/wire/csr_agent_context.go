@@ -10,28 +10,28 @@ import (
 )
 
 type CsrAgentContext struct {
-	Ctx                           context.Context
-	Manager                       mc_manager.AsyncManager
-	CsrController                 controller.MeshGroupCertificateSigningRequestController
-	CsrClient                     zephyr_security.MeshGroupCSRClient
-	MeshGroupCSRDataSourceFactory csr_generator.MeshGroupCSRDataSourceFactory
-	CsrAgentIstioProcessor        csr_generator.MeshGroupCSRProcessor
+	Ctx                             context.Context
+	Manager                         mc_manager.AsyncManager
+	CsrController                   controller.VirtualMeshCertificateSigningRequestController
+	CsrClient                       zephyr_security.VirtualMeshCSRClient
+	VirtualMeshCSRDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory
+	CsrAgentIstioProcessor          csr_generator.VirtualMeshCSRProcessor
 }
 
 func CsrAgentContextProvider(
 	ctx context.Context,
 	mgr mc_manager.AsyncManager,
-	csrController controller.MeshGroupCertificateSigningRequestController,
-	meshGroupCSRDataSourceFactory csr_generator.MeshGroupCSRDataSourceFactory,
-	csrAgentIstioProcessor csr_generator.MeshGroupCSRProcessor,
-	csrClient zephyr_security.MeshGroupCSRClient,
+	csrController controller.VirtualMeshCertificateSigningRequestController,
+	virtualMeshCSRDataSourceFactory csr_generator.VirtualMeshCSRDataSourceFactory,
+	csrAgentIstioProcessor csr_generator.VirtualMeshCSRProcessor,
+	csrClient zephyr_security.VirtualMeshCSRClient,
 ) CsrAgentContext {
 	return CsrAgentContext{
-		Ctx:                           ctx,
-		Manager:                       mgr,
-		CsrController:                 csrController,
-		MeshGroupCSRDataSourceFactory: meshGroupCSRDataSourceFactory,
-		CsrAgentIstioProcessor:        csrAgentIstioProcessor,
-		CsrClient:                     csrClient,
+		Ctx:                             ctx,
+		Manager:                         mgr,
+		CsrController:                   csrController,
+		VirtualMeshCSRDataSourceFactory: virtualMeshCSRDataSourceFactory,
+		CsrAgentIstioProcessor:          csrAgentIstioProcessor,
+		CsrClient:                       csrClient,
 	}
 }

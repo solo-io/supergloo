@@ -40,10 +40,10 @@ var _ = Describe("Federation Decider", func() {
 		ctrl.Finish()
 	})
 
-	It("doesn't federate anything for a group with only one member", func() {
+	It("doesn't federate anything for a virtual mesh with only one member", func() {
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			MeshGroups: []*networking_v1alpha1.MeshGroup{{
-				Spec: networking_types.MeshGroupSpec{
+			VirtualMeshes: []*networking_v1alpha1.VirtualMesh{{
+				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{{
 						Name:      "mesh-1",
 						Namespace: env.DefaultWriteNamespace,
@@ -57,13 +57,13 @@ var _ = Describe("Federation Decider", func() {
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
-		groupCopy := *snapshot.MeshGroups[0]
-		groupCopy.Status.FederationStatus = &core_types.ComputedStatus{
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		vmCopy := *snapshot.VirtualMeshes[0]
+		vmCopy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, &groupCopy).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, &vmCopy).
 			Return(nil)
 
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
@@ -79,7 +79,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
 			return strategies.NewPermissiveFederation(meshServiceClient), nil
 		})
 		decider.DecideFederation(ctx, &snapshot)
@@ -88,15 +88,15 @@ var _ = Describe("Federation Decider", func() {
 	/************************
 	*   This test sets up the following situation:
 	*      - we have four meshes, named mesh-n for n from 1 to 4
-	*      - mesh-1 through mesh-3 are in a group together, mesh-4 is in a group by itself
+	*      - mesh-1 through mesh-3 are in a vm together, mesh-4 is in a vm by itself
 	*      - each of the meshes has exactly one mesh service and one mesh workload
 	*
 	*   We expect that:
-	*      - each of the mesh services in group 1 gets federated to the two mesh workloads from the OTHER meshes in group 1
+	*      - each of the mesh services in vm 1 gets federated to the two mesh workloads from the OTHER meshes in vm 1
 	*      - the service in mesh 4 gets federated nowhere
 	*      - nothing gets federated to the workload in mesh 4
 	*************************/
-	It("federates each service to every other mesh in a group, and not to meshes outside the group (permissive federation end to end)", func() {
+	It("federates each service to every other mesh in a vm, and not to meshes outside the vm (permissive federation end to end)", func() {
 		meshService1 := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "mesh-service-1-mesh-1",
@@ -171,9 +171,9 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			MeshGroups: []*networking_v1alpha1.MeshGroup{
+			VirtualMeshes: []*networking_v1alpha1.VirtualMesh{
 				{
-					Spec: networking_types.MeshGroupSpec{
+					Spec: networking_types.VirtualMeshSpec{
 						Meshes: []*core_types.ResourceRef{
 							{
 								Name:      "mesh-1",
@@ -192,7 +192,7 @@ var _ = Describe("Federation Decider", func() {
 					},
 				},
 				{
-					Spec: networking_types.MeshGroupSpec{
+					Spec: networking_types.VirtualMeshSpec{
 						Meshes: []*core_types.ResourceRef{{
 							Name:      "mesh-4",
 							Namespace: env.DefaultWriteNamespace,
@@ -258,24 +258,24 @@ var _ = Describe("Federation Decider", func() {
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 
-		// EXPECTs for group 1
-		group1Copy := *snapshot.MeshGroups[0]
-		group1Copy.Status.FederationStatus = &core_types.ComputedStatus{
+		// EXPECTs for vm 1
+		vm1Copy := *snapshot.VirtualMeshes[0]
+		vm1Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, &group1Copy).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, &vm1Copy).
 			Return(nil)
 
-		// EXPECTs for group 2
-		group2Copy := *snapshot.MeshGroups[1]
-		group2Copy.Status.FederationStatus = &core_types.ComputedStatus{
+		// EXPECTs for vm 2
+		vm2Copy := *snapshot.VirtualMeshes[1]
+		vm2Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, &group2Copy).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, &vm2Copy).
 			Return(nil)
 
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
@@ -406,16 +406,16 @@ var _ = Describe("Federation Decider", func() {
 			Update(ctx, &meshService4Copy).
 			Return(nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, strategies.GetFederationStrategyFromMode)
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies.GetFederationStrategyFromMode)
 		decider.DecideFederation(ctx, &snapshot)
 	})
 
-	It("marks all groups in the snapshot as having a processing error if we can't set up the precomputed data", func() {
-		group1 := &networking_v1alpha1.MeshGroup{
+	It("marks all virtual meshes in the snapshot as having a processing error if we can't set up the precomputed data", func() {
+		vm1 := &networking_v1alpha1.VirtualMesh{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "group-1",
+				Name: "virtual-mesh-1",
 			},
-			Spec: networking_types.MeshGroupSpec{
+			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{
 					{
 						Name:      "mesh-1",
@@ -433,11 +433,11 @@ var _ = Describe("Federation Decider", func() {
 				Federation: nil, // should default to the permissive mode for demo purposes
 			},
 		}
-		group2 := &networking_v1alpha1.MeshGroup{
+		vm2 := &networking_v1alpha1.VirtualMesh{
 			ObjectMeta: v1.ObjectMeta{
-				Name: "group-2",
+				Name: "virtual-mesh-2",
 			},
-			Spec: networking_types.MeshGroupSpec{
+			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{{
 					Name:      "mesh-4",
 					Namespace: env.DefaultWriteNamespace,
@@ -449,43 +449,43 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		snapshot := snapshot.MeshNetworkingSnapshot{
-			MeshGroups:    []*networking_v1alpha1.MeshGroup{group1, group2},
+			VirtualMeshes: []*networking_v1alpha1.VirtualMesh{vm1, vm2},
 			MeshServices:  []*discovery_v1alpha1.MeshService{},
 			MeshWorkloads: []*discovery_v1alpha1.MeshWorkload{},
 		}
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
-		meshGroupClient := mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
+		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 
 		meshClient.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, testErr).AnyTimes()
 
 		// this many errors happen, because every mesh is going to error out
-		var group1MultiErr *multierror.Error
-		for range group1.Spec.Meshes {
-			group1MultiErr = multierror.Append(group1MultiErr, testErr)
+		var vm1MultiErr *multierror.Error
+		for range vm1.Spec.Meshes {
+			vm1MultiErr = multierror.Append(vm1MultiErr, testErr)
 		}
-		var group2MultiErr *multierror.Error
-		for range group2.Spec.Meshes {
-			group2MultiErr = multierror.Append(group2MultiErr, testErr)
+		var vm2MultiErr *multierror.Error
+		for range vm2.Spec.Meshes {
+			vm2MultiErr = multierror.Append(vm2MultiErr, testErr)
 		}
 
-		group1Copy := *group1
-		group1Copy.Status.FederationStatus = &core_types.ComputedStatus{
+		vm1Copy := *vm1
+		vm1Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
-			Message: decider.ErrorLoadingMeshMetadata(group1MultiErr),
+			Message: decider.ErrorLoadingMeshMetadata(vm1MultiErr),
 		}
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, &group1Copy).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, &vm1Copy).
 			Return(nil)
 
-		group2Copy := *group2
-		group2Copy.Status.FederationStatus = &core_types.ComputedStatus{
+		vm2Copy := *vm2
+		vm2Copy.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
-			Message: decider.ErrorLoadingMeshMetadata(group2MultiErr),
+			Message: decider.ErrorLoadingMeshMetadata(vm2MultiErr),
 		}
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, &group2Copy).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, &vm2Copy).
 			Return(nil)
 
 		strategyDecider := func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
@@ -493,6 +493,6 @@ var _ = Describe("Federation Decider", func() {
 			return nil, nil
 		}
 
-		decider.NewFederationDecider(meshServiceClient, meshClient, meshGroupClient, strategyDecider).DecideFederation(ctx, &snapshot)
+		decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategyDecider).DecideFederation(ctx, &snapshot)
 	})
 })

@@ -14,31 +14,31 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockMeshGroupCSRClient is a mock of MeshGroupCSRClient interface
-type MockMeshGroupCSRClient struct {
+// MockVirtualMeshCSRClient is a mock of VirtualMeshCSRClient interface
+type MockVirtualMeshCSRClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupCSRClientMockRecorder
+	recorder *MockVirtualMeshCSRClientMockRecorder
 }
 
-// MockMeshGroupCSRClientMockRecorder is the mock recorder for MockMeshGroupCSRClient
-type MockMeshGroupCSRClientMockRecorder struct {
-	mock *MockMeshGroupCSRClient
+// MockVirtualMeshCSRClientMockRecorder is the mock recorder for MockVirtualMeshCSRClient
+type MockVirtualMeshCSRClientMockRecorder struct {
+	mock *MockVirtualMeshCSRClient
 }
 
-// NewMockMeshGroupCSRClient creates a new mock instance
-func NewMockMeshGroupCSRClient(ctrl *gomock.Controller) *MockMeshGroupCSRClient {
-	mock := &MockMeshGroupCSRClient{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupCSRClientMockRecorder{mock}
+// NewMockVirtualMeshCSRClient creates a new mock instance
+func NewMockVirtualMeshCSRClient(ctrl *gomock.Controller) *MockVirtualMeshCSRClient {
+	mock := &MockVirtualMeshCSRClient{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshCSRClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupCSRClient) EXPECT() *MockMeshGroupCSRClientMockRecorder {
+func (m *MockVirtualMeshCSRClient) EXPECT() *MockVirtualMeshCSRClientMockRecorder {
 	return m.recorder
 }
 
 // Create mocks base method
-func (m *MockMeshGroupCSRClient) Create(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.CreateOption) error {
+func (m *MockVirtualMeshCSRClient) Create(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -50,14 +50,14 @@ func (m *MockMeshGroupCSRClient) Create(ctx context.Context, csr *v1alpha1.MeshG
 }
 
 // Create indicates an expected call of Create
-func (mr *MockMeshGroupCSRClientMockRecorder) Create(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) Create(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).Create), varargs...)
 }
 
 // Update mocks base method
-func (m *MockMeshGroupCSRClient) Update(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error {
+func (m *MockVirtualMeshCSRClient) Update(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -69,14 +69,14 @@ func (m *MockMeshGroupCSRClient) Update(ctx context.Context, csr *v1alpha1.MeshG
 }
 
 // Update indicates an expected call of Update
-func (mr *MockMeshGroupCSRClientMockRecorder) Update(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) Update(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).Update), varargs...)
 }
 
 // UpdateStatus mocks base method
-func (m *MockMeshGroupCSRClient) UpdateStatus(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.UpdateOption) error {
+func (m *MockVirtualMeshCSRClient) UpdateStatus(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -88,44 +88,44 @@ func (m *MockMeshGroupCSRClient) UpdateStatus(ctx context.Context, csr *v1alpha1
 }
 
 // UpdateStatus indicates an expected call of UpdateStatus
-func (mr *MockMeshGroupCSRClientMockRecorder) UpdateStatus(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) UpdateStatus(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).UpdateStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).UpdateStatus), varargs...)
 }
 
 // Get mocks base method
-func (m *MockMeshGroupCSRClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.MeshGroupCertificateSigningRequest, error) {
+func (m *MockVirtualMeshCSRClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.VirtualMeshCertificateSigningRequest, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
-	ret0, _ := ret[0].(*v1alpha1.MeshGroupCertificateSigningRequest)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMeshCertificateSigningRequest)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get
-func (mr *MockMeshGroupCSRClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).Get), ctx, name, namespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).Get), ctx, name, namespace)
 }
 
 // List mocks base method
-func (m *MockMeshGroupCSRClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MeshGroupCertificateSigningRequestList, error) {
+func (m *MockVirtualMeshCSRClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.VirtualMeshCertificateSigningRequestList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, opts)
-	ret0, _ := ret[0].(*v1alpha1.MeshGroupCertificateSigningRequestList)
+	ret0, _ := ret[0].(*v1alpha1.VirtualMeshCertificateSigningRequestList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List
-func (mr *MockMeshGroupCSRClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).List), ctx, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).List), ctx, opts)
 }
 
 // Delete mocks base method
-func (m *MockMeshGroupCSRClient) Delete(ctx context.Context, csr *v1alpha1.MeshGroupCertificateSigningRequest, opts ...client.DeleteOption) error {
+func (m *MockVirtualMeshCSRClient) Delete(ctx context.Context, csr *v1alpha1.VirtualMeshCertificateSigningRequest, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, csr}
 	for _, a := range opts {
@@ -137,8 +137,8 @@ func (m *MockMeshGroupCSRClient) Delete(ctx context.Context, csr *v1alpha1.MeshG
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockMeshGroupCSRClientMockRecorder) Delete(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) Delete(ctx, csr interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, csr}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshGroupCSRClient)(nil).Delete), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).Delete), varargs...)
 }

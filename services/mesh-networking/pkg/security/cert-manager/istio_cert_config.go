@@ -37,7 +37,7 @@ func BuildSpiffeURI(trustDomain, namespace, sa string) string {
 }
 
 func (i *istioCertConfigProducer) ConfigureCertificateInfo(
-	mg *networking_v1alpha1.MeshGroup,
+	vm *networking_v1alpha1.VirtualMesh,
 	mesh *discovery_v1alpha1.Mesh,
 ) (*security_types.CertConfig, error) {
 	istioMesh := mesh.Spec.GetIstio()

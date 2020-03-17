@@ -9,10 +9,10 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_clients.go
 
-type MeshGroupClient interface {
-	Get(ctx context.Context, name, namespace string) (*networkingv1alpha1.MeshGroup, error)
-	List(ctx context.Context, opts ...client.ListOption) (*networkingv1alpha1.MeshGroupList, error)
-	UpdateStatus(ctx context.Context, meshGroup *networkingv1alpha1.MeshGroup, opts ...client.UpdateOption) error
+type VirtualMeshClient interface {
+	Get(ctx context.Context, name, namespace string) (*networkingv1alpha1.VirtualMesh, error)
+	List(ctx context.Context, opts ...client.ListOption) (*networkingv1alpha1.VirtualMeshList, error)
+	UpdateStatus(ctx context.Context, virtualMesh *networkingv1alpha1.VirtualMesh, opts ...client.UpdateOption) error
 }
 
 type TrafficPolicyClient interface {

@@ -1,4 +1,4 @@
-package group_validation_test
+package vm_validation_test
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
+	vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,7 +23,7 @@ var _ = Describe("mesh ref finder", func() {
 		ctrl          *gomock.Controller
 		ctx           context.Context
 		meshClient    *mock_zephyr_discovery.MockMeshClient
-		meshRefFinder group_validation.GroupMeshFinder
+		meshRefFinder vm_validation.VirtualMeshFinder
 
 		testErr = eris.New("hello")
 	)
@@ -32,7 +32,7 @@ var _ = Describe("mesh ref finder", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		meshClient = mock_zephyr_discovery.NewMockMeshClient(ctrl)
-		meshRefFinder = group_validation.NewGroupMeshFinder(meshClient)
+		meshRefFinder = vm_validation.NewVitualMeshFinder(meshClient)
 	})
 
 	AfterEach(func() {
@@ -44,7 +44,7 @@ var _ = Describe("mesh ref finder", func() {
 			List(ctx).
 			Return(nil, testErr)
 
-		_, err := meshRefFinder.GetMeshesForGroup(ctx, &networking_v1alpha1.MeshGroup{})
+		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(testErr))
 	})
@@ -53,7 +53,7 @@ var _ = Describe("mesh ref finder", func() {
 		meshClient.EXPECT().
 			List(ctx).
 			Return(nil, nil)
-		list, err := meshRefFinder.GetMeshesForGroup(ctx, &networking_v1alpha1.MeshGroup{})
+		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(list).To(BeNil())
 	})
@@ -70,17 +70,17 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		mg := &networking_v1alpha1.MeshGroup{
-			Spec: types.MeshGroupSpec{
+		vm := &networking_v1alpha1.VirtualMesh{
+			Spec: types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
 		meshClient.EXPECT().
 			List(ctx).
 			Return(meshList, nil)
-		_, err := meshRefFinder.GetMeshesForGroup(ctx, mg)
+		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).To(HaveOccurred())
-		Expect(err).To(HaveInErrorChain(group_validation.InvalidMeshRefsError([]string{
+		Expect(err).To(HaveInErrorChain(vm_validation.InvalidMeshRefsError([]string{
 			fmt.Sprintf("%s.%s", refs[0].GetName(), refs[0].GetNamespace()),
 			fmt.Sprintf("%s.%s", refs[1].GetName(), refs[1].GetNamespace()),
 		})))
@@ -113,15 +113,15 @@ var _ = Describe("mesh ref finder", func() {
 				Namespace: "namespace2",
 			},
 		}
-		mg := &networking_v1alpha1.MeshGroup{
-			Spec: types.MeshGroupSpec{
+		vm := &networking_v1alpha1.VirtualMesh{
+			Spec: types.VirtualMeshSpec{
 				Meshes: refs,
 			},
 		}
 		meshClient.EXPECT().
 			List(ctx).
 			Return(meshList, nil)
-		list, err := meshRefFinder.GetMeshesForGroup(ctx, mg)
+		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(list).To(ConsistOf(&meshList.Items[0], &meshList.Items[1]))
 	})

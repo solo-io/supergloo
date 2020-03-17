@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// MeshGroupCertificateSigningRequests returns a MeshGroupCertificateSigningRequestInformer.
-	MeshGroupCertificateSigningRequests() MeshGroupCertificateSigningRequestInformer
+	// VirtualMeshCertificateSigningRequests returns a VirtualMeshCertificateSigningRequestInformer.
+	VirtualMeshCertificateSigningRequests() VirtualMeshCertificateSigningRequestInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// MeshGroupCertificateSigningRequests returns a MeshGroupCertificateSigningRequestInformer.
-func (v *version) MeshGroupCertificateSigningRequests() MeshGroupCertificateSigningRequestInformer {
-	return &meshGroupCertificateSigningRequestInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// VirtualMeshCertificateSigningRequests returns a VirtualMeshCertificateSigningRequestInformer.
+func (v *version) VirtualMeshCertificateSigningRequests() VirtualMeshCertificateSigningRequestInformer {
+	return &virtualMeshCertificateSigningRequestInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

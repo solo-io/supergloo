@@ -39,53 +39,53 @@ func (m *MockCertConfigProducer) EXPECT() *MockCertConfigProducerMockRecorder {
 }
 
 // ConfigureCertificateInfo mocks base method
-func (m *MockCertConfigProducer) ConfigureCertificateInfo(mg *v1alpha10.MeshGroup, mesh *v1alpha1.Mesh) (*types0.CertConfig, error) {
+func (m *MockCertConfigProducer) ConfigureCertificateInfo(vm *v1alpha10.VirtualMesh, mesh *v1alpha1.Mesh) (*types0.CertConfig, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigureCertificateInfo", mg, mesh)
+	ret := m.ctrl.Call(m, "ConfigureCertificateInfo", vm, mesh)
 	ret0, _ := ret[0].(*types0.CertConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConfigureCertificateInfo indicates an expected call of ConfigureCertificateInfo
-func (mr *MockCertConfigProducerMockRecorder) ConfigureCertificateInfo(mg, mesh interface{}) *gomock.Call {
+func (mr *MockCertConfigProducerMockRecorder) ConfigureCertificateInfo(vm, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureCertificateInfo", reflect.TypeOf((*MockCertConfigProducer)(nil).ConfigureCertificateInfo), mg, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureCertificateInfo", reflect.TypeOf((*MockCertConfigProducer)(nil).ConfigureCertificateInfo), vm, mesh)
 }
 
-// MockMeshGroupCertificateManager is a mock of MeshGroupCertificateManager interface
-type MockMeshGroupCertificateManager struct {
+// MockVirtualMeshCertificateManager is a mock of VirtualMeshCertificateManager interface
+type MockVirtualMeshCertificateManager struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshGroupCertificateManagerMockRecorder
+	recorder *MockVirtualMeshCertificateManagerMockRecorder
 }
 
-// MockMeshGroupCertificateManagerMockRecorder is the mock recorder for MockMeshGroupCertificateManager
-type MockMeshGroupCertificateManagerMockRecorder struct {
-	mock *MockMeshGroupCertificateManager
+// MockVirtualMeshCertificateManagerMockRecorder is the mock recorder for MockVirtualMeshCertificateManager
+type MockVirtualMeshCertificateManagerMockRecorder struct {
+	mock *MockVirtualMeshCertificateManager
 }
 
-// NewMockMeshGroupCertificateManager creates a new mock instance
-func NewMockMeshGroupCertificateManager(ctrl *gomock.Controller) *MockMeshGroupCertificateManager {
-	mock := &MockMeshGroupCertificateManager{ctrl: ctrl}
-	mock.recorder = &MockMeshGroupCertificateManagerMockRecorder{mock}
+// NewMockVirtualMeshCertificateManager creates a new mock instance
+func NewMockVirtualMeshCertificateManager(ctrl *gomock.Controller) *MockVirtualMeshCertificateManager {
+	mock := &MockVirtualMeshCertificateManager{ctrl: ctrl}
+	mock.recorder = &MockVirtualMeshCertificateManagerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMeshGroupCertificateManager) EXPECT() *MockMeshGroupCertificateManagerMockRecorder {
+func (m *MockVirtualMeshCertificateManager) EXPECT() *MockVirtualMeshCertificateManagerMockRecorder {
 	return m.recorder
 }
 
-// InitializeCertificateForMeshGroup mocks base method
-func (m *MockMeshGroupCertificateManager) InitializeCertificateForMeshGroup(ctx context.Context, new *v1alpha10.MeshGroup) types.MeshGroupStatus {
+// InitializeCertificateForVirtualMesh mocks base method
+func (m *MockVirtualMeshCertificateManager) InitializeCertificateForVirtualMesh(ctx context.Context, new *v1alpha10.VirtualMesh) types.VirtualMeshStatus {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitializeCertificateForMeshGroup", ctx, new)
-	ret0, _ := ret[0].(types.MeshGroupStatus)
+	ret := m.ctrl.Call(m, "InitializeCertificateForVirtualMesh", ctx, new)
+	ret0, _ := ret[0].(types.VirtualMeshStatus)
 	return ret0
 }
 
-// InitializeCertificateForMeshGroup indicates an expected call of InitializeCertificateForMeshGroup
-func (mr *MockMeshGroupCertificateManagerMockRecorder) InitializeCertificateForMeshGroup(ctx, new interface{}) *gomock.Call {
+// InitializeCertificateForVirtualMesh indicates an expected call of InitializeCertificateForVirtualMesh
+func (mr *MockVirtualMeshCertificateManagerMockRecorder) InitializeCertificateForVirtualMesh(ctx, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitializeCertificateForMeshGroup", reflect.TypeOf((*MockMeshGroupCertificateManager)(nil).InitializeCertificateForMeshGroup), ctx, new)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitializeCertificateForVirtualMesh", reflect.TypeOf((*MockVirtualMeshCertificateManager)(nil).InitializeCertificateForVirtualMesh), ctx, new)
 }

@@ -38,18 +38,18 @@ func (m *MockMeshFederationClient) EXPECT() *MockMeshFederationClientMockRecorde
 }
 
 // FederateServiceSide mocks base method
-func (m *MockMeshFederationClient) FederateServiceSide(ctx context.Context, meshGroup *v1alpha10.MeshGroup, meshService *v1alpha1.MeshService) (dns.ExternalAccessPoint, error) {
+func (m *MockMeshFederationClient) FederateServiceSide(ctx context.Context, virtualMesh *v1alpha10.VirtualMesh, meshService *v1alpha1.MeshService) (dns.ExternalAccessPoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FederateServiceSide", ctx, meshGroup, meshService)
+	ret := m.ctrl.Call(m, "FederateServiceSide", ctx, virtualMesh, meshService)
 	ret0, _ := ret[0].(dns.ExternalAccessPoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FederateServiceSide indicates an expected call of FederateServiceSide
-func (mr *MockMeshFederationClientMockRecorder) FederateServiceSide(ctx, meshGroup, meshService interface{}) *gomock.Call {
+func (mr *MockMeshFederationClientMockRecorder) FederateServiceSide(ctx, virtualMesh, meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederateServiceSide", reflect.TypeOf((*MockMeshFederationClient)(nil).FederateServiceSide), ctx, meshGroup, meshService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederateServiceSide", reflect.TypeOf((*MockMeshFederationClient)(nil).FederateServiceSide), ctx, virtualMesh, meshService)
 }
 
 // FederateClientSide mocks base method

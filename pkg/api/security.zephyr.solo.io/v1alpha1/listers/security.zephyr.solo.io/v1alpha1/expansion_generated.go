@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// MeshGroupCertificateSigningRequestListerExpansion allows custom methods to be added to
-// MeshGroupCertificateSigningRequestLister.
-type MeshGroupCertificateSigningRequestListerExpansion interface{}
+// VirtualMeshCertificateSigningRequestListerExpansion allows custom methods to be added to
+// VirtualMeshCertificateSigningRequestLister.
+type VirtualMeshCertificateSigningRequestListerExpansion interface{}
 
-// MeshGroupCertificateSigningRequestNamespaceListerExpansion allows custom methods to be added to
-// MeshGroupCertificateSigningRequestNamespaceLister.
-type MeshGroupCertificateSigningRequestNamespaceListerExpansion interface{}
+// VirtualMeshCertificateSigningRequestNamespaceListerExpansion allows custom methods to be added to
+// VirtualMeshCertificateSigningRequestNamespaceLister.
+type VirtualMeshCertificateSigningRequestNamespaceListerExpansion interface{}

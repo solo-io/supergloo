@@ -26,14 +26,6 @@ type AccessControlPolicyListerExpansion interface{}
 // AccessControlPolicyNamespaceLister.
 type AccessControlPolicyNamespaceListerExpansion interface{}
 
-// MeshGroupListerExpansion allows custom methods to be added to
-// MeshGroupLister.
-type MeshGroupListerExpansion interface{}
-
-// MeshGroupNamespaceListerExpansion allows custom methods to be added to
-// MeshGroupNamespaceLister.
-type MeshGroupNamespaceListerExpansion interface{}
-
 // TrafficPolicyListerExpansion allows custom methods to be added to
 // TrafficPolicyLister.
 type TrafficPolicyListerExpansion interface{}
@@ -41,3 +33,11 @@ type TrafficPolicyListerExpansion interface{}
 // TrafficPolicyNamespaceListerExpansion allows custom methods to be added to
 // TrafficPolicyNamespaceLister.
 type TrafficPolicyNamespaceListerExpansion interface{}
+
+// VirtualMeshListerExpansion allows custom methods to be added to
+// VirtualMeshLister.
+type VirtualMeshListerExpansion interface{}
+
+// VirtualMeshNamespaceListerExpansion allows custom methods to be added to
+// VirtualMeshNamespaceLister.
+type VirtualMeshNamespaceListerExpansion interface{}

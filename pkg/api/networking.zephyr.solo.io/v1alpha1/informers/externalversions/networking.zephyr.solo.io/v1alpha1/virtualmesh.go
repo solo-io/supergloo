@@ -31,59 +31,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// MeshGroupInformer provides access to a shared informer and lister for
-// MeshGroups.
-type MeshGroupInformer interface {
+// VirtualMeshInformer provides access to a shared informer and lister for
+// VirtualMeshes.
+type VirtualMeshInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.MeshGroupLister
+	Lister() v1alpha1.VirtualMeshLister
 }
 
-type meshGroupInformer struct {
+type virtualMeshInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewMeshGroupInformer constructs a new informer for MeshGroup type.
+// NewVirtualMeshInformer constructs a new informer for VirtualMesh type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewMeshGroupInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredMeshGroupInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewVirtualMeshInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredVirtualMeshInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredMeshGroupInformer constructs a new informer for MeshGroup type.
+// NewFilteredVirtualMeshInformer constructs a new informer for VirtualMesh type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredMeshGroupInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredVirtualMeshInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.NetworkingV1alpha1().MeshGroups(namespace).List(options)
+				return client.NetworkingV1alpha1().VirtualMeshes(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.NetworkingV1alpha1().MeshGroups(namespace).Watch(options)
+				return client.NetworkingV1alpha1().VirtualMeshes(namespace).Watch(options)
 			},
 		},
-		&networkingzephyrsoloiov1alpha1.MeshGroup{},
+		&networkingzephyrsoloiov1alpha1.VirtualMesh{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *meshGroupInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredMeshGroupInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *virtualMeshInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredVirtualMeshInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *meshGroupInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&networkingzephyrsoloiov1alpha1.MeshGroup{}, f.defaultInformer)
+func (f *virtualMeshInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&networkingzephyrsoloiov1alpha1.VirtualMesh{}, f.defaultInformer)
 }
 
-func (f *meshGroupInformer) Lister() v1alpha1.MeshGroupLister {
-	return v1alpha1.NewMeshGroupLister(f.Informer().GetIndexer())
+func (f *virtualMeshInformer) Lister() v1alpha1.VirtualMeshLister {
+	return v1alpha1.NewVirtualMeshLister(f.Informer().GetIndexer())
 }

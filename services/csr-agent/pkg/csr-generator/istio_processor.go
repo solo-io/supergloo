@@ -46,26 +46,26 @@ var (
 
 func NewCsrAgentIstioProcessor(
 	generator IstioCSRGenerator,
-) MeshGroupCSRProcessor {
-	return &MeshGroupCSRProcessorFuncs{
+) VirtualMeshCSRProcessor {
+	return &VirtualMeshCSRProcessorFuncs{
 		OnProcessUpsert: func(
 			ctx context.Context,
-			csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-		) *security_types.MeshGroupCertificateSigningRequestStatus {
+			csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+		) *security_types.VirtualMeshCertificateSigningRequestStatus {
 			return generator.GenerateIstioCSR(ctx, csr)
 		},
 	}
 }
 
 type istioCSRGenerator struct {
-	csrClient    zephyr_security.MeshGroupCSRClient
+	csrClient    zephyr_security.VirtualMeshCSRClient
 	secretClient kubernetes_core.SecretsClient
 	certClient   CertClient
 	signer       certgen.Signer
 }
 
 func NewIstioCSRGenerator(
-	csrClient zephyr_security.MeshGroupCSRClient,
+	csrClient zephyr_security.VirtualMeshCSRClient,
 	secretClient kubernetes_core.SecretsClient,
 	certClient CertClient,
 	signer certgen.Signer,
@@ -75,8 +75,8 @@ func NewIstioCSRGenerator(
 
 func (i *istioCSRGenerator) GenerateIstioCSR(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
 	if err != nil {
 		wrapped := FailedToRetrievePrivateKeyError(err)
@@ -108,9 +108,9 @@ func (i *istioCSRGenerator) GenerateIstioCSR(
 
 func (i *istioCSRGenerator) Start(
 	ctx context.Context,
-	csrClient zephyr_security.MeshGroupCSRClient,
-	ctrl controller.MeshGroupCertificateSigningRequestController,
-	dataSource MeshGroupCSRDataSourceFactory,
+	csrClient zephyr_security.VirtualMeshCSRClient,
+	ctrl controller.VirtualMeshCertificateSigningRequestController,
+	dataSource VirtualMeshCSRDataSourceFactory,
 ) error {
 	handler := dataSource(ctx, csrClient, i)
 	return ctrl.AddEventHandler(ctx, handler)
@@ -118,15 +118,15 @@ func (i *istioCSRGenerator) Start(
 
 func (i *istioCSRGenerator) ProcessUpsert(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	return i.process(ctx, obj)
 }
 
 func (i *istioCSRGenerator) process(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
 	if err != nil {
 		wrapped := FailedToRetrievePrivateKeyError(err)
@@ -158,9 +158,9 @@ func (i *istioCSRGenerator) process(
 
 func (i *istioCSRGenerator) generateCsr(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
 	rootCaData *cert_secrets.RootCaData,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	csr, err := i.signer.GenCSRWithKey(pki_util.CertOptions{
 		Host:          strings.Join(obj.Spec.GetCertConfig().GetHosts(), ","),
 		Org:           obj.Spec.GetCertConfig().GetOrg(),
@@ -190,7 +190,7 @@ func (i *istioCSRGenerator) generateCsr(
 
 func (i *istioCSRGenerator) updateCa(
 	ctx context.Context,
-	obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
+	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
 	rootCaData *cert_secrets.RootCaData,
 ) error {
 	rootCaData.CaCert = obj.Status.GetResponse().GetCaCertificate()
@@ -236,9 +236,9 @@ func (i *istioCSRGenerator) certsAreEqual(
 
 func (i *istioCSRGenerator) ProcessDelete(
 	ctx context.Context,
-	csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
-	// TODO: handle deletion of mesh group certificate signing requests
+	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
+	// TODO: handle deletion of virtual mesh certificate signing requests
 	// https://github.com/solo-io/mesh-projects/issues/227
 	return nil
 }

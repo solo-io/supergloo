@@ -12,75 +12,75 @@ import (
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go
 
-// CertClient is a higher level client used for operations involving MeshGroupCertificateSigningRequests.
+// CertClient is a higher level client used for operations involving VirtualMeshCertificateSigningRequests.
 
 type CertClient interface {
 	/*
-		EnsureSecretKey retrieves the private key for a given MeshGroupCertificateSigningRequest. If the key does not
+		EnsureSecretKey retrieves the private key for a given VirtualMeshCertificateSigningRequest. If the key does not
 		exist already, it will attempt to create one.
 	*/
 	EnsureSecretKey(
 		ctx context.Context,
-		obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
+		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
 	) (secret *cert_secrets.RootCaData, err error)
 }
 
 type IstioCSRGenerator interface {
 	GenerateIstioCSR(
 		ctx context.Context,
-		obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
-type MeshGroupCSRDataSourceFactory func(
+type VirtualMeshCSRDataSourceFactory func(
 	ctx context.Context,
-	csrClient zephyr_security.MeshGroupCSRClient,
-	processor MeshGroupCSRProcessor,
-) controller.MeshGroupCertificateSigningRequestEventHandler
+	csrClient zephyr_security.VirtualMeshCSRClient,
+	processor VirtualMeshCSRProcessor,
+) controller.VirtualMeshCertificateSigningRequestEventHandler
 
 /*
-	MeshGroupCSRProcessor is meant to be an extension to the autopilot handler pattern.
+	VirtualMeshCSRProcessor is meant to be an extension to the autopilot handler pattern.
 
 	The status returned by a processor is intended to reflect the status of the object.
 	If the returned status is nil than the object was not processed and the status should not be used or updated.
 	The contract of how else that data is used by the caller is up to the caller.
 */
-type MeshGroupCSRProcessor interface {
+type VirtualMeshCSRProcessor interface {
 	ProcessUpsert(
 		ctx context.Context,
-		csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 	ProcessDelete(
 		ctx context.Context,
-		csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
-type MeshGroupCSRProcessorFuncs struct {
+type VirtualMeshCSRProcessorFuncs struct {
 	OnProcessUpsert func(
 		ctx context.Context,
-		csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 	OnProcessDelete func(
 		ctx context.Context,
-		csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 }
 
-func (m *MeshGroupCSRProcessorFuncs) ProcessUpsert(
+func (m *VirtualMeshCSRProcessorFuncs) ProcessUpsert(
 	ctx context.Context,
-	csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessUpsert != nil {
 		return m.OnProcessUpsert(ctx, csr)
 	}
 	return nil
 }
 
-func (m *MeshGroupCSRProcessorFuncs) ProcessDelete(
+func (m *VirtualMeshCSRProcessorFuncs) ProcessDelete(
 	ctx context.Context,
-	csr *security_v1alpha1.MeshGroupCertificateSigningRequest,
-) *security_types.MeshGroupCertificateSigningRequestStatus {
+	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	if m.OnProcessDelete != nil {
 		return m.OnProcessDelete(ctx, csr)
 	}

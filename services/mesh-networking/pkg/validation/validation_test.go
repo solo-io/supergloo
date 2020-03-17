@@ -1,4 +1,4 @@
-package group_validation_test
+package vm_validation_test
 
 import (
 	"context"
@@ -14,28 +14,28 @@ import (
 	v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
-	group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
-	mock_group_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation/mocks"
+	vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation"
+	mock_vm_validation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/validation/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("validator", func() {
 
 	var (
-		ctrl            *gomock.Controller
-		validator       snapshot.MeshNetworkingSnapshotValidator
-		meshFinder      *mock_group_validation.MockGroupMeshFinder
-		meshGroupClient *mock_zephyr_networking.MockMeshGroupClient
-		ctx             context.Context
+		ctrl              *gomock.Controller
+		validator         snapshot.MeshNetworkingSnapshotValidator
+		meshFinder        *mock_vm_validation.MockVirtualMeshFinder
+		virtualMeshClient *mock_zephyr_networking.MockVirtualMeshClient
+		ctx               context.Context
 
 		testErr = eris.New("hello")
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		meshFinder = mock_group_validation.NewMockGroupMeshFinder(ctrl)
-		meshGroupClient = mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
-		validator = group_validation.NewMeshGroupValidator(meshFinder, meshGroupClient)
+		meshFinder = mock_vm_validation.NewMockVirtualMeshFinder(ctrl)
+		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		validator = vm_validation.NewVirtualMeshValidator(meshFinder, virtualMeshClient)
 		ctx = context.TODO()
 	})
 
@@ -48,11 +48,11 @@ var _ = Describe("validator", func() {
 			Name:      "incorrect",
 			Namespace: "ref",
 		}
-		mg := &networkingv1alpha1.MeshGroup{
-			Spec: v1alpha1_types.MeshGroupSpec{
+		vm := &networkingv1alpha1.VirtualMesh{
+			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},
-			Status: v1alpha1_types.MeshGroupStatus{
+			Status: v1alpha1_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_INVALID,
 					Message: testErr.Error(),
@@ -60,14 +60,14 @@ var _ = Describe("validator", func() {
 			},
 		}
 		meshFinder.EXPECT().
-			GetMeshesForGroup(ctx, mg).
+			GetMeshesForVirtualMesh(ctx, vm).
 			Return(nil, testErr)
 
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, mg).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, vm).
 			Return(nil)
 
-		valid := validator.ValidateMeshGroupUpsert(ctx, mg, nil)
+		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeFalse())
 	})
 
@@ -85,27 +85,27 @@ var _ = Describe("validator", func() {
 				MeshType: &discovery_types.MeshSpec_ConsulConnect{},
 			},
 		}
-		mg := &networkingv1alpha1.MeshGroup{
-			Spec: v1alpha1_types.MeshGroupSpec{
+		vm := &networkingv1alpha1.VirtualMesh{
+			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},
-			Status: v1alpha1_types.MeshGroupStatus{
+			Status: v1alpha1_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_INVALID,
-					Message: group_validation.OnlyIstioSupportedError(mesh.Name).Error(),
+					Message: vm_validation.OnlyIstioSupportedError(mesh.Name).Error(),
 				},
 			},
 		}
 
 		meshFinder.EXPECT().
-			GetMeshesForGroup(ctx, mg).
+			GetMeshesForVirtualMesh(ctx, vm).
 			Return([]*discoveryv1alpha1.Mesh{&mesh}, nil)
 
-		meshGroupClient.EXPECT().
-			UpdateStatus(ctx, mg).
+		virtualMeshClient.EXPECT().
+			UpdateStatus(ctx, vm).
 			Return(nil)
 
-		valid := validator.ValidateMeshGroupUpsert(ctx, mg, nil)
+		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeFalse())
 	})
 
@@ -125,17 +125,17 @@ var _ = Describe("validator", func() {
 				},
 			},
 		}
-		mg := &networkingv1alpha1.MeshGroup{
-			Spec: v1alpha1_types.MeshGroupSpec{
+		vm := &networkingv1alpha1.VirtualMesh{
+			Spec: v1alpha1_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{ref},
 			},
 		}
 
 		meshFinder.EXPECT().
-			GetMeshesForGroup(ctx, mg).
+			GetMeshesForVirtualMesh(ctx, vm).
 			Return([]*discoveryv1alpha1.Mesh{&mesh}, nil)
 
-		valid := validator.ValidateMeshGroupUpsert(ctx, mg, nil)
+		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
 		Expect(valid).To(BeTrue())
 	})
 })

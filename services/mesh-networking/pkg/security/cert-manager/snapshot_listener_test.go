@@ -23,62 +23,62 @@ var _ = Describe("snapshot listener", func() {
 		ctrl                *gomock.Controller
 		ctx                 context.Context
 		testLogger          *test_logging.TestLogger
-		csrProcessor        *mock_cert_manager.MockMeshGroupCertificateManager
-		meshGroupClient     *mock_zephyr_networking.MockMeshGroupClient
-		csrSnapshotListener cert_manager.GroupMgcsrSnapshotListener
+		csrProcessor        *mock_cert_manager.MockVirtualMeshCertificateManager
+		virtualMeshClient   *mock_zephyr_networking.MockVirtualMeshClient
+		csrSnapshotListener cert_manager.VMCSRSnapshotListener
 	)
 
 	BeforeEach(func() {
 		testLogger = test_logging.NewTestLogger()
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		ctrl = gomock.NewController(GinkgoT())
-		csrProcessor = mock_cert_manager.NewMockMeshGroupCertificateManager(ctrl)
-		meshGroupClient = mock_zephyr_networking.NewMockMeshGroupClient(ctrl)
-		csrSnapshotListener = cert_manager.NewGroupMgcsrSnapshotListener(csrProcessor, meshGroupClient)
+		csrProcessor = mock_cert_manager.NewMockVirtualMeshCertificateManager(ctrl)
+		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
+		csrSnapshotListener = cert_manager.NewVMCSRSnapshotListener(csrProcessor, virtualMeshClient)
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
-	It("will do nothing if there are no updated mesh groups", func() {
+	It("will do nothing if there are no updated virtual meshes", func() {
 		snap := &snapshot.MeshNetworkingSnapshot{}
 		csrSnapshotListener.Sync(ctx, snap)
 		testLogger.EXPECT().
 			LastEntry().
 			Level(zapcore.DebugLevel).
-			HaveMessage(cert_manager.NoMeshGroupsChangedMessage)
+			HaveMessage(cert_manager.NoVirtualMeshsChangedMessage)
 	})
 
 	It("will process all create events in order", func() {
-		mg1 := &networking_v1alpha1.MeshGroup{
+		vm1 := &networking_v1alpha1.VirtualMesh{
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec:       networking_types.MeshGroupSpec{},
-			Status: networking_types.MeshGroupStatus{
+			Spec:       networking_types.VirtualMeshSpec{},
+			Status: networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.ComputedStatus{
 					Status: core_types.ComputedStatus_ACCEPTED,
 				},
 			},
 		}
-		mg2 := &networking_v1alpha1.MeshGroup{
+		vm2 := &networking_v1alpha1.VirtualMesh{
 			TypeMeta:   metav1.TypeMeta{},
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec:       networking_types.MeshGroupSpec{},
-			Status: networking_types.MeshGroupStatus{
+			Spec:       networking_types.VirtualMeshSpec{},
+			Status: networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.ComputedStatus{
 					Status: core_types.ComputedStatus_INVALID,
 				},
 			},
 		}
 		snap := &snapshot.MeshNetworkingSnapshot{
-			MeshGroups: []*networking_v1alpha1.MeshGroup{mg1, mg2},
+			VirtualMeshes: []*networking_v1alpha1.VirtualMesh{vm1, vm2},
 		}
-		csrProcessor.EXPECT().InitializeCertificateForMeshGroup(ctx, mg1).Return(mg1.Status)
-		csrProcessor.EXPECT().InitializeCertificateForMeshGroup(ctx, mg2).Return(mg2.Status)
+		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm1).Return(vm1.Status)
+		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm2).Return(vm2.Status)
 
-		meshGroupClient.EXPECT().UpdateStatus(ctx, mg1).Return(nil)
-		meshGroupClient.EXPECT().UpdateStatus(ctx, mg2).Return(nil)
+		virtualMeshClient.EXPECT().UpdateStatus(ctx, vm1).Return(nil)
+		virtualMeshClient.EXPECT().UpdateStatus(ctx, vm2).Return(nil)
 		csrSnapshotListener.Sync(ctx, snap)
 	})
 })

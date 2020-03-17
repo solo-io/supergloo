@@ -13,39 +13,39 @@ import (
 )
 
 var (
-	GroupMgcsrSnapshotListenerSet = wire.NewSet(
+	VMCSRSnapshotListenerSet = wire.NewSet(
 		NewIstioCertConfigProducer,
-		NewMeshGroupCsrProcessor,
-		NewGroupMgcsrSnapshotListener,
+		NewVirtualMeshCsrProcessor,
+		NewVMCSRSnapshotListener,
 	)
 
-	NoMeshGroupsChangedMessage = "no meshgroups were created or updated during this sync"
+	NoVirtualMeshsChangedMessage = "no virtual meshes were created or updated during this sync"
 )
 
-type GroupMgcsrSnapshotListener snapshot.MeshNetworkingSnapshotListener
+type VMCSRSnapshotListener snapshot.MeshNetworkingSnapshotListener
 
-func NewGroupMgcsrSnapshotListener(
-	csrProcessor MeshGroupCertificateManager,
-	meshGroupClient zephyr_networking.MeshGroupClient,
-) GroupMgcsrSnapshotListener {
+func NewVMCSRSnapshotListener(
+	csrProcessor VirtualMeshCertificateManager,
+	virtualMeshClient zephyr_networking.VirtualMeshClient,
+) VMCSRSnapshotListener {
 	return &snapshot.MeshNetworkingSnapshotListenerFunc{
 		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
 			logger := contextutils.LoggerFrom(ctx)
-			// If no mesh groups have been updated return immediately
-			if len(snap.MeshGroups) == 0 {
-				logger.Debug(NoMeshGroupsChangedMessage)
+			// If no virtual meshs have been updated return immediately
+			if len(snap.VirtualMeshes) == 0 {
+				logger.Debug(NoVirtualMeshsChangedMessage)
 				return
 			}
 
-			for _, meshGroup := range snap.MeshGroups {
-				status := csrProcessor.InitializeCertificateForMeshGroup(ctx, meshGroup)
+			for _, virtualMesh := range snap.VirtualMeshes {
+				status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, virtualMesh)
 				if status.CertificateStatus.Status != types.ComputedStatus_ACCEPTED {
 					logger.Debugw("csr processor failed", zap.Error(eris.New(status.CertificateStatus.Message)))
 				}
-				meshGroup.Status = status
-				err := meshGroupClient.UpdateStatus(ctx, meshGroup)
+				virtualMesh.Status = status
+				err := virtualMeshClient.UpdateStatus(ctx, virtualMesh)
 				if err != nil {
-					logger.Errorf("Error updating certificate status on mesh group %+v", meshGroup.ObjectMeta)
+					logger.Errorf("Error updating certificate status on virtual mesh %+v", virtualMesh.ObjectMeta)
 				}
 			}
 		},

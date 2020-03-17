@@ -26,10 +26,10 @@ import (
 type Interface interface {
 	// AccessControlPolicies returns a AccessControlPolicyInformer.
 	AccessControlPolicies() AccessControlPolicyInformer
-	// MeshGroups returns a MeshGroupInformer.
-	MeshGroups() MeshGroupInformer
 	// TrafficPolicies returns a TrafficPolicyInformer.
 	TrafficPolicies() TrafficPolicyInformer
+	// VirtualMeshes returns a VirtualMeshInformer.
+	VirtualMeshes() VirtualMeshInformer
 }
 
 type version struct {
@@ -48,12 +48,12 @@ func (v *version) AccessControlPolicies() AccessControlPolicyInformer {
 	return &accessControlPolicyInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// MeshGroups returns a MeshGroupInformer.
-func (v *version) MeshGroups() MeshGroupInformer {
-	return &meshGroupInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
 // TrafficPolicies returns a TrafficPolicyInformer.
 func (v *version) TrafficPolicies() TrafficPolicyInformer {
 	return &trafficPolicyInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// VirtualMeshes returns a VirtualMeshInformer.
+func (v *version) VirtualMeshes() VirtualMeshInformer {
+	return &virtualMeshInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

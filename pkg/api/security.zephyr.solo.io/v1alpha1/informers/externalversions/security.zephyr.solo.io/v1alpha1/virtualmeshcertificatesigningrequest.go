@@ -31,59 +31,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// MeshGroupCertificateSigningRequestInformer provides access to a shared informer and lister for
-// MeshGroupCertificateSigningRequests.
-type MeshGroupCertificateSigningRequestInformer interface {
+// VirtualMeshCertificateSigningRequestInformer provides access to a shared informer and lister for
+// VirtualMeshCertificateSigningRequests.
+type VirtualMeshCertificateSigningRequestInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.MeshGroupCertificateSigningRequestLister
+	Lister() v1alpha1.VirtualMeshCertificateSigningRequestLister
 }
 
-type meshGroupCertificateSigningRequestInformer struct {
+type virtualMeshCertificateSigningRequestInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewMeshGroupCertificateSigningRequestInformer constructs a new informer for MeshGroupCertificateSigningRequest type.
+// NewVirtualMeshCertificateSigningRequestInformer constructs a new informer for VirtualMeshCertificateSigningRequest type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewMeshGroupCertificateSigningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredMeshGroupCertificateSigningRequestInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewVirtualMeshCertificateSigningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredVirtualMeshCertificateSigningRequestInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredMeshGroupCertificateSigningRequestInformer constructs a new informer for MeshGroupCertificateSigningRequest type.
+// NewFilteredVirtualMeshCertificateSigningRequestInformer constructs a new informer for VirtualMeshCertificateSigningRequest type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredMeshGroupCertificateSigningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredVirtualMeshCertificateSigningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SecurityV1alpha1().MeshGroupCertificateSigningRequests(namespace).List(options)
+				return client.SecurityV1alpha1().VirtualMeshCertificateSigningRequests(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SecurityV1alpha1().MeshGroupCertificateSigningRequests(namespace).Watch(options)
+				return client.SecurityV1alpha1().VirtualMeshCertificateSigningRequests(namespace).Watch(options)
 			},
 		},
-		&securityzephyrsoloiov1alpha1.MeshGroupCertificateSigningRequest{},
+		&securityzephyrsoloiov1alpha1.VirtualMeshCertificateSigningRequest{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *meshGroupCertificateSigningRequestInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredMeshGroupCertificateSigningRequestInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *virtualMeshCertificateSigningRequestInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredVirtualMeshCertificateSigningRequestInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *meshGroupCertificateSigningRequestInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&securityzephyrsoloiov1alpha1.MeshGroupCertificateSigningRequest{}, f.defaultInformer)
+func (f *virtualMeshCertificateSigningRequestInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&securityzephyrsoloiov1alpha1.VirtualMeshCertificateSigningRequest{}, f.defaultInformer)
 }
 
-func (f *meshGroupCertificateSigningRequestInformer) Lister() v1alpha1.MeshGroupCertificateSigningRequestLister {
-	return v1alpha1.NewMeshGroupCertificateSigningRequestLister(f.Informer().GetIndexer())
+func (f *virtualMeshCertificateSigningRequestInformer) Lister() v1alpha1.VirtualMeshCertificateSigningRequestLister {
+	return v1alpha1.NewVirtualMeshCertificateSigningRequestLister(f.Informer().GetIndexer())
 }

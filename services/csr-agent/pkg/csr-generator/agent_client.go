@@ -30,7 +30,7 @@ func NewCertClient(
 	}
 }
 
-func (c *certClient) EnsureSecretKey(ctx context.Context, obj *securityv1alpha1.MeshGroupCertificateSigningRequest) (*cert_secrets.RootCaData, error) {
+func (c *certClient) EnsureSecretKey(ctx context.Context, obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) (*cert_secrets.RootCaData, error) {
 	secret, err := c.secretClient.Get(ctx, obj.GetName(), obj.GetNamespace())
 	if err != nil {
 		if !kubeerrs.IsNotFound(err) {

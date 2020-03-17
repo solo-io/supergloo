@@ -22,10 +22,10 @@ type permissiveFederation struct {
 
 func (p *permissiveFederation) WriteFederationToServices(
 	ctx context.Context,
-	group *v1alpha1.MeshGroup,
+	vm *v1alpha1.VirtualMesh,
 	meshNameToMetadata MeshNameToMetadata,
 ) error {
-	for _, serverMeshRef := range group.Spec.Meshes {
+	for _, serverMeshRef := range vm.Spec.Meshes {
 		serverMeshMetadata, ok := meshNameToMetadata[serverMeshRef.GetName()]
 		if !ok {
 			return MeshMetadataMissing(serverMeshRef.GetName())
@@ -34,7 +34,7 @@ func (p *permissiveFederation) WriteFederationToServices(
 		servicesInMesh := serverMeshMetadata.MeshServices
 
 		var federatedToWorkloads []*core_types.ResourceRef
-		for _, clientMesh := range group.Spec.Meshes {
+		for _, clientMesh := range vm.Spec.Meshes {
 			// skip `serverMeshRef` - we don't want to federate a service to the same mesh that it's in
 			if clientMesh.GetName() == serverMeshRef.GetName() && clientMesh.GetNamespace() == serverMeshRef.GetNamespace() {
 				continue

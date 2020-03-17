@@ -4,14 +4,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: csr-agent-clusterrole
 rules:
-  - apiGroups: ["networking.zephyr.solo.io"]
-    resources: ["meshgroups"]
-    verbs: ["*"]
   - apiGroups: ["security.zephyr.solo.io"]
-    resources: ["meshgroupcertificatesigningrequests", "meshgroupcertificatesigningrequests/status"]
-    verbs: ["*"]
-  - apiGroups: ["discovery.zephyr.solo.io"]
-    resources: ["meshes"]
+    resources: ["virtualmeshcertificatesigningrequests", "virtualmeshcertificatesigningrequests/status"]
     verbs: ["*"]
   - apiGroups: [""]
     resources: ["secrets"]

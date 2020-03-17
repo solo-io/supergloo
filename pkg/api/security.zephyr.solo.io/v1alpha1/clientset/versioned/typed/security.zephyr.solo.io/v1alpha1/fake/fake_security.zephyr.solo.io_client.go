@@ -28,8 +28,8 @@ type FakeSecurityV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSecurityV1alpha1) MeshGroupCertificateSigningRequests(namespace string) v1alpha1.MeshGroupCertificateSigningRequestInterface {
-	return &FakeMeshGroupCertificateSigningRequests{c, namespace}
+func (c *FakeSecurityV1alpha1) VirtualMeshCertificateSigningRequests(namespace string) v1alpha1.VirtualMeshCertificateSigningRequestInterface {
+	return &FakeVirtualMeshCertificateSigningRequests{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

@@ -20,7 +20,7 @@ var (
 type FederationStrategy interface {
 	WriteFederationToServices(
 		ctx context.Context,
-		group *networking_v1alpha1.MeshGroup,
+		vm *networking_v1alpha1.VirtualMesh,
 		meshNameToMetadata MeshNameToMetadata,
 	) error
 }

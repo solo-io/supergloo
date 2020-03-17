@@ -16,7 +16,7 @@ type MeshFederationClient interface {
 	// returns the externally-resolvable address (NOTE: can be either an IP or a hostname) that the service is now reachable at
 	FederateServiceSide(
 		ctx context.Context,
-		meshGroup *networking_v1alpha1.MeshGroup,
+		virtualMesh *networking_v1alpha1.VirtualMesh,
 		meshService *discovery_v1alpha1.MeshService,
 	) (eap dns.ExternalAccessPoint, err error)
 

@@ -12,15 +12,15 @@ import (
 //go:generate mockgen -destination ./mocks/mock_interfaces.go -source ./interfaces.go
 
 /*
-	MeshGroupCertClient is a higher-level client meant to abstract common certificate related mesh actions
+	VirtualMeshCertClient is a higher-level client meant to abstract common certificate related mesh actions
 */
-type MeshGroupCertClient interface {
+type VirtualMeshCertClient interface {
 	GetRootCaBundle(ctx context.Context, meshRef *core_types.ResourceRef) (*cert_secrets.RootCaData, error)
 }
 
-type MeshGroupCSRSigner interface {
+type VirtualMeshCSRSigner interface {
 	Sign(
 		ctx context.Context,
-		obj *security_v1alpha1.MeshGroupCertificateSigningRequest,
-	) *security_types.MeshGroupCertificateSigningRequestStatus
+		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
+	) *security_types.VirtualMeshCertificateSigningRequestStatus
 }

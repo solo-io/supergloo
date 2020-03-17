@@ -18,4 +18,4 @@ limitations under the License.
 
 package v1alpha1
 
-type MeshGroupCertificateSigningRequestExpansion interface{}
+type VirtualMeshCertificateSigningRequestExpansion interface{}

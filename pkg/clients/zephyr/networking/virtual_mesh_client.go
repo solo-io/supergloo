@@ -7,20 +7,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewMeshGroupClient(dynamicClient client.Client) MeshGroupClient {
-	return &meshGroupClient{dynamicClient: dynamicClient}
+func NewVirtualMeshClient(dynamicClient client.Client) VirtualMeshClient {
+	return &virtualMeshClient{dynamicClient: dynamicClient}
 }
 
-type meshGroupClient struct {
+type virtualMeshClient struct {
 	dynamicClient client.Client
 }
 
-func (m *meshGroupClient) Get(
+func (m *virtualMeshClient) Get(
 	ctx context.Context,
 	name, namespace string,
-) (*networkingv1alpha1.MeshGroup, error) {
+) (*networkingv1alpha1.VirtualMesh, error) {
 
-	csr := networkingv1alpha1.MeshGroup{}
+	csr := networkingv1alpha1.VirtualMesh{}
 	err := m.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -31,12 +31,12 @@ func (m *meshGroupClient) Get(
 	return &csr, nil
 }
 
-func (m *meshGroupClient) List(
+func (m *virtualMeshClient) List(
 	ctx context.Context,
 	opts ...client.ListOption,
-) (*networkingv1alpha1.MeshGroupList, error) {
+) (*networkingv1alpha1.VirtualMeshList, error) {
 
-	list := networkingv1alpha1.MeshGroupList{}
+	list := networkingv1alpha1.VirtualMeshList{}
 	err := m.dynamicClient.List(ctx, &list, opts...)
 	if err != nil {
 		return nil, err
@@ -44,10 +44,10 @@ func (m *meshGroupClient) List(
 	return &list, nil
 }
 
-func (m *meshGroupClient) UpdateStatus(
+func (m *virtualMeshClient) UpdateStatus(
 	ctx context.Context,
-	mg *networkingv1alpha1.MeshGroup,
+	vm *networkingv1alpha1.VirtualMesh,
 	opts ...client.UpdateOption,
 ) error {
-	return m.dynamicClient.Status().Update(ctx, mg, opts...)
+	return m.dynamicClient.Status().Update(ctx, vm, opts...)
 }

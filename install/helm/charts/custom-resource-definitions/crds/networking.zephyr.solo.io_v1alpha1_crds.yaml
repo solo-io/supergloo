@@ -56,14 +56,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: meshgroups.networking.zephyr.solo.io
+  name: virtualmeshes.networking.zephyr.solo.io
 spec:
   group: networking.zephyr.solo.io
   names:
-    kind: MeshGroup
-    listKind: MeshGroupList
-    plural: meshgroups
-    singular: meshgroup
+    kind: VirtualMesh
+    listKind: VirtualMeshList
+    plural: virtualmeshes
+    singular: virtualmesh
   scope: Namespaced
   subresources:
     status: {}

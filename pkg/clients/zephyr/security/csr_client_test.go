@@ -36,30 +36,30 @@ var _ = Describe("csr client", func() {
 		var (
 			mockClient       *mock_controller_runtime.MockClient
 			mockStatusWriter *mock_controller_runtime.MockStatusWriter
-			csrClient        zephyr_security.MeshGroupCSRClient
+			csrClient        zephyr_security.VirtualMeshCSRClient
 		)
 
 		BeforeEach(func() {
 			mockClient = mock_controller_runtime.NewMockClient(ctrl)
 			mockStatusWriter = mock_controller_runtime.NewMockStatusWriter(ctrl)
-			csrClient = zephyr_security.NewMeshGroupCSRClient(mockClient)
+			csrClient = zephyr_security.NewVirtualMeshCSRClient(mockClient)
 		})
 
 		Context("update", func() {
 			It("can call update with the proper args", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequest{}
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequest{}
 				mockClient.EXPECT().Update(ctx, csr).Return(testErr)
 				Expect(csrClient.Update(ctx, csr)).To(Equal(testErr))
 			})
 
 			It("can call update status with the proper args", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequest{
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "namespace",
 						Name:      "name",
 					},
-					Status: security_types.MeshGroupCertificateSigningRequestStatus{
-						Response: &security_types.MeshGroupCertificateSigningResponse{},
+					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
+						Response: &security_types.VirtualMeshCertificateSigningResponse{},
 					},
 				}
 				mockClient.EXPECT().Status().Return(mockStatusWriter)
@@ -71,7 +71,7 @@ var _ = Describe("csr client", func() {
 		Context("get", func() {
 
 			It("can call get with the proper args, and return err", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequest{}
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequest{}
 				resourceName := client.ObjectKey{
 					Name:      "name",
 					Namespace: "namespace",
@@ -82,7 +82,7 @@ var _ = Describe("csr client", func() {
 			})
 
 			It("can call get with the proper args, and return non-err", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequest{}
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequest{}
 				resourceName := client.ObjectKey{
 					Name:      "name",
 					Namespace: "namespace",
@@ -98,7 +98,7 @@ var _ = Describe("csr client", func() {
 		Context("list", func() {
 
 			It("can call list with the proper args, and return err", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequestList{}
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
 				listOptions := metav1.ListOptions{}
 				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(testErr)
 				_, err := csrClient.List(ctx, listOptions)
@@ -106,7 +106,7 @@ var _ = Describe("csr client", func() {
 			})
 
 			It("can call get with the proper args, and return non-err", func() {
-				csr := &v1alpha1.MeshGroupCertificateSigningRequestList{}
+				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
 				listOptions := metav1.ListOptions{}
 				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(nil)
 				response, err := csrClient.List(ctx, listOptions)

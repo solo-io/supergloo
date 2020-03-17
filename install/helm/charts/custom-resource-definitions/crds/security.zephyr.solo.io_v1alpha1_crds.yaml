@@ -6,14 +6,14 @@ metadata:
   labels:
     app: service-mesh-hub
     app.kubernetes.io/name: service-mesh-hub
-  name: meshgroupcertificatesigningrequests.security.zephyr.solo.io
+  name: virtualmeshcertificatesigningrequests.security.zephyr.solo.io
 spec:
   group: security.zephyr.solo.io
   names:
-    kind: MeshGroupCertificateSigningRequest
-    listKind: MeshGroupCertificateSigningRequestList
-    plural: meshgroupcertificatesigningrequests
-    singular: meshgroupcertificatesigningrequest
+    kind: VirtualMeshCertificateSigningRequest
+    listKind: VirtualMeshCertificateSigningRequestList
+    plural: virtualmeshcertificatesigningrequests
+    singular: virtualmeshcertificatesigningrequest
   scope: Namespaced
   subresources:
     status: {}

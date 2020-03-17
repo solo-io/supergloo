@@ -15,21 +15,21 @@ import (
 
 func CsrControllerProviderLocal(
 	mgr mc_manager.AsyncManager,
-) (controller.MeshGroupCertificateSigningRequestController, error) {
-	return controller.NewMeshGroupCertificateSigningRequestController("local-csr-controller", mgr.Manager())
+) (controller.VirtualMeshCertificateSigningRequestController, error) {
+	return controller.NewVirtualMeshCertificateSigningRequestController("local-csr-controller", mgr.Manager())
 }
 
-func NewMeshGroupCSRDataSourceFactory() MeshGroupCSRDataSourceFactory {
-	return NewMeshGroupCSRDataSource
+func NewVirtualMeshCSRDataSourceFactory() VirtualMeshCSRDataSourceFactory {
+	return NewVirtualMeshCSRDataSource
 }
 
-func NewMeshGroupCSRDataSource(
+func NewVirtualMeshCSRDataSource(
 	ctx context.Context,
-	csrClient zephyr_security.MeshGroupCSRClient,
-	processor MeshGroupCSRProcessor,
-) controller.MeshGroupCertificateSigningRequestEventHandler {
-	return &controller.MeshGroupCertificateSigningRequestEventHandlerFuncs{
-		OnCreate: func(obj *securityv1alpha1.MeshGroupCertificateSigningRequest) error {
+	csrClient zephyr_security.VirtualMeshCSRClient,
+	processor VirtualMeshCSRProcessor,
+) controller.VirtualMeshCertificateSigningRequestEventHandler {
+	return &controller.VirtualMeshCertificateSigningRequestEventHandlerFuncs{
+		OnCreate: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			status := processor.ProcessUpsert(ctx, obj)
 			if status == nil {
@@ -47,7 +47,7 @@ func NewMeshGroupCSRDataSource(
 			}
 			return nil
 		},
-		OnUpdate: func(_, new *securityv1alpha1.MeshGroupCertificateSigningRequest) error {
+		OnUpdate: func(_, new *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
 			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
 			status := processor.ProcessUpsert(ctx, new)
 			if status == nil {
@@ -65,11 +65,11 @@ func NewMeshGroupCSRDataSource(
 			}
 			return nil
 		},
-		OnDelete: func(obj *securityv1alpha1.MeshGroupCertificateSigningRequest) error {
+		OnDelete: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
 			logging.BuildEventLogger(ctx, logging.DeleteEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},
-		OnGeneric: func(obj *securityv1alpha1.MeshGroupCertificateSigningRequest) error {
+		OnGeneric: func(obj *securityv1alpha1.VirtualMeshCertificateSigningRequest) error {
 			logging.BuildEventLogger(ctx, logging.GenericEvent, obj).Debugf(UnexpectedEventMsg)
 			return nil
 		},
