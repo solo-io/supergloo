@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
@@ -65,15 +64,15 @@ func MeshNetworkingSnapshotContextProvider(
 }
 
 func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context, mgr mc_manager.AsyncManager) error {
-	msCtrl, err := m.MeshServiceControllerFactory.Build(mgr, common.LocalClusterName)
+	msCtrl, err := m.MeshServiceControllerFactory.Build(mgr, "mesh-service-controller")
 	if err != nil {
 		return err
 	}
-	mwCtrl, err := m.MeshWorkloadControllerFactory.Build(mgr, common.LocalClusterName)
+	mwCtrl, err := m.MeshWorkloadControllerFactory.Build(mgr, "mesh-workload-controller")
 	if err != nil {
 		return err
 	}
-	mgCtrl, err := m.VirtualMeshControllerFactory(mgr, common.LocalClusterName)
+	mgCtrl, err := m.VirtualMeshControllerFactory(mgr, "virtual-mesh-controller")
 	if err != nil {
 		return err
 	}

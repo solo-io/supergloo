@@ -16,7 +16,6 @@ import (
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mock"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/services/common"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
@@ -282,48 +281,6 @@ var _ = Describe("IstioTranslator", func() {
 			mockMeshServiceSelector.
 				EXPECT().
 				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
-				Return(backingMeshService, nil)
-			mockVirtualServiceClient.
-				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
-				Return(nil)
-			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
-				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
-			Expect(translatorError).To(BeNil())
-		})
-
-		It("should translate Mirror destination on same *local* cluster", func() {
-			testContext := setupTestContext()
-			destName := "name"
-			destNamespace := "namespace"
-			testContext.meshService.Spec.GetKubeService().GetRef().GetCluster().Value = common.LocalClusterName
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
-				Destination: &core_types.ResourceRef{
-					Name:      destName,
-					Namespace: destNamespace,
-					// omit cluster to specify local cluster
-				},
-				Percentage: 50,
-			}
-			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
-				httpRoute.Mirror = &api_v1alpha3.Destination{
-					Host: destName + "." + destNamespace,
-				}
-				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
-			}
-			backingMeshService := &discovery_v1alpha1.MeshService{
-				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
-						Ref: &core_types.ResourceRef{
-							Name:      destName,
-							Namespace: destNamespace,
-						},
-					},
-				},
-			}
-			mockMeshServiceSelector.
-				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, "").
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().

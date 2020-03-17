@@ -78,6 +78,12 @@ helm \
 # generate the meshctl binary, register the remote cluster, and install Istio onto the remote cluster
 make meshctl -B
 ./_output/meshctl cluster register \
+  --remote-context kind-$managementPlane \
+  --remote-cluster-name management-plane-cluster \
+  --local-cluster-domain-override host.docker.internal \
+  --dev-csr-agent-chart
+
+./_output/meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
   --local-cluster-domain-override host.docker.internal \

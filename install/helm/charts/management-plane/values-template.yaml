@@ -4,5 +4,3 @@ global:
     pullPolicy: IfNotPresent
   stats:
     enabled: true
-csr-agent:
-  enabled: false

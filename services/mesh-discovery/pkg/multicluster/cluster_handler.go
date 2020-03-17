@@ -7,7 +7,6 @@ import (
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/env"
-	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
 	corev1_controllers "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
@@ -33,8 +32,6 @@ var (
 
 // this is the main entrypoint for discovery
 // when a cluster is registered, we handle that event and spin up new resource controllers for that cluster
-// note that as a first step, the local manager should be registered so that we can detect meshes in the same
-// cluster that SMH runs in. This should be handled by this constructor implementation
 func NewDiscoveryClusterHandler(
 	localManager mc_manager.AsyncManager,
 	meshScanners []mesh.MeshScanner,
@@ -48,7 +45,7 @@ func NewDiscoveryClusterHandler(
 	localMeshWorkloadClient := discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
 	localMeshClient := discoveryContext.ClientFactories.MeshClientFactory(localClient)
 
-	localMeshWorkloadController, err := discoveryContext.ControllerFactories.MeshWorkloadControllerFactory.Build(localManager, common.LocalClusterName)
+	localMeshWorkloadController, err := discoveryContext.ControllerFactories.MeshWorkloadControllerFactory.Build(localManager, "mesh-workload-controller")
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +60,6 @@ func NewDiscoveryClusterHandler(
 		discoveryContext:             discoveryContext,
 		localMeshServiceClient:       localMeshServiceClient,
 		localMeshWorkloadController:  localMeshWorkloadController,
-	}
-
-	// be sure that we are also watching our local cluster
-	err = handler.ClusterAdded(localManager.Context(), localManager, common.LocalClusterName)
-	if err != nil {
-		return nil, err
 	}
 
 	return handler, nil

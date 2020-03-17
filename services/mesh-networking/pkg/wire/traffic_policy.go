@@ -8,7 +8,6 @@ import (
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
@@ -35,11 +34,11 @@ var (
 )
 
 func LocalTrafficPolicyControllerProvider(mgr mc_manager.AsyncManager) (networking_controller.TrafficPolicyController, error) {
-	return networking_controller.NewTrafficPolicyController(common.LocalClusterName, mgr.Manager())
+	return networking_controller.NewTrafficPolicyController("management-plane-traffic-policy-controller", mgr.Manager())
 }
 
 func LocalMeshServiceControllerProvider(mgr mc_manager.AsyncManager) (discovery_controller.MeshServiceController, error) {
-	return discovery_controller.NewMeshServiceController(common.LocalClusterName, mgr.Manager())
+	return discovery_controller.NewMeshServiceController("management-plane-mesh-service-controller", mgr.Manager())
 }
 
 func TrafficPolicyMeshTranslatorsProvider(

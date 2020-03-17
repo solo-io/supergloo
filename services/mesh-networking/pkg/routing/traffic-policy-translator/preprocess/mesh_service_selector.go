@@ -9,7 +9,6 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/constants"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,6 +31,9 @@ var (
 			constants.KUBE_SERVICE_NAMESPACE, namespace,
 			constants.CLUSTER, clusterName)
 	}
+	MustProvideClusterName = func(ref *core_types.ResourceRef) error {
+		return eris.Errorf("Must provide cluster name in ref %+v", ref)
+	}
 )
 
 type meshServiceSelector struct {
@@ -44,14 +46,13 @@ func (m *meshServiceSelector) GetBackingMeshService(
 	kubeServiceNamespace string,
 	kubeServiceCluster string,
 ) (*discovery_v1alpha1.MeshService, error) {
-	destinationClusterName := kubeServiceCluster
-	if destinationClusterName == "" {
-		destinationClusterName = common.LocalClusterName
+	if kubeServiceCluster == "" {
+		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: kubeServiceName, Namespace: kubeServiceNamespace})
 	}
 	destinationKey := client.MatchingLabels(map[string]string{
 		constants.KUBE_SERVICE_NAME:      kubeServiceName,
 		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
-		constants.CLUSTER:                destinationClusterName,
+		constants.CLUSTER:                kubeServiceCluster,
 	})
 	meshServiceList, err := m.meshServiceClient.List(ctx, destinationKey)
 	if err != nil {
@@ -59,9 +60,9 @@ func (m *meshServiceSelector) GetBackingMeshService(
 	}
 	// there should only be a single MeshService with the kube Service name/namespace/cluster key
 	if len(meshServiceList.Items) > 1 {
-		return nil, MultipleMeshServicesFound(kubeServiceName, kubeServiceNamespace, destinationClusterName)
+		return nil, MultipleMeshServicesFound(kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 	} else if len(meshServiceList.Items) < 1 {
-		return nil, MeshServiceNotFound(kubeServiceName, kubeServiceNamespace, destinationClusterName)
+		return nil, MeshServiceNotFound(kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 	}
 	return &meshServiceList.Items[0], nil
 }
@@ -93,6 +94,9 @@ func (m *meshServiceSelector) GetMatchingMeshServices(
 	} else if selector.GetRefs() != nil {
 		// select by Service ResourceRef
 		for _, ref := range selector.GetRefs() {
+			if ref.GetCluster().GetValue() == "" {
+				return nil, MustProvideClusterName(ref)
+			}
 			selectedMeshService := getMeshServiceByServiceKey(
 				ref,
 				allMeshServices)
@@ -117,7 +121,7 @@ func getMeshServiceByServiceKey(
 		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
 		if selectedRef.GetName() == kubeServiceRef.GetName() &&
 			selectedRef.GetNamespace() == kubeServiceRef.GetNamespace() &&
-			common.AreResourcesOnLocalCluster(selectedRef, kubeServiceRef) {
+			selectedRef.GetCluster().GetValue() == kubeServiceRef.GetCluster().GetValue() {
 			return meshService
 		}
 	}

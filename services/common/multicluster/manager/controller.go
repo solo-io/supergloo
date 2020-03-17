@@ -5,7 +5,6 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/services/common"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -148,10 +147,6 @@ func (m *AsyncManagerController) ClusterRemoved(cluster string) error {
 // This is due to the fact that internally common.LocalClusterName is used to represent the local cluster,
 // whereas in user-supplied config omission of the cluster name or "" refer to the local cluster.
 func (m *AsyncManagerController) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, bool) {
-	// TODO: unify this
-	if clusterName == common.LocalClusterName {
-		clusterName = ""
-	}
 	var mgr AsyncManager
 
 	// prepend default Option so it can be overridden by input opts

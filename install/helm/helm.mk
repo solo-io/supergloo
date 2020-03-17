@@ -8,7 +8,7 @@ HELM_OUTPUT_DIR ?= $(OUTPUT_DIR)/helm
 CHARTS_DIR := $(HELM_ROOTDIR)/charts
 PACKAGED_CHARTS_DIR := $(HELM_OUTPUT_DIR)/charts
 # list of SMH component directories, must be a subdirectory in install/helm/charts/
-CHARTS := $(COMPONENTS) custom-resource-definitions
+CHARTS := $(COMPONENTS) custom-resource-definitions csr-agent
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 # TAGGED_VERSION := $(shell git describe --tags)
@@ -38,8 +38,9 @@ HELM_EXPERIMENTAL_OCI=1 helm chart push gcr.io/service-mesh-hub/$(1):$(VERSION);
 endef
 
 define copy_as_dependency
-mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1);
-cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/;
+# the csr-agent is not a dependency of the management-plane
+if [ "$(1)" != "csr-agent" ]; then mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1); fi;
+if [ "$(1)" != "csr-agent" ]; then cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/; fi;
 endef
 
 # make a copy of */Chart-template.yaml and */values-template.yaml to */Chart.yaml and */values.yaml, with version injection

@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/services/common"
 	"github.com/solo-io/mesh-projects/services/common/constants"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,10 +20,11 @@ import (
 
 var _ = Describe("MeshServiceSelector", func() {
 	var (
-		ctrl                  *gomock.Controller
-		ctx                   context.Context
-		mockMeshServiceClient *mock_core.MockMeshServiceClient
-		meshServiceSelector   preprocess.MeshServiceSelector
+		ctrl                   *gomock.Controller
+		ctx                    context.Context
+		mockMeshServiceClient  *mock_core.MockMeshServiceClient
+		meshServiceSelector    preprocess.MeshServiceSelector
+		managementPlaneCluster = "management-plane-cluster"
 	)
 
 	BeforeEach(func() {
@@ -91,7 +91,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-1",
 							Namespace: namespace1,
-							Cluster:   &types2.StringValue{Value: common.LocalClusterName},
+							Cluster:   &types2.StringValue{Value: managementPlaneCluster},
 						},
 						Labels: map[string]string{"k1": "v1"},
 					},
@@ -114,7 +114,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-3",
 							Namespace: namespace2,
-							Cluster:   &types2.StringValue{Value: common.LocalClusterName},
+							Cluster:   &types2.StringValue{Value: managementPlaneCluster},
 						},
 						Labels: map[string]string{"k1": "v1", "other": "label"},
 					},
@@ -172,8 +172,8 @@ var _ = Describe("MeshServiceSelector", func() {
 			}
 			selector := &core_types.Selector{
 				Refs: []*core_types.ResourceRef{
-					{Name: objKey1.Name, Namespace: objKey1.Namespace},
-					{Name: objKey2.Name, Namespace: objKey2.Namespace},
+					{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
+					{Name: objKey2.Name, Namespace: objKey2.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
 				},
 			}
 			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService3}
@@ -189,7 +189,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			}
 			selector := &core_types.Selector{
 				Refs: []*core_types.ResourceRef{
-					{Name: objKey1.Name, Namespace: objKey1.Namespace},
+					{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
 				},
 			}
 			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)

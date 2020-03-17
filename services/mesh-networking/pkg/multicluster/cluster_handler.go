@@ -6,7 +6,6 @@ import (
 	cert_controller "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	"github.com/solo-io/mesh-projects/pkg/security/certgen"
-	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
 	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
@@ -28,12 +27,6 @@ func NewMeshNetworkingClusterHandler(
 		virtualMeshCertClient: virtualMeshCertClient,
 		signer:                signer,
 		csrDataSourceFactory:  csrDataSourceFactory,
-	}
-
-	// be sure that we are also watching our local cluster
-	err := handler.ClusterAdded(localManager.Context(), localManager, common.LocalClusterName)
-	if err != nil {
-		return nil, err
 	}
 
 	return handler, nil

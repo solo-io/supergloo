@@ -17,7 +17,7 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
-COMPONENTS := mesh-discovery mesh-networking csr-agent
+COMPONENTS := mesh-discovery mesh-networking
 # include helm makefile so it can be ran from the root
 include install/helm/helm.mk
 

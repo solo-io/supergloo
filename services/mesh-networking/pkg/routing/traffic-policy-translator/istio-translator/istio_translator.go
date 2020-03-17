@@ -12,7 +12,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
@@ -549,8 +548,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	if err != nil {
 		return "", err
 	}
-	if common.AreResourcesOnLocalCluster(destination, meshService.Spec.GetKubeService().GetRef()) ||
-		destination.GetCluster().GetValue() == meshService.Spec.GetKubeService().GetRef().GetCluster().GetValue() {
+	if destination.GetCluster().GetValue() == meshService.Spec.GetKubeService().GetRef().GetCluster().GetValue() {
 		// destination is on the same cluster as the MeshService's k8s Service
 		return destinationMeshService.Spec.GetKubeService().GetRef().GetName() +
 			"." + destinationMeshService.Spec.GetKubeService().GetRef().GetNamespace(), nil
