@@ -72,6 +72,122 @@ func (mr *MockServiceClientMockRecorder) List(ctx interface{}, options ...interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockServiceClient)(nil).List), varargs...)
 }
 
+// MockPodClient is a mock of PodClient interface
+type MockPodClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodClientMockRecorder
+}
+
+// MockPodClientMockRecorder is the mock recorder for MockPodClient
+type MockPodClientMockRecorder struct {
+	mock *MockPodClient
+}
+
+// NewMockPodClient creates a new mock instance
+func NewMockPodClient(ctrl *gomock.Controller) *MockPodClient {
+	mock := &MockPodClient{ctrl: ctrl}
+	mock.recorder = &MockPodClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodClient) EXPECT() *MockPodClientMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method
+func (m *MockPodClient) Get(ctx context.Context, name, namespace string) (*v1.Pod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
+	ret0, _ := ret[0].(*v1.Pod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockPodClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPodClient)(nil).Get), ctx, name, namespace)
+}
+
+// List mocks base method
+func (m *MockPodClient) List(ctx context.Context, options ...client.ListOption) (*v1.PodList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1.PodList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockPodClientMockRecorder) List(ctx interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPodClient)(nil).List), varargs...)
+}
+
+// MockNodeClient is a mock of NodeClient interface
+type MockNodeClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockNodeClientMockRecorder
+}
+
+// MockNodeClientMockRecorder is the mock recorder for MockNodeClient
+type MockNodeClientMockRecorder struct {
+	mock *MockNodeClient
+}
+
+// NewMockNodeClient creates a new mock instance
+func NewMockNodeClient(ctrl *gomock.Controller) *MockNodeClient {
+	mock := &MockNodeClient{ctrl: ctrl}
+	mock.recorder = &MockNodeClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockNodeClient) EXPECT() *MockNodeClientMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method
+func (m *MockNodeClient) Get(ctx context.Context, name string) (*v1.Node, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name)
+	ret0, _ := ret[0].(*v1.Node)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockNodeClientMockRecorder) Get(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockNodeClient)(nil).Get), ctx, name)
+}
+
+// List mocks base method
+func (m *MockNodeClient) List(ctx context.Context, options ...client.ListOption) (*v1.NodeList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1.NodeList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List
+func (mr *MockNodeClientMockRecorder) List(ctx interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNodeClient)(nil).List), varargs...)
+}
+
 // MockSecretsClient is a mock of SecretsClient interface
 type MockSecretsClient struct {
 	ctrl     *gomock.Controller

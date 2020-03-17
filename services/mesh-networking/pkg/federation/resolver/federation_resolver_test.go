@@ -232,6 +232,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		externalAddress := "255.255.255.255" // intentional garbage
+		port := uint32(32000)                // equally intentional garbage
 
 		meshWorkloadClient.EXPECT().
 			Get(ctx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
@@ -247,11 +248,15 @@ var _ = Describe("Federation Decider", func() {
 			Return(&networking_v1alpha1.MeshGroupList{
 				Items: []networking_v1alpha1.MeshGroup{*meshGroupContainingService},
 			}, nil)
+		eap := dns.ExternalAccessPoint{
+			Address: externalAddress,
+			Port:    port,
+		}
 		meshFederationClient.EXPECT().
 			FederateServiceSide(ctx, meshGroupContainingService, federatedService).
-			Return(externalAddress, nil)
+			Return(eap, nil)
 		meshFederationClient.EXPECT().
-			FederateClientSide(ctx, externalAddress, federatedToWorkload, federatedService).
+			FederateClientSide(ctx, eap, federatedService, federatedToWorkload).
 			Return(nil)
 		serviceCopy := *federatedService
 		serviceCopy.Status.FederationStatus = &core_types.ComputedStatus{

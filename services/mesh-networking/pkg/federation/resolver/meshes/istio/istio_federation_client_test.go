@@ -61,6 +61,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -81,6 +82,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					return nil
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
 			nonIstioMeshRef := &core_types.ResourceRef{
@@ -117,8 +119,8 @@ var _ = Describe("Istio Federation Decider", func() {
 				GetClientForCluster("linkerd").
 				Return(nil, true)
 
-			externalAddress, err := federationClient.FederateServiceSide(ctx, meshGroup, nonIstioMeshService)
-			Expect(externalAddress).To(BeEmpty())
+			_, err := federationClient.FederateServiceSide(ctx, meshGroup, nonIstioMeshService)
+			Expect(err).To(HaveOccurred())
 			Expect(err).To(testutils.HaveInErrorChain(istio_federation.ServiceNotInIstio(nonIstioMeshService)))
 		})
 
@@ -129,6 +131,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
 			serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -149,8 +152,10 @@ var _ = Describe("Istio Federation Decider", func() {
 					return serviceClient
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
+			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.DefaultWriteNamespace,
@@ -159,7 +164,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
-						Name: "istio-cluster",
+						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
 						Istio: &types.IstioMesh{
@@ -182,7 +187,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
 					Federation: &types.Federation{
-						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
+						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
 					KubeService: &types.KubeService{
 						Ref: backingKubeService,
@@ -202,7 +207,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster("istio-cluster").
+				GetClientForCluster(clusterName).
 				Return(nil, true)
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -254,7 +259,7 @@ var _ = Describe("Istio Federation Decider", func() {
 						},
 						Patch: &alpha3.EnvoyFilter_Patch{
 							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
-							Value:     mustBuildFilterPatch("istio-cluster"),
+							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
 					WorkloadSelector: &alpha3.WorkloadSelector{
@@ -290,8 +295,16 @@ var _ = Describe("Istio Federation Decider", func() {
 					Items: []corev1.Service{service},
 				}, nil)
 
-			externalAddress, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
-			Expect(externalAddress).To(Equal("externally-resolvable-hostname.com:3000"))
+			externalAccessPointGetter.EXPECT().
+				GetExternalAccessPointForService(ctx, &service, istio_federation.DefaultGatewayPortName, clusterName).
+				Return(dns.ExternalAccessPoint{
+					Address: "externally-resolvable-hostname.com",
+					Port:    uint32(3000),
+				}, nil)
+
+			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
+			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -302,6 +315,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
 			serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -322,8 +336,10 @@ var _ = Describe("Istio Federation Decider", func() {
 					return serviceClient
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
+			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.DefaultWriteNamespace,
@@ -332,7 +348,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
-						Name: "istio-cluster",
+						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
 						Istio: &types.IstioMesh{
@@ -355,7 +371,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
 					Federation: &types.Federation{
-						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
+						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
 					KubeService: &types.KubeService{
 						Ref: backingKubeService,
@@ -375,7 +391,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster("istio-cluster").
+				GetClientForCluster(clusterName).
 				Return(nil, true)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
@@ -425,7 +441,7 @@ var _ = Describe("Istio Federation Decider", func() {
 						},
 						Patch: &alpha3.EnvoyFilter_Patch{
 							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
-							Value:     mustBuildFilterPatch("istio-cluster"),
+							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
 					WorkloadSelector: &alpha3.WorkloadSelector{
@@ -458,8 +474,16 @@ var _ = Describe("Istio Federation Decider", func() {
 					Items: []corev1.Service{service},
 				}, nil)
 
-			externalAddress, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
-			Expect(externalAddress).To(Equal("externally-resolvable-hostname.com:3000"))
+			externalAccessPointGetter.EXPECT().
+				GetExternalAccessPointForService(ctx, &service, istio_federation.DefaultGatewayPortName, clusterName).
+				Return(dns.ExternalAccessPoint{
+					Address: "externally-resolvable-hostname.com",
+					Port:    uint32(3000),
+				}, nil)
+
+			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
+			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -470,6 +494,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			gatewayClient := mock_istio_networking.NewMockGatewayClient(ctrl)
 			envoyFilterClient := mock_istio_networking.NewMockEnvoyFilterClient(ctrl)
 			serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -490,8 +515,10 @@ var _ = Describe("Istio Federation Decider", func() {
 					return serviceClient
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
+			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
 				Namespace: env.DefaultWriteNamespace,
@@ -500,7 +527,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
 				Spec: types.MeshSpec{
 					Cluster: &core_types.ResourceRef{
-						Name: "istio-cluster",
+						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
 						Istio: &types.IstioMesh{
@@ -523,7 +550,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
 					Federation: &types.Federation{
-						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
+						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
 					KubeService: &types.KubeService{
 						Ref: backingKubeService,
@@ -543,7 +570,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
-				GetClientForCluster("istio-cluster").
+				GetClientForCluster(clusterName).
 				Return(nil, true)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
@@ -605,7 +632,7 @@ var _ = Describe("Istio Federation Decider", func() {
 						},
 						Patch: &alpha3.EnvoyFilter_Patch{
 							Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
-							Value:     mustBuildFilterPatch("istio-cluster"),
+							Value:     mustBuildFilterPatch(clusterName),
 						},
 					}},
 					WorkloadSelector: &alpha3.WorkloadSelector{
@@ -638,8 +665,16 @@ var _ = Describe("Istio Federation Decider", func() {
 					Items: []corev1.Service{service},
 				}, nil)
 
-			externalAddress, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
-			Expect(externalAddress).To(Equal("externally-resolvable-hostname.com:3000"))
+			externalAccessPointGetter.EXPECT().
+				GetExternalAccessPointForService(ctx, &service, istio_federation.DefaultGatewayPortName, clusterName).
+				Return(dns.ExternalAccessPoint{
+					Address: "externally-resolvable-hostname.com",
+					Port:    uint32(3000),
+				}, nil)
+
+			eap, err := federationClient.FederateServiceSide(ctx, meshGroup, istioMeshService)
+			Expect(eap.Address).To(Equal("externally-resolvable-hostname.com"))
+			Expect(eap.Port).To(Equal(uint32(3000)))
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
@@ -649,6 +684,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clientGetter := mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 			meshClient := mock_zephyr_discovery.NewMockMeshClient(ctrl)
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -669,6 +705,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					return nil
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
 			nonIstioMeshRef := &core_types.ResourceRef{
@@ -702,8 +739,11 @@ var _ = Describe("Istio Federation Decider", func() {
 			clientGetter.EXPECT().
 				GetClientForCluster("linkerd").
 				Return(nil, true)
-
-			err := federationClient.FederateClientSide(ctx, "abc.com", nonIstioMeshWorkload, istioMeshService)
+			eap := dns.ExternalAccessPoint{
+				Address: "abc.com",
+				Port:    0,
+			}
+			err := federationClient.FederateClientSide(ctx, eap, istioMeshService, nonIstioMeshWorkload)
 			Expect(err).To(testutils.HaveInErrorChain(istio_federation.WorkloadNotInIstio(nonIstioMeshWorkload)))
 		})
 
@@ -713,6 +753,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			ipAssigner := mock_dns.NewMockIpAssigner(ctrl)
 			serviceEntryClient := mock_istio_networking.NewMockServiceEntryClient(ctrl)
 			destinationRuleClient := mock_istio_networking.NewMockDestinationRuleClient(ctrl)
+			externalAccessPointGetter := mock_dns.NewMockExternalAccessPointGetter(ctrl)
 
 			federationClient := istio_federation.NewIstioFederationClient(
 				clientGetter,
@@ -733,6 +774,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					return nil
 				},
 				ipAssigner,
+				externalAccessPointGetter,
 			)
 
 			istioMeshRefService := &core_types.ResourceRef{
@@ -807,6 +849,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(workloadClient, true)
 
 			externalAddress := "externally-resolvable-hostname.com"
+			port := uint32(32000)
 			serviceEntryRef := &core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
@@ -824,7 +867,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Endpoints: []*alpha3.ServiceEntry_Endpoint{{
 						Address: externalAddress,
 						Ports: map[string]uint32{
-							"http1": istio_federation.DefaultGatewayPort,
+							istio_federation.ServiceEntryPortName: port,
 						},
 					}},
 					Hosts:    []string{serviceMulticlusterDnsName},
@@ -861,7 +904,11 @@ var _ = Describe("Istio Federation Decider", func() {
 			}).
 				Return(nil)
 
-			err := federationClient.FederateClientSide(ctx, externalAddress, meshWorkload, meshService)
+			eap := dns.ExternalAccessPoint{
+				Address: externalAddress,
+				Port:    port,
+			}
+			err := federationClient.FederateClientSide(ctx, eap, meshService, meshWorkload)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

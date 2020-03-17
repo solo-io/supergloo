@@ -9,6 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	dns "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	v1 "k8s.io/api/core/v1"
 )
 
 // MockIpAssigner is a mock of IpAssigner interface
@@ -61,4 +63,42 @@ func (m *MockIpAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, i
 func (mr *MockIpAssignerMockRecorder) UnAssignIPOnCluster(ctx, clusterName, ip interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnAssignIPOnCluster", reflect.TypeOf((*MockIpAssigner)(nil).UnAssignIPOnCluster), ctx, clusterName, ip)
+}
+
+// MockExternalAccessPointGetter is a mock of ExternalAccessPointGetter interface
+type MockExternalAccessPointGetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockExternalAccessPointGetterMockRecorder
+}
+
+// MockExternalAccessPointGetterMockRecorder is the mock recorder for MockExternalAccessPointGetter
+type MockExternalAccessPointGetterMockRecorder struct {
+	mock *MockExternalAccessPointGetter
+}
+
+// NewMockExternalAccessPointGetter creates a new mock instance
+func NewMockExternalAccessPointGetter(ctrl *gomock.Controller) *MockExternalAccessPointGetter {
+	mock := &MockExternalAccessPointGetter{ctrl: ctrl}
+	mock.recorder = &MockExternalAccessPointGetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockExternalAccessPointGetter) EXPECT() *MockExternalAccessPointGetterMockRecorder {
+	return m.recorder
+}
+
+// GetExternalAccessPointForService mocks base method
+func (m *MockExternalAccessPointGetter) GetExternalAccessPointForService(ctx context.Context, svc *v1.Service, portName, clusterName string) (dns.ExternalAccessPoint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExternalAccessPointForService", ctx, svc, portName, clusterName)
+	ret0, _ := ret[0].(dns.ExternalAccessPoint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExternalAccessPointForService indicates an expected call of GetExternalAccessPointForService
+func (mr *MockExternalAccessPointGetterMockRecorder) GetExternalAccessPointForService(ctx, svc, portName, clusterName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExternalAccessPointForService", reflect.TypeOf((*MockExternalAccessPointGetter)(nil).GetExternalAccessPointForService), ctx, svc, portName, clusterName)
 }

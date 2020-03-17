@@ -33,6 +33,9 @@ var (
 	NoManagerForClusterError = func(cluster string) error {
 		return eris.Errorf("could not find manager for cluster %s", cluster)
 	}
+	NoClientForClusterError = func(cluster string) error {
+		return eris.Errorf("could not find dynamic client for cluster %s", cluster)
+	}
 
 	noClientErr = eris.New("no client")
 )

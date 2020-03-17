@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	dns "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
 )
 
 // MockMeshFederationClient is a mock of MeshFederationClient interface
@@ -37,10 +38,10 @@ func (m *MockMeshFederationClient) EXPECT() *MockMeshFederationClientMockRecorde
 }
 
 // FederateServiceSide mocks base method
-func (m *MockMeshFederationClient) FederateServiceSide(ctx context.Context, meshGroup *v1alpha10.MeshGroup, meshService *v1alpha1.MeshService) (string, error) {
+func (m *MockMeshFederationClient) FederateServiceSide(ctx context.Context, meshGroup *v1alpha10.MeshGroup, meshService *v1alpha1.MeshService) (dns.ExternalAccessPoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FederateServiceSide", ctx, meshGroup, meshService)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(dns.ExternalAccessPoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,15 +53,15 @@ func (mr *MockMeshFederationClientMockRecorder) FederateServiceSide(ctx, meshGro
 }
 
 // FederateClientSide mocks base method
-func (m *MockMeshFederationClient) FederateClientSide(ctx context.Context, externalAddress string, meshWorkload *v1alpha1.MeshWorkload, meshService *v1alpha1.MeshService) error {
+func (m *MockMeshFederationClient) FederateClientSide(ctx context.Context, eap dns.ExternalAccessPoint, meshService *v1alpha1.MeshService, meshWorkload *v1alpha1.MeshWorkload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FederateClientSide", ctx, externalAddress, meshWorkload, meshService)
+	ret := m.ctrl.Call(m, "FederateClientSide", ctx, eap, meshService, meshWorkload)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FederateClientSide indicates an expected call of FederateClientSide
-func (mr *MockMeshFederationClientMockRecorder) FederateClientSide(ctx, externalAddress, meshWorkload, meshService interface{}) *gomock.Call {
+func (mr *MockMeshFederationClientMockRecorder) FederateClientSide(ctx, eap, meshService, meshWorkload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederateClientSide", reflect.TypeOf((*MockMeshFederationClient)(nil).FederateClientSide), ctx, externalAddress, meshWorkload, meshService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederateClientSide", reflect.TypeOf((*MockMeshFederationClient)(nil).FederateClientSide), ctx, eap, meshService, meshWorkload)
 }

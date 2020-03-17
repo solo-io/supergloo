@@ -20,7 +20,6 @@ import (
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/security/proto/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -59,6 +58,7 @@ func NewIstioFederationClient(
 	serviceEntryClientFactory istio_networking.ServiceEntryClientFactory,
 	serviceClientFactory kubernetes_core.ServiceClientFactory,
 	ipAssigner dns.IpAssigner,
+	externalAccessPointGetter dns.ExternalAccessPointGetter,
 ) meshes.MeshFederationClient {
 	return &istioFederationClient{
 		dynamicClientGetter:          dynamicClientGetter,
@@ -69,6 +69,7 @@ func NewIstioFederationClient(
 		serviceEntryClientFactory:    serviceEntryClientFactory,
 		serviceClientFactory:         serviceClientFactory,
 		ipAssigner:                   ipAssigner,
+		externalAccessPointGetter:    externalAccessPointGetter,
 	}
 }
 
@@ -80,6 +81,7 @@ type istioFederationClient struct {
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
 	serviceEntryClientFactory    istio_networking.ServiceEntryClientFactory
 	serviceClientFactory         kubernetes_core.ServiceClientFactory
+	externalAccessPointGetter    dns.ExternalAccessPointGetter
 	ipAssigner                   dns.IpAssigner
 }
 
@@ -87,14 +89,14 @@ func (i *istioFederationClient) FederateServiceSide(
 	ctx context.Context,
 	meshGroup *networking_v1alpha1.MeshGroup,
 	meshService *discovery_v1alpha1.MeshService,
-) (externalAddress string, err error) {
+) (eap dns.ExternalAccessPoint, err error) {
 	meshForService, dynamicClient, err := i.getClientForMesh(ctx, meshService.Spec.GetMesh())
 	if err != nil {
-		return "", err
+		return eap, err
 	}
 
 	if meshForService.Spec.GetIstio() == nil {
-		return "", ServiceNotInIstio(meshService)
+		return eap, ServiceNotInIstio(meshService)
 	}
 
 	installNamespace := meshForService.Spec.GetIstio().GetInstallation().GetInstallationNamespace()
@@ -102,24 +104,24 @@ func (i *istioFederationClient) FederateServiceSide(
 	// Make sure the gateway is in a good state
 	err = i.ensureGatewayExists(ctx, dynamicClient, meshGroup.GetName(), meshService, installNamespace)
 	if err != nil {
-		return "", eris.Wrapf(err, "Failed to configure the ingress gateway for service %+v", meshService.ObjectMeta)
+		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway for service %+v", meshService.ObjectMeta)
 	}
 
 	// ensure that the envoy filter exists
 	err = i.ensureEnvoyFilterExists(ctx, meshGroup.GetName(), dynamicClient, installNamespace, meshForService.Spec.GetCluster().GetName())
 	if err != nil {
-		return "", eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %+v", meshService.ObjectMeta)
+		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %+v", meshService.ObjectMeta)
 	}
 
 	// finally, send back the external IP for the gateway we just set up
-	return i.determineExternalIpForGateway(ctx, meshGroup.GetName(), dynamicClient)
+	return i.determineExternalIpForGateway(ctx, meshGroup.GetName(), meshForService.Spec.GetCluster().GetName(), dynamicClient)
 }
 
 func (i *istioFederationClient) FederateClientSide(
 	ctx context.Context,
-	externalAddress string,
-	meshWorkload *discovery_v1alpha1.MeshWorkload,
+	eap dns.ExternalAccessPoint,
 	meshService *discovery_v1alpha1.MeshService,
+	meshWorkload *discovery_v1alpha1.MeshWorkload,
 ) error {
 	meshForWorkload, clientForWorkloadMesh, err := i.getClientForMesh(ctx, meshWorkload.Spec.GetMesh())
 	if err != nil {
@@ -137,10 +139,10 @@ func (i *istioFederationClient) FederateClientSide(
 	err = i.setUpServiceEntry(
 		ctx,
 		clientForWorkloadMesh,
+		eap,
 		installNamespace,
 		serviceMulticlusterName,
 		meshForWorkload.Spec.GetCluster().GetName(),
-		externalAddress,
 	)
 	if err != nil {
 		return err
@@ -188,10 +190,10 @@ func (i *istioFederationClient) setUpDestinationRule(
 func (i *istioFederationClient) setUpServiceEntry(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
-	installNamespace string,
-	serviceMulticlusterDnsName string,
+	eap dns.ExternalAccessPoint,
+	installNamespace,
+	serviceMulticlusterDnsName,
 	workloadClusterName string,
-	externalServiceAddress string,
 ) error {
 	serviceEntryClient := i.serviceEntryClientFactory(clientForWorkloadMesh)
 
@@ -213,9 +215,9 @@ func (i *istioFederationClient) setUpServiceEntry(
 			Spec: alpha3.ServiceEntry{
 				Addresses: []string{newIp},
 				Endpoints: []*alpha3.ServiceEntry_Endpoint{{
-					Address: externalServiceAddress,
+					Address: eap.Address,
 					Ports: map[string]uint32{
-						ServiceEntryPortName: DefaultGatewayPort,
+						ServiceEntryPortName: eap.Port,
 					},
 				}},
 				Hosts:    []string{serviceMulticlusterDnsName},
@@ -233,58 +235,33 @@ func (i *istioFederationClient) setUpServiceEntry(
 	return err
 }
 
-func (i *istioFederationClient) determineExternalIpForGateway(ctx context.Context, meshGroupName string, dynamicClient client.Client) (externalAddress string, err error) {
+func (i *istioFederationClient) determineExternalIpForGateway(
+	ctx context.Context,
+	meshGroupName, clusterName string,
+	dynamicClient client.Client,
+) (eap dns.ExternalAccessPoint, err error) {
 
 	// implicitly convert the map[string]string to a client.MatchingLabels
 	var labels client.MatchingLabels = BuildGatewayWorkloadSelector()
 	gatewayServiceList, err := i.serviceClientFactory(dynamicClient).List(ctx, labels)
 
 	if err != nil {
-		return "", err
+		return eap, err
 	}
 
 	if len(gatewayServiceList.Items) == 0 {
-		return "", eris.Errorf("No gateway for group %s has been initialized yet", meshGroupName)
+		return eap, eris.Errorf("No gateway for group %s has been initialized yet", meshGroupName)
 	} else if len(gatewayServiceList.Items) != 1 {
-		return "", eris.Errorf("Istio gateway for group %s is in an unknown state with multiple services for the ingress gateway", meshGroupName)
+		return eap, eris.Errorf("Istio gateway for group %s is in an unknown state with multiple services for the ingress gateway", meshGroupName)
 	}
 
 	service := gatewayServiceList.Items[0]
 
-	// TODO support services of types other than LoadBalancer https://github.com/solo-io/mesh-projects/issues/241
-	ingress := service.Status.LoadBalancer.Ingress
-	if len(ingress) == 0 {
-		return "", eris.Errorf("No ingresses set up for group %s", meshGroupName)
-	}
-
-	// depending on the environment, the service may have either an IP or a Hostname
-	// https://istio.io/docs/tasks/traffic-management/ingress/ingress-control/#determining-the-ingress-ip-and-ports
-	// TODO: This won't work for local development in KIND or similar https://github.com/solo-io/mesh-projects/issues/239
-	externalAddress = ingress[0].IP
-	if externalAddress == "" {
-		externalAddress = ingress[0].Hostname
-	}
-	if externalAddress == "" {
-		return "", eris.Errorf("Ingress for group %s has not been assigned an externally-resolvable address yet", meshGroupName)
-	}
-
 	if len(service.Spec.Ports) == 0 {
-		return "", eris.Errorf("service %+v is missing ports", service.ObjectMeta)
+		return eap, eris.Errorf("service %+v is missing ports", service.ObjectMeta)
 	}
 
-	// not supporting services of types other than LoadBalancer yet
-	var servicePort *corev1.ServicePort
-	for _, p := range service.Spec.Ports {
-		if p.Name == DefaultGatewayPortName {
-			servicePort = &p
-			break
-		}
-	}
-	if servicePort == nil {
-		return "", eris.Errorf("named port %s not found on service %+v", DefaultGatewayPortName, service.ObjectMeta)
-	}
-
-	return fmt.Sprintf("%s:%d", externalAddress, servicePort.Port), nil
+	return i.externalAccessPointGetter.GetExternalAccessPointForService(ctx, &service, DefaultGatewayPortName, clusterName)
 }
 
 func (i *istioFederationClient) ensureEnvoyFilterExists(

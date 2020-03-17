@@ -17,6 +17,16 @@ type ServiceClient interface {
 	List(ctx context.Context, options ...client.ListOption) (*corev1.ServiceList, error)
 }
 
+type PodClient interface {
+	Get(ctx context.Context, name, namespace string) (*corev1.Pod, error)
+	List(ctx context.Context, options ...client.ListOption) (*corev1.PodList, error)
+}
+
+type NodeClient interface {
+	Get(ctx context.Context, name string) (*corev1.Node, error)
+	List(ctx context.Context, options ...client.ListOption) (*corev1.NodeList, error)
+}
+
 type SecretsClient interface {
 	Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error
 	Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error

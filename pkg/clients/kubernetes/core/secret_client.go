@@ -28,15 +28,15 @@ func (c *secretsClient) Update(ctx context.Context, secret *corev1.Secret, opts 
 }
 
 func (c *secretsClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
-	csr := corev1.Secret{}
+	secret := corev1.Secret{}
 	err := c.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
-	}, &csr)
+	}, &secret)
 	if err != nil {
 		return nil, err
 	}
-	return &csr, nil
+	return &secret, nil
 }
 
 func (c *secretsClient) List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error) {

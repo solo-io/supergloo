@@ -13,6 +13,7 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -112,7 +113,11 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	return nil
 }
 
-func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshService *discovery_v1alpha1.MeshService, meshWorkloadRef *core_types.ResourceRef) error {
+func (f *federationResolver) federateToRemoteWorkload(
+	ctx context.Context,
+	meshService *discovery_v1alpha1.MeshService,
+	meshWorkloadRef *core_types.ResourceRef,
+) error {
 	workload, err := f.meshWorkloadClient.Get(ctx, client.ObjectKey{
 		Name:      meshWorkloadRef.GetName(),
 		Namespace: meshWorkloadRef.GetNamespace(),
@@ -142,11 +147,13 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 		return err
 	}
 
-	var externalServiceAddress string
+	var (
+		eap dns.ExternalAccessPoint
+	)
 	// set up gateway resources on the target cluster
 	switch meshForService.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio:
-		externalServiceAddress, err = f.perMeshFederationClients.Istio.FederateServiceSide(ctx, meshGroup, meshService)
+		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(ctx, meshGroup, meshService)
 	default:
 		err = eris.Errorf("Unsupported mesh type for federation: %+v", meshForWorkload.Spec.MeshType)
 	}
@@ -158,13 +165,21 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 	// set up gateway resources on the client cluster
 	switch meshForWorkload.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio:
-		return f.perMeshFederationClients.Istio.FederateClientSide(ctx, externalServiceAddress, workload, meshService)
+		return f.perMeshFederationClients.Istio.FederateClientSide(
+			ctx,
+			eap,
+			meshService,
+			workload,
+		)
 	default:
 		return eris.Errorf("Unsupported mesh type for federation: %+v", meshForWorkload.Spec.MeshType)
 	}
 }
 
-func (f *federationResolver) getGroupContainingService(ctx context.Context, meshForService *discovery_v1alpha1.Mesh) (*networking_v1alpha1.MeshGroup, error) {
+func (f *federationResolver) getGroupContainingService(
+	ctx context.Context,
+	meshForService *discovery_v1alpha1.Mesh,
+) (*networking_v1alpha1.MeshGroup, error) {
 	meshGroups, err := f.meshGroupClient.List(ctx)
 	if err != nil {
 		return nil, err
