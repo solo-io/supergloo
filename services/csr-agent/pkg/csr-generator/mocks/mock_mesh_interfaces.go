@@ -38,10 +38,10 @@ func (m *MockCertClient) EXPECT() *MockCertClientMockRecorder {
 }
 
 // EnsureSecretKey mocks base method
-func (m *MockCertClient) EnsureSecretKey(ctx context.Context, obj *v1alpha1.VirtualMeshCertificateSigningRequest) (*cert_secrets.RootCaData, error) {
+func (m *MockCertClient) EnsureSecretKey(ctx context.Context, obj *v1alpha1.VirtualMeshCertificateSigningRequest) (*cert_secrets.IntermediateCAData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureSecretKey", ctx, obj)
-	ret0, _ := ret[0].(*cert_secrets.RootCaData)
+	ret0, _ := ret[0].(*cert_secrets.IntermediateCAData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,6 +50,44 @@ func (m *MockCertClient) EnsureSecretKey(ctx context.Context, obj *v1alpha1.Virt
 func (mr *MockCertClientMockRecorder) EnsureSecretKey(ctx, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureSecretKey", reflect.TypeOf((*MockCertClient)(nil).EnsureSecretKey), ctx, obj)
+}
+
+// MockPrivateKeyGenerator is a mock of PrivateKeyGenerator interface
+type MockPrivateKeyGenerator struct {
+	ctrl     *gomock.Controller
+	recorder *MockPrivateKeyGeneratorMockRecorder
+}
+
+// MockPrivateKeyGeneratorMockRecorder is the mock recorder for MockPrivateKeyGenerator
+type MockPrivateKeyGeneratorMockRecorder struct {
+	mock *MockPrivateKeyGenerator
+}
+
+// NewMockPrivateKeyGenerator creates a new mock instance
+func NewMockPrivateKeyGenerator(ctrl *gomock.Controller) *MockPrivateKeyGenerator {
+	mock := &MockPrivateKeyGenerator{ctrl: ctrl}
+	mock.recorder = &MockPrivateKeyGeneratorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPrivateKeyGenerator) EXPECT() *MockPrivateKeyGeneratorMockRecorder {
+	return m.recorder
+}
+
+// GenerateRSA mocks base method
+func (m *MockPrivateKeyGenerator) GenerateRSA(keySize int) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateRSA", keySize)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateRSA indicates an expected call of GenerateRSA
+func (mr *MockPrivateKeyGeneratorMockRecorder) GenerateRSA(keySize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateRSA", reflect.TypeOf((*MockPrivateKeyGenerator)(nil).GenerateRSA), keySize)
 }
 
 // MockIstioCSRGenerator is a mock of IstioCSRGenerator interface

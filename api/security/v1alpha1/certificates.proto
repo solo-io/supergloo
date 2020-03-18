@@ -17,7 +17,6 @@ message VirtualMeshCertificateSigningRequestSpec {
 
     CertConfig cert_config = 2;
 
-
     /*
         Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh
         operator to know which trust bundle to use when signing the new certificates.
@@ -83,5 +82,5 @@ message VirtualMeshCertificateSigningRequestStatus {
     // Workflow for approving Certificate Signing Requests
     ThirdPartyApprovalWorkflow third_party_approval = 2;
 
-   core.zephyr.solo.io.ComputedStatus computed_status = 3;
+    core.zephyr.solo.io.ComputedStatus computed_status = 3;
 }

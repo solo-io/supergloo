@@ -39,10 +39,10 @@ func (m *MockVirtualMeshCertClient) EXPECT() *MockVirtualMeshCertClientMockRecor
 }
 
 // GetRootCaBundle mocks base method
-func (m *MockVirtualMeshCertClient) GetRootCaBundle(ctx context.Context, meshRef *types.ResourceRef) (*cert_secrets.RootCaData, error) {
+func (m *MockVirtualMeshCertClient) GetRootCaBundle(ctx context.Context, meshRef *types.ResourceRef) (*cert_secrets.RootCAData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRootCaBundle", ctx, meshRef)
-	ret0, _ := ret[0].(*cert_secrets.RootCaData)
+	ret0, _ := ret[0].(*cert_secrets.RootCAData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

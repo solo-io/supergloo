@@ -11,16 +11,16 @@ import (
 
 var _ = Describe("ca secrets helper", func() {
 
-	Context("cert and key", func() {
+	Context("Root CA data", func() {
 
 		It("will fail if the root cert is not present", func() {
 			secret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "name",
 				},
-				Type: cert_secrets.CertAndKeySecretType,
+				Type: cert_secrets.RootCertSecretType,
 			}
-			_, err := cert_secrets.CertAndKeyDataFromSecret(secret)
+			_, err := cert_secrets.RootCADataFromSecret(secret)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(HaveInErrorChain(cert_secrets.NoRootCertFoundError(secret.ObjectMeta)))
 		})
@@ -33,32 +33,15 @@ var _ = Describe("ca secrets helper", func() {
 				Data: map[string][]byte{
 					cert_secrets.RootCertID: {},
 				},
-				Type: cert_secrets.CertAndKeySecretType,
+				Type: cert_secrets.RootCertSecretType,
 			}
-			_, err := cert_secrets.CertAndKeyDataFromSecret(secret)
+			_, err := cert_secrets.RootCADataFromSecret(secret)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(HaveInErrorChain(cert_secrets.NoPrivateKeyFoundError(secret.ObjectMeta)))
 		})
 
-		It("will fail if the cert chain is not present", func() {
-			secret := &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "name",
-				},
-				Data: map[string][]byte{
-					cert_secrets.RootCertID:   {},
-					cert_secrets.PrivateKeyID: {},
-				},
-				Type: cert_secrets.CertAndKeySecretType,
-			}
-			_, err := cert_secrets.CertAndKeyDataFromSecret(secret)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(HaveInErrorChain(cert_secrets.NoCertChainFoundError(secret.ObjectMeta)))
-		})
-
 		It("will return the data if all data is present", func() {
-			matchData := &cert_secrets.CertAndKeyData{
-				CertChain:  []byte("cert_chain"),
+			matchData := &cert_secrets.RootCAData{
 				PrivateKey: []byte("private_key"),
 				RootCert:   []byte("root_cert"),
 			}
@@ -67,50 +50,27 @@ var _ = Describe("ca secrets helper", func() {
 					Name: "name",
 				},
 				Data: map[string][]byte{
-					cert_secrets.RootCertID:   matchData.RootCert,
-					cert_secrets.PrivateKeyID: matchData.PrivateKey,
-					cert_secrets.CertChainID:  matchData.CertChain,
+					cert_secrets.RootCertID:       matchData.RootCert,
+					cert_secrets.RootPrivateKeyID: matchData.PrivateKey,
 				},
-				Type: cert_secrets.CertAndKeySecretType,
+				Type: cert_secrets.RootCertSecretType,
 			}
-			data, err := cert_secrets.CertAndKeyDataFromSecret(secret)
+			data, err := cert_secrets.RootCADataFromSecret(secret)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(data).To(Equal(matchData))
 		})
-
-		It("can build the correct secret from the cert and key data", func() {
-			name, namespace := "name", "namespace"
-			matchData := &cert_secrets.CertAndKeyData{
-				CertChain:  []byte("cert_chain"),
-				PrivateKey: []byte("private_key"),
-				RootCert:   []byte("root_cert"),
-			}
-			matchSecret := &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: namespace,
-				},
-				Data: map[string][]byte{
-					cert_secrets.RootCertID:   matchData.RootCert,
-					cert_secrets.PrivateKeyID: matchData.PrivateKey,
-					cert_secrets.CertChainID:  matchData.CertChain,
-				},
-				Type: cert_secrets.CertAndKeySecretType,
-			}
-			Expect(matchData.BuildSecret(name, namespace)).To(Equal(matchSecret))
-		})
 	})
 
-	Context("Root Ca Data", func() {
+	Context("Intermediate CA Data", func() {
 
 		It("will fail if the root cert is not present", func() {
 			secret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "name",
 				},
-				Type: cert_secrets.RootCertSecretType,
+				Type: cert_secrets.IntermediateCertSecretType,
 			}
-			_, err := cert_secrets.RootCaDataFromSecret(secret)
+			_, err := cert_secrets.IntermediateCADataFromSecret(secret)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(HaveInErrorChain(cert_secrets.NoCaKeyFoundError(secret.ObjectMeta)))
 		})
@@ -123,20 +83,36 @@ var _ = Describe("ca secrets helper", func() {
 				Data: map[string][]byte{
 					cert_secrets.CaPrivateKeyID: {},
 				},
-				Type: cert_secrets.RootCertSecretType,
+				Type: cert_secrets.IntermediateCertSecretType,
 			}
-			_, err := cert_secrets.RootCaDataFromSecret(secret)
+			_, err := cert_secrets.IntermediateCADataFromSecret(secret)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(HaveInErrorChain(cert_secrets.NoCaCertFoundError(secret.ObjectMeta)))
 		})
 
+		It("will fail if the cert chain is not present", func() {
+			secret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "name",
+				},
+				Data: map[string][]byte{
+					cert_secrets.CaPrivateKeyID: {},
+					cert_secrets.CaCertID:       {},
+				},
+				Type: cert_secrets.RootCertSecretType,
+			}
+			_, err := cert_secrets.IntermediateCADataFromSecret(secret)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(HaveInErrorChain(cert_secrets.NoCertChainFoundError(secret.ObjectMeta)))
+		})
+
 		It("will return the data if all data is present", func() {
-			matchData := &cert_secrets.RootCaData{
-				CertAndKeyData: cert_secrets.CertAndKeyData{
-					CertChain:  []byte("cert_chain"),
+			matchData := &cert_secrets.IntermediateCAData{
+				RootCAData: cert_secrets.RootCAData{
 					PrivateKey: []byte("private_key"),
 					RootCert:   []byte("root_cert"),
 				},
+				CertChain:    []byte("cert_chain"),
 				CaCert:       []byte("ca_cert"),
 				CaPrivateKey: []byte("ca_key"),
 			}
@@ -145,27 +121,27 @@ var _ = Describe("ca secrets helper", func() {
 					Name: "name",
 				},
 				Data: map[string][]byte{
-					cert_secrets.RootCertID:     matchData.RootCert,
-					cert_secrets.PrivateKeyID:   matchData.PrivateKey,
-					cert_secrets.CertChainID:    matchData.CertChain,
-					cert_secrets.CaPrivateKeyID: matchData.CaPrivateKey,
-					cert_secrets.CaCertID:       matchData.CaCert,
+					cert_secrets.RootCertID:       matchData.RootCert,
+					cert_secrets.RootPrivateKeyID: matchData.PrivateKey,
+					cert_secrets.CertChainID:      matchData.CertChain,
+					cert_secrets.CaPrivateKeyID:   matchData.CaPrivateKey,
+					cert_secrets.CaCertID:         matchData.CaCert,
 				},
-				Type: cert_secrets.RootCertSecretType,
+				Type: cert_secrets.IntermediateCertSecretType,
 			}
-			data, err := cert_secrets.RootCaDataFromSecret(secret)
+			data, err := cert_secrets.IntermediateCADataFromSecret(secret)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(data).To(Equal(matchData))
 		})
 
 		It("can build the correct secret from the root cert data", func() {
 			name, namespace := "name", "namespace"
-			matchData := &cert_secrets.RootCaData{
-				CertAndKeyData: cert_secrets.CertAndKeyData{
-					CertChain:  []byte("cert_chain"),
+			matchData := &cert_secrets.IntermediateCAData{
+				RootCAData: cert_secrets.RootCAData{
 					PrivateKey: []byte("private_key"),
 					RootCert:   []byte("root_cert"),
 				},
+				CertChain:    []byte("cert_chain"),
 				CaCert:       []byte("ca_cert"),
 				CaPrivateKey: []byte("ca_key"),
 			}
@@ -175,13 +151,13 @@ var _ = Describe("ca secrets helper", func() {
 					Namespace: namespace,
 				},
 				Data: map[string][]byte{
-					cert_secrets.RootCertID:     matchData.RootCert,
-					cert_secrets.PrivateKeyID:   matchData.PrivateKey,
-					cert_secrets.CertChainID:    matchData.CertChain,
-					cert_secrets.CaPrivateKeyID: matchData.CaPrivateKey,
-					cert_secrets.CaCertID:       matchData.CaCert,
+					cert_secrets.RootCertID:       matchData.RootCert,
+					cert_secrets.RootPrivateKeyID: matchData.PrivateKey,
+					cert_secrets.CertChainID:      matchData.CertChain,
+					cert_secrets.CaPrivateKeyID:   matchData.CaPrivateKey,
+					cert_secrets.CaCertID:         matchData.CaCert,
 				},
-				Type: cert_secrets.RootCertSecretType,
+				Type: cert_secrets.IntermediateCertSecretType,
 			}
 			Expect(matchData.BuildSecret(name, namespace)).To(Equal(matchSecret))
 		})

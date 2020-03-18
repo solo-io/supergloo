@@ -16,15 +16,7 @@ message VirtualMeshSpec {
     // The meshes contained in this virtual mesh.
     repeated core.zephyr.solo.io.ResourceRef meshes = 2;
 
-    /*
-        optional: if set will use this resource ref to determine the secret from which the
-        root trust bundle should be grabbed. Otherwise it will default to
-
-        trust_bundle:
-            name: cacerts
-            namespace: service-mesh-hub (default write namespace)
-    */
-    core.zephyr.solo.io.ResourceRef trust_bundle_ref = 3;
+    CertificateAuthority certificate_authority = 3;
 
     Federation federation = 4;
 
@@ -54,6 +46,38 @@ message VirtualMeshSpec {
     oneof trust_model {
         SharedTrust shared = 5;
         LimitedTrust limited = 6;
+    }
+}
+
+message CertificateAuthority {
+    // Configuration for auto-generated root certificate unique to the MeshGroup
+    // Uses the X.509 format, RFC5280
+    message Builtin {
+        // Number of days before root cert expires. Defaults to 365.
+        uint32 ttl_days = 1;
+        // Size in bytes of the root cert's private key. Defaults to 4096
+        uint32 rsa_key_size_bytes = 2;
+        // Root cert organization name. Defaults to "service-mesh-hub"
+        string org_name = 3;
+    }
+
+    // Configuration for user-provided root certificate
+    message Provided {
+        /* Resource reference for a Secret object containing the root certificate
+           certificate:
+                name: cacerts
+                namespace: service-mesh-hub (default write namespace)
+        */
+        core.zephyr.solo.io.ResourceRef certificate = 3;
+    }
+
+    // If omitted, defaults to builtin
+    oneof type {
+        // Use auto-generated root certificate
+        Builtin builtin = 1;
+
+        // Use user-provided root certificate
+        Provided provided = 2;
     }
 }
 

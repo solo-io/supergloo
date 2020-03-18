@@ -159,12 +159,12 @@ func (i *istioCSRGenerator) process(
 func (i *istioCSRGenerator) generateCsr(
 	ctx context.Context,
 	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	rootCaData *cert_secrets.RootCaData,
+	intermediateCAData *cert_secrets.IntermediateCAData,
 ) *security_types.VirtualMeshCertificateSigningRequestStatus {
 	csr, err := i.signer.GenCSRWithKey(pki_util.CertOptions{
 		Host:          strings.Join(obj.Spec.GetCertConfig().GetHosts(), ","),
 		Org:           obj.Spec.GetCertConfig().GetOrg(),
-		SignerPrivPem: rootCaData.CaPrivateKey,
+		SignerPrivPem: intermediateCAData.CaPrivateKey,
 	})
 	if err != nil {
 		wrapped := FailedToGenerateCSRError(err)
@@ -191,14 +191,14 @@ func (i *istioCSRGenerator) generateCsr(
 func (i *istioCSRGenerator) updateCa(
 	ctx context.Context,
 	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	rootCaData *cert_secrets.RootCaData,
+	intermediateCAData *cert_secrets.IntermediateCAData,
 ) error {
-	rootCaData.CaCert = obj.Status.GetResponse().GetCaCertificate()
-	rootCaData.RootCert = obj.Status.GetResponse().GetRootCertificate()
-	rootCaData.CertChain = certgen.AppendRootCerts(rootCaData.CaCert, rootCaData.RootCert)
+	intermediateCAData.CaCert = obj.Status.GetResponse().GetCaCertificate()
+	intermediateCAData.RootCert = obj.Status.GetResponse().GetRootCertificate()
+	intermediateCAData.CertChain = certgen.AppendRootCerts(intermediateCAData.CaCert, intermediateCAData.RootCert)
 	secretName, secretNamespace := IstioCaSecretName, "istio-system"
 
-	certSecret := rootCaData.BuildSecret(secretName, secretNamespace)
+	certSecret := intermediateCAData.BuildSecret(secretName, secretNamespace)
 	existing, err := i.secretClient.Get(ctx, secretName, secretNamespace)
 	if err != nil {
 		if !errors.IsNotFound(err) {

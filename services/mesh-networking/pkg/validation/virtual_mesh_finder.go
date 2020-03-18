@@ -20,7 +20,7 @@ type virtualMeshFinder struct {
 	meshClient zephyr_discovery.MeshClient
 }
 
-func NewVitualMeshFinder(meshClient zephyr_discovery.MeshClient) VirtualMeshFinder {
+func NewVirtualMeshFinder(meshClient zephyr_discovery.MeshClient) VirtualMeshFinder {
 	return &virtualMeshFinder{meshClient: meshClient}
 }
 

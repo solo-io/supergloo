@@ -15,7 +15,7 @@ import (
 	VirtualMeshCertClient is a higher-level client meant to abstract common certificate related mesh actions
 */
 type VirtualMeshCertClient interface {
-	GetRootCaBundle(ctx context.Context, meshRef *core_types.ResourceRef) (*cert_secrets.RootCaData, error)
+	GetRootCaBundle(ctx context.Context, meshRef *core_types.ResourceRef) (*cert_secrets.RootCAData, error)
 }
 
 type VirtualMeshCSRSigner interface {

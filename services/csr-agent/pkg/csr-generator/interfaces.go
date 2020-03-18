@@ -22,7 +22,12 @@ type CertClient interface {
 	EnsureSecretKey(
 		ctx context.Context,
 		obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-	) (secret *cert_secrets.RootCaData, err error)
+	) (secret *cert_secrets.IntermediateCAData, err error)
+}
+
+type PrivateKeyGenerator interface {
+	// Generate an RSA private key and return as pem encoded bytes.
+	GenerateRSA(keySize int) ([]byte, error)
 }
 
 type IstioCSRGenerator interface {

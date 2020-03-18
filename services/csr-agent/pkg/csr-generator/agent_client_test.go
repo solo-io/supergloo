@@ -13,6 +13,7 @@ import (
 	mock_certgen "github.com/solo-io/mesh-projects/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
+	mock_csr_agent_controller "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator/mocks"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,13 +22,13 @@ import (
 
 var _ = Describe("agent client", func() {
 	var (
-		ctrl         *gomock.Controller
-		ctx          context.Context
-		secretClient *mock_kubernetes_core.MockSecretsClient
-		signer       *mock_certgen.MockSigner
-		certClient   csr_generator.CertClient
-
-		testErr = eris.New("hello")
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		secretClient            *mock_kubernetes_core.MockSecretsClient
+		signer                  *mock_certgen.MockSigner
+		certClient              csr_generator.CertClient
+		mockPrivateKeyGenerator *mock_csr_agent_controller.MockPrivateKeyGenerator
+		testErr                 = eris.New("hello")
 	)
 
 	BeforeEach(func() {
@@ -35,7 +36,8 @@ var _ = Describe("agent client", func() {
 		ctx = context.TODO()
 		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
-		certClient = csr_generator.NewCertClient(secretClient, signer)
+		mockPrivateKeyGenerator = mock_csr_agent_controller.NewMockPrivateKeyGenerator(ctrl)
+		certClient = csr_generator.NewCertClient(secretClient, signer, mockPrivateKeyGenerator)
 	})
 
 	AfterEach(func() {
@@ -50,11 +52,10 @@ var _ = Describe("agent client", func() {
 			},
 		}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName(), csr.GetNamespace()).
+			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
 			Return(nil, testErr)
 
 		_, err := certClient.EnsureSecretKey(ctx, csr)
-		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(testErr))
 	})
 
@@ -67,11 +68,10 @@ var _ = Describe("agent client", func() {
 		}
 		secret := &v1.Secret{}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName(), csr.GetNamespace()).
+			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
 			Return(secret, nil)
 
 		_, err := certClient.EnsureSecretKey(ctx, csr)
-		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(cert_secrets.NoCaKeyFoundError(secret.ObjectMeta)))
 	})
 
@@ -84,20 +84,20 @@ var _ = Describe("agent client", func() {
 		}
 		secret := &v1.Secret{
 			Data: map[string][]byte{
-				cert_secrets.CaCertID:       []byte("cacert"),
-				cert_secrets.CaPrivateKeyID: []byte("cakey"),
-				cert_secrets.CertChainID:    []byte("certchain"),
-				cert_secrets.PrivateKeyID:   []byte("key"),
-				cert_secrets.RootCertID:     []byte("cert"),
+				cert_secrets.CaCertID:         []byte("cacert"),
+				cert_secrets.CaPrivateKeyID:   []byte("cakey"),
+				cert_secrets.CertChainID:      []byte("certchain"),
+				cert_secrets.RootPrivateKeyID: []byte("key"),
+				cert_secrets.RootCertID:       []byte("cert"),
 			},
 		}
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName(), csr.GetNamespace()).
+			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
 			Return(secret, nil)
 
 		caData, err := certClient.EnsureSecretKey(ctx, csr)
 		Expect(err).NotTo(HaveOccurred())
-		matchData, err := cert_secrets.RootCaDataFromSecret(secret)
+		matchData, err := cert_secrets.IntermediateCADataFromSecret(secret)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(caData).To(Equal(matchData))
 	})
@@ -111,14 +111,25 @@ var _ = Describe("agent client", func() {
 		}
 
 		secretClient.EXPECT().
-			Get(ctx, csr.GetName(), csr.GetNamespace()).
+			Get(ctx, csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace()).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-		secretClient.EXPECT().Create(ctx, gomock.Any()).Return(testErr)
+		key := []byte{'a', 'b', 'c'}
+		mockPrivateKeyGenerator.
+			EXPECT().
+			GenerateRSA(csr_generator.PrivateKeySizeBytes).
+			Return(key, nil)
 
+		intermediateCAData := &cert_secrets.IntermediateCAData{
+			CaPrivateKey: key,
+		}
+		expectedSecret := intermediateCAData.BuildSecret(csr.GetName()+csr_generator.PrivateKeyNameSuffix, csr.GetNamespace())
+		secretClient.
+			EXPECT().
+			Create(ctx, expectedSecret).
+			Return(nil)
 		_, err := certClient.EnsureSecretKey(ctx, csr)
-		Expect(err).To(HaveOccurred())
-		Expect(err).To(HaveInErrorChain(testErr))
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 })

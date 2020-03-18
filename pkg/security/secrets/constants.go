@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	RootCertSecretType corev1.SecretType = "solo.io/ca-root"
+	IntermediateCertSecretType corev1.SecretType = "solo.io/ca-intermediate"
 
-	CertAndKeySecretType corev1.SecretType = "solo.io/cert-and-key"
+	RootCertSecretType corev1.SecretType = "solo.io/ca-root"
 
 	// CaCertID is the CA certificate chain file.
 	CaCertID = "ca-cert.pem"
@@ -15,8 +15,8 @@ const (
 	CaPrivateKeyID = "ca-key.pem"
 	// CertChainID is the ID/name for the certificate chain file.
 	CertChainID = "cert-chain.pem"
-	// PrivateKeyID is the ID/name for the private key file.
-	PrivateKeyID = "key.pem"
+	// RootPrivateKeyID is the ID/name for the private key file.
+	RootPrivateKeyID = "root-key.pem"
 	// RootCertID is the ID/name for the CA root certificate file.
 	RootCertID = "root-cert.pem"
 )

@@ -141,12 +141,9 @@ var _ = Describe("csr processor", func() {
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{},
 			}
 
-			rootCaData := &cert_secrets.RootCaData{
-				CertAndKeyData: cert_secrets.CertAndKeyData{
-					CertChain:  nil,
-					PrivateKey: []byte("private-key"),
-					RootCert:   []byte("root-key"),
-				},
+			rootCaData := &cert_secrets.RootCAData{
+				PrivateKey: []byte("private-key"),
+				RootCert:   []byte("root-cert"),
 			}
 
 			mgCertClient.EXPECT().
@@ -183,12 +180,9 @@ var _ = Describe("csr processor", func() {
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{},
 			}
 
-			rootCaData := &cert_secrets.RootCaData{
-				CertAndKeyData: cert_secrets.CertAndKeyData{
-					CertChain:  nil,
-					PrivateKey: []byte("private-key"),
-					RootCert:   []byte("root-key"),
-				},
+			rootCaData := &cert_secrets.RootCAData{
+				PrivateKey: []byte("private-key"),
+				RootCert:   []byte("root-cert"),
 			}
 
 			mgCertClient.EXPECT().

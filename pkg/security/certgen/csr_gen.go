@@ -38,40 +38,6 @@ var InvalidKeyFormattingError = func(err error) error {
 	return eris.Wrapf(err, "unable to decode private key, currently only supporting PKCS1 encrypted keys")
 }
 
-//go:generate mockgen -destination ./mocks/mock_signer.go -source certgen.go
-
-// Signer is meant as a higher level abstraction around complex certificate workflows
-type Signer interface {
-	/*
-		GenCerFromCSR generates a pem encoded certificate given the parameters
-
-		csrPem: The pem encoded csr bytes
-		signingCertPem: the pem encoded certificate which should sign the new certificate
-		signingKey: The pem encoded private key which should sign the new cert
-		subjectIds: The subjects which the new cert should apply to
-		ttl: time to live, the duration of the certificate
-		isCa: Whether or not the new cert is a Certificate Authority
-	*/
-	GenCertFromEncodedCSR(
-		csrPem, signingCertPem, signingKey []byte,
-		subjectIDs []string,
-		ttl time.Duration,
-		isCA bool,
-	) (cert []byte, err error)
-	/*
-		GenCSRWithKey generates a pem encoded csr with the key provided.
-		The key can be provided via:
-			1. options.SignerKey: This must be a crypto.Signer
-			2. options.SignerKeyPem: Pem encoded private key which will be unmarshalled into a crypto.Signer().
-			Currently this must be a PKCS1 encoded key
-		The hosts should be the Spiffe hosts identities
-		The org should be the organization the cert is being created for.
-	*/
-	GenCSRWithKey(options pki_util.CertOptions) (csr []byte, err error)
-	// GenCSR functions the same as GenCSRWithKey except that it creates a new key and returns it along with the CSR
-	GenCSR(options pki_util.CertOptions) (csr, privKey []byte, err error)
-}
-
 func NewSigner() Signer {
 	return &signer{}
 }

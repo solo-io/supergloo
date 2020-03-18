@@ -10,7 +10,7 @@ import (
 	CertSecretBuilder is meant as an interface function to expose the ability to transform itself into a secret
 	representing the underlying data
 
-	For instance: the RootCaData will build a new secret containing all of the it's certificate related information
+	For instance: the IntermediateCAData will build a new secret containing all of the it's certificate related information
 	in the name and namespace provided
 */
 type CertSecretBuilder interface {

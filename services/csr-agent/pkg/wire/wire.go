@@ -23,6 +23,7 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,
 		csr_generator.CsrControllerProviderLocal,
 		csr_generator.IstioCSRGeneratorSet,
+		csr_generator.NewPrivateKeyGenerator,
 		CsrAgentContextProvider,
 	)
 

@@ -76,8 +76,8 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{
-				CaPrivateKey: []byte("cs-key"),
+			certData := &cert_secrets.IntermediateCAData{
+				CaPrivateKey: []byte("ca-key"),
 			}
 
 			certClient.EXPECT().
@@ -110,8 +110,8 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{
-				CaPrivateKey: []byte("cs-key"),
+			certData := &cert_secrets.IntermediateCAData{
+				CaPrivateKey: []byte("ca-key"),
 			}
 
 			csrData := []byte("csr-data")
@@ -152,8 +152,8 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{
-				CaPrivateKey: []byte("cs-key"),
+			certData := &cert_secrets.IntermediateCAData{
+				CaPrivateKey: []byte("ca-key"),
 			}
 
 			csrData := []byte("csr-data")
@@ -200,7 +200,7 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{}
+			certData := &cert_secrets.IntermediateCAData{}
 			certClient.EXPECT().
 				EnsureSecretKey(ctx, csr).
 				Return(certData, nil)
@@ -232,7 +232,7 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{}
+			certData := &cert_secrets.IntermediateCAData{}
 			certClient.EXPECT().
 				EnsureSecretKey(ctx, csr).
 				Return(certData, nil)
@@ -271,7 +271,7 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{}
+			certData := &cert_secrets.IntermediateCAData{}
 			certClient.EXPECT().
 				EnsureSecretKey(ctx, csr).
 				Return(certData, nil)
@@ -304,7 +304,7 @@ var _ = Describe("csr processor", func() {
 					},
 				},
 			}
-			certData := &cert_secrets.RootCaData{}
+			certData := &cert_secrets.IntermediateCAData{}
 			certClient.EXPECT().
 				EnsureSecretKey(ctx, csr).
 				Return(certData, nil)
@@ -317,13 +317,13 @@ var _ = Describe("csr processor", func() {
 				Get(ctx, csr_generator.IstioCaSecretName, "istio-system").
 				Return(certData.BuildSecret(csr_generator.IstioCaSecretName, "istio-system"), nil)
 
-			matchCert := &cert_secrets.RootCaData{
-				CertAndKeyData: cert_secrets.CertAndKeyData{
-					CertChain: certgen.AppendRootCerts(
-						csr.Status.GetResponse().GetCaCertificate(), csr.Status.GetResponse().GetRootCertificate(),
-					),
+			matchCert := &cert_secrets.IntermediateCAData{
+				RootCAData: cert_secrets.RootCAData{
 					RootCert: csr.Status.GetResponse().GetRootCertificate(),
 				},
+				CertChain: certgen.AppendRootCerts(
+					csr.Status.GetResponse().GetCaCertificate(), csr.Status.GetResponse().GetRootCertificate(),
+				),
 				CaCert: csr.Status.GetResponse().GetCaCertificate(),
 			}
 			secretClient.EXPECT().

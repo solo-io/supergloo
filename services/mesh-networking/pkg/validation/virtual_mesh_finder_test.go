@@ -32,7 +32,7 @@ var _ = Describe("mesh ref finder", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		meshClient = mock_zephyr_discovery.NewMockMeshClient(ctrl)
-		meshRefFinder = vm_validation.NewVitualMeshFinder(meshClient)
+		meshRefFinder = vm_validation.NewVirtualMeshFinder(meshClient)
 	})
 
 	AfterEach(func() {

@@ -5,45 +5,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type CertAndKeyData struct {
-	CertChain  []byte
+// The root CA from the perspective of the MeshGroup
+// A user supplied root cert may be itself derived from another CA, but
+// that is irrelevant for the MeshGroup.
+type RootCAData struct {
 	PrivateKey []byte
 	RootCert   []byte
 }
 
-var _ CertSecretBuilder = &CertAndKeyData{}
-
-func (c *CertAndKeyData) BuildSecret(name, namespace string) *corev1.Secret {
+func (c *RootCAData) BuildSecret(name, namespace string) *corev1.Secret {
 	return &corev1.Secret{
 		Data: map[string][]byte{
-			CertChainID:  c.CertChain,
-			PrivateKeyID: c.PrivateKey,
-			RootCertID:   c.RootCert,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Type: CertAndKeySecretType,
-	}
-}
-
-type RootCaData struct {
-	CertAndKeyData
-	CaCert       []byte
-	CaPrivateKey []byte
-}
-
-var _ CertSecretBuilder = &RootCaData{}
-
-func (r *RootCaData) BuildSecret(name, namespace string) *corev1.Secret {
-	return &corev1.Secret{
-		Data: map[string][]byte{
-			CertChainID:    r.CertChain,
-			PrivateKeyID:   r.PrivateKey,
-			RootCertID:     r.RootCert,
-			CaCertID:       r.CaCert,
-			CaPrivateKeyID: r.CaPrivateKey,
+			RootPrivateKeyID: c.PrivateKey,
+			RootCertID:       c.RootCert,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -53,7 +27,34 @@ func (r *RootCaData) BuildSecret(name, namespace string) *corev1.Secret {
 	}
 }
 
-func RootCaDataFromSecret(secret *corev1.Secret) (*RootCaData, error) {
+// The intermediate CA derived from the root CA of the MeshGroup
+type IntermediateCAData struct {
+	RootCAData
+	CertChain    []byte
+	CaCert       []byte
+	CaPrivateKey []byte
+}
+
+var _ CertSecretBuilder = &IntermediateCAData{}
+
+func (r *IntermediateCAData) BuildSecret(name, namespace string) *corev1.Secret {
+	return &corev1.Secret{
+		Data: map[string][]byte{
+			CertChainID:      r.CertChain,
+			RootPrivateKeyID: r.PrivateKey,
+			RootCertID:       r.RootCert,
+			CaCertID:         r.CaCert,
+			CaPrivateKeyID:   r.CaPrivateKey,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Type: IntermediateCertSecretType,
+	}
+}
+
+func IntermediateCADataFromSecret(secret *corev1.Secret) (*IntermediateCAData, error) {
 	caKey, ok := secret.Data[CaPrivateKeyID]
 	if !ok {
 		return nil, NoCaKeyFoundError(secret.ObjectMeta)
@@ -62,32 +63,32 @@ func RootCaDataFromSecret(secret *corev1.Secret) (*RootCaData, error) {
 	if !ok {
 		return nil, NoCaCertFoundError(secret.ObjectMeta)
 	}
-	certAndKey, err := CertAndKeyDataFromSecret(secret)
-	if err != nil {
-		return nil, err
-	}
-	return &RootCaData{
-		CertAndKeyData: *certAndKey,
-		CaCert:         caCert,
-		CaPrivateKey:   caKey,
-	}, nil
-}
-
-func CertAndKeyDataFromSecret(secret *corev1.Secret) (*CertAndKeyData, error) {
-	rootCert, ok := secret.Data[RootCertID]
-	if !ok {
-		return nil, NoRootCertFoundError(secret.ObjectMeta)
-	}
-	privateKey, ok := secret.Data[PrivateKeyID]
-	if !ok {
-		return nil, NoPrivateKeyFoundError(secret.ObjectMeta)
-	}
 	certChain, ok := secret.Data[CertChainID]
 	if !ok {
 		return nil, NoCertChainFoundError(secret.ObjectMeta)
 	}
-	return &CertAndKeyData{
-		CertChain:  certChain,
+	rootCAData, err := RootCADataFromSecret(secret)
+	if err != nil {
+		return nil, err
+	}
+	return &IntermediateCAData{
+		RootCAData:   *rootCAData,
+		CertChain:    certChain,
+		CaCert:       caCert,
+		CaPrivateKey: caKey,
+	}, nil
+}
+
+func RootCADataFromSecret(secret *corev1.Secret) (*RootCAData, error) {
+	rootCert, ok := secret.Data[RootCertID]
+	if !ok {
+		return nil, NoRootCertFoundError(secret.ObjectMeta)
+	}
+	privateKey, ok := secret.Data[RootPrivateKeyID]
+	if !ok {
+		return nil, NoPrivateKeyFoundError(secret.ObjectMeta)
+	}
+	return &RootCAData{
 		PrivateKey: privateKey,
 		RootCert:   rootCert,
 	}, nil

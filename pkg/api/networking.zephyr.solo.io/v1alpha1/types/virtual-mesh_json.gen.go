@@ -52,6 +52,39 @@ func (this *VirtualMeshSpec_LimitedTrust) UnmarshalJSON(b []byte) error {
 	return VirtualMeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for CertificateAuthority
+func (this *CertificateAuthority) MarshalJSON() ([]byte, error) {
+	str, err := VirtualMeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for CertificateAuthority
+func (this *CertificateAuthority) UnmarshalJSON(b []byte) error {
+	return VirtualMeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for CertificateAuthority_Builtin
+func (this *CertificateAuthority_Builtin) MarshalJSON() ([]byte, error) {
+	str, err := VirtualMeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for CertificateAuthority_Builtin
+func (this *CertificateAuthority_Builtin) UnmarshalJSON(b []byte) error {
+	return VirtualMeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for CertificateAuthority_Provided
+func (this *CertificateAuthority_Provided) MarshalJSON() ([]byte, error) {
+	str, err := VirtualMeshMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for CertificateAuthority_Provided
+func (this *CertificateAuthority_Provided) UnmarshalJSON(b []byte) error {
+	return VirtualMeshUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for Federation
 func (this *Federation) MarshalJSON() ([]byte, error) {
 	str, err := VirtualMeshMarshaler.MarshalToString(this)
