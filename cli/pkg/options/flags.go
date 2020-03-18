@@ -1,7 +1,9 @@
 package options
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/spf13/cobra"
@@ -93,4 +95,10 @@ func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage strin
 	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
 	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")
 	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
+}
+
+func AddCheckFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {
+	flags := cmd.PersistentFlags()
+
+	flags.StringVarP(&opts.Check.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format for the report. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
 }

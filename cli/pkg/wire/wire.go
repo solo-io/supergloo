@@ -14,6 +14,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
@@ -25,6 +28,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	version2 "github.com/solo-io/mesh-projects/pkg/version"
@@ -41,6 +45,10 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_core.NewGeneratedServiceAccountClient,
 		discovery_core.NewGeneratedKubernetesClusterClient,
 		kubernetes_core.NewGeneratedSecretsClient,
+		kubernetes_core.NewGeneratedNamespaceClient,
+		kubernetes_discovery.NewGeneratedServerVersionClient,
+		kubernetes_core.NewGeneratedPodClient,
+		discovery_core.NewGeneratedMeshServiceClient,
 		kubernetes_apps.NewGeneratedDeploymentClient,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
@@ -51,6 +59,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		version2.NewDeployedVersionFinder,
 		helminstall.DefaultHelmClient,
 		install.HelmInstallerProvider,
+		healthcheck.ClientsProvider,
 		common.KubeClientsProvider,
 	)
 	return nil, nil
@@ -70,6 +79,8 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 		register.NewCsrAgentInstallerFactory,
 		common.ClusterRegistrationClientsProvider,
 		operator.NewOperatorManagerFactory,
+		status.StatusClientFactoryProvider,
+		healthcheck.DefaultHealthChecksProvider,
 		common.ClientsProvider,
 	)
 	return nil, nil
@@ -89,6 +100,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 		version.VersionSet,
 		istio.IstioProviderSet,
 		install.InstallSet,
+		check.CheckSet,
 		cli.BuildCli,
 	)
 	return nil
@@ -112,6 +124,7 @@ func InitializeCLIWithMocks(
 		istio.IstioProviderSet,
 		install.InstallSet,
 		upgrade.UpgradeSet,
+		check.CheckSet,
 		cli.BuildCli,
 	)
 	return nil

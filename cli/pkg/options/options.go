@@ -15,6 +15,7 @@ type Options struct {
 	Upgrade    Upgrade
 	SmhInstall SmhInstall
 	Istio      Istio
+	Check      Check
 }
 
 type Root struct {
@@ -73,4 +74,8 @@ type SmhInstall struct {
 	HelmReleaseName         string
 	Version                 string
 	CreateNamespace         bool
+}
+
+type Check struct {
+	OutputFormat string
 }

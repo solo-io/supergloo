@@ -20,7 +20,7 @@ import (
 	"k8s.io/cli-runtime/pkg/resource"
 )
 
-var _ = Describe("Cluster Operations", func() {
+var _ = Describe("Istio operator management", func() {
 	var (
 		ctrl        *gomock.Controller
 		testErr     = eris.New("test-err")

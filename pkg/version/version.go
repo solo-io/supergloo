@@ -9,6 +9,8 @@ var (
 
 	// Will be set by the linker during build. Does not include "v" prefix.
 	Version string
+
+	MinimumSupportedKubernetesMinorVersion = 13
 )
 
 func init() {

@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
 	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
@@ -25,6 +26,7 @@ func BuildCli(
 	istioCmd istio.IstioCommand,
 	upgradeCmd upgrade.UpgradeCommand,
 	installCmd install.InstallCommand,
+	checkCommand check.CheckCommand,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   cliconstants.RootCommand.Use,
@@ -40,6 +42,8 @@ func BuildCli(
 		versionCmd,
 		installCmd,
 		upgradeCmd,
-		istioCmd)
+		istioCmd,
+		checkCommand,
+	)
 	return cmd
 }

@@ -1,0 +1,21 @@
+✅ Kubernetes API
+-----------------
+✅ Kubernetes API server is reachable
+✅ running the minimum supported Kubernetes version (required: >=1.13)
+
+
+✅ Service Mesh Hub Management Plane
+------------------------------------
+✅ installation namespace exists
+✅ components are running
+
+
+❌ Service Federation
+---------------------
+❌ federation decisions have been written to MeshServices
+	Message: failed to write federation metadata to mesh service 'test-mesh-service.service-mesh-hub'; status is 'INVALID'
+	Hint: get details from the failing MeshService: `kubectl -n service-mesh-hub get meshservice test-mesh-service -oyaml`
+	Docs: https://docs.solo.io/test-link
+
+
+❌ Service Mesh Hub check found errors

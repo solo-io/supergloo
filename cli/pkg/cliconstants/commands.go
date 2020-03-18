@@ -29,11 +29,16 @@ var (
 
 	InstallCommand = cobra.Command{
 		Use:   "install",
-		Short: "Install Service Mesh Hub on different platforms",
+		Short: "Install Service Mesh Hub",
 	}
 
 	UpgradeCommand = cobra.Command{
 		Use:   "upgrade",
 		Short: "In-place upgrade of meshctl",
+	}
+
+	CheckCommand = cobra.Command{
+		Use:   "check",
+		Short: "Check the status of a Service Mesh Hub installation",
 	}
 )

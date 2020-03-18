@@ -44,7 +44,7 @@ type necessaryMocks struct {
 	meshctl cli_test.MockMeshctl
 }
 
-var _ = Describe("Cluster Operations", func() {
+var _ = Describe("Istio installation", func() {
 	var (
 		ctrl           *gomock.Controller
 		testErr        = eris.New("test-err")

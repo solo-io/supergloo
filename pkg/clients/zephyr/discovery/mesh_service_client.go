@@ -4,6 +4,10 @@ import (
 	"context"
 
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
+	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned/typed/discovery.zephyr.solo.io/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -52,4 +56,47 @@ func (m *meshServiceClient) List(ctx context.Context, opts ...client.ListOption)
 
 func (m *meshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
 	return m.client.Status().Update(ctx, meshService, options...)
+}
+
+func NewGeneratedMeshServiceClient(cfg *rest.Config) MeshServiceClient {
+	clientSet, _ := versioned.NewForConfig(cfg)
+
+	return &generatedMeshServiceClient{
+		client: clientSet.DiscoveryV1alpha1(),
+	}
+}
+
+type generatedMeshServiceClient struct {
+	client discoveryv1alpha1.DiscoveryV1alpha1Interface
+}
+
+func (m *generatedMeshServiceClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha1.MeshService, error) {
+	return m.client.MeshServices(key.Namespace).Get(key.Name, v1.GetOptions{})
+}
+
+func (m *generatedMeshServiceClient) Create(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.CreateOption) error {
+	newMeshService, err := m.client.MeshServices(meshService.GetNamespace()).Create(meshService)
+	if err != nil {
+		return err
+	}
+	*meshService = *newMeshService
+	return nil
+}
+
+func (m *generatedMeshServiceClient) Update(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
+	newMeshService, err := m.client.MeshServices(meshService.GetNamespace()).Update(meshService)
+	if err != nil {
+		return err
+	}
+	*meshService = *newMeshService
+	return nil
+}
+
+func (m *generatedMeshServiceClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshServiceList, error) {
+	return m.client.MeshServices("").List(v1.ListOptions{})
+}
+
+func (m *generatedMeshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {
+	_, err := m.client.MeshServices(meshService.GetNamespace()).UpdateStatus(meshService)
+	return err
 }

@@ -8,6 +8,8 @@ import (
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
@@ -28,6 +30,7 @@ type KubeClients struct {
 	HelmInstaller         helminstall.Installer
 	KubeClusterClient     discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
 	DeployedVersionFinder version.DeployedVersionFinder
+	HealthCheckClients    healthcheck_types.Clients
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -38,6 +41,8 @@ type Clients struct {
 	ReleaseAssetHelper            upgrade_assets.AssetHelper
 	UnstructuredKubeClientFactory kube.UnstructuredKubeClientFactory
 	DeploymentClient              server.DeploymentClient
+	StatusClientFactory           status.StatusClientFactory
+	HealthCheckSuite              healthcheck_types.HealthCheckSuite
 
 	IstioClients               IstioClients
 	ClusterRegistrationClients ClusterRegistrationClients
@@ -81,6 +86,8 @@ func ClientsProvider(
 	unstructuredKubeClientFactory kube.UnstructuredKubeClientFactory,
 	deploymentClient server.DeploymentClient,
 	istioClients IstioClients,
+	statusClientFactory status.StatusClientFactory,
+	healthCheckSuite healthcheck_types.HealthCheckSuite,
 	clusterRegistrationClients ClusterRegistrationClients,
 ) *Clients {
 	return &Clients{
@@ -90,6 +97,8 @@ func ClientsProvider(
 		DeploymentClient:              deploymentClient,
 		ReleaseAssetHelper:            assetHelper,
 		IstioClients:                  istioClients,
+		StatusClientFactory:           statusClientFactory,
+		HealthCheckSuite:              healthCheckSuite,
 		ClusterRegistrationClients:    clusterRegistrationClients,
 	}
 }
@@ -100,6 +109,7 @@ func KubeClientsProvider(
 	writer SecretWriter,
 	helmInstaller helminstall.Installer,
 	kubeClusterClient discovery_core.KubernetesClusterClient,
+	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
 ) *KubeClients {
 	return &KubeClients{
@@ -108,6 +118,7 @@ func KubeClientsProvider(
 		HelmInstaller:         helmInstaller,
 		KubeClusterClient:     kubeClusterClient,
 		DeployedVersionFinder: deployedVersionFinder,
+		HealthCheckClients:    healthCheckClients,
 	}
 }
 

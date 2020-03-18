@@ -410,3 +410,41 @@ func (mr *MockConfigMapClientMockRecorder) Update(ctx, configMap interface{}) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConfigMapClient)(nil).Update), ctx, configMap)
 }
+
+// MockNamespaceClient is a mock of NamespaceClient interface
+type MockNamespaceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockNamespaceClientMockRecorder
+}
+
+// MockNamespaceClientMockRecorder is the mock recorder for MockNamespaceClient
+type MockNamespaceClientMockRecorder struct {
+	mock *MockNamespaceClient
+}
+
+// NewMockNamespaceClient creates a new mock instance
+func NewMockNamespaceClient(ctrl *gomock.Controller) *MockNamespaceClient {
+	mock := &MockNamespaceClient{ctrl: ctrl}
+	mock.recorder = &MockNamespaceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockNamespaceClient) EXPECT() *MockNamespaceClientMockRecorder {
+	return m.recorder
+}
+
+// Get mocks base method
+func (m *MockNamespaceClient) Get(ctx context.Context, name string) (*v1.Namespace, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, name)
+	ret0, _ := ret[0].(*v1.Namespace)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get
+func (mr *MockNamespaceClientMockRecorder) Get(ctx, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockNamespaceClient)(nil).Get), ctx, name)
+}

@@ -49,3 +49,7 @@ type ConfigMapClient interface {
 	Get(ctx context.Context, objKey client.ObjectKey) (*corev1.ConfigMap, error)
 	Update(ctx context.Context, configMap *corev1.ConfigMap) error
 }
+
+type NamespaceClient interface {
+	Get(ctx context.Context, name string) (*corev1.Namespace, error)
+}

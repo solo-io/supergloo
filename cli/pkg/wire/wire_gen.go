@@ -16,6 +16,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
@@ -30,6 +33,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/version"
@@ -59,10 +63,15 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	if err != nil {
 		return nil, err
 	}
+	namespaceClient := kubernetes_core.NewGeneratedNamespaceClient(clientset)
+	serverVersionClient := kubernetes_discovery.NewGeneratedServerVersionClient(clientset)
+	podClient := kubernetes_core.NewGeneratedPodClient(clientset)
+	meshServiceClient := zephyr_discovery.NewGeneratedMeshServiceClient(masterConfig)
+	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
 	deploymentClient := kubernetes_apps.NewGeneratedDeploymentClient(clientset)
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, kubernetesClusterClient, deployedVersionFinder)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, kubernetesClusterClient, clients, deployedVersionFinder)
 	return kubeClients, nil
 }
 
@@ -78,9 +87,11 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	installerManifestBuilder := operator.NewInstallerManifestBuilder()
 	operatorManagerFactory := operator.NewOperatorManagerFactory()
 	istioClients := common.IstioClientsProvider(installerManifestBuilder, operatorManagerFactory)
+	statusClientFactory := status.StatusClientFactoryProvider()
+	healthCheckSuite := healthcheck.DefaultHealthChecksProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory()
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, clusterRegistrationClients)
+	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, clusterRegistrationClients)
 	return clients, nil
 }
 
@@ -99,7 +110,10 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
+	prettyPrinter := status.NewPrettyPrinter()
+	jsonPrinter := status.NewJsonPrinter()
+	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, checkCommand)
 	return command
 }
 
@@ -112,6 +126,9 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient clie
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand)
+	prettyPrinter := status.NewPrettyPrinter()
+	jsonPrinter := status.NewJsonPrinter()
+	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, checkCommand)
 	return command
 }
