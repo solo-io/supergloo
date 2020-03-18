@@ -12,3 +12,7 @@ keywords:
   - mesh
   - servicemesh
   - servicemeshhub
+dependencies:
+  - name: custom-resource-definitions
+    version: %version%
+    repository: https://storage.googleapis.com/service-mesh-hub/custom-resource-definitions

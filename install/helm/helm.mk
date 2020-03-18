@@ -8,7 +8,7 @@ HELM_OUTPUT_DIR ?= $(OUTPUT_DIR)/helm
 CHARTS_DIR := $(HELM_ROOTDIR)/charts
 PACKAGED_CHARTS_DIR := $(HELM_OUTPUT_DIR)/charts
 # list of SMH component directories, must be a subdirectory in install/helm/charts/
-CHARTS := $(COMPONENTS) custom-resource-definitions csr-agent
+CHARTS := $(COMPONENTS) custom-resource-definitions
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 # TAGGED_VERSION := $(shell git describe --tags)
@@ -37,10 +37,11 @@ HELM_EXPERIMENTAL_OCI=1 helm chart save $(CHARTS_DIR)/$(1) gcr.io/service-mesh-h
 HELM_EXPERIMENTAL_OCI=1 helm chart push gcr.io/service-mesh-hub/$(1):$(VERSION);
 endef
 
+# invoked once per dependency to be copied
+# $(1) is the component to be packaged, $(2) is the dependency
 define copy_as_dependency
-# the csr-agent is not a dependency of the management-plane
-if [ "$(1)" != "csr-agent" ]; then mkdir -p $(CHARTS_DIR)/management-plane/charts/$(1); fi;
-if [ "$(1)" != "csr-agent" ]; then cp -r $(CHARTS_DIR)/$(1) $(CHARTS_DIR)/management-plane/charts/; fi;
+mkdir -p $(CHARTS_DIR)/$(1)/charts/$(2);
+cp -r $(CHARTS_DIR)/$(2) $(CHARTS_DIR)/$(1)/charts/;
 endef
 
 # make a copy of */Chart-template.yaml and */values-template.yaml to */Chart.yaml and */values.yaml, with version injection
@@ -53,33 +54,66 @@ set-version:
 # package the helm chart
 .PHONY: package-component-charts
 package-component-charts:
-	@set -e
 	$(foreach chart,$(CHARTS),$(call package_chart,$(chart)))
-
-# fetch all SMH Helm dependencies (SMH component charts), then package SMH
-.PHONY: package-app-chart
-package-app-chart:
-	$(call package_chart,management-plane)
 
 # generate the helm repo index.yaml for SMH components
 .PHONY: index-component-charts
 index-component-charts:
 	$(foreach chart,$(CHARTS),$(call index_chart,$(chart)))
 
-# generate the helm repo index.yaml for SMH app
-.PHONY: index-app-chart
-index-app-chart:
-	$(call index_chart,management-plane)
+# package, index, and upload Helm charts SMH components
+.PHONY: package-index-components-helm
+package-index-components-helm: set-version package-component-charts index-component-charts
+
+#----------------------------------------------------------------------------------
+# management-plane
+#----------------------------------------------------------------------------------
 
 # copy component dependencies into app chart
-.PHONY: copy-dependencies
-copy-dependencies:
-	$(foreach chart,$(CHARTS),$(call copy_as_dependency,$(chart)))
+.PHONY: copy-dependencies-mgmt-plane
+copy-dependencies-mgmt-plane:
+	$(foreach chart,$(CHARTS),$(call copy_as_dependency,management-plane,$(chart)))
+
+# fetch all management-plane Helm dependencies (SMH component charts), then package management-plane
+.PHONY: package-mgmt-plane-chart
+package-mgmt-plane-chart:
+	$(call package_chart,management-plane)
+
+# generate the helm repo index.yaml for SMH app
+.PHONY: index-mgmt-plane-chart
+index-mgmt-plane-chart:
+	$(call index_chart,management-plane)
+
+# package, index, and upload Helm chart for the SMH app
+package-index-mgmt-plane-helm: package-index-components-helm copy-dependencies-mgmt-plane package-mgmt-plane-chart index-mgmt-plane-chart
+
+#----------------------------------------------------------------------------------
+# csr-agent
+#----------------------------------------------------------------------------------
+
+# copy component dependencies into app chart
+.PHONY: copy-dependencies-csr-agent
+copy-dependencies-csr-agent:
+	$(call copy_as_dependency,csr-agent,custom-resource-definitions)
+
+# fetch all SMH Helm dependencies (SMH component charts), then package SMH
+.PHONY: package-csr-agent-chart
+package-csr-agent-chart:
+	$(call package_chart,csr-agent)
+
+# generate the helm repo index.yaml for SMH app
+.PHONY: index-csr-agent-chart
+index-csr-agent-chart:
+	$(call index_chart,csr-agent)
+
+# package, index, and upload Helm chart for the SMH csr-agent
+package-index-csr-agent-helm: package-index-components-helm copy-dependencies-csr-agent package-csr-agent-chart index-csr-agent-chart
+
+#----------------------------------------------------------------------------------
+# Build Targets
+#----------------------------------------------------------------------------------
 
 # upload the new Helm package and index.yaml
-# use a wildcard in order to execute the target multiple times
-# which is needed because the component Helm packages must exist in the repo
-# before the app can be packaged
 .PHONY: save-helm
 save-helm:
 ifeq ($(RELEASE),"true")
@@ -87,17 +121,6 @@ ifeq ($(RELEASE),"true")
 else
 	echo "Not a release, skipping uploading to GCS."
 endif
-
-# package, index, and upload Helm charts SMH components
-.PHONY: package-index-components-helm
-package-index-components-helm: set-version package-component-charts index-component-charts
-
-# package, index, and upload Helm chart for the SMH app
-package-index-app-helm: package-index-components-helm copy-dependencies package-app-chart index-app-chart
-
-#----------------------------------------------------------------------------------
-# Build Targets
-#----------------------------------------------------------------------------------
 
 # must be executed during build prior to indexing helm repo to maintain prior versions in repo
 .PHONY: fetch-helm
@@ -113,14 +136,16 @@ push-chart-to-registry:
 	$(foreach chart,$(CHARTS),$(call push_chart_to_registry,$(chart)))
 	$(call push_chart_to_registry,management-plane)
 
-# package, index, and upload Helm charts for SMH components, then the SMH app
+# package, index, and upload Helm charts for SMH components, then the management-plane, then the csr-agent
 .PHONY: release-helm
-release-helm: package-index-app-helm save-helm
+release-helm: package-index-mgmt-plane-helm package-index-csr-agent-helm save-helm
 
 .PHONY: helm-clean
 helm-clean:
 	rm -rf $(HELM_OUTPUT_DIR)
 	rm -rf $(CHARTS_DIR)/management-plane/charts
 	rm -rf $(CHARTS_DIR)/management-plane/Chart.lock
+	rm -rf $(CHARTS_DIR)/csr-agent/charts
+	rm -rf $(CHARTS_DIR)/csr-agent/Chart.lock
 	find $(CHARTS_DIR) -type f -name "Chart.yaml" -exec rm {} \;
 	find $(CHARTS_DIR) -type f -name "values.yaml" -exec rm {} \;

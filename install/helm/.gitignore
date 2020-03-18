@@ -5,4 +5,5 @@ values.yaml
 Chart.lock
 # packages for app level Helm dependencies
 charts/management-plane/charts/*
+charts/csr-agent/charts/*
 

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Package csr-agent with all CRD's as a Helm dependency.
+    issueLink: https://github.com/solo-io/mesh-projects/issues/283
