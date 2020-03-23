@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -41,7 +42,7 @@ type linkerdMeshScanner struct {
 	imageNameParser docker.ImageNameParser
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment) (*discoveryv1alpha1.Mesh, error) {
+func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment, _ client.Client) (*discoveryv1alpha1.Mesh, error) {
 
 	linkerdController, err := l.detectLinkerdController(deployment)
 

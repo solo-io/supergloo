@@ -12,6 +12,7 @@ import (
 	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	controller "github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
@@ -132,16 +133,16 @@ func (m *MockMeshScanner) EXPECT() *MockMeshScannerMockRecorder {
 }
 
 // ScanDeployment mocks base method
-func (m *MockMeshScanner) ScanDeployment(arg0 context.Context, arg1 *v1.Deployment) (*v1alpha1.Mesh, error) {
+func (m *MockMeshScanner) ScanDeployment(arg0 context.Context, arg1 *v1.Deployment, arg2 client.Client) (*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScanDeployment", arg0, arg1)
+	ret := m.ctrl.Call(m, "ScanDeployment", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*v1alpha1.Mesh)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScanDeployment indicates an expected call of ScanDeployment
-func (mr *MockMeshScannerMockRecorder) ScanDeployment(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockMeshScannerMockRecorder) ScanDeployment(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDeployment", reflect.TypeOf((*MockMeshScanner)(nil).ScanDeployment), arg0, arg1, arg2)
 }

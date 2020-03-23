@@ -13,10 +13,9 @@ import (
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mesh_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
 	mock_discovery "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/mocks"
+	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func BuildDeployment(objMeta metav1.ObjectMeta) *appsv1.Deployment {
@@ -37,16 +36,13 @@ var _ = Describe("Mesh Finder", func() {
 		ctx             = context.TODO()
 		clusterName     = "cluster-name"
 		remoteNamespace = "remote-namespace"
+		clusterClient   *mock_controller_runtime.MockClient
 		testErr         = eris.New("test-err")
-		notFoundErr     = &errors.StatusError{
-			ErrStatus: metav1.Status{
-				Reason: metav1.StatusReasonNotFound,
-			},
-		}
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		clusterClient = mock_controller_runtime.NewMockClient(ctrl)
 	})
 
 	AfterEach(func() {
@@ -66,24 +62,17 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "test-mesh",
-				}).
-				Return(nil, notFoundErr)
-
-			localMeshClient.
-				EXPECT().
-				Create(ctx, mesh).
+				Upsert(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.Create(deployment)
@@ -104,30 +93,23 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{brokenMeshFinder, meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "test-mesh",
-				}).
-				Return(nil, notFoundErr)
+				Upsert(ctx, mesh).
+				Return(nil)
 
 			brokenMeshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, testErr)
-
-			localMeshClient.
-				EXPECT().
-				Create(ctx, mesh).
-				Return(nil)
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
@@ -144,11 +126,12 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, testErr)
 
 			err := eventHandler.Create(deployment)
@@ -169,11 +152,12 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, nil)
 
 			err := eventHandler.Create(deployment)
@@ -181,7 +165,7 @@ var _ = Describe("Mesh Finder", func() {
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
 
-		It("doesn't write a CR if we discovered a mesh that we discovered previously", func() {
+		It("performs an upsert if we discovered a mesh that we discovered previously", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
@@ -193,27 +177,25 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "test-mesh",
-				}).
-				Return(mesh, nil)
+				Upsert(ctx, mesh).
+				Return(nil)
 
 			err := eventHandler.Create(deployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
 
-		It("doesn't write a CR if we can't determine if this is a newly discovered mesh or not", func() {
+		It("returns error from Upsert if upsert fails", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})
@@ -225,20 +207,18 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, deployment).
+				ScanDeployment(ctx, deployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "test-mesh",
-				}).
-				Return(nil, testErr)
+				Upsert(ctx, mesh).
+				Return(testErr)
 
 			err := eventHandler.Create(deployment)
 			Expect(err).To(Equal(testErr))
@@ -250,7 +230,6 @@ var _ = Describe("Mesh Finder", func() {
 		It("can discover a mesh", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
-			oldDeployment := BuildDeployment(metav1.ObjectMeta{Name: "old-deployment", Namespace: remoteNamespace})
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
 			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
 			mesh := BuildMesh(meshObjectMeta)
@@ -260,75 +239,27 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
-				Return(nil, nil)
-
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, newDeployment).
+				ScanDeployment(ctx, newDeployment, clusterClient).
 				Return(mesh, nil)
 
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "test-mesh",
-				}).
-				Return(nil, notFoundErr)
-
-			localMeshClient.
-				EXPECT().
-				Create(ctx, mesh).
+				Upsert(ctx, mesh).
 				Return(nil)
 
-			err := eventHandler.Update(oldDeployment, newDeployment)
+			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(oldDeployment.GetClusterName()).To(Equal(clusterName))
-			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
-		})
-
-		It("does not do anything if we can't determine whether an old deployment represented a mesh", func() {
-			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
-			brokenMeshFinder := mock_discovery.NewMockMeshScanner(ctrl)
-			localMeshClient := mock_core.NewMockMeshClient(ctrl)
-			oldDeployment := BuildDeployment(metav1.ObjectMeta{Name: "old-deployment", Namespace: remoteNamespace})
-			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
-
-			eventHandler := mesh_discovery.NewMeshFinder(
-				ctx,
-				clusterName,
-				[]mesh_discovery.MeshScanner{brokenMeshFinder, meshFinder},
-				localMeshClient,
-			)
-
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
-				Return(nil, nil)
-
-			brokenMeshFinder.
-				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
-				Return(nil, testErr)
-
-			err := eventHandler.Update(oldDeployment, newDeployment)
-			multierr, ok := err.(*multierror.Error)
-			Expect(ok).To(BeTrue())
-			Expect(multierr.Errors).To(HaveLen(1))
-			Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(testErr))
-
-			Expect(oldDeployment.GetClusterName()).To(Equal(clusterName))
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})
 
 		It("doesn't do anything if no mesh was discovered", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
-			oldDeployment := BuildDeployment(metav1.ObjectMeta{Name: "old-deployment", Namespace: remoteNamespace})
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
 
 			eventHandler := mesh_discovery.NewMeshFinder(
@@ -336,63 +267,23 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
 
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
+				ScanDeployment(ctx, newDeployment, clusterClient).
 				Return(nil, nil)
 
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, newDeployment).
-				Return(nil, nil)
-
-			err := eventHandler.Update(oldDeployment, newDeployment)
+			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(oldDeployment.GetClusterName()).To(Equal(clusterName))
-			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
-		})
-
-		It("doesn't write a CR if the discovered meshes are equal", func() {
-			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
-			localMeshClient := mock_core.NewMockMeshClient(ctrl)
-			oldDeployment := BuildDeployment(metav1.ObjectMeta{Name: "old-deployment", Namespace: remoteNamespace})
-			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
-			meshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
-			mesh := BuildMesh(meshObjectMeta)
-
-			eventHandler := mesh_discovery.NewMeshFinder(
-				ctx,
-				clusterName,
-				[]mesh_discovery.MeshScanner{meshFinder},
-				localMeshClient,
-			)
-
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
-				Return(mesh, nil)
-
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, newDeployment).
-				Return(mesh, nil)
-
-			err := eventHandler.Update(oldDeployment, newDeployment)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(oldDeployment.GetClusterName()).To(Equal(clusterName))
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})
 
 		It("writes a new CR if an update event changes the mesh type", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
-			oldDeployment := BuildDeployment(metav1.ObjectMeta{Name: "old-deployment", Namespace: remoteNamespace})
 			newDeployment := BuildDeployment(metav1.ObjectMeta{Name: "new-deployment", Namespace: remoteNamespace})
-			oldMeshObjectMeta := metav1.ObjectMeta{Name: "test-mesh", Namespace: remoteNamespace}
-			oldMesh := BuildMesh(oldMeshObjectMeta)
-
 			newMeshObjectMeta := metav1.ObjectMeta{Name: "new-test-mesh", Namespace: remoteNamespace}
 			newMesh := BuildMesh(newMeshObjectMeta)
 
@@ -401,34 +292,18 @@ var _ = Describe("Mesh Finder", func() {
 				clusterName,
 				[]mesh_discovery.MeshScanner{meshFinder},
 				localMeshClient,
+				clusterClient,
 			)
-
 			meshFinder.
 				EXPECT().
-				ScanDeployment(ctx, oldDeployment).
-				Return(oldMesh, nil)
-
-			meshFinder.
-				EXPECT().
-				ScanDeployment(ctx, newDeployment).
+				ScanDeployment(ctx, newDeployment, clusterClient).
 				Return(newMesh, nil)
-
 			localMeshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
-					Namespace: remoteNamespace,
-					Name:      "new-test-mesh",
-				}).
-				Return(nil, notFoundErr)
-
-			localMeshClient.
-				EXPECT().
-				Create(ctx, newMesh).
+				Upsert(ctx, newMesh).
 				Return(nil)
-
-			err := eventHandler.Update(oldDeployment, newDeployment)
+			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(oldDeployment.GetClusterName()).To(Equal(clusterName))
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})
 	})

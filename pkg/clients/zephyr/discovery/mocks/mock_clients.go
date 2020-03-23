@@ -99,6 +99,34 @@ func (mr *MockMeshClientMockRecorder) List(ctx interface{}, opts ...interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshClient)(nil).List), varargs...)
 }
 
+// Upsert mocks base method
+func (m *MockMeshClient) Upsert(ctx context.Context, mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Upsert", ctx, mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Upsert indicates an expected call of Upsert
+func (mr *MockMeshClientMockRecorder) Upsert(ctx, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockMeshClient)(nil).Upsert), ctx, mesh)
+}
+
+// Update mocks base method
+func (m *MockMeshClient) Update(ctx context.Context, mesh *v1alpha1.Mesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, mesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update
+func (mr *MockMeshClientMockRecorder) Update(ctx, mesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshClient)(nil).Update), ctx, mesh)
+}
+
 // MockMeshWorkloadClient is a mock of MeshWorkloadClient interface
 type MockMeshWorkloadClient struct {
 	ctrl     *gomock.Controller

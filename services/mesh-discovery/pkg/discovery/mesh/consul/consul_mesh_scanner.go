@@ -17,6 +17,7 @@ import (
 	k8s_apps_v1 "k8s.io/api/apps/v1"
 	k8s_core_v1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -57,7 +58,7 @@ type consulMeshScanner struct {
 	imageNameParser                  docker.ImageNameParser
 }
 
-func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment) (*discoveryv1alpha1.Mesh, error) {
+func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment, _ client.Client) (*discoveryv1alpha1.Mesh, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		isConsulInstallation, err := c.consulConnectInstallationScanner.IsConsulConnect(container)
 		if err != nil {

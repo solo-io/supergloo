@@ -95,12 +95,12 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 	if err != nil {
 		return err
 	}
-
 	meshFinder := mesh.NewMeshFinder(
 		ctx,
 		clusterName,
 		m.meshScanners,
 		m.localMeshClient,
+		mgr.Manager().GetClient(),
 	)
 
 	meshWorkloadFinder := mesh_workload.NewMeshWorkloadFinder(

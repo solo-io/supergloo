@@ -7,6 +7,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type ConfigMapClientFactory func(client.Client) ConfigMapClient
+
+func ConfigMapClientFactoryProvider() ConfigMapClientFactory {
+	return NewConfigMapClient
+}
+
 func NewConfigMapClient(client client.Client) ConfigMapClient {
 	return &configMapClient{
 		client: client,

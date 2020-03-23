@@ -33,6 +33,7 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		controllers.NewServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,
 		discovery_core.NewMeshClientFactoryProvider,
+		kubernetes_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,
 		mesh_linkerd.WireProviderSet,
