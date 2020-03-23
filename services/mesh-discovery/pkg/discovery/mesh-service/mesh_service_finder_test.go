@@ -19,6 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -150,6 +151,13 @@ var _ = Describe("Mesh Service Finder", func() {
 					Selector: map[string]string{
 						"other-label": "value",
 					},
+					Ports: []corev1.ServicePort{{
+						Name:       "port-1",
+						Protocol:   "TCP",
+						Port:       80,
+						TargetPort: intstr.IntOrString{IntVal: 8080},
+						NodePort:   32000,
+					}},
 				},
 			}
 			rightService := corev1.Service{
@@ -165,6 +173,13 @@ var _ = Describe("Mesh Service Finder", func() {
 					Selector: map[string]string{
 						"label": "value",
 					},
+					Ports: []corev1.ServicePort{{
+						Name:       "correct-service-port",
+						Protocol:   "TCP",
+						Port:       443,
+						TargetPort: intstr.IntOrString{IntVal: 8443},
+						NodePort:   32001,
+					}},
 				},
 			}
 
@@ -210,6 +225,11 @@ var _ = Describe("Mesh Service Finder", func() {
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
 							Labels:                 rightService.GetLabels(),
+							Ports: []*discovery_types.KubeServicePort{{
+								Name:     "correct-service-port",
+								Port:     443,
+								Protocol: "TCP",
+							}},
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
 						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{
@@ -366,6 +386,13 @@ var _ = Describe("Mesh Service Finder", func() {
 					Selector: map[string]string{
 						"label": "value",
 					},
+					Ports: []corev1.ServicePort{{
+						Name:       "port-1",
+						Protocol:   "TCP",
+						Port:       80,
+						TargetPort: intstr.IntOrString{IntVal: 8080},
+						NodePort:   32000,
+					}},
 				},
 			}
 
@@ -402,6 +429,11 @@ var _ = Describe("Mesh Service Finder", func() {
 								Cluster:   &protobuf_types.StringValue{Value: clusterName},
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
+							Ports: []*discovery_types.KubeServicePort{{
+								Name:     "port-1",
+								Port:     80,
+								Protocol: "TCP",
+							}},
 						},
 						Mesh: meshWorkloadEvent.Spec.Mesh,
 					},
@@ -423,6 +455,13 @@ var _ = Describe("Mesh Service Finder", func() {
 						"app":   "test-app",
 						"track": "canary",
 					},
+					Ports: []corev1.ServicePort{{
+						Name:       "port-1",
+						Protocol:   "TCP",
+						Port:       80,
+						TargetPort: intstr.IntOrString{IntVal: 8080},
+						NodePort:   32000,
+					}},
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-svc",
@@ -517,6 +556,11 @@ var _ = Describe("Mesh Service Finder", func() {
 							},
 							WorkloadSelectorLabels: serviceEvent.Spec.Selector,
 							Labels:                 serviceEvent.GetLabels(),
+							Ports: []*discovery_types.KubeServicePort{{
+								Name:     "port-1",
+								Port:     80,
+								Protocol: "TCP",
+							}},
 						},
 						Mesh: rightWorkloadV1.Spec.Mesh,
 						Subsets: map[string]*discovery_types.MeshServiceSpec_Subset{

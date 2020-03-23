@@ -45,6 +45,14 @@ message KubeService {
     map<string, string> workload_selector_labels = 2;
     // labels on the underyling k8s Service itself
     map<string, string> labels = 3;
+    repeated KubeServicePort ports = 4;
+}
+
+message KubeServicePort {
+    // external-facing port for this service (i.e., NOT the service's target port on the backing pods)
+    uint32 port = 1;
+    string name = 2;
+    string protocol = 3;
 }
 
 message MeshServiceStatus {

@@ -63,6 +63,17 @@ func (this *KubeService) UnmarshalJSON(b []byte) error {
 	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for KubeServicePort
+func (this *KubeServicePort) MarshalJSON() ([]byte, error) {
+	str, err := RegistryMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for KubeServicePort
+func (this *KubeServicePort) UnmarshalJSON(b []byte) error {
+	return RegistryUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MeshServiceStatus
 func (this *MeshServiceStatus) MarshalJSON() ([]byte, error) {
 	str, err := RegistryMarshaler.MarshalToString(this)

@@ -206,11 +206,23 @@ func (m *meshServiceFinder) buildMeshService(
 				},
 				WorkloadSelectorLabels: service.Spec.Selector,
 				Labels:                 service.GetLabels(),
+				Ports:                  m.convertPorts(service),
 			},
 			Mesh:    meshRef,
 			Subsets: subsets,
 		},
 	}
+}
+
+func (m *meshServiceFinder) convertPorts(service *corev1.Service) (ports []*discovery_types.KubeServicePort) {
+	for _, kubePort := range service.Spec.Ports {
+		ports = append(ports, &discovery_types.KubeServicePort{
+			Port:     uint32(kubePort.Port),
+			Name:     kubePort.Name,
+			Protocol: string(kubePort.Protocol),
+		})
+	}
+	return ports
 }
 
 func (m *meshServiceFinder) upsertMeshService(
