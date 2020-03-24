@@ -66,7 +66,7 @@ var _ = Describe("Cluster Operations", func() {
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
-				SecretClient:         secretClient,
+				SecretsClient:        secretClient,
 				NamespaceClient:      namespaceClient,
 				KubeClusterClient:    clusterClient,
 			},

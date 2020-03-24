@@ -301,7 +301,7 @@ func writeKubeConfigToMaster(
 		return nil, FailedToConvertToSecret(err)
 	}
 
-	err = masterKubeClients.SecretClient.UpsertData(ctx, secret)
+	err = masterKubeClients.SecretsClient.UpsertData(ctx, secret)
 	if err != nil {
 		return nil, FailedToWriteSecret(err)
 	}

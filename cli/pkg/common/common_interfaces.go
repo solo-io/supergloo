@@ -30,7 +30,6 @@ import (
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
-	SecretClient                    kubernetes_core.SecretsClient
 	HelmInstaller                   types.Installer
 	HelmClient                      types.HelmClient                       // used for uninstalling - the go-utils package is not laid out very well
 	KubeClusterClient               discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
