@@ -15,8 +15,6 @@
 #
 #####################################
 
-set -e
-
 if [ "$1" == "cleanup" ]; then
   kind get clusters | while read -r r; do kind delete cluster --name "$r"; done
   exit 0
@@ -30,7 +28,25 @@ remoteCluster=target-cluster-$(xxd -l16 -ps /dev/urandom)
 
 # set up each cluster
 kind create cluster --name $managementPlane
-kind create cluster --name $remoteCluster
+# Create NodePort for remote cluster so it can be reachable from the management plane.
+# This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
+cat <<EOF | kind create cluster --name $remoteCluster --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+        authorization-mode: "AlwaysAllow"
+  extraPortMappings:
+  - containerPort: 32000
+    hostPort: 32000
+    protocol: TCP
+EOF
 
 printf "\n\n---\n"
 echo "Finished setting up cluster $managementPlane"
@@ -40,7 +56,15 @@ echo "Finished setting up cluster $remoteCluster"
 kubectl config use-context kind-$managementPlane
 
 # ensure service-mesh-hub ns exists
-kubectl create ns service-mesh-hub
+kubectl create ns --context kind-$managementPlane  service-mesh-hub
+kubectl create ns --context kind-$remoteCluster  service-mesh-hub
+
+# leaving this in for the time being as there is a race with helm installing CRDs
+# register all our CRDs in the management plane
+ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$managementPlane apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
+# register all the CRDs in the target cluster too
+ls install/helm/charts/custom-resource-definitions/crds | while read f; do kubectl --context kind-$remoteCluster apply -f install/helm/charts/custom-resource-definitions/crds/$f; done
+
 
 # make all the docker images
 # write the output to a temp file so that we can grab the image names out of it
@@ -62,27 +86,177 @@ sed -nE 's|Successfully tagged (.*$)|\1|p' $tempFile | while read f; do kind loa
 make -s package-index-mgmt-plane-helm -B
 make -s package-index-csr-agent-helm -B
 
+# generate the meshctl binary
+make meshctl -B
 # install the app
 # the helm version needs to strip the leading v out of the git describe output
 helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
-helm \
-  -n service-mesh-hub \
-  install service-mesh-hub \
-  ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
+./_output/meshctl install --file ./_output/helm/charts/management-plane/service-mesh-hub-$helmVersion.tgz
 
-# generate the meshctl binary, register the remote cluster, and install Istio onto the remote cluster
-make meshctl -B
+#register the remote cluster, and install Istio onto the management plane cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$managementPlane \
   --remote-cluster-name management-plane-cluster \
   --local-cluster-domain-override host.docker.internal \
   --dev-csr-agent-chart
 
+#register the remote cluster, and install Istio onto the remote cluster
 ./_output/meshctl cluster register \
   --remote-context kind-$remoteCluster \
   --remote-cluster-name target-cluster \
   --local-cluster-domain-override host.docker.internal \
   --dev-csr-agent-chart
 
-./_output/meshctl istio install --profile=default --context kind-$remoteCluster
-./_output/meshctl istio install --profile=minimal --context kind-$managementPlane
+./_output/meshctl istio install --context kind-$remoteCluster --control-plane-spec=- <<EOF
+apiVersion: install.istio.io/v1alpha2
+kind: IstioControlPlane
+metadata:
+  name: example-istiocontrolplane
+  namespace: istio-operator
+spec:
+  autoInjection:
+    injector:
+      enabled: true
+    enabled: true
+  hub: docker.io/istio
+  tag: 1.5.0-alpha.0
+  telemetry:
+    enabled: false
+  values:
+    prometheus:
+      enabled: false
+    gateways:
+      istio-ingressgateway:
+        type: NodePort
+        ports:
+          - targetPort: 15443
+            name: tls
+            nodePort: 32000
+            port: 15443
+    global:
+      controlPlaneSecurityEnabled: true
+      mtls:
+        enabled: true
+      podDNSSearchNamespaces:
+      - global
+      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
+    security:
+      selfSigned: false
+EOF
+
+./_output/meshctl istio install --context kind-$managementPlane --control-plane-spec=- <<EOF
+apiVersion: install.istio.io/v1alpha2
+kind: IstioControlPlane
+metadata:
+  name: example-istiocontrolplane
+  namespace: istio-operator
+spec:
+  autoInjection:
+    injector:
+      enabled: true
+    enabled: true
+  hub: docker.io/istio
+  tag: 1.5.0-alpha.0
+  telemetry:
+    enabled: false
+  values:
+    prometheus:
+      enabled: false
+    global:
+      controlPlaneSecurityEnabled: true
+      mtls:
+        enabled: true
+      podDNSSearchNamespaces:
+      - global
+      - '{{ valueOrDefault .DeploymentMeta.Namespace "default" }}.global'
+    security:
+      selfSigned: false
+EOF
+
+
+echo '>>> Waiting for Meshes to be created'
+retries=50
+count=0
+ok=false
+until ${ok}; do
+    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshes | grep istio -c`
+    if [[ ${numResources} -eq 2 ]]; then
+        ok=true
+        continue
+    fi
+    sleep 5
+    count=$(($count + 1))
+    if [[ ${count} -eq ${retries} ]]; then
+        echo "No more retries left"
+        exit 1
+    fi
+done
+
+echo '✔ Meshes have been created'
+
+kubectl --context kind-$managementPlane apply -f - <<EOF
+apiVersion: networking.zephyr.solo.io/v1alpha1
+kind: VirtualMesh
+metadata:
+  name: virtual-mesh
+  namespace: service-mesh-hub
+spec:
+  meshes:
+  - name: istio-istio-system-target-cluster
+    namespace: service-mesh-hub
+  - name: istio-istio-system-management-plane-cluster
+    namespace: service-mesh-hub
+  certificate_authority:
+    builtin: {}
+EOF
+
+kubectl --context kind-$managementPlane -n istio-system rollout status deployment istio-citadel
+kubectl --context kind-$remoteCluster -n istio-system rollout status deployment istio-citadel
+
+# label bookinfo namespaces for injection
+kubectl --context kind-$managementPlane label namespace default istio-injection=enabled
+kubectl --context kind-$remoteCluster label namespace default istio-injection=enabled
+
+# Apply bookinfo deployments and services
+kubectl apply --context kind-$managementPlane -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml
+kubectl apply --context kind-$remoteCluster -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml
+
+echo '>>> Waiting for MeshWorkloads to be created'
+retries=50
+count=0
+ok=false
+until ${ok}; do
+    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshworkloads | grep istio -c`
+    if [[ ${numResources} -eq 12 ]]; then
+        ok=true
+        continue
+    fi
+    sleep 5
+    count=$(($count + 1))
+    if [[ ${count} -eq ${retries} ]]; then
+        echo "No more retries left"
+        exit 1
+    fi
+done
+
+echo '✔ MeshWorkloads have been created'
+
+echo '>>> Waiting for MeshServices to be created'
+retries=50
+count=0
+ok=false
+until ${ok}; do
+    numResources=`kubectl --context kind-$managementPlane -n service-mesh-hub get meshservices | grep default -c`
+    if [[ ${numResources} -eq 8 ]]; then
+        ok=true
+        continue
+    fi
+    sleep 5
+    count=$(($count + 1))
+    if [[ ${count} -eq ${retries} ]]; then
+        echo "No more retries left"
+        exit 1
+    fi
+done
+
+echo '✔ MeshServices have been created'

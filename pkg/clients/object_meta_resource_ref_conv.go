@@ -13,6 +13,13 @@ func ObjectMetaToResourceRef(objMeta v1.ObjectMeta) *core_types.ResourceRef {
 	}
 }
 
+func ObjectMetaToObjectKey(objMeta v1.ObjectMeta) client.ObjectKey {
+	return client.ObjectKey{
+		Name:      objMeta.GetName(),
+		Namespace: objMeta.GetNamespace(),
+	}
+}
+
 func ResourceRefToObjectMeta(ref *core_types.ResourceRef) v1.ObjectMeta {
 	return v1.ObjectMeta{
 		Name:      ref.GetName(),

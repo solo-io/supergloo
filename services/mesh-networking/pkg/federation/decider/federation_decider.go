@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/wire"
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -15,11 +14,6 @@ import (
 )
 
 var (
-	FederationSet = wire.NewSet(
-		NewFederationDecider,
-		NewFederationSnapshotListener,
-	)
-
 	UnsupportedFederationMode = "Unsupported federation_mode"
 	ErrorUpdatingMeshServices = func(err error) string {
 		return fmt.Sprintf("Error while updating mesh services' federation metadata: %s", err.Error())
@@ -29,7 +23,7 @@ var (
 	}
 )
 
-func NewFederationSnapshotListener(decider FederationDecider) FederationSnapshotListener {
+func NewFederationSnapshotListener(decider FederationDecider) FederationDeciderSnapshotListener {
 	return &snapshot.MeshNetworkingSnapshotListenerFunc{
 		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
 			decider.DecideFederation(ctx, snap)
@@ -37,7 +31,7 @@ func NewFederationSnapshotListener(decider FederationDecider) FederationSnapshot
 	}
 }
 
-type FederationSnapshotListener snapshot.MeshNetworkingSnapshotListener
+type FederationDeciderSnapshotListener snapshot.MeshNetworkingSnapshotListener
 
 type FederationDecider interface {
 	DecideFederation(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot)
@@ -122,7 +116,7 @@ func (f *federationDecider) federateVirtualMesh(
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
 	} else {
-		logger.Error("Recording error to virtual mesh %+v: %+v", vm.ObjectMeta, err)
+		logger.Error("Recording error to virtual mesh %s.%s: %+v", vm.Name, vm.Namespace, err)
 		vm.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),
@@ -138,6 +132,6 @@ func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtual
 
 	err := f.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
 	if err != nil {
-		logger.Errorf("Error updating federation status on virtual mesh %+v", virtualMesh.ObjectMeta)
+		logger.Errorf("Error updating federation status on virtual mesh %s.%s", virtualMesh.Name, virtualMesh.Namespace)
 	}
 }

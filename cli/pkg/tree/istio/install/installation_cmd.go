@@ -30,6 +30,7 @@ func BuildIstioInstallationCmd(
 	clientsFactory common.ClientsFactory,
 	opts *options.Options,
 	out io.Writer,
+	in io.Reader,
 	kubeLoader common_config.KubeLoader,
 	imageNameParser docker.ImageNameParser,
 	fileReader common.FileReader,
@@ -43,7 +44,7 @@ func BuildIstioInstallationCmd(
 				return err
 			}
 
-			istioInstaller, err := buildIstioInstaller(out, clients, opts, opts.Root.KubeConfig, opts.Root.KubeContext, kubeLoader, imageNameParser, fileReader)
+			istioInstaller, err := buildIstioInstaller(out, in, clients, opts, opts.Root.KubeConfig, opts.Root.KubeContext, kubeLoader, imageNameParser, fileReader)
 			if err != nil {
 				return err
 			}
@@ -61,6 +62,7 @@ func BuildIstioInstallationCmd(
 
 func buildIstioInstaller(
 	out io.Writer,
+	in io.Reader,
 	clients *common.Clients,
 	opts *options.Options,
 	kubeConfigPath,
@@ -101,6 +103,7 @@ func buildIstioInstaller(
 		&opts.Istio.Install,
 		clusterName,
 		out,
+		in,
 		clients.IstioClients.OperatorManifestBuilder,
 		operatorManager,
 		fileReader,

@@ -19,6 +19,11 @@ import (
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 	access_control_poilcy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-poilcy"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver"
+	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -87,13 +92,29 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	istioCertConfigProducer := cert_manager.NewIstioCertConfigProducer()
 	virtualMeshCertificateManager := cert_manager.NewVirtualMeshCsrProcessor(dynamicClientGetter, meshClient, virtualMeshFinder, virtualMeshCSRClientFactory, istioCertConfigProducer)
 	vmcsrSnapshotListener := cert_manager.NewVMCSRSnapshotListener(virtualMeshCertificateManager, virtualMeshClient)
-	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, virtualMeshControllerFactory, meshNetworkingSnapshotValidator, vmcsrSnapshotListener)
+	federationStrategyChooser := strategies.NewFederationStrategyChooser()
+	federationDecider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, federationStrategyChooser)
+	federationDeciderSnapshotListener := decider.NewFederationSnapshotListener(federationDecider)
+	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, virtualMeshControllerFactory, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)
 	accessControlPolicyController, err := LocalAccessControlPolicyProvider(asyncManager)
 	if err != nil {
 		return MeshNetworkingContext{}, err
 	}
 	authorizationPolicyClient := security.NewAuthorizationPolicyClient(client)
 	accessControlPolicyTranslator := access_control_poilcy.NewAccessControlPolicyTranslator(accessControlPolicyController, authorizationPolicyClient)
-	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslator, meshNetworkingSnapshotContext, accessControlPolicyTranslator)
+	meshWorkloadClient := zephyr_discovery.NewMeshWorkloadClient(client)
+	gatewayClientFactory := istio_networking.NewGatewayClientFactory()
+	envoyFilterClientFactory := istio_networking.NewEnvoyFilterClientFactory()
+	serviceEntryClientFactory := istio_networking.NewServiceEntryClientFactory()
+	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
+	configMapClient := kubernetes_core.NewConfigMapClient(client)
+	ipAssigner := dns.NewIpAssigner(configMapClient)
+	podClientFactory := kubernetes_core.NewPodClientFactory()
+	nodeClientFactory := kubernetes_core.NewNodeClientFactory()
+	externalAccessPointGetter := dns.NewExternalAccessPointGetter(dynamicClientGetter, podClientFactory, nodeClientFactory)
+	istioFederationClient := istio_federation.NewIstioFederationClient(dynamicClientGetter, meshClient, gatewayClientFactory, envoyFilterClientFactory, destinationRuleClientFactory, serviceEntryClientFactory, serviceClientFactory, ipAssigner, externalAccessPointGetter)
+	perMeshFederationClients := resolver.NewPerMeshFederationClients(istioFederationClient)
+	federationResolver := resolver.NewFederationResolver(meshClient, meshWorkloadClient, meshServiceClient, virtualMeshClient, perMeshFederationClients, meshServiceController)
+	meshNetworkingContext := MeshNetworkingContextProvider(multiClusterDependencies, asyncManagerHandler, trafficPolicyTranslator, meshNetworkingSnapshotContext, accessControlPolicyTranslator, federationResolver)
 	return meshNetworkingContext, nil
 }

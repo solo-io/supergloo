@@ -23,7 +23,9 @@ type MockMeshctl struct {
 	// MUST be non-nil - we always need to produce a mocked master cluster verification client and a mocked usage reporter
 	MockController *gomock.Controller
 
-	// MUST be non-nil
+	// Stdin which is turned into a *bytes.Buffer and passed into the command chain as an io.Reader
+	Stdin string
+
 	Ctx context.Context
 
 	Clients common.Clients
@@ -58,10 +60,10 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 	clientsFactory := func(opts *options.Options) (*common.Clients, error) {
 		return &m.Clients, nil
 	}
-
 	app := wire.InitializeCLIWithMocks(
 		m.Ctx,
 		buffer,
+		bytes.NewBufferString(m.Stdin),
 		usageReporter,
 		kubeFactory,
 		clientsFactory,

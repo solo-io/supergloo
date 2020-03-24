@@ -23,6 +23,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/mesh-projects/pkg/auth/mocks"
+	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
@@ -41,7 +42,8 @@ var _ = Describe("Cluster Operations", func() {
 	var (
 		ctrl              *gomock.Controller
 		ctx               context.Context
-		secretWriter      *cli_mocks.MockSecretWriter
+		secretClient      *mock_kubernetes_core.MockSecretsClient
+		namespaceClient   *mock_kubernetes_core.MockNamespaceClient
 		authClient        *mock_auth.MockClusterAuthorization
 		kubeLoader        *cli_mocks.MockKubeLoader
 		meshctl           *cli_test.MockMeshctl
@@ -54,7 +56,8 @@ var _ = Describe("Cluster Operations", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 
-		secretWriter = cli_mocks.NewMockSecretWriter(ctrl)
+		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		namespaceClient = mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		authClient = mock_auth.NewMockClusterAuthorization(ctrl)
 		kubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		configVerifier = cli_mocks.NewMockMasterKubeConfigVerifier(ctrl)
@@ -63,7 +66,8 @@ var _ = Describe("Cluster Operations", func() {
 		meshctl = &cli_test.MockMeshctl{
 			KubeClients: common.KubeClients{
 				ClusterAuthorization: authClient,
-				SecretWriter:         secretWriter,
+				SecretClient:         secretClient,
+				NamespaceClient:      namespaceClient,
 				KubeClusterClient:    clusterClient,
 			},
 			Clients: common.Clients{
@@ -108,7 +112,7 @@ users:
 			}
 			serviceAccountRef = &core_types.ResourceRef{
 				Name:      "test-cluster-name",
-				Namespace: "default",
+				Namespace: env.DefaultWriteNamespace,
 			}
 
 			contextABC    = "contextABC"
@@ -162,10 +166,15 @@ users:
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
@@ -173,8 +182,8 @@ users:
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					RemoteWriteNamespace: env.DefaultWriteNamespace,
 					ReleaseName:          cliconstants.CsrAgentReleaseName,
-					RemoteWriteNamespace: "default",
 				}).
 				Return(nil)
 
@@ -188,7 +197,7 @@ users:
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
-					WriteNamespace: "default",
+					WriteNamespace: env.DefaultWriteNamespace,
 				},
 			}).Return(nil)
 
@@ -249,10 +258,15 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			csrAgentInstaller.
 				EXPECT().
@@ -260,8 +274,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeConfig:           remoteKubeConfig,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					RemoteWriteNamespace: env.DefaultWriteNamespace,
 					ReleaseName:          cliconstants.CsrAgentReleaseName,
-					RemoteWriteNamespace: "default",
 				})
 
 			clusterClient.
@@ -276,7 +290,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
-						WriteNamespace: "default",
+						WriteNamespace: env.DefaultWriteNamespace,
 					},
 				}).
 				Return(nil)
@@ -338,10 +352,15 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			csrAgentInstaller.
 				EXPECT().
@@ -350,8 +369,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeContext:          contextDEF,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					RemoteWriteNamespace: env.DefaultWriteNamespace,
 					ReleaseName:          cliconstants.CsrAgentReleaseName,
-					RemoteWriteNamespace: "default",
 				})
 
 			clusterClient.
@@ -366,7 +385,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
-						WriteNamespace: "default",
+						WriteNamespace: env.DefaultWriteNamespace,
 					},
 				}).
 				Return(nil)
@@ -437,6 +456,56 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				EXPECT().
 				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(nil, testErr)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
+
+			clusterClient.EXPECT().Get(ctx,
+				client.ObjectKey{
+					Name:      "test-cluster-name",
+					Namespace: env.DefaultWriteNamespace,
+				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
+
+			stdout, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
+
+			Expect(err).To(Equal(testErr))
+			Expect(stdout).To(ContainSubstring(register.FailedToCreateAuthToken(serviceAccountRef, remoteKubeConfig, "")))
+		})
+
+		It("will create namespace if it does not exist", func() {
+			localKubeConfig := "~/.kube/master-config"
+			remoteKubeConfig := "~/.kube/target-config"
+			os.Setenv("KUBECONFIG", localKubeConfig)
+			defer os.Setenv("KUBECONFIG", "")
+			testErr := eris.New("hello")
+
+			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(localKubeConfig, "").
+				Return(targetRestConfig, nil)
+			kubeLoader.
+				EXPECT().
+				GetRestConfigForContext(remoteKubeConfig, "").
+				Return(targetRestConfig, nil)
+			authClient.
+				EXPECT().
+				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
+				Return(nil, testErr)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
+			namespaceClient.
+				EXPECT().
+				Create(ctx, &v1.Namespace{
+					ObjectMeta: metav1.ObjectMeta{Name: env.DefaultWriteNamespace},
+				}).
+				Return(nil)
 
 			clusterClient.EXPECT().Get(ctx,
 				client.ObjectKey{
@@ -546,9 +615,9 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 					Namespace: env.DefaultWriteNamespace,
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(&v1.Secret{
+				UpsertData(ctx, &v1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
 						Name:      serviceAccountRef.Name,
@@ -560,6 +629,11 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 					Type: v1.SecretTypeOpaque,
 				}).
 				Return(testErr)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			output, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
 				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
@@ -624,10 +698,15 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			testErr := eris.New("test")
 
@@ -641,7 +720,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
-					WriteNamespace: "default",
+					WriteNamespace: env.DefaultWriteNamespace,
 				},
 			}).Return(testErr)
 
@@ -681,10 +760,15 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			csrAgentInstaller.
 				EXPECT().
@@ -694,7 +778,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
 					ReleaseName:          cliconstants.CsrAgentReleaseName,
-					RemoteWriteNamespace: "default",
+					RemoteWriteNamespace: env.DefaultWriteNamespace,
 				})
 
 			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
@@ -707,7 +791,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
-					WriteNamespace: "default",
+					WriteNamespace: env.DefaultWriteNamespace,
 				},
 			}).Return(nil)
 
@@ -750,10 +834,15 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Type: v1.SecretTypeOpaque,
 			}
 
-			secretWriter.
+			secretClient.
 				EXPECT().
-				Apply(secret).
+				UpsertData(ctx, secret).
 				Return(nil)
+
+			namespaceClient.
+				EXPECT().
+				Get(ctx, env.DefaultWriteNamespace).
+				Return(nil, nil)
 
 			csrAgentInstaller.EXPECT().
 				Install(ctx, &csr.CsrAgentInstallOptions{
@@ -761,8 +850,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
+					RemoteWriteNamespace: env.DefaultWriteNamespace,
 					ReleaseName:          cliconstants.CsrAgentReleaseName,
-					RemoteWriteNamespace: "default",
 					UseDevCsrAgentChart:  true,
 				}).
 				Return(nil)
@@ -777,7 +866,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
-					WriteNamespace: "default",
+					WriteNamespace: env.DefaultWriteNamespace,
 				},
 			}).Return(nil)
 

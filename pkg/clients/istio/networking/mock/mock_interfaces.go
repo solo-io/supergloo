@@ -259,18 +259,18 @@ func (mr *MockVirtualServiceClientMockRecorder) Update(ctx, virtualService inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockVirtualServiceClient)(nil).Update), varargs...)
 }
 
-// Upsert mocks base method.
-func (m *MockVirtualServiceClient) Upsert(ctx context.Context, virtualService *v1alpha3.VirtualService) error {
+// UpsertSpec mocks base method.
+func (m *MockVirtualServiceClient) UpsertSpec(ctx context.Context, virtualService *v1alpha3.VirtualService) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upsert", ctx, virtualService)
+	ret := m.ctrl.Call(m, "UpsertSpec", ctx, virtualService)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Upsert indicates an expected call of Upsert.
-func (mr *MockVirtualServiceClientMockRecorder) Upsert(ctx, virtualService interface{}) *gomock.Call {
+// UpsertSpec indicates an expected call of UpsertSpec.
+func (mr *MockVirtualServiceClientMockRecorder) UpsertSpec(ctx, virtualService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockVirtualServiceClient)(nil).Upsert), ctx, virtualService)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockVirtualServiceClient)(nil).UpsertSpec), ctx, virtualService)
 }
 
 // MockDestinationRuleClient is a mock of DestinationRuleClient interface.
@@ -344,16 +344,16 @@ func (mr *MockDestinationRuleClientMockRecorder) Update(ctx, destinationRule int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDestinationRuleClient)(nil).Update), varargs...)
 }
 
-// Upsert mocks base method.
-func (m *MockDestinationRuleClient) Upsert(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
+// UpsertSpec mocks base method.
+func (m *MockDestinationRuleClient) UpsertSpec(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upsert", ctx, destinationRule)
+	ret := m.ctrl.Call(m, "UpsertSpec", ctx, destinationRule)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Upsert indicates an expected call of Upsert.
-func (mr *MockDestinationRuleClientMockRecorder) Upsert(ctx, destinationRule interface{}) *gomock.Call {
+// UpsertSpec indicates an expected call of UpsertSpec.
+func (mr *MockDestinationRuleClientMockRecorder) UpsertSpec(ctx, destinationRule interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockDestinationRuleClient)(nil).Upsert), ctx, destinationRule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockDestinationRuleClient)(nil).UpsertSpec), ctx, destinationRule)
 }

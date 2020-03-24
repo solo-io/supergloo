@@ -1,4 +1,4 @@
-//+build wireinject
+// +build wireinject
 
 package wire
 
@@ -23,6 +23,10 @@ import (
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
 	wire.Build(
 		kubernetes_core.NewSecretsClient,
+		kubernetes_core.NewConfigMapClient,
+		kubernetes_core.NewPodClientFactory,
+		kubernetes_core.NewNodeClientFactory,
+		discovery_core.NewMeshWorkloadClient,
 		zephyr_networking.NewVirtualMeshClient,
 		discovery_core.NewMeshClient,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,
@@ -36,6 +40,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		ControllerFactoryProviderSet,
 		TrafficPolicyProviderSet,
 		AccessControlPolicySet,
+		FederationProviderSet,
 		networking_multicluster.NewMeshNetworkingClusterHandler,
 		controllers.NewMeshServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,

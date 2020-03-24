@@ -65,7 +65,8 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-		).Start(ctx, meshServiceController)
+			meshServiceController,
+		).Start(ctx)
 
 		oldMeshService := &discovery_v1alpha1.MeshService{
 			Spec: types.MeshServiceSpec{
@@ -116,7 +117,8 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-		).Start(ctx, meshServiceController)
+			meshServiceController,
+		).Start(ctx)
 
 		service1 := &discovery_v1alpha1.MeshService{
 			Spec: types.MeshServiceSpec{
@@ -158,7 +160,8 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-		).Start(ctx, meshServiceController)
+			meshServiceController,
+		).Start(ctx)
 
 		federatedServiceRef := &core_types.ResourceRef{
 			Name:      "federated-service",

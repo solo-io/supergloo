@@ -25,3 +25,12 @@ func (g *generatedNamespaceClient) Get(ctx context.Context, name string) (*corev
 func (g *generatedNamespaceClient) Delete(ctx context.Context, name string) error {
 	return g.client.CoreV1().Namespaces().Delete(name, &metav1.DeleteOptions{})
 }
+
+func (g *generatedNamespaceClient) Create(ctx context.Context, ns *corev1.Namespace) error {
+	created, err := g.client.CoreV1().Namespaces().Create(ns)
+	if err != nil {
+		return err
+	}
+	*ns = *created
+	return nil
+}

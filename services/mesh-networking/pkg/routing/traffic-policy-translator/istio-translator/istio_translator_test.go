@@ -125,7 +125,7 @@ var _ = Describe("IstioTranslator", func() {
 					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: api_v1alpha3.VirtualService{
-					Hosts: []string{meshServiceObjKey.Name},
+					Hosts: []string{kubeServiceObjKey.Name},
 					Http: []*api_v1alpha3.HTTPRoute{
 						{
 							Match: []*api_v1alpha3.HTTPMatchRequest{{}},
@@ -148,7 +148,7 @@ var _ = Describe("IstioTranslator", func() {
 					Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: api_v1alpha3.DestinationRule{
-					Host: meshServiceObjKey.Name,
+					Host: kubeServiceObjKey.Name,
 					TrafficPolicy: &api_v1alpha3.TrafficPolicy{
 						Tls: &api_v1alpha3.TLSSettings{
 							Mode: api_v1alpha3.TLSSettings_ISTIO_MUTUAL,
@@ -156,7 +156,7 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mockDestinationRuleClient.EXPECT().Upsert(ctx, computedDestinationRule).Return(nil)
+			mockDestinationRuleClient.EXPECT().Create(ctx, computedDestinationRule).Return(nil)
 			return &testContext{
 				clusterName:            clusterName,
 				meshObjKey:             meshObjKey,
@@ -173,7 +173,7 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx,
@@ -213,7 +213,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -242,7 +242,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -264,7 +264,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
 				httpRoute.Mirror = &api_v1alpha3.Destination{
-					Host: destName + "." + destNamespace,
+					Host: destName,
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
@@ -284,7 +284,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -328,7 +328,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -355,7 +355,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -384,7 +384,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -413,7 +413,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -434,7 +434,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -480,7 +480,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -503,7 +503,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -526,7 +526,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -565,7 +565,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -588,7 +588,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -611,7 +611,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -634,7 +634,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -686,7 +686,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -700,7 +700,7 @@ var _ = Describe("IstioTranslator", func() {
 			multiClusterDnsName := "multicluster-dns-name"
 			destCluster := &types.StringValue{Value: "remote-cluster-1"}
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
-			expectedSubsetName := "env:dev,version:v1,"
+			expectedSubsetName := "env-dev_version-v1"
 			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
 				Destinations: []*networking_types.MultiDestination_WeightedDestination{
 					{
@@ -766,7 +766,7 @@ var _ = Describe("IstioTranslator", func() {
 				Return(nil)
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -871,7 +871,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -1002,7 +1002,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -1089,7 +1089,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockVirtualServiceClient.
 				EXPECT().
-				Upsert(ctx, testContext.computedVirtualService).
+				UpsertSpec(ctx, testContext.computedVirtualService).
 				Return(nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)

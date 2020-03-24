@@ -14,7 +14,6 @@ import (
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
-	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
@@ -23,7 +22,6 @@ import (
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/version"
-	k8sapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -32,7 +30,7 @@ import (
 // a grab bag of various clients that command implementations may use
 type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
-	SecretWriter                    SecretWriter
+	SecretClient                    kubernetes_core.SecretsClient
 	HelmInstaller                   types.Installer
 	HelmClient                      types.HelmClient                       // used for uninstalling - the go-utils package is not laid out very well
 	KubeClusterClient               discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
@@ -56,7 +54,6 @@ type Clients struct {
 	DeploymentClient              server.DeploymentClient
 	StatusClientFactory           status.StatusClientFactory
 	HealthCheckSuite              healthcheck_types.HealthCheckSuite
-	HelmUninstallerFactory        helm_uninstall.UninstallerFactory
 
 	IstioClients               IstioClients
 	ClusterRegistrationClients ClusterRegistrationClients
@@ -101,13 +98,6 @@ type ClusterRegistrationClients struct {
 
 type ClientsFactory func(opts *options.Options) (*Clients, error)
 
-// write a k8s secret
-// used to pare down from the complexity of all the methods on the k8s client-go SecretInterface
-type SecretWriter interface {
-	// create, or update if already exists
-	Apply(secret *k8sapiv1.Secret) error
-}
-
 func ClientsProvider(
 	serverVersionClient server.ServerVersionClient,
 	assetHelper upgrade_assets.AssetHelper,
@@ -118,7 +108,6 @@ func ClientsProvider(
 	statusClientFactory status.StatusClientFactory,
 	healthCheckSuite healthcheck_types.HealthCheckSuite,
 	clusterRegistrationClients ClusterRegistrationClients,
-	helmUninstallerFactory helm_uninstall.UninstallerFactory,
 ) *Clients {
 	return &Clients{
 		ServerVersionClient:           serverVersionClient,
@@ -130,14 +119,12 @@ func ClientsProvider(
 		StatusClientFactory:           statusClientFactory,
 		HealthCheckSuite:              healthCheckSuite,
 		ClusterRegistrationClients:    clusterRegistrationClients,
-		HelmUninstallerFactory:        helmUninstallerFactory,
 	}
 }
 
 // facilitates wire codegen
 func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
-	writer SecretWriter,
 	helmInstaller types.Installer,
 	helmClient types.HelmClient,
 	kubeClusterClient discovery_core.KubernetesClusterClient,
@@ -152,7 +139,6 @@ func KubeClientsProvider(
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
-		SecretWriter:                    writer,
 		HelmInstaller:                   helmInstaller,
 		HelmClient:                      helmClient,
 		KubeClusterClient:               kubeClusterClient,

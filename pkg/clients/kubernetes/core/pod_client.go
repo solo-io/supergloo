@@ -9,7 +9,7 @@ import (
 
 type PodClientFactory func(client client.Client) PodClient
 
-func PodClientFactoryProvider() PodClientFactory {
+func NewPodClientFactory() PodClientFactory {
 	return NewPodClient
 }
 

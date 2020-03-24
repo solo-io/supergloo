@@ -46,14 +46,15 @@ func (d *destinationRuleClient) Update(ctx context.Context, destinationRule *v1a
 	return d.client.Update(ctx, destinationRule, options...)
 }
 
-func (d *destinationRuleClient) Upsert(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
+func (d *destinationRuleClient) UpsertSpec(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
 	key := client.ObjectKey{Name: destinationRule.GetName(), Namespace: destinationRule.GetNamespace()}
-	_, err := d.Get(ctx, key)
+	old, err := d.Get(ctx, key)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return d.Create(ctx, destinationRule)
 		}
 		return err
 	}
-	return d.Update(ctx, destinationRule)
+	old.Spec = destinationRule.Spec
+	return d.Update(ctx, old)
 }

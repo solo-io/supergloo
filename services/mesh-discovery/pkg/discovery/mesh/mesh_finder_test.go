@@ -195,7 +195,7 @@ var _ = Describe("Mesh Finder", func() {
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
 
-		It("returns error from Upsert if upsert fails", func() {
+		It("returns error from UpsertData if upsert fails", func() {
 			meshFinder := mock_discovery.NewMockMeshScanner(ctrl)
 			localMeshClient := mock_core.NewMockMeshClient(ctrl)
 			deployment := BuildDeployment(metav1.ObjectMeta{Name: "test-deployment", Namespace: remoteNamespace})

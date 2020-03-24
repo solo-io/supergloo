@@ -79,13 +79,13 @@ func (t *trafficPolicyTranslator) Start(ctx context.Context) error {
 
 		OnDelete: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
 			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, trafficPolicy)
-			logger.Warn("Ignoring event: %+v", trafficPolicy)
+			logger.Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
 		},
 
 		OnGeneric: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
 			logging.BuildEventLogger(ctx, logging.GenericEvent, trafficPolicy).
-				Warn("Ignoring event: %+v", trafficPolicy)
+				Debugf("Ignoring event for traffic policy: %s.%s", trafficPolicy.Name, trafficPolicy.Namespace)
 			return nil
 		},
 	})
@@ -213,5 +213,6 @@ func (t *trafficPolicyTranslator) setStatus(
 		trafficPolicy.Status.ComputedStatus = &core_types.ComputedStatus{
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
+		trafficPolicy.Status.TranslatorErrors = nil
 	}
 }

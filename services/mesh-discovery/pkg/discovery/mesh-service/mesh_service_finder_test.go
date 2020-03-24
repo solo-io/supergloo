@@ -10,6 +10,7 @@ import (
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/mesh-projects/pkg/clients"
 	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	discovery_mocks "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
@@ -27,6 +28,7 @@ type mocks struct {
 	serviceClient          *mock_kubernetes_core.MockServiceClient
 	meshServiceClient      *discovery_mocks.MockMeshServiceClient
 	meshWorkloadClient     *discovery_mocks.MockMeshWorkloadClient
+	meshClient             *discovery_mocks.MockMeshClient
 	serviceController      *mock_corev1.MockServiceController
 	meshWorkloadController *mock_zephyr_discovery.MockMeshWorkloadController
 
@@ -55,6 +57,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		serviceClient := mock_kubernetes_core.NewMockServiceClient(ctrl)
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
+		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
 		serviceController := mock_corev1.NewMockServiceController(ctrl)
 		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
 
@@ -85,6 +88,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			serviceClient,
 			meshServiceClient,
 			meshWorkloadClient,
+			meshClient,
 		)
 
 		err := meshServiceFinder.StartDiscovery(
@@ -99,6 +103,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			serviceController:      serviceController,
 			meshWorkloadController: meshWorkloadController,
 			meshWorkloadClient:     meshWorkloadClient,
+			meshClient:             meshClient,
 
 			meshServiceFinder: meshServiceFinder,
 
@@ -111,6 +116,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("can associate a mesh workload with an existing service", func() {
 			mocks := setupMocks()
 
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
+
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
 					KubePod: &discovery_types.KubePod{
@@ -121,8 +138,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -136,8 +153,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -200,6 +217,11 @@ var _ = Describe("Mesh Service Finder", func() {
 					*meshWorkloadEventV2,
 				}}, nil)
 
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				Return(mesh, nil)
+
 			mocks.meshServiceClient.
 				EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -249,6 +271,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not associate a mesh workload to any service if the labels don't match", func() {
 			mocks := setupMocks()
 
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
+
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
 					KubePod: &discovery_types.KubePod{
@@ -258,8 +292,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -282,6 +316,11 @@ var _ = Describe("Mesh Service Finder", func() {
 				Return(&corev1.ServiceList{
 					Items: []corev1.Service{wrongService, wrongService},
 				}, nil)
+
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				Return(mesh, nil)
 
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
 
@@ -311,6 +350,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not match a service with no labels to the mesh workload event", func() {
 			mocks := setupMocks()
 
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
+
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
 					KubePod: &discovery_types.KubePod{
@@ -320,8 +371,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -343,6 +394,11 @@ var _ = Describe("Mesh Service Finder", func() {
 					Items: []corev1.Service{wrongService, wrongService},
 				}, nil)
 
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				Return(mesh, nil)
+
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
 
 			Expect(err).NotTo(HaveOccurred())
@@ -350,6 +406,18 @@ var _ = Describe("Mesh Service Finder", func() {
 
 		It("does not create a mesh service if it already exists", func() {
 			mocks := setupMocks()
+
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
@@ -360,8 +428,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -410,6 +478,11 @@ var _ = Describe("Mesh Service Finder", func() {
 				List(ctx).
 				Return(&v1alpha1.MeshWorkloadList{Items: nil}, nil)
 
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				Return(mesh, nil)
+
 			mocks.meshServiceClient.
 				EXPECT().
 				Get(ctx, client.ObjectKey{
@@ -448,6 +521,18 @@ var _ = Describe("Mesh Service Finder", func() {
 	Context("service event", func() {
 		It("can associate a service with an existing mesh workload", func() {
 			mocks := setupMocks()
+
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
 
 			serviceEvent := &corev1.Service{
 				Spec: corev1.ServiceSpec{
@@ -520,6 +605,15 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshServiceName := "my-svc-my-ns-test-cluster-name"
 
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, client.ObjectKey{
+					Name:      mesh.Name,
+					Namespace: mesh.Namespace,
+				}).
+				Return(mesh, nil).
+				Times(2)
+
 			mocks.meshWorkloadClient.
 				EXPECT().
 				List(ctx).
@@ -580,6 +674,18 @@ var _ = Describe("Mesh Service Finder", func() {
 		It("does not associate a service to any mesh workload if the labels don't match", func() {
 			mocks := setupMocks()
 
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: clusterName,
+					},
+				},
+			}
+
 			serviceEvent := &corev1.Service{
 				Spec: corev1.ServiceSpec{
 					Selector: map[string]string{
@@ -602,8 +708,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -616,8 +722,8 @@ var _ = Describe("Mesh Service Finder", func() {
 						},
 					},
 					Mesh: &core_types.ResourceRef{
-						Name:      "istio-test-mesh",
-						Namespace: "isito-system",
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
 					},
 				},
 			}
@@ -631,6 +737,80 @@ var _ = Describe("Mesh Service Finder", func() {
 						*wrongWorkload2,
 					},
 				}, nil)
+
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, client.ObjectKey{
+					Name:      mesh.Name,
+					Namespace: mesh.Namespace,
+				}).
+				Return(mesh, nil).
+				Times(2)
+
+			err := mocks.serviceCallback(serviceEvent)
+
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("will bail out early if the mesh is on a different cluster than the service", func() {
+			mocks := setupMocks()
+
+			mesh := &v1alpha1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "istio-test-mesh",
+					Namespace: "isito-system",
+				},
+				Spec: discovery_types.MeshSpec{
+					Cluster: &core_types.ResourceRef{
+						Name: "incorrect-cluster-name",
+					},
+				},
+			}
+
+			serviceEvent := &corev1.Service{
+				Spec: corev1.ServiceSpec{
+					Selector: map[string]string{
+						"app":   "test-app",
+						"track": "canary",
+					},
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-svc",
+					Namespace: "my-ns",
+				},
+			}
+
+			wrongWorkload1 := &v1alpha1.MeshWorkload{
+				Spec: discovery_types.MeshWorkloadSpec{
+					KubePod: &discovery_types.KubePod{
+						Labels: map[string]string{
+							"app":   "test-app",
+							"track": "production",
+						},
+					},
+					Mesh: &core_types.ResourceRef{
+						Name:      mesh.Name,
+						Namespace: mesh.Namespace,
+					},
+				},
+			}
+
+			mocks.meshWorkloadClient.
+				EXPECT().
+				List(ctx).
+				Return(&v1alpha1.MeshWorkloadList{
+					Items: []v1alpha1.MeshWorkload{
+						*wrongWorkload1,
+					},
+				}, nil)
+
+			mocks.meshClient.
+				EXPECT().
+				Get(ctx, client.ObjectKey{
+					Name:      mesh.Name,
+					Namespace: mesh.Namespace,
+				}).
+				Return(mesh, nil)
 
 			err := mocks.serviceCallback(serviceEvent)
 

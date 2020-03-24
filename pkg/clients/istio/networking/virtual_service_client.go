@@ -31,16 +31,17 @@ func (v *virtualServiceClient) Get(ctx context.Context, key client.ObjectKey) (*
 	return &virtualService, nil
 }
 
-func (v *virtualServiceClient) Upsert(ctx context.Context, virtualService *v1alpha3.VirtualService) error {
+func (v *virtualServiceClient) UpsertSpec(ctx context.Context, virtualService *v1alpha3.VirtualService) error {
 	key := client.ObjectKey{Name: virtualService.GetName(), Namespace: virtualService.GetNamespace()}
-	_, err := v.Get(ctx, key)
+	existing, err := v.Get(ctx, key)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return v.Create(ctx, virtualService)
 		}
 		return err
 	}
-	return v.Update(ctx, virtualService)
+	existing.Spec = virtualService.Spec
+	return v.Update(ctx, existing)
 }
 
 func (v *virtualServiceClient) Create(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.CreateOption) error {

@@ -60,7 +60,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
-		common.DefaultSecretWriterProvider,
 		auth.NewClusterAuthorization,
 		docker.NewImageNameParser,
 		version2.NewDeployedVersionFinder,
@@ -94,13 +93,12 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 		operator.NewOperatorManagerFactory,
 		status.StatusClientFactoryProvider,
 		healthcheck.DefaultHealthChecksProvider,
-		helm_uninstall.NewUninstallerFactory,
 		common.ClientsProvider,
 	)
 	return nil, nil
 }
 
-func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
+func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Command {
 	wire.Build(
 		docker.NewImageNameParser,
 		common.NewDefaultFileReader,
@@ -124,6 +122,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 func InitializeCLIWithMocks(
 	ctx context.Context,
 	out io.Writer,
+	in io.Reader,
 	usageClient usageclient.Client,
 	kubeClientsFactory common.KubeClientsFactory,
 	clientsFactory common.ClientsFactory,

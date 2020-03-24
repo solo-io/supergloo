@@ -37,11 +37,17 @@ func Run(ctx context.Context) {
 		logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
 	}
 
+	err = meshNetworkingContext.FederationResolver.Start(ctx)
+	if err != nil {
+		logger.Fatalw("error intitializing FederationResolver", zap.Error(err))
+	}
+
 	// block until we die; RIP
 	err = multicluster.SetupAndStartLocalManager(
 		meshNetworkingContext.MultiClusterDeps,
 		[]mc_manager.AsyncManagerStartOptionsFunc{
 			multicluster.AddAllV1Alpha1ToScheme,
+			multicluster.AddAllIstioToScheme,
 		},
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "mesh-networking-multicluster-controller",

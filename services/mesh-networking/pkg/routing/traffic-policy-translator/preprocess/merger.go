@@ -126,8 +126,15 @@ func mergeTrafficPoliciesByMeshService(
 				// if spec containing TrafficPolicy rules already exists, with same Source selectors, just append to its HttpRequestMatchers
 				if mergeableHttpTp.SourceSelector.Equal(mergedTrafficPolicy.Spec.GetSourceSelector()) &&
 					areTrafficPolicyActionsEqual(mergeableHttpTp.TrafficPolicySpec, &mergedTrafficPolicy.Spec) {
-					mergedTrafficPolicy.Spec.HttpRequestMatchers =
-						append(mergedTrafficPolicy.Spec.GetHttpRequestMatchers(), mergeableHttpTp.HttpMatcher)
+					/*
+						Only attempt to add the HttpMatcher the list if it is non-nil.
+						Nil HttpRequestMatchers is a valid state in the Istio API, and therefore must
+						be treated as an additional case here
+					*/
+					if mergeableHttpTp.HttpMatcher != nil {
+						mergedTrafficPolicy.Spec.HttpRequestMatchers =
+							append(mergedTrafficPolicy.Spec.GetHttpRequestMatchers(), mergeableHttpTp.HttpMatcher)
+					}
 					trafficPolicyExists = true
 					break
 				}
@@ -138,9 +145,16 @@ func mergeTrafficPoliciesByMeshService(
 					Spec: *mergeableHttpTp.TrafficPolicySpec,
 				}
 				mergedTrafficPolicies = append(mergedTrafficPolicies, newMergedTrafficPolicy)
-				newMergedTrafficPolicy.Spec.HttpRequestMatchers =
-					[]*networking_v1alpha1_types.HttpMatcher{mergeableHttpTp.HttpMatcher}
 				newMergedTrafficPolicy.Spec.SourceSelector = mergeableHttpTp.SourceSelector
+				/*
+					Only attempt to add the HttpMatcher the list if it is non-nil.
+					Nil HttpRequestMatchers is a valid state in the Istio API, and therefore must
+					be treated as an additional case here
+				*/
+				if mergeableHttpTp.HttpMatcher != nil {
+					newMergedTrafficPolicy.Spec.HttpRequestMatchers =
+						[]*networking_v1alpha1_types.HttpMatcher{mergeableHttpTp.HttpMatcher}
+				}
 			}
 		}
 		trafficPoliciesByMeshService[meshServiceKey] = mergedTrafficPolicies
@@ -159,36 +173,68 @@ func mergeHttpTrafficPolicies(
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
 ) ([]*MergeableHttpTrafficPolicy, error) {
+	if len(trafficPolicy.Spec.GetHttpRequestMatchers()) == 0 {
+		mergeable, err := attemptTrafficPolicyMerge(trafficPolicy, mergeableTrafficPolicies, nil)
+		if err != nil {
+			return nil, err
+		}
+		if mergeable != nil {
+			mergeableTrafficPolicies = append(mergeableTrafficPolicies, mergeable)
+		}
+		return mergeableTrafficPolicies, nil
+	}
 	// We choose the N^2 comparison over implementing a Set data structure for HTTPMatchers
 	for _, httpMatcher := range trafficPolicy.Spec.GetHttpRequestMatchers() {
-		merged := false
-		for _, mergeableTp := range mergeableTrafficPolicies {
-			// attempt merging if Source selector and HttpMatcher are equal
-			if trafficPolicy.Spec.SourceSelector.Equal(mergeableTp.SourceSelector) && httpMatcher.Equal(mergeableTp.HttpMatcher) {
-				mergedTrafficPolicySpec, err := mergeTrafficPolicySpec(mergeableTp.TrafficPolicySpec, &trafficPolicy.Spec)
-				if err != nil {
-					return nil, err
-				}
-				// update existing TrafficPolicy with merged spec
-				mergeableTp.TrafficPolicySpec = mergedTrafficPolicySpec
-				merged = true
-				break
-			}
+		mergeable, err := attemptTrafficPolicyMerge(trafficPolicy, mergeableTrafficPolicies, httpMatcher)
+		if err != nil {
+			return nil, err
 		}
-		if !merged {
-			// copy all spec fields except HttpMatchers and Destination rules
-			newTPSpec, err := mergeTrafficPolicySpec(&networking_v1alpha1_types.TrafficPolicySpec{}, &trafficPolicy.Spec)
-			if err != nil {
-				return nil, err
-			}
-			mergeableTrafficPolicies = append(mergeableTrafficPolicies, &MergeableHttpTrafficPolicy{
-				HttpMatcher:       httpMatcher,
-				SourceSelector:    trafficPolicy.Spec.SourceSelector,
-				TrafficPolicySpec: newTPSpec,
-			})
+		if mergeable != nil {
+			mergeableTrafficPolicies = append(mergeableTrafficPolicies, mergeable)
 		}
 	}
 	return mergeableTrafficPolicies, nil
+}
+
+/*
+	Attempt to either create a new MergeableHttpTrafficPolicy or merge with an existing one
+
+	If one is found to merge with, the function will return (nil, nil)
+	If a new one must be created, the function will return the (newTP, nil)
+*/
+func attemptTrafficPolicyMerge(
+	trafficPolicy *networking_v1alpha1.TrafficPolicy,
+	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
+	httpMatcher *networking_v1alpha1_types.HttpMatcher,
+) (*MergeableHttpTrafficPolicy, error) {
+	var merged bool
+	for _, mergeableTp := range mergeableTrafficPolicies {
+		// attempt merging if Source selector and HttpMatcher are equal
+		if trafficPolicy.Spec.SourceSelector.Equal(mergeableTp.SourceSelector) && httpMatcher.Equal(mergeableTp.HttpMatcher) {
+			mergedTrafficPolicySpec, err := mergeTrafficPolicySpec(mergeableTp.TrafficPolicySpec, &trafficPolicy.Spec)
+			if err != nil {
+				return nil, err
+			}
+			// update existing TrafficPolicy with merged spec
+			mergeableTp.TrafficPolicySpec = mergedTrafficPolicySpec
+			merged = true
+			break
+		}
+	}
+	// If the TP has already been merged, return nothing
+	if merged {
+		return nil, nil
+	}
+	// copy all spec fields except HttpMatchers and Destination rules
+	newTPSpec, err := mergeTrafficPolicySpec(&networking_v1alpha1_types.TrafficPolicySpec{}, &trafficPolicy.Spec)
+	if err != nil {
+		return nil, err
+	}
+	return &MergeableHttpTrafficPolicy{
+		HttpMatcher:       httpMatcher,
+		SourceSelector:    trafficPolicy.Spec.SourceSelector,
+		TrafficPolicySpec: newTPSpec,
+	}, nil
 }
 
 // For fields that exist in that but not this, merge into this.

@@ -273,6 +273,43 @@ The IstioControlPlane has been written to cluster 'cluster-name' in namespace 'i
 `))
 	})
 
+	It("reads an IstioControlPlane spec provided by the via stdin", func() {
+		mocks := setupMocks()
+
+		mocks.operatorManager.EXPECT().ValidateOperatorNamespace(clusterName).Return(true, nil)
+		mocks.operatorManager.EXPECT().Install().Return(nil)
+
+		specContent := "this is my IstioControlPlane spec"
+		mocks.meshctl.Stdin = specContent
+
+		controlPlaneResource := []*resource.Info{{
+			Name: "custom-control-plane",
+			Object: &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"kind": "IstioControlPlane",
+				},
+			},
+		}}
+
+		mocks.unstructuredKubeClient.
+			EXPECT().
+			BuildResources(cliconstants.DefaultIstioOperatorNamespace, specContent).
+			Return(controlPlaneResource, nil)
+
+		mocks.unstructuredKubeClient.
+			EXPECT().
+			Create(cliconstants.DefaultIstioOperatorNamespace, controlPlaneResource).
+			Return(nil, nil)
+
+		output, err := mocks.meshctl.Invoke("istio install --control-plane-spec=-")
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(output).To(Equal(`Installing the Istio operator to cluster 'cluster-name' in namespace 'istio-operator'
+
+The IstioControlPlane has been written to cluster 'cluster-name' in namespace 'istio-operator'. The Istio operator should process it momentarily and install Istio.
+`))
+	})
+
 	It("can install the operator without providing an IstioControlPlane spec", func() {
 		mocks := setupMocks()
 

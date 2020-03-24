@@ -19,9 +19,9 @@ import (
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/spf13/pflag"
-	kubev1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -52,6 +52,9 @@ var (
 	}
 	FailedToWriteKubeCluster = func(err error) error {
 		return eris.Wrap(err, "Could not write KubernetesCluster resource to master cluster")
+	}
+	FailedToEnsureWriteNamespace = func(err error, namespace string) error {
+		return eris.Wrapf(err, "Failed to find or create namespace %s on the cluster being registered", namespace)
 	}
 )
 
@@ -118,6 +121,10 @@ func RegisterCluster(
 		return err
 	}
 
+	if err = ensureRemoteNamespace(ctx, registerOpts.RemoteWriteNamespace, remoteKubeClients); err != nil {
+		return err
+	}
+
 	configForServiceAccount, err := generateServiceAccountConfig(ctx, out, remoteKubeClients, remoteCfg, registerOpts)
 	if err != nil {
 		return err
@@ -126,6 +133,7 @@ func RegisterCluster(
 	fmt.Fprintf(out, "Successfully wrote service account to remote cluster...\n")
 
 	secret, err := writeKubeConfigToMaster(
+		ctx,
 		opts.Root.WriteNamespace,
 		registerOpts,
 		remoteConfigPath,
@@ -177,6 +185,20 @@ func RegisterCluster(
 	return nil
 }
 
+func ensureRemoteNamespace(ctx context.Context, writeNamespace string, remote *common.KubeClients) error {
+	_, err := remote.NamespaceClient.Get(ctx, writeNamespace)
+	if errors.IsNotFound(err) {
+		return remote.NamespaceClient.Create(ctx, &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: writeNamespace,
+			},
+		})
+	} else if err != nil {
+		return FailedToEnsureWriteNamespace(err, writeNamespace)
+	}
+	return nil
+}
+
 func shouldOverwrite(
 	ctx context.Context,
 	binaryName string,
@@ -216,13 +238,14 @@ func shouldOverwrite(
 }
 
 func writeKubeConfigToMaster(
+	ctx context.Context,
 	writeNamespace string,
 	registerOpts options.Register,
 	remoteKubeConfig string,
 	serviceAccountConfig *rest.Config,
 	masterKubeClients *common.KubeClients,
 	kubeLoader common_config.KubeLoader,
-) (*kubev1.Secret, error) {
+) (*corev1.Secret, error) {
 
 	// now we need the cluster/context information from that config
 	remoteKubeCtx, err := kubeLoader.GetRawConfigForContext(remoteKubeConfig, registerOpts.RemoteContext)
@@ -278,7 +301,7 @@ func writeKubeConfigToMaster(
 		return nil, FailedToConvertToSecret(err)
 	}
 
-	err = masterKubeClients.SecretWriter.Apply(secret)
+	err = masterKubeClients.SecretClient.UpsertData(ctx, secret)
 	if err != nil {
 		return nil, FailedToWriteSecret(err)
 	}
@@ -292,10 +315,10 @@ func writeKubeClusterToMaster(
 	masterKubeClients *common.KubeClients,
 	writeNamespace string,
 	registerOpts options.Register,
-	secret *kubev1.Secret,
+	secret *corev1.Secret,
 ) error {
 	cluster := &discoveryv1alpha1.KubernetesCluster{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      registerOpts.RemoteClusterName,
 			Namespace: writeNamespace,
 		},

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	k8sclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -22,17 +23,30 @@ type secretsClient struct {
 	dynamicClient client.Client
 }
 
-func (c *secretsClient) Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
-	return c.dynamicClient.Create(ctx, secret, opts...)
+func (s *secretsClient) Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
+	return s.dynamicClient.Create(ctx, secret, opts...)
 }
 
-func (c *secretsClient) Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
-	return c.dynamicClient.Update(ctx, secret, opts...)
+func (s *secretsClient) Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
+	return s.dynamicClient.Update(ctx, secret, opts...)
 }
 
-func (c *secretsClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
+func (s *secretsClient) UpsertData(ctx context.Context, secret *corev1.Secret) error {
+	existing, err := s.Get(ctx, secret.Name, secret.Namespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return s.dynamicClient.Create(ctx, secret)
+		}
+		return err
+	}
+	existing.Data = secret.Data
+	existing.StringData = secret.StringData
+	return s.dynamicClient.Update(ctx, existing)
+}
+
+func (s *secretsClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
 	secret := corev1.Secret{}
-	err := c.dynamicClient.Get(ctx, client.ObjectKey{
+	err := s.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
 	}, &secret)
@@ -83,6 +97,22 @@ func (s *secretsGeneratedClient) Update(_ context.Context, secret *corev1.Secret
 		return err
 	}
 	*secret = *updated
+	return nil
+}
+
+func (s *secretsGeneratedClient) UpsertData(_ context.Context, secret *corev1.Secret) error {
+	upserted, err := s.client.Secrets(secret.GetNamespace()).Create(secret)
+	if err != nil {
+		if errors.IsAlreadyExists(err) {
+			upserted, err = s.client.Secrets(secret.GetNamespace()).Update(secret)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	*secret = *upserted
 	return nil
 }
 

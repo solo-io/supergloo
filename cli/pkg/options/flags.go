@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
+	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/spf13/cobra"
 )
 
 func AddRootFlags(cmd *cobra.Command, options *Options) {
 	flags := cmd.PersistentFlags()
-	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", "service-mesh-hub",
+	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", env.DefaultWriteNamespace,
 		"Specify the namespace where Service Mesh Hub resources should be written")
 	flags.StringVar(&options.Root.KubeConfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 		"Specify the kubeconfig for the current command")
@@ -65,7 +66,7 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 
 	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
 		"Name of the cluster to be operated upon")
-	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, "default",
+	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, env.DefaultWriteNamespace,
 		"Namespace in the remote cluster in which to write resources")
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
 		"Set the context you would like to use for the remote cluster")
@@ -93,7 +94,7 @@ func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage strin
 	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the remote cluster")
 	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
 	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
-	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")
+	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource. Pass '-' to have meshctl read the value from stdin")
 	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
 }
 

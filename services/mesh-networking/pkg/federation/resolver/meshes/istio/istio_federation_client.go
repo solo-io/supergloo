@@ -48,6 +48,8 @@ const (
 	ServiceEntryPortProtocol = "http"
 )
 
+type IstioFederationClient meshes.MeshFederationClient
+
 // istio-specific implementation of federation resolution
 func NewIstioFederationClient(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
@@ -59,7 +61,7 @@ func NewIstioFederationClient(
 	serviceClientFactory kubernetes_core.ServiceClientFactory,
 	ipAssigner dns.IpAssigner,
 	externalAccessPointGetter dns.ExternalAccessPointGetter,
-) meshes.MeshFederationClient {
+) IstioFederationClient {
 	return &istioFederationClient{
 		dynamicClientGetter:          dynamicClientGetter,
 		meshClient:                   meshClient,

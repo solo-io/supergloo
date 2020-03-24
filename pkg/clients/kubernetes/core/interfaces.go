@@ -29,6 +29,7 @@ type NodeClient interface {
 type SecretsClient interface {
 	Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error
 	Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error
+	UpsertData(ctx context.Context, secret *corev1.Secret) error
 	Get(ctx context.Context, name, namespace string) (*corev1.Secret, error)
 	List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error)
 	Delete(ctx context.Context, secret *corev1.Secret) error
@@ -51,6 +52,7 @@ type ConfigMapClient interface {
 }
 
 type NamespaceClient interface {
+	Create(ctx context.Context, ns *corev1.Namespace) error
 	Get(ctx context.Context, name string) (*corev1.Namespace, error)
 	Delete(ctx context.Context, name string) error
 }

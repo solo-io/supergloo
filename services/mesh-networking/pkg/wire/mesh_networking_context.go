@@ -8,6 +8,8 @@ import (
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 	access_control_poilcy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-poilcy"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver"
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -21,6 +23,7 @@ type MeshNetworkingContext struct {
 	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslator
 	MeshNetworkingSnapshotContext *MeshNetworkingSnapshotContext
 	AccessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator
+	FederationResolver            resolver.FederationResolver
 }
 
 func MeshNetworkingContextProvider(
@@ -29,6 +32,7 @@ func MeshNetworkingContextProvider(
 	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslator,
 	meshNetworkingSnapshotContext *MeshNetworkingSnapshotContext,
 	accessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator,
+	federationResolver resolver.FederationResolver,
 ) MeshNetworkingContext {
 	return MeshNetworkingContext{
 		MultiClusterDeps:              multiClusterDeps,
@@ -36,15 +40,17 @@ func MeshNetworkingContextProvider(
 		TrafficPolicyTranslator:       trafficPolicyTranslator,
 		MeshNetworkingSnapshotContext: meshNetworkingSnapshotContext,
 		AccessControlPolicyTranslator: accessControlPolicyTranslator,
+		FederationResolver:            federationResolver,
 	}
 }
 
 type MeshNetworkingSnapshotContext struct {
-	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
-	MeshServiceControllerFactory  controllers.MeshServiceControllerFactory
-	VirtualMeshControllerFactory  controller_factories.VirtualMeshControllerFactory
-	SnapshotValidator             snapshot.MeshNetworkingSnapshotValidator
-	VMCSRSnapshotListener         cert_manager.VMCSRSnapshotListener
+	MeshWorkloadControllerFactory     controllers.MeshWorkloadControllerFactory
+	MeshServiceControllerFactory      controllers.MeshServiceControllerFactory
+	VirtualMeshControllerFactory      controller_factories.VirtualMeshControllerFactory
+	SnapshotValidator                 snapshot.MeshNetworkingSnapshotValidator
+	VMCSRSnapshotListener             cert_manager.VMCSRSnapshotListener
+	FederationDeciderSnapshotListener decider.FederationDeciderSnapshotListener
 }
 
 func MeshNetworkingSnapshotContextProvider(
@@ -53,13 +59,15 @@ func MeshNetworkingSnapshotContextProvider(
 	virtualMeshControllerFactory controller_factories.VirtualMeshControllerFactory,
 	snapshotValidator snapshot.MeshNetworkingSnapshotValidator,
 	vmcsrSnapshotListener cert_manager.VMCSRSnapshotListener,
+	federationDeciderSnapshotListener decider.FederationDeciderSnapshotListener,
 ) *MeshNetworkingSnapshotContext {
 	return &MeshNetworkingSnapshotContext{
-		MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
-		MeshServiceControllerFactory:  meshServiceControllerFactory,
-		VirtualMeshControllerFactory:  virtualMeshControllerFactory,
-		SnapshotValidator:             snapshotValidator,
-		VMCSRSnapshotListener:         vmcsrSnapshotListener,
+		MeshWorkloadControllerFactory:     meshWorkloadControllerFactory,
+		MeshServiceControllerFactory:      meshServiceControllerFactory,
+		VirtualMeshControllerFactory:      virtualMeshControllerFactory,
+		SnapshotValidator:                 snapshotValidator,
+		VMCSRSnapshotListener:             vmcsrSnapshotListener,
+		FederationDeciderSnapshotListener: federationDeciderSnapshotListener,
 	}
 }
 
@@ -81,6 +89,7 @@ func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context, mgr 
 		return err
 	}
 	listenerGenerator.RegisterListener(m.VMCSRSnapshotListener)
+	listenerGenerator.RegisterListener(m.FederationDeciderSnapshotListener)
 	go func() { listenerGenerator.StartPushingSnapshots(ctx, time.Second) }()
 	return nil
 }

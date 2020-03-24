@@ -30,12 +30,12 @@ type VirtualServiceClient interface {
 	Create(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.CreateOption) error
 	Update(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.UpdateOption) error
 	// Create the VirtualService if it does not exist, otherwise update
-	Upsert(ctx context.Context, virtualService *v1alpha3.VirtualService) error
+	UpsertSpec(ctx context.Context, virtualService *v1alpha3.VirtualService) error
 }
 
 type DestinationRuleClient interface {
 	Get(ctx context.Context, key client.ObjectKey) (*v1alpha3.DestinationRule, error)
 	Create(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error
 	Update(ctx context.Context, destinationRule *v1alpha3.DestinationRule, options ...client.UpdateOption) error
-	Upsert(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error
+	UpsertSpec(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	security_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	security_types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
@@ -74,49 +73,6 @@ func NewIstioCSRGenerator(
 }
 
 func (i *istioCSRGenerator) GenerateIstioCSR(
-	ctx context.Context,
-	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
-	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
-	if err != nil {
-		wrapped := FailedToRetrievePrivateKeyError(err)
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
-			Message: wrapped.Error(),
-		}
-		return &obj.Status
-	}
-
-	// csr data has not yet been saturated, meaning this is a new request
-	if len(obj.Spec.GetCsrData()) == 0 {
-		return i.generateCsr(ctx, obj, rootCaData)
-	} else {
-		// csr data has been saturated, this csr is ready to be reprocessed
-		if err = i.updateCa(ctx, obj, rootCaData); err != nil {
-			wrapped := FailedToUpdateCaError(err)
-			obj.Status.ComputedStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_INVALID,
-				Message: wrapped.Error(),
-			}
-			return &obj.Status
-		}
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{Status: core_types.ComputedStatus_ACCEPTED}
-	}
-
-	return &obj.Status
-}
-
-func (i *istioCSRGenerator) Start(
-	ctx context.Context,
-	csrClient zephyr_security.VirtualMeshCSRClient,
-	ctrl controller.VirtualMeshCertificateSigningRequestController,
-	dataSource VirtualMeshCSRDataSourceFactory,
-) error {
-	handler := dataSource(ctx, csrClient, i)
-	return ctrl.AddEventHandler(ctx, handler)
-}
-
-func (i *istioCSRGenerator) ProcessUpsert(
 	ctx context.Context,
 	obj *security_v1alpha1.VirtualMeshCertificateSigningRequest,
 ) *security_types.VirtualMeshCertificateSigningRequestStatus {
@@ -232,13 +188,4 @@ func (i *istioCSRGenerator) certsAreEqual(
 		}
 	}
 	return true
-}
-
-func (i *istioCSRGenerator) ProcessDelete(
-	ctx context.Context,
-	csr *security_v1alpha1.VirtualMeshCertificateSigningRequest,
-) *security_types.VirtualMeshCertificateSigningRequestStatus {
-	// TODO: handle deletion of virtual mesh certificate signing requests
-	// https://github.com/solo-io/mesh-projects/issues/227
-	return nil
 }

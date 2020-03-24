@@ -118,6 +118,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 		initializedDeps.serviceClient,
 		m.localMeshServiceClient,
 		m.localMeshWorkloadClient,
+		m.localMeshClient,
 	)
 
 	err = meshFinder.StartDiscovery(initializedDeps.deploymentController, MeshPredicates)

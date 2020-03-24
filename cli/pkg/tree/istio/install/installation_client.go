@@ -3,6 +3,7 @@ package install
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
@@ -41,6 +42,7 @@ func NewIstioInstaller(
 	istioInstallOptions *options.IstioInstall,
 	clusterName string,
 	out io.Writer,
+	in io.Reader,
 	manifestBuilder operator.InstallerManifestBuilder,
 	operatorManager operator.OperatorManager,
 	fileReader common.FileReader,
@@ -51,6 +53,7 @@ func NewIstioInstaller(
 		manifestBuilder:        manifestBuilder,
 		istioInstallOptions:    istioInstallOptions,
 		out:                    out,
+		in:                     in,
 		clusterName:            clusterName,
 		operatorManager:        operatorManager,
 		fileReader:             fileReader,
@@ -62,6 +65,7 @@ type istioInstaller struct {
 	manifestBuilder        operator.InstallerManifestBuilder
 	istioInstallOptions    *options.IstioInstall
 	out                    io.Writer
+	in                     io.Reader
 	clusterName            string
 	operatorManager        operator.OperatorManager
 	fileReader             common.FileReader
@@ -152,16 +156,25 @@ func (i *istioInstaller) loadIstioControlPlane() (string, error) {
 func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
 	path := i.istioInstallOptions.IstioControlPlaneManifestPath
 
-	fileExists, err := i.fileReader.Exists(path)
-	if err != nil {
-		return "", eris.Wrapf(err, "Unexpected error while reading IstioControlPlane spec")
-	} else if !fileExists {
-		return "", eris.Errorf("Path to IstioControlPlane spec does not exist: %s", i.istioInstallOptions.IstioControlPlaneManifestPath)
-	}
+	var contents []byte
+	if path == "-" {
+		var err error
+		contents, err = ioutil.ReadAll(i.in)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		fileExists, err := i.fileReader.Exists(path)
+		if err != nil {
+			return "", eris.Wrapf(err, "Unexpected error while reading IstioControlPlane spec")
+		} else if !fileExists {
+			return "", eris.Errorf("Path to IstioControlPlane spec does not exist: %s", i.istioInstallOptions.IstioControlPlaneManifestPath)
+		}
 
-	contents, err := i.fileReader.Read(path)
-	if err != nil {
-		return "", err
+		contents, err = i.fileReader.Read(path)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	stringContents := string(contents)

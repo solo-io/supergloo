@@ -248,6 +248,20 @@ func (mr *MockSecretsClientMockRecorder) Update(ctx, secret interface{}, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSecretsClient)(nil).Update), varargs...)
 }
 
+// UpsertData mocks base method.
+func (m *MockSecretsClient) UpsertData(ctx context.Context, secret *v1.Secret) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertData", ctx, secret)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertData indicates an expected call of UpsertData.
+func (mr *MockSecretsClientMockRecorder) UpsertData(ctx, secret interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertData", reflect.TypeOf((*MockSecretsClient)(nil).UpsertData), ctx, secret)
+}
+
 // Get mocks base method.
 func (m *MockSecretsClient) Get(ctx context.Context, name, namespace string) (*v1.Secret, error) {
 	m.ctrl.T.Helper()
@@ -445,6 +459,20 @@ func NewMockNamespaceClient(ctrl *gomock.Controller) *MockNamespaceClient {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockNamespaceClient) EXPECT() *MockNamespaceClientMockRecorder {
 	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockNamespaceClient) Create(ctx context.Context, ns *v1.Namespace) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, ns)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockNamespaceClientMockRecorder) Create(ctx, ns interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNamespaceClient)(nil).Create), ctx, ns)
 }
 
 // Get mocks base method.

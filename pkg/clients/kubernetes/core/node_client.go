@@ -9,7 +9,7 @@ import (
 
 type NodeClientFactory func(client client.Client) NodeClient
 
-func NodeClientFactoryProvider() NodeClientFactory {
+func NewNodeClientFactory() NodeClientFactory {
 	return NewNodeClient
 }
 

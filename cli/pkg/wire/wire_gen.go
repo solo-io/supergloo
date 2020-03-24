@@ -62,7 +62,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	rbacClient := auth.RbacClientProvider(clientset)
 	remoteAuthorityManager := auth.NewRemoteAuthorityManager(serviceAccountClient, rbacClient)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
-	secretWriter := common.DefaultSecretWriterProvider(clientset, writeNamespace)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
 	kubernetesClusterClient, err := zephyr_discovery.NewGeneratedKubernetesClusterClient(masterConfig)
@@ -84,7 +83,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
 	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
 	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(secretsClient, secretToConfigConverter, crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient)
 	return kubeClients, nil
 }
 
@@ -104,12 +103,11 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	healthCheckSuite := healthcheck.DefaultHealthChecksProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory()
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
-	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, clusterRegistrationClients, uninstallerFactory)
+	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, clusterRegistrationClients)
 	return clients, nil
 }
 
-func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
+func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	client := usage.DefaultUsageReporterProvider()
 	kubeClientsFactory := DefaultKubeClientsFactoryProvider()
@@ -120,7 +118,7 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
 	imageNameParser := docker.NewImageNameParser()
 	fileReader := common.NewDefaultFileReader()
-	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, kubeLoader, imageNameParser, fileReader)
+	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)
@@ -132,12 +130,12 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
-	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, kubeLoader, imageNameParser, fileReader)
+	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)

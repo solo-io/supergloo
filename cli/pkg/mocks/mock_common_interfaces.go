@@ -8,45 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/core/v1"
 )
-
-// MockSecretWriter is a mock of SecretWriter interface.
-type MockSecretWriter struct {
-	ctrl     *gomock.Controller
-	recorder *MockSecretWriterMockRecorder
-}
-
-// MockSecretWriterMockRecorder is the mock recorder for MockSecretWriter.
-type MockSecretWriterMockRecorder struct {
-	mock *MockSecretWriter
-}
-
-// NewMockSecretWriter creates a new mock instance.
-func NewMockSecretWriter(ctrl *gomock.Controller) *MockSecretWriter {
-	mock := &MockSecretWriter{ctrl: ctrl}
-	mock.recorder = &MockSecretWriterMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockSecretWriter) EXPECT() *MockSecretWriterMockRecorder {
-	return m.recorder
-}
-
-// Apply mocks base method.
-func (m *MockSecretWriter) Apply(secret *v1.Secret) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", secret)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Apply indicates an expected call of Apply.
-func (mr *MockSecretWriterMockRecorder) Apply(secret interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockSecretWriter)(nil).Apply), secret)
-}
 
 // MockFileReader is a mock of FileReader interface.
 type MockFileReader struct {

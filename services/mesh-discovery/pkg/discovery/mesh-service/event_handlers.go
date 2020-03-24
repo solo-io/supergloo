@@ -16,7 +16,6 @@ import (
 
 type ServiceEventHandler struct {
 	Ctx                 context.Context
-	ClusterName         string
 	HandleServiceUpsert func(service *corev1.Service) error
 }
 
@@ -42,7 +41,6 @@ func (s *ServiceEventHandler) Generic(obj *corev1.Service) error {
 
 type MeshWorkloadEventHandler struct {
 	Ctx                      context.Context
-	ClusterName              string
 	HandleMeshWorkloadUpsert func(meshWorkload *v1alpha1.MeshWorkload) error
 }
 

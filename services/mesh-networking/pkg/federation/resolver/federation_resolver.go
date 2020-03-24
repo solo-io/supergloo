@@ -14,18 +14,23 @@ import (
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes"
+	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
 	FailedToFederateService = func(err error, meshService *discovery_v1alpha1.MeshService, meshWorkloadRef *core_types.ResourceRef) string {
-		return fmt.Sprintf("Could not federate service %+v to mesh workload %+v: %s", meshService.ObjectMeta, meshWorkloadRef, err.Error())
+		return fmt.Sprintf("Could not federate service %s.%s to mesh workload %+v: %s",
+			meshService.Name, meshService.Namespace, meshWorkloadRef, err.Error())
 	}
 )
 
 type PerMeshFederationClients struct {
-	Istio meshes.MeshFederationClient
+	Istio istio_federation.IstioFederationClient
+}
+
+func NewPerMeshFederationClients(istio istio_federation.IstioFederationClient) PerMeshFederationClients {
+	return PerMeshFederationClients{Istio: istio}
 }
 
 func NewFederationResolver(
@@ -34,6 +39,7 @@ func NewFederationResolver(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	perMeshFederationClients PerMeshFederationClients,
+	meshServiceController discovery_controllers.MeshServiceController,
 ) FederationResolver {
 	return &federationResolver{
 		meshClient:               meshClient,
@@ -41,10 +47,12 @@ func NewFederationResolver(
 		meshServiceClient:        meshServiceClient,
 		virtualMeshClient:        virtualMeshClient,
 		perMeshFederationClients: perMeshFederationClients,
+		meshServiceController:    meshServiceController,
 	}
 }
 
 type federationResolver struct {
+	meshServiceController    discovery_controllers.MeshServiceController
 	meshClient               zephyr_discovery.MeshClient
 	meshWorkloadClient       zephyr_discovery.MeshWorkloadClient
 	meshServiceClient        zephyr_discovery.MeshServiceClient
@@ -52,8 +60,8 @@ type federationResolver struct {
 	perMeshFederationClients PerMeshFederationClients
 }
 
-func (f *federationResolver) Start(ctx context.Context, meshServiceController discovery_controllers.MeshServiceController) {
-	meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
+func (f *federationResolver) Start(ctx context.Context) error {
+	return f.meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
 			return f.handleServiceUpsert(ctx, obj)
 		},

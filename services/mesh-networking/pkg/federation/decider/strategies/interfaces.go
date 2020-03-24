@@ -25,7 +25,14 @@ type FederationStrategy interface {
 	) error
 }
 
-type FederationStrategyChooser func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (FederationStrategy, error)
+type FederationStrategyChooser func(
+	mode networking_types.Federation_Mode,
+	meshServiceClient discovery_core.MeshServiceClient,
+) (FederationStrategy, error)
+
+func NewFederationStrategyChooser() FederationStrategyChooser {
+	return GetFederationStrategyFromMode
+}
 
 var GetFederationStrategyFromMode FederationStrategyChooser = func(
 	mode networking_types.Federation_Mode,

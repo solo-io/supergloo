@@ -3,6 +3,7 @@ package istio_translator
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -17,6 +18,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -122,8 +124,9 @@ func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 			},
 		},
 	}
-	err := destinationRuleClient.Upsert(ctx, destinationRule)
-	if err != nil {
+	// Only attempt to create if does not already exist
+	err := destinationRuleClient.Create(ctx, destinationRule)
+	if err != nil && !errors.IsAlreadyExists(err) {
 		return i.errorToStatus(err)
 	}
 	return nil
@@ -139,8 +142,14 @@ func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 	if err != nil {
 		return i.errorToStatus(err)
 	}
-	// Upsert computed VirtualService
-	err = virtualServiceClient.Upsert(ctx, computedVirtualService)
+	// The translator will attempt to create a virtual service for every MeshService.
+	// However, a mesh service with no Http, Tcp, or Tls Routes is invalid, so as we only support Http here,
+	// we simply return nil. This will not be true for MeshServices which have been configured by TrafficPolicies
+	if len(computedVirtualService.Spec.GetHttp()) == 0 {
+		return nil
+	}
+	// UpsertData computed VirtualService
+	err = virtualServiceClient.UpsertSpec(ctx, computedVirtualService)
 	if err != nil {
 		return i.errorToStatus(err)
 	}
@@ -156,16 +165,18 @@ func (i *istioTrafficPolicyTranslator) translateIntoVirtualService(
 		ObjectMeta: clients.ResourceRefToObjectMeta(meshService.Spec.GetKubeService().GetRef()),
 		Spec: api_v1alpha3.VirtualService{
 			Hosts: []string{buildServiceHostname(meshService)},
-			Http:  []*api_v1alpha3.HTTPRoute{},
 		},
 	}
+	var allHttpRoutes []*api_v1alpha3.HTTPRoute
 	for _, trafficPolicy := range trafficPolicies {
 		httpRoutes, err := i.translateIntoHTTPRoutes(ctx, meshService, trafficPolicy)
 		if err != nil {
 			return nil, err
 		}
-		virtualService.Spec.Http = httpRoutes
+		allHttpRoutes = append(allHttpRoutes, httpRoutes...)
 	}
+	sort.Sort(SpecificitySortableRoutes(allHttpRoutes))
+	virtualService.Spec.Http = allHttpRoutes
 	return virtualService, nil
 }
 
@@ -201,12 +212,11 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	}
 	retries := i.translateRetries(trafficPolicy)
 	headerManipulation := i.translateHeaderManipulation(trafficPolicy)
-	// flatten HTTPMatchRequests, i.e. create an HTTPRoute per HTTPMatchRequest
-	// this facilitates sorting the HTTPRoutes to produce a well-defined ordering of precedence
-	httpRoutes := make([]*api_v1alpha3.HTTPRoute, 0, len(requestMatchers))
-	for _, requestMatcher := range requestMatchers {
+	var httpRoutes []*api_v1alpha3.HTTPRoute
+
+	if len(requestMatchers) == 0 {
+		// If no matchers are present return a single route with no matchers
 		httpRoutes = append(httpRoutes, &api_v1alpha3.HTTPRoute{
-			Match:            []*api_v1alpha3.HTTPMatchRequest{requestMatcher},
 			Route:            trafficShift,
 			Timeout:          trafficPolicy.Spec.GetRequestTimeout(),
 			Fault:            faultInjection,
@@ -216,8 +226,24 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 			Mirror:           mirror,
 			Headers:          headerManipulation,
 		})
+	} else {
+		httpRoutes = make([]*api_v1alpha3.HTTPRoute, 0, len(requestMatchers))
+		// flatten HTTPMatchRequests, i.e. create an HTTPRoute per HTTPMatchRequest
+		// this facilitates sorting the HTTPRoutes to produce a well-defined ordering of precedence
+		for _, requestMatcher := range requestMatchers {
+			httpRoutes = append(httpRoutes, &api_v1alpha3.HTTPRoute{
+				Match:            []*api_v1alpha3.HTTPMatchRequest{requestMatcher},
+				Route:            trafficShift,
+				Timeout:          trafficPolicy.Spec.GetRequestTimeout(),
+				Fault:            faultInjection,
+				CorsPolicy:       corsPolicy,
+				Retries:          retries,
+				MirrorPercentage: mirrorPercentage,
+				Mirror:           mirror,
+				Headers:          headerManipulation,
+			})
+		}
 	}
-	sort.Sort(SpecificitySortableRoutes(httpRoutes))
 	return httpRoutes, nil
 }
 
@@ -550,8 +576,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	}
 	if destination.GetCluster().GetValue() == meshService.Spec.GetKubeService().GetRef().GetCluster().GetValue() {
 		// destination is on the same cluster as the MeshService's k8s Service
-		return destinationMeshService.Spec.GetKubeService().GetRef().GetName() +
-			"." + destinationMeshService.Spec.GetKubeService().GetRef().GetNamespace(), nil
+		return buildServiceHostname(destinationMeshService), nil
 	} else {
 		// destination is on a remote cluster to the MeshService's k8s Service
 		return destinationMeshService.Spec.GetFederation().GetMulticlusterDnsName(), nil
@@ -559,19 +584,15 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 }
 
 func buildServiceHostname(meshService *discovery_v1alpha1.MeshService) string {
-	return meshService.GetName()
+	return meshService.Spec.GetKubeService().GetRef().GetName()
 }
 
 // sort the label keys, then in order concatenate keys-values
 func generateUniqueSubsetName(selectors map[string]string) string {
-	subsetName := ""
 	var keys []string
-	for key := range selectors {
-		keys = append(keys, key)
+	for key, val := range selectors {
+		keys = append(keys, key+"-"+val)
 	}
 	sort.Strings(keys)
-	for _, key := range keys {
-		subsetName += key + ":" + selectors[key] + ","
-	}
-	return subsetName
+	return strings.Join(keys, "_")
 }
