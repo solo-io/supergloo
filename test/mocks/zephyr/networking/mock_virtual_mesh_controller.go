@@ -13,30 +13,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockVirtualMeshController is a mock of VirtualMeshController interface
+// MockVirtualMeshController is a mock of VirtualMeshController interface.
 type MockVirtualMeshController struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualMeshControllerMockRecorder
 }
 
-// MockVirtualMeshControllerMockRecorder is the mock recorder for MockVirtualMeshController
+// MockVirtualMeshControllerMockRecorder is the mock recorder for MockVirtualMeshController.
 type MockVirtualMeshControllerMockRecorder struct {
 	mock *MockVirtualMeshController
 }
 
-// NewMockVirtualMeshController creates a new mock instance
+// NewMockVirtualMeshController creates a new mock instance.
 func NewMockVirtualMeshController(ctrl *gomock.Controller) *MockVirtualMeshController {
 	mock := &MockVirtualMeshController{ctrl: ctrl}
 	mock.recorder = &MockVirtualMeshControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVirtualMeshController) EXPECT() *MockVirtualMeshControllerMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockVirtualMeshController) AddEventHandler(arg0 context.Context, arg1 controller.VirtualMeshEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -48,37 +48,37 @@ func (m *MockVirtualMeshController) AddEventHandler(arg0 context.Context, arg1 c
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockVirtualMeshControllerMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockVirtualMeshController)(nil).AddEventHandler), varargs...)
 }
 
-// MockTrafficPolicyController is a mock of TrafficPolicyController interface
+// MockTrafficPolicyController is a mock of TrafficPolicyController interface.
 type MockTrafficPolicyController struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyControllerMockRecorder
 }
 
-// MockTrafficPolicyControllerMockRecorder is the mock recorder for MockTrafficPolicyController
+// MockTrafficPolicyControllerMockRecorder is the mock recorder for MockTrafficPolicyController.
 type MockTrafficPolicyControllerMockRecorder struct {
 	mock *MockTrafficPolicyController
 }
 
-// NewMockTrafficPolicyController creates a new mock instance
+// NewMockTrafficPolicyController creates a new mock instance.
 func NewMockTrafficPolicyController(ctrl *gomock.Controller) *MockTrafficPolicyController {
 	mock := &MockTrafficPolicyController{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyController) EXPECT() *MockTrafficPolicyControllerMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockTrafficPolicyController) AddEventHandler(arg0 context.Context, arg1 controller.TrafficPolicyEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -90,7 +90,7 @@ func (m *MockTrafficPolicyController) AddEventHandler(arg0 context.Context, arg1
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockTrafficPolicyControllerMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

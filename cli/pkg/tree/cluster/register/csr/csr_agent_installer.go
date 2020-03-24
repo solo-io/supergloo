@@ -6,6 +6,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/mesh-projects/pkg/version"
 )
 
@@ -25,7 +26,7 @@ func NewCsrAgentInstallerFactory() CsrAgentInstallerFactory {
 }
 
 func NewCsrAgentInstaller(
-	helmInstaller helminstall.Installer,
+	helmInstaller types.Installer,
 	deployedVersionFinder version.DeployedVersionFinder,
 ) CsrAgentInstaller {
 	return &csrAgentInstaller{
@@ -35,7 +36,7 @@ func NewCsrAgentInstaller(
 }
 
 type csrAgentInstaller struct {
-	helmInstaller         helminstall.Installer
+	helmInstaller         types.Installer
 	deployedVersionFinder version.DeployedVersionFinder
 }
 
@@ -85,7 +86,7 @@ func (c *csrAgentInstaller) runHelmInstall(
 
 	releaseUri := fmt.Sprintf(chartPathTemplate, version)
 
-	return c.helmInstaller.Install(&helminstall.InstallerConfig{
+	return c.helmInstaller.Install(&types.InstallerConfig{
 		KubeConfig:       kubeConfig,
 		KubeContext:      kubeContext,
 		InstallNamespace: installNamespace,

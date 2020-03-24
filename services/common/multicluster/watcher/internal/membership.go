@@ -6,9 +6,9 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 //go:generate mockgen -source ./membership.go -destination mocks/membership.go
@@ -57,38 +57,24 @@ type remoteCluster struct {
 
 func (c *ClusterMembershipHandler) AddMemberCluster(ctx context.Context, s *v1.Secret) (resync bool, err error) {
 	logger := contextutils.LoggerFrom(ctx)
-	for clusterID, kubeConfig := range s.Data {
-		// clusterID must be unique even across multiple secrets
-		c.lock.RLock()
-		if _, ok := c.clusterByName[clusterID]; ok {
-			return false, ClusterExistsError(clusterID, c.clusterByName[clusterID].secretName, s.ObjectMeta.Namespace)
-		}
-		c.lock.RUnlock()
-		clusterConfig, err := clientcmd.Load(kubeConfig)
-		if err != nil {
-			return false, KubeConfigInvalidFormatError(err, clusterID, s.GetName(), s.GetNamespace())
-		}
-
-		clientConfig := clientcmd.NewDefaultClientConfig(*clusterConfig, &clientcmd.ConfigOverrides{})
-		restConfig, err := clientConfig.ClientConfig()
-		if err != nil {
-			return false, KubeConfigInvalidFormatError(err, clusterID, s.GetName(), s.GetNamespace())
-		}
-
-		err = c.kubeConfigReceiver.ClusterAdded(restConfig, clusterID)
-		if err != nil {
-			return true, ClusterAddError(err, clusterID)
-		}
-
-		logger.Infof("Adding new cluster member: %s", clusterID)
-		c.lock.Lock()
-		c.clusterByName[clusterID] = &remoteCluster{
-			secretName:  s.GetName(),
-			kubeContext: clusterConfig.CurrentContext,
-		}
-		c.lock.Unlock()
-
+	clusterName, config, err := kubeconfig.SecretToConfig(s)
+	if err != nil {
+		return false, KubeConfigInvalidFormatError(err, clusterName, s.GetName(), s.GetNamespace())
 	}
+
+	err = c.kubeConfigReceiver.ClusterAdded(config.RestConfig, clusterName)
+	if err != nil {
+		return true, ClusterAddError(err, clusterName)
+	}
+
+	logger.Infof("Adding new cluster member: %s", clusterName)
+	c.lock.Lock()
+	c.clusterByName[clusterName] = &remoteCluster{
+		secretName:  s.GetName(),
+		kubeContext: config.ApiConfig.CurrentContext,
+	}
+	c.lock.Unlock()
+
 	c.lock.RLock()
 	logger.Infof("Number of remote clusters: %d", len(c.clusterByName))
 	c.lock.RUnlock()

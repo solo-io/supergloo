@@ -13,30 +13,30 @@ import (
 	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
-// MockVirtualMeshFinder is a mock of VirtualMeshFinder interface
+// MockVirtualMeshFinder is a mock of VirtualMeshFinder interface.
 type MockVirtualMeshFinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualMeshFinderMockRecorder
 }
 
-// MockVirtualMeshFinderMockRecorder is the mock recorder for MockVirtualMeshFinder
+// MockVirtualMeshFinderMockRecorder is the mock recorder for MockVirtualMeshFinder.
 type MockVirtualMeshFinderMockRecorder struct {
 	mock *MockVirtualMeshFinder
 }
 
-// NewMockVirtualMeshFinder creates a new mock instance
+// NewMockVirtualMeshFinder creates a new mock instance.
 func NewMockVirtualMeshFinder(ctrl *gomock.Controller) *MockVirtualMeshFinder {
 	mock := &MockVirtualMeshFinder{ctrl: ctrl}
 	mock.recorder = &MockVirtualMeshFinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVirtualMeshFinder) EXPECT() *MockVirtualMeshFinderMockRecorder {
 	return m.recorder
 }
 
-// GetMeshesForVirtualMesh mocks base method
+// GetMeshesForVirtualMesh mocks base method.
 func (m *MockVirtualMeshFinder) GetMeshesForVirtualMesh(ctx context.Context, vm *v1alpha10.VirtualMesh) ([]*v1alpha1.Mesh, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMeshesForVirtualMesh", ctx, vm)
@@ -45,7 +45,7 @@ func (m *MockVirtualMeshFinder) GetMeshesForVirtualMesh(ctx context.Context, vm 
 	return ret0, ret1
 }
 
-// GetMeshesForVirtualMesh indicates an expected call of GetMeshesForVirtualMesh
+// GetMeshesForVirtualMesh indicates an expected call of GetMeshesForVirtualMesh.
 func (mr *MockVirtualMeshFinderMockRecorder) GetMeshesForVirtualMesh(ctx, vm interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshesForVirtualMesh", reflect.TypeOf((*MockVirtualMeshFinder)(nil).GetMeshesForVirtualMesh), ctx, vm)

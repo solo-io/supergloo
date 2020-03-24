@@ -11,30 +11,30 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// MockCertSecretBuilder is a mock of CertSecretBuilder interface
+// MockCertSecretBuilder is a mock of CertSecretBuilder interface.
 type MockCertSecretBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockCertSecretBuilderMockRecorder
 }
 
-// MockCertSecretBuilderMockRecorder is the mock recorder for MockCertSecretBuilder
+// MockCertSecretBuilderMockRecorder is the mock recorder for MockCertSecretBuilder.
 type MockCertSecretBuilderMockRecorder struct {
 	mock *MockCertSecretBuilder
 }
 
-// NewMockCertSecretBuilder creates a new mock instance
+// NewMockCertSecretBuilder creates a new mock instance.
 func NewMockCertSecretBuilder(ctrl *gomock.Controller) *MockCertSecretBuilder {
 	mock := &MockCertSecretBuilder{ctrl: ctrl}
 	mock.recorder = &MockCertSecretBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCertSecretBuilder) EXPECT() *MockCertSecretBuilderMockRecorder {
 	return m.recorder
 }
 
-// BuildSecret mocks base method
+// BuildSecret mocks base method.
 func (m *MockCertSecretBuilder) BuildSecret(name, namespace string) *v1.Secret {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildSecret", name, namespace)
@@ -42,7 +42,7 @@ func (m *MockCertSecretBuilder) BuildSecret(name, namespace string) *v1.Secret {
 	return ret0
 }
 
-// BuildSecret indicates an expected call of BuildSecret
+// BuildSecret indicates an expected call of BuildSecret.
 func (mr *MockCertSecretBuilderMockRecorder) BuildSecret(name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSecret", reflect.TypeOf((*MockCertSecretBuilder)(nil).BuildSecret), name, namespace)

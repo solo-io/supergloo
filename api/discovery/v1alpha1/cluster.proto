@@ -15,4 +15,7 @@ message KubernetesClusterSpec {
     string version = 3;
     // cloud provider, empty if unknown
     string cloud = 4;
+
+    // namespace to use when writing Service Mesh Hub resources to this cluster
+    string write_namespace = 5;
 }

@@ -29,17 +29,19 @@ require (
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca
-	github.com/solo-io/go-utils v0.15.0
+	github.com/solo-io/go-utils v0.15.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
 	github.com/solo-io/solo-kit v0.13.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.13.0
+	helm.sh/helm/v3 v3.0.0
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
 	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
 	k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible

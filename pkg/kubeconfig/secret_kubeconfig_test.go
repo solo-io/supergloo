@@ -94,38 +94,6 @@ users:
 		Expect(secret).To(Equal(expectedSecret))
 	})
 
-	It("should convert a secret to multiple kube configs", func() {
-		secret := &v1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: map[string]string{KubeConfigSecretLabel: "true"},
-			},
-			Data: map[string][]byte{
-				clusterName1: []byte(kubeConfigRaw1),
-				clusterName2: []byte(kubeConfigRaw2),
-			},
-			Type: v1.SecretTypeOpaque,
-		}
-		expectedKubeConfigs := []*KubeConfig{&kubeConfig1, &kubeConfig2}
-		kubeConfigs, err := SecretToKubeConfigs(secret)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(kubeConfigs).To(ConsistOf(expectedKubeConfigs))
-	})
-
-	It("should fail if unable to deserialize kube config yaml string", func() {
-		secret := &v1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: map[string]string{KubeConfigSecretLabel: "true"},
-			},
-			Data: map[string][]byte{
-				clusterName1: []byte("invalid kube config"),
-				clusterName2: []byte(kubeConfigRaw2),
-			},
-			Type: v1.SecretTypeOpaque,
-		}
-		_, err := SecretToKubeConfigs(secret)
-		Expect(err).To(testutils.HaveInErrorChain(FailedToConvertSecretToKubeConfig(err)))
-	})
-
 	It("should fail if multiple clusters share the same name", func() {
 		name := "secret-name"
 		namespace := "secret-namespace"

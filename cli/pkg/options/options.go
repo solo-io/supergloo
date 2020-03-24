@@ -10,12 +10,13 @@ func NewOptionsProvider() *Options {
 }
 
 type Options struct {
-	Root       Root
-	Cluster    Cluster
-	Upgrade    Upgrade
-	SmhInstall SmhInstall
-	Istio      Istio
-	Check      Check
+	Root         Root
+	Cluster      Cluster
+	Upgrade      Upgrade
+	SmhInstall   SmhInstall
+	Istio        Istio
+	Check        Check
+	SmhUninstall SmhUninstall
 }
 
 type Root struct {
@@ -74,6 +75,11 @@ type SmhInstall struct {
 	HelmReleaseName         string
 	Version                 string
 	CreateNamespace         bool
+}
+
+type SmhUninstall struct {
+	ReleaseName     string
+	RemoveNamespace bool
 }
 
 type Check struct {

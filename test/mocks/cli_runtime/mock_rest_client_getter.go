@@ -13,30 +13,30 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// MockRESTClientGetter is a mock of RESTClientGetter interface
+// MockRESTClientGetter is a mock of RESTClientGetter interface.
 type MockRESTClientGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockRESTClientGetterMockRecorder
 }
 
-// MockRESTClientGetterMockRecorder is the mock recorder for MockRESTClientGetter
+// MockRESTClientGetterMockRecorder is the mock recorder for MockRESTClientGetter.
 type MockRESTClientGetterMockRecorder struct {
 	mock *MockRESTClientGetter
 }
 
-// NewMockRESTClientGetter creates a new mock instance
+// NewMockRESTClientGetter creates a new mock instance.
 func NewMockRESTClientGetter(ctrl *gomock.Controller) *MockRESTClientGetter {
 	mock := &MockRESTClientGetter{ctrl: ctrl}
 	mock.recorder = &MockRESTClientGetterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRESTClientGetter) EXPECT() *MockRESTClientGetterMockRecorder {
 	return m.recorder
 }
 
-// ToDiscoveryClient mocks base method
+// ToDiscoveryClient mocks base method.
 func (m *MockRESTClientGetter) ToDiscoveryClient() (discovery.CachedDiscoveryInterface, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToDiscoveryClient")
@@ -45,13 +45,13 @@ func (m *MockRESTClientGetter) ToDiscoveryClient() (discovery.CachedDiscoveryInt
 	return ret0, ret1
 }
 
-// ToDiscoveryClient indicates an expected call of ToDiscoveryClient
+// ToDiscoveryClient indicates an expected call of ToDiscoveryClient.
 func (mr *MockRESTClientGetterMockRecorder) ToDiscoveryClient() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToDiscoveryClient", reflect.TypeOf((*MockRESTClientGetter)(nil).ToDiscoveryClient))
 }
 
-// ToRESTConfig mocks base method
+// ToRESTConfig mocks base method.
 func (m *MockRESTClientGetter) ToRESTConfig() (*rest.Config, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToRESTConfig")
@@ -60,13 +60,13 @@ func (m *MockRESTClientGetter) ToRESTConfig() (*rest.Config, error) {
 	return ret0, ret1
 }
 
-// ToRESTConfig indicates an expected call of ToRESTConfig
+// ToRESTConfig indicates an expected call of ToRESTConfig.
 func (mr *MockRESTClientGetterMockRecorder) ToRESTConfig() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToRESTConfig", reflect.TypeOf((*MockRESTClientGetter)(nil).ToRESTConfig))
 }
 
-// ToRESTMapper mocks base method
+// ToRESTMapper mocks base method.
 func (m *MockRESTClientGetter) ToRESTMapper() (meta.RESTMapper, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToRESTMapper")
@@ -75,7 +75,7 @@ func (m *MockRESTClientGetter) ToRESTMapper() (meta.RESTMapper, error) {
 	return ret0, ret1
 }
 
-// ToRESTMapper indicates an expected call of ToRESTMapper
+// ToRESTMapper indicates an expected call of ToRESTMapper.
 func (mr *MockRESTClientGetterMockRecorder) ToRESTMapper() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToRESTMapper", reflect.TypeOf((*MockRESTClientGetter)(nil).ToRESTMapper))

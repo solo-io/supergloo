@@ -13,30 +13,30 @@ import (
 	strategies "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
 )
 
-// MockFederationStrategy is a mock of FederationStrategy interface
+// MockFederationStrategy is a mock of FederationStrategy interface.
 type MockFederationStrategy struct {
 	ctrl     *gomock.Controller
 	recorder *MockFederationStrategyMockRecorder
 }
 
-// MockFederationStrategyMockRecorder is the mock recorder for MockFederationStrategy
+// MockFederationStrategyMockRecorder is the mock recorder for MockFederationStrategy.
 type MockFederationStrategyMockRecorder struct {
 	mock *MockFederationStrategy
 }
 
-// NewMockFederationStrategy creates a new mock instance
+// NewMockFederationStrategy creates a new mock instance.
 func NewMockFederationStrategy(ctrl *gomock.Controller) *MockFederationStrategy {
 	mock := &MockFederationStrategy{ctrl: ctrl}
 	mock.recorder = &MockFederationStrategyMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockFederationStrategy) EXPECT() *MockFederationStrategyMockRecorder {
 	return m.recorder
 }
 
-// WriteFederationToServices mocks base method
+// WriteFederationToServices mocks base method.
 func (m *MockFederationStrategy) WriteFederationToServices(ctx context.Context, vm *v1alpha1.VirtualMesh, meshNameToMetadata strategies.MeshNameToMetadata) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteFederationToServices", ctx, vm, meshNameToMetadata)
@@ -44,7 +44,7 @@ func (m *MockFederationStrategy) WriteFederationToServices(ctx context.Context, 
 	return ret0
 }
 
-// WriteFederationToServices indicates an expected call of WriteFederationToServices
+// WriteFederationToServices indicates an expected call of WriteFederationToServices.
 func (mr *MockFederationStrategyMockRecorder) WriteFederationToServices(ctx, vm, meshNameToMetadata interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteFederationToServices", reflect.TypeOf((*MockFederationStrategy)(nil).WriteFederationToServices), ctx, vm, meshNameToMetadata)

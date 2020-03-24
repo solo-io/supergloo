@@ -8,6 +8,7 @@ import (
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
@@ -36,7 +37,7 @@ var (
 	PostInstallMessage = "Service Mesh Hub successfully installed!\n"
 )
 
-func HelmInstallerProvider(helmClient helminstall.HelmClient, kubeClient kubernetes.Interface) helminstall.Installer {
+func HelmInstallerProvider(helmClient types.HelmClient, kubeClient kubernetes.Interface) types.Installer {
 	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 }
 
@@ -58,7 +59,7 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 			if err != nil {
 				return InstallErr(err)
 			}
-			if err := kubeClients.HelmInstaller.Install(&helminstall.InstallerConfig{
+			if err := kubeClients.HelmInstaller.Install(&types.InstallerConfig{
 				KubeConfig:         opts.Root.KubeConfig,
 				KubeContext:        opts.Root.KubeContext,
 				DryRun:             opts.SmhInstall.DryRun,

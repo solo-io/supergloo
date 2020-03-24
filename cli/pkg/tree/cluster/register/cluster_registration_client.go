@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -28,7 +29,6 @@ import (
 
 const (
 	FailedToCheckForPreviousKubeCluster = "Could not get KubernetesCluster resource from master cluster"
-	CsrAgentReleaseName                 = "csr-agent"
 )
 
 var (
@@ -158,7 +158,7 @@ func RegisterCluster(
 			ClusterName:          registerOpts.RemoteClusterName,
 			SmhInstallNamespace:  opts.Root.WriteNamespace,
 			UseDevCsrAgentChart:  registerOpts.UseDevCsrAgentChart,
-			ReleaseName:          CsrAgentReleaseName,
+			ReleaseName:          cliconstants.CsrAgentReleaseName,
 			RemoteWriteNamespace: registerOpts.RemoteWriteNamespace,
 		},
 	)
@@ -304,6 +304,7 @@ func writeKubeClusterToMaster(
 				Name:      secret.GetName(),
 				Namespace: secret.GetNamespace(),
 			},
+			WriteNamespace: registerOpts.RemoteWriteNamespace,
 		},
 	}
 	err := masterKubeClients.KubeClusterClient.Upsert(ctx, cluster)

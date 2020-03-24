@@ -13,30 +13,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockPodController is a mock of PodController interface
+// MockPodController is a mock of PodController interface.
 type MockPodController struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodControllerMockRecorder
 }
 
-// MockPodControllerMockRecorder is the mock recorder for MockPodController
+// MockPodControllerMockRecorder is the mock recorder for MockPodController.
 type MockPodControllerMockRecorder struct {
 	mock *MockPodController
 }
 
-// NewMockPodController creates a new mock instance
+// NewMockPodController creates a new mock instance.
 func NewMockPodController(ctrl *gomock.Controller) *MockPodController {
 	mock := &MockPodController{ctrl: ctrl}
 	mock.recorder = &MockPodControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodController) EXPECT() *MockPodControllerMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockPodController) AddEventHandler(arg0 context.Context, arg1 controller.PodEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -48,7 +48,7 @@ func (m *MockPodController) AddEventHandler(arg0 context.Context, arg1 controlle
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockPodControllerMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

@@ -34,7 +34,12 @@ var (
 
 	UpgradeCommand = cobra.Command{
 		Use:   "upgrade",
-		Short: "In-place upgrade of meshctl",
+		Short: "In-place upgrade of the meshctl binary",
+	}
+
+	UninstallCommand = cobra.Command{
+		Use:   "uninstall",
+		Short: "Completely uninstall Service Mesh Hub and remove associated CRDs",
 	}
 
 	CheckCommand = cobra.Command{

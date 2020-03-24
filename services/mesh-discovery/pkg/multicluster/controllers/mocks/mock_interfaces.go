@@ -14,30 +14,30 @@ import (
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 )
 
-// MockDeploymentControllerFactory is a mock of DeploymentControllerFactory interface
+// MockDeploymentControllerFactory is a mock of DeploymentControllerFactory interface.
 type MockDeploymentControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentControllerFactoryMockRecorder
 }
 
-// MockDeploymentControllerFactoryMockRecorder is the mock recorder for MockDeploymentControllerFactory
+// MockDeploymentControllerFactoryMockRecorder is the mock recorder for MockDeploymentControllerFactory.
 type MockDeploymentControllerFactoryMockRecorder struct {
 	mock *MockDeploymentControllerFactory
 }
 
-// NewMockDeploymentControllerFactory creates a new mock instance
+// NewMockDeploymentControllerFactory creates a new mock instance.
 func NewMockDeploymentControllerFactory(ctrl *gomock.Controller) *MockDeploymentControllerFactory {
 	mock := &MockDeploymentControllerFactory{ctrl: ctrl}
 	mock.recorder = &MockDeploymentControllerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDeploymentControllerFactory) EXPECT() *MockDeploymentControllerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockDeploymentControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller0.DeploymentController, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
@@ -46,36 +46,36 @@ func (m *MockDeploymentControllerFactory) Build(mgr mc_manager.AsyncManager, clu
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockDeploymentControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockDeploymentControllerFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockPodControllerFactory is a mock of PodControllerFactory interface
+// MockPodControllerFactory is a mock of PodControllerFactory interface.
 type MockPodControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockPodControllerFactoryMockRecorder
 }
 
-// MockPodControllerFactoryMockRecorder is the mock recorder for MockPodControllerFactory
+// MockPodControllerFactoryMockRecorder is the mock recorder for MockPodControllerFactory.
 type MockPodControllerFactoryMockRecorder struct {
 	mock *MockPodControllerFactory
 }
 
-// NewMockPodControllerFactory creates a new mock instance
+// NewMockPodControllerFactory creates a new mock instance.
 func NewMockPodControllerFactory(ctrl *gomock.Controller) *MockPodControllerFactory {
 	mock := &MockPodControllerFactory{ctrl: ctrl}
 	mock.recorder = &MockPodControllerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPodControllerFactory) EXPECT() *MockPodControllerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockPodControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller1.PodController, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
@@ -84,36 +84,36 @@ func (m *MockPodControllerFactory) Build(mgr mc_manager.AsyncManager, clusterNam
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockPodControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockPodControllerFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockMeshWorkloadControllerFactory is a mock of MeshWorkloadControllerFactory interface
+// MockMeshWorkloadControllerFactory is a mock of MeshWorkloadControllerFactory interface.
 type MockMeshWorkloadControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadControllerFactoryMockRecorder
 }
 
-// MockMeshWorkloadControllerFactoryMockRecorder is the mock recorder for MockMeshWorkloadControllerFactory
+// MockMeshWorkloadControllerFactoryMockRecorder is the mock recorder for MockMeshWorkloadControllerFactory.
 type MockMeshWorkloadControllerFactoryMockRecorder struct {
 	mock *MockMeshWorkloadControllerFactory
 }
 
-// NewMockMeshWorkloadControllerFactory creates a new mock instance
+// NewMockMeshWorkloadControllerFactory creates a new mock instance.
 func NewMockMeshWorkloadControllerFactory(ctrl *gomock.Controller) *MockMeshWorkloadControllerFactory {
 	mock := &MockMeshWorkloadControllerFactory{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadControllerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshWorkloadControllerFactory) EXPECT() *MockMeshWorkloadControllerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadController, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
@@ -122,36 +122,36 @@ func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, c
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockMeshWorkloadControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshWorkloadControllerFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockMeshServiceControllerFactory is a mock of MeshServiceControllerFactory interface
+// MockMeshServiceControllerFactory is a mock of MeshServiceControllerFactory interface.
 type MockMeshServiceControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceControllerFactoryMockRecorder
 }
 
-// MockMeshServiceControllerFactoryMockRecorder is the mock recorder for MockMeshServiceControllerFactory
+// MockMeshServiceControllerFactoryMockRecorder is the mock recorder for MockMeshServiceControllerFactory.
 type MockMeshServiceControllerFactoryMockRecorder struct {
 	mock *MockMeshServiceControllerFactory
 }
 
-// NewMockMeshServiceControllerFactory creates a new mock instance
+// NewMockMeshServiceControllerFactory creates a new mock instance.
 func NewMockMeshServiceControllerFactory(ctrl *gomock.Controller) *MockMeshServiceControllerFactory {
 	mock := &MockMeshServiceControllerFactory{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceControllerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshServiceControllerFactory) EXPECT() *MockMeshServiceControllerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockMeshServiceControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceController, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
@@ -160,36 +160,36 @@ func (m *MockMeshServiceControllerFactory) Build(mgr mc_manager.AsyncManager, cl
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockMeshServiceControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshServiceControllerFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockServiceControllerFactory is a mock of ServiceControllerFactory interface
+// MockServiceControllerFactory is a mock of ServiceControllerFactory interface.
 type MockServiceControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceControllerFactoryMockRecorder
 }
 
-// MockServiceControllerFactoryMockRecorder is the mock recorder for MockServiceControllerFactory
+// MockServiceControllerFactoryMockRecorder is the mock recorder for MockServiceControllerFactory.
 type MockServiceControllerFactoryMockRecorder struct {
 	mock *MockServiceControllerFactory
 }
 
-// NewMockServiceControllerFactory creates a new mock instance
+// NewMockServiceControllerFactory creates a new mock instance.
 func NewMockServiceControllerFactory(ctrl *gomock.Controller) *MockServiceControllerFactory {
 	mock := &MockServiceControllerFactory{ctrl: ctrl}
 	mock.recorder = &MockServiceControllerFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceControllerFactory) EXPECT() *MockServiceControllerFactoryMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockServiceControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller1.ServiceController, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
@@ -198,7 +198,7 @@ func (m *MockServiceControllerFactory) Build(mgr mc_manager.AsyncManager, cluste
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockServiceControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockServiceControllerFactory)(nil).Build), mgr, clusterName)

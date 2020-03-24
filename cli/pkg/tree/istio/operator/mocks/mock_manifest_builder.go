@@ -11,30 +11,30 @@ import (
 	options "github.com/solo-io/mesh-projects/cli/pkg/options"
 )
 
-// MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface
+// MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface.
 type MockInstallerManifestBuilder struct {
 	ctrl     *gomock.Controller
 	recorder *MockInstallerManifestBuilderMockRecorder
 }
 
-// MockInstallerManifestBuilderMockRecorder is the mock recorder for MockInstallerManifestBuilder
+// MockInstallerManifestBuilderMockRecorder is the mock recorder for MockInstallerManifestBuilder.
 type MockInstallerManifestBuilderMockRecorder struct {
 	mock *MockInstallerManifestBuilder
 }
 
-// NewMockInstallerManifestBuilder creates a new mock instance
+// NewMockInstallerManifestBuilder creates a new mock instance.
 func NewMockInstallerManifestBuilder(ctrl *gomock.Controller) *MockInstallerManifestBuilder {
 	mock := &MockInstallerManifestBuilder{ctrl: ctrl}
 	mock.recorder = &MockInstallerManifestBuilderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockInstallerManifestBuilder) EXPECT() *MockInstallerManifestBuilderMockRecorder {
 	return m.recorder
 }
 
-// Build mocks base method
+// Build mocks base method.
 func (m *MockInstallerManifestBuilder) Build(options *options.IstioInstallationConfig) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", options)
@@ -43,13 +43,13 @@ func (m *MockInstallerManifestBuilder) Build(options *options.IstioInstallationC
 	return ret0, ret1
 }
 
-// Build indicates an expected call of Build
+// Build indicates an expected call of Build.
 func (mr *MockInstallerManifestBuilderMockRecorder) Build(options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).Build), options)
 }
 
-// GetControlPlaneSpecWithProfile mocks base method
+// GetControlPlaneSpecWithProfile mocks base method.
 func (m *MockInstallerManifestBuilder) GetControlPlaneSpecWithProfile(profile, installationNamespace string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetControlPlaneSpecWithProfile", profile, installationNamespace)
@@ -58,7 +58,7 @@ func (m *MockInstallerManifestBuilder) GetControlPlaneSpecWithProfile(profile, i
 	return ret0, ret1
 }
 
-// GetControlPlaneSpecWithProfile indicates an expected call of GetControlPlaneSpecWithProfile
+// GetControlPlaneSpecWithProfile indicates an expected call of GetControlPlaneSpecWithProfile.
 func (mr *MockInstallerManifestBuilderMockRecorder) GetControlPlaneSpecWithProfile(profile, installationNamespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetControlPlaneSpecWithProfile", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).GetControlPlaneSpecWithProfile), profile, installationNamespace)

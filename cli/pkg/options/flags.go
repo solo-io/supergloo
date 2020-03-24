@@ -42,7 +42,7 @@ func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringSliceVarP(&opts.SmhInstall.HelmChartValueFileNames, "values", "", []string{},
 		"List of files with value overrides for the Service Mesh Hub Helm chart, "+
 			"(e.g. --values file1,file2 or --values file1 --values file2)")
-	flags.StringVar(&opts.SmhInstall.HelmReleaseName, "release-name", cliconstants.ReleaseName,
+	flags.StringVar(&opts.SmhInstall.HelmReleaseName, "release-name", cliconstants.ServiceMeshHubReleaseName,
 		"Helm release name")
 	flags.StringVar(&opts.SmhInstall.Version, "version", "",
 		"Version to install (e.g. v1.2.0, defaults to latest)")
@@ -95,6 +95,13 @@ func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage strin
 	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
 	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource")
 	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
+}
+
+func AddUninstallFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.PersistentFlags()
+
+	flags.StringVar(&opts.SmhUninstall.ReleaseName, "release-name", cliconstants.ServiceMeshHubReleaseName, "Helm release name")
+	flags.BoolVar(&opts.SmhUninstall.RemoveNamespace, "remove-namespace", false, "Remove the Service Mesh Hub namespace specified with -n")
 }
 
 func AddCheckFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {

@@ -7,14 +7,14 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
+	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
-	mock_go_utils "github.com/solo-io/mesh-projects/test/mocks/go-utils"
 	"k8s.io/client-go/rest"
 )
 
@@ -24,13 +24,13 @@ var _ = Describe("Install", func() {
 		ctx               context.Context
 		mockKubeLoader    *cli_mocks.MockKubeLoader
 		meshctl           *cli_test.MockMeshctl
-		mockHelmInstaller *mock_go_utils.MockInstaller
+		mockHelmInstaller *mock_types.MockInstaller
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockHelmInstaller = mock_go_utils.NewMockInstaller(ctrl)
+		mockHelmInstaller = mock_types.NewMockInstaller(ctrl)
 		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
 		meshctl = &cli_test.MockMeshctl{
 			MockController: ctrl,
@@ -47,12 +47,12 @@ var _ = Describe("Install", func() {
 
 	It("should set default values for flags", func() {
 		chartOverride := "chartOverride.tgz"
-		installerconfig := &helminstall.InstallerConfig{
+		installerconfig := &types.InstallerConfig{
 			DryRun:             false,
 			CreateNamespace:    true,
 			Verbose:            false,
 			InstallNamespace:   "service-mesh-hub",
-			ReleaseName:        cliconstants.ReleaseName,
+			ReleaseName:        cliconstants.ServiceMeshHubReleaseName,
 			ReleaseUri:         chartOverride,
 			ValuesFiles:        []string{},
 			PreInstallMessage:  install.PreInstallMessage,
@@ -78,7 +78,7 @@ var _ = Describe("Install", func() {
 		createNamespace := false
 		valuesFile1 := "values-file1"
 		valuesFile2 := "values-file2"
-		installerconfig := &helminstall.InstallerConfig{
+		installerconfig := &types.InstallerConfig{
 			DryRun:             true,
 			CreateNamespace:    true,
 			Verbose:            true,

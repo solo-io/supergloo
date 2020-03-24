@@ -13,30 +13,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMeshWorkloadController is a mock of MeshWorkloadController interface
+// MockMeshWorkloadController is a mock of MeshWorkloadController interface.
 type MockMeshWorkloadController struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadControllerMockRecorder
 }
 
-// MockMeshWorkloadControllerMockRecorder is the mock recorder for MockMeshWorkloadController
+// MockMeshWorkloadControllerMockRecorder is the mock recorder for MockMeshWorkloadController.
 type MockMeshWorkloadControllerMockRecorder struct {
 	mock *MockMeshWorkloadController
 }
 
-// NewMockMeshWorkloadController creates a new mock instance
+// NewMockMeshWorkloadController creates a new mock instance.
 func NewMockMeshWorkloadController(ctrl *gomock.Controller) *MockMeshWorkloadController {
 	mock := &MockMeshWorkloadController{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshWorkloadController) EXPECT() *MockMeshWorkloadControllerMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockMeshWorkloadController) AddEventHandler(arg0 context.Context, arg1 controller.MeshWorkloadEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -48,37 +48,37 @@ func (m *MockMeshWorkloadController) AddEventHandler(arg0 context.Context, arg1 
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockMeshWorkloadControllerMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockMeshWorkloadController)(nil).AddEventHandler), varargs...)
 }
 
-// MockMeshServiceController is a mock of MeshServiceController interface
+// MockMeshServiceController is a mock of MeshServiceController interface.
 type MockMeshServiceController struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceControllerMockRecorder
 }
 
-// MockMeshServiceControllerMockRecorder is the mock recorder for MockMeshServiceController
+// MockMeshServiceControllerMockRecorder is the mock recorder for MockMeshServiceController.
 type MockMeshServiceControllerMockRecorder struct {
 	mock *MockMeshServiceController
 }
 
-// NewMockMeshServiceController creates a new mock instance
+// NewMockMeshServiceController creates a new mock instance.
 func NewMockMeshServiceController(ctrl *gomock.Controller) *MockMeshServiceController {
 	mock := &MockMeshServiceController{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceControllerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshServiceController) EXPECT() *MockMeshServiceControllerMockRecorder {
 	return m.recorder
 }
 
-// AddEventHandler mocks base method
+// AddEventHandler mocks base method.
 func (m *MockMeshServiceController) AddEventHandler(arg0 context.Context, arg1 controller.MeshServiceEventHandler, arg2 ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
@@ -90,7 +90,7 @@ func (m *MockMeshServiceController) AddEventHandler(arg0 context.Context, arg1 c
 	return ret0
 }
 
-// AddEventHandler indicates an expected call of AddEventHandler
+// AddEventHandler indicates an expected call of AddEventHandler.
 func (mr *MockMeshServiceControllerMockRecorder) AddEventHandler(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)

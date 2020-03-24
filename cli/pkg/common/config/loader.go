@@ -19,6 +19,7 @@ type KubeLoader interface {
 	GetRestConfigForContext(path string, context string) (*rest.Config, error)
 	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)
 	RESTClientGetter(path, context string) resource.RESTClientGetter
+	GetRestConfigFromBytes(config []byte) (*rest.Config, error)
 }
 
 // only the pieces from a kube config that we need to operate on
@@ -47,6 +48,10 @@ func (k *kubeLoader) GetRestConfigForContext(path string, context string) (*rest
 	}
 
 	return cfg.ClientConfig()
+}
+
+func (k *kubeLoader) GetRestConfigFromBytes(config []byte) (*rest.Config, error) {
+	return clientcmd.RESTConfigFromKubeConfig(config)
 }
 
 func getConfigWithContext(masterURL, kubeconfigPath, context string) (clientcmd.ClientConfig, error) {
@@ -101,5 +106,5 @@ func (k *kubeLoader) ParseContext(path string) (*KubeContext, error) {
 }
 
 func (k *kubeLoader) RESTClientGetter(path, context string) resource.RESTClientGetter {
-	return NewRESTClientGetter(k, path, context)
+	return NewFileBackedRESTClientGetter(k, path, context)
 }

@@ -12,30 +12,30 @@ import (
 	controller0 "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 )
 
-// MockMeshServiceFinder is a mock of MeshServiceFinder interface
+// MockMeshServiceFinder is a mock of MeshServiceFinder interface.
 type MockMeshServiceFinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceFinderMockRecorder
 }
 
-// MockMeshServiceFinderMockRecorder is the mock recorder for MockMeshServiceFinder
+// MockMeshServiceFinderMockRecorder is the mock recorder for MockMeshServiceFinder.
 type MockMeshServiceFinderMockRecorder struct {
 	mock *MockMeshServiceFinder
 }
 
-// NewMockMeshServiceFinder creates a new mock instance
+// NewMockMeshServiceFinder creates a new mock instance.
 func NewMockMeshServiceFinder(ctrl *gomock.Controller) *MockMeshServiceFinder {
 	mock := &MockMeshServiceFinder{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceFinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method
+// StartDiscovery mocks base method.
 func (m *MockMeshServiceFinder) StartDiscovery(serviceController controller0.ServiceController, meshWorkloadController controller.MeshWorkloadController) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartDiscovery", serviceController, meshWorkloadController)
@@ -43,7 +43,7 @@ func (m *MockMeshServiceFinder) StartDiscovery(serviceController controller0.Ser
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery
+// StartDiscovery indicates an expected call of StartDiscovery.
 func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceController, meshWorkloadController interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceController, meshWorkloadController)

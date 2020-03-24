@@ -17,30 +17,30 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface
+// MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.
 type MockMeshWorkloadFinder struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadFinderMockRecorder
 }
 
-// MockMeshWorkloadFinderMockRecorder is the mock recorder for MockMeshWorkloadFinder
+// MockMeshWorkloadFinderMockRecorder is the mock recorder for MockMeshWorkloadFinder.
 type MockMeshWorkloadFinderMockRecorder struct {
 	mock *MockMeshWorkloadFinder
 }
 
-// NewMockMeshWorkloadFinder creates a new mock instance
+// NewMockMeshWorkloadFinder creates a new mock instance.
 func NewMockMeshWorkloadFinder(ctrl *gomock.Controller) *MockMeshWorkloadFinder {
 	mock := &MockMeshWorkloadFinder{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadFinderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshWorkloadFinder) EXPECT() *MockMeshWorkloadFinderMockRecorder {
 	return m.recorder
 }
 
-// StartDiscovery mocks base method
+// StartDiscovery mocks base method.
 func (m *MockMeshWorkloadFinder) StartDiscovery(podController controller.PodController, predicates []predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartDiscovery", podController, predicates)
@@ -48,13 +48,13 @@ func (m *MockMeshWorkloadFinder) StartDiscovery(podController controller.PodCont
 	return ret0
 }
 
-// StartDiscovery indicates an expected call of StartDiscovery
+// StartDiscovery indicates an expected call of StartDiscovery.
 func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podController, predicates interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podController, predicates)
 }
 
-// Create mocks base method
+// Create mocks base method.
 func (m *MockMeshWorkloadFinder) Create(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", obj)
@@ -62,13 +62,13 @@ func (m *MockMeshWorkloadFinder) Create(obj *v10.Pod) error {
 	return ret0
 }
 
-// Create indicates an expected call of Create
+// Create indicates an expected call of Create.
 func (mr *MockMeshWorkloadFinderMockRecorder) Create(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Create), obj)
 }
 
-// Update mocks base method
+// Update mocks base method.
 func (m *MockMeshWorkloadFinder) Update(old, new *v10.Pod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", old, new)
@@ -76,13 +76,13 @@ func (m *MockMeshWorkloadFinder) Update(old, new *v10.Pod) error {
 	return ret0
 }
 
-// Update indicates an expected call of Update
+// Update indicates an expected call of Update.
 func (mr *MockMeshWorkloadFinderMockRecorder) Update(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Update), old, new)
 }
 
-// Delete mocks base method
+// Delete mocks base method.
 func (m *MockMeshWorkloadFinder) Delete(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", obj)
@@ -90,13 +90,13 @@ func (m *MockMeshWorkloadFinder) Delete(obj *v10.Pod) error {
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
+// Delete indicates an expected call of Delete.
 func (mr *MockMeshWorkloadFinderMockRecorder) Delete(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Delete), obj)
 }
 
-// Generic mocks base method
+// Generic mocks base method.
 func (m *MockMeshWorkloadFinder) Generic(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic", obj)
@@ -104,36 +104,36 @@ func (m *MockMeshWorkloadFinder) Generic(obj *v10.Pod) error {
 	return ret0
 }
 
-// Generic indicates an expected call of Generic
+// Generic indicates an expected call of Generic.
 func (mr *MockMeshWorkloadFinderMockRecorder) Generic(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Generic), obj)
 }
 
-// MockOwnerFetcher is a mock of OwnerFetcher interface
+// MockOwnerFetcher is a mock of OwnerFetcher interface.
 type MockOwnerFetcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockOwnerFetcherMockRecorder
 }
 
-// MockOwnerFetcherMockRecorder is the mock recorder for MockOwnerFetcher
+// MockOwnerFetcherMockRecorder is the mock recorder for MockOwnerFetcher.
 type MockOwnerFetcherMockRecorder struct {
 	mock *MockOwnerFetcher
 }
 
-// NewMockOwnerFetcher creates a new mock instance
+// NewMockOwnerFetcher creates a new mock instance.
 func NewMockOwnerFetcher(ctrl *gomock.Controller) *MockOwnerFetcher {
 	mock := &MockOwnerFetcher{ctrl: ctrl}
 	mock.recorder = &MockOwnerFetcherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockOwnerFetcher) EXPECT() *MockOwnerFetcherMockRecorder {
 	return m.recorder
 }
 
-// GetDeployment mocks base method
+// GetDeployment mocks base method.
 func (m *MockOwnerFetcher) GetDeployment(ctx context.Context, pod *v10.Pod) (*v1.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployment", ctx, pod)
@@ -142,36 +142,36 @@ func (m *MockOwnerFetcher) GetDeployment(ctx context.Context, pod *v10.Pod) (*v1
 	return ret0, ret1
 }
 
-// GetDeployment indicates an expected call of GetDeployment
+// GetDeployment indicates an expected call of GetDeployment.
 func (mr *MockOwnerFetcherMockRecorder) GetDeployment(ctx, pod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeployment", reflect.TypeOf((*MockOwnerFetcher)(nil).GetDeployment), ctx, pod)
 }
 
-// MockMeshWorkloadScanner is a mock of MeshWorkloadScanner interface
+// MockMeshWorkloadScanner is a mock of MeshWorkloadScanner interface.
 type MockMeshWorkloadScanner struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadScannerMockRecorder
 }
 
-// MockMeshWorkloadScannerMockRecorder is the mock recorder for MockMeshWorkloadScanner
+// MockMeshWorkloadScannerMockRecorder is the mock recorder for MockMeshWorkloadScanner.
 type MockMeshWorkloadScannerMockRecorder struct {
 	mock *MockMeshWorkloadScanner
 }
 
-// NewMockMeshWorkloadScanner creates a new mock instance
+// NewMockMeshWorkloadScanner creates a new mock instance.
 func NewMockMeshWorkloadScanner(ctrl *gomock.Controller) *MockMeshWorkloadScanner {
 	mock := &MockMeshWorkloadScanner{ctrl: ctrl}
 	mock.recorder = &MockMeshWorkloadScannerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshWorkloadScanner) EXPECT() *MockMeshWorkloadScannerMockRecorder {
 	return m.recorder
 }
 
-// ScanPod mocks base method
+// ScanPod mocks base method.
 func (m *MockMeshWorkloadScanner) ScanPod(arg0 context.Context, arg1 *v10.Pod) (*types.ResourceRef, v11.ObjectMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScanPod", arg0, arg1)
@@ -181,7 +181,7 @@ func (m *MockMeshWorkloadScanner) ScanPod(arg0 context.Context, arg1 *v10.Pod) (
 	return ret0, ret1, ret2
 }
 
-// ScanPod indicates an expected call of ScanPod
+// ScanPod indicates an expected call of ScanPod.
 func (mr *MockMeshWorkloadScannerMockRecorder) ScanPod(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanPod", reflect.TypeOf((*MockMeshWorkloadScanner)(nil).ScanPod), arg0, arg1)

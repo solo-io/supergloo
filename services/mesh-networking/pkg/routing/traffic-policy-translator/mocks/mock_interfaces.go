@@ -14,30 +14,30 @@ import (
 	types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
-// MockTrafficPolicyMeshTranslator is a mock of TrafficPolicyMeshTranslator interface
+// MockTrafficPolicyMeshTranslator is a mock of TrafficPolicyMeshTranslator interface.
 type MockTrafficPolicyMeshTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyMeshTranslatorMockRecorder
 }
 
-// MockTrafficPolicyMeshTranslatorMockRecorder is the mock recorder for MockTrafficPolicyMeshTranslator
+// MockTrafficPolicyMeshTranslatorMockRecorder is the mock recorder for MockTrafficPolicyMeshTranslator.
 type MockTrafficPolicyMeshTranslatorMockRecorder struct {
 	mock *MockTrafficPolicyMeshTranslator
 }
 
-// NewMockTrafficPolicyMeshTranslator creates a new mock instance
+// NewMockTrafficPolicyMeshTranslator creates a new mock instance.
 func NewMockTrafficPolicyMeshTranslator(ctrl *gomock.Controller) *MockTrafficPolicyMeshTranslator {
 	mock := &MockTrafficPolicyMeshTranslator{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyMeshTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyMeshTranslator) EXPECT() *MockTrafficPolicyMeshTranslatorMockRecorder {
 	return m.recorder
 }
 
-// TranslateTrafficPolicy mocks base method
+// TranslateTrafficPolicy mocks base method.
 func (m *MockTrafficPolicyMeshTranslator) TranslateTrafficPolicy(ctx context.Context, meshService *v1alpha1.MeshService, mesh *v1alpha1.Mesh, mergedTrafficPolicy []*v1alpha10.TrafficPolicy) *types.TrafficPolicyStatus_TranslatorError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateTrafficPolicy", ctx, meshService, mesh, mergedTrafficPolicy)
@@ -45,36 +45,36 @@ func (m *MockTrafficPolicyMeshTranslator) TranslateTrafficPolicy(ctx context.Con
 	return ret0
 }
 
-// TranslateTrafficPolicy indicates an expected call of TranslateTrafficPolicy
+// TranslateTrafficPolicy indicates an expected call of TranslateTrafficPolicy.
 func (mr *MockTrafficPolicyMeshTranslatorMockRecorder) TranslateTrafficPolicy(ctx, meshService, mesh, mergedTrafficPolicy interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficPolicy", reflect.TypeOf((*MockTrafficPolicyMeshTranslator)(nil).TranslateTrafficPolicy), ctx, meshService, mesh, mergedTrafficPolicy)
 }
 
-// MockTrafficPolicyTranslator is a mock of TrafficPolicyTranslator interface
+// MockTrafficPolicyTranslator is a mock of TrafficPolicyTranslator interface.
 type MockTrafficPolicyTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyTranslatorMockRecorder
 }
 
-// MockTrafficPolicyTranslatorMockRecorder is the mock recorder for MockTrafficPolicyTranslator
+// MockTrafficPolicyTranslatorMockRecorder is the mock recorder for MockTrafficPolicyTranslator.
 type MockTrafficPolicyTranslatorMockRecorder struct {
 	mock *MockTrafficPolicyTranslator
 }
 
-// NewMockTrafficPolicyTranslator creates a new mock instance
+// NewMockTrafficPolicyTranslator creates a new mock instance.
 func NewMockTrafficPolicyTranslator(ctrl *gomock.Controller) *MockTrafficPolicyTranslator {
 	mock := &MockTrafficPolicyTranslator{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyTranslator) EXPECT() *MockTrafficPolicyTranslatorMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockTrafficPolicyTranslator) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx)
@@ -82,7 +82,7 @@ func (m *MockTrafficPolicyTranslator) Start(ctx context.Context) error {
 	return ret0
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockTrafficPolicyTranslatorMockRecorder) Start(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTrafficPolicyTranslator)(nil).Start), ctx)

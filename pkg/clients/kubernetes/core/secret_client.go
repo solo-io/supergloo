@@ -2,11 +2,14 @@ package kubernetes_core
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	k8sclientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,13 +42,31 @@ func (c *secretsClient) Get(ctx context.Context, name, namespace string) (*corev
 	return &secret, nil
 }
 
-func (c *secretsClient) List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error) {
+func (c *secretsClient) List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error) {
 	list := corev1.SecretList{}
-	err := c.dynamicClient.List(ctx, &list, &client.ListOptions{Raw: &opts})
+	var opts = []client.ListOption{client.InNamespace(namespace), client.MatchingLabels(labels)}
+	err := c.dynamicClient.List(ctx, &list, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &list, nil
+}
+
+func (c *secretsClient) Delete(ctx context.Context, secret *corev1.Secret) error {
+	return c.dynamicClient.Delete(ctx, secret)
+}
+
+type GeneratedSecretClientFactory func(cfg *rest.Config) (SecretsClient, error)
+
+func GeneratedSecretClientFactoryProvider() GeneratedSecretClientFactory {
+	return func(cfg *rest.Config) (SecretsClient, error) {
+		cs, err := kubernetes.NewForConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		return NewGeneratedSecretsClient(cs), nil
+	}
 }
 
 func NewGeneratedSecretsClient(client kubernetes.Interface) SecretsClient {
@@ -78,6 +99,18 @@ func (s *secretsGeneratedClient) Get(ctx context.Context, name, namespace string
 	return s.client.Secrets(namespace).Get(name, metav1.GetOptions{})
 }
 
-func (s *secretsGeneratedClient) List(ctx context.Context, opts metav1.ListOptions) (*corev1.SecretList, error) {
-	return s.client.Secrets("").List(metav1.ListOptions{})
+func (s *secretsGeneratedClient) List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error) {
+	var labelPairs []string
+	for k, v := range labels {
+		labelPairs = append(labelPairs, fmt.Sprintf("%s=%s", k, v))
+	}
+	listOptions := metav1.ListOptions{
+		LabelSelector: strings.Join(labelPairs, ","),
+	}
+
+	return s.client.Secrets(namespace).List(listOptions)
+}
+
+func (s *secretsGeneratedClient) Delete(ctx context.Context, secret *corev1.Secret) error {
+	return s.client.Secrets(secret.GetNamespace()).Delete(secret.GetName(), &metav1.DeleteOptions{})
 }

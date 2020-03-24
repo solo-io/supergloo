@@ -21,3 +21,7 @@ type generatedNamespaceClient struct {
 func (g *generatedNamespaceClient) Get(ctx context.Context, name string) (*corev1.Namespace, error) {
 	return g.client.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 }
+
+func (g *generatedNamespaceClient) Delete(ctx context.Context, name string) error {
+	return g.client.CoreV1().Namespaces().Delete(name, &metav1.DeleteOptions{})
+}

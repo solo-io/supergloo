@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/autopilot/codegen"
 	"github.com/solo-io/autopilot/codegen/model"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -38,7 +39,7 @@ func main() {
 		Groups: []model.Group{
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "security.zephyr.solo.io",
+					Group:   "security." + cliconstants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/mesh-projects",
@@ -59,7 +60,7 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "networking.zephyr.solo.io",
+					Group:   "networking." + cliconstants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/mesh-projects",
@@ -92,7 +93,7 @@ func main() {
 			},
 			{
 				GroupVersion: schema.GroupVersion{
-					Group:   "discovery.zephyr.solo.io",
+					Group:   "discovery." + cliconstants.ServiceMeshHubApiGroupSuffix,
 					Version: "v1alpha1",
 				},
 				Module: "github.com/solo-io/mesh-projects",

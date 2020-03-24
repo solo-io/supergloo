@@ -1,4 +1,4 @@
-package common_config
+package internal
 
 import (
 	"path/filepath"
@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
 	diskcached "k8s.io/client-go/discovery/cached/disk"
 	"k8s.io/client-go/rest"
@@ -24,36 +23,13 @@ var (
 	removeProtocol = regexp.MustCompile("http[s]?:/{2}")
 )
 
-func NewRESTClientGetter(kubeLoader KubeLoader, kubeConfigPath, kubeContext string) resource.RESTClientGetter {
-	return &restClientGetter{
-		kubeLoader:     kubeLoader,
-		kubeConfigPath: kubeConfigPath,
-		kubeContext:    kubeContext,
-	}
-}
-
-type restClientGetter struct {
-	kubeLoader     KubeLoader
-	kubeConfigPath string
-	kubeContext    string
-}
-
-func (r *restClientGetter) ToRESTConfig() (*rest.Config, error) {
-	return r.kubeLoader.GetRestConfigForContext(r.kubeConfigPath, r.kubeContext)
-}
-
 //
 // files below this comment were shamelessly and brazenly stolen from the Helm codebase
 //
 
-func (r *restClientGetter) ToDiscoveryClient() (discovery.CachedDiscoveryInterface, error) {
-	config, err := r.ToRESTConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	discoveryCacheDir := computeDiscoverCacheDir(filepath.Join(homedir.HomeDir(), ".kube", "cache", "discovery"), config.Host)
-	return diskcached.NewCachedDiscoveryClientForConfig(config, discoveryCacheDir, defaultCacheDir, 10*time.Minute)
+func ToDiscoveryClient(restCfg *rest.Config) (discovery.CachedDiscoveryInterface, error) {
+	discoveryCacheDir := computeDiscoverCacheDir(filepath.Join(homedir.HomeDir(), ".kube", "cache", "discovery"), restCfg.Host)
+	return diskcached.NewCachedDiscoveryClientForConfig(restCfg, discoveryCacheDir, defaultCacheDir, 10*time.Minute)
 }
 
 // computeDiscoverCacheDir takes the parentDir and the host and comes up with a "usually non-colliding" name.
@@ -65,8 +41,8 @@ func computeDiscoverCacheDir(parentDir, host string) string {
 	return filepath.Join(parentDir, safeHost)
 }
 
-func (r *restClientGetter) ToRESTMapper() (meta.RESTMapper, error) {
-	discoveryClient, err := r.ToDiscoveryClient()
+func ToRESTMapper(restCfg *rest.Config) (meta.RESTMapper, error) {
+	discoveryClient, err := ToDiscoveryClient(restCfg)
 	if err != nil {
 		return nil, err
 	}

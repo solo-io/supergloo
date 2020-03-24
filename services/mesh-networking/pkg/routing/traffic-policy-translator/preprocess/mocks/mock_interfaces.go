@@ -15,30 +15,30 @@ import (
 	keys "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
 )
 
-// MockMeshServiceSelector is a mock of MeshServiceSelector interface
+// MockMeshServiceSelector is a mock of MeshServiceSelector interface.
 type MockMeshServiceSelector struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshServiceSelectorMockRecorder
 }
 
-// MockMeshServiceSelectorMockRecorder is the mock recorder for MockMeshServiceSelector
+// MockMeshServiceSelectorMockRecorder is the mock recorder for MockMeshServiceSelector.
 type MockMeshServiceSelectorMockRecorder struct {
 	mock *MockMeshServiceSelector
 }
 
-// NewMockMeshServiceSelector creates a new mock instance
+// NewMockMeshServiceSelector creates a new mock instance.
 func NewMockMeshServiceSelector(ctrl *gomock.Controller) *MockMeshServiceSelector {
 	mock := &MockMeshServiceSelector{ctrl: ctrl}
 	mock.recorder = &MockMeshServiceSelectorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMeshServiceSelector) EXPECT() *MockMeshServiceSelectorMockRecorder {
 	return m.recorder
 }
 
-// GetMatchingMeshServices mocks base method
+// GetMatchingMeshServices mocks base method.
 func (m *MockMeshServiceSelector) GetMatchingMeshServices(ctx context.Context, selector *types.Selector) ([]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMatchingMeshServices", ctx, selector)
@@ -47,13 +47,13 @@ func (m *MockMeshServiceSelector) GetMatchingMeshServices(ctx context.Context, s
 	return ret0, ret1
 }
 
-// GetMatchingMeshServices indicates an expected call of GetMatchingMeshServices
+// GetMatchingMeshServices indicates an expected call of GetMatchingMeshServices.
 func (mr *MockMeshServiceSelectorMockRecorder) GetMatchingMeshServices(ctx, selector interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMatchingMeshServices", reflect.TypeOf((*MockMeshServiceSelector)(nil).GetMatchingMeshServices), ctx, selector)
 }
 
-// GetBackingMeshService mocks base method
+// GetBackingMeshService mocks base method.
 func (m *MockMeshServiceSelector) GetBackingMeshService(ctx context.Context, kubeServiceName, kubeServiceNamespace, kubeServiceCluster string) (*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBackingMeshService", ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
@@ -62,36 +62,36 @@ func (m *MockMeshServiceSelector) GetBackingMeshService(ctx context.Context, kub
 	return ret0, ret1
 }
 
-// GetBackingMeshService indicates an expected call of GetBackingMeshService
+// GetBackingMeshService indicates an expected call of GetBackingMeshService.
 func (mr *MockMeshServiceSelectorMockRecorder) GetBackingMeshService(ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackingMeshService", reflect.TypeOf((*MockMeshServiceSelector)(nil).GetBackingMeshService), ctx, kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 }
 
-// MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface
+// MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface.
 type MockTrafficPolicyPreprocessor struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyPreprocessorMockRecorder
 }
 
-// MockTrafficPolicyPreprocessorMockRecorder is the mock recorder for MockTrafficPolicyPreprocessor
+// MockTrafficPolicyPreprocessorMockRecorder is the mock recorder for MockTrafficPolicyPreprocessor.
 type MockTrafficPolicyPreprocessorMockRecorder struct {
 	mock *MockTrafficPolicyPreprocessor
 }
 
-// NewMockTrafficPolicyPreprocessor creates a new mock instance
+// NewMockTrafficPolicyPreprocessor creates a new mock instance.
 func NewMockTrafficPolicyPreprocessor(ctrl *gomock.Controller) *MockTrafficPolicyPreprocessor {
 	mock := &MockTrafficPolicyPreprocessor{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyPreprocessorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyPreprocessor) EXPECT() *MockTrafficPolicyPreprocessorMockRecorder {
 	return m.recorder
 }
 
-// PreprocessTrafficPolicy mocks base method
+// PreprocessTrafficPolicy mocks base method.
 func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPolicy(ctx context.Context, trafficPolicy *v1alpha10.TrafficPolicy) (map[keys.MeshServiceMultiClusterKey][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PreprocessTrafficPolicy", ctx, trafficPolicy)
@@ -100,13 +100,13 @@ func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPolicy(ctx context.Cont
 	return ret0, ret1
 }
 
-// PreprocessTrafficPolicy indicates an expected call of PreprocessTrafficPolicy
+// PreprocessTrafficPolicy indicates an expected call of PreprocessTrafficPolicy.
 func (mr *MockTrafficPolicyPreprocessorMockRecorder) PreprocessTrafficPolicy(ctx, trafficPolicy interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreprocessTrafficPolicy", reflect.TypeOf((*MockTrafficPolicyPreprocessor)(nil).PreprocessTrafficPolicy), ctx, trafficPolicy)
 }
 
-// PreprocessTrafficPoliciesForMeshService mocks base method
+// PreprocessTrafficPoliciesForMeshService mocks base method.
 func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPoliciesForMeshService(ctx context.Context, meshService *v1alpha1.MeshService) (map[keys.MeshServiceMultiClusterKey][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PreprocessTrafficPoliciesForMeshService", ctx, meshService)
@@ -115,36 +115,36 @@ func (m *MockTrafficPolicyPreprocessor) PreprocessTrafficPoliciesForMeshService(
 	return ret0, ret1
 }
 
-// PreprocessTrafficPoliciesForMeshService indicates an expected call of PreprocessTrafficPoliciesForMeshService
+// PreprocessTrafficPoliciesForMeshService indicates an expected call of PreprocessTrafficPoliciesForMeshService.
 func (mr *MockTrafficPolicyPreprocessorMockRecorder) PreprocessTrafficPoliciesForMeshService(ctx, meshService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreprocessTrafficPoliciesForMeshService", reflect.TypeOf((*MockTrafficPolicyPreprocessor)(nil).PreprocessTrafficPoliciesForMeshService), ctx, meshService)
 }
 
-// MockTrafficPolicyMerger is a mock of TrafficPolicyMerger interface
+// MockTrafficPolicyMerger is a mock of TrafficPolicyMerger interface.
 type MockTrafficPolicyMerger struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyMergerMockRecorder
 }
 
-// MockTrafficPolicyMergerMockRecorder is the mock recorder for MockTrafficPolicyMerger
+// MockTrafficPolicyMergerMockRecorder is the mock recorder for MockTrafficPolicyMerger.
 type MockTrafficPolicyMergerMockRecorder struct {
 	mock *MockTrafficPolicyMerger
 }
 
-// NewMockTrafficPolicyMerger creates a new mock instance
+// NewMockTrafficPolicyMerger creates a new mock instance.
 func NewMockTrafficPolicyMerger(ctrl *gomock.Controller) *MockTrafficPolicyMerger {
 	mock := &MockTrafficPolicyMerger{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyMergerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyMerger) EXPECT() *MockTrafficPolicyMergerMockRecorder {
 	return m.recorder
 }
 
-// MergeTrafficPoliciesForMeshServices mocks base method
+// MergeTrafficPoliciesForMeshServices mocks base method.
 func (m *MockTrafficPolicyMerger) MergeTrafficPoliciesForMeshServices(ctx context.Context, meshServices []*v1alpha1.MeshService) (map[keys.MeshServiceMultiClusterKey][]*v1alpha10.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MergeTrafficPoliciesForMeshServices", ctx, meshServices)
@@ -153,36 +153,36 @@ func (m *MockTrafficPolicyMerger) MergeTrafficPoliciesForMeshServices(ctx contex
 	return ret0, ret1
 }
 
-// MergeTrafficPoliciesForMeshServices indicates an expected call of MergeTrafficPoliciesForMeshServices
+// MergeTrafficPoliciesForMeshServices indicates an expected call of MergeTrafficPoliciesForMeshServices.
 func (mr *MockTrafficPolicyMergerMockRecorder) MergeTrafficPoliciesForMeshServices(ctx, meshServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MergeTrafficPoliciesForMeshServices", reflect.TypeOf((*MockTrafficPolicyMerger)(nil).MergeTrafficPoliciesForMeshServices), ctx, meshServices)
 }
 
-// MockTrafficPolicyValidator is a mock of TrafficPolicyValidator interface
+// MockTrafficPolicyValidator is a mock of TrafficPolicyValidator interface.
 type MockTrafficPolicyValidator struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyValidatorMockRecorder
 }
 
-// MockTrafficPolicyValidatorMockRecorder is the mock recorder for MockTrafficPolicyValidator
+// MockTrafficPolicyValidatorMockRecorder is the mock recorder for MockTrafficPolicyValidator.
 type MockTrafficPolicyValidatorMockRecorder struct {
 	mock *MockTrafficPolicyValidator
 }
 
-// NewMockTrafficPolicyValidator creates a new mock instance
+// NewMockTrafficPolicyValidator creates a new mock instance.
 func NewMockTrafficPolicyValidator(ctrl *gomock.Controller) *MockTrafficPolicyValidator {
 	mock := &MockTrafficPolicyValidator{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyValidatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyValidator) EXPECT() *MockTrafficPolicyValidatorMockRecorder {
 	return m.recorder
 }
 
-// Validate mocks base method
+// Validate mocks base method.
 func (m *MockTrafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *v1alpha10.TrafficPolicy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Validate", ctx, trafficPolicy)
@@ -190,7 +190,7 @@ func (m *MockTrafficPolicyValidator) Validate(ctx context.Context, trafficPolicy
 	return ret0
 }
 
-// Validate indicates an expected call of Validate
+// Validate indicates an expected call of Validate.
 func (mr *MockTrafficPolicyValidatorMockRecorder) Validate(ctx, trafficPolicy interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockTrafficPolicyValidator)(nil).Validate), ctx, trafficPolicy)

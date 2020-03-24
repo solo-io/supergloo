@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockDeploymentClient is a mock of DeploymentClient interface
+// MockDeploymentClient is a mock of DeploymentClient interface.
 type MockDeploymentClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentClientMockRecorder
 }
 
-// MockDeploymentClientMockRecorder is the mock recorder for MockDeploymentClient
+// MockDeploymentClientMockRecorder is the mock recorder for MockDeploymentClient.
 type MockDeploymentClientMockRecorder struct {
 	mock *MockDeploymentClient
 }
 
-// NewMockDeploymentClient creates a new mock instance
+// NewMockDeploymentClient creates a new mock instance.
 func NewMockDeploymentClient(ctrl *gomock.Controller) *MockDeploymentClient {
 	mock := &MockDeploymentClient{ctrl: ctrl}
 	mock.recorder = &MockDeploymentClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDeploymentClient) EXPECT() *MockDeploymentClientMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockDeploymentClient) Get(ctx context.Context, objectKey client.ObjectKey) (*v1.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, objectKey)
@@ -45,36 +45,36 @@ func (m *MockDeploymentClient) Get(ctx context.Context, objectKey client.ObjectK
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockDeploymentClientMockRecorder) Get(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeploymentClient)(nil).Get), ctx, objectKey)
 }
 
-// MockReplicaSetClient is a mock of ReplicaSetClient interface
+// MockReplicaSetClient is a mock of ReplicaSetClient interface.
 type MockReplicaSetClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockReplicaSetClientMockRecorder
 }
 
-// MockReplicaSetClientMockRecorder is the mock recorder for MockReplicaSetClient
+// MockReplicaSetClientMockRecorder is the mock recorder for MockReplicaSetClient.
 type MockReplicaSetClientMockRecorder struct {
 	mock *MockReplicaSetClient
 }
 
-// NewMockReplicaSetClient creates a new mock instance
+// NewMockReplicaSetClient creates a new mock instance.
 func NewMockReplicaSetClient(ctrl *gomock.Controller) *MockReplicaSetClient {
 	mock := &MockReplicaSetClient{ctrl: ctrl}
 	mock.recorder = &MockReplicaSetClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockReplicaSetClient) EXPECT() *MockReplicaSetClientMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockReplicaSetClient) Get(ctx context.Context, objectKey client.ObjectKey) (*v1.ReplicaSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, objectKey)
@@ -83,7 +83,7 @@ func (m *MockReplicaSetClient) Get(ctx context.Context, objectKey client.ObjectK
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockReplicaSetClientMockRecorder) Get(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockReplicaSetClient)(nil).Get), ctx, objectKey)

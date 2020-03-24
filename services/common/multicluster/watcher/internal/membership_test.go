@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	. "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
 	kubev1 "k8s.io/api/core/v1"
@@ -67,10 +68,10 @@ users:
 		})
 
 		Context("add cluster", func() {
-			It("returns nil if data is nil", func() {
+			It("returns an error if the secret is malformed", func() {
 				resync, err := cmh.AddMemberCluster(ctx, &kubev1.Secret{})
 				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).To(HaveInErrorChain(kubeconfig.NoDataInKubeConfigSecret(&kubev1.Secret{})))
 			})
 
 			It("returns an error if there is an invalid kube config string", func() {
@@ -115,31 +116,6 @@ users:
 				})
 				Expect(resync).To(BeFalse(), "resync should be false")
 				Expect(err).NotTo(HaveOccurred())
-			})
-
-			It("cluster exists error", func() {
-				receiver.EXPECT().ClusterAdded(gomock.Any(), clusterName).Return(nil)
-				resync, err := cmh.AddMemberCluster(ctx, &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
-					},
-					Data: map[string][]byte{
-						clusterName: byteConfig,
-					},
-				})
-				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).NotTo(HaveOccurred())
-				resync, err = cmh.AddMemberCluster(ctx, &kubev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: secretName,
-					},
-					Data: map[string][]byte{
-						clusterName: byteConfig,
-					},
-				})
-				Expect(resync).To(BeFalse(), "resync should be false")
-				Expect(err).To(HaveOccurred())
-				Expect(err).To(HaveInErrorChain(ClusterExistsError(clusterName, secretName, "")))
 			})
 		})
 

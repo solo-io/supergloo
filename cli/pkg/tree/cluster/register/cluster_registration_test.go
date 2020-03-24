@@ -9,8 +9,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
@@ -68,7 +69,7 @@ var _ = Describe("Cluster Operations", func() {
 			Clients: common.Clients{
 				MasterClusterVerifier: configVerifier,
 				ClusterRegistrationClients: common.ClusterRegistrationClients{
-					CsrAgentInstallerFactory: func(_ helminstall.Installer, _ version.DeployedVersionFinder) csr.CsrAgentInstaller {
+					CsrAgentInstallerFactory: func(_ types.Installer, _ version.DeployedVersionFinder) csr.CsrAgentInstaller {
 						return csrAgentInstaller
 					},
 				},
@@ -172,7 +173,7 @@ users:
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
-					ReleaseName:          register.CsrAgentReleaseName,
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
 					RemoteWriteNamespace: "default",
 				}).
 				Return(nil)
@@ -187,6 +188,7 @@ users:
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
+					WriteNamespace: "default",
 				},
 			}).Return(nil)
 
@@ -258,7 +260,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeConfig:           remoteKubeConfig,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
-					ReleaseName:          register.CsrAgentReleaseName,
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
 					RemoteWriteNamespace: "default",
 				})
 
@@ -274,6 +276,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
+						WriteNamespace: "default",
 					},
 				}).
 				Return(nil)
@@ -347,7 +350,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeContext:          contextDEF,
 					ClusterName:          "test-cluster-name",
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
-					ReleaseName:          register.CsrAgentReleaseName,
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
 					RemoteWriteNamespace: "default",
 				})
 
@@ -363,6 +366,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 							Name:      secret.GetName(),
 							Namespace: secret.GetNamespace(),
 						},
+						WriteNamespace: "default",
 					},
 				}).
 				Return(nil)
@@ -637,6 +641,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
+					WriteNamespace: "default",
 				},
 			}).Return(testErr)
 
@@ -688,7 +693,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 					KubeContext:          remoteContext,
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
-					ReleaseName:          register.CsrAgentReleaseName,
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
 					RemoteWriteNamespace: "default",
 				})
 
@@ -702,6 +707,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
+					WriteNamespace: "default",
 				},
 			}).Return(nil)
 
@@ -755,7 +761,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 					KubeContext:          "",
 					ClusterName:          clusterName,
 					SmhInstallNamespace:  env.DefaultWriteNamespace,
-					ReleaseName:          register.CsrAgentReleaseName,
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
 					RemoteWriteNamespace: "default",
 					UseDevCsrAgentChart:  true,
 				}).
@@ -771,6 +777,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 						Name:      secret.GetName(),
 						Namespace: secret.GetNamespace(),
 					},
+					WriteNamespace: "default",
 				},
 			}).Return(nil)
 

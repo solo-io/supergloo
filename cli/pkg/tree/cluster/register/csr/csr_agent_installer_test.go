@@ -9,11 +9,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
+	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	mock_version "github.com/solo-io/mesh-projects/pkg/version/mocks"
-	mock_go_utils "github.com/solo-io/mesh-projects/test/mocks/go-utils"
 )
 
 var _ = Describe("CSR Agent Installer", func() {
@@ -33,7 +34,7 @@ var _ = Describe("CSR Agent Installer", func() {
 	})
 
 	It("can install the correct open source version of csr-agent", func() {
-		helmInstaller := mock_go_utils.NewMockInstaller(ctrl)
+		helmInstaller := mock_types.NewMockInstaller(ctrl)
 		deployedVersionFinder := mock_version.NewMockDeployedVersionFinder(ctrl)
 		csrAgentInstaller := csr.NewCsrAgentInstaller(helmInstaller, deployedVersionFinder)
 		openSourceVersion := "1.0.0"
@@ -46,7 +47,7 @@ var _ = Describe("CSR Agent Installer", func() {
 			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
-			Install(&helminstall.InstallerConfig{
+			Install(&types.InstallerConfig{
 				KubeConfig:       kubeConfig,
 				KubeContext:      kubeContext,
 				InstallNamespace: remoteWriteNamespace,
@@ -71,7 +72,7 @@ var _ = Describe("CSR Agent Installer", func() {
 	})
 
 	It("can install csr-agent from a locally packaged chart", func() {
-		helmInstaller := mock_go_utils.NewMockInstaller(ctrl)
+		helmInstaller := mock_types.NewMockInstaller(ctrl)
 		deployedVersionFinder := mock_version.NewMockDeployedVersionFinder(ctrl)
 		csrAgentInstaller := csr.NewCsrAgentInstaller(helmInstaller, deployedVersionFinder)
 		openSourceVersion := "1.0.0"
@@ -84,7 +85,7 @@ var _ = Describe("CSR Agent Installer", func() {
 			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
-			Install(&helminstall.InstallerConfig{
+			Install(&types.InstallerConfig{
 				KubeConfig:       kubeConfig,
 				KubeContext:      kubeContext,
 				InstallNamespace: remoteWriteNamespace,
@@ -110,7 +111,7 @@ var _ = Describe("CSR Agent Installer", func() {
 	})
 
 	It("does not complain if csr-agent is already deployed", func() {
-		helmInstaller := mock_go_utils.NewMockInstaller(ctrl)
+		helmInstaller := mock_types.NewMockInstaller(ctrl)
 		deployedVersionFinder := mock_version.NewMockDeployedVersionFinder(ctrl)
 		csrAgentInstaller := csr.NewCsrAgentInstaller(helmInstaller, deployedVersionFinder)
 		openSourceVersion := "1.0.0"
@@ -123,7 +124,7 @@ var _ = Describe("CSR Agent Installer", func() {
 			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
-			Install(&helminstall.InstallerConfig{
+			Install(&types.InstallerConfig{
 				KubeConfig:       kubeConfig,
 				KubeContext:      kubeContext,
 				InstallNamespace: remoteWriteNamespace,
@@ -149,7 +150,7 @@ var _ = Describe("CSR Agent Installer", func() {
 	})
 
 	It("responds with the appropriate error if the helm install fails", func() {
-		helmInstaller := mock_go_utils.NewMockInstaller(ctrl)
+		helmInstaller := mock_types.NewMockInstaller(ctrl)
 		deployedVersionFinder := mock_version.NewMockDeployedVersionFinder(ctrl)
 		csrAgentInstaller := csr.NewCsrAgentInstaller(helmInstaller, deployedVersionFinder)
 		openSourceVersion := "1.0.0"
@@ -162,7 +163,7 @@ var _ = Describe("CSR Agent Installer", func() {
 			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
-			Install(&helminstall.InstallerConfig{
+			Install(&types.InstallerConfig{
 				KubeConfig:       kubeConfig,
 				KubeContext:      kubeContext,
 				InstallNamespace: remoteWriteNamespace,

@@ -11,30 +11,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAccessControlPolicyTranslator is a mock of AccessControlPolicyTranslator interface
+// MockAccessControlPolicyTranslator is a mock of AccessControlPolicyTranslator interface.
 type MockAccessControlPolicyTranslator struct {
 	ctrl     *gomock.Controller
 	recorder *MockAccessControlPolicyTranslatorMockRecorder
 }
 
-// MockAccessControlPolicyTranslatorMockRecorder is the mock recorder for MockAccessControlPolicyTranslator
+// MockAccessControlPolicyTranslatorMockRecorder is the mock recorder for MockAccessControlPolicyTranslator.
 type MockAccessControlPolicyTranslatorMockRecorder struct {
 	mock *MockAccessControlPolicyTranslator
 }
 
-// NewMockAccessControlPolicyTranslator creates a new mock instance
+// NewMockAccessControlPolicyTranslator creates a new mock instance.
 func NewMockAccessControlPolicyTranslator(ctrl *gomock.Controller) *MockAccessControlPolicyTranslator {
 	mock := &MockAccessControlPolicyTranslator{ctrl: ctrl}
 	mock.recorder = &MockAccessControlPolicyTranslatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAccessControlPolicyTranslator) EXPECT() *MockAccessControlPolicyTranslatorMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockAccessControlPolicyTranslator) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx)
@@ -42,7 +42,7 @@ func (m *MockAccessControlPolicyTranslator) Start(ctx context.Context) error {
 	return ret0
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockAccessControlPolicyTranslatorMockRecorder) Start(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAccessControlPolicyTranslator)(nil).Start), ctx)

@@ -20,22 +20,28 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
+	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
+	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	"github.com/solo-io/mesh-projects/pkg/auth"
+	kubernetes_apiext "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/version"
 	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
@@ -71,7 +77,14 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	deploymentClient := kubernetes_apps.NewGeneratedDeploymentClient(clientset)
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, kubernetesClusterClient, clients, deployedVersionFinder)
+	generatedCrdClientFactory := kubernetes_apiext.NewGeneratedCrdClientFactory()
+	crdRemover := crd_uninstall.NewCrdRemover(generatedCrdClientFactory)
+	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
+	uninstallClients := common.UninstallClientsProvider(crdRemover, secretToConfigConverter)
+	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
+	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
+	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(secretsClient, secretToConfigConverter, crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, secretWriter, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient)
 	return kubeClients, nil
 }
 
@@ -91,7 +104,8 @@ func DefaultClientsFactory(opts *options.Options) (*common.Clients, error) {
 	healthCheckSuite := healthcheck.DefaultHealthChecksProvider()
 	csrAgentInstallerFactory := csr.NewCsrAgentInstallerFactory()
 	clusterRegistrationClients := common.ClusterRegistrationClientsProvider(csrAgentInstallerFactory)
-	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, clusterRegistrationClients)
+	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
+	clients := common.ClientsProvider(serverVersionClient, assetHelper, masterKubeConfigVerifier, unstructuredKubeClientFactory, deploymentClient, istioClients, statusClientFactory, healthCheckSuite, clusterRegistrationClients, uninstallerFactory)
 	return clients, nil
 }
 
@@ -110,14 +124,15 @@ func InitializeCLI(ctx context.Context, out io.Writer) *cobra.Command {
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)
+	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, checkCommand)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand)
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
@@ -126,9 +141,10 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, usageClient clie
 	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(optionsOptions, kubeClientsFactory, kubeLoader, out)
+	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, checkCommand)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand)
 	return command
 }

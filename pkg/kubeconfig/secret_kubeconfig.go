@@ -4,6 +4,7 @@ import (
 	"github.com/rotisserie/eris"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -24,6 +25,12 @@ var (
 	}
 	FailedToConvertSecretToKubeConfig = func(err error) error {
 		return eris.Wrapf(err, "Could not deserialize string to KubeConfig while generating KubeConfig")
+	}
+	NoDataInKubeConfigSecret = func(secret *kubev1.Secret) error {
+		return eris.Errorf("No data in kube config secret %s.%s", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
+	}
+	FailedToConvertSecretToClientConfig = func(err error) error {
+		return eris.Wrap(err, "Could not convert config to ClientConfig")
 	}
 )
 
@@ -54,17 +61,43 @@ func KubeConfigsToSecret(name string, namespace string, kcs []*KubeConfig) (*kub
 	}, nil
 }
 
-func SecretToKubeConfigs(secret *kubev1.Secret) ([]*KubeConfig, error) {
-	var kubeConfigs = []*KubeConfig{}
-	for cluster, dataEntry := range secret.Data {
-		config, err := clientcmd.Load(dataEntry)
-		if err != nil {
-			return nil, FailedToConvertSecretToKubeConfig(err)
-		}
-		kubeConfigs = append(kubeConfigs, &KubeConfig{
-			Config:  *config,
-			Cluster: cluster,
-		})
+type SecretToConfigConverter func(secret *kubev1.Secret) (clusterName string, config *Config, err error)
+
+func SecretToConfigConverterProvider() SecretToConfigConverter {
+	return SecretToConfig
+}
+
+type Config struct {
+	ClientConfig clientcmd.ClientConfig
+	ApiConfig    *api.Config
+	RestConfig   *rest.Config
+}
+
+func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
+	if len(secret.Data) > 1 {
+		return "", nil, eris.Errorf("kube config secret %s.%s has multiple keys in its data, this is unexpected", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
 	}
-	return kubeConfigs, nil
+	for clusterName, dataEntry := range secret.Data {
+		clientConfig, err := clientcmd.NewClientConfigFromBytes(dataEntry)
+		if err != nil {
+			return clusterName, nil, FailedToConvertSecretToClientConfig(err)
+		}
+
+		apiConfig, err := clientcmd.Load(dataEntry)
+		if err != nil {
+			return clusterName, nil, FailedToConvertSecretToKubeConfig(err)
+		}
+
+		restConfig, err := clientConfig.ClientConfig()
+		if err != nil {
+			return clusterName, nil, eris.Wrapf(err, "Failed to convert secret %+v to rest config", secret.ObjectMeta)
+		}
+		return clusterName, &Config{
+			ClientConfig: clientConfig,
+			RestConfig:   restConfig,
+			ApiConfig:    apiConfig,
+		}, nil
+	}
+
+	return "", nil, NoDataInKubeConfigSecret(secret)
 }

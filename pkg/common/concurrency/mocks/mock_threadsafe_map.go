@@ -10,42 +10,42 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockThreadSafeMap is a mock of ThreadSafeMap interface
+// MockThreadSafeMap is a mock of ThreadSafeMap interface.
 type MockThreadSafeMap struct {
 	ctrl     *gomock.Controller
 	recorder *MockThreadSafeMapMockRecorder
 }
 
-// MockThreadSafeMapMockRecorder is the mock recorder for MockThreadSafeMap
+// MockThreadSafeMapMockRecorder is the mock recorder for MockThreadSafeMap.
 type MockThreadSafeMapMockRecorder struct {
 	mock *MockThreadSafeMap
 }
 
-// NewMockThreadSafeMap creates a new mock instance
+// NewMockThreadSafeMap creates a new mock instance.
 func NewMockThreadSafeMap(ctrl *gomock.Controller) *MockThreadSafeMap {
 	mock := &MockThreadSafeMap{ctrl: ctrl}
 	mock.recorder = &MockThreadSafeMapMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockThreadSafeMap) EXPECT() *MockThreadSafeMapMockRecorder {
 	return m.recorder
 }
 
-// Delete mocks base method
+// Delete mocks base method.
 func (m *MockThreadSafeMap) Delete(key interface{}) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", key)
 }
 
-// Delete indicates an expected call of Delete
+// Delete indicates an expected call of Delete.
 func (mr *MockThreadSafeMapMockRecorder) Delete(key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockThreadSafeMap)(nil).Delete), key)
 }
 
-// Load mocks base method
+// Load mocks base method.
 func (m *MockThreadSafeMap) Load(key interface{}) (interface{}, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Load", key)
@@ -54,13 +54,13 @@ func (m *MockThreadSafeMap) Load(key interface{}) (interface{}, bool) {
 	return ret0, ret1
 }
 
-// Load indicates an expected call of Load
+// Load indicates an expected call of Load.
 func (mr *MockThreadSafeMapMockRecorder) Load(key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockThreadSafeMap)(nil).Load), key)
 }
 
-// LoadOrStore mocks base method
+// LoadOrStore mocks base method.
 func (m *MockThreadSafeMap) LoadOrStore(key, value interface{}) (interface{}, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LoadOrStore", key, value)
@@ -69,31 +69,31 @@ func (m *MockThreadSafeMap) LoadOrStore(key, value interface{}) (interface{}, bo
 	return ret0, ret1
 }
 
-// LoadOrStore indicates an expected call of LoadOrStore
+// LoadOrStore indicates an expected call of LoadOrStore.
 func (mr *MockThreadSafeMapMockRecorder) LoadOrStore(key, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadOrStore", reflect.TypeOf((*MockThreadSafeMap)(nil).LoadOrStore), key, value)
 }
 
-// Range mocks base method
+// Range mocks base method.
 func (m *MockThreadSafeMap) Range(f func(interface{}, interface{}) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Range", f)
 }
 
-// Range indicates an expected call of Range
+// Range indicates an expected call of Range.
 func (mr *MockThreadSafeMapMockRecorder) Range(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Range", reflect.TypeOf((*MockThreadSafeMap)(nil).Range), f)
 }
 
-// Store mocks base method
+// Store mocks base method.
 func (m *MockThreadSafeMap) Store(key, value interface{}) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Store", key, value)
 }
 
-// Store indicates an expected call of Store
+// Store indicates an expected call of Store.
 func (mr *MockThreadSafeMapMockRecorder) Store(key, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockThreadSafeMap)(nil).Store), key, value)

@@ -10,30 +10,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockOperatorManager is a mock of OperatorManager interface
+// MockOperatorManager is a mock of OperatorManager interface.
 type MockOperatorManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockOperatorManagerMockRecorder
 }
 
-// MockOperatorManagerMockRecorder is the mock recorder for MockOperatorManager
+// MockOperatorManagerMockRecorder is the mock recorder for MockOperatorManager.
 type MockOperatorManagerMockRecorder struct {
 	mock *MockOperatorManager
 }
 
-// NewMockOperatorManager creates a new mock instance
+// NewMockOperatorManager creates a new mock instance.
 func NewMockOperatorManager(ctrl *gomock.Controller) *MockOperatorManager {
 	mock := &MockOperatorManager{ctrl: ctrl}
 	mock.recorder = &MockOperatorManagerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockOperatorManager) EXPECT() *MockOperatorManagerMockRecorder {
 	return m.recorder
 }
 
-// Install mocks base method
+// Install mocks base method.
 func (m *MockOperatorManager) Install() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Install")
@@ -41,13 +41,13 @@ func (m *MockOperatorManager) Install() error {
 	return ret0
 }
 
-// Install indicates an expected call of Install
+// Install indicates an expected call of Install.
 func (mr *MockOperatorManagerMockRecorder) Install() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Install", reflect.TypeOf((*MockOperatorManager)(nil).Install))
 }
 
-// ValidateOperatorNamespace mocks base method
+// ValidateOperatorNamespace mocks base method.
 func (m *MockOperatorManager) ValidateOperatorNamespace(clusterName string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateOperatorNamespace", clusterName)
@@ -56,7 +56,7 @@ func (m *MockOperatorManager) ValidateOperatorNamespace(clusterName string) (boo
 	return ret0, ret1
 }
 
-// ValidateOperatorNamespace indicates an expected call of ValidateOperatorNamespace
+// ValidateOperatorNamespace indicates an expected call of ValidateOperatorNamespace.
 func (mr *MockOperatorManagerMockRecorder) ValidateOperatorNamespace(clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateOperatorNamespace", reflect.TypeOf((*MockOperatorManager)(nil).ValidateOperatorNamespace), clusterName)

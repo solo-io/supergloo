@@ -3,7 +3,7 @@ package csr
 import (
 	"context"
 
-	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	"github.com/solo-io/mesh-projects/pkg/version"
 )
 
@@ -29,6 +29,6 @@ type CsrAgentInstaller interface {
 }
 
 type CsrAgentInstallerFactory func(
-	helmInstaller helminstall.Installer,
+	helmInstaller types.Installer,
 	deployedVersionFinder version.DeployedVersionFinder,
 ) CsrAgentInstaller

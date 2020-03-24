@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/wire"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"k8s.io/client-go/rest"
 )
 
@@ -22,18 +23,17 @@ type MockMeshctl struct {
 	// MUST be non-nil - we always need to produce a mocked master cluster verification client and a mocked usage reporter
 	MockController *gomock.Controller
 
-	// safe to leave nil if not needed
-	MasterKubeConfig *rest.Config
-
+	// MUST be non-nil
 	Ctx context.Context
 
 	Clients common.Clients
 
 	KubeClients common.KubeClients
 
-	KubeLoader      common_config.KubeLoader
-	ImageNameParser docker.ImageNameParser
-	FileReader      common.FileReader
+	KubeLoader              common_config.KubeLoader
+	ImageNameParser         docker.ImageNameParser
+	FileReader              common.FileReader
+	SecretToConfigConverter kubeconfig.SecretToConfigConverter
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -59,7 +59,17 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		return &m.Clients, nil
 	}
 
-	app := wire.InitializeCLIWithMocks(m.Ctx, buffer, usageReporter, kubeFactory, clientsFactory, m.KubeLoader, m.ImageNameParser, m.FileReader)
+	app := wire.InitializeCLIWithMocks(
+		m.Ctx,
+		buffer,
+		usageReporter,
+		kubeFactory,
+		clientsFactory,
+		m.KubeLoader,
+		m.ImageNameParser,
+		m.FileReader,
+		m.SecretToConfigConverter,
+	)
 
 	splitArgs, err := shellwords.Parse(argString)
 	if err != nil {

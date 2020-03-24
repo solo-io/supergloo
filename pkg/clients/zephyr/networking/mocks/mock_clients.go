@@ -13,30 +13,30 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// MockVirtualMeshClient is a mock of VirtualMeshClient interface
+// MockVirtualMeshClient is a mock of VirtualMeshClient interface.
 type MockVirtualMeshClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockVirtualMeshClientMockRecorder
 }
 
-// MockVirtualMeshClientMockRecorder is the mock recorder for MockVirtualMeshClient
+// MockVirtualMeshClientMockRecorder is the mock recorder for MockVirtualMeshClient.
 type MockVirtualMeshClientMockRecorder struct {
 	mock *MockVirtualMeshClient
 }
 
-// NewMockVirtualMeshClient creates a new mock instance
+// NewMockVirtualMeshClient creates a new mock instance.
 func NewMockVirtualMeshClient(ctrl *gomock.Controller) *MockVirtualMeshClient {
 	mock := &MockVirtualMeshClient{ctrl: ctrl}
 	mock.recorder = &MockVirtualMeshClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockVirtualMeshClient) EXPECT() *MockVirtualMeshClientMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockVirtualMeshClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.VirtualMesh, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
@@ -45,13 +45,13 @@ func (m *MockVirtualMeshClient) Get(ctx context.Context, name, namespace string)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockVirtualMeshClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockVirtualMeshClient)(nil).Get), ctx, name, namespace)
 }
 
-// List mocks base method
+// List mocks base method.
 func (m *MockVirtualMeshClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualMeshList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -64,14 +64,14 @@ func (m *MockVirtualMeshClient) List(ctx context.Context, opts ...client.ListOpt
 	return ret0, ret1
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockVirtualMeshClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockVirtualMeshClient)(nil).List), varargs...)
 }
 
-// UpdateStatus mocks base method
+// UpdateStatus mocks base method.
 func (m *MockVirtualMeshClient) UpdateStatus(ctx context.Context, virtualMesh *v1alpha1.VirtualMesh, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, virtualMesh}
@@ -83,37 +83,37 @@ func (m *MockVirtualMeshClient) UpdateStatus(ctx context.Context, virtualMesh *v
 	return ret0
 }
 
-// UpdateStatus indicates an expected call of UpdateStatus
+// UpdateStatus indicates an expected call of UpdateStatus.
 func (mr *MockVirtualMeshClientMockRecorder) UpdateStatus(ctx, virtualMesh interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, virtualMesh}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpdateStatus), varargs...)
 }
 
-// MockTrafficPolicyClient is a mock of TrafficPolicyClient interface
+// MockTrafficPolicyClient is a mock of TrafficPolicyClient interface.
 type MockTrafficPolicyClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockTrafficPolicyClientMockRecorder
 }
 
-// MockTrafficPolicyClientMockRecorder is the mock recorder for MockTrafficPolicyClient
+// MockTrafficPolicyClientMockRecorder is the mock recorder for MockTrafficPolicyClient.
 type MockTrafficPolicyClientMockRecorder struct {
 	mock *MockTrafficPolicyClient
 }
 
-// NewMockTrafficPolicyClient creates a new mock instance
+// NewMockTrafficPolicyClient creates a new mock instance.
 func NewMockTrafficPolicyClient(ctrl *gomock.Controller) *MockTrafficPolicyClient {
 	mock := &MockTrafficPolicyClient{ctrl: ctrl}
 	mock.recorder = &MockTrafficPolicyClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyClient) EXPECT() *MockTrafficPolicyClientMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockTrafficPolicyClient) Get(ctx context.Context, name, namespace string) (*v1alpha1.TrafficPolicy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, name, namespace)
@@ -122,13 +122,13 @@ func (m *MockTrafficPolicyClient) Get(ctx context.Context, name, namespace strin
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockTrafficPolicyClientMockRecorder) Get(ctx, name, namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTrafficPolicyClient)(nil).Get), ctx, name, namespace)
 }
 
-// Create mocks base method
+// Create mocks base method.
 func (m *MockTrafficPolicyClient) Create(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, trafficPolicy}
@@ -140,14 +140,14 @@ func (m *MockTrafficPolicyClient) Create(ctx context.Context, trafficPolicy *v1a
 	return ret0
 }
 
-// Create indicates an expected call of Create
+// Create indicates an expected call of Create.
 func (mr *MockTrafficPolicyClientMockRecorder) Create(ctx, trafficPolicy interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, trafficPolicy}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTrafficPolicyClient)(nil).Create), varargs...)
 }
 
-// Update mocks base method
+// Update mocks base method.
 func (m *MockTrafficPolicyClient) Update(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, trafficPolicy}
@@ -159,14 +159,14 @@ func (m *MockTrafficPolicyClient) Update(ctx context.Context, trafficPolicy *v1a
 	return ret0
 }
 
-// Update indicates an expected call of Update
+// Update indicates an expected call of Update.
 func (mr *MockTrafficPolicyClientMockRecorder) Update(ctx, trafficPolicy interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, trafficPolicy}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTrafficPolicyClient)(nil).Update), varargs...)
 }
 
-// UpdateStatus mocks base method
+// UpdateStatus mocks base method.
 func (m *MockTrafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, trafficPolicy}
@@ -178,14 +178,14 @@ func (m *MockTrafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolic
 	return ret0
 }
 
-// UpdateStatus indicates an expected call of UpdateStatus
+// UpdateStatus indicates an expected call of UpdateStatus.
 func (mr *MockTrafficPolicyClientMockRecorder) UpdateStatus(ctx, trafficPolicy interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, trafficPolicy}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockTrafficPolicyClient)(nil).UpdateStatus), varargs...)
 }
 
-// List mocks base method
+// List mocks base method.
 func (m *MockTrafficPolicyClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.TrafficPolicyList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
@@ -198,7 +198,7 @@ func (m *MockTrafficPolicyClient) List(ctx context.Context, opts ...client.ListO
 	return ret0, ret1
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockTrafficPolicyClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
