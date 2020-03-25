@@ -18,11 +18,13 @@ type GatewayClient interface {
 type EnvoyFilterClient interface {
 	Create(ctx context.Context, envoyFilter *v1alpha3.EnvoyFilter) error
 	Get(ctx context.Context, objKey client.ObjectKey) (*v1alpha3.EnvoyFilter, error)
+	UpsertSpec(ctx context.Context, envoyFilter *v1alpha3.EnvoyFilter) error
 }
 
 type ServiceEntryClient interface {
 	Create(ctx context.Context, serviceEntry *v1alpha3.ServiceEntry) error
 	Get(ctx context.Context, objKey client.ObjectKey) (*v1alpha3.ServiceEntry, error)
+	Update(ctx context.Context, envoyFilter *v1alpha3.ServiceEntry) error
 }
 
 type VirtualServiceClient interface {

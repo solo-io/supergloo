@@ -15,13 +15,20 @@ import (
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	FailedToFederateServiceMessage = "failed to federate mesh service to mesh workload"
+)
+
 var (
-	FailedToFederateService = func(err error, meshService *discovery_v1alpha1.MeshService, meshWorkloadRef *core_types.ResourceRef) string {
-		return fmt.Sprintf("Could not federate service %s.%s to mesh workload %+v: %s",
-			meshService.Name, meshService.Namespace, meshWorkloadRef, err.Error())
+	FailedToFederateServices = func(
+		meshService *discovery_v1alpha1.MeshService,
+		meshWorkloadRefs []*core_types.ResourceRef) string {
+		return fmt.Sprintf("Could not federate service %s.%s to mesh workloads %+v. Check logs for details",
+			meshService.Name, meshService.Namespace, meshWorkloadRefs)
 	}
 )
 
@@ -92,30 +99,37 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	if federationConfig == nil {
 		return nil
 	}
-
+	var failedFederations []*core_types.ResourceRef
 	for _, federatedToWorkloadRef := range federationConfig.FederatedToWorkloads {
-		err := f.federateToRemoteWorkload(ctx, meshService, federatedToWorkloadRef)
-
-		var federationStatus *core_types.ComputedStatus
-		if err != nil {
-			message := FailedToFederateService(err, meshService, federatedToWorkloadRef)
-			logger.Errorf(message)
-
-			federationStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
-				Message: message,
-			}
-		} else {
-			federationStatus = &core_types.ComputedStatus{
-				Status: core_types.ComputedStatus_ACCEPTED,
-			}
+		if err := f.federateToRemoteWorkload(ctx, meshService, federatedToWorkloadRef); err != nil {
+			failedFederations = append(failedFederations, federatedToWorkloadRef)
+			logger.Warnw(FailedToFederateServiceMessage,
+				zap.String("mesh_workload", fmt.Sprintf("%s.%s", federatedToWorkloadRef.GetName(), federatedToWorkloadRef.GetNamespace())),
+				zap.String("mesh_service", fmt.Sprintf("%s.%s", meshService.GetName(), meshService.GetNamespace())),
+				zap.Error(err))
 		}
+	}
 
-		meshService.Status.FederationStatus = federationStatus
-		err = f.meshServiceClient.UpdateStatus(ctx, meshService)
-		if err != nil {
-			logger.Errorf("Failed to update service status: %+v", err)
+	var federationStatus *core_types.ComputedStatus
+	if len(failedFederations) > 0 {
+		federationStatus = &core_types.ComputedStatus{
+			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+			Message: FailedToFederateServices(meshService, failedFederations),
 		}
+	} else {
+		federationStatus = &core_types.ComputedStatus{
+			Status: core_types.ComputedStatus_ACCEPTED,
+		}
+	}
+
+	// If the status is the same as the current, do not attempt to update
+	if meshService.Status.FederationStatus.Equal(federationStatus) {
+		return nil
+	}
+	meshService.Status.FederationStatus = federationStatus
+	err := f.meshServiceClient.UpdateStatus(ctx, meshService)
+	if err != nil {
+		logger.Warnw("Failed to update service status", zap.Error(err))
 	}
 
 	return nil
@@ -127,7 +141,8 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 		Namespace: meshWorkloadRef.GetNamespace(),
 	})
 	if err != nil {
-		return eris.Wrapf(err, "Could not load federated MeshWorkload metadata for service %+v", meshService.ObjectMeta)
+		return eris.Wrapf(err, "Could not load federated MeshWorkload metadata for service %s.%s",
+			meshService.GetNamespace(), meshService.GetNamespace())
 	}
 
 	meshForWorkload, err := f.meshClient.Get(ctx, client.ObjectKey{
@@ -135,7 +150,8 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 		Namespace: workload.Spec.GetMesh().GetNamespace(),
 	})
 	if err != nil {
-		return eris.Wrapf(err, "Could not load mesh for MeshWorkload %+v", workload.ObjectMeta)
+		return eris.Wrapf(err, "Could not load mesh for MeshWorkload %s.%s",
+			meshService.GetNamespace(), meshService.GetNamespace())
 	}
 
 	meshForService, err := f.meshClient.Get(ctx, client.ObjectKey{

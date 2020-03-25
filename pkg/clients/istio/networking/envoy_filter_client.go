@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,6 +38,14 @@ func (e *envoyFilterClient) Get(ctx context.Context, objKey client.ObjectKey) (*
 	return &filter, nil
 }
 
-func (e *envoyFilterClient) Update(ctx context.Context, gateway *v1alpha3.Gateway) error {
-	return e.client.Update(ctx, gateway)
+func (e *envoyFilterClient) UpsertSpec(ctx context.Context, envoyFilter *v1alpha3.EnvoyFilter) error {
+	existing, err := e.Get(ctx, client.ObjectKey{Name: envoyFilter.Name, Namespace: envoyFilter.Namespace})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return e.Create(ctx, envoyFilter)
+		}
+		return err
+	}
+	existing.Spec = envoyFilter.Spec
+	return e.client.Update(ctx, existing)
 }

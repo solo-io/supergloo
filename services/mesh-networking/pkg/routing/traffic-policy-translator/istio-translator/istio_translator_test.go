@@ -253,6 +253,7 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			destName := "name"
 			destNamespace := "namespace"
+			port := uint32(9080)
 			destCluster := &types.StringValue{Value: testContext.clusterName}
 			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
 				Destination: &core_types.ResourceRef{
@@ -261,10 +262,14 @@ var _ = Describe("IstioTranslator", func() {
 					Cluster:   destCluster,
 				},
 				Percentage: 50,
+				Port:       port,
 			}
 			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
 				httpRoute.Mirror = &api_v1alpha3.Destination{
 					Host: destName,
+					Port: &api_v1alpha3.PortSelector{
+						Number: port,
+					},
 				}
 				httpRoute.MirrorPercentage = &api_v1alpha3.Percent{Value: 50.0}
 			}
@@ -664,6 +669,63 @@ var _ = Describe("IstioTranslator", func() {
 					{
 						Destination: &api_v1alpha3.Destination{
 							Host: multiClusterDnsName,
+						},
+						Weight: 50,
+					},
+				}
+			}
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
+						},
+					},
+					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+				},
+			}
+			mockMeshServiceSelector.
+				EXPECT().
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				Return(backingMeshService, nil)
+			mockVirtualServiceClient.
+				EXPECT().
+				UpsertSpec(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate TrafficShift with ports", func() {
+			testContext := setupTestContext()
+			destName := "name"
+			destNamespace := "namespace"
+			multiClusterDnsName := "multicluster-dns-name"
+			port := uint32(9080)
+			destCluster := &types.StringValue{Value: "remote-cluster-1"}
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
+				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+					{
+						Destination: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
+							Cluster:   destCluster,
+						},
+						Weight: 50,
+						Port:   port,
+					},
+				},
+			}
+			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
+				httpRoute.Route = []*api_v1alpha3.HTTPRouteDestination{
+					{
+						Destination: &api_v1alpha3.Destination{
+							Host: multiClusterDnsName,
+							Port: &api_v1alpha3.PortSelector{
+								Number: port,
+							},
 						},
 						Weight: 50,
 					},

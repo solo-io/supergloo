@@ -148,7 +148,7 @@ func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 	if len(computedVirtualService.Spec.GetHttp()) == 0 {
 		return nil
 	}
-	// UpsertData computed VirtualService
+	// Upsert computed VirtualService
 	err = virtualServiceClient.UpsertSpec(ctx, computedVirtualService)
 	if err != nil {
 		return i.errorToStatus(err)
@@ -410,6 +410,15 @@ func (i *istioTrafficPolicyTranslator) translateTrafficShift(
 				},
 				Weight: int32(destination.GetWeight()),
 			}
+			// Add port to destination if non-zero
+			// If the service backing this destination has one more than one port exposed, and
+			// no port is chosen, istio will return an error. Otherwise istio will use the
+			// one port available.
+			if destination.Port != 0 {
+				httpRouteDestination.Destination.Port = &api_v1alpha3.PortSelector{
+					Number: destination.Port,
+				}
+			}
 			if destination.Subset != nil {
 				subsetName, err := i.translateSubset(ctx, destination)
 				if err != nil {
@@ -490,6 +499,15 @@ func (i *istioTrafficPolicyTranslator) translateMirror(
 		}
 		mirror = &api_v1alpha3.Destination{
 			Host: hostnameForKubeService,
+		}
+		// Add port to destination if non-zero
+		// If the service backing this destination has one more than one port exposed, and
+		// no port is chosen, istio will return an error. Otherwise istio will use the
+		// one port available.
+		if trafficPolicy.Spec.GetMirror().GetPort() != 0 {
+			mirror.Port = &api_v1alpha3.PortSelector{
+				Number: trafficPolicy.Spec.GetMirror().GetPort(),
+			}
 		}
 	}
 	return mirror, nil

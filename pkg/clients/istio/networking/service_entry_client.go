@@ -36,3 +36,7 @@ func (s *serviceEntryClient) Get(ctx context.Context, objKey client.ObjectKey) (
 
 	return &ServiceEntry, nil
 }
+
+func (g *serviceEntryClient) Update(ctx context.Context, serviceEntry *v1alpha3.ServiceEntry) error {
+	return g.client.Update(ctx, serviceEntry)
+}

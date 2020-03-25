@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
@@ -26,10 +27,10 @@ import (
 
 var (
 	ServiceNotInIstio = func(service *discovery_v1alpha1.MeshService) error {
-		return eris.Errorf("Service %+v does not belong to an Istio mesh", service.ObjectMeta)
+		return eris.Errorf("Service %s.%s does not belong to an Istio mesh", service.Name, service.Namespace)
 	}
 	WorkloadNotInIstio = func(workload *discovery_v1alpha1.MeshWorkload) error {
-		return eris.Errorf("Workload %+v does not belong to an Istio mesh", workload.ObjectMeta)
+		return eris.Errorf("Workload %s.%s does not belong to an Istio mesh", workload.Name, workload.Namespace)
 	}
 	ClusterNotReady = func(clusterName string) error {
 		return eris.Errorf("Cluster '%s' is not fully registered yet", clusterName)
@@ -41,11 +42,8 @@ const (
 	DefaultGatewayProtocol = "TLS"
 	DefaultGatewayPortName = "tls"
 
-	EnvoySniClusterFilterName = "envoy.filters.network.sni_cluster"
-
-	ServiceEntryPort         = 9080 // seemingly arbitrary? port on the service entry in the local cluster that will get forwarded to the port of the remote gateway
-	ServiceEntryPortName     = "http1"
-	ServiceEntryPortProtocol = "http"
+	EnvoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
+	EnvoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
 )
 
 type IstioFederationClient meshes.MeshFederationClient
@@ -106,13 +104,15 @@ func (i *istioFederationClient) FederateServiceSide(
 	// Make sure the gateway is in a good state
 	err = i.ensureGatewayExists(ctx, dynamicClient, virtualMesh.GetName(), meshService, installNamespace)
 	if err != nil {
-		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway for service %+v", meshService.ObjectMeta)
+		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway for service %s.%s",
+			meshService.GetName(), meshService.GetNamespace())
 	}
 
 	// ensure that the envoy filter exists
 	err = i.ensureEnvoyFilterExists(ctx, virtualMesh.GetName(), dynamicClient, installNamespace, meshForService.Spec.GetCluster().GetName())
 	if err != nil {
-		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %+v", meshService.ObjectMeta)
+		return eap, eris.Wrapf(err, "Failed to configure the ingress gateway envoy filter for service %s.%s",
+			meshService.GetName(), meshService.GetNamespace())
 	}
 
 	// finally, send back the external IP for the gateway we just set up
@@ -142,8 +142,8 @@ func (i *istioFederationClient) FederateClientSide(
 		ctx,
 		clientForWorkloadMesh,
 		eap,
+		meshService,
 		installNamespace,
-		serviceMulticlusterName,
 		meshForWorkload.Spec.GetCluster().GetName(),
 	)
 	if err != nil {
@@ -193,48 +193,60 @@ func (i *istioFederationClient) setUpServiceEntry(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
 	eap dns.ExternalAccessPoint,
+	meshService *discovery_v1alpha1.MeshService,
 	installNamespace,
-	serviceMulticlusterDnsName,
 	workloadClusterName string,
 ) error {
 	serviceEntryClient := i.serviceEntryClientFactory(clientForWorkloadMesh)
 
 	computedRef := &core_types.ResourceRef{
-		Name:      serviceMulticlusterDnsName,
+		Name:      meshService.Spec.GetFederation().GetMulticlusterDnsName(),
 		Namespace: installNamespace,
 	}
 
-	_, err := serviceEntryClient.Get(ctx, clients.ResourceRefToObjectKey(computedRef))
+	endpoint := &alpha3.ServiceEntry_Endpoint{
+		Address: eap.Address,
+		Ports:   make(map[string]uint32),
+	}
+	var ports []*alpha3.Port
+	for _, port := range meshService.Spec.GetKubeService().GetPorts() {
+		ports = append(ports, &alpha3.Port{
+			Number:   port.Port,
+			Protocol: port.Protocol,
+			Name:     port.Name,
+		})
+		endpoint.Ports[port.Name] = eap.Port
+	}
+	endpoints := []*alpha3.ServiceEntry_Endpoint{endpoint}
+
+	existing, err := serviceEntryClient.Get(ctx, clients.ResourceRefToObjectKey(computedRef))
 	if errors.IsNotFound(err) {
 		// generate a unique IP within the workload cluster for the service entry to point to
 		newIp, err := i.ipAssigner.AssignIPOnCluster(ctx, workloadClusterName)
 		if err != nil {
 			return err
 		}
-
-		return serviceEntryClient.Create(ctx, &v1alpha3.ServiceEntry{
+		serviceEntry := &v1alpha3.ServiceEntry{
 			ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
 			Spec: alpha3.ServiceEntry{
-				Addresses: []string{newIp},
-				Endpoints: []*alpha3.ServiceEntry_Endpoint{{
-					Address: eap.Address,
-					Ports: map[string]uint32{
-						ServiceEntryPortName: eap.Port,
-					},
-				}},
-				Hosts:    []string{serviceMulticlusterDnsName},
-				Location: alpha3.ServiceEntry_MESH_INTERNAL,
-				Ports: []*alpha3.Port{{
-					Name:     ServiceEntryPortName,
-					Number:   ServiceEntryPort,
-					Protocol: ServiceEntryPortProtocol,
-				}},
+				Addresses:  []string{newIp},
+				Hosts:      []string{meshService.Spec.GetFederation().GetMulticlusterDnsName()},
+				Location:   alpha3.ServiceEntry_MESH_INTERNAL,
 				Resolution: alpha3.ServiceEntry_DNS,
+				Endpoints:  endpoints,
+				Ports:      ports,
 			},
-		})
+		}
+
+		return serviceEntryClient.Create(ctx, serviceEntry)
+	} else if err != nil {
+		return err
 	}
 
-	return err
+	// if the service entry already exists, update it with all ports and endpoints found on the target service.
+	existing.Spec.Ports = ports
+	existing.Spec.Endpoints = endpoints
+	return serviceEntryClient.Update(ctx, existing)
 }
 
 func (i *istioFederationClient) determineExternalIpForGateway(
@@ -280,40 +292,40 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 		Namespace: installNamespace,
 	}
 
-	_, err := envoyFilterClient.Get(ctx, clients.ResourceRefToObjectKey(computedRef))
-	if errors.IsNotFound(err) {
-		filterPatch, err := BuildClusterReplacementPatch(clusterName)
-		if err != nil {
-			return err
-		}
+	filterPatch, err := BuildClusterReplacementPatch(clusterName)
+	if err != nil {
+		return err
+	}
 
-		// see https://github.com/solo-io/mesh-projects/issues/195 for details on this envoy filter config
-		return envoyFilterClient.Create(ctx, &v1alpha3.EnvoyFilter{
-			ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
-			Spec: alpha3.EnvoyFilter{
-				ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
-					ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
-					Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
-						Context: alpha3.EnvoyFilter_GATEWAY,
-						ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-							Listener: &alpha3.EnvoyFilter_ListenerMatch{
-								PortNumber: DefaultGatewayPort,
+	// see https://github.com/solo-io/mesh-projects/issues/195 for details on this envoy filter config
+	return envoyFilterClient.UpsertSpec(ctx, &v1alpha3.EnvoyFilter{
+		ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
+		Spec: alpha3.EnvoyFilter{
+			ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
+				ApplyTo: alpha3.EnvoyFilter_NETWORK_FILTER,
+				Match: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: alpha3.EnvoyFilter_GATEWAY,
+					ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &alpha3.EnvoyFilter_ListenerMatch{
+							PortNumber: DefaultGatewayPort,
+							FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+									Name: EnvoySniClusterFilterName,
+								},
 							},
 						},
 					},
-					Patch: &alpha3.EnvoyFilter_Patch{
-						Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
-						Value:     filterPatch,
-					},
-				}},
-				WorkloadSelector: &alpha3.WorkloadSelector{
-					Labels: BuildGatewayWorkloadSelector(),
 				},
+				Patch: &alpha3.EnvoyFilter_Patch{
+					Operation: alpha3.EnvoyFilter_Patch_INSERT_AFTER,
+					Value:     filterPatch,
+				},
+			}},
+			WorkloadSelector: &alpha3.WorkloadSelector{
+				Labels: BuildGatewayWorkloadSelector(),
 			},
-		})
-	}
-
-	return err
+		},
+	})
 }
 
 func (i *istioFederationClient) ensureGatewayExists(
@@ -332,7 +344,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 	}
 
 	existingGateway, err := gatewayClient.Get(ctx, clients.ResourceRefToObjectKey(computedGatewayRef))
-	serviceDnsName := meshService.Spec.GetFederation().GetMulticlusterDnsName()
+	serviceDnsName := BuildMatchingMultiClusterHostName(meshService.Spec.GetFederation())
 	if errors.IsNotFound(err) {
 		// if the gateway wasn't found, then create our initial state
 		return gatewayClient.Create(ctx, &v1alpha3.Gateway{
@@ -385,6 +397,22 @@ func (i *istioFederationClient) ensureGatewayExists(
 	return nil
 }
 
+/*
+	Need to add a wildcard "*" matcher at the beginning of this DNS name because the SNI name
+	which istio uses is not the exact host which we use on the ServiceEntry/DestinationRule.
+
+	For example: If we are federating the pod with multicluster DNS `reviews.default.target-cluster`.
+	`reviews.default.target-cluster` is the host we will use to populate the ServiceEntry/DestinationRule.
+	However, istio has an internal representation of this hostname which will look something like:
+	outbound_9080_v2_._review.default.target-cluster. This value will depend on the port, as well as subsets.
+
+	This is the value which needs to be matched as well as translate into outbound_9080_v2_._review.default.svc.cluster.local
+	on the target cluster.
+*/
+func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.Federation) string {
+	return fmt.Sprintf("*.%s", federationInfo.GetMulticlusterDnsName())
+}
+
 func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *core_types.ResourceRef) (*discovery_v1alpha1.Mesh, client.Client, error) {
 	mesh, err := i.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshRef))
 	if err != nil {
@@ -421,7 +449,7 @@ func BuildClusterReplacementPatch(clusterName string) (*types.Struct, error) {
 		Fields: map[string]*types.Value{
 			"name": {
 				Kind: &types.Value_StringValue{
-					StringValue: EnvoySniClusterFilterName,
+					StringValue: EnvoyTcpClusterRewriteFilterName,
 				},
 			},
 			"config": {

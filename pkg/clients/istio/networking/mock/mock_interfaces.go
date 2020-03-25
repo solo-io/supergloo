@@ -131,6 +131,20 @@ func (mr *MockEnvoyFilterClientMockRecorder) Get(ctx, objKey interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEnvoyFilterClient)(nil).Get), ctx, objKey)
 }
 
+// UpsertSpec mocks base method.
+func (m *MockEnvoyFilterClient) UpsertSpec(ctx context.Context, envoyFilter *v1alpha3.EnvoyFilter) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertSpec", ctx, envoyFilter)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertSpec indicates an expected call of UpsertSpec.
+func (mr *MockEnvoyFilterClientMockRecorder) UpsertSpec(ctx, envoyFilter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockEnvoyFilterClient)(nil).UpsertSpec), ctx, envoyFilter)
+}
+
 // MockServiceEntryClient is a mock of ServiceEntryClient interface.
 type MockServiceEntryClient struct {
 	ctrl     *gomock.Controller
@@ -181,6 +195,20 @@ func (m *MockServiceEntryClient) Get(ctx context.Context, objKey client.ObjectKe
 func (mr *MockServiceEntryClientMockRecorder) Get(ctx, objKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockServiceEntryClient)(nil).Get), ctx, objKey)
+}
+
+// Update mocks base method.
+func (m *MockServiceEntryClient) Update(ctx context.Context, envoyFilter *v1alpha3.ServiceEntry) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, envoyFilter)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockServiceEntryClientMockRecorder) Update(ctx, envoyFilter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockServiceEntryClient)(nil).Update), ctx, envoyFilter)
 }
 
 // MockVirtualServiceClient is a mock of VirtualServiceClient interface.

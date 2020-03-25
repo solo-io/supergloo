@@ -11,6 +11,7 @@ import (
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	"go.uber.org/zap"
 )
 
 var (
@@ -116,7 +117,7 @@ func (f *federationDecider) federateVirtualMesh(
 			Status: core_types.ComputedStatus_ACCEPTED,
 		}
 	} else {
-		logger.Error("Recording error to virtual mesh %s.%s: %+v", vm.Name, vm.Namespace, err)
+		logger.Debugf("Recording error to virtual mesh %s.%s", vm.Name, vm.Namespace, zap.Error(err))
 		vm.Status.FederationStatus = &core_types.ComputedStatus{
 			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),

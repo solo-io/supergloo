@@ -230,7 +230,7 @@ var _ = Describe("Istio Federation Decider", func() {
 							},
 							Hosts: []string{
 								// initially create the gateway with just the one service's host
-								istioMeshService.Spec.GetFederation().GetMulticlusterDnsName(),
+								istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation()),
 							},
 							Tls: &alpha3.Server_TLSOptions{
 								Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
@@ -254,6 +254,11 @@ var _ = Describe("Istio Federation Decider", func() {
 							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
 								Listener: &alpha3.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
+									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+											Name: istio_federation.EnvoySniClusterFilterName,
+										},
+									},
 								},
 							},
 						},
@@ -268,11 +273,9 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(envoyFilter.ObjectMeta))).
-				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-			envoyFilterClient.EXPECT().
-				Create(ctx, envoyFilter).
+				UpsertSpec(ctx, envoyFilter).
 				Return(nil)
+
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := corev1.Service{
 				Spec: corev1.ServiceSpec{
@@ -422,6 +425,9 @@ var _ = Describe("Istio Federation Decider", func() {
 					Namespace: "istio-system",
 				}).
 				Return(gateway, nil)
+			gatewayClient.EXPECT().
+				Update(ctx, gateway).
+				Return(nil)
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
 				ObjectMeta: v1.ObjectMeta{
@@ -436,6 +442,11 @@ var _ = Describe("Istio Federation Decider", func() {
 							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
 								Listener: &alpha3.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
+									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+											Name: istio_federation.EnvoySniClusterFilterName,
+										},
+									},
 								},
 							},
 						},
@@ -450,8 +461,8 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(envoyFilter.ObjectMeta))).
-				Return(envoyFilter, nil)
+				UpsertSpec(ctx, envoyFilter).
+				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := corev1.Service{
 				Spec: corev1.ServiceSpec{
@@ -605,7 +616,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Protocol: istio_federation.DefaultGatewayProtocol,
 					Name:     istio_federation.DefaultGatewayPortName,
 				},
-				Hosts: []string{istioMeshService.Spec.GetFederation().GetMulticlusterDnsName()},
+				Hosts: []string{istio_federation.BuildMatchingMultiClusterHostName(istioMeshService.Spec.GetFederation())},
 				Tls: &alpha3.Server_TLSOptions{
 					Mode: alpha3.Server_TLSOptions_AUTO_PASSTHROUGH,
 				},
@@ -627,6 +638,11 @@ var _ = Describe("Istio Federation Decider", func() {
 							ObjectTypes: &alpha3.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
 								Listener: &alpha3.EnvoyFilter_ListenerMatch{
 									PortNumber: istio_federation.DefaultGatewayPort,
+									FilterChain: &alpha3.EnvoyFilter_ListenerMatch_FilterChainMatch{
+										Filter: &alpha3.EnvoyFilter_ListenerMatch_FilterMatch{
+											Name: istio_federation.EnvoySniClusterFilterName,
+										},
+									},
 								},
 							},
 						},
@@ -641,8 +657,8 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(envoyFilter.ObjectMeta))).
-				Return(envoyFilter, nil)
+				UpsertSpec(ctx, envoyFilter).
+				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := corev1.Service{
 				Spec: corev1.ServiceSpec{
@@ -825,6 +841,11 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: "application-ns",
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
+			svcPort := &types.KubeServicePort{
+				Port:     9080,
+				Name:     "http1",
+				Protocol: "http",
+			}
 			meshService := &discovery_v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "istio-svc",
@@ -837,6 +858,9 @@ var _ = Describe("Istio Federation Decider", func() {
 					},
 					KubeService: &types.KubeService{
 						Ref: backingKubeSvc,
+						Ports: []*types.KubeServicePort{
+							svcPort,
+						},
 					},
 				},
 			}
@@ -867,15 +891,15 @@ var _ = Describe("Istio Federation Decider", func() {
 					Endpoints: []*alpha3.ServiceEntry_Endpoint{{
 						Address: externalAddress,
 						Ports: map[string]uint32{
-							istio_federation.ServiceEntryPortName: port,
+							svcPort.Name: port,
 						},
 					}},
 					Hosts:    []string{serviceMulticlusterDnsName},
 					Location: alpha3.ServiceEntry_MESH_INTERNAL,
 					Ports: []*alpha3.Port{{
-						Name:     istio_federation.ServiceEntryPortName,
-						Number:   istio_federation.ServiceEntryPort,
-						Protocol: istio_federation.ServiceEntryPortProtocol,
+						Name:     svcPort.Name,
+						Number:   svcPort.Port,
+						Protocol: svcPort.Protocol,
 					}},
 					Resolution: alpha3.ServiceEntry_DNS,
 				},

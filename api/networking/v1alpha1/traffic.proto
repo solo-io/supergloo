@@ -106,6 +106,9 @@ message MultiDestination {
         uint32 weight = 2;
         // Subset routing is currently only supported on Istio
         map<string, string> subset = 3;
+        // port on the destination service to receive traffic. If multiple are found, and none are specified,
+        // then the configuration will be considered invalid
+        uint32 port = 4;
     }
 
     repeated WeightedDestination destinations = 1;
@@ -295,6 +298,9 @@ message Mirror {
     // Percentage of traffic to mirror. If absent, 100% will be mirrored.
     // Values range between 0 and 100
     double percentage = 2;
+    // port on the destination service to receive traffic. If multiple are found, and none are specified,
+    // then the configuration will be considered invalid
+    uint32 port = 3;
 }
 
 message HttpMethod {
