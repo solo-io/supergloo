@@ -18,7 +18,7 @@ LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 COMPONENTS := mesh-discovery mesh-networking
-# include helm makefile so it can be ran from the root
+# include helm Makefile so it can be ran from the root
 include install/helm/helm.mk
 
 #----------------------------------------------------------------------------------

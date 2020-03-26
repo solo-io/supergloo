@@ -101,8 +101,9 @@ type Selector struct {
 	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
 	// If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster
 	Cluster *types.StringValue `protobuf:"bytes,3,opt,name=cluster,proto3" json:"cluster,omitempty"`
-	// Apply the selector to one or more services by adding their refs here.
-	// If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
+	//
+	//Apply the selector to one or more services by adding their refs here.
+	//If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
 	Refs                 []*ResourceRef `protobuf:"bytes,4,rep,name=refs,proto3" json:"refs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`
@@ -161,7 +162,7 @@ func (m *Selector) GetRefs() []*ResourceRef {
 	return nil
 }
 
-//*
+//
 //Special selector capable of selecting specific service identities. Useful for binding policy rules.
 type IdentitySelector struct {
 	// list of namespaces to search

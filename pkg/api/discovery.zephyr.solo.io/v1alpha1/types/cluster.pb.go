@@ -22,8 +22,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// specifies a method by which to select pods
-// with in a mesh for the application of rules and policies
+//
+//specifies a method by which to select pods within a mesh for the application of rules and policies
 type KubernetesClusterSpec struct {
 	// pointer to secret which contains the kubeconfig with information to connect to the remote cluster.
 	SecretRef *types.ResourceRef `protobuf:"bytes,1,opt,name=secret_ref,json=secretRef,proto3" json:"secret_ref,omitempty"`

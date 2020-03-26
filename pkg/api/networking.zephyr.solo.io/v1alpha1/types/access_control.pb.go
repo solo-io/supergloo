@@ -22,43 +22,49 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// access control policies apply ALLOW policies to communication in a mesh
-// access control policies specify the following:
-// ALLOW those requests:
-// - originating from from **source pods**
-// - sent to **destination pods**
-// - matching one or more **request matcher**
-// if no access control policies are present, all traffic in the mesh will be set to ALLOW
+//
+//access control policies apply ALLOW policies to communication in a mesh
+//access control policies specify the following:
+//ALLOW those requests:
+//- originating from from **source pods**
+//- sent to **destination pods**
+//- matching one or more **request matcher**
+//if no access control policies are present, all traffic in the mesh will be set to ALLOW
 type AccessControlPolicySpec struct {
-	// requests originating from these pods will have the rule applied
-	// leave empty to have all pods in the mesh apply these policies
 	//
-	// note that access control policies are mapped to source pods by their
-	// service account. if other pods share the same service account,
-	// this access control rule will apply to those pods as well.
+	//requests originating from these pods will have the rule applied
+	//leave empty to have all pods in the mesh apply these policies
 	//
-	// for fine-grained access control policies, ensure that your
-	// service accounts properly reflect the desired
-	// boundary for your access control policies
+	//note that access control policies are mapped to source pods by their
+	//service account. if other pods share the same service account,
+	//this access control rule will apply to those pods as well.
+	//
+	//for fine-grained access control policies, ensure that your
+	//service accounts properly reflect the desired
+	//boundary for your access control policies
 	SourceSelector *types.IdentitySelector `protobuf:"bytes,2,opt,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	// requests destined for these pods will have the rule applied
-	// leave empty to apply to all destination pods in the mesh
+	//
+	//requests destined for these pods will have the rule applied
+	//leave empty to apply to all destination pods in the mesh
 	DestinationSelector *types.Selector `protobuf:"bytes,3,opt,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
-	// Optional. A list of HTTP paths or gRPC methods to allow.
-	// gRPC methods must be presented as fully-qualified name in the form of
-	// "/packageName.serviceName/methodName" and are case sensitive.
-	// Exact match, prefix match, and suffix match are supported for paths.
-	// For example, the path "/books/review" matches
-	// "/books/review" (exact match), or "/books/*" (prefix match),
-	// or "*/review" (suffix match).
-	// If not specified, it allows to any path.
+	//
+	//Optional. A list of HTTP paths or gRPC methods to allow.
+	//gRPC methods must be presented as fully-qualified name in the form of
+	//"/packageName.serviceName/methodName" and are case sensitive.
+	//Exact match, prefix match, and suffix match are supported for paths.
+	//For example, the path "/books/review" matches
+	//"/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match),
+	//
+	//If not specified, it allows to any path.
 	AllowedPaths []string `protobuf:"bytes,4,rep,name=allowed_paths,json=allowedPaths,proto3" json:"allowed_paths,omitempty"`
-	// Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
-	// It is ignored in gRPC case because the value is always "POST".
-	// If set to ["*"] or not specified, it allows to any method.
+	//
+	//Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
+	//It is ignored in gRPC case because the value is always "POST".
+	//If set to ["*"] or not specified, it allows to any method.
 	AllowedMethods []string `protobuf:"bytes,5,rep,name=allowed_methods,json=allowedMethods,proto3" json:"allowed_methods,omitempty"`
-	// Optional. A list of ports which to allow
-	// if not set any port is allowed
+	//
+	//Optional. A list of ports which to allow
+	//if not set any port is allowed
 	AllowedPorts         []string `protobuf:"bytes,6,rep,name=allowed_ports,json=allowedPorts,proto3" json:"allowed_ports,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

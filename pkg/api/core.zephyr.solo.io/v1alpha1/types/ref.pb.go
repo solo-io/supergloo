@@ -26,17 +26,20 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // reference object for kubernetes objects, support multi cluster
 type ResourceRef struct {
-	// (optional): The kubernetes kind of the object
-	// Up to the user to decide whether or not to use this field, can be implicit
-	// or explicit depending on the use case.
+	//
+	//The kubernetes kind of the object
+	//Up to the user to decide whether or not to use this field, can be implicit
+	//or explicit depending on the use case.
 	APIGroup *types.StringValue `protobuf:"bytes,1,opt,name=APIGroup,proto3" json:"APIGroup,omitempty"`
 	Kind     *types.StringValue `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	Name     string             `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	// (optional): The namespace in which the object lives
-	// if left empty it will default to the namespace of the object referencing it.
+	//
+	//The namespace in which the object lives
+	//if left empty it will default to the namespace of the object referencing it.
 	Namespace string `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// (optional) the cluster in which the object lives
-	// if left empty will assume the current cluster
+	//
+	//The cluster in which the object lives
+	//if left empty will assume the current cluster
 	Cluster              *types.StringValue `protobuf:"bytes,5,opt,name=cluster,proto3" json:"cluster,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`

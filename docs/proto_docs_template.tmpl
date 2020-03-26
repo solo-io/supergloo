@@ -1,0 +1,90 @@
+
+---
+title: "{{ .Package }}{{.Name}}"
+---
+
+## Package : `{{ .Package }}`
+
+{{$file_name := .Name}}
+
+<a name="top"></a>
+
+<a name="API Reference for {{.Name}}"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## {{.Name}}
+{{.Description}}
+
+## Table of Contents
+{{range .Messages}}  - [{{.LongName}}](#{{.FullName}})
+{{end}}
+{{range .Enums}}  - [{{.LongName}}](#{{.FullName}})
+{{end}}
+{{range .Extensions}}  - [File-level Extensions](#{{$file_name}}-extensions)
+{{end}}
+{{range .Services}}  - [{{.Name}}](#{{.FullName}})
+{{end}}
+
+
+{{range .Messages}}
+<a name="{{.FullName}}"></a>
+
+### {{.LongName}}
+{{replaceNewLine .Description}}
+
+{{if .HasFields}}
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+{{range .Fields -}}
+  | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}[{{.LongType}}](#{{.FullType}}) | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
+{{end}}
+{{end}}
+
+{{if .HasExtensions}}
+| Extension | Type | Base | Number | Description |
+| --------- | ---- | ---- | ------ | ----------- |
+{{range .Extensions -}}
+  | {{.Name}} | {{.LongType}} | {{.ContainingLongType}} | {{.Number}} | {{replaceNewLine .Description}}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
+{{end}}
+{{end}}
+
+{{end}} <!-- end messages -->
+
+{{range .Enums}}
+<a name="{{.FullName}}"></a>
+
+### {{.LongName}}
+{{replaceNewLine .Description}}
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+{{range .Values -}}
+  | {{.Name}} | {{.Number}} | {{replaceNewLine .Description}} |
+{{end}}
+
+{{end}} <!-- end enums -->
+
+{{if .HasExtensions}}
+<a name="{{$file_name}}-extensions"></a>
+
+### File-level Extensions
+| Extension | Type | Base | Number | Description |
+| --------- | ---- | ---- | ------ | ----------- |
+{{range .Extensions -}}
+  | {{.Name}} | {{.LongType}} | {{.ContainingLongType}} | {{.Number}} | {{replaceNewLine .Description}}{{if .DefaultValue}} Default: `{{.DefaultValue}}`{{end}} |
+{{end}}
+{{end}} <!-- end HasExtensions -->
+
+{{range .Services}}
+<a name="{{.FullName}}"></a>
+
+### {{.Name}}
+{{replaceNewLine .Description}}
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+{{range .Methods -}}
+  | {{.Name}} | [{{.RequestLongType}}](#{{.RequestFullType}}){{if .RequestStreaming}} stream{{end}} | [{{.ResponseLongType}}](#{{.ResponseFullType}}){{if .ResponseStreaming}} stream{{end}} | {{replaceNewLine .Description}} |
+{{end}}
+{{end}} <!-- end services -->
+

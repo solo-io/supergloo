@@ -19,7 +19,6 @@ message MeshServiceSpec {
 
        The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
     */
-
     KubeService kube_service = 1;
 
     // The mesh with which this service is associated
@@ -81,10 +80,12 @@ message MeshWorkloadSpec {
 
 message KubePod {
 
-    // these are the labels directly from the pods that this controller owns
-    // NB: these are NEITHER the matchLabels nor the labels on the controller itself.
-    // we need these to determine which services are backed by this workload, and
-    // the service backing is determined by the pod labels
+    /*
+        these are the labels directly from the pods that this controller owns
+        NB: these are NEITHER the matchLabels nor the labels on the controller itself.
+        we need these to determine which services are backed by this workload, and
+        the service backing is determined by the pod labels
+    */
     map<string, string> labels = 3;
 
     string service_account_name = 4;

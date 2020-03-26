@@ -1,0 +1,53 @@
+name: Docs
+
+on:
+  push:
+    branches:
+    - 'master'
+  release:
+    types:
+    - created
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14
+      id: go
+    - name: Install Protoc
+      uses: Arduino/actions/setup-protoc@master
+      with:
+        version: '3.6.1'
+
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v2
+      with:
+        hugo-version: '0.62.2'
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Update deps
+      run: make update-deps
+
+    - name: Generate Docs
+      run: go run generate.go
+
+    - name: Docker Login
+      run : docker login quay.io --username "solo-io+solobot" --password ${{ secrets.QUAY_IO_PASSWORD }}
+
+    - name: Push latest
+      # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
+      if: github.ref == 'refs/heads/master'
+      run: cd docs &&  make latest -B
+
+    - name: Push Tagged
+      # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
+      run: cd docs &&  make tagged -B
+      env:
+        TAGGED_VERSION: github.ref
+

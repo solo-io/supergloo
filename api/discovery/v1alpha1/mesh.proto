@@ -10,7 +10,7 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /*
-Meshes represent a currently registered service mesh.
+    Meshes represent a currently registered service mesh.
 */
 message MeshSpec {
     oneof mesh_type {
@@ -31,8 +31,10 @@ message MeshInstallation {
     // where the control plane has been installed
     string installation_namespace = 1;
 
-    // version of the mesh which has been installed
-    // Note that the version may be "latest"
+    /*
+        version of the mesh which has been installed
+        Note that the version may be "latest"
+    */
     string version = 2;
 }
 

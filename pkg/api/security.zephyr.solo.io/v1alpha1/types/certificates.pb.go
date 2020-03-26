@@ -132,7 +132,10 @@ type CertConfig struct {
 	//The cluster.local may be replaced by the root of trust domain for the mesh
 	Hosts []string `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
 	// Organization for this certificate.
-	Org                  string         `protobuf:"bytes,3,opt,name=org,proto3" json:"org,omitempty"`
+	Org string `protobuf:"bytes,3,opt,name=org,proto3" json:"org,omitempty"`
+	//
+	//In the future, the type of mesh, and level of trust will need to be specified here,
+	//but for the time being we are only supporting shared trust in istio.
 	MeshType             types.MeshType `protobuf:"varint,5,opt,name=mesh_type,json=meshType,proto3,enum=core.zephyr.solo.io.MeshType" json:"mesh_type,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`

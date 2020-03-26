@@ -316,8 +316,9 @@ func (*CertificateAuthority) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// Configuration for auto-generated root certificate unique to the MeshGroup
-// Uses the X.509 format, RFC5280
+//
+//Configuration for auto-generated root certificate unique to the VirtualMesh
+//Uses the X.509 format, RFC5280
 type CertificateAuthority_Builtin struct {
 	// Number of days before root cert expires. Defaults to 365.
 	TtlDays uint32 `protobuf:"varint,1,opt,name=ttl_days,json=ttlDays,proto3" json:"ttl_days,omitempty"`

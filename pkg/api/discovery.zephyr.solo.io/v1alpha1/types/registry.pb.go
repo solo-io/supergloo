@@ -28,6 +28,11 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //The MeshService is an abstraction for a service which we have discovered to be, or are told, is part of a
 //given mesh. The Mesh object has references to the MeshServices which belong to it.
 type MeshServiceSpec struct {
+	//
+	//Resource ref to the underlying resource which this service is representing. It can potentially represent
+	//multiple different resource types, but currently supports only kubernetes services
+	//
+	//The type is specified on the ResourceRef.APIGroup and ResourceRef.Kind fields
 	KubeService *KubeService `protobuf:"bytes,1,opt,name=kube_service,json=kubeService,proto3" json:"kube_service,omitempty"`
 	// The mesh with which this service is associated
 	Mesh                 *types.ResourceRef                 `protobuf:"bytes,2,opt,name=mesh,proto3" json:"mesh,omitempty"`
@@ -396,10 +401,11 @@ func (m *MeshWorkloadSpec) GetMesh() *types.ResourceRef {
 }
 
 type KubePod struct {
-	// these are the labels directly from the pods that this controller owns
-	// NB: these are NEITHER the matchLabels nor the labels on the controller itself.
-	// we need these to determine which services are backed by this workload, and
-	// the service backing is determined by the pod labels
+	//
+	//these are the labels directly from the pods that this controller owns
+	//NB: these are NEITHER the matchLabels nor the labels on the controller itself.
+	//we need these to determine which services are backed by this workload, and
+	//the service backing is determined by the pod labels
 	Labels               map[string]string `protobuf:"bytes,3,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	ServiceAccountName   string            `protobuf:"bytes,4,opt,name=service_account_name,json=serviceAccountName,proto3" json:"service_account_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`

@@ -172,8 +172,9 @@ var xxx_messageInfo_MeshStatus proto.InternalMessageInfo
 type MeshInstallation struct {
 	// where the control plane has been installed
 	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
-	// version of the mesh which has been installed
-	// Note that the version may be "latest"
+	//
+	//version of the mesh which has been installed
+	//Note that the version may be "latest"
 	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

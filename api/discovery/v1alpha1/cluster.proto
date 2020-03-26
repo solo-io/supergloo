@@ -4,8 +4,9 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.s
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 
-// specifies a method by which to select pods
-// with in a mesh for the application of rules and policies
+/*
+    specifies a method by which to select pods within a mesh for the application of rules and policies
+*/
 message KubernetesClusterSpec {
     // pointer to secret which contains the kubeconfig with information to connect to the remote cluster.
     core.zephyr.solo.io.ResourceRef secret_ref = 1;

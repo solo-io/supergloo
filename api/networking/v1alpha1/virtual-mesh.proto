@@ -50,8 +50,10 @@ message VirtualMeshSpec {
 }
 
 message CertificateAuthority {
-    // Configuration for auto-generated root certificate unique to the MeshGroup
-    // Uses the X.509 format, RFC5280
+    /*
+        Configuration for auto-generated root certificate unique to the VirtualMesh
+        Uses the X.509 format, RFC5280
+    */
     message Builtin {
         // Number of days before root cert expires. Defaults to 365.
         uint32 ttl_days = 1;

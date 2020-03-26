@@ -47,9 +47,10 @@ message CertConfig {
     // Organization for this certificate.
     string org = 3;
 
-    // In the future, the type of mesh, and level of trust will need to be specified here,
-    // but for the time being we are only supporting shared trust in istio.
-
+    /*
+        In the future, the type of mesh, and level of trust will need to be specified here,
+        but for the time being we are only supporting shared trust in istio.
+    */
     core.zephyr.solo.io.MeshType mesh_type = 5;
 }
 

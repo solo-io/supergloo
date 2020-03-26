@@ -71,38 +71,47 @@ func (HttpMethodValue) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a8bc42f1f1b5bdd7, []int{0}
 }
 
-// a routing rule applies some L7 routing features to an existing mesh
-// routing rules specify the following:
-// for all requests:
-// - originating from from **source pods**
-// - sent to **destination services**
-// - matching one or more **request matcher**
-// apply the specified TrafficPolicySpec
-// the routing configuration that will be applied to the mesh(es)
 //
-// Throughout the documentation below, the term "destination" or "destination service" refers to
-// the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
+//a routing rule applies some L7 routing features to an existing mesh
+//routing rules specify the following:
+//for all requests:
+//- originating from from **source pods**
+//- sent to **destination services**
+//- matching one or more **request matcher**
+//apply the specified TrafficPolicySpec
+//the routing configuration that will be applied to the mesh(es)
 //
-// NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
-// the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
+//Throughout the documentation below, the term "destination" or "destination service" refers to
+//the underlying Kubernetes service that is represented in Service Mesh Hub as a MeshService.
+//
+//NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
+//the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 type TrafficPolicySpec struct {
-	// requests originating from these pods will have the rule applied
-	// leave empty to have all pods in the mesh apply these rules
 	//
-	// > Note: Source Selectors are ignored when TrafficPolicys are
-	// applied to pods in a Linkerd mesh. TrafficPolicys will apply to
-	// all selected destinations in Linkerd, regardless of the source.
+	//requests originating from these pods will have the rule applied
+	//leave empty to have all pods in the mesh apply these rules
+	//
+	//> Note: Source Selectors are ignored when TrafficPolicys are
+	//applied to pods in a Linkerd mesh. TrafficPolicys will apply to
+	//all selected destinations in Linkerd, regardless of the source.
 	SourceSelector *types.Selector `protobuf:"bytes,1,opt,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	// requests destined for these k8s services will have the rule applied
-	// leave empty to apply to all destination k8s services in the mesh
+	//
+	//requests destined for these k8s services will have the rule applied
+	//leave empty to apply to all destination k8s services in the mesh
 	DestinationSelector *types.Selector `protobuf:"bytes,2,opt,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
-	// If specified, this rule will only apply to http requests matching these conditions.
-	// Within a single matcher, all conditions must be satisfied for a match to occur.
-	// Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
-	// NB: Linkerd only supports matching on Request Path and Method
+	//
+	//If specified, this rule will only apply to http requests matching these conditions.
+	//Within a single matcher, all conditions must be satisfied for a match to occur.
+	//Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
+	//NB: Linkerd only supports matching on Request Path and Method
 	HttpRequestMatchers []*HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
-	// enables traffic shifting, i.e. to reroute requests to a different service,
-	// to a subset of pods based on their label, and/or split traffic between multiple services
+	//
+	//a routing rule can have one of several types
+	//Note: types imported from istio will be replaced with our own
+	//simpler types, this is just a place to start from
+	//
+	//enables traffic shifting, i.e. to reroute requests to a different service,
+	//to a subset of pods based on their label, and/or split traffic between multiple services
 	TrafficShift *MultiDestination `protobuf:"bytes,4,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
 	// enable fault injection on requests
 	FaultInjection *FaultInjection `protobuf:"bytes,5,opt,name=fault_injection,json=faultInjection,proto3" json:"fault_injection,omitempty"`
@@ -110,12 +119,12 @@ type TrafficPolicySpec struct {
 	RequestTimeout *types1.Duration `protobuf:"bytes,6,opt,name=request_timeout,json=requestTimeout,proto3" json:"request_timeout,omitempty"`
 	// set a retry policy on requests
 	Retries *RetryPolicy `protobuf:"bytes,7,opt,name=retries,proto3" json:"retries,omitempty"`
-	// set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-	// for further details about cross origin resource sharing.
+	//
+	//set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
+	//https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+	//for further details about cross origin resource sharing.
 	CorsPolicy *CorsPolicy `protobuf:"bytes,8,opt,name=cors_policy,json=corsPolicy,proto3" json:"cors_policy,omitempty"`
-	// Mirror HTTP traffic to a another destination. Traffic will still be sent
-	// to its original destination as normal.
+	// Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal.
 	Mirror *Mirror `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
 	// manipulate request and response headers
 	HeaderManipulation   *HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
@@ -311,12 +320,13 @@ func (m *TrafficPolicyStatus_TranslatorError) GetErrorMessage() string {
 	return ""
 }
 
-// RetryPolicy contains mesh-specific retry configuration
-// Different meshes support different Retry features
-// Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
-// Allowing the same TrafficPolicy to apply retries to different mesh types
-// The configuration applied to the target mesh will use the corresponding
-// config for each type, while other config types will be ignored
+//
+//RetryPolicy contains mesh-specific retry configuration
+//Different meshes support different Retry features
+//Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
+//Allowing the same TrafficPolicy to apply retries to different mesh types
+//The configuration applied to the target mesh will use the corresponding
+//config for each type, while other config types will be ignored
 type RetryPolicy struct {
 	// Number of retries for a given request
 	Attempts int32 `protobuf:"varint,1,opt,name=attempts,proto3" json:"attempts,omitempty"`
@@ -469,17 +479,17 @@ func (m *MultiDestination_WeightedDestination) GetPort() uint32 {
 	return 0
 }
 
-// FaultInjection can be used to specify one or more faults to inject
-// while forwarding http requests to the destination specified in a route.
-// Faults include aborting the Http request from downstream service, and/or delaying
-// proxying of requests. A fault rule MUST HAVE delay or abort.
+//
+//FaultInjection can be used to specify one or more faults to inject
+//while forwarding http requests to the destination specified in a route.
+//Faults include aborting the Http request from downstream service, and/or delaying
+//proxying of requests. A fault rule MUST HAVE delay or abort.
 type FaultInjection struct {
 	// Types that are valid to be assigned to FaultInjectionType:
 	//	*FaultInjection_Delay_
 	//	*FaultInjection_Abort_
 	FaultInjectionType isFaultInjection_FaultInjectionType `protobuf_oneof:"fault_injection_type"`
-	// Percentage of requests to be faulted with the error code provided.
-	// Values range between 0 and 100
+	// Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
 	Percentage           float64  `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -561,9 +571,10 @@ func (*FaultInjection) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-// The optional _percentage_ field can be used to only delay a certain
-// percentage of requests. If left unspecified, all request will be delayed.
+//
+//The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+//The optional _percentage_ field can be used to only delay a certain
+//percentage of requests. If left unspecified, all request will be delayed.
 type FaultInjection_Delay struct {
 	// Types that are valid to be assigned to HttpDelayType:
 	//	*FaultInjection_Delay_FixedDelay
@@ -642,10 +653,11 @@ func (*FaultInjection_Delay) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// The _httpStatus_ field is used to indicate the HTTP status code to
-// return to the caller. The optional _percentage_ field can be used to only
-// abort a certain percentage of requests. If not specified, all requests are
-// aborted.
+//
+//The _httpStatus_ field is used to indicate the HTTP status code to
+//return to the caller. The optional _percentage_ field can be used to only
+//abort a certain percentage of requests. If not specified, all requests are
+//aborted.
 type FaultInjection_Abort struct {
 	// Types that are valid to be assigned to ErrorType:
 	//	*FaultInjection_Abort_HttpStatus
@@ -715,14 +727,11 @@ func (*FaultInjection_Abort) XXX_OneofWrappers() []interface{} {
 type HeaderManipulation struct {
 	// HTTP headers to remove before returning a response to the caller.
 	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
-	// Additional HTTP headers to add before returning a response to the
-	// caller.
+	// Additional HTTP headers to add before returning a response to the caller.
 	AppendResponseHeaders map[string]string `protobuf:"bytes,13,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// HTTP headers to remove before forwarding a request to the
-	// destination service.
+	// HTTP headers to remove before forwarding a request to the destination service.
 	RemoveRequestHeaders []string `protobuf:"bytes,14,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
-	// Additional HTTP headers to add before forwarding a request to the
-	// destination service.
+	// Additional HTTP headers to add before forwarding a request to the destination service.
 	AppendRequestHeaders map[string]string `protobuf:"bytes,15,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
@@ -782,25 +791,31 @@ func (m *HeaderManipulation) GetAppendRequestHeaders() map[string]string {
 }
 
 type CorsPolicy struct {
-	// String patterns that match allowed origins.
-	// An origin is allowed if any of the string matchers match.
-	// If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+	//
+	//String patterns that match allowed origins.
+	//An origin is allowed if any of the string matchers match.
+	//If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
 	AllowOrigins []*StringMatch `protobuf:"bytes,7,rep,name=allow_origins,json=allowOrigins,proto3" json:"allow_origins,omitempty"`
-	// List of HTTP methods allowed to access the resource. The content will
-	// be serialized into the Access-Control-Allow-Methods header.
+	//
+	//List of HTTP methods allowed to access the resource. The content will
+	//be serialized into the Access-Control-Allow-Methods header.
 	AllowMethods []string `protobuf:"bytes,2,rep,name=allow_methods,json=allowMethods,proto3" json:"allow_methods,omitempty"`
-	// List of HTTP headers that can be used when requesting the
-	// resource. Serialized to Access-Control-Allow-Headers header.
+	//
+	//List of HTTP headers that can be used when requesting the
+	//resource. Serialized to Access-Control-Allow-Headers header.
 	AllowHeaders []string `protobuf:"bytes,3,rep,name=allow_headers,json=allowHeaders,proto3" json:"allow_headers,omitempty"`
-	// A white list of HTTP headers that the browsers are allowed to
-	// access. Serialized into Access-Control-Expose-Headers header.
+	//
+	//A white list of HTTP headers that the browsers are allowed to
+	//access. Serialized into Access-Control-Expose-Headers header.
 	ExposeHeaders []string `protobuf:"bytes,4,rep,name=expose_headers,json=exposeHeaders,proto3" json:"expose_headers,omitempty"`
-	// Specifies how long the results of a preflight request can be
-	// cached. Translates to the `Access-Control-Max-Age` header.
+	//
+	//Specifies how long the results of a preflight request can be
+	//cached. Translates to the `Access-Control-Max-Age` header.
 	MaxAge *types1.Duration `protobuf:"bytes,5,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`
-	// Indicates whether the caller is allowed to send the actual request
-	// (not the preflight) using credentials. Translates to
-	// `Access-Control-Allow-Credentials` header.
+	//
+	//Indicates whether the caller is allowed to send the actual request
+	//(not the preflight) using credentials. Translates to
+	//`Access-Control-Allow-Credentials` header.
 	AllowCredentials     *types1.BoolValue `protobuf:"bytes,6,opt,name=allow_credentials,json=allowCredentials,proto3" json:"allow_credentials,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
@@ -882,8 +897,9 @@ type HttpMatcher struct {
 	PathSpecifier isHttpMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
 	// Specifies a set of headers which requests must match in entirety (all headers must match).
 	Headers []*HeaderMatcher `protobuf:"bytes,6,rep,name=headers,proto3" json:"headers,omitempty"`
-	// Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
-	// The router will check the query string from the *path* header against all the specified query parameters
+	//
+	//Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
+	//The router will check the query string from the *path* header against all the specified query parameters
 	QueryParameters []*QueryParameterMatcher `protobuf:"bytes,7,rep,name=query_parameters,json=queryParameters,proto3" json:"query_parameters,omitempty"`
 	// HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
 	Method               *HttpMethod `protobuf:"bytes,8,opt,name=method,proto3" json:"method,omitempty"`
@@ -993,8 +1009,9 @@ func (*HttpMatcher) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// Describes how to match a given string in HTTP headers. Match is
-// case-sensitive.
+//
+//Describes how to match a given string in HTTP headers. Match is
+//case-sensitive.
 type StringMatch struct {
 	// Types that are valid to be assigned to MatchType:
 	//	*StringMatch_Exact
@@ -1089,17 +1106,19 @@ func (*StringMatch) XXX_OneofWrappers() []interface{} {
 type HeaderMatcher struct {
 	// Specifies the name of the header in the request.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Specifies the value of the header. If the value is absent a request that
-	// has the name header will match, regardless of the header’s value.
+	//
+	//Specifies the value of the header. If the value is absent a request that
+	//has the name header will match, regardless of the header’s value.
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 	// Specifies whether the header value should be treated as regex or not.
 	Regex bool `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
-	// If set to true, the result of the match will be inverted. Defaults to false.
 	//
-	// Examples:
-	// * name=foo, invert_match=true: matches if no header named `foo` is present
-	// * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-	// * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+	//If set to true, the result of the match will be inverted. Defaults to false.
+	//
+	//Examples:
+	// name=foo, invert_match=true: matches if no header named `foo` is present
+	// name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+	// name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
 	InvertMatch          bool     `protobuf:"varint,4,opt,name=invert_match,json=invertMatch,proto3" json:"invert_match,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1158,20 +1177,24 @@ func (m *HeaderMatcher) GetInvertMatch() bool {
 	return false
 }
 
-// Query parameter matching treats the query string of a request's :path header
-// as an ampersand-separated list of keys and/or key=value elements.
+//
+//Query parameter matching treats the query string of a request's :path header
+//as an ampersand-separated list of keys and/or key=value elements.
 type QueryParameterMatcher struct {
-	// Specifies the name of a key that must be present in the requested
-	// *path*'s query string.
+	//
+	//Specifies the name of a key that must be present in the requested
+	//path*'s query string.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Specifies the value of the key. If the value is absent, a request
-	// that contains the key in its query string will match, whether the
-	// key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
+	//
+	//Specifies the value of the key. If the value is absent, a request
+	//that contains the key in its query string will match, whether the
+	//key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	// Specifies whether the query parameter value is a regular expression.
-	// Defaults to false. The entire query parameter value (i.e., the part to
-	// the right of the equals sign in "key=value") must match the regex.
-	// E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
+	//
+	//Specifies whether the query parameter value is a regular expression.
+	//Defaults to false. The entire query parameter value (i.e., the part to
+	//the right of the equals sign in "key=value") must match the regex.
+	//E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
 	Regex                bool     `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1226,8 +1249,9 @@ func (m *QueryParameterMatcher) GetRegex() bool {
 type Mirror struct {
 	// Destination to mirror traffic to
 	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	// Percentage of traffic to mirror. If absent, 100% will be mirrored.
-	// Values range between 0 and 100
+	//
+	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
+	//Values range between 0 and 100
 	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
 	// port on the destination service to receive traffic. If multiple are found, and none are specified,
 	// then the configuration will be considered invalid

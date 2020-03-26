@@ -5,47 +5,59 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.
 import "mesh-projects/api/core/v1alpha1/selector.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
 
-// access control policies apply ALLOW policies to communication in a mesh
-// access control policies specify the following:
-// ALLOW those requests:
-// - originating from from **source pods**
-// - sent to **destination pods**
-// - matching one or more **request matcher**
-// if no access control policies are present, all traffic in the mesh will be set to ALLOW
+/*
+    access control policies apply ALLOW policies to communication in a mesh
+    access control policies specify the following:
+    ALLOW those requests:
+    - originating from from **source pods**
+    - sent to **destination pods**
+    - matching one or more **request matcher**
+    if no access control policies are present, all traffic in the mesh will be set to ALLOW
+*/
 message AccessControlPolicySpec {
-    // requests originating from these pods will have the rule applied
-    // leave empty to have all pods in the mesh apply these policies
-    //
-    // note that access control policies are mapped to source pods by their
-    // service account. if other pods share the same service account,
-    // this access control rule will apply to those pods as well.
-    //
-    // for fine-grained access control policies, ensure that your
-    // service accounts properly reflect the desired
-    // boundary for your access control policies
+    /*
+        requests originating from these pods will have the rule applied
+        leave empty to have all pods in the mesh apply these policies
+
+        note that access control policies are mapped to source pods by their
+        service account. if other pods share the same service account,
+        this access control rule will apply to those pods as well.
+
+        for fine-grained access control policies, ensure that your
+        service accounts properly reflect the desired
+        boundary for your access control policies
+    */
     core.zephyr.solo.io.IdentitySelector source_selector = 2;
 
-    // requests destined for these pods will have the rule applied
-    // leave empty to apply to all destination pods in the mesh
+    /*
+        requests destined for these pods will have the rule applied
+        leave empty to apply to all destination pods in the mesh
+    */
     core.zephyr.solo.io.Selector destination_selector = 3;
 
-    // Optional. A list of HTTP paths or gRPC methods to allow.
-    // gRPC methods must be presented as fully-qualified name in the form of
-    // "/packageName.serviceName/methodName" and are case sensitive.
-    // Exact match, prefix match, and suffix match are supported for paths.
-    // For example, the path "/books/review" matches
-    // "/books/review" (exact match), or "/books/*" (prefix match),
-    // or "*/review" (suffix match).
-    // If not specified, it allows to any path.
+    /*
+        Optional. A list of HTTP paths or gRPC methods to allow.
+        gRPC methods must be presented as fully-qualified name in the form of
+        "/packageName.serviceName/methodName" and are case sensitive.
+        Exact match, prefix match, and suffix match are supported for paths.
+        For example, the path "/books/review" matches
+        "/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match),
+
+        If not specified, it allows to any path.
+    */
     repeated string allowed_paths = 4;
 
-    // Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
-    // It is ignored in gRPC case because the value is always "POST".
-    // If set to ["*"] or not specified, it allows to any method.
+    /*
+        Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
+        It is ignored in gRPC case because the value is always "POST".
+        If set to ["*"] or not specified, it allows to any method.
+    */
     repeated string allowed_methods = 5;
 
-    // Optional. A list of ports which to allow
-    // if not set any port is allowed
+    /*
+        Optional. A list of ports which to allow
+        if not set any port is allowed
+    */
     repeated string allowed_ports = 6;
 }
 
