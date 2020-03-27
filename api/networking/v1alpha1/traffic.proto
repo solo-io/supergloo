@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.
 import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
+import "mesh-projects/api/core/v1alpha1/http.proto";
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 import "mesh-projects/api/core/v1alpha1/selector.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
@@ -92,7 +93,7 @@ message TrafficPolicyStatus {
         string translator_id = 1;
         string error_message = 2;
     }
-    core.zephyr.solo.io.ComputedStatus computed_status = 1;
+    core.zephyr.solo.io.ComputedStatus translation_status = 1;
     repeated TranslatorError translator_errors = 2;
 }
 
@@ -362,17 +363,5 @@ message Mirror {
 }
 
 message HttpMethod {
-    HttpMethodValue method = 1;
-}
-
-enum HttpMethodValue {
-    GET = 0;
-    POST = 1;
-    PUT = 2;
-    DELETE = 3;
-    HEAD = 4;
-    CONNECT = 5;
-    OPTIONS = 6;
-    TRACE = 7;
-    PATCH = 8;
+    core.zephyr.solo.io.HttpMethodValue method = 1;
 }

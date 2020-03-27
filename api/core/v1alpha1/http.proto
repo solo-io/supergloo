@@ -1,0 +1,15 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+
+enum HttpMethodValue {
+    GET = 0;
+    POST = 1;
+    PUT = 2;
+    DELETE = 3;
+    HEAD = 4;
+    CONNECT = 5;
+    OPTIONS = 6;
+    TRACE = 7;
+    PATCH = 8;
+}

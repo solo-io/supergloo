@@ -21,6 +21,6 @@ type TrafficPolicyMeshTranslator interface {
 	) *types.TrafficPolicyStatus_TranslatorError
 }
 
-type TrafficPolicyTranslator interface {
+type TrafficPolicyTranslatorLoop interface {
 	Start(ctx context.Context) error
 }

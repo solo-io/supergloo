@@ -15,9 +15,9 @@ import (
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking_clients "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
 	mock_traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/mocks"
 	mock_processor "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	mock_zephyr_discovery "github.com/solo-io/mesh-projects/test/mocks/zephyr/discovery"
@@ -38,7 +38,7 @@ var _ = Describe("Translator", func() {
 		mockMeshServiceController   *mock_zephyr_discovery.MockMeshServiceController
 		trafficPolicyEventHandler   *networking_controller.TrafficPolicyEventHandlerFuncs
 		meshServiceEventHandler     *discovery_controller.MeshServiceEventHandlerFuncs
-		translator                  traffic_policy_translator.TrafficPolicyTranslator
+		translator                  traffic_policy_translator.TrafficPolicyTranslatorLoop
 	)
 
 	BeforeEach(func() {
@@ -51,7 +51,7 @@ var _ = Describe("Translator", func() {
 		mockIstioTranslator = mock_traffic_policy_translator.NewMockTrafficPolicyMeshTranslator(ctrl)
 		mockTrafficPolicyController = mock_zephyr_networking.NewMockTrafficPolicyController(ctrl)
 		mockMeshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
-		translator = traffic_policy_translator.NewTrafficPolicyTranslator(
+		translator = traffic_policy_translator.NewTrafficPolicyTranslatorLoop(
 			mockPreprocessor,
 			[]traffic_policy_translator.TrafficPolicyMeshTranslator{mockIstioTranslator},
 			mockMeshClient,
@@ -89,7 +89,7 @@ var _ = Describe("Translator", func() {
 		BeforeEach(func() {
 			triggeringTP = &networking_v1alpha1.TrafficPolicy{
 				Status: networking_v1alpha1_types.TrafficPolicyStatus{
-					ComputedStatus: &core_types.ComputedStatus{
+					TranslationStatus: &core_types.ComputedStatus{
 						Status:  core_types.ComputedStatus_ACCEPTED,
 						Message: "",
 					},
@@ -98,14 +98,14 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("handle create for TrafficPolicy", func() {
-			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				DestName:      "name",
-				DestNamespace: "namespace",
+			meshServiceMCKey := selector.MeshServiceId{
+				Name:      "name",
+				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
@@ -141,14 +141,14 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("should return translator specific error statuses", func() {
-			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				DestName:      "name",
-				DestNamespace: "namespace",
+			meshServiceMCKey := selector.MeshServiceId{
+				Name:      "name",
+				Namespace: "namespace",
 			}
-			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{
 				meshServiceMCKey: {},
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{
@@ -186,7 +186,7 @@ var _ = Describe("Translator", func() {
 			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
 			expectedTP := &networking_v1alpha1.TrafficPolicy{}
-			expectedTP.Status.ComputedStatus = &core_types.ComputedStatus{
+			expectedTP.Status.TranslationStatus = &core_types.ComputedStatus{
 				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 			}
@@ -214,12 +214,12 @@ var _ = Describe("Translator", func() {
 		})
 
 		It("should upsert policy resources for MeshService", func() {
-			meshServiceMCKey := keys.MeshServiceMultiClusterKey{
-				DestName:      "name",
-				DestNamespace: "namespace",
+			meshServiceMCKey := selector.MeshServiceId{
+				Name:      "name",
+				Namespace: "namespace",
 			}
-			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.DestName, Namespace: meshServiceMCKey.DestNamespace}
-			mergedTPsByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{meshServiceMCKey: {}}
+			meshServiceObjectKey := client.ObjectKey{Name: meshServiceMCKey.Name, Namespace: meshServiceMCKey.Namespace}
+			mergedTPsByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{meshServiceMCKey: {}}
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_v1alpha1_types.MeshServiceSpec{

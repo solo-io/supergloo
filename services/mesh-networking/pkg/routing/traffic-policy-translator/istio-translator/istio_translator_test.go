@@ -17,8 +17,8 @@ import (
 	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mock"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
+	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
-	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +46,7 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshServiceClient        *mock_core.MockMeshServiceClient
 		mockVirtualServiceClient     *mock_istio_networking.MockVirtualServiceClient
 		mockDestinationRuleClient    *mock_istio_networking.MockDestinationRuleClient
-		mockMeshServiceSelector      *mock_preprocess.MockMeshServiceSelector
+		mockMeshServiceSelector      *mock_selector.MockMeshServiceSelector
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
@@ -55,7 +55,7 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
 		mockVirtualServiceClient = mock_istio_networking.NewMockVirtualServiceClient(ctrl)
-		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
+		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
 		mockDestinationRuleClient = mock_istio_networking.NewMockDestinationRuleClient(ctrl)
 		istioTrafficPolicyTranslator = istio_translator.NewIstioTrafficPolicyTranslator(
 			mockDynamicClientGetter,
@@ -449,7 +449,7 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HeaderMatchers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				Headers: []*networking_types.HeaderMatcher{
 					{
 						Name:        "name1",
@@ -473,7 +473,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Headers: map[string]*api_v1alpha3.StringMatch{
 						"name1": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "value1"}},
 						"name2": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
@@ -495,14 +495,14 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				PathSpecifier: &networking_types.HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
 				},
 			}
@@ -518,14 +518,14 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				PathSpecifier: &networking_types.HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}},
 				},
 			}
@@ -541,7 +541,7 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate QueryParamMatchers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				QueryParameters: []*networking_types.QueryParameterMatcher{
 					{
 						Name:  "qp1",
@@ -557,7 +557,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					QueryParams: map[string]*api_v1alpha3.StringMatch{
 						"qp1": {
 							MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "qpv1"},
@@ -580,14 +580,14 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HttpMatcher regex path specifiers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				PathSpecifier: &networking_types.HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
 				},
 			}
@@ -603,14 +603,14 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				PathSpecifier: &networking_types.HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}},
 				},
 			}
@@ -626,14 +626,14 @@ var _ = Describe("IstioTranslator", func() {
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				PathSpecifier: &networking_types.HttpMatcher_Exact{
 					Exact: "path",
 				},
 			}
 			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
 				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: networking_types.HttpMethodValue_GET.String()}},
+					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
 					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}},
 				},
 			}
@@ -871,7 +871,7 @@ var _ = Describe("IstioTranslator", func() {
 					PathSpecifier: &networking_types.HttpMatcher_Exact{
 						Exact: "path",
 					},
-					Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_GET},
+					Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 				},
 				{
 					Headers: []*networking_types.HeaderMatcher{
@@ -882,7 +882,7 @@ var _ = Describe("IstioTranslator", func() {
 							InvertMatch: true,
 						},
 					},
-					Method: &networking_types.HttpMethod{Method: networking_types.HttpMethodValue_POST},
+					Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_POST},
 				},
 			}
 			testContext.computedVirtualService.Spec.Http = []*api_v1alpha3.HTTPRoute{
@@ -953,7 +953,7 @@ var _ = Describe("IstioTranslator", func() {
 						Prefix: "/prefix",
 					},
 					Method: &networking_types.HttpMethod{
-						Method: networking_types.HttpMethodValue_GET,
+						Method: core_types.HttpMethodValue_GET,
 					},
 				},
 				{
@@ -961,7 +961,7 @@ var _ = Describe("IstioTranslator", func() {
 						Exact: "exact-path",
 					},
 					Method: &networking_types.HttpMethod{
-						Method: networking_types.HttpMethodValue_GET,
+						Method: core_types.HttpMethodValue_GET,
 					},
 				},
 				{
@@ -969,7 +969,7 @@ var _ = Describe("IstioTranslator", func() {
 						Exact: "exact-path",
 					},
 					Method: &networking_types.HttpMethod{
-						Method: networking_types.HttpMethodValue_PUT,
+						Method: core_types.HttpMethodValue_PUT,
 					},
 				},
 				{

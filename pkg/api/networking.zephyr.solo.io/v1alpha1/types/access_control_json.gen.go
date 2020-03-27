@@ -40,6 +40,17 @@ func (this *AccessControlPolicyStatus) UnmarshalJSON(b []byte) error {
 	return AccessControlUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for AccessControlPolicyStatus_TranslatorError
+func (this *AccessControlPolicyStatus_TranslatorError) MarshalJSON() ([]byte, error) {
+	str, err := AccessControlMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for AccessControlPolicyStatus_TranslatorError
+func (this *AccessControlPolicyStatus_TranslatorError) UnmarshalJSON(b []byte) error {
+	return AccessControlUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	AccessControlMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	AccessControlUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

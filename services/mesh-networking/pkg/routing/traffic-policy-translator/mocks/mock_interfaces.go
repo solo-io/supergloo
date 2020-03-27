@@ -51,31 +51,31 @@ func (mr *MockTrafficPolicyMeshTranslatorMockRecorder) TranslateTrafficPolicy(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficPolicy", reflect.TypeOf((*MockTrafficPolicyMeshTranslator)(nil).TranslateTrafficPolicy), ctx, meshService, mesh, mergedTrafficPolicy)
 }
 
-// MockTrafficPolicyTranslator is a mock of TrafficPolicyTranslator interface.
-type MockTrafficPolicyTranslator struct {
+// MockTrafficPolicyTranslatorLoop is a mock of TrafficPolicyTranslatorLoop interface.
+type MockTrafficPolicyTranslatorLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficPolicyTranslatorMockRecorder
+	recorder *MockTrafficPolicyTranslatorLoopMockRecorder
 }
 
-// MockTrafficPolicyTranslatorMockRecorder is the mock recorder for MockTrafficPolicyTranslator.
-type MockTrafficPolicyTranslatorMockRecorder struct {
-	mock *MockTrafficPolicyTranslator
+// MockTrafficPolicyTranslatorLoopMockRecorder is the mock recorder for MockTrafficPolicyTranslatorLoop.
+type MockTrafficPolicyTranslatorLoopMockRecorder struct {
+	mock *MockTrafficPolicyTranslatorLoop
 }
 
-// NewMockTrafficPolicyTranslator creates a new mock instance.
-func NewMockTrafficPolicyTranslator(ctrl *gomock.Controller) *MockTrafficPolicyTranslator {
-	mock := &MockTrafficPolicyTranslator{ctrl: ctrl}
-	mock.recorder = &MockTrafficPolicyTranslatorMockRecorder{mock}
+// NewMockTrafficPolicyTranslatorLoop creates a new mock instance.
+func NewMockTrafficPolicyTranslatorLoop(ctrl *gomock.Controller) *MockTrafficPolicyTranslatorLoop {
+	mock := &MockTrafficPolicyTranslatorLoop{ctrl: ctrl}
+	mock.recorder = &MockTrafficPolicyTranslatorLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTrafficPolicyTranslator) EXPECT() *MockTrafficPolicyTranslatorMockRecorder {
+func (m *MockTrafficPolicyTranslatorLoop) EXPECT() *MockTrafficPolicyTranslatorLoopMockRecorder {
 	return m.recorder
 }
 
 // Start mocks base method.
-func (m *MockTrafficPolicyTranslator) Start(ctx context.Context) error {
+func (m *MockTrafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx)
 	ret0, _ := ret[0].(error)
@@ -83,7 +83,7 @@ func (m *MockTrafficPolicyTranslator) Start(ctx context.Context) error {
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockTrafficPolicyTranslatorMockRecorder) Start(ctx interface{}) *gomock.Call {
+func (mr *MockTrafficPolicyTranslatorLoopMockRecorder) Start(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTrafficPolicyTranslator)(nil).Start), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTrafficPolicyTranslatorLoop)(nil).Start), ctx)
 }

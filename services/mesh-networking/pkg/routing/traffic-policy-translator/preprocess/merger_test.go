@@ -14,9 +14,9 @@ import (
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
-	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,7 +26,7 @@ var _ = Describe("Merger", func() {
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
 		trafficPolicyMerger     preprocess.TrafficPolicyMerger
-		mockMeshServiceSelector *mock_preprocess.MockMeshServiceSelector
+		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
 		mockMeshClient          *mock_core.MockMeshClient
 		mockTrafficPolicyClient *mock_zephyr_networking.MockTrafficPolicyClient
 	)
@@ -34,7 +34,7 @@ var _ = Describe("Merger", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
+		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockTrafficPolicyClient = mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
 		trafficPolicyMerger = preprocess.NewTrafficPolicyMerger(
@@ -68,13 +68,13 @@ var _ = Describe("Merger", func() {
 		destNamespaces2 := []string{"namespace2"}
 		destLabels2 := map[string]string{"k2": "v2"}
 		httpMatcher1 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_GET},
+			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
 		}
 		httpMatcher2 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_POST},
+			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_POST},
 		}
 		httpMatcher3 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: networking_v1alpha1_types.HttpMethodValue_PUT},
+			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_PUT},
 		}
 		tp1 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
@@ -91,7 +91,7 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_ACCEPTED,
 					Message: "",
 				},
@@ -113,7 +113,7 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_ACCEPTED,
 					Message: "",
 				},
@@ -134,7 +134,7 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_ACCEPTED,
 					Message: "",
 				},
@@ -157,7 +157,7 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_ACCEPTED,
 					Message: "",
 				},
@@ -180,7 +180,7 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_ACCEPTED,
 					Message: "",
 				},
@@ -196,21 +196,21 @@ var _ = Describe("Merger", func() {
 				},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				TranslationStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_CONFLICT,
 					Message: "",
 				},
 			},
 		}
-		meshServiceKey1 := keys.MeshServiceMultiClusterKey{
-			DestName:        meshServiceName1,
-			DestNamespace:   meshServiceNamespace1,
-			DestClusterName: meshClusterName1,
+		meshServiceKey1 := selector.MeshServiceId{
+			Name:        meshServiceName1,
+			Namespace:   meshServiceNamespace1,
+			ClusterName: meshClusterName1,
 		}
-		meshServiceKey2 := keys.MeshServiceMultiClusterKey{
-			DestName:        meshServiceName2,
-			DestNamespace:   meshServiceNamespace2,
-			DestClusterName: meshClusterName2,
+		meshServiceKey2 := selector.MeshServiceId{
+			Name:        meshServiceName2,
+			Namespace:   meshServiceNamespace2,
+			ClusterName: meshClusterName2,
 		}
 		meshServices := []*v1alpha1.MeshService{
 			{

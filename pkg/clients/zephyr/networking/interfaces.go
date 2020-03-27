@@ -22,3 +22,8 @@ type TrafficPolicyClient interface {
 	UpdateStatus(ctx context.Context, trafficPolicy *networkingv1alpha1.TrafficPolicy, options ...client.UpdateOption) error
 	List(ctx context.Context, opts ...client.ListOption) (*networkingv1alpha1.TrafficPolicyList, error)
 }
+
+type AccessControlPolicyClient interface {
+	List(ctx context.Context, opts ...client.ListOption) (*networkingv1alpha1.AccessControlPolicyList, error)
+	UpdateStatus(ctx context.Context, acp *networkingv1alpha1.AccessControlPolicy, options ...client.UpdateOption) error
+}

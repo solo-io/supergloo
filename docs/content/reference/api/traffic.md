@@ -37,7 +37,6 @@ title: "networking.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/networking
   - [TrafficPolicyStatus](#networking.zephyr.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError)
 
-  - [HttpMethodValue](#networking.zephyr.solo.io.HttpMethodValue)
 
 
 
@@ -208,7 +207,7 @@ Parameters for matching routes. All specified conditions must be satisfied for a
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| method | [HttpMethodValue](#networking.zephyr.solo.io.HttpMethodValue) |  |  |
+| method | [core.zephyr.solo.io.HttpMethodValue](#core.zephyr.solo.io.HttpMethodValue) |  |  |
 
 
 
@@ -363,7 +362,7 @@ a routing rule applies some L7 routing features to an existing mesh routing rule
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| computedStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
+| translationStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
 | translatorErrors | [][TrafficPolicyStatus.TranslatorError](#networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError) | repeated |  |
 
 
@@ -387,25 +386,6 @@ a routing rule applies some L7 routing features to an existing mesh routing rule
 
 
  <!-- end messages -->
-
-
-<a name="networking.zephyr.solo.io.HttpMethodValue"></a>
-
-### HttpMethodValue
-
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| GET | 0 |  |
-| POST | 1 |  |
-| PUT | 2 |  |
-| DELETE | 3 |  |
-| HEAD | 4 |  |
-| CONNECT | 5 |  |
-| OPTIONS | 6 |  |
-| TRACE | 7 |  |
-| PATCH | 8 |  |
-
 
  <!-- end enums -->
 

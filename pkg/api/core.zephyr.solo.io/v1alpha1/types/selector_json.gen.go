@@ -41,6 +41,28 @@ func (this *IdentitySelector) UnmarshalJSON(b []byte) error {
 	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for IdentitySelector_Matcher
+func (this *IdentitySelector_Matcher) MarshalJSON() ([]byte, error) {
+	str, err := SelectorMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for IdentitySelector_Matcher
+func (this *IdentitySelector_Matcher) UnmarshalJSON(b []byte) error {
+	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for IdentitySelector_ServiceAccountRefs
+func (this *IdentitySelector_ServiceAccountRefs) MarshalJSON() ([]byte, error) {
+	str, err := SelectorMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for IdentitySelector_ServiceAccountRefs
+func (this *IdentitySelector_ServiceAccountRefs) UnmarshalJSON(b []byte) error {
+	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	SelectorMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	SelectorUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}

@@ -2,6 +2,7 @@ syntax = "proto3";
 package networking.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
 
+import "mesh-projects/api/core/v1alpha1/http.proto";
 import "mesh-projects/api/core/v1alpha1/selector.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
 
@@ -11,7 +12,7 @@ import "mesh-projects/api/core/v1alpha1/status.proto";
     ALLOW those requests:
     - originating from from **source pods**
     - sent to **destination pods**
-    - matching one or more **request matcher**
+    - matching the indicated request criteria (allowed_paths, allowed_methods, allowed_ports)
     if no access control policies are present, all traffic in the mesh will be set to ALLOW
 */
 message AccessControlPolicySpec {
@@ -50,15 +51,24 @@ message AccessControlPolicySpec {
     /*
         Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
         It is ignored in gRPC case because the value is always "POST".
-        If set to ["*"] or not specified, it allows to any method.
+        If not specified, allows any method.
     */
-    repeated string allowed_methods = 5;
+    repeated core.zephyr.solo.io.HttpMethodValue allowed_methods = 5;
 
     /*
         Optional. A list of ports which to allow
         if not set any port is allowed
     */
-    repeated string allowed_ports = 6;
+    repeated uint32 allowed_ports = 6;
 }
 
-message AccessControlPolicyStatus {}
+message AccessControlPolicyStatus {
+    // TODO use a shared Status message with TrafficPolicy once autopilot allows for it
+    message TranslatorError {
+        // ID representing a translator that translates TrafficPolicy to Mesh-specific config
+        string translator_id = 1;
+        string error_message = 2;
+    }
+    core.zephyr.solo.io.ComputedStatus translation_status = 1;
+    repeated TranslatorError translator_errors = 2;
+}

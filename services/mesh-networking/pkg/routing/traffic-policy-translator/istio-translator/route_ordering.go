@@ -1,7 +1,7 @@
 package istio_translator
 
 import (
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 )
 
@@ -107,6 +107,6 @@ func isMethodMoreSpecific(a, b *api_v1alpha3.StringMatch) bool {
 	} else {
 		// if both method matchers exist, ordering by specificity is irrelevant because they match in a mutually exclusively manner
 		// we apply an ordering here purely for determinism
-		return networking_types.HttpMethodValue_value[a.GetExact()] > networking_types.HttpMethodValue_value[b.GetExact()]
+		return core_types.HttpMethodValue_value[a.GetExact()] > core_types.HttpMethodValue_value[b.GetExact()]
 	}
 }

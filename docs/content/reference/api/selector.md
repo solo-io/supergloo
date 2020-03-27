@@ -17,6 +17,8 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/se
 
 ## Table of Contents
   - [IdentitySelector](#core.zephyr.solo.io.IdentitySelector)
+  - [IdentitySelector.Matcher](#core.zephyr.solo.io.IdentitySelector.Matcher)
+  - [IdentitySelector.ServiceAccountRefs](#core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs)
   - [Selector](#core.zephyr.solo.io.Selector)
   - [Selector.LabelsEntry](#core.zephyr.solo.io.Selector.LabelsEntry)
 
@@ -29,14 +31,44 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/se
 <a name="core.zephyr.solo.io.IdentitySelector"></a>
 
 ### IdentitySelector
-Special selector capable of selecting specific service identities. Useful for binding policy rules.
+Selector capable of selecting specific service identities. Useful for binding policy rules. Either (namespaces, cluster, service_account_names) or service_accounts can be specified. If all fields are omitted, any source identity is permitted.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespaces | [][string](#string) | repeated | list of namespaces to search |
-| cluster | [google.protobuf.StringValue](#google.protobuf.StringValue) |  | If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster |
-| serviceAccounts | [][string](#string) | repeated | List of service accounts within the given namespaces to select. If empty, all service accounts will be selected. |
+| matcher | [IdentitySelector.Matcher](#core.zephyr.solo.io.IdentitySelector.Matcher) |  |  |
+| serviceAccountRefs | [IdentitySelector.ServiceAccountRefs](#core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs) |  |  |
+
+
+
+
+
+
+<a name="core.zephyr.solo.io.IdentitySelector.Matcher"></a>
+
+### IdentitySelector.Matcher
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| namespaces | [][string](#string) | repeated | Namespaces to allow. If not set, any namespace is allowed. |
+| clusters | [][string](#string) | repeated | Cluster to allow. If not set, any cluster is allowed. |
+
+
+
+
+
+
+<a name="core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs"></a>
+
+### IdentitySelector.ServiceAccountRefs
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| serviceAccounts | [][ResourceRef](#core.zephyr.solo.io.ResourceRef) | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
 
 
 

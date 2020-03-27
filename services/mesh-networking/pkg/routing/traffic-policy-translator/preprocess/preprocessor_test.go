@@ -11,8 +11,9 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	networking_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,14 +25,14 @@ var _ = Describe("Merger", func() {
 		ctx                     context.Context
 		mockMerger              *mock_preprocess.MockTrafficPolicyMerger
 		mockValidator           *mock_preprocess.MockTrafficPolicyValidator
-		mockMeshServiceSelector *mock_preprocess.MockMeshServiceSelector
+		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
 		preprocessor            preprocess.TrafficPolicyPreprocessor
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
+		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
 		mockMerger = mock_preprocess.NewMockTrafficPolicyMerger(ctrl)
 		mockValidator = mock_preprocess.NewMockTrafficPolicyValidator(ctrl)
 		preprocessor = preprocess.NewTrafficPolicyPreprocessor(
@@ -55,7 +56,7 @@ var _ = Describe("Merger", func() {
 			ObjectMeta: v1.ObjectMeta{Namespace: namespace},
 		}
 		ms := []*discovery_v1alpha1.MeshService{}
-		expectedMergedTPs := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{}
+		expectedMergedTPs := map[networking_selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{}
 		mockMeshServiceSelector.
 			EXPECT().
 			GetMatchingMeshServices(ctx, selector).
@@ -96,7 +97,7 @@ var _ = Describe("Merger", func() {
 	It("should process TrafficPolicies for MeshService", func() {
 		ms := &discovery_v1alpha1.MeshService{}
 		msList := []*discovery_v1alpha1.MeshService{ms}
-		mergedTpsByMs := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{}
+		mergedTpsByMs := map[networking_selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{}
 		mockMerger.
 			EXPECT().
 			MergeTrafficPoliciesForMeshServices(ctx, msList).

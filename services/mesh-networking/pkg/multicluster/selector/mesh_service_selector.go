@@ -1,4 +1,4 @@
-package preprocess
+package selector
 
 import (
 	"context"
@@ -40,6 +40,10 @@ type meshServiceSelector struct {
 	meshServiceClient zephyr_discovery.MeshServiceClient
 }
 
+func NewMeshServiceSelector(meshServiceClient zephyr_discovery.MeshServiceClient) MeshServiceSelector {
+	return &meshServiceSelector{meshServiceClient: meshServiceClient}
+}
+
 func (m *meshServiceSelector) GetBackingMeshService(
 	ctx context.Context,
 	kubeServiceName string,
@@ -65,10 +69,6 @@ func (m *meshServiceSelector) GetBackingMeshService(
 		return nil, MeshServiceNotFound(kubeServiceName, kubeServiceNamespace, kubeServiceCluster)
 	}
 	return &meshServiceList.Items[0], nil
-}
-
-func NewMeshServiceSelector(meshServiceClient zephyr_discovery.MeshServiceClient) MeshServiceSelector {
-	return &meshServiceSelector{meshServiceClient: meshServiceClient}
 }
 
 // List all MeshServices and filter for the ones associated with the k8s Services specified in the selector

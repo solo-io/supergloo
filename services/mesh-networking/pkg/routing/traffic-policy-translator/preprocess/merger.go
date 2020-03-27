@@ -8,21 +8,20 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	networking_errors "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/keys"
 )
 
 type trafficPolicyMerger struct {
-	meshServiceSelector MeshServiceSelector
+	meshServiceSelector selector.MeshServiceSelector
 	meshClient          discovery_core.MeshClient
 	trafficPolicyClient networking_core.TrafficPolicyClient
 }
 
 func NewTrafficPolicyMerger(
-	meshServiceSelector MeshServiceSelector,
+	meshServiceSelector selector.MeshServiceSelector,
 	meshClient discovery_core.MeshClient,
 	trafficPolicyClient networking_core.TrafficPolicyClient,
 ) TrafficPolicyMerger {
@@ -36,7 +35,7 @@ func NewTrafficPolicyMerger(
 func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 	ctx context.Context,
 	meshServices []*discovery_v1alpha1.MeshService,
-) (map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy, error) {
+) (map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy, error) {
 	trafficPoliciesByMeshService, err := t.getTrafficPoliciesByMeshService(ctx, meshServices)
 	if err != nil {
 		return nil, err
@@ -52,11 +51,11 @@ func (t *trafficPolicyMerger) MergeTrafficPoliciesForMeshServices(
 func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 	ctx context.Context,
 	meshServices []*discovery_v1alpha1.MeshService,
-) (map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy, error) {
-	trafficPoliciesByMeshService := map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy{}
+) (map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy, error) {
+	trafficPoliciesByMeshService := map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{}
 	// initialize map with given meshServices
 	for _, meshService := range meshServices {
-		meshServiceKey, err := buildKeyForMeshService(ctx, t.meshClient, meshService)
+		meshServiceKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshService)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +77,7 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 			return nil, err
 		}
 		for _, meshServiceForTP := range meshServicesForTP {
-			meshServiceKey, err := buildKeyForMeshService(ctx, t.meshClient, meshServiceForTP)
+			meshServiceKey, err := selector.BuildIdForMeshService(ctx, t.meshClient, meshServiceForTP)
 			if err != nil {
 				return nil, err
 			}
@@ -98,8 +97,8 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 		3. If conflict encountered, do not apply any of its configuration, update conflicting TrafficPolicy with CONFLICT status and continue.
 */
 func mergeTrafficPoliciesByMeshService(
-	trafficPoliciesByMeshService map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy,
-) (map[keys.MeshServiceMultiClusterKey][]*networking_v1alpha1.TrafficPolicy, error) {
+	trafficPoliciesByMeshService map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy,
+) (map[selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy, error) {
 	for meshServiceKey, trafficPolicies := range trafficPoliciesByMeshService {
 		sort.Slice(trafficPolicies, func(a, b int) bool {
 			timestampA := trafficPolicies[a].GetCreationTimestamp()
@@ -110,7 +109,7 @@ func mergeTrafficPoliciesByMeshService(
 		var mergeableHttpTrafficPolicies []*MergeableHttpTrafficPolicy
 		for _, trafficPolicy := range trafficPolicies {
 			// ignore TrafficPolicy with bad statuses
-			if trafficPolicy.Status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_ACCEPTED {
+			if trafficPolicy.Status.GetTranslationStatus().GetStatus() == core_types.ComputedStatus_ACCEPTED {
 				mergedHttpTrafficPolicies, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, mergeableHttpTrafficPolicies)
 				mergeableHttpTrafficPolicies = mergedHttpTrafficPolicies
 				if conflictErr != nil {
@@ -308,22 +307,6 @@ func areTrafficPolicyActionsEqual(
 		return false
 	}
 	return true
-}
-
-func buildKeyForMeshService(
-	ctx context.Context,
-	meshClient discovery_core.MeshClient,
-	meshService *discovery_v1alpha1.MeshService,
-) (*keys.MeshServiceMultiClusterKey, error) {
-	mesh, err := meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
-	if err != nil {
-		return nil, err
-	}
-	return &keys.MeshServiceMultiClusterKey{
-		DestName:        meshService.GetName(),
-		DestNamespace:   meshService.GetNamespace(),
-		DestClusterName: mesh.Spec.GetCluster().GetName(),
-	}, nil
 }
 
 type MergeableHttpTrafficPolicy struct {

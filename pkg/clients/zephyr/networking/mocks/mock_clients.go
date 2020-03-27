@@ -204,3 +204,65 @@ func (mr *MockTrafficPolicyClientMockRecorder) List(ctx interface{}, opts ...int
 	varargs := append([]interface{}{ctx}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrafficPolicyClient)(nil).List), varargs...)
 }
+
+// MockAccessControlPolicyClient is a mock of AccessControlPolicyClient interface.
+type MockAccessControlPolicyClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockAccessControlPolicyClientMockRecorder
+}
+
+// MockAccessControlPolicyClientMockRecorder is the mock recorder for MockAccessControlPolicyClient.
+type MockAccessControlPolicyClientMockRecorder struct {
+	mock *MockAccessControlPolicyClient
+}
+
+// NewMockAccessControlPolicyClient creates a new mock instance.
+func NewMockAccessControlPolicyClient(ctrl *gomock.Controller) *MockAccessControlPolicyClient {
+	mock := &MockAccessControlPolicyClient{ctrl: ctrl}
+	mock.recorder = &MockAccessControlPolicyClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAccessControlPolicyClient) EXPECT() *MockAccessControlPolicyClientMockRecorder {
+	return m.recorder
+}
+
+// List mocks base method.
+func (m *MockAccessControlPolicyClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessControlPolicyList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.AccessControlPolicyList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockAccessControlPolicyClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).List), varargs...)
+}
+
+// UpdateStatus mocks base method.
+func (m *MockAccessControlPolicyClient) UpdateStatus(ctx context.Context, acp *v1alpha1.AccessControlPolicy, options ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, acp}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus.
+func (mr *MockAccessControlPolicyClientMockRecorder) UpdateStatus(ctx, acp interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, acp}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).UpdateStatus), varargs...)
+}

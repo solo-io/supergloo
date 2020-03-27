@@ -13,9 +13,10 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -26,19 +27,13 @@ const (
 	TranslatorId = "istio-translator"
 )
 
-var (
-	ClientNotFoundErr = func(clusterName string) error {
-		return eris.Errorf("Client not found for cluster with name: %s", clusterName)
-	}
-)
-
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
 
 func NewIstioTrafficPolicyTranslator(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshServiceSelector preprocess.MeshServiceSelector,
+	meshServiceSelector selector.MeshServiceSelector,
 	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory,
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
 ) IstioTranslator {
@@ -58,7 +53,7 @@ type istioTrafficPolicyTranslator struct {
 	meshServiceClient            zephyr_discovery.MeshServiceClient
 	virtualServiceClientFactory  istio_networking.VirtualServiceClientFactory
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
-	meshServiceSelector          preprocess.MeshServiceSelector
+	meshServiceSelector          selector.MeshServiceSelector
 }
 
 /*
@@ -103,7 +98,7 @@ func (i *istioTrafficPolicyTranslator) fetchClientsForMeshService(
 	}
 	dynamicClient, ok := i.dynamicClientGetter.GetClientForCluster(clusterName)
 	if !ok {
-		return nil, nil, ClientNotFoundErr(clusterName)
+		return nil, nil, multicluster.ClientNotFoundError(clusterName)
 	}
 	return i.destinationRuleClientFactory(dynamicClient), i.virtualServiceClientFactory(dynamicClient), nil
 }
@@ -364,7 +359,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 	clusterName := destination.GetDestination().GetCluster().GetValue()
 	dynamicClient, ok := i.dynamicClientGetter.GetClientForCluster(clusterName)
 	if !ok {
-		return "", ClientNotFoundErr(clusterName)
+		return "", multicluster.ClientNotFoundError(clusterName)
 	}
 	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
 	destinationRule, err := destinationRuleClient.Get(ctx, clients.ResourceRefToObjectKey(destination.GetDestination()))

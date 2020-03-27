@@ -1,4 +1,4 @@
-package preprocess_test
+package selector_test
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/mesh-projects/services/common/constants"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
+	networking_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -23,7 +23,7 @@ var _ = Describe("MeshServiceSelector", func() {
 		ctrl                   *gomock.Controller
 		ctx                    context.Context
 		mockMeshServiceClient  *mock_core.MockMeshServiceClient
-		meshServiceSelector    preprocess.MeshServiceSelector
+		meshServiceSelector    networking_selector.MeshServiceSelector
 		managementPlaneCluster = "management-plane-cluster"
 	)
 
@@ -31,7 +31,7 @@ var _ = Describe("MeshServiceSelector", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
-		meshServiceSelector = preprocess.NewMeshServiceSelector(mockMeshServiceClient)
+		meshServiceSelector = networking_selector.NewMeshServiceSelector(mockMeshServiceClient)
 	})
 
 	AfterEach(func() {
@@ -57,7 +57,7 @@ var _ = Describe("MeshServiceSelector", func() {
 				},
 			}
 			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(preprocess.InvalidSelectorErr))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.InvalidSelectorErr))
 		})
 
 		It("return error if Selector.cluster specified", func() {
@@ -67,7 +67,7 @@ var _ = Describe("MeshServiceSelector", func() {
 				Cluster:    &types2.StringValue{Value: "remote-cluster"},
 			}
 			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(preprocess.ClusterSelectorNotSupported))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.ClusterSelectorNotSupported))
 		})
 	})
 
@@ -193,7 +193,7 @@ var _ = Describe("MeshServiceSelector", func() {
 				},
 			}
 			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(preprocess.KubeServiceNotFound(objKey1.Name, objKey1.Namespace)))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.KubeServiceNotFound(objKey1.Name, objKey1.Namespace)))
 		})
 
 		It("should select across all namespaces", func() {
@@ -239,7 +239,7 @@ var _ = Describe("MeshServiceSelector", func() {
 				&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{{}, {}}}, nil)
 			_, err := meshServiceSelector.GetBackingMeshService(ctx, serviceName, serviceNamespace, serviceCluster)
-			Expect(err).To(testutils.HaveInErrorChain(preprocess.MultipleMeshServicesFound(serviceName, serviceNamespace, serviceCluster)))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MultipleMeshServicesFound(serviceName, serviceNamespace, serviceCluster)))
 		})
 
 		It("should throw error if multiple MeshServices found", func() {
@@ -255,7 +255,7 @@ var _ = Describe("MeshServiceSelector", func() {
 				&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{}}, nil)
 			_, err := meshServiceSelector.GetBackingMeshService(ctx, serviceName, serviceNamespace, serviceCluster)
-			Expect(err).To(testutils.HaveInErrorChain(preprocess.MeshServiceNotFound(serviceName, serviceNamespace, serviceCluster)))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.MeshServiceNotFound(serviceName, serviceNamespace, serviceCluster)))
 		})
 	})
 })

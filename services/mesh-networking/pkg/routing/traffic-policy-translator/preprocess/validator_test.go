@@ -15,8 +15,9 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
+	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
-	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -25,7 +26,7 @@ var _ = Describe("Validator", func() {
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
 		mockMeshServiceClient   *mock_core.MockMeshServiceClient
-		mockMeshServiceSelector *mock_preprocess.MockMeshServiceSelector
+		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
 		validator               preprocess.TrafficPolicyValidator
 	)
 
@@ -33,7 +34,7 @@ var _ = Describe("Validator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
-		mockMeshServiceSelector = mock_preprocess.NewMockMeshServiceSelector(ctrl)
+		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
 		validator = preprocess.NewTrafficPolicyValidator(mockMeshServiceClient, mockMeshServiceSelector)
 	})
 
@@ -61,9 +62,9 @@ var _ = Describe("Validator", func() {
 		mockMeshServiceSelector.
 			EXPECT().
 			GetBackingMeshService(ctx, name, namespace, cluster).
-			Return(nil, preprocess.MeshServiceNotFound(name, namespace, cluster))
+			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
-		expectSingleErrorOf(err, preprocess.MeshServiceNotFound(name, namespace, cluster))
+		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
 	})
 
 	It("should return error for RetryPolicy with negative num attempts", func() {
@@ -114,11 +115,11 @@ var _ = Describe("Validator", func() {
 		mockMeshServiceSelector.
 			EXPECT().
 			GetBackingMeshService(ctx, name, namespace, cluster).
-			Return(nil, preprocess.MeshServiceNotFound(name, namespace, cluster))
+			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MeshServiceNotFound(name, namespace, cluster))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(name, namespace, cluster))))
 	})
 
 	It("should return error if TrafficShift has subsets that can't be found", func() {
@@ -286,11 +287,11 @@ var _ = Describe("Validator", func() {
 		mockMeshServiceSelector.
 			EXPECT().
 			GetBackingMeshService(ctx, serviceKey.Name, serviceKey.Namespace, "").
-			Return(nil, preprocess.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
+			Return(nil, selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
 		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(preprocess.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))))
+		Expect(multierr.Errors).To(ContainElement(testutils.HaveInErrorChain(selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))))
 	})
 })
 

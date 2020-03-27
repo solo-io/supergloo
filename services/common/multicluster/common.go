@@ -5,7 +5,6 @@ import (
 
 	"github.com/rotisserie/eris"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const (
@@ -14,8 +13,8 @@ const (
 )
 
 var (
-	ClientNotFoundForClusterError = func(cluster string, GVK schema.GroupVersionKind) error {
-		return eris.Errorf("no valid %s client found for cluster %s", GVK, cluster)
+	ClientNotFoundError = func(clusterName string) error {
+		return eris.Errorf("Client not found for cluster with name: %s", clusterName)
 	}
 )
 

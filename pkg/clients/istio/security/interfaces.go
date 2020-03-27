@@ -7,10 +7,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination ./mock/mock_interfaces.go
+
 type AuthorizationPolicyClient interface {
 	Get(ctx context.Context, key client.ObjectKey) (*v1beta1.AuthorizationPolicy, error)
 	Create(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy, options ...client.CreateOption) error
 	Update(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error
 	// Create the AuthorizationPolicy if it does not exist, otherwise update
-	Upsert(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy) error
+	UpsertSpec(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy) error
 }

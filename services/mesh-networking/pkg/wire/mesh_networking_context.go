@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
-	access_control_poilcy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-poilcy"
+	access_control_policy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver"
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
@@ -20,18 +20,18 @@ import (
 type MeshNetworkingContext struct {
 	MultiClusterDeps              multicluster.MultiClusterDependencies
 	MeshNetworkingClusterHandler  mc_manager.AsyncManagerHandler
-	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslator
+	TrafficPolicyTranslator       traffic_policy_translator.TrafficPolicyTranslatorLoop
 	MeshNetworkingSnapshotContext *MeshNetworkingSnapshotContext
-	AccessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator
+	AccessControlPolicyTranslator access_control_policy.AcpTranslatorLoop
 	FederationResolver            resolver.FederationResolver
 }
 
 func MeshNetworkingContextProvider(
 	multiClusterDeps multicluster.MultiClusterDependencies,
 	meshNetworkingClusterHandler mc_manager.AsyncManagerHandler,
-	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslator,
+	trafficPolicyTranslator traffic_policy_translator.TrafficPolicyTranslatorLoop,
 	meshNetworkingSnapshotContext *MeshNetworkingSnapshotContext,
-	accessControlPolicyTranslator access_control_poilcy.AccessControlPolicyTranslator,
+	accessControlPolicyTranslator access_control_policy.AcpTranslatorLoop,
 	federationResolver resolver.FederationResolver,
 ) MeshNetworkingContext {
 	return MeshNetworkingContext{
