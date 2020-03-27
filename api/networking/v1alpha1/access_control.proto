@@ -34,7 +34,7 @@ message AccessControlPolicySpec {
         requests destined for these pods will have the rule applied
         leave empty to apply to all destination pods in the mesh
     */
-    core.zephyr.solo.io.Selector destination_selector = 3;
+    core.zephyr.solo.io.ServiceSelector destination_selector = 3;
 
     /*
         Optional. A list of HTTP paths or gRPC methods to allow.

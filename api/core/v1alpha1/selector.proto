@@ -79,21 +79,26 @@ option (gogoproto.equal_all) = true;
 
 
 */
-message Selector {
-    // map of labels to match against
-    map<string, string> labels = 1;
+message ServiceSelector {
+    message Matcher {
+        // If specified, all labels must exist on k8s Service, else match on any labels.
+        map<string, string> labels = 1;
+        // If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+        repeated string namespaces = 2;
+        // If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+        repeated string clusters = 3;
+    }
 
-    // list of namespaces to search
-    repeated string namespaces = 2;
+    message ServiceRefs {
+        // Match k8s Services by direct reference.
+        repeated ResourceRef services = 1;
+    }
 
-    // If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster
-    google.protobuf.StringValue cluster = 3;
-
-    /*
-        Apply the selector to one or more services by adding their refs here.
-        If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
-    */
-    repeated ResourceRef refs = 4;
+    // If specified, select services using either a Matcher or direct reference. If not set, select all Services.
+    oneof service_selector_type {
+        Matcher matcher = 1;
+        ServiceRefs service_refs = 2;
+    }
 }
 
 /*

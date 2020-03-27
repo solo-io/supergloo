@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -296,12 +295,12 @@ var _ = Describe("IstioTranslator", func() {
 						{
 							Name:      "name1",
 							Namespace: "namespace1",
-							Cluster:   &types.StringValue{Value: testData.clusterNames[0]},
+							Cluster:   testData.clusterNames[0],
 						},
 						{
 							Name:      "name2",
 							Namespace: "namespace2",
-							Cluster:   &types.StringValue{Value: testData.clusterNames[1]},
+							Cluster:   testData.clusterNames[1],
 						},
 					},
 				},

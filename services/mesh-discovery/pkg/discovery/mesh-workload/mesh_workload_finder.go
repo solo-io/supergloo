@@ -187,7 +187,7 @@ func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_t
 				Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
-				Cluster:   &pb_types.StringValue{Value: d.clusterName},
+				Cluster:   d.clusterName,
 			}, nil
 		}
 	}

@@ -3,7 +3,6 @@ package mesh_service_test
 import (
 	"context"
 
-	protobuf_types "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -243,7 +242,7 @@ var _ = Describe("Mesh Service Finder", func() {
 							Ref: &core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
-								Cluster:   &protobuf_types.StringValue{Value: clusterName},
+								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
 							Labels:                 rightService.GetLabels(),
@@ -499,7 +498,7 @@ var _ = Describe("Mesh Service Finder", func() {
 							Ref: &core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
-								Cluster:   &protobuf_types.StringValue{Value: clusterName},
+								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
 							Ports: []*discovery_types.KubeServicePort{{
@@ -646,7 +645,7 @@ var _ = Describe("Mesh Service Finder", func() {
 							Ref: &core_types.ResourceRef{
 								Name:      serviceEvent.GetName(),
 								Namespace: serviceEvent.GetNamespace(),
-								Cluster:   &protobuf_types.StringValue{Value: clusterName},
+								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: serviceEvent.Spec.Selector,
 							Labels:                 serviceEvent.GetLabels(),

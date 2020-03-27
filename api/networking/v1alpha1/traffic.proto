@@ -38,13 +38,14 @@ message TrafficPolicySpec {
         applied to pods in a Linkerd mesh. TrafficPolicys will apply to
         all selected destinations in Linkerd, regardless of the source.
     */
-    core.zephyr.solo.io.Selector source_selector = 1;
+    // > Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
+    core.zephyr.solo.io.ServiceSelector source_selector = 1;
 
     /*
         requests destined for these k8s services will have the rule applied
         leave empty to apply to all destination k8s services in the mesh
     */
-    core.zephyr.solo.io.Selector destination_selector = 2;
+    core.zephyr.solo.io.ServiceSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.

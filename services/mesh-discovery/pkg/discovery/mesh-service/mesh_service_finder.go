@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	protobuf_types "github.com/gogo/protobuf/types"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -238,7 +237,7 @@ func (m *meshServiceFinder) buildMeshService(
 				Ref: &core_types.ResourceRef{
 					Name:      service.GetName(),
 					Namespace: service.GetNamespace(),
-					Cluster:   &protobuf_types.StringValue{Value: clusterName},
+					Cluster:   clusterName,
 				},
 				WorkloadSelectorLabels: service.Spec.Selector,
 				Labels:                 service.GetLabels(),

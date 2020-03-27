@@ -14,7 +14,7 @@ type MeshServiceSelector interface {
 	// fetch all MeshServices that match the given selector
 	GetMatchingMeshServices(
 		ctx context.Context,
-		selector *core_types.Selector,
+		selector *core_types.ServiceSelector,
 	) ([]*discovery_v1alpha1.MeshService, error)
 
 	// fetch the MeshService backing a k8s Service by the Service's name, namespace, cluster name

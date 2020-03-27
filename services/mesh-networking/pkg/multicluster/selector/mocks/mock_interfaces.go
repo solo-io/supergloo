@@ -37,7 +37,7 @@ func (m *MockMeshServiceSelector) EXPECT() *MockMeshServiceSelectorMockRecorder 
 }
 
 // GetMatchingMeshServices mocks base method.
-func (m *MockMeshServiceSelector) GetMatchingMeshServices(ctx context.Context, selector *types.Selector) ([]*v1alpha1.MeshService, error) {
+func (m *MockMeshServiceSelector) GetMatchingMeshServices(ctx context.Context, selector *types.ServiceSelector) ([]*v1alpha1.MeshService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMatchingMeshServices", ctx, selector)
 	ret0, _ := ret[0].([]*v1alpha1.MeshService)

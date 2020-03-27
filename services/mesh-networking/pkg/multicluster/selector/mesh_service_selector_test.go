@@ -3,7 +3,6 @@ package selector_test
 import (
 	"context"
 
-	types2 "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,11 +19,10 @@ import (
 
 var _ = Describe("MeshServiceSelector", func() {
 	var (
-		ctrl                   *gomock.Controller
-		ctx                    context.Context
-		mockMeshServiceClient  *mock_core.MockMeshServiceClient
-		meshServiceSelector    networking_selector.MeshServiceSelector
-		managementPlaneCluster = "management-plane-cluster"
+		ctrl                  *gomock.Controller
+		ctx                   context.Context
+		mockMeshServiceClient *mock_core.MockMeshServiceClient
+		meshServiceSelector   networking_selector.MeshServiceSelector
 	)
 
 	BeforeEach(func() {
@@ -47,34 +45,14 @@ var _ = Describe("MeshServiceSelector", func() {
 					Items: []v1alpha1.MeshService{},
 				}, nil)
 		})
-
-		It("return error if both Selector.labels/names/cluster and Refs specified", func() {
-			selector := &core_types.Selector{
-				Labels:     map[string]string{"k1": "v1"},
-				Namespaces: []string{"namespace"},
-				Refs: []*core_types.ResourceRef{
-					{Name: "name", Namespace: "namespace"},
-				},
-			}
-			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(networking_selector.InvalidSelectorErr))
-		})
-
-		It("return error if Selector.cluster specified", func() {
-			selector := &core_types.Selector{
-				Labels:     map[string]string{"k1": "v1"},
-				Namespaces: []string{"namespace"},
-				Cluster:    &types2.StringValue{Value: "remote-cluster"},
-			}
-			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(networking_selector.ClusterSelectorNotSupported))
-		})
 	})
 
 	Describe("MeshService selection", func() {
 		var (
 			namespace1   string
 			namespace2   string
+			cluster1     string
+			cluster2     string
 			meshService1 v1alpha1.MeshService
 			meshService2 v1alpha1.MeshService
 			meshService3 v1alpha1.MeshService
@@ -82,6 +60,8 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService5 v1alpha1.MeshService
 		)
 		BeforeEach(func() {
+			cluster1 = "cluster1"
+			cluster2 = "cluster2"
 			namespace1 = "namespace1"
 			namespace2 = "namespace2"
 			meshService1 = v1alpha1.MeshService{
@@ -91,7 +71,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-1",
 							Namespace: namespace1,
-							Cluster:   &types2.StringValue{Value: managementPlaneCluster},
+							Cluster:   cluster1,
 						},
 						Labels: map[string]string{"k1": "v1"},
 					},
@@ -103,6 +83,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-2",
 							Namespace: namespace1,
+							Cluster:   cluster2,
 						},
 						Labels: map[string]string{"k1": "v1"},
 					},
@@ -114,7 +95,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-3",
 							Namespace: namespace2,
-							Cluster:   &types2.StringValue{Value: managementPlaneCluster},
+							Cluster:   cluster1,
 						},
 						Labels: map[string]string{"k1": "v1", "other": "label"},
 					},
@@ -126,6 +107,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-4",
 							Namespace: "other-namespace",
+							Cluster:   cluster2,
 						},
 						Labels: map[string]string{"k1": "v1"},
 					},
@@ -137,6 +119,7 @@ var _ = Describe("MeshServiceSelector", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-5",
 							Namespace: namespace1,
+							Cluster:   cluster2,
 						},
 						Labels: map[string]string{"other": "label"},
 					},
@@ -150,11 +133,16 @@ var _ = Describe("MeshServiceSelector", func() {
 		})
 
 		It("should select Destinations by labels and namespaces", func() {
-			selector := &core_types.Selector{
-				Labels:     map[string]string{"k1": "v1"},
-				Namespaces: []string{namespace1, namespace2},
+			selector := &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+					Matcher: &core_types.ServiceSelector_Matcher{
+						Labels:     map[string]string{"k1": "v1"},
+						Namespaces: []string{namespace1, namespace2},
+						Clusters:   []string{cluster1},
+					},
+				},
 			}
-			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService2, &meshService3}
+			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService3}
 
 			meshServices, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
@@ -170,10 +158,14 @@ var _ = Describe("MeshServiceSelector", func() {
 				Name:      meshService3.Spec.GetKubeService().GetRef().GetName(),
 				Namespace: meshService3.Spec.GetKubeService().GetRef().GetNamespace(),
 			}
-			selector := &core_types.Selector{
-				Refs: []*core_types.ResourceRef{
-					{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
-					{Name: objKey2.Name, Namespace: objKey2.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
+			selector := &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
+						Services: []*core_types.ResourceRef{
+							{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: cluster1},
+							{Name: objKey2.Name, Namespace: objKey2.Namespace, Cluster: cluster1},
+						},
+					},
 				},
 			}
 			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService3}
@@ -183,24 +175,39 @@ var _ = Describe("MeshServiceSelector", func() {
 		})
 
 		It("should return error if Service not found", func() {
-			objKey1 := client.ObjectKey{
-				Name:      "non-existent-name",
-				Namespace: "non-existent-namespace",
-			}
-			selector := &core_types.Selector{
-				Refs: []*core_types.ResourceRef{
-					{Name: objKey1.Name, Namespace: objKey1.Namespace, Cluster: &types2.StringValue{Value: managementPlaneCluster}},
+			name := "non-existent-name"
+			namespace := "non-existent-namespace"
+			cluster := "non-existent-cluster"
+			selector := &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
+					ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
+						Services: []*core_types.ResourceRef{
+							{Name: name, Namespace: namespace, Cluster: cluster},
+						},
+					},
 				},
 			}
 			_, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-			Expect(err).To(testutils.HaveInErrorChain(networking_selector.KubeServiceNotFound(objKey1.Name, objKey1.Namespace)))
+			Expect(err).To(testutils.HaveInErrorChain(networking_selector.KubeServiceNotFound(name, namespace, cluster)))
 		})
 
-		It("should select across all namespaces", func() {
-			selector := &core_types.Selector{
-				Labels: map[string]string{"k1": "v1"},
+		It("should select across all namespaces and clusters", func() {
+			selector := &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+					Matcher: &core_types.ServiceSelector_Matcher{
+						Labels: map[string]string{"k1": "v1"},
+					},
+				},
 			}
 			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService2, &meshService3, &meshService4}
+			meshServices, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(meshServices).To(ConsistOf(expectedMeshServices))
+		})
+
+		It("should select all services if selector ommitted", func() {
+			selector := &core_types.ServiceSelector{}
+			expectedMeshServices := []*v1alpha1.MeshService{&meshService1, &meshService2, &meshService3, &meshService4, &meshService5}
 			meshServices, err := meshServiceSelector.GetMatchingMeshServices(ctx, selector)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(meshServices).To(ConsistOf(expectedMeshServices))

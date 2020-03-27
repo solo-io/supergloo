@@ -28,8 +28,7 @@ message ResourceRef {
     string namespace = 4;
 
     /*
-        The cluster in which the object lives
-        if left empty will assume the current cluster
+        Required: the cluster on which the object exists.
     */
-    google.protobuf.StringValue cluster = 5;
+    string cluster = 5;
 }

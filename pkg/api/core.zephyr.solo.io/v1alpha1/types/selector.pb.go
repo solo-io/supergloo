@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	types "github.com/gogo/protobuf/types"
+	_ "github.com/gogo/protobuf/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -94,70 +94,178 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //hello: world
 //
 //
-type Selector struct {
-	// map of labels to match against
-	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// list of namespaces to search
-	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	// If empty string or nil, select in the cluster local to the enclosing resource, else select in the referenced remote cluster
-	Cluster *types.StringValue `protobuf:"bytes,3,opt,name=cluster,proto3" json:"cluster,omitempty"`
+type ServiceSelector struct {
+	// If specified, select services using either a Matcher or direct reference. If not set, select all Services.
 	//
-	//Apply the selector to one or more services by adding their refs here.
-	//If the resources are not in the local cluster, the "cluster" field must be populated with the remote cluster name.
-	Refs                 []*ResourceRef `protobuf:"bytes,4,rep,name=refs,proto3" json:"refs,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+	// Types that are valid to be assigned to ServiceSelectorType:
+	//	*ServiceSelector_Matcher_
+	//	*ServiceSelector_ServiceRefs_
+	ServiceSelectorType  isServiceSelector_ServiceSelectorType `protobuf_oneof:"service_selector_type"`
+	XXX_NoUnkeyedLiteral struct{}                              `json:"-"`
+	XXX_unrecognized     []byte                                `json:"-"`
+	XXX_sizecache        int32                                 `json:"-"`
 }
 
-func (m *Selector) Reset()         { *m = Selector{} }
-func (m *Selector) String() string { return proto.CompactTextString(m) }
-func (*Selector) ProtoMessage()    {}
-func (*Selector) Descriptor() ([]byte, []int) {
+func (m *ServiceSelector) Reset()         { *m = ServiceSelector{} }
+func (m *ServiceSelector) String() string { return proto.CompactTextString(m) }
+func (*ServiceSelector) ProtoMessage()    {}
+func (*ServiceSelector) Descriptor() ([]byte, []int) {
 	return fileDescriptor_6ca43acbd26ca19e, []int{0}
 }
-func (m *Selector) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Selector.Unmarshal(m, b)
+func (m *ServiceSelector) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceSelector.Unmarshal(m, b)
 }
-func (m *Selector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Selector.Marshal(b, m, deterministic)
+func (m *ServiceSelector) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceSelector.Marshal(b, m, deterministic)
 }
-func (m *Selector) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Selector.Merge(m, src)
+func (m *ServiceSelector) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceSelector.Merge(m, src)
 }
-func (m *Selector) XXX_Size() int {
-	return xxx_messageInfo_Selector.Size(m)
+func (m *ServiceSelector) XXX_Size() int {
+	return xxx_messageInfo_ServiceSelector.Size(m)
 }
-func (m *Selector) XXX_DiscardUnknown() {
-	xxx_messageInfo_Selector.DiscardUnknown(m)
+func (m *ServiceSelector) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceSelector.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Selector proto.InternalMessageInfo
+var xxx_messageInfo_ServiceSelector proto.InternalMessageInfo
 
-func (m *Selector) GetLabels() map[string]string {
+type isServiceSelector_ServiceSelectorType interface {
+	isServiceSelector_ServiceSelectorType()
+	Equal(interface{}) bool
+}
+
+type ServiceSelector_Matcher_ struct {
+	Matcher *ServiceSelector_Matcher `protobuf:"bytes,1,opt,name=matcher,proto3,oneof" json:"matcher,omitempty"`
+}
+type ServiceSelector_ServiceRefs_ struct {
+	ServiceRefs *ServiceSelector_ServiceRefs `protobuf:"bytes,2,opt,name=service_refs,json=serviceRefs,proto3,oneof" json:"service_refs,omitempty"`
+}
+
+func (*ServiceSelector_Matcher_) isServiceSelector_ServiceSelectorType()     {}
+func (*ServiceSelector_ServiceRefs_) isServiceSelector_ServiceSelectorType() {}
+
+func (m *ServiceSelector) GetServiceSelectorType() isServiceSelector_ServiceSelectorType {
+	if m != nil {
+		return m.ServiceSelectorType
+	}
+	return nil
+}
+
+func (m *ServiceSelector) GetMatcher() *ServiceSelector_Matcher {
+	if x, ok := m.GetServiceSelectorType().(*ServiceSelector_Matcher_); ok {
+		return x.Matcher
+	}
+	return nil
+}
+
+func (m *ServiceSelector) GetServiceRefs() *ServiceSelector_ServiceRefs {
+	if x, ok := m.GetServiceSelectorType().(*ServiceSelector_ServiceRefs_); ok {
+		return x.ServiceRefs
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ServiceSelector) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*ServiceSelector_Matcher_)(nil),
+		(*ServiceSelector_ServiceRefs_)(nil),
+	}
+}
+
+type ServiceSelector_Matcher struct {
+	// If specified, all labels must exist on k8s Service, else match on any labels.
+	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	// If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+	Clusters             []string `protobuf:"bytes,3,rep,name=clusters,proto3" json:"clusters,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ServiceSelector_Matcher) Reset()         { *m = ServiceSelector_Matcher{} }
+func (m *ServiceSelector_Matcher) String() string { return proto.CompactTextString(m) }
+func (*ServiceSelector_Matcher) ProtoMessage()    {}
+func (*ServiceSelector_Matcher) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6ca43acbd26ca19e, []int{0, 0}
+}
+func (m *ServiceSelector_Matcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceSelector_Matcher.Unmarshal(m, b)
+}
+func (m *ServiceSelector_Matcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceSelector_Matcher.Marshal(b, m, deterministic)
+}
+func (m *ServiceSelector_Matcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceSelector_Matcher.Merge(m, src)
+}
+func (m *ServiceSelector_Matcher) XXX_Size() int {
+	return xxx_messageInfo_ServiceSelector_Matcher.Size(m)
+}
+func (m *ServiceSelector_Matcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceSelector_Matcher.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceSelector_Matcher proto.InternalMessageInfo
+
+func (m *ServiceSelector_Matcher) GetLabels() map[string]string {
 	if m != nil {
 		return m.Labels
 	}
 	return nil
 }
 
-func (m *Selector) GetNamespaces() []string {
+func (m *ServiceSelector_Matcher) GetNamespaces() []string {
 	if m != nil {
 		return m.Namespaces
 	}
 	return nil
 }
 
-func (m *Selector) GetCluster() *types.StringValue {
+func (m *ServiceSelector_Matcher) GetClusters() []string {
 	if m != nil {
-		return m.Cluster
+		return m.Clusters
 	}
 	return nil
 }
 
-func (m *Selector) GetRefs() []*ResourceRef {
+type ServiceSelector_ServiceRefs struct {
+	// Match k8s Services by direct reference.
+	Services             []*ResourceRef `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *ServiceSelector_ServiceRefs) Reset()         { *m = ServiceSelector_ServiceRefs{} }
+func (m *ServiceSelector_ServiceRefs) String() string { return proto.CompactTextString(m) }
+func (*ServiceSelector_ServiceRefs) ProtoMessage()    {}
+func (*ServiceSelector_ServiceRefs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6ca43acbd26ca19e, []int{0, 1}
+}
+func (m *ServiceSelector_ServiceRefs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceSelector_ServiceRefs.Unmarshal(m, b)
+}
+func (m *ServiceSelector_ServiceRefs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceSelector_ServiceRefs.Marshal(b, m, deterministic)
+}
+func (m *ServiceSelector_ServiceRefs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceSelector_ServiceRefs.Merge(m, src)
+}
+func (m *ServiceSelector_ServiceRefs) XXX_Size() int {
+	return xxx_messageInfo_ServiceSelector_ServiceRefs.Size(m)
+}
+func (m *ServiceSelector_ServiceRefs) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceSelector_ServiceRefs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceSelector_ServiceRefs proto.InternalMessageInfo
+
+func (m *ServiceSelector_ServiceRefs) GetServices() []*ResourceRef {
 	if m != nil {
-		return m.Refs
+		return m.Services
 	}
 	return nil
 }
@@ -332,8 +440,10 @@ func (m *IdentitySelector_ServiceAccountRefs) GetServiceAccounts() []*ResourceRe
 }
 
 func init() {
-	proto.RegisterType((*Selector)(nil), "core.zephyr.solo.io.Selector")
-	proto.RegisterMapType((map[string]string)(nil), "core.zephyr.solo.io.Selector.LabelsEntry")
+	proto.RegisterType((*ServiceSelector)(nil), "core.zephyr.solo.io.ServiceSelector")
+	proto.RegisterType((*ServiceSelector_Matcher)(nil), "core.zephyr.solo.io.ServiceSelector.Matcher")
+	proto.RegisterMapType((map[string]string)(nil), "core.zephyr.solo.io.ServiceSelector.Matcher.LabelsEntry")
+	proto.RegisterType((*ServiceSelector_ServiceRefs)(nil), "core.zephyr.solo.io.ServiceSelector.ServiceRefs")
 	proto.RegisterType((*IdentitySelector)(nil), "core.zephyr.solo.io.IdentitySelector")
 	proto.RegisterType((*IdentitySelector_Matcher)(nil), "core.zephyr.solo.io.IdentitySelector.Matcher")
 	proto.RegisterType((*IdentitySelector_ServiceAccountRefs)(nil), "core.zephyr.solo.io.IdentitySelector.ServiceAccountRefs")
@@ -344,47 +454,130 @@ func init() {
 }
 
 var fileDescriptor_6ca43acbd26ca19e = []byte{
-	// 475 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0x4f, 0x6f, 0xd3, 0x30,
-	0x14, 0x5f, 0x92, 0xb1, 0x6e, 0xee, 0x81, 0xca, 0x54, 0x28, 0x8a, 0x50, 0x15, 0xed, 0xd4, 0x1d,
-	0xea, 0x68, 0x05, 0xa1, 0xc1, 0xad, 0x93, 0x26, 0x6d, 0x1a, 0x1c, 0x70, 0x25, 0x0e, 0x5c, 0x2a,
-	0xd7, 0xbc, 0xfc, 0x61, 0x69, 0x6c, 0xd9, 0x4e, 0x51, 0xf8, 0x12, 0xdc, 0xf8, 0x0c, 0x7c, 0x2e,
-	0x3e, 0x09, 0x8a, 0x93, 0x94, 0xd1, 0x56, 0xea, 0x6e, 0xcf, 0xcf, 0xbf, 0xf7, 0x7b, 0xbf, 0x9f,
-	0x9f, 0x1f, 0x9a, 0x25, 0x99, 0x49, 0xcb, 0x25, 0xe1, 0x62, 0x15, 0x69, 0x91, 0x8b, 0x49, 0x26,
-	0xa2, 0x15, 0xe8, 0x74, 0x22, 0x95, 0xf8, 0x06, 0xdc, 0xe8, 0x88, 0xc9, 0x2c, 0xe2, 0x42, 0x41,
-	0xb4, 0xbe, 0x64, 0xb9, 0x4c, 0xd9, 0x65, 0xa4, 0x21, 0x07, 0x6e, 0x84, 0x22, 0x52, 0x09, 0x23,
-	0xf0, 0x8b, 0xfa, 0x96, 0xfc, 0x00, 0x99, 0x56, 0x8a, 0xd4, 0x1c, 0x24, 0x13, 0xc1, 0x28, 0x11,
-	0x22, 0xc9, 0x21, 0xb2, 0x90, 0x65, 0x19, 0x47, 0xdf, 0x15, 0x93, 0x12, 0x94, 0x6e, 0x8a, 0x82,
-	0x8b, 0x43, 0x4d, 0x14, 0xc4, 0x2d, 0x74, 0x98, 0x88, 0x44, 0xd8, 0x30, 0xaa, 0xa3, 0x26, 0x7b,
-	0xfe, 0xcb, 0x45, 0xa7, 0xf3, 0x56, 0x08, 0x9e, 0xa1, 0x93, 0x9c, 0x2d, 0x21, 0xd7, 0xbe, 0x13,
-	0x7a, 0xe3, 0xfe, 0xf4, 0x82, 0xec, 0xd1, 0x44, 0x3a, 0x38, 0xf9, 0x60, 0xb1, 0x37, 0x85, 0x51,
-	0x15, 0x6d, 0x0b, 0xf1, 0x08, 0xa1, 0x82, 0xad, 0x40, 0x4b, 0xc6, 0x41, 0xfb, 0x6e, 0xe8, 0x8d,
-	0xcf, 0xe8, 0xa3, 0x0c, 0x7e, 0x8b, 0x7a, 0x3c, 0x2f, 0xb5, 0x01, 0xe5, 0x7b, 0xa1, 0x33, 0xee,
-	0x4f, 0x5f, 0x91, 0xc6, 0x22, 0xe9, 0x2c, 0x92, 0xb9, 0x51, 0x59, 0x91, 0x7c, 0x66, 0x79, 0x09,
-	0xb4, 0x03, 0xe3, 0x37, 0xe8, 0x58, 0x41, 0xac, 0xfd, 0x63, 0x2b, 0x2c, 0xdc, 0x2b, 0x8c, 0x82,
-	0x16, 0xa5, 0xe2, 0x40, 0x21, 0xa6, 0x16, 0x1d, 0xbc, 0x43, 0xfd, 0x47, 0x22, 0xf1, 0x00, 0x79,
-	0x0f, 0x50, 0xf9, 0x4e, 0xe8, 0x8c, 0xcf, 0x68, 0x1d, 0xe2, 0x21, 0x7a, 0xb6, 0xae, 0x1b, 0xf9,
-	0xae, 0xcd, 0x35, 0x87, 0xf7, 0xee, 0x95, 0x73, 0xfe, 0xd3, 0x43, 0x83, 0xbb, 0xaf, 0x50, 0x98,
-	0xcc, 0x54, 0x9b, 0x07, 0xba, 0x43, 0xbd, 0x15, 0x33, 0x3c, 0x05, 0x65, 0x49, 0xfa, 0xd3, 0xc9,
-	0x5e, 0x21, 0xdb, 0x75, 0xe4, 0x63, 0x53, 0x74, 0x7b, 0x44, 0xbb, 0x7a, 0x9c, 0xa3, 0xa1, 0x06,
-	0xb5, 0xce, 0x38, 0x2c, 0x18, 0xe7, 0xa2, 0x2c, 0xcc, 0xc2, 0x1a, 0x74, 0x2d, 0xef, 0xd5, 0xd3,
-	0x78, 0xe7, 0x0d, 0xc3, 0xac, 0x21, 0xa0, 0x10, 0xeb, 0xdb, 0x23, 0x8a, 0xf5, 0x4e, 0x36, 0xb8,
-	0x41, 0xbd, 0x56, 0xc3, 0xd6, 0x84, 0x9c, 0x9d, 0x09, 0x05, 0xe8, 0xb4, 0x7d, 0xf4, 0x6e, 0x7e,
-	0x9b, 0x73, 0xc0, 0x10, 0xde, 0x6d, 0x89, 0xef, 0xd1, 0x60, 0xcb, 0x4a, 0xf7, 0x81, 0x0e, 0xcf,
-	0xe9, 0xf9, 0xff, 0x62, 0xf5, 0xb5, 0x8f, 0x5e, 0x66, 0xad, 0xcd, 0x45, 0xb7, 0x21, 0x0b, 0x53,
-	0x49, 0xb8, 0xfe, 0xf4, 0xfb, 0xcf, 0xc8, 0xf9, 0x72, 0x7f, 0x70, 0xd3, 0xe4, 0x43, 0xb2, 0x59,
-	0x84, 0xad, 0xd6, 0xff, 0xf6, 0xa2, 0x66, 0xd4, 0xcb, 0x13, 0xfb, 0xe9, 0x5e, 0xff, 0x0d, 0x00,
-	0x00, 0xff, 0xff, 0x67, 0xab, 0xad, 0xca, 0xbf, 0x03, 0x00, 0x00,
+	// 498 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xdd, 0x6e, 0xd3, 0x30,
+	0x14, 0x5e, 0x1a, 0xb1, 0xad, 0xa7, 0x48, 0xab, 0x4c, 0x81, 0x28, 0x17, 0x55, 0xb5, 0xab, 0x22,
+	0xd1, 0x84, 0x8d, 0x9b, 0x82, 0xb8, 0x59, 0xa5, 0x49, 0x9d, 0x0a, 0x12, 0x64, 0xe2, 0x86, 0x9b,
+	0xc9, 0x35, 0xa7, 0x49, 0x58, 0x5a, 0x5b, 0xb6, 0x53, 0x14, 0x5e, 0x82, 0xd7, 0xe0, 0x79, 0x78,
+	0x04, 0xee, 0x79, 0x07, 0x94, 0xc4, 0xe9, 0x4f, 0x56, 0xb1, 0xee, 0xce, 0xc7, 0xf1, 0xf7, 0x7d,
+	0xe7, 0x3b, 0x9f, 0x1d, 0xb8, 0x08, 0x63, 0x1d, 0xa5, 0x53, 0x8f, 0xf1, 0xb9, 0xaf, 0x78, 0xc2,
+	0x07, 0x31, 0xf7, 0xe7, 0xa8, 0xa2, 0x81, 0x90, 0xfc, 0x1b, 0x32, 0xad, 0x7c, 0x2a, 0x62, 0x9f,
+	0x71, 0x89, 0xfe, 0xf2, 0x8c, 0x26, 0x22, 0xa2, 0x67, 0xbe, 0xc2, 0x04, 0x99, 0xe6, 0xd2, 0x13,
+	0x92, 0x6b, 0x4e, 0x9e, 0xe4, 0x5f, 0xbd, 0x1f, 0x28, 0xa2, 0x4c, 0x7a, 0x39, 0x87, 0x17, 0x73,
+	0xb7, 0x1b, 0x72, 0x1e, 0x26, 0xe8, 0x17, 0x47, 0xa6, 0xe9, 0xcc, 0xff, 0x2e, 0xa9, 0x10, 0x28,
+	0x55, 0x09, 0x72, 0x5f, 0xdc, 0x27, 0x22, 0x71, 0x66, 0x8e, 0x76, 0x42, 0x1e, 0xf2, 0x62, 0xe9,
+	0xe7, 0xab, 0x72, 0xf7, 0xf4, 0xaf, 0x0d, 0x27, 0xd7, 0x28, 0x97, 0x31, 0xc3, 0x6b, 0xd3, 0x0f,
+	0x19, 0xc3, 0xd1, 0x9c, 0x6a, 0x16, 0xa1, 0x74, 0xac, 0x9e, 0xd5, 0x6f, 0x9d, 0xbf, 0xf4, 0x76,
+	0xf4, 0xe6, 0xd5, 0x60, 0xde, 0x87, 0x12, 0x33, 0x3e, 0x08, 0x2a, 0x38, 0xf9, 0x0c, 0x8f, 0x55,
+	0x79, 0xea, 0x46, 0xe2, 0x4c, 0x39, 0x8d, 0x82, 0xee, 0xd5, 0x5e, 0x74, 0xa6, 0x0e, 0x70, 0xa6,
+	0xc6, 0x07, 0x41, 0x4b, 0xad, 0x4b, 0xf7, 0xb7, 0x05, 0x47, 0x46, 0x8d, 0x7c, 0x84, 0xc3, 0x84,
+	0x4e, 0x31, 0x51, 0x8e, 0xd5, 0xb3, 0xfb, 0xad, 0xf3, 0xe1, 0x43, 0x7a, 0xf5, 0xde, 0x17, 0xd0,
+	0xcb, 0x85, 0x96, 0x59, 0x60, 0x78, 0x48, 0x17, 0x60, 0x41, 0xe7, 0xa8, 0x04, 0x65, 0x98, 0xb7,
+	0x6c, 0xf7, 0x9b, 0xc1, 0xc6, 0x0e, 0x71, 0xe1, 0x98, 0x25, 0xa9, 0xd2, 0x28, 0x95, 0x63, 0x17,
+	0x5f, 0x57, 0xb5, 0xfb, 0x06, 0x5a, 0x1b, 0x94, 0xa4, 0x0d, 0xf6, 0x2d, 0x66, 0xc5, 0x14, 0x9b,
+	0x41, 0xbe, 0x24, 0x1d, 0x78, 0xb4, 0xa4, 0x49, 0x8a, 0xc5, 0x28, 0x9a, 0x41, 0x59, 0xbc, 0x6d,
+	0x0c, 0x2d, 0x77, 0x02, 0xad, 0x0d, 0xcb, 0xe4, 0x1d, 0x1c, 0x1b, 0xcb, 0x95, 0xb3, 0xde, 0x4e,
+	0x67, 0x01, 0x2a, 0x9e, 0xca, 0x02, 0x14, 0xac, 0x10, 0xa3, 0xe7, 0xf0, 0xb4, 0x1a, 0x7c, 0x75,
+	0xcd, 0x6e, 0x74, 0x26, 0xf0, 0xf4, 0xa7, 0x0d, 0xed, 0xab, 0xaf, 0xb8, 0xd0, 0xb1, 0xce, 0x56,
+	0x81, 0x5f, 0xd5, 0x03, 0x1f, 0xec, 0x94, 0xaa, 0xe3, 0x76, 0x25, 0x9e, 0x40, 0xa7, 0x12, 0xa6,
+	0x8c, 0xf1, 0x74, 0xa1, 0x37, 0x93, 0x1f, 0xee, 0xc7, 0x6b, 0xe6, 0x70, 0x51, 0x12, 0x98, 0x1b,
+	0x40, 0xd4, 0x9d, 0x5d, 0xf7, 0x72, 0x7d, 0x0f, 0xb6, 0x53, 0xb3, 0xfe, 0x9b, 0x5a, 0xa3, 0x96,
+	0x1a, 0x05, 0x72, 0x57, 0x92, 0x4c, 0xa0, 0x5d, 0xb3, 0xb2, 0x7f, 0x12, 0x27, 0xdb, 0xcd, 0xaa,
+	0x91, 0x03, 0xcf, 0x62, 0x63, 0x73, 0x3b, 0x91, 0xd1, 0xa7, 0x5f, 0x7f, 0xba, 0xd6, 0x97, 0xc9,
+	0xbd, 0x3f, 0x10, 0x71, 0x1b, 0xae, 0xde, 0x77, 0x4d, 0x7a, 0xfd, 0xdc, 0x73, 0x46, 0x35, 0x3d,
+	0x2c, 0xde, 0xf6, 0xeb, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xc8, 0xbf, 0x3b, 0x0c, 0x96, 0x04,
+	0x00, 0x00,
 }
 
-func (this *Selector) Equal(that interface{}) bool {
+func (this *ServiceSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Selector)
+	that1, ok := that.(*ServiceSelector)
 	if !ok {
-		that2, ok := that.(Selector)
+		that2, ok := that.(ServiceSelector)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.ServiceSelectorType == nil {
+		if this.ServiceSelectorType != nil {
+			return false
+		}
+	} else if this.ServiceSelectorType == nil {
+		return false
+	} else if !this.ServiceSelectorType.Equal(that1.ServiceSelectorType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *ServiceSelector_Matcher_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ServiceSelector_Matcher_)
+	if !ok {
+		that2, ok := that.(ServiceSelector_Matcher_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Matcher.Equal(that1.Matcher) {
+		return false
+	}
+	return true
+}
+func (this *ServiceSelector_ServiceRefs_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ServiceSelector_ServiceRefs_)
+	if !ok {
+		that2, ok := that.(ServiceSelector_ServiceRefs_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.ServiceRefs.Equal(that1.ServiceRefs) {
+		return false
+	}
+	return true
+}
+func (this *ServiceSelector_Matcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ServiceSelector_Matcher)
+	if !ok {
+		that2, ok := that.(ServiceSelector_Matcher)
 		if ok {
 			that1 = &that2
 		} else {
@@ -412,14 +605,43 @@ func (this *Selector) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !this.Cluster.Equal(that1.Cluster) {
+	if len(this.Clusters) != len(that1.Clusters) {
 		return false
 	}
-	if len(this.Refs) != len(that1.Refs) {
+	for i := range this.Clusters {
+		if this.Clusters[i] != that1.Clusters[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
-	for i := range this.Refs {
-		if !this.Refs[i].Equal(that1.Refs[i]) {
+	return true
+}
+func (this *ServiceSelector_ServiceRefs) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ServiceSelector_ServiceRefs)
+	if !ok {
+		that2, ok := that.(ServiceSelector_ServiceRefs)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Services) != len(that1.Services) {
+		return false
+	}
+	for i := range this.Services {
+		if !this.Services[i].Equal(that1.Services[i]) {
 			return false
 		}
 	}

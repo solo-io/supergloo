@@ -36,7 +36,7 @@ reference object for kubernetes objects, support multi cluster
 | kind | [google.protobuf.StringValue](#google.protobuf.StringValue) |  |  |
 | name | [string](#string) |  |  |
 | namespace | [string](#string) |  | The namespace in which the object lives if left empty it will default to the namespace of the object referencing it. |
-| cluster | [google.protobuf.StringValue](#google.protobuf.StringValue) |  | The cluster in which the object lives if left empty will assume the current cluster |
+| cluster | [string](#string) |  | Required: the cluster on which the object exists. |
 
 
 

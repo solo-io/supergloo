@@ -56,6 +56,8 @@ type istioTrafficPolicyTranslator struct {
 	meshServiceSelector          selector.MeshServiceSelector
 }
 
+var SourceClusterSelectorNotSupported = eris.New("TrafficPolicy's SourceSelector cluster matching is not currently supported for Istio")
+
 /*
 	Translate a TrafficPolicy into the following Istio specific configuration:
 	https://istio.io/docs/concepts/traffic-management/
@@ -245,11 +247,44 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 ) ([]*api_v1alpha3.HTTPMatchRequest, error) {
-	var translatedRequestMatcher []*api_v1alpha3.HTTPMatchRequest
-	matchers := trafficPolicy.Spec.GetHttpRequestMatchers()
-	if matchers != nil {
-		translatedRequestMatcher = []*api_v1alpha3.HTTPMatchRequest{}
-		for _, matcher := range matchers {
+	// Generate HttpMatchRequests for SourceSelector, one per namespace.
+	var sourceMatchers []*api_v1alpha3.HTTPMatchRequest
+	if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetClusters()) > 0 {
+		return nil, SourceClusterSelectorNotSupported
+	}
+	// Set SourceNamespace and SourceLabels.
+	if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels()) > 0 ||
+		len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces()) > 0 {
+		if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces()) > 0 {
+			for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces() {
+				matchRequest := &api_v1alpha3.HTTPMatchRequest{
+					SourceNamespace: namespace,
+					SourceLabels:    trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels(),
+				}
+				sourceMatchers = append(sourceMatchers, matchRequest)
+			}
+		} else {
+			sourceMatchers = append(sourceMatchers, &api_v1alpha3.HTTPMatchRequest{
+				SourceLabels: trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels(),
+			})
+		}
+	}
+	if trafficPolicy.Spec.GetHttpRequestMatchers() == nil {
+		return sourceMatchers, nil
+	}
+	// If HttpRequestMatchers exist, generate cartesian product of sourceMatchers and httpRequestMatchers.
+	var translatedRequestMatchers []*api_v1alpha3.HTTPMatchRequest
+	// If SourceSelector is nil, generate an HttpMatchRequest without SourceSelector match criteria
+	if len(sourceMatchers) == 0 {
+		sourceMatchers = append(sourceMatchers, &api_v1alpha3.HTTPMatchRequest{})
+	}
+	// Set QueryParams, Headers, WithoutHeaders, Uri, and Method.
+	for _, sourceMatcher := range sourceMatchers {
+		for _, matcher := range trafficPolicy.Spec.GetHttpRequestMatchers() {
+			httpMatcher := &api_v1alpha3.HTTPMatchRequest{
+				SourceNamespace: sourceMatcher.GetSourceNamespace(),
+				SourceLabels:    sourceMatcher.GetSourceLabels(),
+			}
 			headerMatchers, inverseHeaderMatchers := i.translateRequestMatcherHeaders(matcher.GetHeaders())
 			uriMatcher, err := i.translateRequestMatcherPathSpecifier(matcher)
 			if err != nil {
@@ -259,26 +294,15 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 			if matcher.GetMethod() != nil {
 				method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: matcher.GetMethod().GetMethod().String()}}
 			}
-			matchRequest := &api_v1alpha3.HTTPMatchRequest{
-				Uri:            uriMatcher,
-				Method:         method,
-				QueryParams:    i.translateRequestMatcherQueryParams(matcher.GetQueryParameters()),
-				Headers:        headerMatchers,
-				WithoutHeaders: inverseHeaderMatchers,
-				SourceLabels:   trafficPolicy.Spec.GetSourceSelector().GetLabels(),
-			}
-			if len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
-				for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetNamespaces() {
-					matchRequestWithNamespace := *matchRequest
-					matchRequestWithNamespace.SourceNamespace = namespace
-					translatedRequestMatcher = append(translatedRequestMatcher, &matchRequestWithNamespace)
-				}
-			} else {
-				translatedRequestMatcher = append(translatedRequestMatcher, matchRequest)
-			}
+			httpMatcher.QueryParams = i.translateRequestMatcherQueryParams(matcher.GetQueryParameters())
+			httpMatcher.Headers = headerMatchers
+			httpMatcher.WithoutHeaders = inverseHeaderMatchers
+			httpMatcher.Uri = uriMatcher
+			httpMatcher.Method = method
+			translatedRequestMatchers = append(translatedRequestMatchers, httpMatcher)
 		}
 	}
-	return translatedRequestMatcher, nil
+	return translatedRequestMatchers, nil
 }
 
 func (i *istioTrafficPolicyTranslator) translateRequestMatcherPathSpecifier(matcher *networking_types.HttpMatcher) (*api_v1alpha3.StringMatch, error) {
@@ -356,7 +380,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 	destination *networking_types.MultiDestination_WeightedDestination,
 ) (string, error) {
 	// fetch client for destination's cluster
-	clusterName := destination.GetDestination().GetCluster().GetValue()
+	clusterName := destination.GetDestination().GetCluster()
 	dynamicClient, ok := i.dynamicClientGetter.GetClientForCluster(clusterName)
 	if !ok {
 		return "", multicluster.ClientNotFoundError(clusterName)
@@ -583,11 +607,11 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	destination *core_types.ResourceRef,
 ) (string, error) {
 	destinationMeshService, err := i.meshServiceSelector.GetBackingMeshService(
-		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster().GetValue())
+		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster())
 	if err != nil {
 		return "", err
 	}
-	if destination.GetCluster().GetValue() == meshService.Spec.GetKubeService().GetRef().GetCluster().GetValue() {
+	if destination.GetCluster() == meshService.Spec.GetKubeService().GetRef().GetCluster() {
 		// destination is on the same cluster as the MeshService's k8s Service
 		return buildServiceHostname(destinationMeshService), nil
 	} else {

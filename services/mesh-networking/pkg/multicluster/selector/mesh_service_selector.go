@@ -14,10 +14,8 @@ import (
 )
 
 var (
-	InvalidSelectorErr          = eris.New("Incorrectly configured Selector: only one of (labels + namespaces) or (refs) may be declared.")
-	ClusterSelectorNotSupported = eris.New("Remote destination cluster selection is not currently supported.")
-	KubeServiceNotFound         = func(name, namespace string) error {
-		return eris.Errorf("Kubernetes Service with name: %s, namespace: %s not found", name, namespace)
+	KubeServiceNotFound = func(name, namespace, cluster string) error {
+		return eris.Errorf("Kubernetes Service with name: %s, namespace: %s, cluster: %s not found", name, namespace, cluster)
 	}
 	MultipleMeshServicesFound = func(name, namespace, clusterName string) error {
 		return eris.Errorf("Multiple MeshServices found with labels %s=%s, %s=%s, %s=%s",
@@ -74,7 +72,7 @@ func (m *meshServiceSelector) GetBackingMeshService(
 // List all MeshServices and filter for the ones associated with the k8s Services specified in the selector
 func (m *meshServiceSelector) GetMatchingMeshServices(
 	ctx context.Context,
-	selector *core_types.Selector,
+	selector *core_types.ServiceSelector,
 ) ([]*discovery_v1alpha1.MeshService, error) {
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
 	meshServiceList, err := m.meshServiceClient.List(ctx)
@@ -83,32 +81,32 @@ func (m *meshServiceSelector) GetMatchingMeshServices(
 	}
 	allMeshServices := convertToPointerSlice(meshServiceList.Items)
 	// select all MeshServices
-	if selector == nil {
-		selectedMeshServices = allMeshServices
-	} else if selector.GetCluster().GetValue() != "" {
-		return nil, ClusterSelectorNotSupported
-	} else if selector.GetRefs() != nil && (selector.GetLabels() != nil ||
-		selector.GetNamespaces() != nil ||
-		selector.GetCluster().GetValue() != "") {
-		return nil, InvalidSelectorErr
-	} else if selector.GetRefs() != nil {
-		// select by Service ResourceRef
-		for _, ref := range selector.GetRefs() {
-			if ref.GetCluster().GetValue() == "" {
+	if selector.GetServiceSelectorType() == nil {
+		return allMeshServices, nil
+	}
+	switch selectorType := selector.GetServiceSelectorType().(type) {
+	case *core_types.ServiceSelector_Matcher_:
+		selectedMeshServices = getMeshServicesBySelectorNamespace(
+			selector.GetMatcher().GetLabels(),
+			selector.GetMatcher().GetNamespaces(),
+			selector.GetMatcher().GetClusters(),
+			allMeshServices,
+		)
+	case *core_types.ServiceSelector_ServiceRefs_:
+		for _, ref := range selector.GetServiceRefs().GetServices() {
+			if ref.GetCluster() == "" {
 				return nil, MustProvideClusterName(ref)
 			}
-			selectedMeshService := getMeshServiceByServiceKey(
-				ref,
-				allMeshServices)
+			selectedMeshService := getMeshServiceByServiceKey(ref, allMeshServices)
 			if selectedMeshService != nil {
 				selectedMeshServices = append(selectedMeshServices, selectedMeshService)
 			} else {
 				// MeshService for referenced k8s Service not found
-				return nil, KubeServiceNotFound(ref.GetName(), ref.GetNamespace())
+				return nil, KubeServiceNotFound(ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 			}
 		}
-	} else {
-		selectedMeshServices = getMeshServicesBySelectorNamespace(selector.GetLabels(), selector.GetNamespaces(), allMeshServices)
+	default:
+		return nil, eris.Errorf("ServiceSelector has unexpected type %T", selectorType)
 	}
 	return selectedMeshServices, nil
 }
@@ -121,7 +119,7 @@ func getMeshServiceByServiceKey(
 		kubeServiceRef := meshService.Spec.GetKubeService().GetRef()
 		if selectedRef.GetName() == kubeServiceRef.GetName() &&
 			selectedRef.GetNamespace() == kubeServiceRef.GetNamespace() &&
-			selectedRef.GetCluster().GetValue() == kubeServiceRef.GetCluster().GetValue() {
+			selectedRef.GetCluster() == kubeServiceRef.GetCluster() {
 			return meshService
 		}
 	}
@@ -131,32 +129,41 @@ func getMeshServiceByServiceKey(
 func getMeshServicesBySelectorNamespace(
 	selectors map[string]string,
 	namespaces []string,
+	clusters []string,
 	meshServices []*discovery_v1alpha1.MeshService,
 ) []*discovery_v1alpha1.MeshService {
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
 	for _, meshService := range meshServices {
 		kubeService := meshService.Spec.GetKubeService()
-		if kubeServiceMatches(selectors, namespaces, kubeService) {
+		if kubeServiceMatches(selectors, namespaces, clusters, kubeService) {
 			selectedMeshServices = append(selectedMeshServices, meshService)
 		}
 	}
 	return selectedMeshServices
 }
 
-// All selectors must exist. If namespaces is populated, only one namespace must match
+/* For a k8s Service to match:
+1) If labels is specified, all labels must exist on the k8s Service
+2) If namespaces is specified, the k8s must be in one of those namespaces
+3) The k8s Service must exist in the specified cluster. If cluster is empty, select across all clusters.
+*/
 func kubeServiceMatches(
-	selectors map[string]string,
+	labels map[string]string,
 	namespaces []string,
+	clusters []string,
 	kubeService *types.KubeService,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeService.GetRef().GetNamespace(), namespaces) {
 		return false
 	}
-	for k, v := range selectors {
+	for k, v := range labels {
 		serviceLabelValue, ok := kubeService.GetLabels()[k]
 		if !ok || serviceLabelValue != v {
 			return false
 		}
+	}
+	if len(clusters) > 0 && !stringutils.ContainsString(kubeService.GetRef().GetCluster(), clusters) {
+		return false
 	}
 	return true
 }

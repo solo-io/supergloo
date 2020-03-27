@@ -26,16 +26,15 @@ var (
 	InvalidPercentageError = func(pct float64) error {
 		return eris.Errorf("Percentage must be between 0.0 and 100.0 inclusive, got %f", pct)
 	}
-	DestinationsNotFound = func(selector *core_types.Selector) error {
+	DestinationsNotFound = func(selector *core_types.ServiceSelector) error {
 		return eris.Errorf("No destinations found with Selector %+v", selector)
 	}
 	SubsetSelectorNotFound = func(meshService *discovery_v1alpha1.MeshService, subsetKey string, subsetValue string) error {
 		return eris.Errorf("Subset selector with key: %s, value: %s not found on k8s service of name: %s, namespace: %s",
 			subsetKey, subsetValue, meshService.GetName(), meshService.GetNamespace())
 	}
-	NilDestinationRef          = eris.New("Destination reference must be non-nil")
-	InvalidDestinationSelector = eris.New("Destination must be selected by either (labels, namespaces, cluster) or references, encountered both")
-	MinDurationError           = eris.New("Duration must be >= 1 millisecond")
+	NilDestinationRef = eris.New("Destination reference must be non-nil")
+	MinDurationError  = eris.New("Duration must be >= 1 millisecond")
 )
 
 type trafficPolicyValidator struct {
@@ -79,29 +78,13 @@ func (t *trafficPolicyValidator) Validate(ctx context.Context, trafficPolicy *ne
 	return multiErr.ErrorOrNil()
 }
 
-func (t *trafficPolicyValidator) validateDestination(ctx context.Context, selector *core_types.Selector) error {
+func (t *trafficPolicyValidator) validateDestination(ctx context.Context, selector *core_types.ServiceSelector) error {
 	if selector == nil {
-		return NilDestinationRef
+		return nil
 	}
-	if (selector.GetLabels() != nil || selector.GetNamespaces() != nil || selector.GetCluster().GetValue() != "") &&
-		selector.GetRefs() != nil {
-		return InvalidDestinationSelector
-	} else if selector.GetRefs() != nil {
-		// select by refs
-		for _, ref := range selector.GetRefs() {
-			_, err := t.validateKubeService(ctx, ref)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		meshServices, err := t.meshServiceSelector.GetMatchingMeshServices(ctx, selector)
-		if err != nil {
-			return err
-		}
-		if len(meshServices) < 1 {
-			return DestinationsNotFound(selector)
-		}
+	_, err := t.meshServiceSelector.GetMatchingMeshServices(ctx, selector)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -222,7 +205,7 @@ func (t *trafficPolicyValidator) validateKubeService(
 	if ref == nil {
 		return nil, NilDestinationRef
 	}
-	meshService, err := t.meshServiceSelector.GetBackingMeshService(ctx, ref.GetName(), ref.GetNamespace(), ref.GetCluster().GetValue())
+	meshService, err := t.meshServiceSelector.GetBackingMeshService(ctx, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 	if err != nil {
 		return nil, err
 	}

@@ -34,6 +34,7 @@ type testContext struct {
 	meshService            *discovery_v1alpha1.MeshService
 	trafficPolicy          []*v1alpha1.TrafficPolicy
 	computedVirtualService *client_v1alpha3.VirtualService
+	baseMatchRequest       *api_v1alpha3.HTTPMatchRequest
 }
 
 var _ = Describe("IstioTranslator", func() {
@@ -77,6 +78,7 @@ var _ = Describe("IstioTranslator", func() {
 	Context("should translate TrafficPolicies into VirtualService and DestinationRule and upsert", func() {
 		setupTestContext := func() *testContext {
 			clusterName := "clusterName"
+			sourceNamespace := "source-namespace"
 			meshObjKey := client.ObjectKey{Name: "mesh-name", Namespace: "mesh-namespace"}
 			meshServiceObjKey := client.ObjectKey{Name: "mesh-service-name", Namespace: "mesh-service-namespace"}
 			kubeServiceObjKey := client.ObjectKey{Name: "kube-service-name", Namespace: "kube-service-namespace"}
@@ -96,7 +98,7 @@ var _ = Describe("IstioTranslator", func() {
 						Ref: &core_types.ResourceRef{
 							Name:      kubeServiceObjKey.Name,
 							Namespace: kubeServiceObjKey.Namespace,
-							Cluster:   &types.StringValue{Value: clusterName},
+							Cluster:   clusterName,
 						},
 					},
 					Federation: &discovery_types.Federation{
@@ -116,9 +118,18 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			trafficPolicy := []*v1alpha1.TrafficPolicy{{
 				Spec: networking_types.TrafficPolicySpec{
-					HttpRequestMatchers: []*networking_types.HttpMatcher{{}, {}, {}},
+					SourceSelector: &core_types.ServiceSelector{
+						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+							Matcher: &core_types.ServiceSelector_Matcher{
+								Namespaces: []string{sourceNamespace},
+							},
+						},
+					},
+					HttpRequestMatchers: []*networking_types.HttpMatcher{
+						{}, {}, {}},
 				}},
 			}
+			baseMatchRequest := &api_v1alpha3.HTTPMatchRequest{SourceNamespace: sourceNamespace}
 			computedVirtualService := &client_v1alpha3.VirtualService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
@@ -128,13 +139,13 @@ var _ = Describe("IstioTranslator", func() {
 					Hosts: []string{kubeServiceObjKey.Name},
 					Http: []*api_v1alpha3.HTTPRoute{
 						{
-							Match: []*api_v1alpha3.HTTPMatchRequest{{}},
+							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
 						},
 						{
-							Match: []*api_v1alpha3.HTTPMatchRequest{{}},
+							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
 						},
 						{
-							Match: []*api_v1alpha3.HTTPMatchRequest{{}},
+							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
 						},
 					},
 				},
@@ -166,6 +177,7 @@ var _ = Describe("IstioTranslator", func() {
 				meshService:            meshService,
 				trafficPolicy:          trafficPolicy,
 				computedVirtualService: computedVirtualService,
+				baseMatchRequest:       baseMatchRequest,
 			}
 		}
 
@@ -181,6 +193,20 @@ var _ = Describe("IstioTranslator", func() {
 				testContext.mesh,
 				testContext.trafficPolicy)
 			Expect(translatorError).To(BeNil())
+		})
+
+		It("should translate Retries", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+					Matcher: &core_types.ServiceSelector_Matcher{
+						Clusters: []string{"cluster-1"},
+					},
+				},
+			}
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError.GetErrorMessage()).To(ContainSubstring(istio_translator.SourceClusterSelectorNotSupported.Error()))
 		})
 
 		It("should translate CorsPolicy", func() {
@@ -254,7 +280,7 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			port := uint32(9080)
-			destCluster := &types.StringValue{Value: testContext.clusterName}
+			destCluster := testContext.clusterName
 			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
@@ -285,7 +311,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockMeshServiceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -306,7 +332,7 @@ var _ = Describe("IstioTranslator", func() {
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
-					Cluster:   &types.StringValue{Value: remoteClusterName},
+					Cluster:   remoteClusterName,
 				},
 				Percentage: 50,
 			}
@@ -471,18 +497,16 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Headers: map[string]*api_v1alpha3.StringMatch{
-						"name1": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "value1"}},
-						"name2": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
-					},
-					WithoutHeaders: map[string]*api_v1alpha3.StringMatch{
-						"name3": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "[a-z]+"}},
-					},
-				},
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Headers = map[string]*api_v1alpha3.StringMatch{
+				"name1": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "value1"}},
+				"name2": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
 			}
+			expectedMatchRequest.WithoutHeaders = map[string]*api_v1alpha3.StringMatch{
+				"name3": {MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "[a-z]+"}},
+			}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -500,12 +524,10 @@ var _ = Describe("IstioTranslator", func() {
 					Regex: "*",
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
-				},
-			}
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -523,12 +545,10 @@ var _ = Describe("IstioTranslator", func() {
 					Prefix: "prefix",
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}},
-				},
-			}
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -555,19 +575,17 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					QueryParams: map[string]*api_v1alpha3.StringMatch{
-						"qp1": {
-							MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "qpv1"},
-						},
-						"qp2": {
-							MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "qpv2"},
-						},
-					},
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.QueryParams = map[string]*api_v1alpha3.StringMatch{
+				"qp1": {
+					MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "qpv1"},
+				},
+				"qp2": {
+					MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "qpv2"},
 				},
 			}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -585,12 +603,10 @@ var _ = Describe("IstioTranslator", func() {
 					Regex: "*",
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}},
-				},
-			}
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "*"}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -608,12 +624,10 @@ var _ = Describe("IstioTranslator", func() {
 					Prefix: "prefix",
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}},
-				},
-			}
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "prefix"}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -631,12 +645,10 @@ var _ = Describe("IstioTranslator", func() {
 					Exact: "path",
 				},
 			}
-			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{
-				{
-					Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}},
-					Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}},
-				},
-			}
+			expectedMatchRequest := *testContext.baseMatchRequest
+			expectedMatchRequest.Method = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: core_types.HttpMethodValue_GET.String()}}
+			expectedMatchRequest.Uri = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "path"}}
+			testContext.computedVirtualService.Spec.Http[0].Match = []*api_v1alpha3.HTTPMatchRequest{&expectedMatchRequest}
 			mockVirtualServiceClient.
 				EXPECT().
 				UpsertSpec(ctx, testContext.computedVirtualService).
@@ -651,7 +663,7 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			multiClusterDnsName := "multicluster-dns-name"
-			destCluster := &types.StringValue{Value: "remote-cluster-1"}
+			destCluster := "remote-cluster-1"
 			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
 				Destinations: []*networking_types.MultiDestination_WeightedDestination{
 					{
@@ -687,7 +699,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockMeshServiceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -704,7 +716,7 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			multiClusterDnsName := "multicluster-dns-name"
 			port := uint32(9080)
-			destCluster := &types.StringValue{Value: "remote-cluster-1"}
+			destCluster := "remote-cluster-1"
 			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
 				Destinations: []*networking_types.MultiDestination_WeightedDestination{
 					{
@@ -744,7 +756,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockMeshServiceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -760,7 +772,7 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			multiClusterDnsName := "multicluster-dns-name"
-			destCluster := &types.StringValue{Value: "remote-cluster-1"}
+			destCluster := "remote-cluster-1"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
 			expectedSubsetName := "env-dev_version-v1"
 			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
@@ -811,12 +823,12 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockMeshServiceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster.GetValue()).
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 
 			mockDynamicClientGetter.
 				EXPECT().
-				GetClientForCluster(destCluster.GetValue()).
+				GetClientForCluster(destCluster).
 				Return(nil, true)
 			mockDestinationRuleClient.
 				EXPECT().
@@ -844,7 +856,7 @@ var _ = Describe("IstioTranslator", func() {
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
-					Cluster:   &types.StringValue{Value: remoteClusterName},
+					Cluster:   remoteClusterName,
 				},
 				Percentage: 50,
 			}
@@ -862,9 +874,13 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			labels := map[string]string{"env": "dev"}
 			namespaces := []string{"n1", "n2"}
-			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.Selector{
-				Labels:     labels,
-				Namespaces: namespaces,
+			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.ServiceSelector{
+				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+					Matcher: &core_types.ServiceSelector_Matcher{
+						Labels:     labels,
+						Namespaces: namespaces,
+					},
+				},
 			}
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
 				{
@@ -1006,6 +1022,7 @@ var _ = Describe("IstioTranslator", func() {
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
 							Headers: map[string]*api_v1alpha3.StringMatch{
 								"content-type": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "text/html"}},
 							},
@@ -1016,44 +1033,50 @@ var _ = Describe("IstioTranslator", func() {
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
-							Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "PUT"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
+							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "PUT"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
-							Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
+							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "www*"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "www*"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri:    &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/prefix"}},
-							Method: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/prefix"}},
+							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
 							WithoutHeaders: map[string]*api_v1alpha3.StringMatch{
 								"set-cookie": {MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "foo=bar"}},
 							},
@@ -1109,42 +1132,48 @@ var _ = Describe("IstioTranslator", func() {
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "longer"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "longer"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "short"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "short"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "longer*"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "longer*"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "short*"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "short*"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/longer"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/longer"}},
 						},
 					},
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
 						{
-							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/short"}},
+							SourceNamespace: testContext.baseMatchRequest.GetSourceNamespace(),
+							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/short"}},
 						},
 					},
 				},

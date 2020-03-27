@@ -67,7 +67,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 					Kind:      &pb_types.StringValue{Value: deployment.Kind},
 					Name:      deployment.Name,
 					Namespace: deployment.Namespace,
-					Cluster:   &pb_types.StringValue{Value: pod.ObjectMeta.ClusterName},
+					Cluster:   pod.ObjectMeta.ClusterName,
 				},
 				KubePod: &discovery_types.KubePod{},
 			},

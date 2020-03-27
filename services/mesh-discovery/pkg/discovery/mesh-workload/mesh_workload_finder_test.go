@@ -89,7 +89,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: meshNamespace,
-			Cluster:   &pb_types.StringValue{Value: clusterName},
+			Cluster:   clusterName,
 		}
 		expectedMeshWorkload := *discoveredMeshWorkload
 		expectedMeshWorkload.Spec.Mesh = meshSpec
@@ -131,7 +131,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
-			Cluster:   &pb_types.StringValue{Value: clusterName},
+			Cluster:   clusterName,
 		}
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		expectedErr := eris.New("error")
@@ -250,7 +250,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
-			Cluster:   &pb_types.StringValue{Value: clusterName},
+			Cluster:   clusterName,
 		}
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
@@ -309,7 +309,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
-			Cluster:   &pb_types.StringValue{Value: clusterName},
+			Cluster:   clusterName,
 		}
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().

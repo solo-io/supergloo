@@ -93,7 +93,7 @@ var _ = Describe("Translator", func() {
 	var acp = func() *networking_v1alpha1.AccessControlPolicy {
 		return &networking_v1alpha1.AccessControlPolicy{
 			Spec: networking_types.AccessControlPolicySpec{
-				DestinationSelector: &core_types.Selector{},
+				DestinationSelector: &core_types.ServiceSelector{},
 			},
 		}
 	}
@@ -269,24 +269,36 @@ var _ = Describe("Translator", func() {
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-1"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-1"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-1"},
+									},
+								},
 							},
 						},
 					},
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-2"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-2"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-2"},
+									},
+								},
 							},
 						},
 					},
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-3"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-3"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-3"},
+									},
+								},
 							},
 						},
 					},
@@ -360,24 +372,36 @@ var _ = Describe("Translator", func() {
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-1"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-1"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-1"},
+									},
+								},
 							},
 						},
 					},
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-2"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-2"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-2"},
+									},
+								},
 							},
 						},
 					},
 					{
 						ObjectMeta: metav1.ObjectMeta{Name: "acp-name-3"},
 						Spec: networking_types.AccessControlPolicySpec{
-							DestinationSelector: &core_types.Selector{
-								Namespaces: []string{"dest-namespace-3"},
+							DestinationSelector: &core_types.ServiceSelector{
+								ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
+									Matcher: &core_types.ServiceSelector_Matcher{
+										Namespaces: []string{"dest-namespace-3"},
+									},
+								},
 							},
 						},
 					},

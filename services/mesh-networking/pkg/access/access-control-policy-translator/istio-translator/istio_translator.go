@@ -187,7 +187,7 @@ func (i *istioTranslator) buildPrincipals(
 	case *core_types.IdentitySelector_ServiceAccountRefs_:
 		// select by direct reference to ServiceAccounts
 		for _, serviceAccountRef := range source.GetServiceAccountRefs().GetServiceAccounts() {
-			trustDomains, err := i.getTrustDomainForClusters(ctx, []string{serviceAccountRef.GetCluster().GetValue()})
+			trustDomains, err := i.getTrustDomainForClusters(ctx, []string{serviceAccountRef.GetCluster()})
 			if err != nil {
 				return nil, err
 			}

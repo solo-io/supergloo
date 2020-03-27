@@ -48,12 +48,16 @@ var _ = Describe("Validator", func() {
 		cluster := "cluster"
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				DestinationSelector: &core_types.Selector{
-					Refs: []*core_types.ResourceRef{
-						{
-							Name:      name,
-							Namespace: namespace,
-							Cluster:   &types1.StringValue{Value: cluster},
+				DestinationSelector: &core_types.ServiceSelector{
+					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
+						ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
+							Services: []*core_types.ResourceRef{
+								{
+									Name:      name,
+									Namespace: namespace,
+									Cluster:   cluster,
+								},
+							},
 						},
 					},
 				},
@@ -61,7 +65,7 @@ var _ = Describe("Validator", func() {
 		}
 		mockMeshServiceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, name, namespace, cluster).
+			GetMatchingMeshServices(ctx, tp.Spec.GetDestinationSelector()).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
@@ -98,7 +102,7 @@ var _ = Describe("Validator", func() {
 		serviceRef := &core_types.ResourceRef{
 			Name:      name,
 			Namespace: namespace,
-			Cluster:   &types1.StringValue{Value: cluster},
+			Cluster:   cluster,
 		}
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
@@ -129,7 +133,7 @@ var _ = Describe("Validator", func() {
 		serviceRef := &core_types.ResourceRef{
 			Name:      name,
 			Namespace: namespace,
-			Cluster:   &types1.StringValue{Value: cluster},
+			Cluster:   cluster,
 		}
 		subset := map[string]string{"env": "dev", "version": "v1"}
 		tp := &networking_v1alpha1.TrafficPolicy{
@@ -153,7 +157,7 @@ var _ = Describe("Validator", func() {
 		}}
 		mockMeshServiceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster().GetValue()).
+			GetBackingMeshService(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
 			Return(backingMeshService, nil)
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)

@@ -47,7 +47,7 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should process TrafficPolicy", func() {
-		selector := &core_types.Selector{}
+		selector := &core_types.ServiceSelector{}
 		namespace := "namespace"
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: types.TrafficPolicySpec{
@@ -72,7 +72,7 @@ var _ = Describe("Merger", func() {
 	})
 
 	It("should update triggering TrafficPolicy status to CONFLICT if conflict found during processing", func() {
-		selector := &core_types.Selector{}
+		selector := &core_types.ServiceSelector{}
 		namespace := "namespace"
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: types.TrafficPolicySpec{
