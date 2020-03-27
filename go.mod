@@ -24,6 +24,7 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.7
+	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
 	github.com/pelletier/go-toml v1.4.0 // indirect

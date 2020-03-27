@@ -1,0 +1,35 @@
++--------+--------------------------------+-----------------------------------+--------------------------------+---------+-------------+--------------------------------+--------------------------------+
+|  NAME  |        REQUEST MATCHERS        |           TRAFFIC SHIFT           |        FAULT INJECTION         | TIMEOUT |   RETRIES   |              CORS              |             MIRROR             |
++--------+--------------------------------+-----------------------------------+--------------------------------+---------+-------------+--------------------------------+--------------------------------+
+| simple | GET /static*                   | Destination:                      | Delay (Fixed: 3s 0ns)          | 4s 0ns  | 10 attempts | Allowed methods:               |                                |
+|        |                                | Name: reviews                     | On 25.00% requests             |         |             | get                            |                                |
+|        | Query Params:                  | Namespace: default                |                                |         |             |                                |                                |
+|        |                                | Cluster: target-cluster           |                                |         |             | Allowed headers:               |                                |
+|        | param1=value1                  | Weight: 80                        |                                |         |             | x-auth                         |                                |
+|        | param2=^[^a-z](Regex)          |                                   |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
+|        | Headers:                       | Destination:                      |                                |         |             |                                |                                |
+|        |                                | Name: reviews                     |                                |         |             |                                |                                |
+|        | header1: value1                | Namespace: default                |                                |         |             |                                |                                |
+|        | (Regex: false, Invert: true)   | Cluster: management-plane-cluster |                                |         |             |                                |                                |
+|        | header2: value2*               | Subsets: version: v3              |                                |         |             |                                |                                |
+|        | (Regex: true, Invert: false)   | Weight: 20                        |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
++--------+--------------------------------+-----------------------------------+--------------------------------+---------+-------------+--------------------------------+--------------------------------+
+| simple | GET /static*                   | Destination:                      |                                |         |             |                                | 10.00% to:                     |
+|        |                                | Name: reviews                     |                                |         |             |                                | Name: other-svc                |
+|        | Query Params:                  | Namespace: default                |                                |         |             |                                | Namespace: other-ns            |
+|        |                                | Cluster: target-cluster           |                                |         |             |                                | Cluster: other-cluster         |
+|        | param1=value1                  | Weight: 80                        |                                |         |             |                                |                                |
+|        | param2=^[^a-z](Regex)          |                                   |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
+|        | Headers:                       | Destination:                      |                                |         |             |                                |                                |
+|        |                                | Name: reviews                     |                                |         |             |                                |                                |
+|        | header1: value1                | Namespace: default                |                                |         |             |                                |                                |
+|        | (Regex: false, Invert: true)   | Cluster: management-plane-cluster |                                |         |             |                                |                                |
+|        | header2: value2*               | Subsets: version: v3              |                                |         |             |                                |                                |
+|        | (Regex: true, Invert: false)   | Weight: 20                        |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
+|        |                                |                                   |                                |         |             |                                |                                |
++--------+--------------------------------+-----------------------------------+--------------------------------+---------+-------------+--------------------------------+--------------------------------+
