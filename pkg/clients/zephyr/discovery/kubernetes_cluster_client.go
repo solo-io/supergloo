@@ -31,14 +31,15 @@ func (k *kubernetesClusterClient) Get(ctx context.Context, key client.ObjectKey)
 
 func (k *kubernetesClusterClient) List(
 	ctx context.Context,
-	opts ...client.ListOption) (*v1alpha1.KubernetesClusterList, error) {
+	opts ...client.ListOption,
+) (*v1alpha1.KubernetesClusterList, error) {
 	listOptions := &client.ListOptions{}
 	for _, v := range opts {
 		v.ApplyToList(listOptions)
 	}
 	raw := metav1.ListOptions{}
-	if listOptions.Raw != nil {
-		raw = *listOptions.Raw
+	if converted := listOptions.AsListOptions(); converted != nil {
+		raw = *converted
 	}
 	return k.clientSet.KubernetesClusters(listOptions.Namespace).List(raw)
 }

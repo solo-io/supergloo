@@ -35,8 +35,8 @@ func (s *generatedPodClient) List(ctx context.Context, options ...client.ListOpt
 		v.ApplyToList(listOptions)
 	}
 	raw := v1.ListOptions{}
-	if listOptions.Raw != nil {
-		raw = *listOptions.Raw
+	if converted := listOptions.AsListOptions(); converted != nil {
+		raw = *converted
 	}
 	return s.client.CoreV1().Pods(listOptions.Namespace).List(raw)
 }
