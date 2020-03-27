@@ -16,7 +16,8 @@ const (
 	// CertChainID is the ID/name for the certificate chain file.
 	CertChainID = "cert-chain.pem"
 	// RootPrivateKeyID is the ID/name for the private key file.
-	RootPrivateKeyID = "root-key.pem"
+	// Unfortunately has to be `key.pem`, not `root-key.pem` to match istio :(
+	RootPrivateKeyID = "key.pem"
 	// RootCertID is the ID/name for the CA root certificate file.
 	RootCertID = "root-cert.pem"
 )

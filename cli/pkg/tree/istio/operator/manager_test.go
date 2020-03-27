@@ -5,7 +5,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/go-utils/testutils"
+	. "github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/go-utils/versionutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	mock_kube "github.com/solo-io/mesh-projects/cli/pkg/common/kube/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -29,10 +30,9 @@ var _ = Describe("Istio operator management", func() {
 
 	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *options.IstioInstallationConfig {
 		return &options.IstioInstallationConfig{
-			CreateNamespace:            createNamespace,
-			CreateIstioControlPlaneCRD: createCRD,
-			InstallNamespace:           cliconstants.DefaultIstioOperatorNamespace,
-			IstioOperatorVersion:       cliconstants.DefaultIstioOperatorVersion,
+			CreateNamespace:        createNamespace,
+			CreateIstioOperatorCRD: createCRD,
+			InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
 		}
 	}
 
@@ -52,15 +52,13 @@ var _ = Describe("Istio operator management", func() {
 			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 
 			installConfig := &options.IstioInstallationConfig{
-				CreateNamespace:            true,
-				CreateIstioControlPlaneCRD: true,
-				InstallNamespace:           "", // purposely left empty
-				IstioOperatorVersion:       "", // purposely left empty
+				CreateNamespace:        true,
+				CreateIstioOperatorCRD: true,
+				InstallNamespace:       "", // purposely left empty
 			}
 
 			installWithDefaults := *installConfig
 			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
-			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -103,7 +101,7 @@ var _ = Describe("Istio operator management", func() {
 			manifestBuilder.EXPECT().Build(installConfig).Return("", testErr)
 
 			err := operatorManager.Install()
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToGenerateInstallManifest(testErr)))
+			Expect(err).To(HaveInErrorChain(operator.FailedToGenerateInstallManifest(testErr)))
 		})
 
 		It("reports the correct error if the manifest can't be turned into k8s resources", func() {
@@ -128,7 +126,7 @@ var _ = Describe("Istio operator management", func() {
 			kubeClient.EXPECT().BuildResources(cliconstants.DefaultIstioOperatorNamespace, installManifest).Return(nil, testErr)
 
 			err := operatorManager.Install()
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToParseInstallManifest(testErr)))
+			Expect(err).To(HaveInErrorChain(operator.FailedToParseInstallManifest(testErr)))
 		})
 
 		It("cleans up the operator install if part of it fails", func() {
@@ -141,7 +139,6 @@ var _ = Describe("Istio operator management", func() {
 
 			installWithDefaults := *installConfig
 			installWithDefaults.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
-			installWithDefaults.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 
 			installManifest := "hoooo boy let's install istio"
 			manifestBuilder.EXPECT().Build(&installWithDefaults).Return(installManifest, nil)
@@ -164,7 +161,7 @@ var _ = Describe("Istio operator management", func() {
 			)
 
 			err := operatorManager.Install()
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToInstallOperator(testErr)))
+			Expect(err).To(HaveInErrorChain(operator.FailedToInstallOperator(testErr)))
 		})
 	})
 
@@ -210,10 +207,11 @@ var _ = Describe("Istio operator management", func() {
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())
-			Expect(err).To(testutils.HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, cliconstants.DefaultIstioOperatorNamespace, cliconstants.DefaultIstioOperatorVersion)))
+			Expect(err).To(HaveInErrorChain(operator.FailedToCheckIfOperatorExists(testErr, clusterName, cliconstants.DefaultIstioOperatorNamespace)))
 		})
 
-		It("reports the proper error if the operator already exists at a different version than what was requested", func() {
+		It("will fail if current operator isn't minimum viable version", func() {
+
 			kubeClient := mock_kube.NewMockUnstructuredKubeClient(ctrl)
 			manifestBuilder := mock_operator.NewMockInstallerManifestBuilder(ctrl)
 			deploymentClient := mock_server.NewMockDeploymentClient(ctrl)
@@ -245,11 +243,18 @@ var _ = Describe("Istio operator management", func() {
 				}},
 			}, nil)
 
-			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: "4.2.0"}, nil)
+			belowRequiredVersion := versionutils.Version{
+				Major: 1,
+				Minor: 4,
+				Patch: 1,
+			}
+
+			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: belowRequiredVersion.String()}, nil)
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())
-			Expect(err).To(testutils.HaveInErrorChain(operator.OperatorVersionMismatch(clusterName, installConfig.InstallNamespace, installConfig.IstioOperatorVersion, "4.2.0")))
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(HaveInErrorChain(operator.IncompatibleOperatorVersion(belowRequiredVersion.String())))
 		})
 
 		It("reports that an installation is not needed if the operator is already installed at the requested version", func() {
@@ -284,7 +289,7 @@ var _ = Describe("Istio operator management", func() {
 				}},
 			}, nil)
 
-			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: cliconstants.DefaultIstioOperatorVersion}, nil)
+			imageNameParser.EXPECT().Parse("istio-operator-test-image:0.6.9").Return(&docker.Image{Tag: operator.MinimumOperatorVersion.String()}, nil)
 
 			installNeeded, err := operatorManager.ValidateOperatorNamespace(clusterName)
 			Expect(installNeeded).To(BeFalse())

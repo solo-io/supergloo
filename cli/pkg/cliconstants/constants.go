@@ -9,7 +9,6 @@ const (
 	DefaultKubeClientTimeout       = 5 * time.Second
 
 	DefaultIstioOperatorNamespace      = "istio-operator"
-	DefaultIstioOperatorVersion        = "1.5.0-alpha.0"
 	DefaultIstioOperatorDeploymentName = "istio-operator"
 
 	ServiceMeshHubApiGroupSuffix = "zephyr.solo.io"

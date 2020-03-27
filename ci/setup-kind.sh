@@ -107,21 +107,47 @@ helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
   --local-cluster-domain-override host.docker.internal \
   --dev-csr-agent-chart
 
-./_output/meshctl istio install --context kind-$remoteCluster --control-plane-spec=- <<EOF
-apiVersion: install.istio.io/v1alpha2
-kind: IstioControlPlane
+./_output/meshctl istio install --context kind-$remoteCluster --operator-spec=- <<EOF
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
 metadata:
-  name: example-istiocontrolplane
+  name: example-istiooperator
   namespace: istio-operator
 spec:
-  autoInjection:
-    injector:
+  profile: minimal
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    proxy:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
       enabled: true
-    enabled: true
-  hub: docker.io/istio
-  tag: 1.5.0-alpha.0
-  telemetry:
-    enabled: false
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+        service:
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32000
   values:
     prometheus:
       enabled: false
@@ -134,6 +160,7 @@ spec:
             nodePort: 32000
             port: 15443
     global:
+      pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
       mtls:
         enabled: true
@@ -144,25 +171,28 @@ spec:
       selfSigned: false
 EOF
 
-./_output/meshctl istio install --context kind-$managementPlane --control-plane-spec=- <<EOF
-apiVersion: install.istio.io/v1alpha2
-kind: IstioControlPlane
+./_output/meshctl istio install --context kind-$managementPlane --operator-spec=- <<EOF
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
 metadata:
-  name: example-istiocontrolplane
+  name: example-istiooperator
   namespace: istio-operator
 spec:
-  autoInjection:
-    injector:
-      enabled: true
-    enabled: true
-  hub: docker.io/istio
-  tag: 1.5.0-alpha.0
-  telemetry:
-    enabled: false
+  profile: minimal
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
+    proxy:
+      k8s:
+        env:
+          - name: PILOT_CERT_PROVIDER
+            value: "kubernetes"
   values:
-    prometheus:
-      enabled: false
     global:
+      pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
       mtls:
         enabled: true
@@ -194,6 +224,9 @@ done
 
 echo '✔ Meshes have been created'
 
+kubectl --context kind-$managementPlane -n istio-system rollout status deployment istiod
+kubectl --context kind-$remoteCluster -n istio-system rollout status deployment istiod
+
 kubectl --context kind-$managementPlane apply -f - <<EOF
 apiVersion: networking.zephyr.solo.io/v1alpha1
 kind: VirtualMesh
@@ -210,8 +243,52 @@ spec:
     builtin: {}
 EOF
 
-kubectl --context kind-$managementPlane -n istio-system rollout status deployment istio-citadel
-kubectl --context kind-$remoteCluster -n istio-system rollout status deployment istio-citadel
+echo ">>> Waiting for cacerts in ${managementPlane}"
+retries=50
+count=0
+ok=false
+until ${ok}; do
+    numResources=`kubectl --context kind-$managementPlane -n istio-system get secrets | grep cacerts -c`
+    if [[ ${numResources} -eq 1 ]]; then
+        ok=true
+        continue
+    fi
+    sleep 5
+    count=$(($count + 1))
+    if [[ ${count} -eq ${retries} ]]; then
+        echo "No more retries left"
+        exit 1
+    fi
+done
+
+echo "✔ cacerts in $managementPlane have been created"
+
+echo ">>> Waiting for cacerts in $remoteCluster"
+retries=50
+count=0
+ok=false
+until ${ok}; do
+    numResources=`kubectl --context kind-$remoteCluster -n istio-system get secrets | grep cacerts -c`
+    if [[ ${numResources} -eq 1 ]]; then
+        ok=true
+        continue
+    fi
+    sleep 5
+    count=$(($count + 1))
+    if [[ ${count} -eq ${retries} ]]; then
+        echo "No more retries left"
+        exit 1
+    fi
+done
+
+echo "✔ cacerts in $remoteCluster have been created"
+
+
+kubectl --context kind-$managementPlane -n istio-system delete pod -l app=istiod
+kubectl --context kind-$remoteCluster -n istio-system delete pod -l app=istiod
+
+kubectl --context kind-$managementPlane -n istio-system rollout status deployment istiod
+kubectl --context kind-$remoteCluster -n istio-system rollout status deployment istiod
 
 # label bookinfo namespaces for injection
 kubectl --context kind-$managementPlane label namespace default istio-injection=enabled
@@ -260,3 +337,7 @@ until ${ok}; do
 done
 
 echo '✔ MeshServices have been created'
+
+# Workaround for an eventual consistency bug where SMH doesn't create all the necessary federation resources
+kubectl --context kind-$managementPlane -n service-mesh-hub delete pod -l service-mesh-hub=mesh-networking
+kubectl --context kind-$managementPlane -n service-mesh-hub rollout status deployment mesh-networking

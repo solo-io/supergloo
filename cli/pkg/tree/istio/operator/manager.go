@@ -1,8 +1,11 @@
 package operator
 
 import (
+	"strings"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/versionutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -21,24 +24,27 @@ var (
 	FailedToCleanFailedInstallation = func(err error) error {
 		return eris.Wrap(err, "Failed to clean up the failed Istio operator installation.")
 	}
-	OperatorVersionMismatch = func(clusterName, installNamespace, specifiedVersion, actualVersion string) error {
-		return eris.Errorf(
-			"Istio operator is already running in cluster '%s' namespace '%s', but its version does not match what was specified; specified '%s' but found '%s'",
-			clusterName,
-			installNamespace,
-			specifiedVersion,
-			actualVersion,
-		)
-	}
 	UnrecognizedOperatorInstance    = eris.New("This instance of the Istio operator is not recognized - cannot verify its version matches what you specified")
 	FailedToGenerateInstallManifest = func(err error) error {
 		return eris.Wrap(err, "Install manifest template failed to render. This shouldn't happen")
 	}
-	FailedToValidateExistingOperator = func(err error, clusterName, namespace, version string) error {
-		return eris.Wrapf(err, "Failed to validate that the existing Istio operator deployment in cluster %s namespace %s is the requested version: %s", clusterName, namespace, version)
+	FailedToValidateExistingOperator = func(err error, clusterName, namespace string) error {
+		return eris.Wrapf(err, "Failed to validate existing Istio operator deployment in cluster %s namespace %s", clusterName, namespace)
 	}
-	FailedToCheckIfOperatorExists = func(err error, clusterName, namespace, version string) error {
-		return eris.Wrapf(err, "Failed to check whether the Istio operator is already installed to cluster %s in namespace %s at version %s", clusterName, namespace, version)
+	FailedToDetermineOperatorVersion = func(current string) error {
+		return eris.Errorf("Failed to determine whether the current operator running at version %s is the minimum version %s", current, MinimumOperatorVersion.String())
+	}
+	IncompatibleOperatorVersion = func(current string) error {
+		return eris.Errorf("Found istio operator running at version %s, while %s is the minimum supported version", current, MinimumOperatorVersion.String())
+	}
+	FailedToCheckIfOperatorExists = func(err error, clusterName, namespace string) error {
+		return eris.Wrapf(err, "Failed to check whether the Istio operator is already installed to cluster %s in namespace %s", clusterName, namespace)
+	}
+
+	MinimumOperatorVersion = versionutils.Version{
+		Major: 1,
+		Minor: 5,
+		Patch: 1,
 	}
 )
 
@@ -127,7 +133,7 @@ func (m *manager) Install() error {
 func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded bool, err error) {
 	deployments, err := m.deploymentClient.GetDeployments(m.installationConfig.InstallNamespace, "")
 	if err != nil {
-		return false, FailedToCheckIfOperatorExists(err, clusterName, m.installationConfig.InstallNamespace, m.installationConfig.IstioOperatorVersion)
+		return false, FailedToCheckIfOperatorExists(err, clusterName, m.installationConfig.InstallNamespace)
 	}
 
 	if deployments == nil {
@@ -136,9 +142,8 @@ func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded b
 
 	for _, deployment := range deployments.Items {
 		if deployment.Name == cliconstants.DefaultIstioOperatorDeploymentName {
-			err := m.validateExistingOperatorDeployment(clusterName, m.installationConfig, deployment)
-			if err != nil {
-				return false, FailedToValidateExistingOperator(err, clusterName, m.installationConfig.InstallNamespace, m.installationConfig.IstioOperatorVersion)
+			if err = m.validateExistingOperatorDeployment(clusterName, m.installationConfig, deployment); err != nil {
+				return false, FailedToValidateExistingOperator(err, clusterName, m.installationConfig.InstallNamespace)
 			}
 
 			// no install needed, and no error occurred
@@ -166,8 +171,22 @@ func (m *manager) validateExistingOperatorDeployment(clusterName string, install
 		actualImageVersion = image.Digest
 	}
 
-	if actualImageVersion != installerOptions.IstioOperatorVersion {
-		return OperatorVersionMismatch(clusterName, installerOptions.InstallNamespace, installerOptions.IstioOperatorVersion, actualImageVersion)
+	if !strings.HasPrefix(actualImageVersion, "v") {
+		actualImageVersion = "v" + actualImageVersion
+	}
+
+	version, err := versionutils.ParseVersion(actualImageVersion)
+	if err != nil {
+		return err
+	}
+
+	greater, ok := version.IsGreaterThan(MinimumOperatorVersion)
+	if !ok {
+		return FailedToDetermineOperatorVersion(version.String())
+	}
+
+	if !(greater || version.Equals(&MinimumOperatorVersion)) {
+		return IncompatibleOperatorVersion(version.String())
 	}
 
 	return nil
@@ -176,9 +195,5 @@ func (m *manager) validateExistingOperatorDeployment(clusterName string, install
 func setDefaults(installerOptions *options.IstioInstallationConfig) {
 	if installerOptions.InstallNamespace == "" {
 		installerOptions.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
-	}
-
-	if installerOptions.IstioOperatorVersion == "" {
-		installerOptions.IstioOperatorVersion = cliconstants.DefaultIstioOperatorVersion
 	}
 }

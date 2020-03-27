@@ -17,13 +17,12 @@ meshctl istio install [flags]
 ### Options
 
 ```
-      --control-plane-spec string   Optional path to a YAML file containing an IstioControlPlane resource. Pass '-' to have meshctl read the value from stdin
-      --create-operator-crd         Register the IstioControlPlane CRD in the remote cluster (default true)
+      --create-operator-crd         Register the IstioOperator CRD in the remote cluster (default true)
       --create-operator-namespace   Create the namespace specified by --operator-namespace (default true)
       --dry-run                     Dump the manifest that would be used to install the operator to stdout rather than apply it
   -h, --help                        help for install
       --operator-namespace string   Namespace in which to install the Istio operator (default "istio-operator")
-      --operator-version string     Version of the Istio operator to use (https://hub.docker.com/r/istio/operator/tags) (default "1.5.0-alpha.0")
+      --operator-spec string        Optional path to a YAML file containing an IstioOperator resource
       --profile string              Install Istio in one of its pre-configured profiles; supported profiles: [default, demo, minimal, remote, sds] (https://preliminary.istio.io/docs/setup/additional-setup/config-profiles/)
 ```
 

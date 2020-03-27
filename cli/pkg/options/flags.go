@@ -89,12 +89,11 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage string) {
 	operatorNsFlag := "operator-namespace"
 	flags := cmd.PersistentFlags()
-	flags.StringVar(&opts.Istio.Install.InstallationConfig.IstioOperatorVersion, "operator-version", cliconstants.DefaultIstioOperatorVersion, "Version of the Istio operator to use (https://hub.docker.com/r/istio/operator/tags)")
 	flags.StringVar(&opts.Istio.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Istio operator")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioControlPlaneCRD, "create-operator-crd", true, "Register the IstioControlPlane CRD in the remote cluster")
+	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioOperatorCRD, "create-operator-crd", true, "Register the IstioOperator CRD in the remote cluster")
 	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
 	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
-	flags.StringVar(&opts.Istio.Install.IstioControlPlaneManifestPath, "control-plane-spec", "", "Optional path to a YAML file containing an IstioControlPlane resource. Pass '-' to have meshctl read the value from stdin")
+	flags.StringVar(&opts.Istio.Install.IstioOperatorManifestPath, "operator-spec", "", "Optional path to a YAML file containing an IstioOperator resource")
 	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
 }
 

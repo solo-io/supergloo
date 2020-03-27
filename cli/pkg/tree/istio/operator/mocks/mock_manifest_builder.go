@@ -49,17 +49,17 @@ func (mr *MockInstallerManifestBuilderMockRecorder) Build(options interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).Build), options)
 }
 
-// GetControlPlaneSpecWithProfile mocks base method.
-func (m *MockInstallerManifestBuilder) GetControlPlaneSpecWithProfile(profile, installationNamespace string) (string, error) {
+// GetOperatorSpecWithProfile mocks base method.
+func (m *MockInstallerManifestBuilder) GetOperatorSpecWithProfile(profile, installationNamespace string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetControlPlaneSpecWithProfile", profile, installationNamespace)
+	ret := m.ctrl.Call(m, "GetOperatorSpecWithProfile", profile, installationNamespace)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetControlPlaneSpecWithProfile indicates an expected call of GetControlPlaneSpecWithProfile.
-func (mr *MockInstallerManifestBuilderMockRecorder) GetControlPlaneSpecWithProfile(profile, installationNamespace interface{}) *gomock.Call {
+// GetOperatorSpecWithProfile indicates an expected call of GetOperatorSpecWithProfile.
+func (mr *MockInstallerManifestBuilderMockRecorder) GetOperatorSpecWithProfile(profile, installationNamespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetControlPlaneSpecWithProfile", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).GetControlPlaneSpecWithProfile), profile, installationNamespace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOperatorSpecWithProfile", reflect.TypeOf((*MockInstallerManifestBuilder)(nil).GetOperatorSpecWithProfile), profile, installationNamespace)
 }
