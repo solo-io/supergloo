@@ -1,6 +1,7 @@
 package table_printing
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -79,12 +80,20 @@ func (a *accessControlPolicyPrinter) Print(out io.Writer, printMode PrintMode, a
 	return nil
 }
 
-func (a *accessControlPolicyPrinter) allowedPortsToCell(allowedPorts []string) string {
-	return strings.Join(allowedPorts, "\n")
+func (a *accessControlPolicyPrinter) allowedPortsToCell(allowedPorts []uint32) string {
+	portStrings := []string{}
+	for _, port := range allowedPorts {
+		portStrings = append(portStrings, fmt.Sprintf("%d", port))
+	}
+	return strings.Join(portStrings, "\n")
 }
 
-func (a *accessControlPolicyPrinter) allowedMethodsToCell(allowedMethods []string) string {
-	return strings.Join(allowedMethods, "\n")
+func (a *accessControlPolicyPrinter) allowedMethodsToCell(allowedMethods []core_types.HttpMethodValue) string {
+	allowedMethodStrings := []string{}
+	for _, method := range allowedMethods {
+		allowedMethodStrings = append(allowedMethodStrings, method.String())
+	}
+	return strings.Join(allowedMethodStrings, "\n")
 }
 
 func (a *accessControlPolicyPrinter) allowedPathsToCell(allowedPaths []string) string {

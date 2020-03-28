@@ -45,18 +45,22 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 					Name: "simple",
 				},
 				Spec: types.TrafficPolicySpec{
-					DestinationSelector: &core_types.Selector{
-						Refs: []*core_types.ResourceRef{{
-							Cluster:   &types2.StringValue{Value: "management-plane-cluster"},
-							Name:      "reviews",
-							Namespace: "default",
-						}},
+					DestinationSelector: &core_types.ServiceSelector{
+						ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
+							ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
+								Services: []*core_types.ResourceRef{{
+									Cluster:   "management-plane-cluster",
+									Name:      "reviews",
+									Namespace: "default",
+								}},
+							},
+						},
 					},
 					TrafficShift: &types.MultiDestination{
 						Destinations: []*types.MultiDestination_WeightedDestination{
 							{
 								Destination: &core_types.ResourceRef{
-									Cluster:   &types2.StringValue{Value: "target-cluster"},
+									Cluster:   "target-cluster",
 									Name:      "reviews",
 									Namespace: "default",
 								},
@@ -64,7 +68,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 							{
 								Destination: &core_types.ResourceRef{
-									Cluster:   &types2.StringValue{Value: "management-plane-cluster"},
+									Cluster:   "management-plane-cluster",
 									Name:      "reviews",
 									Namespace: "default",
 								},
@@ -135,18 +139,22 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 					Name: "simple",
 				},
 				Spec: types.TrafficPolicySpec{
-					DestinationSelector: &core_types.Selector{
-						Refs: []*core_types.ResourceRef{{
-							Cluster:   &types2.StringValue{Value: "management-plane-cluster"},
-							Name:      "reviews",
-							Namespace: "default",
-						}},
+					DestinationSelector: &core_types.ServiceSelector{
+						ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
+							ServiceRefs: &core_types.ServiceSelector_ServiceRefs{
+								Services: []*core_types.ResourceRef{{
+									Cluster:   "management-plane-cluster",
+									Name:      "reviews",
+									Namespace: "default",
+								}},
+							},
+						},
 					},
 					TrafficShift: &types.MultiDestination{
 						Destinations: []*types.MultiDestination_WeightedDestination{
 							{
 								Destination: &core_types.ResourceRef{
-									Cluster:   &types2.StringValue{Value: "target-cluster"},
+									Cluster:   "target-cluster",
 									Name:      "reviews",
 									Namespace: "default",
 								},
@@ -154,7 +162,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 							{
 								Destination: &core_types.ResourceRef{
-									Cluster:   &types2.StringValue{Value: "management-plane-cluster"},
+									Cluster:   "management-plane-cluster",
 									Name:      "reviews",
 									Namespace: "default",
 								},
@@ -201,7 +209,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 						Destination: &core_types.ResourceRef{
 							Name:      "other-svc",
 							Namespace: "other-ns",
-							Cluster:   &types2.StringValue{Value: "other-cluster"},
+							Cluster:   "other-cluster",
 						},
 					},
 				},

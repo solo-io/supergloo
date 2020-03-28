@@ -160,7 +160,7 @@ func (t *trafficPolicyPrinter) mirrorToCell(mirror *types.Mirror) string {
 		mirror.Percentage,
 		mirror.Destination.GetName(),
 		mirror.Destination.GetNamespace(),
-		mirror.Destination.GetCluster().GetValue(),
+		mirror.Destination.GetCluster(),
 	)
 }
 
@@ -317,7 +317,7 @@ func (t *trafficPolicyPrinter) trafficShiftToCell(trafficShift *types.MultiDesti
 		destinations = append(destinations, fmt.Sprintf("Destination:\nName: %s\nNamespace: %s\nCluster: %s\n%s%s\n",
 			destination.GetDestination().GetName(),
 			destination.GetDestination().GetNamespace(),
-			destination.GetDestination().GetCluster().GetValue(),
+			destination.GetDestination().GetCluster(),
 			subsetsStringRepr,
 			weightStringRepr,
 		))

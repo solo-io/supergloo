@@ -44,8 +44,11 @@ var _ = Describe("Access Control Printer", func() {
 					Name: "simple",
 				},
 				Spec: types.AccessControlPolicySpec{
-					AllowedPorts:   []string{"8080", "8443"},
-					AllowedMethods: []string{"GET", "POST"},
+					AllowedPorts: []uint32{8080, 8443},
+					AllowedMethods: []core_types.HttpMethodValue{
+						core_types.HttpMethodValue_GET,
+						core_types.HttpMethodValue_POST,
+					},
 				},
 			},
 			{
@@ -54,7 +57,11 @@ var _ = Describe("Access Control Printer", func() {
 				},
 				Spec: types.AccessControlPolicySpec{
 					SourceSelector: &core_types.IdentitySelector{
-						Namespaces: []string{"ns1", "ns2"},
+						IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
+							Matcher: &core_types.IdentitySelector_Matcher{
+								Namespaces: []string{"ns1", "ns2"},
+							},
+						},
 					},
 				},
 			},
