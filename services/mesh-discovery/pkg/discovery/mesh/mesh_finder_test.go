@@ -72,7 +72,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, mesh).
+				UpsertSpec(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.Create(deployment)
@@ -103,7 +103,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, mesh).
+				UpsertSpec(ctx, mesh).
 				Return(nil)
 
 			brokenMeshFinder.
@@ -187,7 +187,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, mesh).
+				UpsertSpec(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.Create(deployment)
@@ -217,7 +217,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, mesh).
+				UpsertSpec(ctx, mesh).
 				Return(testErr)
 
 			err := eventHandler.Create(deployment)
@@ -249,7 +249,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, mesh).
+				UpsertSpec(ctx, mesh).
 				Return(nil)
 
 			err := eventHandler.Update(nil, newDeployment)
@@ -300,7 +300,7 @@ var _ = Describe("Mesh Finder", func() {
 				Return(newMesh, nil)
 			localMeshClient.
 				EXPECT().
-				Upsert(ctx, newMesh).
+				UpsertSpec(ctx, newMesh).
 				Return(nil)
 			err := eventHandler.Update(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())

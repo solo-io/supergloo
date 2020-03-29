@@ -82,7 +82,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 	} else if discoveredMesh == nil {
 		return nil
 	}
-	err = m.localMeshClient.Upsert(m.ctx, discoveredMesh)
+	err = m.localMeshClient.UpsertSpec(m.ctx, discoveredMesh)
 	if err != nil {
 		logger.Errorw(fmt.Sprintf("Error creating Mesh CR for deployment %+v", deployment), zap.Error(err))
 	}

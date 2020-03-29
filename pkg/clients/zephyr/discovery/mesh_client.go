@@ -51,14 +51,15 @@ func (m *meshClient) Update(ctx context.Context, mesh *discovery_v1alpha1.Mesh) 
 	return m.client.Update(ctx, mesh)
 }
 
-func (m *meshClient) Upsert(ctx context.Context, mesh *discovery_v1alpha1.Mesh) error {
+func (m *meshClient) UpsertSpec(ctx context.Context, mesh *discovery_v1alpha1.Mesh) error {
 	key := client.ObjectKey{Name: mesh.GetName(), Namespace: mesh.GetNamespace()}
-	_, err := m.Get(ctx, key)
+	existingMesh, err := m.Get(ctx, key)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return m.Create(ctx, mesh)
 		}
 		return err
 	}
-	return m.Update(ctx, mesh)
+	existingMesh.Spec = mesh.Spec
+	return m.Update(ctx, existingMesh)
 }

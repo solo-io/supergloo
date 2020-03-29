@@ -99,18 +99,18 @@ func (mr *MockMeshClientMockRecorder) List(ctx interface{}, opts ...interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshClient)(nil).List), varargs...)
 }
 
-// Upsert mocks base method.
-func (m *MockMeshClient) Upsert(ctx context.Context, mesh *v1alpha1.Mesh) error {
+// UpsertSpec mocks base method.
+func (m *MockMeshClient) UpsertSpec(ctx context.Context, mesh *v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upsert", ctx, mesh)
+	ret := m.ctrl.Call(m, "UpsertSpec", ctx, mesh)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Upsert indicates an expected call of Upsert.
-func (mr *MockMeshClientMockRecorder) Upsert(ctx, mesh interface{}) *gomock.Call {
+// UpsertSpec indicates an expected call of UpsertSpec.
+func (mr *MockMeshClientMockRecorder) UpsertSpec(ctx, mesh interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockMeshClient)(nil).Upsert), ctx, mesh)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockMeshClient)(nil).UpsertSpec), ctx, mesh)
 }
 
 // Update mocks base method.

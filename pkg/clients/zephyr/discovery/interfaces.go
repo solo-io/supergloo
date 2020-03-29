@@ -20,7 +20,7 @@ type MeshClient interface {
 	// To specify a namespace call with List(ctx , client.InNamespace("namespace"))
 	List(ctx context.Context, opts ...client.ListOption) (*discovery_v1alpha1.MeshList, error)
 	// Create if Mesh doesn't exist, otherwise update.
-	Upsert(ctx context.Context, mesh *discovery_v1alpha1.Mesh) error
+	UpsertSpec(ctx context.Context, mesh *discovery_v1alpha1.Mesh) error
 	Update(ctx context.Context, mesh *discovery_v1alpha1.Mesh) error
 }
 
