@@ -11,6 +11,7 @@ import (
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/mesh-projects/pkg/logging"
 	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
+	"github.com/solo-io/mesh-projects/services/common/constants"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -59,7 +60,9 @@ func (d *meshWorkloadFinder) StartDiscovery(podController controller.PodControll
 func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
 	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod)
+
 	discoveredMeshWorkload, err := d.discoverMeshWorkload(pod)
+
 	if err != nil && discoveredMeshWorkload == nil {
 		logger.Errorw(MeshWorkloadProcessingError, zap.Error(err))
 		return err
@@ -123,26 +126,39 @@ func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
 	return nil
 }
 
+func (d *meshWorkloadFinder) attachGeneralDiscoveryLabels(controllerRef *core_types.ResourceRef, meshWorkload *discoveryv1alpha1.MeshWorkload) {
+	if meshWorkload.Labels == nil {
+		meshWorkload.Labels = map[string]string{}
+	}
+	meshWorkload.Labels[constants.DISCOVERED_BY] = constants.MESH_WORKLOAD_DISCOVERY
+	meshWorkload.Labels[constants.CLUSTER] = d.clusterName
+	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAME] = controllerRef.GetName()
+	meshWorkload.Labels[constants.KUBE_CONTROLLER_NAMESPACE] = controllerRef.GetNamespace()
+}
+
 func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1alpha1.MeshWorkload, error) {
 	var (
 		multiErr               *multierror.Error
 		discoveredMeshWorkload *discoveryv1alpha1.MeshWorkload
+		controllerRef          *core_types.ResourceRef
 	)
 	for _, meshWorkloadScanner := range d.meshWorkloadScanners {
-		discoveredMeshWorkloadRef, objectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
+		discoveredControllerRef, discoveredMeshWorkloadObjectMeta, err := meshWorkloadScanner.ScanPod(d.ctx, pod)
 		if err != nil {
 			multiErr = multierror.Append(multiErr, err)
 		}
-		if discoveredMeshWorkloadRef != nil {
+		if discoveredControllerRef != nil {
+			controllerRef = discoveredControllerRef
+
 			meshRef, err := d.createMeshResourceRef(d.ctx)
 			if err != nil {
 				multiErr = multierror.Append(multiErr, err)
 				return nil, multiErr.ErrorOrNil()
 			}
 			discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
-				ObjectMeta: objectMeta,
+				ObjectMeta: discoveredMeshWorkloadObjectMeta,
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubeControllerRef: discoveredMeshWorkloadRef,
+					KubeControllerRef: controllerRef,
 					KubePod: &discovery_types.KubePod{
 						Labels:             pod.Labels,
 						ServiceAccountName: pod.Spec.ServiceAccountName,
@@ -152,6 +168,11 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 			}
 			break
 		}
+	}
+
+	// the mesh workload needs to have our standard discovery labels attached to it, like cluster name, etc
+	if discoveredMeshWorkload != nil {
+		d.attachGeneralDiscoveryLabels(controllerRef, discoveredMeshWorkload)
 	}
 	return discoveredMeshWorkload, multiErr.ErrorOrNil()
 }

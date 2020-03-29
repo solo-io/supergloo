@@ -14,11 +14,9 @@ import (
 )
 
 var (
-	DiscoveryLabels = func(cluster string) map[string]string {
+	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.DISCOVERED_BY: constants.MESH_WORKLOAD_DISCOVERY,
-			constants.MESH_TYPE:     core_types.MeshType_ISTIO.String(),
-			constants.CLUSTER:       cluster,
+			constants.MESH_TYPE: core_types.MeshType_ISTIO.String(),
 		}
 	}
 )
@@ -52,7 +50,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 		}, metav1.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
 			Namespace: env.DefaultWriteNamespace,
-			Labels:    DiscoveryLabels(pod.GetClusterName()),
+			Labels:    DiscoveryLabels(),
 		}, nil
 }
 

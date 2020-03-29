@@ -60,7 +60,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: env.DefaultWriteNamespace,
-				Labels:    mesh_workload.DiscoveryLabels(pod.GetClusterName()),
+				Labels:    mesh_workload.DiscoveryLabels(),
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
 				KubeControllerRef: &core_types.ResourceRef{
