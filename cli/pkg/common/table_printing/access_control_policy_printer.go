@@ -46,7 +46,7 @@ func (a *accessControlPolicyPrinter) Print(out io.Writer, printMode PrintMode, a
 		}
 
 		if acSpec.GetDestinationSelector() != nil && printMode == WorkloadPrintMode {
-			newRow = append(newRow, internal.SelectorToCell(acSpec.DestinationSelector))
+			newRow = append(newRow, internal.ServiceSelectorToCell(acSpec.DestinationSelector))
 		} else {
 			newRow = append(newRow, "")
 		}

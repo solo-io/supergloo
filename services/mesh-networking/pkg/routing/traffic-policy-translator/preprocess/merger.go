@@ -311,6 +311,6 @@ func areTrafficPolicyActionsEqual(
 
 type MergeableHttpTrafficPolicy struct {
 	HttpMatcher       *networking_v1alpha1_types.HttpMatcher
-	SourceSelector    *core_types.ServiceSelector
+	SourceSelector    *core_types.WorkloadSelector
 	TrafficPolicySpec *networking_v1alpha1_types.TrafficPolicySpec
 }

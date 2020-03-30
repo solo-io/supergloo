@@ -118,12 +118,8 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			trafficPolicy := []*v1alpha1.TrafficPolicy{{
 				Spec: networking_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: []string{sourceNamespace},
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: []string{sourceNamespace},
 					},
 					HttpRequestMatchers: []*networking_types.HttpMatcher{
 						{}, {}, {}},
@@ -193,20 +189,6 @@ var _ = Describe("IstioTranslator", func() {
 				testContext.mesh,
 				testContext.trafficPolicy)
 			Expect(translatorError).To(BeNil())
-		})
-
-		It("should translate Retries", func() {
-			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-					Matcher: &core_types.ServiceSelector_Matcher{
-						Clusters: []string{"cluster-1"},
-					},
-				},
-			}
-			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
-				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
-			Expect(translatorError.GetErrorMessage()).To(ContainSubstring(istio_translator.SourceClusterSelectorNotSupported.Error()))
 		})
 
 		It("should translate CorsPolicy", func() {
@@ -874,13 +856,9 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			labels := map[string]string{"env": "dev"}
 			namespaces := []string{"n1", "n2"}
-			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.ServiceSelector{
-				ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-					Matcher: &core_types.ServiceSelector_Matcher{
-						Labels:     labels,
-						Namespaces: namespaces,
-					},
-				},
+			testContext.trafficPolicy[0].Spec.SourceSelector = &core_types.WorkloadSelector{
+				Labels:     labels,
+				Namespaces: namespaces,
 			}
 			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
 				{

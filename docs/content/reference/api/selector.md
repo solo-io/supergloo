@@ -23,6 +23,8 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/se
   - [ServiceSelector.Matcher](#core.zephyr.solo.io.ServiceSelector.Matcher)
   - [ServiceSelector.Matcher.LabelsEntry](#core.zephyr.solo.io.ServiceSelector.Matcher.LabelsEntry)
   - [ServiceSelector.ServiceRefs](#core.zephyr.solo.io.ServiceSelector.ServiceRefs)
+  - [WorkloadSelector](#core.zephyr.solo.io.WorkloadSelector)
+  - [WorkloadSelector.LabelsEntry](#core.zephyr.solo.io.WorkloadSelector.LabelsEntry)
 
 
 
@@ -80,7 +82,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 <a name="core.zephyr.solo.io.ServiceSelector"></a>
 
 ### ServiceSelector
-Global selector used to select resources from any set of clusters, namespaces, and/or labels<br>Specifies a method by which to select pods within a mesh for the application of rules and policies.<br>Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.<br>Currently only selection on the local cluster is supported, indicated by a nil cluster field.<br>Valid: 1. selector: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" 2. selector: refs: - name: foo namespace: bar<br>Invalid: 1. selector: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" refs: - name: foo namespace: bar<br>By default labels will select across all namespaces, unless a list of namespaces is provided, in which case it will only select from those. An empty or nil list is equal to AllNamespaces.<br>If no labels are given, and only namespaces, the full list of resources from the namespace will be selected.<br>The following selector will select all resources with the following labels in every namespace, in the local cluster:<br>selector: labels: foo: bar hello: world<br>Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:<br>selector: labels: foo: bar hello: world namespaces - foo - bar<br>This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:<br>selector namespaces - foo - bar labels: hello: world
+Select Kubernetes services<br>Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.<br>Valid: 1. selector: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" 2. selector: refs: - name: foo namespace: bar<br>Invalid: 1. selector: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" refs: - name: foo namespace: bar<br>By default labels will select across all namespaces, unless a list of namespaces is provided, in which case it will only select from those. An empty list is equal to AllNamespaces.<br>If no labels are given, and only namespaces, all resources from the namespaces will be selected.<br>The following selector will select all resources with the following labels in every namespace, in the local cluster:<br>selector: matcher: labels: foo: bar hello: world<br>Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:<br>selector: matcher: labels: foo: bar hello: world namespaces - foo - bar<br>This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:<br>selector matcher: namespaces - foo - bar labels: hello: world
 
 
 | Field | Type | Label | Description |
@@ -135,6 +137,38 @@ Global selector used to select resources from any set of clusters, namespaces, a
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | services | [][ResourceRef](#core.zephyr.solo.io.ResourceRef) | repeated | Match k8s Services by direct reference. |
+
+
+
+
+
+
+<a name="core.zephyr.solo.io.WorkloadSelector"></a>
+
+### WorkloadSelector
+Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for detailed semantics.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| labels | [][WorkloadSelector.LabelsEntry](#core.zephyr.solo.io.WorkloadSelector.LabelsEntry) | repeated | If specified, all labels must exist on workloads, else match on any labels. |
+| namespaces | [][string](#string) | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
+
+
+
+
+
+
+<a name="core.zephyr.solo.io.WorkloadSelector.LabelsEntry"></a>
+
+### WorkloadSelector.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
 
 
 

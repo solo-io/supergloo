@@ -78,13 +78,9 @@ var _ = Describe("Merger", func() {
 		}
 		tp1 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-						Matcher: &core_types.ServiceSelector_Matcher{
-							Namespaces: destNamespaces1,
-							Labels:     destLabels1,
-						},
-					},
+				SourceSelector: &core_types.WorkloadSelector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
 				},
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -107,13 +103,9 @@ var _ = Describe("Merger", func() {
 		}
 		tp2 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-						Matcher: &core_types.ServiceSelector_Matcher{
-							Namespaces: destNamespaces2,
-							Labels:     destLabels2,
-						},
-					},
+				SourceSelector: &core_types.WorkloadSelector{
+					Namespaces: destNamespaces2,
+					Labels:     destLabels2,
 				},
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -137,13 +129,9 @@ var _ = Describe("Merger", func() {
 		}
 		tp3 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-						Matcher: &core_types.ServiceSelector_Matcher{
-							Namespaces: destNamespaces1,
-							Labels:     destLabels1,
-						},
-					},
+				SourceSelector: &core_types.WorkloadSelector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
 				},
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -166,13 +154,9 @@ var _ = Describe("Merger", func() {
 		}
 		tp4 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-						Matcher: &core_types.ServiceSelector_Matcher{
-							Namespaces: destNamespaces1,
-							Labels:     destLabels1,
-						},
-					},
+				SourceSelector: &core_types.WorkloadSelector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
 				},
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -197,13 +181,9 @@ var _ = Describe("Merger", func() {
 		}
 		tp5 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
-				SourceSelector: &core_types.ServiceSelector{
-					ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-						Matcher: &core_types.ServiceSelector_Matcher{
-							Namespaces: destNamespaces1,
-							Labels:     destLabels1,
-						},
-					},
+				SourceSelector: &core_types.WorkloadSelector{
+					Namespaces: destNamespaces1,
+					Labels:     destLabels1,
 				},
 				DestinationSelector: &core_types.ServiceSelector{
 					ServiceSelectorType: &core_types.ServiceSelector_ServiceRefs_{
@@ -308,13 +288,9 @@ var _ = Describe("Merger", func() {
 		mergedTrafficPolicy1 := []*networking_v1alpha1.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: destNamespaces1,
-								Labels:     destLabels1,
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
 					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
@@ -325,13 +301,9 @@ var _ = Describe("Merger", func() {
 			},
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: destNamespaces2,
-								Labels:     destLabels2,
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: destNamespaces2,
+						Labels:     destLabels2,
 					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
@@ -339,13 +311,9 @@ var _ = Describe("Merger", func() {
 			},
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: destNamespaces1,
-								Labels:     destLabels1,
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
 					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
 					FaultInjection: &networking_v1alpha1_types.FaultInjection{
@@ -357,13 +325,9 @@ var _ = Describe("Merger", func() {
 		mergedTrafficPolicy2 := []*networking_v1alpha1.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: destNamespaces2,
-								Labels:     destLabels2,
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: destNamespaces2,
+						Labels:     destLabels2,
 					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
@@ -371,13 +335,9 @@ var _ = Describe("Merger", func() {
 			},
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{
-					SourceSelector: &core_types.ServiceSelector{
-						ServiceSelectorType: &core_types.ServiceSelector_Matcher_{
-							Matcher: &core_types.ServiceSelector_Matcher{
-								Namespaces: destNamespaces1,
-								Labels:     destLabels1,
-							},
-						},
+					SourceSelector: &core_types.WorkloadSelector{
+						Namespaces: destNamespaces1,
+						Labels:     destLabels1,
 					},
 					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},

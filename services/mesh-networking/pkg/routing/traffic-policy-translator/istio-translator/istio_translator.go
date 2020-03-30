@@ -249,23 +249,21 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 ) ([]*api_v1alpha3.HTTPMatchRequest, error) {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*api_v1alpha3.HTTPMatchRequest
-	if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetClusters()) > 0 {
-		return nil, SourceClusterSelectorNotSupported
-	}
+
 	// Set SourceNamespace and SourceLabels.
-	if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels()) > 0 ||
-		len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces()) > 0 {
-		if len(trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces()) > 0 {
-			for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetNamespaces() {
+	if len(trafficPolicy.Spec.GetSourceSelector().GetLabels()) > 0 ||
+		len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
+		if len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
+			for _, namespace := range trafficPolicy.Spec.GetSourceSelector().GetNamespaces() {
 				matchRequest := &api_v1alpha3.HTTPMatchRequest{
 					SourceNamespace: namespace,
-					SourceLabels:    trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels(),
+					SourceLabels:    trafficPolicy.Spec.GetSourceSelector().GetLabels(),
 				}
 				sourceMatchers = append(sourceMatchers, matchRequest)
 			}
 		} else {
 			sourceMatchers = append(sourceMatchers, &api_v1alpha3.HTTPMatchRequest{
-				SourceLabels: trafficPolicy.Spec.GetSourceSelector().GetMatcher().GetLabels(),
+				SourceLabels: trafficPolicy.Spec.GetSourceSelector().GetLabels(),
 			})
 		}
 	}

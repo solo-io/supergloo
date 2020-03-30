@@ -338,7 +338,7 @@ a routing rule applies some L7 routing features to an existing mesh routing rule
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [core.zephyr.solo.io.ServiceSelector](#core.zephyr.solo.io.ServiceSelector) |  | > Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
+| sourceSelector | [core.zephyr.solo.io.WorkloadSelector](#core.zephyr.solo.io.WorkloadSelector) |  | > Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
 | destinationSelector | [core.zephyr.solo.io.ServiceSelector](#core.zephyr.solo.io.ServiceSelector) |  | requests destined for these k8s services will have the rule applied leave empty to apply to all destination k8s services in the mesh |
 | httpRequestMatchers | [][HttpMatcher](#networking.zephyr.solo.io.HttpMatcher) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method |
 | trafficShift | [MultiDestination](#networking.zephyr.solo.io.MultiDestination) |  | a routing rule can have one of several types Note: types imported from istio will be replaced with our own simpler types, this is just a place to start from<br>enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services |

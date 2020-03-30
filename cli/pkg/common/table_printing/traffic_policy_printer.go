@@ -46,13 +46,13 @@ func (t *trafficPolicyPrinter) Print(out io.Writer, printMode PrintMode, traffic
 		tpSpec := trafficPolicy.Spec
 
 		if tpSpec.GetSourceSelector() != nil && printMode == ServicePrintMode {
-			newRow = append(newRow, internal.SelectorToCell(tpSpec.SourceSelector))
+			newRow = append(newRow, internal.WorkloadSelectorToCell(tpSpec.SourceSelector))
 		} else {
 			newRow = append(newRow, "")
 		}
 
 		if tpSpec.GetDestinationSelector() != nil && printMode == WorkloadPrintMode {
-			newRow = append(newRow, internal.SelectorToCell(tpSpec.DestinationSelector))
+			newRow = append(newRow, internal.ServiceSelectorToCell(tpSpec.DestinationSelector))
 		} else {
 			newRow = append(newRow, "")
 		}

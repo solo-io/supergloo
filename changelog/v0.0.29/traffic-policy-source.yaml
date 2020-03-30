@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Do TrafficPolicy source selection based on new WorkloadSelector type
+    issueLink:  https://github.com/solo-io/mesh-projects/issues/333

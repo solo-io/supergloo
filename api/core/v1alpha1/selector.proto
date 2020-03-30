@@ -9,14 +9,10 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /*
-    Global selector used to select resources from any set of clusters, namespaces, and/or labels
-
-    Specifies a method by which to select pods within a mesh for the application of rules and policies.
+    Select Kubernetes services
 
     Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
     considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
-
-    Currently only selection on the local cluster is supported, indicated by a nil cluster field.
 
     Valid:
         1.
@@ -47,23 +43,25 @@ option (gogoproto.equal_all) = true;
                   namespace: bar
 
     By default labels will select across all namespaces, unless a list of namespaces is provided, in which case
-    it will only select from those. An empty or nil list is equal to AllNamespaces.
+    it will only select from those. An empty list is equal to AllNamespaces.
 
-    If no labels are given, and only namespaces, the full list of resources from the namespace will be selected.
+    If no labels are given, and only namespaces, all resources from the namespaces will be selected.
 
     The following selector will select all resources with the following labels in every namespace, in the local cluster:
 
     selector:
+      matcher:
         labels:
-            foo: bar
-            hello: world
+          foo: bar
+          hello: world
 
     Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:
 
     selector:
+      matcher:
         labels:
-            foo: bar
-            hello: world
+          foo: bar
+          hello: world
         namespaces
         - foo
         - bar
@@ -71,11 +69,12 @@ option (gogoproto.equal_all) = true;
     This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:
 
     selector
+      matcher:
         namespaces
         - foo
         - bar
         labels:
-            hello: world
+          hello: world
 
 
 */
@@ -99,6 +98,18 @@ message ServiceSelector {
         Matcher matcher = 1;
         ServiceRefs service_refs = 2;
     }
+}
+
+/*
+    Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for
+    detailed semantics.
+*/
+message WorkloadSelector {
+    // If specified, all labels must exist on workloads, else match on any labels.
+    map<string, string> labels = 1;
+
+    // If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+    repeated string namespaces = 2;
 }
 
 /*

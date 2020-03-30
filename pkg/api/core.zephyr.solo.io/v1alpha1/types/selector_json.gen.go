@@ -52,6 +52,17 @@ func (this *ServiceSelector_ServiceRefs) UnmarshalJSON(b []byte) error {
 	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for WorkloadSelector
+func (this *WorkloadSelector) MarshalJSON() ([]byte, error) {
+	str, err := SelectorMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for WorkloadSelector
+func (this *WorkloadSelector) UnmarshalJSON(b []byte) error {
+	return SelectorUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for IdentitySelector
 func (this *IdentitySelector) MarshalJSON() ([]byte, error) {
 	str, err := SelectorMarshaler.MarshalToString(this)

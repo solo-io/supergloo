@@ -7,7 +7,25 @@ import (
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 )
 
-func SelectorToCell(selector *core_types.ServiceSelector) string {
+func WorkloadSelectorToCell(selector *core_types.WorkloadSelector) string {
+	var namespaceField string
+	if len(selector.GetNamespaces()) > 0 {
+		namespaceField = fmt.Sprintf("Namespaces:\n%s\n", strings.Join(selector.GetNamespaces(), ","))
+	}
+
+	var labelsField string
+	if len(selector.GetLabels()) > 0 {
+		labelStrings := []string{}
+		for k, v := range selector.GetLabels() {
+			labelStrings = append(labelStrings, fmt.Sprintf("%s=%s", k, v))
+		}
+		labelsField = fmt.Sprintf("Labels:\n%s\n", strings.Join(labelStrings, ","))
+	}
+
+	return fmt.Sprintf("%s%s", namespaceField, labelsField)
+}
+
+func ServiceSelectorToCell(selector *core_types.ServiceSelector) string {
 	switch selector.GetServiceSelectorType().(type) {
 	case *core_types.ServiceSelector_Matcher_:
 		namespaces := selector.GetMatcher().GetNamespaces()
