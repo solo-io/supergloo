@@ -73,7 +73,7 @@ func (i *istioTranslator) Translate(
 	acp *networking_v1alpha1.AccessControlPolicy,
 ) *networking_types.AccessControlPolicyStatus_TranslatorError {
 	authPoliciesWithClients := make([]authPolicyClientPair, 0, len(targetServices))
-	principals, err := i.buildPrincipals(ctx, acp.Spec.GetSourceSelector())
+	fromSources, err := i.buildSources(ctx, acp.Spec.GetSourceSelector())
 	if err != nil {
 		return &networking_types.AccessControlPolicyStatus_TranslatorError{
 			TranslatorId: TranslatorId,
@@ -96,7 +96,7 @@ func (i *istioTranslator) Translate(
 			}
 		}
 		authPolicyWithClient := authPolicyClientPair{
-			authPolicy: i.translateForDestination(principals, acp, targetService.MeshService),
+			authPolicy: i.translateForDestination(fromSources, acp, targetService.MeshService),
 			client:     i.authPolicyClientFactory(client),
 		}
 		authPoliciesWithClients = append(authPoliciesWithClients, authPolicyWithClient)
@@ -115,7 +115,7 @@ func (i *istioTranslator) Translate(
 }
 
 func (i *istioTranslator) translateForDestination(
-	principals []string,
+	fromSources *security_v1beta1.Rule_From,
 	acp *networking_v1alpha1.AccessControlPolicy,
 	meshService *discovery_v1alpha1.MeshService,
 ) *client_security_v1beta1.AuthorizationPolicy {
@@ -131,11 +131,7 @@ func (i *istioTranslator) translateForDestination(
 			Rules: []*security_v1beta1.Rule{
 				{
 					From: []*security_v1beta1.Rule_From{
-						{
-							Source: &security_v1beta1.Source{
-								Principals: principals,
-							},
-						},
+						fromSources,
 					},
 					To: []*security_v1beta1.Rule_To{
 						{
@@ -156,33 +152,46 @@ func (i *istioTranslator) translateForDestination(
 
 // Generate all fully qualified principal names for specified service accounts.
 // Reference: https://istio.io/docs/reference/config/security/authorization-policy/#Source
-func (i *istioTranslator) buildPrincipals(
+func (i *istioTranslator) buildSources(
 	ctx context.Context,
 	source *core_types.IdentitySelector,
-) ([]string, error) {
+) (*security_v1beta1.Rule_From, error) {
 	var principals []string
-
+	var namespaces []string
+	if source.GetIdentitySelectorType() == nil {
+		// allow any source identity
+		return &security_v1beta1.Rule_From{
+			Source: &security_v1beta1.Source{
+				Principals: []string{"*"},
+			},
+		}, nil
+	}
 	switch selectorType := source.GetIdentitySelectorType().(type) {
 	case *core_types.IdentitySelector_Matcher_:
-		// select by clusters and namespaces
-		trustDomains, err := i.getTrustDomainForClusters(ctx, source.GetMatcher().GetClusters())
-		if err != nil {
-			return nil, err
-		}
-		// Permit any cluster if unspecified.
-		if len(trustDomains) == 0 {
-			trustDomains = []string{"*"}
-		}
-		namespaces := source.GetMatcher().GetNamespaces()
-		// Permit any namespace if unspecified.
-		if len(namespaces) == 0 {
-			namespaces = []string{"*"}
-		}
-		for _, trustDomain := range trustDomains {
-			for _, namespace := range namespaces {
-				// Use wildcard for service account to permit any.
-				principals = append(principals, BuildSpiffeURI(trustDomain, namespace, "*"))
+		if len(source.GetMatcher().GetClusters()) > 0 {
+			// select by clusters and specifiedNamespaces
+			trustDomains, err := i.getTrustDomainForClusters(ctx, source.GetMatcher().GetClusters())
+			if err != nil {
+				return nil, err
 			}
+			specifiedNamespaces := source.GetMatcher().GetNamespaces()
+			// Permit any namespace if unspecified.
+			if len(specifiedNamespaces) == 0 {
+				specifiedNamespaces = []string{""}
+			}
+			for _, trustDomain := range trustDomains {
+				for _, namespace := range specifiedNamespaces {
+					// Use empty string for service account to permit any.
+					uri, err := buildSpiffeURI(trustDomain, namespace, "")
+					if err != nil {
+						return nil, err
+					}
+					principals = append(principals, uri)
+				}
+			}
+		} else {
+			// select by namespaces, permit any cluster
+			namespaces = source.GetMatcher().GetNamespaces()
 		}
 	case *core_types.IdentitySelector_ServiceAccountRefs_:
 		// select by direct reference to ServiceAccounts
@@ -192,12 +201,21 @@ func (i *istioTranslator) buildPrincipals(
 				return nil, err
 			}
 			// If no error thrown, trustDomains is guaranteed to be of length 1.
-			principals = append(principals, BuildSpiffeURI(trustDomains[0], serviceAccountRef.GetNamespace(), serviceAccountRef.GetName()))
+			uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.GetNamespace(), serviceAccountRef.GetName())
+			if err != nil {
+				return nil, err
+			}
+			principals = append(principals, uri)
 		}
 	default:
 		return nil, eris.Errorf("IdentitySelector has unexpected type %T", selectorType)
 	}
-	return principals, nil
+	return &security_v1beta1.Rule_From{
+		Source: &security_v1beta1.Source{
+			Principals: principals,
+			Namespaces: namespaces,
+		},
+	}, nil
 }
 
 /*
@@ -225,7 +243,7 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 }
 
 func methodsToString(methodEnums []core_types.HttpMethodValue) []string {
-	methods := make([]string, 0, len(methodEnums))
+	var methods []string
 	for _, methodEnum := range methodEnums {
 		methods = append(methods, methodEnum.String())
 	}
@@ -241,9 +259,19 @@ type authPolicyClientPair struct {
 /*
 	The principal string format is described here: https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE-ID.md#2-spiffe-identity
 	Testing shows that the "spiffe://" prefix cannot be included.
+	Istio only respects prefix or suffix wildcards, https://github.com/istio/istio/blob/9727308b3dadbfc8151cf70a045d1c7c52ab222b/pilot/pkg/security/authz/model/matcher/string.go#L45
 */
-func BuildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
-	return fmt.Sprintf("%s/ns/%s/sa/%s", trustDomain, namespace, serviceAccount)
+func buildSpiffeURI(trustDomain, namespace, serviceAccount string) (string, error) {
+	if trustDomain == "" {
+		return "", eris.New("trustDomain cannot be empty")
+	}
+	if namespace == "" {
+		return fmt.Sprintf("%s/ns/*", trustDomain), nil
+	} else if serviceAccount == "" {
+		return fmt.Sprintf("%s/ns/%s/sa/*", trustDomain, namespace), nil
+	} else {
+		return fmt.Sprintf("%s/ns/%s/sa/%s", trustDomain, namespace, serviceAccount), nil
+	}
 }
 
 func intToString(ints []uint32) []string {

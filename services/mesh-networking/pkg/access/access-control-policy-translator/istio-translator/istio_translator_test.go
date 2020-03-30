@@ -182,7 +182,7 @@ var _ = Describe("IstioTranslator", func() {
 			for _, namespace := range testData.namespaces {
 				expectedPrincipals = append(
 					expectedPrincipals,
-					fmt.Sprintf(istio_translator.BuildSpiffeURI(trustDomain, namespace, "*")),
+					fmt.Sprintf("%s/ns/%s/sa/*", trustDomain, namespace),
 				)
 			}
 		}
@@ -229,18 +229,15 @@ var _ = Describe("IstioTranslator", func() {
 		Expect(translatorError).To(BeNil())
 	})
 
-	It("should use wildcards if user omits specifying source namespace and cluster", func() {
+	It("use suffix wildcard if cluster specified and namespace omitted", func() {
 		testData := initTestData()
-		testData.namespaces = []string{"*"}
-		testData.acpClusterNames = nil
-		testData.accessControlPolicy.Spec.SourceSelector.GetMatcher().Clusters = nil
 		testData.accessControlPolicy.Spec.SourceSelector.GetMatcher().Namespaces = nil
 		var expectedPrincipals []string
 		var expectedAuthPolicies []*client_security_v1beta1.AuthorizationPolicy
-		for _, namespace := range testData.namespaces {
+		for _, trustDomain := range testData.trustDomains {
 			expectedPrincipals = append(
 				expectedPrincipals,
-				fmt.Sprintf(istio_translator.BuildSpiffeURI("*", namespace, "*")),
+				fmt.Sprintf("%s/ns/*", trustDomain),
 			)
 		}
 		for _, targetService := range testData.targetServices {
@@ -280,9 +277,153 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
 			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, true)
-			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
+		Expect(translatorError).To(BeNil())
+	})
+
+	It("should use principal wildcard if user omits source selector", func() {
+		clusterNames := []string{"cluster-name1", "cluster-name2"}
+		trustDomains := []string{"cluster.local1", "cluster.local2"}
+		acp := &networking_v1alpha1.AccessControlPolicy{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "acp-name",
+				Namespace: "acp-namespace",
+			},
+			Spec: networking_types.AccessControlPolicySpec{},
+		}
+		targetServices := []access_control_policy_translator.TargetService{
+			{
+				MeshService: &discovery_v1alpha1.MeshService{
+					Spec: discovery_types.MeshServiceSpec{
+						KubeService: &discovery_types.KubeService{
+							WorkloadSelectorLabels: map[string]string{
+								"k1a": "v1a", "k1b": "v1b",
+							},
+							Ref: &core_types.ResourceRef{Namespace: "namespace1"},
+						},
+					},
+				},
+				Mesh: &discovery_v1alpha1.Mesh{
+					Spec: discovery_types.MeshSpec{
+						MeshType: &discovery_types.MeshSpec_Istio{
+							Istio: &discovery_types.IstioMesh{
+								CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+							},
+						},
+						Cluster: &core_types.ResourceRef{Name: clusterNames[0]},
+					},
+				},
+			},
+		}
+		expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      acp.GetName(),
+				Namespace: targetServices[0].MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
+			},
+			Spec: security_v1beta1.AuthorizationPolicy{
+				Selector: &v1beta1.WorkloadSelector{
+					MatchLabels: targetServices[0].MeshService.Spec.GetKubeService().GetWorkloadSelectorLabels(),
+				},
+				Rules: []*security_v1beta1.Rule{
+					{
+						From: []*security_v1beta1.Rule_From{
+							{
+								Source: &security_v1beta1.Source{
+									Principals: []string{"*"},
+								},
+							},
+						},
+						To: []*security_v1beta1.Rule_To{
+							{
+								Operation: &security_v1beta1.Operation{},
+							},
+						},
+					},
+				},
+				Action: security_v1beta1.AuthorizationPolicy_ALLOW,
+			},
+		}
+		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, true)
+		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
+		Expect(translatorError).To(BeNil())
+	})
+
+	It("should use From.Source.Namespaces if only Matcher.Namespaces specified (and cluster omitted)", func() {
+		clusterNames := []string{"cluster-name1", "cluster-name2"}
+		trustDomains := []string{"cluster.local1", "cluster.local2"}
+		acp := &networking_v1alpha1.AccessControlPolicy{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      "acp-name",
+				Namespace: "acp-namespace",
+			},
+			Spec: networking_types.AccessControlPolicySpec{
+				SourceSelector: &core_types.IdentitySelector{
+					IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
+						Matcher: &core_types.IdentitySelector_Matcher{
+							Namespaces: []string{"foo"},
+						},
+					},
+				},
+			},
+		}
+		targetServices := []access_control_policy_translator.TargetService{
+			{
+				MeshService: &discovery_v1alpha1.MeshService{
+					Spec: discovery_types.MeshServiceSpec{
+						KubeService: &discovery_types.KubeService{
+							WorkloadSelectorLabels: map[string]string{
+								"k1a": "v1a", "k1b": "v1b",
+							},
+							Ref: &core_types.ResourceRef{Namespace: "namespace1"},
+						},
+					},
+				},
+				Mesh: &discovery_v1alpha1.Mesh{
+					Spec: discovery_types.MeshSpec{
+						MeshType: &discovery_types.MeshSpec_Istio{
+							Istio: &discovery_types.IstioMesh{
+								CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+							},
+						},
+						Cluster: &core_types.ResourceRef{Name: clusterNames[0]},
+					},
+				},
+			},
+		}
+		expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      acp.GetName(),
+				Namespace: targetServices[0].MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
+			},
+			Spec: security_v1beta1.AuthorizationPolicy{
+				Selector: &v1beta1.WorkloadSelector{
+					MatchLabels: targetServices[0].MeshService.Spec.GetKubeService().GetWorkloadSelectorLabels(),
+				},
+				Rules: []*security_v1beta1.Rule{
+					{
+						From: []*security_v1beta1.Rule_From{
+							{
+								Source: &security_v1beta1.Source{
+									Namespaces: acp.Spec.GetSourceSelector().GetMatcher().GetNamespaces(),
+								},
+							},
+						},
+						To: []*security_v1beta1.Rule_To{
+							{
+								Operation: &security_v1beta1.Operation{},
+							},
+						},
+					},
+				},
+				Action: security_v1beta1.AuthorizationPolicy_ALLOW,
+			},
+		}
+		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, true)
+		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
 		Expect(translatorError).To(BeNil())
 	})
 
@@ -316,7 +457,7 @@ var _ = Describe("IstioTranslator", func() {
 		var expectedPrincipals []string
 		for i, serviceAccount := range testData.accessControlPolicy.Spec.SourceSelector.GetServiceAccountRefs().GetServiceAccounts() {
 			expectedPrincipals = append(expectedPrincipals,
-				istio_translator.BuildSpiffeURI(testData.trustDomains[i], serviceAccount.GetNamespace(), serviceAccount.GetName()))
+				fmt.Sprintf("%s/ns/%s/sa/%s", testData.trustDomains[i], serviceAccount.GetNamespace(), serviceAccount.GetName()))
 		}
 		var expectedAuthPolicies []*client_security_v1beta1.AuthorizationPolicy
 		for _, targetService := range testData.targetServices {
@@ -369,6 +510,7 @@ var _ = Describe("IstioTranslator", func() {
 					IdentitySelectorType: &core_types.IdentitySelector_Matcher_{
 						Matcher: &core_types.IdentitySelector_Matcher{
 							Namespaces: []string{"foo"},
+							Clusters:   []string{"cluster"},
 						},
 					},
 				},
@@ -396,7 +538,7 @@ var _ = Describe("IstioTranslator", func() {
 			for _, namespace := range testData.namespaces {
 				expectedPrincipals = append(
 					expectedPrincipals,
-					fmt.Sprintf(istio_translator.BuildSpiffeURI(trustDomain, namespace, "*")),
+					fmt.Sprintf("%s/ns/%s/sa/*", trustDomain, namespace),
 				)
 			}
 		}

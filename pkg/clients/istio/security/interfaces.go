@@ -11,8 +11,8 @@ import (
 
 type AuthorizationPolicyClient interface {
 	Get(ctx context.Context, key client.ObjectKey) (*v1beta1.AuthorizationPolicy, error)
-	Create(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy, options ...client.CreateOption) error
-	Update(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error
+	Create(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy, options ...client.CreateOption) error
+	Update(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error
 	// Create the AuthorizationPolicy if it does not exist, otherwise update
-	UpsertSpec(ctx context.Context, virtualService *v1beta1.AuthorizationPolicy) error
+	UpsertSpec(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy) error
 }
