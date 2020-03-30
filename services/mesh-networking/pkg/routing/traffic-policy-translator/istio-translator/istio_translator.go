@@ -56,7 +56,12 @@ type istioTrafficPolicyTranslator struct {
 	meshServiceSelector          selector.MeshServiceSelector
 }
 
-var SourceClusterSelectorNotSupported = eris.New("TrafficPolicy's SourceSelector cluster matching is not currently supported for Istio")
+var (
+	NoSpecifiedPortError = func(svc *discovery_v1alpha1.MeshService) error {
+		return eris.Errorf("Mesh service %s.%s ports list does not include just one entry, so no default can be used. "+
+			"Must specify a destination with a port", svc.Name, svc.Namespace)
+	}
+)
 
 /*
 	Translate a TrafficPolicy into the following Istio specific configuration:
@@ -204,7 +209,7 @@ func (i *istioTrafficPolicyTranslator) translateIntoHTTPRoutes(
 	if mirror, err = i.translateMirror(ctx, meshService, trafficPolicy); err != nil {
 		return nil, err
 	}
-	if trafficShift, err = i.translateTrafficShift(ctx, meshService, trafficPolicy); err != nil {
+	if trafficShift, err = i.translateDestinationRoutes(ctx, meshService, trafficPolicy); err != nil {
 		return nil, err
 	}
 	retries := i.translateRetries(trafficPolicy)
@@ -249,7 +254,6 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 ) ([]*api_v1alpha3.HTTPMatchRequest, error) {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*api_v1alpha3.HTTPMatchRequest
-
 	// Set SourceNamespace and SourceLabels.
 	if len(trafficPolicy.Spec.GetSourceSelector().GetLabels()) > 0 ||
 		len(trafficPolicy.Spec.GetSourceSelector().GetNamespaces()) > 0 {
@@ -407,15 +411,15 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 }
 
 // For each Destination, create an Istio HTTPRouteDestination
-func (i *istioTrafficPolicyTranslator) translateTrafficShift(
+func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 ) ([]*api_v1alpha3.HTTPRouteDestination, error) {
-	var translatedTrafficShift []*api_v1alpha3.HTTPRouteDestination
+	var translatedRouteDestinations []*api_v1alpha3.HTTPRouteDestination
 	trafficShift := trafficPolicy.Spec.GetTrafficShift()
 	if trafficShift != nil {
-		translatedTrafficShift = []*api_v1alpha3.HTTPRouteDestination{}
+		translatedRouteDestinations = []*api_v1alpha3.HTTPRouteDestination{}
 		for _, destination := range trafficShift.GetDestinations() {
 			hostnameForKubeService, err := i.getHostnameForKubeService(ctx, meshService, destination.GetDestination())
 			if err != nil {
@@ -443,10 +447,26 @@ func (i *istioTrafficPolicyTranslator) translateTrafficShift(
 				}
 				httpRouteDestination.Destination.Subset = subsetName
 			}
-			translatedTrafficShift = append(translatedTrafficShift, httpRouteDestination)
+			translatedRouteDestinations = append(translatedRouteDestinations, httpRouteDestination)
+		}
+	} else {
+		if len(meshService.Spec.GetKubeService().GetPorts()) != 1 {
+			return nil, NoSpecifiedPortError(meshService)
+		}
+		// Since only one port is available, use that as the target port for the destination
+		defaultServicePort := meshService.Spec.GetKubeService().GetPorts()[0]
+		translatedRouteDestinations = []*api_v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &api_v1alpha3.Destination{
+					Host: buildServiceHostname(meshService),
+					Port: &api_v1alpha3.PortSelector{
+						Number: defaultServicePort.Port,
+					},
+				},
+			},
 		}
 	}
-	return translatedTrafficShift, nil
+	return translatedRouteDestinations, nil
 }
 
 func (i *istioTrafficPolicyTranslator) translateRetries(trafficPolicy *networking_v1alpha1.TrafficPolicy) *api_v1alpha3.HTTPRetry {

@@ -35,6 +35,7 @@ type testContext struct {
 	trafficPolicy          []*v1alpha1.TrafficPolicy
 	computedVirtualService *client_v1alpha3.VirtualService
 	baseMatchRequest       *api_v1alpha3.HTTPMatchRequest
+	defaultRoute           []*api_v1alpha3.HTTPRouteDestination
 }
 
 var _ = Describe("IstioTranslator", func() {
@@ -100,6 +101,12 @@ var _ = Describe("IstioTranslator", func() {
 							Namespace: kubeServiceObjKey.Namespace,
 							Cluster:   clusterName,
 						},
+						Ports: []*discovery_types.KubeServicePort{
+							{
+								Port: 9080,
+								Name: "http",
+							},
+						},
 					},
 					Federation: &discovery_types.Federation{
 						MulticlusterDnsName: meshServiceFederationMCDnsName,
@@ -126,6 +133,16 @@ var _ = Describe("IstioTranslator", func() {
 				}},
 			}
 			baseMatchRequest := &api_v1alpha3.HTTPMatchRequest{SourceNamespace: sourceNamespace}
+			defaultRoute := []*api_v1alpha3.HTTPRouteDestination{
+				{
+					Destination: &api_v1alpha3.Destination{
+						Host: meshService.Spec.GetKubeService().GetRef().GetName(),
+						Port: &api_v1alpha3.PortSelector{
+							Number: 9080,
+						},
+					},
+				},
+			}
 			computedVirtualService := &client_v1alpha3.VirtualService{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      meshService.Spec.GetKubeService().GetRef().GetName(),
@@ -136,12 +153,15 @@ var _ = Describe("IstioTranslator", func() {
 					Http: []*api_v1alpha3.HTTPRoute{
 						{
 							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
+							Route: defaultRoute,
 						},
 						{
 							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
+							Route: defaultRoute,
 						},
 						{
 							Match: []*api_v1alpha3.HTTPMatchRequest{baseMatchRequest},
+							Route: defaultRoute,
 						},
 					},
 				},
@@ -174,6 +194,7 @@ var _ = Describe("IstioTranslator", func() {
 				trafficPolicy:          trafficPolicy,
 				computedVirtualService: computedVirtualService,
 				baseMatchRequest:       baseMatchRequest,
+				defaultRoute:           defaultRoute,
 			}
 		}
 
@@ -188,6 +209,43 @@ var _ = Describe("IstioTranslator", func() {
 				testContext.meshService,
 				testContext.mesh,
 				testContext.trafficPolicy)
+			Expect(translatorError).To(BeNil())
+		})
+
+		It("should error if no destination is specified, and multiple ports are available on service", func() {
+			testContext := setupTestContext()
+			testContext.meshService.Spec.KubeService.Ports =
+				append(testContext.meshService.Spec.KubeService.Ports, &discovery_types.KubeServicePort{
+					Port: 8080,
+					Name: "will fail",
+				})
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx,
+				testContext.meshService,
+				testContext.mesh,
+				testContext.trafficPolicy)
+			Expect(translatorError.ErrorMessage).
+				To(ContainSubstring(istio_translator.NoSpecifiedPortError(testContext.meshService).Error()))
+		})
+
+		It("should translate Retries", func() {
+			testContext := setupTestContext()
+			testContext.trafficPolicy[0].Spec.Retries = &networking_types.RetryPolicy{
+				Attempts:      5,
+				PerTryTimeout: &types.Duration{Seconds: 2},
+			}
+			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
+				httpRoute.Retries = &api_v1alpha3.HTTPRetry{
+					Attempts:      5,
+					PerTryTimeout: &types.Duration{Seconds: 2},
+				}
+			}
+			mockVirtualServiceClient.
+				EXPECT().
+				UpsertSpec(ctx, testContext.computedVirtualService).
+				Return(nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
 			Expect(translatorError).To(BeNil())
 		})
 
@@ -889,6 +947,7 @@ var _ = Describe("IstioTranslator", func() {
 							SourceNamespace: namespaces[1],
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -901,6 +960,7 @@ var _ = Describe("IstioTranslator", func() {
 							SourceNamespace: namespaces[1],
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -911,6 +971,7 @@ var _ = Describe("IstioTranslator", func() {
 							SourceNamespace: namespaces[0],
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -923,6 +984,7 @@ var _ = Describe("IstioTranslator", func() {
 							SourceNamespace: namespaces[0],
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 			}
 			mockVirtualServiceClient.
@@ -1007,6 +1069,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1016,6 +1079,7 @@ var _ = Describe("IstioTranslator", func() {
 							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "PUT"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1025,6 +1089,7 @@ var _ = Describe("IstioTranslator", func() {
 							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1033,6 +1098,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "exact-path"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1041,6 +1107,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "www*"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1050,6 +1117,7 @@ var _ = Describe("IstioTranslator", func() {
 							Method:          &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "GET"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1061,6 +1129,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri: &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 			}
 			mockVirtualServiceClient.
@@ -1114,6 +1183,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "longer"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1122,6 +1192,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: "short"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1130,6 +1201,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "longer*"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1138,6 +1210,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: "short*"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1146,6 +1219,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/longer"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 				{
 					Match: []*api_v1alpha3.HTTPMatchRequest{
@@ -1154,6 +1228,7 @@ var _ = Describe("IstioTranslator", func() {
 							Uri:             &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: "/short"}},
 						},
 					},
+					Route: testContext.defaultRoute,
 				},
 			}
 			mockVirtualServiceClient.
