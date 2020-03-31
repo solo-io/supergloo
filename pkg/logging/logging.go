@@ -31,7 +31,7 @@ func (e EventType) String() string {
 	case CreateEvent:
 		return "create"
 	case UpdateEvent:
-		return "udpate"
+		return "update"
 	case DeleteEvent:
 		return "delete"
 	case GenericEvent:

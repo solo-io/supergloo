@@ -337,7 +337,3 @@ until ${ok}; do
 done
 
 echo '✔ MeshServices have been created'
-
-# Workaround for an eventual consistency bug where SMH doesn't create all the necessary federation resources
-kubectl --context kind-$managementPlane -n service-mesh-hub delete pod -l service-mesh-hub=mesh-networking
-kubectl --context kind-$managementPlane -n service-mesh-hub rollout status deployment mesh-networking
