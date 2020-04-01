@@ -60,6 +60,9 @@ var (
 		return eris.Errorf("Mesh service %s.%s ports list does not include just one entry, so no default can be used. "+
 			"Must specify a destination with a port", svc.Name, svc.Namespace)
 	}
+	MultiClusterSubsetsNotSupported = func(dest *networking_types.MultiDestination_WeightedDestination) error {
+		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
+	}
 )
 
 /*
@@ -420,7 +423,11 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	if trafficShift != nil {
 		translatedRouteDestinations = []*api_v1alpha3.HTTPRouteDestination{}
 		for _, destination := range trafficShift.GetDestinations() {
-			hostnameForKubeService, err := i.getHostnameForKubeService(ctx, meshService, destination.GetDestination())
+			hostnameForKubeService, isMulticluster, err := i.getHostnameForKubeService(
+				ctx,
+				meshService,
+				destination.GetDestination(),
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -440,6 +447,10 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 				}
 			}
 			if destination.Subset != nil {
+				// multicluster subsets are currently unsupported, so return a status error to invalidate the TrafficPolicy
+				if isMulticluster {
+					return nil, MultiClusterSubsetsNotSupported(destination)
+				}
 				subsetName, err := i.translateSubset(ctx, destination)
 				if err != nil {
 					return nil, err
@@ -529,7 +540,11 @@ func (i *istioTrafficPolicyTranslator) translateMirror(
 ) (*api_v1alpha3.Destination, error) {
 	var mirror *api_v1alpha3.Destination
 	if trafficPolicy.Spec.GetMirror() != nil {
-		hostnameForKubeService, err := i.getHostnameForKubeService(ctx, meshService, trafficPolicy.Spec.GetMirror().GetDestination())
+		hostnameForKubeService, _, err := i.getHostnameForKubeService(
+			ctx,
+			meshService,
+			trafficPolicy.Spec.GetMirror().GetDestination(),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -622,18 +637,18 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 	destination *core_types.ResourceRef,
-) (string, error) {
+) (hostname string, isMulticluster bool, err error) {
 	destinationMeshService, err := i.meshServiceSelector.GetBackingMeshService(
 		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster())
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	if destination.GetCluster() == meshService.Spec.GetKubeService().GetRef().GetCluster() {
 		// destination is on the same cluster as the MeshService's k8s Service
-		return buildServiceHostname(destinationMeshService), nil
+		return buildServiceHostname(destinationMeshService), false, nil
 	} else {
 		// destination is on a remote cluster to the MeshService's k8s Service
-		return destinationMeshService.Spec.GetFederation().GetMulticlusterDnsName(), nil
+		return destinationMeshService.Spec.GetFederation().GetMulticlusterDnsName(), true, nil
 	}
 }
 

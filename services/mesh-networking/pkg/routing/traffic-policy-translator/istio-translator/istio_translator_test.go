@@ -811,28 +811,27 @@ var _ = Describe("IstioTranslator", func() {
 			testContext := setupTestContext()
 			destName := "name"
 			destNamespace := "namespace"
-			multiClusterDnsName := "multicluster-dns-name"
-			destCluster := "remote-cluster-1"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
 			expectedSubsetName := "env-dev_version-v1"
+			destination := &networking_types.MultiDestination_WeightedDestination{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					Cluster:   testContext.clusterName,
+				},
+				Subset: declaredSubset,
+				Weight: 50,
+			}
 			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
 				Destinations: []*networking_types.MultiDestination_WeightedDestination{
-					{
-						Destination: &core_types.ResourceRef{
-							Name:      destName,
-							Namespace: destNamespace,
-							Cluster:   destCluster,
-						},
-						Subset: declaredSubset,
-						Weight: 50,
-					},
+					destination,
 				},
 			}
 			for _, httpRoute := range testContext.computedVirtualService.Spec.Http {
 				httpRoute.Route = []*api_v1alpha3.HTTPRouteDestination{
 					{
 						Destination: &api_v1alpha3.Destination{
-							Host:   multiClusterDnsName,
+							Host:   destName,
 							Subset: expectedSubsetName,
 						},
 						Weight: 50,
@@ -847,7 +846,6 @@ var _ = Describe("IstioTranslator", func() {
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			existingDestRule := &client_v1alpha3.DestinationRule{}
@@ -863,12 +861,12 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			mockMeshServiceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				GetBackingMeshService(ctx, destName, destNamespace, testContext.clusterName).
 				Return(backingMeshService, nil)
 
 			mockDynamicClientGetter.
 				EXPECT().
-				GetClientForCluster(destCluster).
+				GetClientForCluster(testContext.clusterName).
 				Return(nil, nil)
 			mockDestinationRuleClient.
 				EXPECT().
@@ -885,6 +883,49 @@ var _ = Describe("IstioTranslator", func() {
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
 			Expect(translatorError).To(BeNil())
+		})
+
+		It("should error translating multi cluster TrafficShift with subsets", func() {
+			testContext := setupTestContext()
+			destName := "name"
+			destNamespace := "namespace"
+			multiClusterDnsName := "multicluster-dns-name"
+			destCluster := "remote-cluster-1"
+			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
+			destination := &networking_types.MultiDestination_WeightedDestination{
+				Destination: &core_types.ResourceRef{
+					Name:      destName,
+					Namespace: destNamespace,
+					Cluster:   destCluster,
+				},
+				Subset: declaredSubset,
+				Weight: 50,
+			}
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
+				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+					destination,
+				},
+			}
+			backingMeshService := &discovery_v1alpha1.MeshService{
+				Spec: discovery_types.MeshServiceSpec{
+					KubeService: &discovery_types.KubeService{
+						Ref: &core_types.ResourceRef{
+							Name:      destName,
+							Namespace: destNamespace,
+						},
+					},
+					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+				},
+			}
+			mockMeshServiceSelector.
+				EXPECT().
+				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				Return(backingMeshService, nil)
+			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
+			Expect(translatorError).NotTo(BeNil())
+			Expect(translatorError.ErrorMessage).
+				To(ContainSubstring(istio_translator.MultiClusterSubsetsNotSupported(destination).Error()))
 		})
 
 		It("should return error if multiple MeshServices found for name/namespace/cluster", func() {

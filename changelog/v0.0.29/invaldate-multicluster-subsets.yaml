@@ -1,0 +1,6 @@
+changelog:
+- type: FIX
+  description: >
+    Temporarily invalidate multi-cluster subsets, as implementing them is slightly difficult, and they currently
+    silently break istio/envoy
+  issueLink:  https://github.com/solo-io/mesh-projects/issues/326
