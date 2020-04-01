@@ -31,7 +31,8 @@ var (
 		return eris.Wrapf(err, "Error processing AccessControlPolicy: %+v", acp)
 	}
 	AuthPolicyUpsertError = func(err error, authPolicy *client_security_v1beta1.AuthorizationPolicy) error {
-		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %+v", authPolicy)
+		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
+			authPolicy.Name, authPolicy.Namespace)
 	}
 	EmptyTrustDomainForMeshError = func(mesh *discovery_v1alpha1.Mesh) error {
 		return eris.Errorf("Empty trust domain for Istio Mesh: %+v", mesh)
@@ -127,7 +128,7 @@ func (i *istioTranslator) translateForDestination(
 	}
 	authPolicy := &client_security_v1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      acp.GetName(),
+			Name:      buildAuthPolicyName(acp, meshService),
 			Namespace: meshService.Spec.GetKubeService().GetRef().GetNamespace(),
 		},
 		Spec: security_v1beta1.AuthorizationPolicy{
@@ -260,6 +261,10 @@ func methodsToString(methodEnums []core_types.HttpMethodValue) []string {
 type authPolicyClientPair struct {
 	authPolicy *client_security_v1beta1.AuthorizationPolicy
 	client     istio_security.AuthorizationPolicyClient
+}
+
+func buildAuthPolicyName(acp *networking_v1alpha1.AccessControlPolicy, svc *discovery_v1alpha1.MeshService) string {
+	return fmt.Sprintf("%s-%s", acp.GetName(), svc.GetName())
 }
 
 /*

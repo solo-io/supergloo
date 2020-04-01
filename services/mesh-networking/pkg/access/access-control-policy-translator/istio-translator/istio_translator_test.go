@@ -189,7 +189,7 @@ var _ = Describe("IstioTranslator", func() {
 		for _, targetService := range testData.targetServices {
 			expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      testData.accessControlPolicy.GetName(),
+					Name:      testData.accessControlPolicy.GetName() + "-" + targetService.MeshService.Name,
 					Namespace: targetService.MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
@@ -243,7 +243,7 @@ var _ = Describe("IstioTranslator", func() {
 		for _, targetService := range testData.targetServices {
 			expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      testData.accessControlPolicy.GetName(),
+					Name:      testData.accessControlPolicy.GetName() + "-" + targetService.MeshService.Name,
 					Namespace: targetService.MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
@@ -319,7 +319,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 			ObjectMeta: v1.ObjectMeta{
-				Name:      acp.GetName(),
+				Name:      acp.GetName() + "-" + targetServices[0].MeshService.Name,
 				Namespace: targetServices[0].MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 			},
 			Spec: security_v1beta1.AuthorizationPolicy{
@@ -397,7 +397,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 			ObjectMeta: v1.ObjectMeta{
-				Name:      acp.GetName(),
+				Name:      acp.GetName() + "-" + targetServices[0].MeshService.Name,
 				Namespace: targetServices[0].MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 			},
 			Spec: security_v1beta1.AuthorizationPolicy{
@@ -467,7 +467,7 @@ var _ = Describe("IstioTranslator", func() {
 		for _, targetService := range testData.targetServices {
 			expectedAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      testData.accessControlPolicy.GetName(),
+					Name:      testData.accessControlPolicy.GetName() + "-" + targetService.MeshService.Name,
 					Namespace: targetService.MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
@@ -549,7 +549,7 @@ var _ = Describe("IstioTranslator", func() {
 		expectedAuthPolicies := []*client_security_v1beta1.AuthorizationPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{
-					Name:      testData.accessControlPolicy.GetName(),
+					Name:      testData.accessControlPolicy.GetName() + "-" + testData.targetServices[0].MeshService.Name,
 					Namespace: testData.targetServices[0].MeshService.Spec.GetKubeService().GetRef().GetNamespace(),
 				},
 				Spec: security_v1beta1.AuthorizationPolicy{
