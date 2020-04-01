@@ -102,3 +102,17 @@ func (mr *MockAuthorizationPolicyClientMockRecorder) UpsertSpec(ctx, authPolicy 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).UpsertSpec), ctx, authPolicy)
 }
+
+// Delete mocks base method.
+func (m *MockAuthorizationPolicyClient) Delete(ctx context.Context, key client.ObjectKey) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockAuthorizationPolicyClientMockRecorder) Delete(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Delete), ctx, key)
+}

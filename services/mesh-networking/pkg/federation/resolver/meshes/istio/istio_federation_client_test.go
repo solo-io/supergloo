@@ -117,7 +117,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster("linkerd").
-				Return(nil, true)
+				Return(nil, nil)
 
 			_, err := federationClient.FederateServiceSide(ctx, virtualMesh, nonIstioMeshService)
 			Expect(err).To(HaveOccurred())
@@ -208,7 +208,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(clusterName).
-				Return(nil, true)
+				Return(nil, nil)
 			gatewayClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
@@ -395,7 +395,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(clusterName).
-				Return(nil, true)
+				Return(nil, nil)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
@@ -582,7 +582,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(clusterName).
-				Return(nil, true)
+				Return(nil, nil)
 			gateway := &v1alpha3.Gateway{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
@@ -754,7 +754,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster("linkerd").
-				Return(nil, true)
+				Return(nil, nil)
 			eap := dns.ExternalAccessPoint{
 				Address: "abc.com",
 				Port:    0,
@@ -870,7 +870,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			workloadClient := mock_controller_runtime.NewMockClient(ctrl)
 			clientGetter.EXPECT().
 				GetClientForCluster("istio-cluster-workload").
-				Return(workloadClient, true)
+				Return(workloadClient, nil)
 
 			externalAddress := "externally-resolvable-hostname.com"
 			port := uint32(32000)

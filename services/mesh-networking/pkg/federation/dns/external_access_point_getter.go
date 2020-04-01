@@ -113,9 +113,9 @@ func (f *externalAccessPointGetter) GetExternalAccessPointForService(
 }
 
 func (f *externalAccessPointGetter) getNodeIp(ctx context.Context, svc *corev1.Service, clusterName string) (string, error) {
-	dynamicClient, ok := f.dynamicClientGetter.GetClientForCluster(clusterName)
-	if !ok {
-		return "", mc_manager.NoClientForClusterError(clusterName)
+	dynamicClient, err := f.dynamicClientGetter.GetClientForCluster(clusterName)
+	if err != nil {
+		return "", err
 	}
 
 	podClient := f.podClientFactory(dynamicClient)

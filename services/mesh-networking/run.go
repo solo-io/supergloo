@@ -37,6 +37,11 @@ func Run(ctx context.Context) {
 		logger.Fatalw("error intitializing AccessControlPolicyTranslator", zap.Error(err))
 	}
 
+	err = meshNetworkingContext.GlobalAccessPolicyEnforcer.Start(ctx)
+	if err != nil {
+		logger.Fatalw("error intitializing GlobalAccessControlPolicyEnforcer", zap.Error(err))
+	}
+
 	err = meshNetworkingContext.FederationResolver.Start(ctx)
 	if err != nil {
 		logger.Fatalw("error intitializing FederationResolver", zap.Error(err))

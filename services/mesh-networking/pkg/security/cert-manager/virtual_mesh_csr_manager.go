@@ -24,9 +24,6 @@ import (
 )
 
 var (
-	DynamicClientDoesNotExistForClusterError = func(clusterName string) error {
-		return eris.Errorf("could not find a dynamic client for cluster %s", clusterName)
-	}
 	UnsupportedMeshTypeError = func(mesh *discovery_v1alpha1.Mesh) error {
 		return eris.Errorf("unsupported mesh type: %T found", mesh.Spec.GetMeshType())
 	}
@@ -113,9 +110,9 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 
 		clusterName := mesh.Spec.GetCluster().GetName()
 		// TODO: check KubernetesCluster resource to see if this retry is worth it
-		dynamicClient, ok := m.dynamicClientGetter.GetClientForCluster(clusterName, retry.Attempts(6))
-		if !ok {
-			return DynamicClientDoesNotExistForClusterError(clusterName)
+		dynamicClient, err := m.dynamicClientGetter.GetClientForCluster(clusterName, retry.Attempts(6))
+		if err != nil {
+			return err
 		}
 		csrClient := m.csrClientFactory(dynamicClient)
 		_, err = csrClient.Get(ctx, m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()), env.GetWriteNamespace())

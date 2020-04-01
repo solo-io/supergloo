@@ -15,4 +15,5 @@ type AuthorizationPolicyClient interface {
 	Update(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error
 	// Create the AuthorizationPolicy if it does not exist, otherwise update
 	UpsertSpec(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy) error
+	Delete(ctx context.Context, key client.ObjectKey) error
 }

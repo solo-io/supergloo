@@ -109,6 +109,7 @@ Configuration for user-provided root certificate
 | federation | [Federation](#networking.zephyr.solo.io.Federation) |  |  |
 | shared | [VirtualMeshSpec.SharedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.SharedTrust) |  |  |
 | limited | [VirtualMeshSpec.LimitedTrust](#networking.zephyr.solo.io.VirtualMeshSpec.LimitedTrust) |  |  |
+| enforceAccessControl | [bool](#bool) |  | If true, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If false, by default allow traffic to all Services in the VirtualMesh. Defaults to false when not set. |
 
 
 
@@ -143,10 +144,10 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| health | [core.zephyr.solo.io.HealthStatus](#core.zephyr.solo.io.HealthStatus) |  | 0:  The state of the virtual mesh is unknown, this most likely means that the state is being calculated. 1:  The state of the virtual mesh is Good. All operations have been completed successfully, and all routing is enabled. 2:  The state of the virtual mesh is bad. Either a virtual mesh operation has failed, or some portion of inter-mesh routing is down.<br>TODO: Enumerate further information below on the following states in a description message |
 | federationStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
 | certificateStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
 | configStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
+| accessControlEnforcementStatus | [core.zephyr.solo.io.ComputedStatus](#core.zephyr.solo.io.ComputedStatus) |  |  |
 
 
 

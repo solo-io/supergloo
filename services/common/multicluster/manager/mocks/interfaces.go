@@ -340,7 +340,7 @@ func (m *MockDynamicClientGetter) EXPECT() *MockDynamicClientGetterMockRecorder 
 }
 
 // GetClientForCluster mocks base method.
-func (m *MockDynamicClientGetter) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, bool) {
+func (m *MockDynamicClientGetter) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{clusterName}
 	for _, a := range opts {
@@ -348,7 +348,7 @@ func (m *MockDynamicClientGetter) GetClientForCluster(clusterName string, opts .
 	}
 	ret := m.ctrl.Call(m, "GetClientForCluster", varargs...)
 	ret0, _ := ret[0].(client.Client)
-	ret1, _ := ret[1].(bool)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 

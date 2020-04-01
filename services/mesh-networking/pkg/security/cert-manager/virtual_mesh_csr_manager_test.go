@@ -18,6 +18,7 @@ import (
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	mock_zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
+	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	cert_manager "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-manager/mocks"
@@ -197,13 +198,13 @@ var _ = Describe("csr manager", func() {
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(clusterName, gomock.Any()).
-				Return(nil, false)
+				Return(nil, mc_manager.ClientNotFoundError(clusterName))
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.ComputedStatus{
 					Status:  core_types.ComputedStatus_INVALID,
-					Message: cert_manager.DynamicClientDoesNotExistForClusterError(clusterName).Error(),
+					Message: mc_manager.ClientNotFoundError(clusterName).Error(),
 				},
 			}))
 		})
@@ -245,7 +246,7 @@ var _ = Describe("csr manager", func() {
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(clusterName, gomock.Any()).
-				Return(nil, true)
+				Return(nil, nil)
 
 			csrClient.EXPECT().
 				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).
@@ -303,7 +304,7 @@ var _ = Describe("csr manager", func() {
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(clusterName, gomock.Any()).
-				Return(nil, true)
+				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
 				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).
@@ -383,7 +384,7 @@ var _ = Describe("csr manager", func() {
 
 			dynamicClientGetter.EXPECT().
 				GetClientForCluster(clusterName, gomock.Any()).
-				Return(nil, true)
+				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
 				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).

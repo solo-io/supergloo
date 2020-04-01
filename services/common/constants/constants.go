@@ -10,3 +10,7 @@ const (
 	KUBE_CONTROLLER_NAMESPACE = "kube-controller-namespace"
 	MESH_TYPE                 = "mesh-type"
 )
+
+var (
+	OwnedBySMHLabel = map[string]string{"solo.io/owned-by": "service-mesh-hub"}
+)

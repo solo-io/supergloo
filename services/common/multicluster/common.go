@@ -3,19 +3,12 @@ package multicluster
 import (
 	"context"
 
-	"github.com/rotisserie/eris"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 )
 
 const (
 	MultiClusterLabel      = "solo.io/kubeconfig"
 	MultiClusterController = "multi-cluster-controller"
-)
-
-var (
-	ClientNotFoundError = func(clusterName string) error {
-		return eris.Errorf("Client not found for cluster with name: %s", clusterName)
-	}
 )
 
 // associate a name with the async manager handler

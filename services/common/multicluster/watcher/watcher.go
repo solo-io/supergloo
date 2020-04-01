@@ -3,7 +3,6 @@ package mc_watcher
 import (
 	"context"
 
-	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
@@ -11,11 +10,6 @@ import (
 	internal_watcher "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-)
-
-var (
-	ClusterNotFoundError  = eris.New("cluster not found")
-	ClusterNameEmptyError = eris.New("cluster name cannot be an empty string")
 )
 
 /*

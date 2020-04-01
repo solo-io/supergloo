@@ -44,7 +44,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		networking_multicluster.NewMeshNetworkingClusterHandler,
 		controllers.NewMeshServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,
-		controller_factories.NewVirtualMeshControllerFactory,
+		controller_factories.NewLocalVirtualMeshController,
 		vm_validation.NewVirtualMeshValidator,
 		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,

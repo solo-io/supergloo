@@ -51,3 +51,11 @@ func (a *authorizationPolicyClient) Create(ctx context.Context, authorizationPol
 func (a *authorizationPolicyClient) Update(ctx context.Context, authorizationPolicy *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error {
 	return a.client.Update(ctx, authorizationPolicy, options...)
 }
+
+func (a *authorizationPolicyClient) Delete(ctx context.Context, key client.ObjectKey) error {
+	authPolicy, err := a.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	return a.client.Delete(ctx, authPolicy)
+}

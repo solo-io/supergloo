@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
 	istio_security "github.com/solo-io/mesh-projects/pkg/clients/istio/security"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	access_control_policy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
 	security_v1beta1 "istio.io/api/security/v1beta1"
@@ -88,11 +87,11 @@ func (i *istioTranslator) Translate(
 		if targetService.Mesh.Spec.GetIstio() == nil {
 			continue
 		}
-		client, ok := i.dynamicClientGetter.GetClientForCluster(targetService.Mesh.Spec.GetCluster().GetName())
-		if !ok {
+		client, err := i.dynamicClientGetter.GetClientForCluster(targetService.Mesh.Spec.GetCluster().GetName())
+		if err != nil {
 			return &networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,
-				ErrorMessage: multicluster.ClientNotFoundError(targetService.Mesh.Spec.GetCluster().GetName()).Error(),
+				ErrorMessage: err.Error(),
 			}
 		}
 		authPolicyWithClient := authPolicyClientPair{
@@ -119,6 +118,13 @@ func (i *istioTranslator) translateForDestination(
 	acp *networking_v1alpha1.AccessControlPolicy,
 	meshService *discovery_v1alpha1.MeshService,
 ) *client_security_v1beta1.AuthorizationPolicy {
+	allowedMethods := methodsToString(acp.Spec.GetAllowedMethods())
+	// Istio considers AuthorizationPolicies without at least one defined To.Operation invalid,
+	// The workaround is to populate a dummy "*" for METHOD if not user specified. This guarantees existence of at least
+	// one To.Operation.
+	if len(allowedMethods) < 1 {
+		allowedMethods = []string{"*"}
+	}
 	authPolicy := &client_security_v1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      acp.GetName(),
@@ -137,7 +143,7 @@ func (i *istioTranslator) translateForDestination(
 						{
 							Operation: &security_v1beta1.Operation{
 								Ports:   intToString(acp.Spec.GetAllowedPorts()),
-								Methods: methodsToString(acp.Spec.GetAllowedMethods()),
+								Methods: allowedMethods,
 								Paths:   acp.Spec.GetAllowedPaths(),
 							},
 						},

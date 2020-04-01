@@ -222,7 +222,7 @@ var _ = Describe("IstioTranslator", func() {
 			expectedAuthPolicies = append(expectedAuthPolicies, expectedAuthPolicy)
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
-			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, true)
+			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, nil)
 			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
@@ -276,7 +276,7 @@ var _ = Describe("IstioTranslator", func() {
 			expectedAuthPolicies = append(expectedAuthPolicies, expectedAuthPolicy)
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
-			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, true)
+			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, nil)
 			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
@@ -337,7 +337,9 @@ var _ = Describe("IstioTranslator", func() {
 						},
 						To: []*security_v1beta1.Rule_To{
 							{
-								Operation: &security_v1beta1.Operation{},
+								Operation: &security_v1beta1.Operation{
+									Methods: []string{"*"},
+								},
 							},
 						},
 					},
@@ -345,7 +347,7 @@ var _ = Describe("IstioTranslator", func() {
 				Action: security_v1beta1.AuthorizationPolicy_ALLOW,
 			},
 		}
-		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, true)
+		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, nil)
 		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
 		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
 		Expect(translatorError).To(BeNil())
@@ -413,7 +415,9 @@ var _ = Describe("IstioTranslator", func() {
 						},
 						To: []*security_v1beta1.Rule_To{
 							{
-								Operation: &security_v1beta1.Operation{},
+								Operation: &security_v1beta1.Operation{
+									Methods: []string{"*"},
+								},
 							},
 						},
 					},
@@ -421,7 +425,7 @@ var _ = Describe("IstioTranslator", func() {
 				Action: security_v1beta1.AuthorizationPolicy_ALLOW,
 			},
 		}
-		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, true)
+		dynamicClientGetter.EXPECT().GetClientForCluster(clusterNames[0]).Return(nil, nil)
 		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
 		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
 		Expect(translatorError).To(BeNil())
@@ -496,7 +500,7 @@ var _ = Describe("IstioTranslator", func() {
 			expectedAuthPolicies = append(expectedAuthPolicies, expectedAuthPolicy)
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
-			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, true)
+			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, nil)
 			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
@@ -577,7 +581,7 @@ var _ = Describe("IstioTranslator", func() {
 			},
 		}
 		for i, _ := range testData.targetServices {
-			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, true)
+			dynamicClientGetter.EXPECT().GetClientForCluster(testData.clusterNames[i]).Return(nil, nil)
 		}
 		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicies[0]).Return(testErr)
 		expectedTranslatorError := &networking_types.AccessControlPolicyStatus_TranslatorError{

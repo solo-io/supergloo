@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -103,9 +102,9 @@ func (i *istioTrafficPolicyTranslator) fetchClientsForMeshService(
 	if err != nil {
 		return nil, nil, err
 	}
-	dynamicClient, ok := i.dynamicClientGetter.GetClientForCluster(clusterName)
-	if !ok {
-		return nil, nil, multicluster.ClientNotFoundError(clusterName)
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(clusterName)
+	if err != nil {
+		return nil, nil, err
 	}
 	return i.destinationRuleClientFactory(dynamicClient), i.virtualServiceClientFactory(dynamicClient), nil
 }
@@ -383,9 +382,9 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 ) (string, error) {
 	// fetch client for destination's cluster
 	clusterName := destination.GetDestination().GetCluster()
-	dynamicClient, ok := i.dynamicClientGetter.GetClientForCluster(clusterName)
-	if !ok {
-		return "", multicluster.ClientNotFoundError(clusterName)
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(clusterName)
+	if err != nil {
+		return "", err
 	}
 	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
 	destinationRule, err := destinationRuleClient.Get(ctx, clients.ResourceRefToObjectKey(destination.GetDestination()))

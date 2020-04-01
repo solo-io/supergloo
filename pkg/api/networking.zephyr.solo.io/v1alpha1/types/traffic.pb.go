@@ -41,7 +41,15 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 //NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
 //the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 type TrafficPolicySpec struct {
-	// > Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
+	//
+	//requests originating from these pods will have the rule applied
+	//leave empty to have all pods in the mesh apply these rules
+	//
+	//Note: Source Selectors are ignored when TrafficPolicys are
+	//applied to pods in a Linkerd mesh. TrafficPolicys will apply to
+	//all selected destinations in Linkerd, regardless of the source.
+	//
+	//Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
 	SourceSelector *types.WorkloadSelector `protobuf:"bytes,1,opt,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
 	//
 	//requests destined for these k8s services will have the rule applied
