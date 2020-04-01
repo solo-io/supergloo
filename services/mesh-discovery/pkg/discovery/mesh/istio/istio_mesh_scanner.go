@@ -78,12 +78,12 @@ func (i *istioMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_a
 		},
 		Spec: discovery_types.MeshSpec{
 			MeshType: &discovery_types.MeshSpec_Istio{
-				Istio: &discovery_types.IstioMesh{
-					Installation: &discovery_types.MeshInstallation{
+				Istio: &discovery_types.MeshSpec_IstioMesh{
+					Installation: &discovery_types.MeshSpec_MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               istioDeployment.Version,
 					},
-					CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{
+					CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 						TrustDomain:      trustDomain,
 						CitadelNamespace: deployment.GetNamespace(),
 						// This assumes that the istiod deployment is the cert provider

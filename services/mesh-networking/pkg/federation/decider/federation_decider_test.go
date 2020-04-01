@@ -48,8 +48,8 @@ var _ = Describe("Federation Decider", func() {
 						Name:      "mesh-1",
 						Namespace: env.DefaultWriteNamespace,
 					}},
-					Federation: &networking_types.Federation{
-						Mode: networking_types.Federation_PERMISSIVE,
+					Federation: &networking_types.VirtualMeshSpec_Federation{
+						Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 					},
 				},
 			}},
@@ -59,8 +59,8 @@ var _ = Describe("Federation Decider", func() {
 
 		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		vmCopy := *snapshot.VirtualMeshes[0]
-		vmCopy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		vmCopy.Status.FederationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateStatus(ctx, &vmCopy).
@@ -79,7 +79,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
 			return strategies.NewPermissiveFederation(meshServiceClient), nil
 		})
 		decider.DecideFederation(ctx, &snapshot)
@@ -107,7 +107,7 @@ var _ = Describe("Federation Decider", func() {
 					Name:      "mesh-1",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				KubeService: &types.KubeService{
+				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
 						Name:      "application-svc1",
 						Namespace: "application-ns1",
@@ -125,7 +125,7 @@ var _ = Describe("Federation Decider", func() {
 					Name:      "mesh-2",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				KubeService: &types.KubeService{
+				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
 						Name:      "application-svc2",
 						Namespace: "application-ns2",
@@ -143,7 +143,7 @@ var _ = Describe("Federation Decider", func() {
 					Name:      "mesh-3",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				KubeService: &types.KubeService{
+				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
 						Name:      "application-svc3",
 						Namespace: "application-ns3",
@@ -161,7 +161,7 @@ var _ = Describe("Federation Decider", func() {
 					Name:      "mesh-4",
 					Namespace: env.DefaultWriteNamespace,
 				},
-				KubeService: &types.KubeService{
+				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
 						Name:      "application-svc4",
 						Namespace: "application-ns4",
@@ -197,8 +197,8 @@ var _ = Describe("Federation Decider", func() {
 							Name:      "mesh-4",
 							Namespace: env.DefaultWriteNamespace,
 						}},
-						Federation: &networking_types.Federation{
-							Mode: networking_types.Federation_PERMISSIVE,
+						Federation: &networking_types.VirtualMeshSpec_Federation{
+							Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 						},
 					},
 				},
@@ -262,8 +262,8 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for vm 1
 		vm1Copy := *snapshot.VirtualMeshes[0]
-		vm1Copy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		vm1Copy.Status.FederationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateStatus(ctx, &vm1Copy).
@@ -271,8 +271,8 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for vm 2
 		vm2Copy := *snapshot.VirtualMeshes[1]
-		vm2Copy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		vm2Copy.Status.FederationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
 			UpdateStatus(ctx, &vm2Copy).
@@ -342,7 +342,7 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService1
 		meshService1Copy := *meshService1
-		meshService1Copy.Spec.Federation = &types.Federation{
+		meshService1Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc1.application-ns1.cluster-1",
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
@@ -361,7 +361,7 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService2
 		meshService2Copy := *meshService2
-		meshService2Copy.Spec.Federation = &types.Federation{
+		meshService2Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc2.application-ns2.cluster-2",
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
@@ -380,7 +380,7 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService3
 		meshService3Copy := *meshService3
-		meshService3Copy.Spec.Federation = &types.Federation{
+		meshService3Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc3.application-ns3.cluster-3",
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
@@ -399,7 +399,7 @@ var _ = Describe("Federation Decider", func() {
 
 		// EXPECTs for meshService4
 		meshService4Copy := *meshService4
-		meshService4Copy.Spec.Federation = &types.Federation{
+		meshService4Copy.Spec.Federation = &types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc4.application-ns4.cluster-4",
 		}
 		meshServiceClient.EXPECT().
@@ -442,8 +442,8 @@ var _ = Describe("Federation Decider", func() {
 					Name:      "mesh-4",
 					Namespace: env.DefaultWriteNamespace,
 				}},
-				Federation: &networking_types.Federation{
-					Mode: networking_types.Federation_PERMISSIVE,
+				Federation: &networking_types.VirtualMeshSpec_Federation{
+					Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 				},
 			},
 		}
@@ -471,8 +471,8 @@ var _ = Describe("Federation Decider", func() {
 		}
 
 		vm1Copy := *vm1
-		vm1Copy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		vm1Copy.Status.FederationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: decider.ErrorLoadingMeshMetadata(vm1MultiErr),
 		}
 		virtualMeshClient.EXPECT().
@@ -480,15 +480,15 @@ var _ = Describe("Federation Decider", func() {
 			Return(nil)
 
 		vm2Copy := *vm2
-		vm2Copy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		vm2Copy.Status.FederationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: decider.ErrorLoadingMeshMetadata(vm2MultiErr),
 		}
 		virtualMeshClient.EXPECT().
 			UpdateStatus(ctx, &vm2Copy).
 			Return(nil)
 
-		strategyDecider := func(mode networking_types.Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
+		strategyDecider := func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
 			// these don't matter, we'll bail out before this point
 			return nil, nil
 		}

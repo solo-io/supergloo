@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	UnsupportedMode = func(mode networking_types.Federation_Mode) error {
+	UnsupportedMode = func(mode networking_types.VirtualMeshSpec_Federation_Mode) error {
 		return eris.Errorf("Mode %+v is not supported", mode)
 	}
 )
@@ -26,7 +26,7 @@ type FederationStrategy interface {
 }
 
 type FederationStrategyChooser func(
-	mode networking_types.Federation_Mode,
+	mode networking_types.VirtualMeshSpec_Federation_Mode,
 	meshServiceClient discovery_core.MeshServiceClient,
 ) (FederationStrategy, error)
 
@@ -35,12 +35,12 @@ func NewFederationStrategyChooser() FederationStrategyChooser {
 }
 
 var GetFederationStrategyFromMode FederationStrategyChooser = func(
-	mode networking_types.Federation_Mode,
+	mode networking_types.VirtualMeshSpec_Federation_Mode,
 	meshServiceClient discovery_core.MeshServiceClient,
 ) (FederationStrategy, error) {
 
 	switch mode {
-	case networking_types.Federation_PERMISSIVE:
+	case networking_types.VirtualMeshSpec_Federation_PERMISSIVE:
 		return NewPermissiveFederation(meshServiceClient), nil
 	default:
 		return nil, UnsupportedMode(mode)

@@ -85,8 +85,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: testErr.Error(),
 				},
 			}))
@@ -118,8 +118,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: cert_manager.UnsupportedMeshTypeError(mesh).Error(),
 				},
 			}))
@@ -142,7 +142,7 @@ var _ = Describe("csr manager", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 				Status: discovery_types.MeshStatus{},
@@ -158,8 +158,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: cert_manager.UnableToGatherCertConfigInfo(testErr, mesh, vm).Error(),
 				},
 			}))
@@ -182,7 +182,7 @@ var _ = Describe("csr manager", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 				Status: discovery_types.MeshStatus{},
@@ -202,8 +202,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: mc_manager.ClientNotFoundError(clusterName).Error(),
 				},
 			}))
@@ -230,7 +230,7 @@ var _ = Describe("csr manager", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 				Status: discovery_types.MeshStatus{},
@@ -254,8 +254,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: testErr.Error(),
 				},
 			}))
@@ -282,13 +282,13 @@ var _ = Describe("csr manager", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 				Status: discovery_types.MeshStatus{},
 			}
 
-			certConfig := &security_types.CertConfig{
+			certConfig := &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 				Hosts:    []string{"hello", "world"},
 				Org:      "test",
 				MeshType: core_types.MeshType_ISTIO,
@@ -324,8 +324,8 @@ var _ = Describe("csr manager", func() {
 						CertConfig: certConfig,
 					},
 					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-						ComputedStatus: &core_types.ComputedStatus{
-							Status:  0,
+						ComputedStatus: &core_types.Status{
+							State:   core_types.Status_UNKNOWN,
 							Message: "awaiting automated csr generation",
 						},
 					},
@@ -334,8 +334,8 @@ var _ = Describe("csr manager", func() {
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: testErr.Error(),
 				},
 			}))
@@ -362,13 +362,13 @@ var _ = Describe("csr manager", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 				Status: discovery_types.MeshStatus{},
 			}
 
-			certConfig := &security_types.CertConfig{
+			certConfig := &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 				Hosts:    []string{"hello", "world"},
 				Org:      "test",
 				MeshType: core_types.MeshType_ISTIO,
@@ -404,7 +404,7 @@ var _ = Describe("csr manager", func() {
 						CertConfig: certConfig,
 					},
 					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-						ComputedStatus: &core_types.ComputedStatus{
+						ComputedStatus: &core_types.Status{
 							Message: "awaiting automated csr generation",
 						},
 					},
@@ -412,8 +412,8 @@ var _ = Describe("csr manager", func() {
 				Return(nil)
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
-			Expect(status.CertificateStatus).To(Equal(&core_types.ComputedStatus{
-				Status: core_types.ComputedStatus_ACCEPTED,
+			Expect(status.CertificateStatus).To(Equal(&core_types.Status{
+				State: core_types.Status_ACCEPTED,
 			}))
 		})
 

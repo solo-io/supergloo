@@ -39,10 +39,10 @@ func (m *MockCertConfigProducer) EXPECT() *MockCertConfigProducerMockRecorder {
 }
 
 // ConfigureCertificateInfo mocks base method.
-func (m *MockCertConfigProducer) ConfigureCertificateInfo(vm *v1alpha10.VirtualMesh, mesh *v1alpha1.Mesh) (*types0.CertConfig, error) {
+func (m *MockCertConfigProducer) ConfigureCertificateInfo(vm *v1alpha10.VirtualMesh, mesh *v1alpha1.Mesh) (*types0.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureCertificateInfo", vm, mesh)
-	ret0, _ := ret[0].(*types0.CertConfig)
+	ret0, _ := ret[0].(*types0.VirtualMeshCertificateSigningRequestSpec_CertConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

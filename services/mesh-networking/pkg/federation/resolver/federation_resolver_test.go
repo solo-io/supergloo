@@ -84,15 +84,15 @@ var _ = Describe("Federation Decider", func() {
 				},
 			},
 			Status: discovery_types.MeshServiceStatus{
-				FederationStatus: &core_types.ComputedStatus{
-					Status: core_types.ComputedStatus_ACCEPTED,
+				FederationStatus: &core_types.Status{
+					State: core_types.Status_ACCEPTED,
 				},
 			},
 		}
 		newMeshService := *oldMeshService
 		newMeshService.Status = discovery_types.MeshServiceStatus{
-			FederationStatus: &core_types.ComputedStatus{
-				Status: core_types.ComputedStatus_INVALID,
+			FederationStatus: &core_types.Status{
+				State: core_types.Status_INVALID,
 			},
 		}
 		err := capturedEventHandler.Update(oldMeshService, &newMeshService)
@@ -193,7 +193,7 @@ var _ = Describe("Federation Decider", func() {
 				Mesh: &core_types.ResourceRef{
 					Name: "doesn't matter",
 				},
-				Federation: &discovery_types.Federation{
+				Federation: &discovery_types.MeshServiceSpec_Federation{
 					FederatedToWorkloads: []*core_types.ResourceRef{
 						{
 							Name:      workload1.Name,
@@ -223,8 +223,8 @@ var _ = Describe("Federation Decider", func() {
 				&discovery_v1alpha1.MeshService{
 					Spec: service1.Spec,
 					Status: discovery_types.MeshServiceStatus{
-						FederationStatus: &core_types.ComputedStatus{
-							Status: core_types.ComputedStatus_PROCESSING_ERROR,
+						FederationStatus: &core_types.Status{
+							State: core_types.Status_PROCESSING_ERROR,
 							Message: resolver.FailedToFederateServices(
 								service1,
 								service1.Spec.GetFederation().GetFederatedToWorkloads(),
@@ -308,8 +308,8 @@ var _ = Describe("Federation Decider", func() {
 			Spec: discovery_types.MeshSpec{
 				Cluster: clientClusterRef,
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: "istio-system",
 						},
 					},
@@ -323,8 +323,8 @@ var _ = Describe("Federation Decider", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: "istio-system",
 						},
 					},
@@ -335,11 +335,11 @@ var _ = Describe("Federation Decider", func() {
 		federatedService := &discovery_v1alpha1.MeshService{
 			ObjectMeta: clients.ResourceRefToObjectMeta(federatedServiceRef),
 			Spec: discovery_types.MeshServiceSpec{
-				Federation: &discovery_types.Federation{
+				Federation: &discovery_types.MeshServiceSpec_Federation{
 					MulticlusterDnsName:  dns.BuildMulticlusterDnsName(kubeServiceRef, serverClusterName),
 					FederatedToWorkloads: []*core_types.ResourceRef{meshWorkloadRef},
 				},
-				KubeService: &discovery_types.KubeService{
+				KubeService: &discovery_types.MeshServiceSpec_KubeService{
 					Ref: kubeServiceRef,
 				},
 				Mesh: clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta),
@@ -383,8 +383,8 @@ var _ = Describe("Federation Decider", func() {
 			FederateClientSide(ctx, eap, federatedService, federatedToWorkload).
 			Return(nil)
 		serviceCopy := *federatedService
-		serviceCopy.Status.FederationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		serviceCopy.Status.FederationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		meshServiceClient.EXPECT().
 			UpdateStatus(ctx, &serviceCopy).

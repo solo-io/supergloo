@@ -12,6 +12,28 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 message VirtualMeshCertificateSigningRequestSpec {
+    message CertConfig {
+        /*
+             list of hostnames and IPs to generate a certificate for.
+             This can also be set to the identity running the workload,
+             like kubernetes service account.
+
+             Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
+
+             "cluster.local" may be replaced by the root of trust domain for the mesh.
+         */
+        repeated string hosts = 2;
+
+        // Organization for this certificate.
+        string org = 3;
+
+        /*
+            In the future, the type of mesh, and level of trust will need to be specified here,
+            but for the time being we are only supporting shared trust in Istio.
+        */
+        core.zephyr.solo.io.MeshType mesh_type = 5;
+    }
+
     // Base64-encoded PKCS#10 CSR data
     bytes csr_data = 1;
 
@@ -30,58 +52,34 @@ message VirtualMeshCertificateSigningRequestSpec {
 
 }
 
-message CertConfig {
-    /*
-         list of hostnames and IPs to generate a certificate for.
-         This can also be set to the identity running the workload,
-         like kubernetes service account.
-
-         Generally for an istio CA this will take the values:
-             1. spiffe://cluster.local/ns/istio-system/sa/citadel
-             2. localhost
-
-         The cluster.local may be replaced by the root of trust domain for the mesh
-     */
-    repeated string hosts = 2;
-
-    // Organization for this certificate.
-    string org = 3;
-
-    /*
-        In the future, the type of mesh, and level of trust will need to be specified here,
-        but for the time being we are only supporting shared trust in istio.
-    */
-    core.zephyr.solo.io.MeshType mesh_type = 5;
-}
-
-message VirtualMeshCertificateSigningResponse {
-    // If request was approved, the controller will place the issued certificate here.
-    bytes ca_certificate = 1;
-    // root cert shared by all clusters, safe to send over the wire
-    bytes root_certificate = 2;
-}
-
-message ThirdPartyApprovalWorkflow {
-    // time when the status was last updated
-    google.protobuf.Timestamp last_updated_time = 2;
-
-    // a user readable message regarding the status of the CSR
-    string message = 3;
-
-    enum ApprovalStatus {
-        // have a default value which represents not being set as proto enums require a default 0th value
-        PENDING = 0;
-        APPROVED = 1;
-        DENIED = 2;
-    }
-    ApprovalStatus approval_status = 4;
-}
-
 message VirtualMeshCertificateSigningRequestStatus {
+    message Response {
+        // If request was approved, the controller will place the issued certificate here.
+        bytes ca_certificate = 1;
+        // root cert shared by all clusters, safe to send over the wire
+        bytes root_certificate = 2;
+    }
+
+    message ThirdPartyApprovalWorkflow {
+        // time when the status was last updated
+        google.protobuf.Timestamp last_updated_time = 2;
+
+        // a user readable message regarding the status of the CSR
+        string message = 3;
+
+        enum ApprovalStatus {
+            // have a default value which represents not being set as proto enums require a default 0th value
+            PENDING = 0;
+            APPROVED = 1;
+            DENIED = 2;
+        }
+        ApprovalStatus approval_status = 4;
+    }
+
     // Response from the certificate authority
-    VirtualMeshCertificateSigningResponse response = 1;
+    Response response = 1;
     // Workflow for approving Certificate Signing Requests
     ThirdPartyApprovalWorkflow third_party_approval = 2;
 
-    core.zephyr.solo.io.ComputedStatus computed_status = 3;
+    core.zephyr.solo.io.Status computed_status = 3;
 }

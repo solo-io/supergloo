@@ -10,6 +10,7 @@ import "google/protobuf/duration.proto";
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
+// The Mesh types known to Service Mesh Hub. Note that there is some duplication between this enum and the discovery.MeshSpec message
 enum MeshType {
     ISTIO = 0;
     APPMESH = 1;

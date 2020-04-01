@@ -95,8 +95,8 @@ var _ = Describe("csr-agent controller", func() {
 		It("will log an error and set status frrom processor", func() {
 			csr := &securityv1alpha1.VirtualMeshCertificateSigningRequest{
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ComputedStatus: &core_types.ComputedStatus{
-						Status:  core_types.ComputedStatus_INVALID,
+					ComputedStatus: &core_types.Status{
+						State:   core_types.Status_INVALID,
 						Message: testErr.Error(),
 					},
 				},
@@ -142,8 +142,8 @@ var _ = Describe("csr-agent controller", func() {
 		It("will log an error and set status frrom processor", func() {
 			csr := &securityv1alpha1.VirtualMeshCertificateSigningRequest{
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ComputedStatus: &core_types.ComputedStatus{
-						Status:  core_types.ComputedStatus_INVALID,
+					ComputedStatus: &core_types.Status{
+						State:   core_types.Status_INVALID,
 						Message: testErr.Error(),
 					},
 				},

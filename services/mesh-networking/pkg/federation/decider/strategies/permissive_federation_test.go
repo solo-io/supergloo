@@ -40,8 +40,8 @@ var _ = Describe("Permissive Federation", func() {
 		vm := &networking_v1alpha1.VirtualMesh{
 			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{meshRef},
-				Federation: &networking_types.Federation{
-					Mode: networking_types.Federation_PERMISSIVE,
+				Federation: &networking_types.VirtualMeshSpec_Federation{
+					Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
 				},
 			},
 		}
@@ -52,7 +52,7 @@ var _ = Describe("Permissive Federation", func() {
 			},
 			Spec: types.MeshServiceSpec{
 				Mesh: meshRef,
-				KubeService: &types.KubeService{
+				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
 						Name:      "application-svc",
 						Namespace: "application-ns",
@@ -69,7 +69,7 @@ var _ = Describe("Permissive Federation", func() {
 
 		meshServiceClient := mock_discovery_core.NewMockMeshServiceClient(ctrl)
 		serviceCopy := *service
-		serviceCopy.Spec.Federation = &types.Federation{
+		serviceCopy.Spec.Federation = &types.MeshServiceSpec_Federation{
 			MulticlusterDnsName: "application-svc.application-ns.application-cluster",
 		}
 		meshServiceClient.EXPECT().

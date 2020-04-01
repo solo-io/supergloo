@@ -3,7 +3,6 @@ package mesh_workload
 import (
 	"context"
 
-	pb_types "github.com/gogo/protobuf/types"
 	"github.com/hashicorp/go-multierror"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
@@ -158,8 +157,8 @@ func (d *meshWorkloadFinder) discoverMeshWorkload(pod *corev1.Pod) (*discoveryv1
 			discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
 				ObjectMeta: discoveredMeshWorkloadObjectMeta,
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubeControllerRef: controllerRef,
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+						KubeControllerRef:  controllerRef,
 						Labels:             pod.Labels,
 						ServiceAccountName: pod.Spec.ServiceAccountName,
 					},
@@ -205,7 +204,6 @@ func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_t
 	for _, mesh := range meshList.Items {
 		if mesh.Spec.Cluster.Name == d.clusterName {
 			return &core_types.ResourceRef{
-				Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 				Name:      mesh.Name,
 				Namespace: mesh.Namespace,
 				Cluster:   d.clusterName,

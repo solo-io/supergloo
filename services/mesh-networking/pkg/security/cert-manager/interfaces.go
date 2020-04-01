@@ -19,7 +19,7 @@ type CertConfigProducer interface {
 	ConfigureCertificateInfo(
 		vm *networking_v1alpha1.VirtualMesh,
 		mesh *discovery_v1alpha1.Mesh,
-	) (*security_types.CertConfig, error)
+	) (*security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error)
 }
 
 // VirtualMeshCertificateManager is the higher level event handler interface for VirtualMeshes

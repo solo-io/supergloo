@@ -195,25 +195,25 @@ func (t *trafficPolicyTranslatorLoop) setStatus(
 		// clear out any previous translator errors
 		trafficPolicy.Status.TranslatorErrors = nil
 		if eris.Is(err, errors.TrafficPolicyConflictError) {
-			trafficPolicy.Status.TranslationStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_CONFLICT,
+			trafficPolicy.Status.TranslationStatus = &core_types.Status{
+				State:   core_types.Status_CONFLICT,
 				Message: "TrafficPolicy conflicts with existing set of TrafficPolicies",
 			}
 		} else {
-			trafficPolicy.Status.TranslationStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+			trafficPolicy.Status.TranslationStatus = &core_types.Status{
+				State:   core_types.Status_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while processing TrafficPolicy: %s", err.Error()),
 			}
 		}
 	} else if translatorErrors != nil {
-		trafficPolicy.Status.TranslationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		trafficPolicy.Status.TranslationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 		}
 		trafficPolicy.Status.TranslatorErrors = translatorErrors
 	} else {
-		trafficPolicy.Status.TranslationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		trafficPolicy.Status.TranslationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		// clear out any previous translator errors
 		trafficPolicy.Status.TranslatorErrors = nil

@@ -95,8 +95,8 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_ACCEPTED,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
@@ -121,8 +121,8 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_ACCEPTED,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
@@ -146,8 +146,8 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_ACCEPTED,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
@@ -173,8 +173,8 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_ACCEPTED,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
@@ -200,8 +200,8 @@ var _ = Describe("Merger", func() {
 				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_ACCEPTED,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_ACCEPTED,
 					Message: "",
 				},
 			},
@@ -220,8 +220,8 @@ var _ = Describe("Merger", func() {
 				},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
-				TranslationStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_CONFLICT,
+				TranslationStatus: &core_types.Status{
+					State:   core_types.Status_CONFLICT,
 					Message: "",
 				},
 			},

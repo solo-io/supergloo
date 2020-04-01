@@ -3,18 +3,56 @@ package networking.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "mesh-projects/api/core/v1alpha1/health.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 message VirtualMeshSpec {
+    message CertificateAuthority {
+        /*
+            Configuration for auto-generated root certificate unique to the VirtualMesh
+            Uses the X.509 format, RFC5280
+        */
+        message Builtin {
+            // Number of days before root cert expires. Defaults to 365.
+            uint32 ttl_days = 1;
+            // Size in bytes of the root cert's private key. Defaults to 4096
+            uint32 rsa_key_size_bytes = 2;
+            // Root cert organization name. Defaults to "service-mesh-hub"
+            string org_name = 3;
+        }
+
+        // Configuration for user-provided root certificate.
+        message Provided {
+            // Reference to a Secret object containing the root certificate.
+            core.zephyr.solo.io.ResourceRef certificate = 3;
+        }
+
+        // If omitted, defaults to builtin.
+        oneof type {
+            // Use auto-generated root certificate.
+            Builtin builtin = 1;
+
+            // Use user-provided root certificate.
+            Provided provided = 2;
+        }
+    }
+
+    message Federation {
+        enum Mode {
+            // All services in a VirtualMesh will be federated to all workloads in that Virtual Mesh.
+            PERMISSIVE = 0;
+        }
+
+        Mode mode = 1;
+    }
+
     /*
         Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
         between all entities which wish to communicate within the virtual mesh.
 
-        The best current example of this would be the replicated control planes example from istio:
+        The best current example of this would be the replicated control planes example from Istio:
         https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
     */
     message SharedTrust {}
@@ -56,55 +94,16 @@ message VirtualMeshSpec {
     bool enforce_access_control = 7;
 }
 
-message CertificateAuthority {
-    /*
-        Configuration for auto-generated root certificate unique to the VirtualMesh
-        Uses the X.509 format, RFC5280
-    */
-    message Builtin {
-        // Number of days before root cert expires. Defaults to 365.
-        uint32 ttl_days = 1;
-        // Size in bytes of the root cert's private key. Defaults to 4096
-        uint32 rsa_key_size_bytes = 2;
-        // Root cert organization name. Defaults to "service-mesh-hub"
-        string org_name = 3;
-    }
-
-    // Configuration for user-provided root certificate
-    message Provided {
-        /* Resource reference for a Secret object containing the root certificate
-           certificate:
-                name: cacerts
-                namespace: service-mesh-hub (default write namespace)
-        */
-        core.zephyr.solo.io.ResourceRef certificate = 3;
-    }
-
-    // If omitted, defaults to builtin
-    oneof type {
-        // Use auto-generated root certificate
-        Builtin builtin = 1;
-
-        // Use user-provided root certificate
-        Provided provided = 2;
-    }
-}
-
-message Federation {
-    enum Mode {
-        // federate everything to everybody
-        PERMISSIVE = 0;
-    }
-
-    Mode mode = 1;
-}
-
 message VirtualMeshStatus {
-    core.zephyr.solo.io.ComputedStatus federation_status = 1;
+    // Status of the process writing federation decision metadata onto MeshServices.
+    core.zephyr.solo.io.Status federation_status = 1;
 
-    core.zephyr.solo.io.ComputedStatus certificate_status = 2;
+    // Status of the process signing CSRs.
+    core.zephyr.solo.io.Status certificate_status = 2;
 
-    core.zephyr.solo.io.ComputedStatus config_status = 3;
+    // Overall validation status of this VirtualMesh.
+    core.zephyr.solo.io.Status config_status = 3;
 
-    core.zephyr.solo.io.ComputedStatus access_control_enforcement_status = 4;
+    // Status of ensuring that access control is enforced within this VirtualMesh.
+    core.zephyr.solo.io.Status access_control_enforcement_status = 4;
 }

@@ -56,8 +56,8 @@ var _ = Describe("snapshot listener", func() {
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec:       networking_types.VirtualMeshSpec{},
 			Status: networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status: core_types.ComputedStatus_ACCEPTED,
+				CertificateStatus: &core_types.Status{
+					State: core_types.Status_ACCEPTED,
 				},
 			},
 		}
@@ -66,8 +66,8 @@ var _ = Describe("snapshot listener", func() {
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec:       networking_types.VirtualMeshSpec{},
 			Status: networking_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status: core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State: core_types.Status_INVALID,
 				},
 			},
 		}

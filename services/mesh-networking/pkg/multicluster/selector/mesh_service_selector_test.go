@@ -67,7 +67,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService1 = v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-1"},
 				Spec: types.MeshServiceSpec{
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-1",
 							Namespace: namespace1,
@@ -79,7 +79,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService2 = v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-2"},
 				Spec: types.MeshServiceSpec{
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-2",
 							Namespace: namespace1,
@@ -91,7 +91,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService3 = v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-3"},
 				Spec: types.MeshServiceSpec{
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-3",
 							Namespace: namespace2,
@@ -103,7 +103,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService4 = v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-4"},
 				Spec: types.MeshServiceSpec{
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-4",
 							Namespace: "other-namespace",
@@ -115,7 +115,7 @@ var _ = Describe("MeshServiceSelector", func() {
 			meshService5 = v1alpha1.MeshService{
 				ObjectMeta: v1.ObjectMeta{Name: "mesh-service-5"},
 				Spec: types.MeshServiceSpec{
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      "kube-service-5",
 							Namespace: namespace1,

@@ -18,14 +18,14 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for ComputedStatus
-func (this *ComputedStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for Status
+func (this *Status) MarshalJSON() ([]byte, error) {
 	str, err := StatusMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for ComputedStatus
-func (this *ComputedStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for Status
+func (this *Status) UnmarshalJSON(b []byte) error {
 	return StatusUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

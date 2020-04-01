@@ -7,16 +7,16 @@ import "google/protobuf/wrappers.proto";
 
 import "mesh-projects/api/core/v1alpha1/http.proto";
 import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "mesh-projects/api/core/v1alpha1/selector.proto";
+import "mesh-projects/api/core/v1alpha1/service_selector.proto";
+import "mesh-projects/api/core/v1alpha1/workload_selector.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /*
-    a routing rule applies some L7 routing features to an existing mesh
-    routing rules specify the following:
-    for all requests:
+    A routing rule applies some L7 routing features to an existing mesh.
+    Routing rules specify the following for all requests:
     - originating from from **source pods**
     - sent to **destination services**
     - matching one or more **request matcher**
@@ -31,8 +31,8 @@ option (gogoproto.equal_all) = true;
 */
 message TrafficPolicySpec {
     /*
-        requests originating from these pods will have the rule applied
-        leave empty to have all pods in the mesh apply these rules
+        Requests originating from these pods will have the rule applied.
+        Leave empty to have all pods in the mesh apply these rules.
 
         Note: Source Selectors are ignored when TrafficPolicys are
         applied to pods in a Linkerd mesh. TrafficPolicys will apply to
@@ -43,8 +43,8 @@ message TrafficPolicySpec {
     core.zephyr.solo.io.WorkloadSelector source_selector = 1;
 
     /*
-        requests destined for these k8s services will have the rule applied
-        leave empty to apply to all destination k8s services in the mesh
+        Requests destined for these k8s services will have the rule applied.
+        Leave empty to apply to all destination k8s services in the mesh.
     */
     core.zephyr.solo.io.ServiceSelector destination_selector = 2;
 
@@ -57,26 +57,26 @@ message TrafficPolicySpec {
     repeated HttpMatcher http_request_matchers = 3;
 
     /*
-        a routing rule can have one of several types
-        Note: types imported from istio will be replaced with our own
-        simpler types, this is just a place to start from
+        A routing rule can have one of several types.
+        Note: types imported from Istio will be replaced with our own
+        simpler types, this is just a place to start from.
 
-        enables traffic shifting, i.e. to reroute requests to a different service,
-        to a subset of pods based on their label, and/or split traffic between multiple services
+        Enables traffic shifting, i.e. to reroute requests to a different service,
+        to a subset of pods based on their label, and/or split traffic between multiple services.
     */
     MultiDestination traffic_shift = 4;
 
-    // enable fault injection on requests
+    // Enable fault injection on requests.
     FaultInjection fault_injection = 5;
 
-    // set a timeout on requests
+    // Set a timeout on requests.
     google.protobuf.Duration request_timeout = 6;
 
-    // set a retry policy on requests
+    // Set a retry policy on requests.
     RetryPolicy retries = 7;
 
     /*
-        set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
+        Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
         for further details about cross origin resource sharing.
     */
@@ -85,17 +85,17 @@ message TrafficPolicySpec {
     // Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal.
     Mirror mirror = 9;
 
-    // manipulate request and response headers
+    // Manipulate request and response headers.
     HeaderManipulation header_manipulation = 10;
 }
 
 message TrafficPolicyStatus {
     message TranslatorError {
-        // ID representing a translator that translates TrafficPolicy to Mesh-specific config
+        // ID representing a translator that translates TrafficPolicy to Mesh-specific config.
         string translator_id = 1;
         string error_message = 2;
     }
-    core.zephyr.solo.io.ComputedStatus translation_status = 1;
+    core.zephyr.solo.io.Status translation_status = 1;
     repeated TranslatorError translator_errors = 2;
 }
 
@@ -118,11 +118,11 @@ message RetryPolicy {
 message MultiDestination {
     message WeightedDestination {
         core.zephyr.solo.io.ResourceRef destination = 1;
-        // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route
+        // Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route.
         uint32 weight = 2;
-        // Subset routing is currently only supported on Istio
+        // Subset routing is currently only supported on Istio.
         map<string, string> subset = 3;
-        // port on the destination service to receive traffic. If multiple are found, and none are specified,
+        // Port on the destination service to receive traffic. If multiple are found, and none are specified,
         // then the configuration will be considered invalid
         uint32 port = 4;
     }
@@ -188,7 +188,7 @@ message FaultInjection {
     double percentage = 5;
 }
 
-// manipulate request and response headers
+// Manipulate request and response headers.
 message HeaderManipulation {
     // HTTP headers to remove before returning a response to the caller.
     repeated string remove_response_headers = 12;
@@ -288,13 +288,13 @@ message HttpMatcher {
 message StringMatch {
     oneof match_type {
 
-        // exact string match
+        // Exact string match.
         string exact = 1;
 
-        // prefix-based match
+        // Prefix-based match.
         string prefix = 2;
 
-        // ECMAscript style regex-based match
+        // ECMAscript style regex-based match.
         string regex = 3;
     }
 }
@@ -359,8 +359,8 @@ message Mirror {
         Values range between 0 and 100
     */
     double percentage = 2;
-    // port on the destination service to receive traffic. If multiple are found, and none are specified,
-    // then the configuration will be considered invalid
+    // Port on the destination service to receive traffic. If multiple are found, and none are specified,
+    // then the configuration will be considered invalid.
     uint32 port = 3;
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	pb_types "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
@@ -62,8 +61,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				Namespace: "namespace",
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Namespace: "controller-namespace",
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Namespace: "controller-namespace",
+					},
 				},
 			},
 		}
@@ -84,19 +85,18 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		}
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		meshSpec := &core_types.ResourceRef{
-			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: meshNamespace,
 			Cluster:   clusterName,
 		}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.CLUSTER:                   clusterName,
-			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeControllerRef.GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeControllerRef.GetNamespace(),
+			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
+			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
@@ -105,7 +105,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().
 			List(ctx, &client.ListOptions{}).
 			Return(meshList, nil)
-		discoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshWorkloadClient.EXPECT().
 			Create(ctx, discoveredMeshWorkload).
@@ -136,7 +135,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshSpec := &core_types.ResourceRef{
-			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -145,12 +143,12 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		expectedErr := eris.New("error")
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, expectedErr)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, expectedErr)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.CLUSTER:                   clusterName,
-			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeControllerRef.GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeControllerRef.GetNamespace(),
+			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
+			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
@@ -159,7 +157,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().
 			List(ctx, &client.ListOptions{}).
 			Return(meshList, nil)
-		discoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshWorkloadClient.EXPECT().
 			Create(ctx, discoveredMeshWorkload).
@@ -172,7 +169,7 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		expectedErr := eris.New("error")
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(nil, expectedErr)
 		err := meshWorkloadFinder.Create(pod)
 		multierr, ok := err.(*multierror.Error)
@@ -189,8 +186,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				Namespace: "namespace",
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Namespace: "controller-namespace",
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Namespace: "controller-namespace",
+					},
 				},
 			},
 		}
@@ -204,10 +203,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
+			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(pod.ClusterName).To(Equal(clusterName))
@@ -222,8 +221,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				Namespace: "namespace",
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Namespace: "controller-namespace",
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Namespace: "controller-namespace",
+					},
 				},
 			},
 		}
@@ -237,10 +238,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
+			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
@@ -254,8 +255,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				Namespace: "namespace",
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Namespace: newNamespace,
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Namespace: newNamespace,
+					},
 				},
 			},
 		}
@@ -267,7 +270,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshSpec := &core_types.ResourceRef{
-			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -275,17 +277,16 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
+			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		newDiscoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.CLUSTER:                   clusterName,
-			constants.KUBE_CONTROLLER_NAME:      newDiscoveredMeshWorkload.Spec.KubeControllerRef.GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: newDiscoveredMeshWorkload.Spec.KubeControllerRef.GetNamespace(),
+			constants.KUBE_CONTROLLER_NAME:      newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
+			constants.KUBE_CONTROLLER_NAMESPACE: newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
-		newDiscoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		newDiscoveredMeshWorkload.Spec.Mesh = meshSpec
 		mockLocalMeshClient.EXPECT().
 			List(ctx, &client.ListOptions{}).
@@ -337,7 +338,6 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
 		}
 		meshSpec := &core_types.ResourceRef{
-			Kind:      &pb_types.StringValue{Value: mesh.TypeMeta.Kind},
 			Name:      mesh.Name,
 			Namespace: mesh.Namespace,
 			Cluster:   clusterName,
@@ -348,18 +348,17 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Return(nil, metav1.ObjectMeta{}, nil)
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		objKey, _ := client.ObjectKeyFromObject(discoveredMeshWorkload)
 		mockLocalMeshWorkloadClient.EXPECT().
 			Get(ctx, objKey).
 			Return(nil, notFoundErr)
-		discoveredMeshWorkload.Spec.KubePod = &discovery_types.KubePod{}
 		discoveredMeshWorkload.Spec.Mesh = meshSpec
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.CLUSTER:                   clusterName,
-			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeControllerRef.GetName(),
-			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeControllerRef.GetNamespace(),
+			constants.KUBE_CONTROLLER_NAME:      discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetName(),
+			constants.KUBE_CONTROLLER_NAMESPACE: discoveredMeshWorkload.Spec.KubeController.KubeControllerRef.GetNamespace(),
 		}
 		mockLocalMeshWorkloadClient.EXPECT().
 			Create(ctx, discoveredMeshWorkload).
@@ -378,8 +377,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				Namespace: "namespace",
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Namespace: "controller-namespace",
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Namespace: "controller-namespace",
+					},
 				},
 			},
 		}
@@ -393,10 +394,10 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, errors.New(""))
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, errors.New(""))
 		mockMeshWorkloadScanner.EXPECT().
 			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, errors.New(""))
+			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, errors.New(""))
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
 		err := meshWorkloadFinder.Update(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())

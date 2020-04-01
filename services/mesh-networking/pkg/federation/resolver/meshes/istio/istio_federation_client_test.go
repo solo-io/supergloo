@@ -167,8 +167,8 @@ var _ = Describe("Istio Federation Decider", func() {
 						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.IstioMesh{
-							Installation: &types.MeshInstallation{
+						Istio: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -186,10 +186,10 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.Federation{
+					Federation: &types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
@@ -354,8 +354,8 @@ var _ = Describe("Istio Federation Decider", func() {
 						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.IstioMesh{
-							Installation: &types.MeshInstallation{
+						Istio: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -373,10 +373,10 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.Federation{
+					Federation: &types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, "istio-cluster"),
 					},
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
@@ -541,8 +541,8 @@ var _ = Describe("Istio Federation Decider", func() {
 						Name: clusterName,
 					},
 					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.IstioMesh{
-							Installation: &types.MeshInstallation{
+						Istio: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -560,10 +560,10 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRef,
-					Federation: &types.Federation{
+					Federation: &types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: dns.BuildMulticlusterDnsName(backingKubeService, clusterName),
 					},
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: backingKubeService,
 					},
 				},
@@ -808,8 +808,8 @@ var _ = Describe("Istio Federation Decider", func() {
 						Name: "istio-cluster-svc",
 					},
 					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.IstioMesh{
-							Installation: &types.MeshInstallation{
+						Istio: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -823,8 +823,8 @@ var _ = Describe("Istio Federation Decider", func() {
 						Name: "istio-cluster-workload",
 					},
 					MeshType: &types.MeshSpec_Istio{
-						Istio: &types.IstioMesh{
-							Installation: &types.MeshInstallation{
+						Istio: &types.MeshSpec_IstioMesh{
+							Installation: &types.MeshSpec_MeshInstallation{
 								InstallationNamespace: "istio-system",
 							},
 						},
@@ -841,7 +841,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: "application-ns",
 			}
 			serviceMulticlusterDnsName := dns.BuildMulticlusterDnsName(backingKubeSvc, istioMeshForService.Spec.Cluster.Name)
-			svcPort := &types.KubeServicePort{
+			svcPort := &types.MeshServiceSpec_KubeService_KubeServicePort{
 				Port:     9080,
 				Name:     "http1",
 				Protocol: "http",
@@ -853,12 +853,12 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 				Spec: types.MeshServiceSpec{
 					Mesh: istioMeshRefService,
-					Federation: &types.Federation{
+					Federation: &types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: serviceMulticlusterDnsName,
 					},
-					KubeService: &types.KubeService{
+					KubeService: &types.MeshServiceSpec_KubeService{
 						Ref: backingKubeSvc,
-						Ports: []*types.KubeServicePort{
+						Ports: []*types.MeshServiceSpec_KubeService_KubeServicePort{
 							svcPort,
 						},
 					},

@@ -151,7 +151,7 @@ func kubeServiceMatches(
 	labels map[string]string,
 	namespaces []string,
 	clusters []string,
-	kubeService *types.KubeService,
+	kubeService *types.MeshServiceSpec_KubeService,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeService.GetRef().GetNamespace(), namespaces) {
 		return false

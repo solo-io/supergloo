@@ -31,36 +31,14 @@ func (this *VirtualMeshCertificateSigningRequestSpec) UnmarshalJSON(b []byte) er
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for CertConfig
-func (this *CertConfig) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningRequestSpec_CertConfig
+func (this *VirtualMeshCertificateSigningRequestSpec_CertConfig) MarshalJSON() ([]byte, error) {
 	str, err := CertificatesMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for CertConfig
-func (this *CertConfig) UnmarshalJSON(b []byte) error {
-	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningResponse
-func (this *VirtualMeshCertificateSigningResponse) MarshalJSON() ([]byte, error) {
-	str, err := CertificatesMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningResponse
-func (this *VirtualMeshCertificateSigningResponse) UnmarshalJSON(b []byte) error {
-	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for ThirdPartyApprovalWorkflow
-func (this *ThirdPartyApprovalWorkflow) MarshalJSON() ([]byte, error) {
-	str, err := CertificatesMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for ThirdPartyApprovalWorkflow
-func (this *ThirdPartyApprovalWorkflow) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestSpec_CertConfig
+func (this *VirtualMeshCertificateSigningRequestSpec_CertConfig) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
@@ -72,6 +50,28 @@ func (this *VirtualMeshCertificateSigningRequestStatus) MarshalJSON() ([]byte, e
 
 // UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestStatus
 func (this *VirtualMeshCertificateSigningRequestStatus) UnmarshalJSON(b []byte) error {
+	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningRequestStatus_Response
+func (this *VirtualMeshCertificateSigningRequestStatus_Response) MarshalJSON() ([]byte, error) {
+	str, err := CertificatesMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestStatus_Response
+func (this *VirtualMeshCertificateSigningRequestStatus_Response) UnmarshalJSON(b []byte) error {
+	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow
+func (this *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) MarshalJSON() ([]byte, error) {
+	str, err := CertificatesMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow
+func (this *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) UnmarshalJSON(b []byte) error {
 	return CertificatesUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

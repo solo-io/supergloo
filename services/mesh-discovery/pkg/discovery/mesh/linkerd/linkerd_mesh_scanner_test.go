@@ -100,8 +100,8 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Linkerd{
-					Linkerd: &discovery_types.LinkerdMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Linkerd: &discovery_types.MeshSpec_LinkerdMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "0.6.9",
 						},

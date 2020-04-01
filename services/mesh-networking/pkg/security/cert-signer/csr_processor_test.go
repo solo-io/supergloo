@@ -52,8 +52,8 @@ var _ = Describe("csr processor", func() {
 			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
 				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{},
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
-						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_DENIED,
+					ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+						ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED,
 					},
 				},
 			}
@@ -64,8 +64,8 @@ var _ = Describe("csr processor", func() {
 			obj := &v1alpha1.VirtualMeshCertificateSigningRequest{
 				Spec: security_types.VirtualMeshCertificateSigningRequestSpec{},
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
-						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
+					ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+						ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
 					},
 				},
 			}
@@ -78,8 +78,8 @@ var _ = Describe("csr processor", func() {
 					CsrData: []byte("hello"),
 				},
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
-						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
+					ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+						ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
 					},
 				},
 			}
@@ -93,10 +93,10 @@ var _ = Describe("csr processor", func() {
 					VirtualMeshRef: &core_types.ResourceRef{},
 				},
 				Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-					ThirdPartyApproval: &security_types.ThirdPartyApprovalWorkflow{
-						ApprovalStatus: security_types.ThirdPartyApprovalWorkflow_APPROVED,
+					ThirdPartyApproval: &security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{
+						ApprovalStatus: security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED,
 					},
-					Response: &security_types.VirtualMeshCertificateSigningResponse{
+					Response: &security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 						CaCertificate:   []byte("hello"),
 						RootCertificate: []byte("hello"),
 					},
@@ -123,8 +123,8 @@ var _ = Describe("csr processor", func() {
 
 			status := csrProcessor.Sign(ctx, csr)
 			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				ComputedStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: cert_signer.VirtualMeshTrustBundleNotFoundMsg(testErr, csr.Spec.GetVirtualMeshRef()).Error(),
 				},
 			}))
@@ -162,8 +162,8 @@ var _ = Describe("csr processor", func() {
 
 			status := csrProcessor.Sign(ctx, csr)
 			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				ComputedStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: cert_signer.FailedToSignCertError(testErr).Error(),
 				},
 			}))
@@ -202,12 +202,12 @@ var _ = Describe("csr processor", func() {
 
 			status := csrProcessor.Sign(ctx, csr)
 			Expect(status).To(Equal(&security_types.VirtualMeshCertificateSigningRequestStatus{
-				Response: &security_types.VirtualMeshCertificateSigningResponse{
+				Response: &security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 					CaCertificate:   newCert,
 					RootCertificate: rootCaData.RootCert,
 				},
-				ComputedStatus: &core_types.ComputedStatus{
-					Status: core_types.ComputedStatus_ACCEPTED,
+				ComputedStatus: &core_types.Status{
+					State: core_types.Status_ACCEPTED,
 				},
 			}))
 		})

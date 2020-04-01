@@ -62,8 +62,8 @@ func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_a
 		},
 		Spec: discovery_types.MeshSpec{
 			MeshType: &discovery_types.MeshSpec_Linkerd{
-				Linkerd: &discovery_types.LinkerdMesh{
-					Installation: &discovery_types.MeshInstallation{
+				Linkerd: &discovery_types.MeshSpec_LinkerdMesh{
+					Installation: &discovery_types.MeshSpec_MeshInstallation{
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               linkerdController.version,
 					},

@@ -22,7 +22,7 @@ func NewRootCertGenerator() RootCertGenerator {
 
 // Generate a new private key and use it to self-sign a new root certificate
 func (c *rootCertGenerator) GenRootCertAndKey(
-	builtinCA *networking_types.CertificateAuthority_Builtin,
+	builtinCA *networking_types.VirtualMeshSpec_CertificateAuthority_Builtin,
 ) (*cert_secrets.RootCAData, error) {
 	org := DefaultOrgName
 	if builtinCA.GetOrgName() != "" {

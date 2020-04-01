@@ -39,7 +39,7 @@ func BuildSpiffeURI(trustDomain, namespace, sa string) string {
 func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	vm *networking_v1alpha1.VirtualMesh,
 	mesh *discovery_v1alpha1.Mesh,
-) (*security_types.CertConfig, error) {
+) (*security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig, error) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
 		return nil, IncorrectMeshTypeError(mesh)
@@ -58,7 +58,7 @@ func (i *istioCertConfigProducer) ConfigureCertificateInfo(
 	if istioMesh.GetCitadelInfo().GetCitadelServiceAccount() != "" {
 		citadelServiceAccount = istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
 	}
-	return &security_types.CertConfig{
+	return &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 		// TODO: Make citadel namespace discoverable
 		Hosts:    []string{BuildSpiffeURI(trustDomain, citadelNamespace, citadelServiceAccount)},
 		Org:      DefaultIstioOrg,

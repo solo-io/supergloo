@@ -40,9 +40,9 @@ func (s *federationDecisionCheck) Run(ctx context.Context, installNamespace stri
 		}
 
 		federatedServiceExists = true
-		if federationStatus.GetStatus() != types.ComputedStatus_ACCEPTED {
+		if federationStatus.GetState() != types.Status_ACCEPTED {
 			return &healthcheck_types.RunFailure{
-				ErrorMessage: FederationRecordingHasFailed(meshService.GetName(), meshService.GetNamespace(), federationStatus.Status).Error(),
+				ErrorMessage: FederationRecordingHasFailed(meshService.GetName(), meshService.GetNamespace(), federationStatus.State).Error(),
 				Hint:         fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", installNamespace, meshService.GetName()),
 			}, true
 		}

@@ -57,7 +57,7 @@ func (p *permissiveFederation) WriteFederationToServices(
 		for _, service := range servicesInMesh {
 			serviceClusterName := serverMeshMetadata.ClusterName
 
-			service.Spec.Federation = &discovery_types.Federation{
+			service.Spec.Federation = &discovery_types.MeshServiceSpec_Federation{
 				MulticlusterDnsName:  dns.BuildMulticlusterDnsName(service.Spec.GetKubeService().GetRef(), serviceClusterName),
 				FederatedToWorkloads: federatedToWorkloads,
 			}

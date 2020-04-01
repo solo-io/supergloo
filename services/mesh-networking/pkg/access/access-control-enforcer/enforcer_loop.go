@@ -112,13 +112,13 @@ func (e *enforcerLoop) setStatus(
 	err error,
 ) error {
 	if err != nil {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 	} else {
-		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		virtualMesh.Status.AccessControlEnforcementStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 	}
 	return e.virtualMeshClient.UpdateStatus(ctx, virtualMesh)

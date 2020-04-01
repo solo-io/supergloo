@@ -5,7 +5,7 @@ option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.s
 import "mesh-projects/api/core/v1alpha1/ref.proto";
 
 /*
-    specifies a method by which to select pods within a mesh for the application of rules and policies
+    Representation of a Kubernetes cluster that has been registered in Service Mesh Hub.
 */
 message KubernetesClusterSpec {
     // pointer to secret which contains the kubeconfig with information to connect to the remote cluster.

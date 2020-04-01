@@ -58,8 +58,8 @@ func (c *certSinger) Sign(
 	certData, err := c.mgCertClient.GetRootCaBundle(ctx, obj.Spec.GetVirtualMeshRef())
 	if err != nil {
 		wrapperErr := VirtualMeshTrustBundleNotFoundMsg(err, obj.Spec.GetVirtualMeshRef())
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		obj.Status.ComputedStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: wrapperErr.Error(),
 		}
 		return &obj.Status
@@ -75,20 +75,20 @@ func (c *certSinger) Sign(
 	)
 	if err != nil {
 		wrappedErr := FailedToSignCertError(err)
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		obj.Status.ComputedStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: wrappedErr.Error(),
 		}
 		return &obj.Status
 	}
 
 	// set the cert on the obj object to the cert, and update it
-	obj.Status.Response = &security_types.VirtualMeshCertificateSigningResponse{
+	obj.Status.Response = &security_types.VirtualMeshCertificateSigningRequestStatus_Response{
 		CaCertificate:   cert,
 		RootCertificate: certData.RootCert,
 	}
-	obj.Status.ComputedStatus = &core_types.ComputedStatus{
-		Status: core_types.ComputedStatus_ACCEPTED,
+	obj.Status.ComputedStatus = &core_types.Status{
+		State: core_types.Status_ACCEPTED,
 	}
 	return &obj.Status
 }
@@ -97,8 +97,8 @@ func (c *certSinger) shouldProcess(csr *security_v1alpha1.VirtualMeshCertificate
 	// TODO: make this configurable so third party workflows can be enabled
 	switch {
 	// Third party approval is not in the correct state
-	case csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.ThirdPartyApprovalWorkflow_APPROVED &&
-		csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.ThirdPartyApprovalWorkflow_PENDING:
+	case csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED &&
+		csr.Status.GetThirdPartyApproval().GetApprovalStatus() != security_types.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_PENDING:
 		return false
 	// CSR data has not yet been populated
 	case len(csr.Spec.GetCsrData()) == 0:

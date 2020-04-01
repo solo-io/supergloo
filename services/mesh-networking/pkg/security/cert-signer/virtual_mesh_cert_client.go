@@ -50,7 +50,7 @@ func (v *virtualMeshCertClient) GetRootCaBundle(
 	var caSecret *core_v1.Secret
 	var trustBundleSecretRef *core_types.ResourceRef
 	switch vm.Spec.GetCertificateAuthority().GetType().(type) {
-	case *types.CertificateAuthority_Provided_:
+	case *types.VirtualMeshSpec_CertificateAuthority_Provided_:
 		trustBundleSecretRef = vm.Spec.GetCertificateAuthority().GetProvided().GetCertificate()
 		caSecret, err = v.localSecretClient.Get(ctx, trustBundleSecretRef.GetName(), trustBundleSecretRef.GetNamespace())
 		if err != nil {

@@ -3,7 +3,8 @@ package networking.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
 
 import "mesh-projects/api/core/v1alpha1/http.proto";
-import "mesh-projects/api/core/v1alpha1/selector.proto";
+import "mesh-projects/api/core/v1alpha1/identity_selector.proto";
+import "mesh-projects/api/core/v1alpha1/service_selector.proto";
 import "mesh-projects/api/core/v1alpha1/status.proto";
 
 /*
@@ -69,6 +70,10 @@ message AccessControlPolicyStatus {
         string translator_id = 1;
         string error_message = 2;
     }
-    core.zephyr.solo.io.ComputedStatus translation_status = 1;
+
+    // The status reported by the process translating this resource into mesh-specific resource(s).
+    core.zephyr.solo.io.Status translation_status = 1;
+
+    // More detailed errors than the base status provided by `translation_status`.
     repeated TranslatorError translator_errors = 2;
 }

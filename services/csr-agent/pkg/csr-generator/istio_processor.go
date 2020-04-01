@@ -86,8 +86,8 @@ func (i *istioCSRGenerator) process(
 	rootCaData, err := i.certClient.EnsureSecretKey(ctx, obj)
 	if err != nil {
 		wrapped := FailedToRetrievePrivateKeyError(err)
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		obj.Status.ComputedStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
@@ -100,13 +100,13 @@ func (i *istioCSRGenerator) process(
 		// csr data has been saturated, this csr is ready to be reprocessed
 		if err = i.updateCa(ctx, obj, rootCaData); err != nil {
 			wrapped := FailedToUpdateCaError(err)
-			obj.Status.ComputedStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_INVALID,
+			obj.Status.ComputedStatus = &core_types.Status{
+				State:   core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return &obj.Status
 		}
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{Status: core_types.ComputedStatus_ACCEPTED}
+		obj.Status.ComputedStatus = &core_types.Status{State: core_types.Status_ACCEPTED}
 	}
 
 	return &obj.Status
@@ -124,8 +124,8 @@ func (i *istioCSRGenerator) generateCsr(
 	})
 	if err != nil {
 		wrapped := FailedToGenerateCSRError(err)
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		obj.Status.ComputedStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
@@ -134,13 +134,13 @@ func (i *istioCSRGenerator) generateCsr(
 	obj.Spec.CsrData = csr
 	if err = i.csrClient.Update(ctx, obj); err != nil {
 		wrapped := FailesToAddCsrToResource(err)
-		obj.Status.ComputedStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		obj.Status.ComputedStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: wrapped.Error(),
 		}
 		return &obj.Status
 	}
-	obj.Status.ComputedStatus = &core_types.ComputedStatus{Status: core_types.ComputedStatus_ACCEPTED}
+	obj.Status.ComputedStatus = &core_types.Status{State: core_types.Status_ACCEPTED}
 	return &obj.Status
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	pb_types "github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -63,19 +62,21 @@ var _ = Describe("MeshWorkloadScanner", func() {
 				Labels:    mesh_workload.DiscoveryLabels(),
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
-				KubeControllerRef: &core_types.ResourceRef{
-					Kind:      &pb_types.StringValue{Value: deployment.Kind},
-					Name:      deployment.Name,
-					Namespace: deployment.Namespace,
-					Cluster:   pod.ObjectMeta.ClusterName,
+				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
+					KubeControllerRef: &core_types.ResourceRef{
+						Name:      deployment.Name,
+						Namespace: deployment.Namespace,
+						Cluster:   pod.ObjectMeta.ClusterName,
+					},
+					Labels:             nil,
+					ServiceAccountName: "",
 				},
-				KubePod: &discovery_types.KubePod{},
 			},
 		}
 		mockOwnerFetcher.EXPECT().GetDeployment(ctx, pod).Return(deployment, nil)
 		controllerRef, meta, err := meshWorkloadScanner.ScanPod(ctx, pod)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(controllerRef).To(Equal(expectedMeshWorkload.Spec.KubeControllerRef))
+		Expect(controllerRef).To(Equal(expectedMeshWorkload.Spec.KubeController.KubeControllerRef))
 		Expect(meta).To(Equal(expectedMeshWorkload.ObjectMeta))
 	})
 

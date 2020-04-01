@@ -30,14 +30,15 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type MeshSpec struct {
 	// Types that are valid to be assigned to MeshType:
 	//	*MeshSpec_Istio
-	//	*MeshSpec_AwsAppMesh
+	//	*MeshSpec_AwsAppMesh_
 	//	*MeshSpec_Linkerd
 	//	*MeshSpec_ConsulConnect
-	MeshType             isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	Cluster              *types.ResourceRef  `protobuf:"bytes,5,opt,name=cluster,proto3" json:"cluster,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
-	XXX_unrecognized     []byte              `json:"-"`
-	XXX_sizecache        int32               `json:"-"`
+	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
+	// The cluster on which this mesh resides.
+	Cluster              *types.ResourceRef `protobuf:"bytes,5,opt,name=cluster,proto3" json:"cluster,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *MeshSpec) Reset()         { *m = MeshSpec{} }
@@ -70,20 +71,20 @@ type isMeshSpec_MeshType interface {
 }
 
 type MeshSpec_Istio struct {
-	Istio *IstioMesh `protobuf:"bytes,1,opt,name=istio,proto3,oneof" json:"istio,omitempty"`
+	Istio *MeshSpec_IstioMesh `protobuf:"bytes,1,opt,name=istio,proto3,oneof" json:"istio,omitempty"`
 }
-type MeshSpec_AwsAppMesh struct {
-	AwsAppMesh *AwsAppMesh `protobuf:"bytes,2,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof" json:"aws_app_mesh,omitempty"`
+type MeshSpec_AwsAppMesh_ struct {
+	AwsAppMesh *MeshSpec_AwsAppMesh `protobuf:"bytes,2,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof" json:"aws_app_mesh,omitempty"`
 }
 type MeshSpec_Linkerd struct {
-	Linkerd *LinkerdMesh `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof" json:"linkerd,omitempty"`
+	Linkerd *MeshSpec_LinkerdMesh `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof" json:"linkerd,omitempty"`
 }
 type MeshSpec_ConsulConnect struct {
-	ConsulConnect *ConsulConnectMesh `protobuf:"bytes,4,opt,name=consul_connect,json=consulConnect,proto3,oneof" json:"consul_connect,omitempty"`
+	ConsulConnect *MeshSpec_ConsulConnectMesh `protobuf:"bytes,4,opt,name=consul_connect,json=consulConnect,proto3,oneof" json:"consul_connect,omitempty"`
 }
 
 func (*MeshSpec_Istio) isMeshSpec_MeshType()         {}
-func (*MeshSpec_AwsAppMesh) isMeshSpec_MeshType()    {}
+func (*MeshSpec_AwsAppMesh_) isMeshSpec_MeshType()   {}
 func (*MeshSpec_Linkerd) isMeshSpec_MeshType()       {}
 func (*MeshSpec_ConsulConnect) isMeshSpec_MeshType() {}
 
@@ -94,28 +95,28 @@ func (m *MeshSpec) GetMeshType() isMeshSpec_MeshType {
 	return nil
 }
 
-func (m *MeshSpec) GetIstio() *IstioMesh {
+func (m *MeshSpec) GetIstio() *MeshSpec_IstioMesh {
 	if x, ok := m.GetMeshType().(*MeshSpec_Istio); ok {
 		return x.Istio
 	}
 	return nil
 }
 
-func (m *MeshSpec) GetAwsAppMesh() *AwsAppMesh {
-	if x, ok := m.GetMeshType().(*MeshSpec_AwsAppMesh); ok {
+func (m *MeshSpec) GetAwsAppMesh() *MeshSpec_AwsAppMesh {
+	if x, ok := m.GetMeshType().(*MeshSpec_AwsAppMesh_); ok {
 		return x.AwsAppMesh
 	}
 	return nil
 }
 
-func (m *MeshSpec) GetLinkerd() *LinkerdMesh {
+func (m *MeshSpec) GetLinkerd() *MeshSpec_LinkerdMesh {
 	if x, ok := m.GetMeshType().(*MeshSpec_Linkerd); ok {
 		return x.Linkerd
 	}
 	return nil
 }
 
-func (m *MeshSpec) GetConsulConnect() *ConsulConnectMesh {
+func (m *MeshSpec) GetConsulConnect() *MeshSpec_ConsulConnectMesh {
 	if x, ok := m.GetMeshType().(*MeshSpec_ConsulConnect); ok {
 		return x.ConsulConnect
 	}
@@ -133,10 +134,298 @@ func (m *MeshSpec) GetCluster() *types.ResourceRef {
 func (*MeshSpec) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
 		(*MeshSpec_Istio)(nil),
-		(*MeshSpec_AwsAppMesh)(nil),
+		(*MeshSpec_AwsAppMesh_)(nil),
 		(*MeshSpec_Linkerd)(nil),
 		(*MeshSpec_ConsulConnect)(nil),
 	}
+}
+
+type MeshSpec_MeshInstallation struct {
+	// Namespace in which the control plane has been installed.
+	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
+	//
+	//version of the mesh which has been installed
+	//Note that the version may be "latest"
+	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MeshSpec_MeshInstallation) Reset()         { *m = MeshSpec_MeshInstallation{} }
+func (m *MeshSpec_MeshInstallation) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_MeshInstallation) ProtoMessage()    {}
+func (*MeshSpec_MeshInstallation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 0}
+}
+func (m *MeshSpec_MeshInstallation) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_MeshInstallation.Unmarshal(m, b)
+}
+func (m *MeshSpec_MeshInstallation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_MeshInstallation.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_MeshInstallation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_MeshInstallation.Merge(m, src)
+}
+func (m *MeshSpec_MeshInstallation) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_MeshInstallation.Size(m)
+}
+func (m *MeshSpec_MeshInstallation) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_MeshInstallation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_MeshInstallation proto.InternalMessageInfo
+
+func (m *MeshSpec_MeshInstallation) GetInstallationNamespace() string {
+	if m != nil {
+		return m.InstallationNamespace
+	}
+	return ""
+}
+
+func (m *MeshSpec_MeshInstallation) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
+// Mesh object representing an installed Istio control plane
+type MeshSpec_IstioMesh struct {
+	Installation         *MeshSpec_MeshInstallation      `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
+	CitadelInfo          *MeshSpec_IstioMesh_CitadelInfo `protobuf:"bytes,2,opt,name=citadel_info,json=citadelInfo,proto3" json:"citadel_info,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
+	XXX_unrecognized     []byte                          `json:"-"`
+	XXX_sizecache        int32                           `json:"-"`
+}
+
+func (m *MeshSpec_IstioMesh) Reset()         { *m = MeshSpec_IstioMesh{} }
+func (m *MeshSpec_IstioMesh) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_IstioMesh) ProtoMessage()    {}
+func (*MeshSpec_IstioMesh) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 1}
+}
+func (m *MeshSpec_IstioMesh) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_IstioMesh.Unmarshal(m, b)
+}
+func (m *MeshSpec_IstioMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_IstioMesh.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_IstioMesh) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_IstioMesh.Merge(m, src)
+}
+func (m *MeshSpec_IstioMesh) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_IstioMesh.Size(m)
+}
+func (m *MeshSpec_IstioMesh) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_IstioMesh.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_IstioMesh proto.InternalMessageInfo
+
+func (m *MeshSpec_IstioMesh) GetInstallation() *MeshSpec_MeshInstallation {
+	if m != nil {
+		return m.Installation
+	}
+	return nil
+}
+
+func (m *MeshSpec_IstioMesh) GetCitadelInfo() *MeshSpec_IstioMesh_CitadelInfo {
+	if m != nil {
+		return m.CitadelInfo
+	}
+	return nil
+}
+
+type MeshSpec_IstioMesh_CitadelInfo struct {
+	//
+	//Istio trust domain used for https/spiffe identity.
+	//https://spiffe.io/spiffe/concepts/#trust-domain
+	//https://istio.io/docs/reference/glossary/#identity
+	//
+	//If empty will default to "cluster.local"
+	TrustDomain string `protobuf:"bytes,1,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
+	//
+	//istio-citadel namespace, used to determine identity for the Istio CA cert.
+	//If empty will default to MeshInstallation.installation_namespace
+	CitadelNamespace string `protobuf:"bytes,2,opt,name=citadel_namespace,json=citadelNamespace,proto3" json:"citadel_namespace,omitempty"`
+	//
+	//istio-citadel service account, used to determine identity for the Istio CA cert.
+	//If empty will default to "istio-citadel"
+	CitadelServiceAccount string   `protobuf:"bytes,3,opt,name=citadel_service_account,json=citadelServiceAccount,proto3" json:"citadel_service_account,omitempty"`
+	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
+	XXX_unrecognized      []byte   `json:"-"`
+	XXX_sizecache         int32    `json:"-"`
+}
+
+func (m *MeshSpec_IstioMesh_CitadelInfo) Reset()         { *m = MeshSpec_IstioMesh_CitadelInfo{} }
+func (m *MeshSpec_IstioMesh_CitadelInfo) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_IstioMesh_CitadelInfo) ProtoMessage()    {}
+func (*MeshSpec_IstioMesh_CitadelInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 1, 0}
+}
+func (m *MeshSpec_IstioMesh_CitadelInfo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo.Unmarshal(m, b)
+}
+func (m *MeshSpec_IstioMesh_CitadelInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_IstioMesh_CitadelInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo.Merge(m, src)
+}
+func (m *MeshSpec_IstioMesh_CitadelInfo) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo.Size(m)
+}
+func (m *MeshSpec_IstioMesh_CitadelInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_IstioMesh_CitadelInfo proto.InternalMessageInfo
+
+func (m *MeshSpec_IstioMesh_CitadelInfo) GetTrustDomain() string {
+	if m != nil {
+		return m.TrustDomain
+	}
+	return ""
+}
+
+func (m *MeshSpec_IstioMesh_CitadelInfo) GetCitadelNamespace() string {
+	if m != nil {
+		return m.CitadelNamespace
+	}
+	return ""
+}
+
+func (m *MeshSpec_IstioMesh_CitadelInfo) GetCitadelServiceAccount() string {
+	if m != nil {
+		return m.CitadelServiceAccount
+	}
+	return ""
+}
+
+// Mesh object representing AWS App Mesh
+type MeshSpec_AwsAppMesh struct {
+	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
+	// The AWS region the AWS App Mesh control plane resources exist in.
+	Region               string   `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MeshSpec_AwsAppMesh) Reset()         { *m = MeshSpec_AwsAppMesh{} }
+func (m *MeshSpec_AwsAppMesh) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_AwsAppMesh) ProtoMessage()    {}
+func (*MeshSpec_AwsAppMesh) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 2}
+}
+func (m *MeshSpec_AwsAppMesh) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_AwsAppMesh.Unmarshal(m, b)
+}
+func (m *MeshSpec_AwsAppMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_AwsAppMesh.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_AwsAppMesh) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_AwsAppMesh.Merge(m, src)
+}
+func (m *MeshSpec_AwsAppMesh) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_AwsAppMesh.Size(m)
+}
+func (m *MeshSpec_AwsAppMesh) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_AwsAppMesh.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_AwsAppMesh proto.InternalMessageInfo
+
+func (m *MeshSpec_AwsAppMesh) GetInstallation() *MeshSpec_MeshInstallation {
+	if m != nil {
+		return m.Installation
+	}
+	return nil
+}
+
+func (m *MeshSpec_AwsAppMesh) GetRegion() string {
+	if m != nil {
+		return m.Region
+	}
+	return ""
+}
+
+// Mesh object representing an installed Linkerd control plane
+type MeshSpec_LinkerdMesh struct {
+	Installation         *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *MeshSpec_LinkerdMesh) Reset()         { *m = MeshSpec_LinkerdMesh{} }
+func (m *MeshSpec_LinkerdMesh) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_LinkerdMesh) ProtoMessage()    {}
+func (*MeshSpec_LinkerdMesh) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 3}
+}
+func (m *MeshSpec_LinkerdMesh) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_LinkerdMesh.Unmarshal(m, b)
+}
+func (m *MeshSpec_LinkerdMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_LinkerdMesh.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_LinkerdMesh) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_LinkerdMesh.Merge(m, src)
+}
+func (m *MeshSpec_LinkerdMesh) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_LinkerdMesh.Size(m)
+}
+func (m *MeshSpec_LinkerdMesh) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_LinkerdMesh.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_LinkerdMesh proto.InternalMessageInfo
+
+func (m *MeshSpec_LinkerdMesh) GetInstallation() *MeshSpec_MeshInstallation {
+	if m != nil {
+		return m.Installation
+	}
+	return nil
+}
+
+type MeshSpec_ConsulConnectMesh struct {
+	Installation         *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *MeshSpec_ConsulConnectMesh) Reset()         { *m = MeshSpec_ConsulConnectMesh{} }
+func (m *MeshSpec_ConsulConnectMesh) String() string { return proto.CompactTextString(m) }
+func (*MeshSpec_ConsulConnectMesh) ProtoMessage()    {}
+func (*MeshSpec_ConsulConnectMesh) Descriptor() ([]byte, []int) {
+	return fileDescriptor_041eef151226511f, []int{0, 4}
+}
+func (m *MeshSpec_ConsulConnectMesh) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MeshSpec_ConsulConnectMesh.Unmarshal(m, b)
+}
+func (m *MeshSpec_ConsulConnectMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MeshSpec_ConsulConnectMesh.Marshal(b, m, deterministic)
+}
+func (m *MeshSpec_ConsulConnectMesh) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MeshSpec_ConsulConnectMesh.Merge(m, src)
+}
+func (m *MeshSpec_ConsulConnectMesh) XXX_Size() int {
+	return xxx_messageInfo_MeshSpec_ConsulConnectMesh.Size(m)
+}
+func (m *MeshSpec_ConsulConnectMesh) XXX_DiscardUnknown() {
+	xxx_messageInfo_MeshSpec_ConsulConnectMesh.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MeshSpec_ConsulConnectMesh proto.InternalMessageInfo
+
+func (m *MeshSpec_ConsulConnectMesh) GetInstallation() *MeshSpec_MeshInstallation {
+	if m != nil {
+		return m.Installation
+	}
+	return nil
 }
 
 type MeshStatus struct {
@@ -169,303 +458,15 @@ func (m *MeshStatus) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MeshStatus proto.InternalMessageInfo
 
-type MeshInstallation struct {
-	// where the control plane has been installed
-	InstallationNamespace string `protobuf:"bytes,1,opt,name=installation_namespace,json=installationNamespace,proto3" json:"installation_namespace,omitempty"`
-	//
-	//version of the mesh which has been installed
-	//Note that the version may be "latest"
-	Version              string   `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *MeshInstallation) Reset()         { *m = MeshInstallation{} }
-func (m *MeshInstallation) String() string { return proto.CompactTextString(m) }
-func (*MeshInstallation) ProtoMessage()    {}
-func (*MeshInstallation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{2}
-}
-func (m *MeshInstallation) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MeshInstallation.Unmarshal(m, b)
-}
-func (m *MeshInstallation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MeshInstallation.Marshal(b, m, deterministic)
-}
-func (m *MeshInstallation) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MeshInstallation.Merge(m, src)
-}
-func (m *MeshInstallation) XXX_Size() int {
-	return xxx_messageInfo_MeshInstallation.Size(m)
-}
-func (m *MeshInstallation) XXX_DiscardUnknown() {
-	xxx_messageInfo_MeshInstallation.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MeshInstallation proto.InternalMessageInfo
-
-func (m *MeshInstallation) GetInstallationNamespace() string {
-	if m != nil {
-		return m.InstallationNamespace
-	}
-	return ""
-}
-
-func (m *MeshInstallation) GetVersion() string {
-	if m != nil {
-		return m.Version
-	}
-	return ""
-}
-
-// Mesh object representing an installed Istio control plane
-type IstioMesh struct {
-	Installation         *MeshInstallation      `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	CitadelInfo          *IstioMesh_CitadelInfo `protobuf:"bytes,2,opt,name=citadel_info,json=citadelInfo,proto3" json:"citadel_info,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *IstioMesh) Reset()         { *m = IstioMesh{} }
-func (m *IstioMesh) String() string { return proto.CompactTextString(m) }
-func (*IstioMesh) ProtoMessage()    {}
-func (*IstioMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{3}
-}
-func (m *IstioMesh) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_IstioMesh.Unmarshal(m, b)
-}
-func (m *IstioMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_IstioMesh.Marshal(b, m, deterministic)
-}
-func (m *IstioMesh) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IstioMesh.Merge(m, src)
-}
-func (m *IstioMesh) XXX_Size() int {
-	return xxx_messageInfo_IstioMesh.Size(m)
-}
-func (m *IstioMesh) XXX_DiscardUnknown() {
-	xxx_messageInfo_IstioMesh.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IstioMesh proto.InternalMessageInfo
-
-func (m *IstioMesh) GetInstallation() *MeshInstallation {
-	if m != nil {
-		return m.Installation
-	}
-	return nil
-}
-
-func (m *IstioMesh) GetCitadelInfo() *IstioMesh_CitadelInfo {
-	if m != nil {
-		return m.CitadelInfo
-	}
-	return nil
-}
-
-type IstioMesh_CitadelInfo struct {
-	//
-	//istio trust domain used for https/spiffe identity.
-	//https://spiffe.io/spiffe/concepts/#trust-domain
-	//https://istio.io/docs/reference/glossary/#identity
-	//
-	//If empty will default to "cluster.local"
-	TrustDomain string `protobuf:"bytes,1,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
-	//
-	//istio-citadel namespace, used to determine identity for istio CA cert.
-	//If empty will default to MeshInstallation.installation_namespace
-	CitadelNamespace string `protobuf:"bytes,2,opt,name=citadel_namespace,json=citadelNamespace,proto3" json:"citadel_namespace,omitempty"`
-	//
-	//istio-citadel service account, used to determine identity for istio CA cert.
-	//If empty will default to "istio-citadel"
-	CitadelServiceAccount string   `protobuf:"bytes,3,opt,name=citadel_service_account,json=citadelServiceAccount,proto3" json:"citadel_service_account,omitempty"`
-	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
-	XXX_unrecognized      []byte   `json:"-"`
-	XXX_sizecache         int32    `json:"-"`
-}
-
-func (m *IstioMesh_CitadelInfo) Reset()         { *m = IstioMesh_CitadelInfo{} }
-func (m *IstioMesh_CitadelInfo) String() string { return proto.CompactTextString(m) }
-func (*IstioMesh_CitadelInfo) ProtoMessage()    {}
-func (*IstioMesh_CitadelInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{3, 0}
-}
-func (m *IstioMesh_CitadelInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_IstioMesh_CitadelInfo.Unmarshal(m, b)
-}
-func (m *IstioMesh_CitadelInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_IstioMesh_CitadelInfo.Marshal(b, m, deterministic)
-}
-func (m *IstioMesh_CitadelInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IstioMesh_CitadelInfo.Merge(m, src)
-}
-func (m *IstioMesh_CitadelInfo) XXX_Size() int {
-	return xxx_messageInfo_IstioMesh_CitadelInfo.Size(m)
-}
-func (m *IstioMesh_CitadelInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_IstioMesh_CitadelInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IstioMesh_CitadelInfo proto.InternalMessageInfo
-
-func (m *IstioMesh_CitadelInfo) GetTrustDomain() string {
-	if m != nil {
-		return m.TrustDomain
-	}
-	return ""
-}
-
-func (m *IstioMesh_CitadelInfo) GetCitadelNamespace() string {
-	if m != nil {
-		return m.CitadelNamespace
-	}
-	return ""
-}
-
-func (m *IstioMesh_CitadelInfo) GetCitadelServiceAccount() string {
-	if m != nil {
-		return m.CitadelServiceAccount
-	}
-	return ""
-}
-
-// Mesh object representing AWS App Mesh
-type AwsAppMesh struct {
-	Installation *MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	// The AWS region the AWS App Mesh control plane resources exist in.
-	Region               string   `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *AwsAppMesh) Reset()         { *m = AwsAppMesh{} }
-func (m *AwsAppMesh) String() string { return proto.CompactTextString(m) }
-func (*AwsAppMesh) ProtoMessage()    {}
-func (*AwsAppMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{4}
-}
-func (m *AwsAppMesh) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AwsAppMesh.Unmarshal(m, b)
-}
-func (m *AwsAppMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AwsAppMesh.Marshal(b, m, deterministic)
-}
-func (m *AwsAppMesh) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AwsAppMesh.Merge(m, src)
-}
-func (m *AwsAppMesh) XXX_Size() int {
-	return xxx_messageInfo_AwsAppMesh.Size(m)
-}
-func (m *AwsAppMesh) XXX_DiscardUnknown() {
-	xxx_messageInfo_AwsAppMesh.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AwsAppMesh proto.InternalMessageInfo
-
-func (m *AwsAppMesh) GetInstallation() *MeshInstallation {
-	if m != nil {
-		return m.Installation
-	}
-	return nil
-}
-
-func (m *AwsAppMesh) GetRegion() string {
-	if m != nil {
-		return m.Region
-	}
-	return ""
-}
-
-// Mesh object representing an installed Linkerd control plane
-type LinkerdMesh struct {
-	Installation         *MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *LinkerdMesh) Reset()         { *m = LinkerdMesh{} }
-func (m *LinkerdMesh) String() string { return proto.CompactTextString(m) }
-func (*LinkerdMesh) ProtoMessage()    {}
-func (*LinkerdMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{5}
-}
-func (m *LinkerdMesh) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_LinkerdMesh.Unmarshal(m, b)
-}
-func (m *LinkerdMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_LinkerdMesh.Marshal(b, m, deterministic)
-}
-func (m *LinkerdMesh) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LinkerdMesh.Merge(m, src)
-}
-func (m *LinkerdMesh) XXX_Size() int {
-	return xxx_messageInfo_LinkerdMesh.Size(m)
-}
-func (m *LinkerdMesh) XXX_DiscardUnknown() {
-	xxx_messageInfo_LinkerdMesh.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_LinkerdMesh proto.InternalMessageInfo
-
-func (m *LinkerdMesh) GetInstallation() *MeshInstallation {
-	if m != nil {
-		return m.Installation
-	}
-	return nil
-}
-
-type ConsulConnectMesh struct {
-	Installation         *MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *ConsulConnectMesh) Reset()         { *m = ConsulConnectMesh{} }
-func (m *ConsulConnectMesh) String() string { return proto.CompactTextString(m) }
-func (*ConsulConnectMesh) ProtoMessage()    {}
-func (*ConsulConnectMesh) Descriptor() ([]byte, []int) {
-	return fileDescriptor_041eef151226511f, []int{6}
-}
-func (m *ConsulConnectMesh) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ConsulConnectMesh.Unmarshal(m, b)
-}
-func (m *ConsulConnectMesh) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ConsulConnectMesh.Marshal(b, m, deterministic)
-}
-func (m *ConsulConnectMesh) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ConsulConnectMesh.Merge(m, src)
-}
-func (m *ConsulConnectMesh) XXX_Size() int {
-	return xxx_messageInfo_ConsulConnectMesh.Size(m)
-}
-func (m *ConsulConnectMesh) XXX_DiscardUnknown() {
-	xxx_messageInfo_ConsulConnectMesh.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ConsulConnectMesh proto.InternalMessageInfo
-
-func (m *ConsulConnectMesh) GetInstallation() *MeshInstallation {
-	if m != nil {
-		return m.Installation
-	}
-	return nil
-}
-
 func init() {
 	proto.RegisterType((*MeshSpec)(nil), "discovery.zephyr.solo.io.MeshSpec")
+	proto.RegisterType((*MeshSpec_MeshInstallation)(nil), "discovery.zephyr.solo.io.MeshSpec.MeshInstallation")
+	proto.RegisterType((*MeshSpec_IstioMesh)(nil), "discovery.zephyr.solo.io.MeshSpec.IstioMesh")
+	proto.RegisterType((*MeshSpec_IstioMesh_CitadelInfo)(nil), "discovery.zephyr.solo.io.MeshSpec.IstioMesh.CitadelInfo")
+	proto.RegisterType((*MeshSpec_AwsAppMesh)(nil), "discovery.zephyr.solo.io.MeshSpec.AwsAppMesh")
+	proto.RegisterType((*MeshSpec_LinkerdMesh)(nil), "discovery.zephyr.solo.io.MeshSpec.LinkerdMesh")
+	proto.RegisterType((*MeshSpec_ConsulConnectMesh)(nil), "discovery.zephyr.solo.io.MeshSpec.ConsulConnectMesh")
 	proto.RegisterType((*MeshStatus)(nil), "discovery.zephyr.solo.io.MeshStatus")
-	proto.RegisterType((*MeshInstallation)(nil), "discovery.zephyr.solo.io.MeshInstallation")
-	proto.RegisterType((*IstioMesh)(nil), "discovery.zephyr.solo.io.IstioMesh")
-	proto.RegisterType((*IstioMesh_CitadelInfo)(nil), "discovery.zephyr.solo.io.IstioMesh.CitadelInfo")
-	proto.RegisterType((*AwsAppMesh)(nil), "discovery.zephyr.solo.io.AwsAppMesh")
-	proto.RegisterType((*LinkerdMesh)(nil), "discovery.zephyr.solo.io.LinkerdMesh")
-	proto.RegisterType((*ConsulConnectMesh)(nil), "discovery.zephyr.solo.io.ConsulConnectMesh")
 }
 
 func init() {
@@ -473,44 +474,44 @@ func init() {
 }
 
 var fileDescriptor_041eef151226511f = []byte{
-	// 588 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x94, 0xc1, 0x6e, 0xd4, 0x3c,
-	0x10, 0xc7, 0xbf, 0xed, 0x47, 0x5b, 0x76, 0x76, 0x41, 0xad, 0x45, 0x4b, 0xb4, 0x87, 0xaa, 0x04,
-	0x90, 0x80, 0xd2, 0x44, 0x05, 0xc1, 0x01, 0x4e, 0xdb, 0x72, 0x68, 0x25, 0xa8, 0x50, 0x8a, 0x38,
-	0x20, 0xa1, 0xc8, 0xf5, 0xce, 0x66, 0x4d, 0xb3, 0x1e, 0xcb, 0x76, 0xb6, 0x2a, 0xef, 0xc1, 0x3b,
-	0xf0, 0x26, 0xbc, 0x07, 0xaf, 0xc0, 0x0b, 0xa0, 0x38, 0xd9, 0x66, 0xdb, 0x6a, 0x55, 0x0e, 0xbd,
-	0x65, 0xfc, 0x9f, 0xf9, 0xd9, 0xf9, 0x8f, 0x3d, 0xb0, 0x9b, 0x49, 0x37, 0x2a, 0x8e, 0x23, 0x41,
-	0xe3, 0xd8, 0x52, 0x4e, 0xdb, 0x92, 0xe2, 0x31, 0xda, 0xd1, 0xb6, 0x36, 0xf4, 0x0d, 0x85, 0xb3,
-	0x31, 0xd7, 0x32, 0x1e, 0x48, 0x2b, 0x68, 0x82, 0xe6, 0x2c, 0x9e, 0xec, 0xf0, 0x5c, 0x8f, 0xf8,
-	0x8e, 0x4f, 0x8a, 0xb4, 0x21, 0x47, 0x2c, 0x38, 0x97, 0xa3, 0xef, 0xa8, 0x47, 0x67, 0x26, 0x2a,
-	0x49, 0x91, 0xa4, 0xde, 0xd3, 0xab, 0x28, 0x41, 0x06, 0x1b, 0x8a, 0xc1, 0x61, 0x05, 0xe9, 0x3d,
-	0xbf, 0x2e, 0x75, 0x84, 0x3c, 0x77, 0xf5, 0x96, 0xbd, 0x8d, 0x8c, 0x28, 0xcb, 0x31, 0xf6, 0xd1,
-	0x71, 0x31, 0x8c, 0x4f, 0x0d, 0xd7, 0x1a, 0x8d, 0xad, 0xf5, 0x7b, 0x19, 0x65, 0xe4, 0x3f, 0xe3,
-	0xf2, 0xab, 0x5a, 0x0d, 0xff, 0x2c, 0xc0, 0xed, 0x0f, 0x68, 0x47, 0x47, 0x1a, 0x05, 0x7b, 0x0b,
-	0x8b, 0xd2, 0x3a, 0x49, 0x41, 0x6b, 0xb3, 0xf5, 0xa4, 0xf3, 0xe2, 0x61, 0x34, 0xef, 0x2f, 0xa2,
-	0x83, 0x32, 0xad, 0xac, 0xdb, 0xff, 0x2f, 0xa9, 0x6a, 0xd8, 0x3e, 0x74, 0xf9, 0xa9, 0x4d, 0xb9,
-	0xd6, 0x69, 0x79, 0xee, 0x60, 0xc1, 0x33, 0x1e, 0xcd, 0x67, 0xf4, 0x4f, 0x6d, 0x5f, 0xeb, 0x1a,
-	0x02, 0xfc, 0x3c, 0x62, 0x7d, 0x58, 0xce, 0xa5, 0x3a, 0x41, 0x33, 0x08, 0xfe, 0xf7, 0x90, 0xc7,
-	0xf3, 0x21, 0xef, 0xab, 0xc4, 0x9a, 0x32, 0xad, 0x63, 0x9f, 0xe0, 0xae, 0x20, 0x65, 0x8b, 0x3c,
-	0x15, 0xa4, 0x14, 0x0a, 0x17, 0xdc, 0xf2, 0xa4, 0xad, 0xf9, 0xa4, 0x3d, 0x9f, 0xbf, 0x57, 0xa5,
-	0xd7, 0xbc, 0x3b, 0x62, 0x76, 0x91, 0xbd, 0x81, 0x65, 0x91, 0x17, 0xd6, 0xa1, 0x09, 0x16, 0x3d,
-	0x6e, 0x33, 0x2a, 0x1b, 0x72, 0x99, 0x94, 0xa0, 0xa5, 0xc2, 0x08, 0x4c, 0x70, 0x98, 0x4c, 0x0b,
-	0x76, 0x3b, 0xd0, 0x2e, 0x6d, 0x49, 0xdd, 0x99, 0xc6, 0xb0, 0x0b, 0xe0, 0x4d, 0x77, 0xdc, 0x15,
-	0x36, 0x14, 0xb0, 0x52, 0x46, 0x07, 0xca, 0x3a, 0x9e, 0xe7, 0xdc, 0x49, 0x52, 0xec, 0x15, 0xac,
-	0xcb, 0x99, 0x38, 0x55, 0x7c, 0x8c, 0x56, 0x73, 0x81, 0xbe, 0x37, 0xed, 0x64, 0x6d, 0x56, 0x3d,
-	0x9c, 0x8a, 0x2c, 0x80, 0xe5, 0x09, 0x1a, 0x2b, 0x49, 0x79, 0xff, 0xdb, 0xc9, 0x34, 0x0c, 0x7f,
-	0x2d, 0x40, 0xfb, 0xbc, 0x6b, 0xec, 0x10, 0xba, 0xb3, 0x80, 0xba, 0xe1, 0xcf, 0xe6, 0xbb, 0x73,
-	0xf9, 0x80, 0xc9, 0x85, 0x7a, 0x96, 0x40, 0x57, 0x48, 0xc7, 0x07, 0x98, 0xa7, 0x52, 0x0d, 0xa9,
-	0x6e, 0x7e, 0xfc, 0x0f, 0x17, 0x28, 0xda, 0xab, 0xea, 0x0e, 0xd4, 0x90, 0x92, 0x8e, 0x68, 0x82,
-	0xde, 0x8f, 0x16, 0x74, 0x66, 0x44, 0xf6, 0x00, 0xba, 0xce, 0x14, 0xd6, 0xa5, 0x03, 0x1a, 0x73,
-	0xa9, 0x6a, 0x23, 0x3a, 0x7e, 0xed, 0x9d, 0x5f, 0x62, 0x5b, 0xb0, 0x3a, 0x3d, 0x46, 0x63, 0x58,
-	0x65, 0xc4, 0x4a, 0x2d, 0x34, 0x5e, 0xbd, 0x86, 0xfb, 0xd3, 0x64, 0x8b, 0x66, 0x22, 0x05, 0xa6,
-	0x5c, 0x08, 0x2a, 0x94, 0xf3, 0xd7, 0xae, 0x9d, 0xac, 0xd5, 0xf2, 0x51, 0xa5, 0xf6, 0x2b, 0x31,
-	0x74, 0x00, 0xcd, 0xd5, 0xbd, 0x71, 0x27, 0xd7, 0x61, 0xc9, 0x60, 0xd6, 0x34, 0xb0, 0x8e, 0xc2,
-	0xaf, 0xd0, 0x99, 0xb9, 0xeb, 0x37, 0xbd, 0x6d, 0x28, 0x60, 0xf5, 0xca, 0x03, 0xb8, 0xe9, 0x4d,
-	0x76, 0x3f, 0xff, 0xfc, 0xbd, 0xd1, 0xfa, 0xf2, 0xf1, 0xda, 0xf9, 0xaa, 0x4f, 0xb2, 0x8b, 0x33,
-	0xf6, 0xd2, 0x3e, 0xcd, 0x04, 0x2c, 0x5f, 0x93, 0x3d, 0x5e, 0xf2, 0xb3, 0xec, 0xe5, 0xdf, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0xe4, 0x5e, 0x04, 0x35, 0xba, 0x05, 0x00, 0x00,
+	// 580 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x94, 0xcf, 0x6e, 0xd4, 0x3e,
+	0x10, 0xc7, 0x7f, 0xdb, 0x1f, 0x6d, 0xd9, 0xd9, 0x05, 0xb5, 0x16, 0x2d, 0x51, 0x0e, 0x55, 0xe9,
+	0x09, 0x04, 0x4d, 0x54, 0x0a, 0x08, 0x71, 0xeb, 0x9f, 0x03, 0x45, 0x80, 0x20, 0x95, 0x40, 0x02,
+	0xa1, 0xc8, 0xf5, 0xce, 0x66, 0x4d, 0xb3, 0x1e, 0xcb, 0x76, 0xb6, 0x2a, 0x12, 0x8f, 0xc1, 0x3b,
+	0x70, 0xe1, 0x81, 0xb8, 0xf2, 0x24, 0x28, 0x4e, 0xd2, 0x6c, 0x5b, 0x21, 0x96, 0x43, 0x6f, 0x19,
+	0x7f, 0x3d, 0x1f, 0x8f, 0xbe, 0x33, 0x19, 0xd8, 0xcd, 0xa4, 0x1b, 0x15, 0x47, 0x91, 0xa0, 0x71,
+	0x6c, 0x29, 0xa7, 0x4d, 0x49, 0xf1, 0x18, 0xed, 0x68, 0x53, 0x1b, 0xfa, 0x8c, 0xc2, 0xd9, 0x98,
+	0x6b, 0x19, 0x0f, 0xa4, 0x15, 0x34, 0x41, 0x73, 0x1a, 0x4f, 0xb6, 0x78, 0xae, 0x47, 0x7c, 0xcb,
+	0x5f, 0x8a, 0xb4, 0x21, 0x47, 0x2c, 0x38, 0x93, 0xa3, 0x2f, 0xa8, 0x47, 0xa7, 0x26, 0x2a, 0x49,
+	0x91, 0xa4, 0xf0, 0xde, 0x65, 0x94, 0x20, 0x83, 0x2d, 0xc5, 0xe0, 0xb0, 0x82, 0x84, 0x6b, 0x19,
+	0x51, 0x96, 0x63, 0xec, 0xa3, 0xa3, 0x62, 0x18, 0x9f, 0x18, 0xae, 0x35, 0x1a, 0x5b, 0xeb, 0xb7,
+	0x32, 0xca, 0xc8, 0x7f, 0xc6, 0xe5, 0x57, 0x75, 0xba, 0xf1, 0xa3, 0x0b, 0xd7, 0x5f, 0xa1, 0x1d,
+	0x1d, 0x6a, 0x14, 0x6c, 0x1f, 0xe6, 0xa5, 0x75, 0x92, 0x82, 0xce, 0x7a, 0xe7, 0x6e, 0xef, 0xe1,
+	0x83, 0xe8, 0x4f, 0x75, 0x45, 0x4d, 0x4a, 0x74, 0x50, 0xde, 0x2f, 0xa3, 0xe7, 0xff, 0x25, 0x55,
+	0x32, 0x7b, 0x0b, 0x7d, 0x7e, 0x62, 0x53, 0xae, 0x75, 0x5a, 0x56, 0x1f, 0xcc, 0x79, 0xd8, 0xe6,
+	0x0c, 0xb0, 0x9d, 0x13, 0xbb, 0xa3, 0x75, 0x4d, 0x03, 0x7e, 0x16, 0xb1, 0x17, 0xb0, 0x98, 0x4b,
+	0x75, 0x8c, 0x66, 0x10, 0xfc, 0xef, 0x69, 0xd1, 0x0c, 0xb4, 0x97, 0x55, 0x46, 0x8d, 0x6b, 0x00,
+	0xec, 0x13, 0xdc, 0x14, 0xa4, 0x6c, 0x91, 0xa7, 0x82, 0x94, 0x42, 0xe1, 0x82, 0x6b, 0x1e, 0xf9,
+	0x68, 0x06, 0xe4, 0x9e, 0x4f, 0xdc, 0xab, 0xf2, 0x6a, 0xf0, 0x0d, 0x31, 0x7d, 0xc8, 0x9e, 0xc1,
+	0xa2, 0xc8, 0x0b, 0xeb, 0xd0, 0x04, 0xf3, 0x9e, 0xbb, 0x1e, 0x95, 0x1d, 0xbb, 0x88, 0x4c, 0xd0,
+	0x52, 0x61, 0x04, 0x26, 0x38, 0x4c, 0x9a, 0x84, 0x50, 0xc0, 0x52, 0x09, 0x3d, 0x50, 0xd6, 0xf1,
+	0x3c, 0xe7, 0x4e, 0x92, 0x62, 0x8f, 0x61, 0x55, 0x4e, 0xc5, 0xa9, 0xe2, 0x63, 0xb4, 0x9a, 0x0b,
+	0xf4, 0x4d, 0xea, 0x26, 0x2b, 0xd3, 0xea, 0xeb, 0x46, 0x64, 0x01, 0x2c, 0x4e, 0xd0, 0x58, 0x49,
+	0xca, 0xfb, 0xdf, 0x4d, 0x9a, 0x30, 0xfc, 0x39, 0x07, 0xdd, 0xb3, 0xae, 0xb1, 0xf7, 0xd0, 0x9f,
+	0x06, 0xd4, 0x9d, 0xdf, 0x9e, 0xc1, 0x8b, 0x8b, 0x95, 0x26, 0xe7, 0x40, 0xec, 0x23, 0xf4, 0x85,
+	0x74, 0x7c, 0x80, 0x79, 0x2a, 0xd5, 0x90, 0xea, 0x29, 0x78, 0xfa, 0x2f, 0x23, 0x15, 0xed, 0x55,
+	0x80, 0x03, 0x35, 0xa4, 0xa4, 0x27, 0xda, 0x20, 0xfc, 0xd6, 0x81, 0xde, 0x94, 0xc8, 0xee, 0x40,
+	0xdf, 0x99, 0xc2, 0xba, 0x74, 0x40, 0x63, 0x2e, 0x55, 0x6d, 0x4d, 0xcf, 0x9f, 0xed, 0xfb, 0x23,
+	0x76, 0x1f, 0x96, 0x9b, 0x7a, 0x5a, 0x0b, 0x2b, 0x6b, 0x96, 0x6a, 0xa1, 0x75, 0xef, 0x09, 0xdc,
+	0x6e, 0x2e, 0x5b, 0x34, 0x13, 0x29, 0x30, 0xe5, 0x42, 0x50, 0xa1, 0x9c, 0x9f, 0xbf, 0x6e, 0xb2,
+	0x52, 0xcb, 0x87, 0x95, 0xba, 0x53, 0x89, 0xe1, 0x57, 0x80, 0x76, 0x86, 0xaf, 0xce, 0xdb, 0x55,
+	0x58, 0x30, 0x98, 0xb5, 0xbd, 0xad, 0xa3, 0x70, 0x08, 0xbd, 0xa9, 0xa1, 0xbf, 0xb2, 0xf7, 0xc3,
+	0x1c, 0x96, 0x2f, 0xfd, 0x09, 0x57, 0xf6, 0xda, 0x6e, 0x0f, 0xba, 0xe5, 0x1e, 0x49, 0xdd, 0xa9,
+	0xc6, 0x8d, 0x3e, 0x80, 0xcf, 0x73, 0xdc, 0x15, 0x76, 0xf7, 0xdd, 0xf7, 0x5f, 0x6b, 0x9d, 0x0f,
+	0x6f, 0xfe, 0xba, 0x82, 0xf5, 0x71, 0x76, 0x7e, 0x0d, 0x5f, 0xa8, 0xa5, 0xdd, 0xa7, 0xe5, 0x23,
+	0xf6, 0x68, 0xc1, 0x2f, 0xc7, 0xed, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x70, 0x6c, 0x85, 0x79,
+	0xdd, 0x05, 0x00, 0x00,
 }
 
 func (this *MeshSpec) Equal(that interface{}) bool {
@@ -573,14 +574,14 @@ func (this *MeshSpec_Istio) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MeshSpec_AwsAppMesh) Equal(that interface{}) bool {
+func (this *MeshSpec_AwsAppMesh_) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MeshSpec_AwsAppMesh)
+	that1, ok := that.(*MeshSpec_AwsAppMesh_)
 	if !ok {
-		that2, ok := that.(MeshSpec_AwsAppMesh)
+		that2, ok := that.(MeshSpec_AwsAppMesh_)
 		if ok {
 			that1 = &that2
 		} else {
@@ -645,38 +646,14 @@ func (this *MeshSpec_ConsulConnect) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MeshStatus) Equal(that interface{}) bool {
+func (this *MeshSpec_MeshInstallation) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MeshStatus)
+	that1, ok := that.(*MeshSpec_MeshInstallation)
 	if !ok {
-		that2, ok := that.(MeshStatus)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *MeshInstallation) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*MeshInstallation)
-	if !ok {
-		that2, ok := that.(MeshInstallation)
+		that2, ok := that.(MeshSpec_MeshInstallation)
 		if ok {
 			that1 = &that2
 		} else {
@@ -699,14 +676,14 @@ func (this *MeshInstallation) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *IstioMesh) Equal(that interface{}) bool {
+func (this *MeshSpec_IstioMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*IstioMesh)
+	that1, ok := that.(*MeshSpec_IstioMesh)
 	if !ok {
-		that2, ok := that.(IstioMesh)
+		that2, ok := that.(MeshSpec_IstioMesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -729,14 +706,14 @@ func (this *IstioMesh) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *IstioMesh_CitadelInfo) Equal(that interface{}) bool {
+func (this *MeshSpec_IstioMesh_CitadelInfo) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*IstioMesh_CitadelInfo)
+	that1, ok := that.(*MeshSpec_IstioMesh_CitadelInfo)
 	if !ok {
-		that2, ok := that.(IstioMesh_CitadelInfo)
+		that2, ok := that.(MeshSpec_IstioMesh_CitadelInfo)
 		if ok {
 			that1 = &that2
 		} else {
@@ -762,14 +739,14 @@ func (this *IstioMesh_CitadelInfo) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *AwsAppMesh) Equal(that interface{}) bool {
+func (this *MeshSpec_AwsAppMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*AwsAppMesh)
+	that1, ok := that.(*MeshSpec_AwsAppMesh)
 	if !ok {
-		that2, ok := that.(AwsAppMesh)
+		that2, ok := that.(MeshSpec_AwsAppMesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -792,14 +769,14 @@ func (this *AwsAppMesh) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *LinkerdMesh) Equal(that interface{}) bool {
+func (this *MeshSpec_LinkerdMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*LinkerdMesh)
+	that1, ok := that.(*MeshSpec_LinkerdMesh)
 	if !ok {
-		that2, ok := that.(LinkerdMesh)
+		that2, ok := that.(MeshSpec_LinkerdMesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -819,14 +796,14 @@ func (this *LinkerdMesh) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *ConsulConnectMesh) Equal(that interface{}) bool {
+func (this *MeshSpec_ConsulConnectMesh) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*ConsulConnectMesh)
+	that1, ok := that.(*MeshSpec_ConsulConnectMesh)
 	if !ok {
-		that2, ok := that.(ConsulConnectMesh)
+		that2, ok := that.(MeshSpec_ConsulConnectMesh)
 		if ok {
 			that1 = &that2
 		} else {
@@ -839,6 +816,30 @@ func (this *ConsulConnectMesh) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.Installation.Equal(that1.Installation) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *MeshStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MeshStatus)
+	if !ok {
+		that2, ok := that.(MeshStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

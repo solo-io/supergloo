@@ -64,9 +64,9 @@ var _ = Describe("virtual mesh cert client", func() {
 				Namespace: meshRef.Namespace,
 			},
 			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.CertificateAuthority{
-					Type: &v1alpha1_types.CertificateAuthority_Provided_{
-						Provided: &v1alpha1_types.CertificateAuthority_Provided{
+				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided{
 							Certificate: &core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
@@ -100,9 +100,9 @@ var _ = Describe("virtual mesh cert client", func() {
 				Namespace: meshRef.Namespace,
 			},
 			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.CertificateAuthority{
-					Type: &v1alpha1_types.CertificateAuthority_Provided_{
-						Provided: &v1alpha1_types.CertificateAuthority_Provided{
+				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided_{
+						Provided: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Provided{
 							Certificate: &core_types.ResourceRef{
 								Name:      "tb_name",
 								Namespace: "tb_namespace",
@@ -151,9 +151,9 @@ var _ = Describe("virtual mesh cert client", func() {
 				Namespace: meshRef.Namespace,
 			},
 			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.CertificateAuthority{
-					Type: &v1alpha1_types.CertificateAuthority_Builtin_{
-						Builtin: &v1alpha1_types.CertificateAuthority_Builtin{},
+				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},
@@ -188,9 +188,9 @@ var _ = Describe("virtual mesh cert client", func() {
 				Namespace: meshRef.Namespace,
 			},
 			Spec: v1alpha1_types.VirtualMeshSpec{
-				CertificateAuthority: &v1alpha1_types.CertificateAuthority{
-					Type: &v1alpha1_types.CertificateAuthority_Builtin_{
-						Builtin: &v1alpha1_types.CertificateAuthority_Builtin{},
+				CertificateAuthority: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority{
+					Type: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin_{
+						Builtin: &v1alpha1_types.VirtualMeshSpec_CertificateAuthority_Builtin{},
 					},
 				},
 			},

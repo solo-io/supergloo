@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	pb_types "github.com/gogo/protobuf/types"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/common/constants"
@@ -43,7 +42,6 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 		return nil, metav1.ObjectMeta{}, err
 	}
 	return &core_types.ResourceRef{
-			Kind:      &pb_types.StringValue{Value: deployment.Kind},
 			Name:      deployment.Name,
 			Namespace: deployment.Namespace,
 			Cluster:   pod.ClusterName,

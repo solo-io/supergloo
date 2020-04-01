@@ -1,0 +1,23 @@
+syntax = "proto3";
+package core.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+
+import "google/protobuf/wrappers.proto";
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+
+
+/*
+    Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for
+    detailed semantics.
+*/
+message WorkloadSelector {
+    // If specified, all labels must exist on workloads, else match on any labels.
+    map<string, string> labels = 1;
+
+    // If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+    repeated string namespaces = 2;
+}

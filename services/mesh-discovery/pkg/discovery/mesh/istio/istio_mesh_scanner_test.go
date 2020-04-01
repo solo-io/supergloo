@@ -121,12 +121,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "latest",
 						},
-						CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{
+						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 							TrustDomain:           trustDomain,
 							CitadelNamespace:      istioNs,
 							CitadelServiceAccount: serviceAccountName,
@@ -187,12 +187,12 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "latest",
 						},
-						CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{
+						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 							TrustDomain:           trustDomain,
 							CitadelNamespace:      istioNs,
 							CitadelServiceAccount: serviceAccountName,

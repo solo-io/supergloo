@@ -27,7 +27,7 @@ var _ = Describe("istio cert config", func() {
 		mesh := &v1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Linkerd{
-					Linkerd: &discovery_types.LinkerdMesh{},
+					Linkerd: &discovery_types.MeshSpec_LinkerdMesh{},
 				},
 			},
 		}
@@ -40,15 +40,15 @@ var _ = Describe("istio cert config", func() {
 		mesh := &v1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: istioNamespace,
 						},
 					},
 				},
 			},
 		}
-		matchCertConfig := &security_types.CertConfig{
+		matchCertConfig := &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 			Hosts: []string{
 				cert_manager.BuildSpiffeURI(
 					cert_manager.DefaultTrustDomain,
@@ -65,7 +65,7 @@ var _ = Describe("istio cert config", func() {
 	})
 
 	It("will return default the values present in the cert config when discovered", func() {
-		citadelInfo := &discovery_types.IstioMesh_CitadelInfo{
+		citadelInfo := &discovery_types.MeshSpec_IstioMesh_CitadelInfo{
 			TrustDomain:           "test.domain",
 			CitadelNamespace:      "testns",
 			CitadelServiceAccount: "testsa",
@@ -73,8 +73,8 @@ var _ = Describe("istio cert config", func() {
 		mesh := &v1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						Installation: &discovery_types.MeshInstallation{
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: istioNamespace,
 						},
 						CitadelInfo: citadelInfo,
@@ -82,7 +82,7 @@ var _ = Describe("istio cert config", func() {
 				},
 			},
 		}
-		matchCertConfig := &security_types.CertConfig{
+		matchCertConfig := &security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig{
 			Hosts: []string{
 				cert_manager.BuildSpiffeURI(
 					citadelInfo.GetTrustDomain(),

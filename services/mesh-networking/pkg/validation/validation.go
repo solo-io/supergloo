@@ -69,8 +69,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *networking_v1al
 	// TODO: Currently we are listing meshes from all namespaces, however, the namespace(s) should be configurable.
 	matchingMeshes, err := m.meshFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		vm.Status.ConfigStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		vm.Status.ConfigStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: err.Error(),
 		}
 		return err
@@ -78,8 +78,8 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *networking_v1al
 	for _, v := range matchingMeshes {
 		if v.Spec.GetIstio() == nil {
 			wrapped := OnlyIstioSupportedError(v.GetName())
-			vm.Status.ConfigStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_INVALID,
+			vm.Status.ConfigStatus = &core_types.Status{
+				State:   core_types.Status_INVALID,
 				Message: wrapped.Error(),
 			}
 			return wrapped

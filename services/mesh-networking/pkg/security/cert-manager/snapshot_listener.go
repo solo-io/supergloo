@@ -39,7 +39,7 @@ func NewVMCSRSnapshotListener(
 
 			for _, virtualMesh := range snap.VirtualMeshes {
 				status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, virtualMesh)
-				if status.CertificateStatus.Status != types.ComputedStatus_ACCEPTED {
+				if status.CertificateStatus.State != types.Status_ACCEPTED {
 					logger.Debugw("csr processor failed", zap.Error(eris.New(status.CertificateStatus.Message)))
 				}
 				virtualMesh.Status = status

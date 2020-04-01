@@ -110,15 +110,15 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 		}
 	}
 
-	var federationStatus *core_types.ComputedStatus
+	var federationStatus *core_types.Status
 	if len(failedFederations) > 0 {
-		federationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		federationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: FailedToFederateServices(meshService, failedFederations),
 		}
 	} else {
-		federationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		federationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 	}
 

@@ -126,8 +126,8 @@ var _ = Describe("Consul Mesh Finder", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_ConsulConnect{
-					ConsulConnect: &discovery_types.ConsulConnectMesh{
-						Installation: &discovery_types.MeshInstallation{
+					ConsulConnect: &discovery_types.MeshSpec_ConsulConnectMesh{
+						Installation: &discovery_types.MeshSpec_MeshInstallation{
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               consulVersion,
 						},

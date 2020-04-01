@@ -67,21 +67,21 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 ) networking_types.VirtualMeshStatus {
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
-		vm.Status.CertificateStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		vm.Status.CertificateStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
 	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
-		vm.Status.CertificateStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		vm.Status.CertificateStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
-	vm.Status.CertificateStatus = &core_types.ComputedStatus{
-		Status: core_types.ComputedStatus_ACCEPTED,
+	vm.Status.CertificateStatus = &core_types.Status{
+		State: core_types.Status_ACCEPTED,
 	}
 	return vm.Status
 }
@@ -93,7 +93,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 ) error {
 	for _, mesh := range meshes {
 		var (
-			certConfig *security_types.CertConfig
+			certConfig *security_types.VirtualMeshCertificateSigningRequestSpec_CertConfig
 			meshType   core_types.MeshType
 			err        error
 		)
@@ -138,7 +138,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 				CertConfig: certConfig,
 			},
 			Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-				ComputedStatus: &core_types.ComputedStatus{
+				ComputedStatus: &core_types.Status{
 					Message: "awaiting automated csr generation",
 				},
 			},

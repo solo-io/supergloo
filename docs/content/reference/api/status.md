@@ -16,25 +16,25 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/st
 
 
 ## Table of Contents
-  - [ComputedStatus](#core.zephyr.solo.io.ComputedStatus)
+  - [Status](#core.zephyr.solo.io.Status)
 
-  - [ComputedStatus.Status](#core.zephyr.solo.io.ComputedStatus.Status)
-
-
+  - [Status.State](#core.zephyr.solo.io.Status.State)
 
 
 
 
-<a name="core.zephyr.solo.io.ComputedStatus"></a>
 
-### ComputedStatus
-a status set by Service Mesh Hub while processing a resource
+
+<a name="core.zephyr.solo.io.Status"></a>
+
+### Status
+Status set by Service Mesh Hub while processing a resource.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| status | [ComputedStatus.Status](#core.zephyr.solo.io.ComputedStatus.Status) |  |  |
-| message | [string](#string) |  | human-readable message to be surfaced to the user |
+| state | [Status.State](#core.zephyr.solo.io.Status.State) |  |  |
+| message | [string](#string) |  | Human-readable message with details concerning the reason this state was reached. |
 
 
 
@@ -43,9 +43,9 @@ a status set by Service Mesh Hub while processing a resource
  <!-- end messages -->
 
 
-<a name="core.zephyr.solo.io.ComputedStatus.Status"></a>
+<a name="core.zephyr.solo.io.Status.State"></a>
 
-### ComputedStatus.Status
+### Status.State
 
 
 | Name | Number | Description |

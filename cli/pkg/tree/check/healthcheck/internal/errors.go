@@ -19,7 +19,7 @@ var (
 	KubernetesServerVersionUnsupported = func(minorVersion string) error {
 		return eris.Errorf("Kubernetes version 1.%s unsupported; only Kubernetes version 1.%d and later is supported", minorVersion, version.MinimumSupportedKubernetesMinorVersion)
 	}
-	FederationRecordingHasFailed = func(meshServiceName, installNamespace string, nonAcceptedStatus types.ComputedStatus_Status) error {
+	FederationRecordingHasFailed = func(meshServiceName, installNamespace string, nonAcceptedStatus types.Status_State) error {
 		return eris.Errorf("failed to write federation metadata to mesh service '%s.%s'; status is '%s'", meshServiceName, installNamespace, nonAcceptedStatus.String())
 	}
 	NoServiceMeshHubComponentsExist = eris.New("no Service Mesh Hub components are installed yet")

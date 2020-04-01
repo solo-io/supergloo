@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// The Mesh types known to Service Mesh Hub. Note that there is some duplication between this enum and the discovery.MeshSpec message
 type MeshType int32
 
 const (

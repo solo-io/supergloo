@@ -1,0 +1,45 @@
+syntax = "proto3";
+package discovery.zephyr.solo.io;
+option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+
+import "mesh-projects/api/core/v1alpha1/ref.proto";
+import "mesh-projects/api/core/v1alpha1/status.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/**
+    The MeshWorkload is an abstraction for a workload/client which we have discovered to be part of a
+    given mesh. The Mesh object has references to the MeshWorkloads which belong to it.
+*/
+message MeshWorkloadSpec {
+    message KubeController {
+        /**
+           Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+           It has the generic name kube_controller as it can represent either a deployment or a daemonset. Or potentially
+           any other kubernetes object which creates injected pods.
+        */
+        core.zephyr.solo.io.ResourceRef kube_controller_ref = 1;
+
+        /**
+            these are the labels directly from the pods that this controller owns
+            NB: these are NEITHER the matchLabels nor the labels on the controller itself.
+            we need these to determine which services are backed by this workload, and
+            the service backing is determined by the pod labels.
+        */
+        map<string, string> labels = 2;
+
+        // Service account attached to the pods owned by this controller
+        string service_account_name = 3;
+    }
+
+    // The controller (e.g. deployment) that owns this workload
+    KubeController kube_controller = 1;
+
+    // The mesh with which this workload is associated
+    core.zephyr.solo.io.ResourceRef mesh = 2;
+}
+
+message MeshWorkloadStatus {
+
+}

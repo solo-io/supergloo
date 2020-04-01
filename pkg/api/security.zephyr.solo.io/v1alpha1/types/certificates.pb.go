@@ -25,39 +25,39 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type ThirdPartyApprovalWorkflow_ApprovalStatus int32
+type VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus int32
 
 const (
 	// have a default value which represents not being set as proto enums require a default 0th value
-	ThirdPartyApprovalWorkflow_PENDING  ThirdPartyApprovalWorkflow_ApprovalStatus = 0
-	ThirdPartyApprovalWorkflow_APPROVED ThirdPartyApprovalWorkflow_ApprovalStatus = 1
-	ThirdPartyApprovalWorkflow_DENIED   ThirdPartyApprovalWorkflow_ApprovalStatus = 2
+	VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_PENDING  VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus = 0
+	VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_APPROVED VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus = 1
+	VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_DENIED   VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus = 2
 )
 
-var ThirdPartyApprovalWorkflow_ApprovalStatus_name = map[int32]string{
+var VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus_name = map[int32]string{
 	0: "PENDING",
 	1: "APPROVED",
 	2: "DENIED",
 }
 
-var ThirdPartyApprovalWorkflow_ApprovalStatus_value = map[string]int32{
+var VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus_value = map[string]int32{
 	"PENDING":  0,
 	"APPROVED": 1,
 	"DENIED":   2,
 }
 
-func (x ThirdPartyApprovalWorkflow_ApprovalStatus) String() string {
-	return proto.EnumName(ThirdPartyApprovalWorkflow_ApprovalStatus_name, int32(x))
+func (x VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus) String() string {
+	return proto.EnumName(VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus_name, int32(x))
 }
 
-func (ThirdPartyApprovalWorkflow_ApprovalStatus) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_18059a2d427f053e, []int{3, 0}
+func (VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_18059a2d427f053e, []int{1, 1, 0}
 }
 
 type VirtualMeshCertificateSigningRequestSpec struct {
 	// Base64-encoded PKCS#10 CSR data
-	CsrData    []byte      `protobuf:"bytes,1,opt,name=csr_data,json=csrData,proto3" json:"csr_data,omitempty"`
-	CertConfig *CertConfig `protobuf:"bytes,2,opt,name=cert_config,json=certConfig,proto3" json:"cert_config,omitempty"`
+	CsrData    []byte                                               `protobuf:"bytes,1,opt,name=csr_data,json=csrData,proto3" json:"csr_data,omitempty"`
+	CertConfig *VirtualMeshCertificateSigningRequestSpec_CertConfig `protobuf:"bytes,2,opt,name=cert_config,json=certConfig,proto3" json:"cert_config,omitempty"`
 	//
 	//Reference to the virtual mesh which this CSR corresponds to. This is important as it allows the virtual mesh
 	//operator to know which trust bundle to use when signing the new certificates.
@@ -105,7 +105,7 @@ func (m *VirtualMeshCertificateSigningRequestSpec) GetCsrData() []byte {
 	return nil
 }
 
-func (m *VirtualMeshCertificateSigningRequestSpec) GetCertConfig() *CertConfig {
+func (m *VirtualMeshCertificateSigningRequestSpec) GetCertConfig() *VirtualMeshCertificateSigningRequestSpec_CertConfig {
 	if m != nil {
 		return m.CertConfig
 	}
@@ -119,187 +119,85 @@ func (m *VirtualMeshCertificateSigningRequestSpec) GetVirtualMeshRef() *types.Re
 	return nil
 }
 
-type CertConfig struct {
+type VirtualMeshCertificateSigningRequestSpec_CertConfig struct {
 	//
 	//list of hostnames and IPs to generate a certificate for.
 	//This can also be set to the identity running the workload,
 	//like kubernetes service account.
 	//
-	//Generally for an istio CA this will take the values:
-	//1. spiffe://cluster.local/ns/istio-system/sa/citadel
-	//2. localhost
+	//Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
 	//
-	//The cluster.local may be replaced by the root of trust domain for the mesh
+	//"cluster.local" may be replaced by the root of trust domain for the mesh.
 	Hosts []string `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
 	// Organization for this certificate.
 	Org string `protobuf:"bytes,3,opt,name=org,proto3" json:"org,omitempty"`
 	//
 	//In the future, the type of mesh, and level of trust will need to be specified here,
-	//but for the time being we are only supporting shared trust in istio.
+	//but for the time being we are only supporting shared trust in Istio.
 	MeshType             types.MeshType `protobuf:"varint,5,opt,name=mesh_type,json=meshType,proto3,enum=core.zephyr.solo.io.MeshType" json:"mesh_type,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`
 	XXX_sizecache        int32          `json:"-"`
 }
 
-func (m *CertConfig) Reset()         { *m = CertConfig{} }
-func (m *CertConfig) String() string { return proto.CompactTextString(m) }
-func (*CertConfig) ProtoMessage()    {}
-func (*CertConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_18059a2d427f053e, []int{1}
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) Reset() {
+	*m = VirtualMeshCertificateSigningRequestSpec_CertConfig{}
 }
-func (m *CertConfig) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CertConfig.Unmarshal(m, b)
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) String() string {
+	return proto.CompactTextString(m)
 }
-func (m *CertConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CertConfig.Marshal(b, m, deterministic)
+func (*VirtualMeshCertificateSigningRequestSpec_CertConfig) ProtoMessage() {}
+func (*VirtualMeshCertificateSigningRequestSpec_CertConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_18059a2d427f053e, []int{0, 0}
 }
-func (m *CertConfig) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CertConfig.Merge(m, src)
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig.Unmarshal(m, b)
 }
-func (m *CertConfig) XXX_Size() int {
-	return xxx_messageInfo_CertConfig.Size(m)
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig.Marshal(b, m, deterministic)
 }
-func (m *CertConfig) XXX_DiscardUnknown() {
-	xxx_messageInfo_CertConfig.DiscardUnknown(m)
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig.Merge(m, src)
+}
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig.Size(m)
+}
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CertConfig proto.InternalMessageInfo
+var xxx_messageInfo_VirtualMeshCertificateSigningRequestSpec_CertConfig proto.InternalMessageInfo
 
-func (m *CertConfig) GetHosts() []string {
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) GetHosts() []string {
 	if m != nil {
 		return m.Hosts
 	}
 	return nil
 }
 
-func (m *CertConfig) GetOrg() string {
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) GetOrg() string {
 	if m != nil {
 		return m.Org
 	}
 	return ""
 }
 
-func (m *CertConfig) GetMeshType() types.MeshType {
+func (m *VirtualMeshCertificateSigningRequestSpec_CertConfig) GetMeshType() types.MeshType {
 	if m != nil {
 		return m.MeshType
 	}
 	return types.MeshType_ISTIO
 }
 
-type VirtualMeshCertificateSigningResponse struct {
-	// If request was approved, the controller will place the issued certificate here.
-	CaCertificate []byte `protobuf:"bytes,1,opt,name=ca_certificate,json=caCertificate,proto3" json:"ca_certificate,omitempty"`
-	// root cert shared by all clusters, safe to send over the wire
-	RootCertificate      []byte   `protobuf:"bytes,2,opt,name=root_certificate,json=rootCertificate,proto3" json:"root_certificate,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *VirtualMeshCertificateSigningResponse) Reset()         { *m = VirtualMeshCertificateSigningResponse{} }
-func (m *VirtualMeshCertificateSigningResponse) String() string { return proto.CompactTextString(m) }
-func (*VirtualMeshCertificateSigningResponse) ProtoMessage()    {}
-func (*VirtualMeshCertificateSigningResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_18059a2d427f053e, []int{2}
-}
-func (m *VirtualMeshCertificateSigningResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_VirtualMeshCertificateSigningResponse.Unmarshal(m, b)
-}
-func (m *VirtualMeshCertificateSigningResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_VirtualMeshCertificateSigningResponse.Marshal(b, m, deterministic)
-}
-func (m *VirtualMeshCertificateSigningResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VirtualMeshCertificateSigningResponse.Merge(m, src)
-}
-func (m *VirtualMeshCertificateSigningResponse) XXX_Size() int {
-	return xxx_messageInfo_VirtualMeshCertificateSigningResponse.Size(m)
-}
-func (m *VirtualMeshCertificateSigningResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_VirtualMeshCertificateSigningResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_VirtualMeshCertificateSigningResponse proto.InternalMessageInfo
-
-func (m *VirtualMeshCertificateSigningResponse) GetCaCertificate() []byte {
-	if m != nil {
-		return m.CaCertificate
-	}
-	return nil
-}
-
-func (m *VirtualMeshCertificateSigningResponse) GetRootCertificate() []byte {
-	if m != nil {
-		return m.RootCertificate
-	}
-	return nil
-}
-
-type ThirdPartyApprovalWorkflow struct {
-	// time when the status was last updated
-	LastUpdatedTime *types1.Timestamp `protobuf:"bytes,2,opt,name=last_updated_time,json=lastUpdatedTime,proto3" json:"last_updated_time,omitempty"`
-	// a user readable message regarding the status of the CSR
-	Message              string                                    `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	ApprovalStatus       ThirdPartyApprovalWorkflow_ApprovalStatus `protobuf:"varint,4,opt,name=approval_status,json=approvalStatus,proto3,enum=security.zephyr.solo.io.ThirdPartyApprovalWorkflow_ApprovalStatus" json:"approval_status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
-	XXX_unrecognized     []byte                                    `json:"-"`
-	XXX_sizecache        int32                                     `json:"-"`
-}
-
-func (m *ThirdPartyApprovalWorkflow) Reset()         { *m = ThirdPartyApprovalWorkflow{} }
-func (m *ThirdPartyApprovalWorkflow) String() string { return proto.CompactTextString(m) }
-func (*ThirdPartyApprovalWorkflow) ProtoMessage()    {}
-func (*ThirdPartyApprovalWorkflow) Descriptor() ([]byte, []int) {
-	return fileDescriptor_18059a2d427f053e, []int{3}
-}
-func (m *ThirdPartyApprovalWorkflow) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ThirdPartyApprovalWorkflow.Unmarshal(m, b)
-}
-func (m *ThirdPartyApprovalWorkflow) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ThirdPartyApprovalWorkflow.Marshal(b, m, deterministic)
-}
-func (m *ThirdPartyApprovalWorkflow) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ThirdPartyApprovalWorkflow.Merge(m, src)
-}
-func (m *ThirdPartyApprovalWorkflow) XXX_Size() int {
-	return xxx_messageInfo_ThirdPartyApprovalWorkflow.Size(m)
-}
-func (m *ThirdPartyApprovalWorkflow) XXX_DiscardUnknown() {
-	xxx_messageInfo_ThirdPartyApprovalWorkflow.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ThirdPartyApprovalWorkflow proto.InternalMessageInfo
-
-func (m *ThirdPartyApprovalWorkflow) GetLastUpdatedTime() *types1.Timestamp {
-	if m != nil {
-		return m.LastUpdatedTime
-	}
-	return nil
-}
-
-func (m *ThirdPartyApprovalWorkflow) GetMessage() string {
-	if m != nil {
-		return m.Message
-	}
-	return ""
-}
-
-func (m *ThirdPartyApprovalWorkflow) GetApprovalStatus() ThirdPartyApprovalWorkflow_ApprovalStatus {
-	if m != nil {
-		return m.ApprovalStatus
-	}
-	return ThirdPartyApprovalWorkflow_PENDING
-}
-
 type VirtualMeshCertificateSigningRequestStatus struct {
 	// Response from the certificate authority
-	Response *VirtualMeshCertificateSigningResponse `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
+	Response *VirtualMeshCertificateSigningRequestStatus_Response `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
 	// Workflow for approving Certificate Signing Requests
-	ThirdPartyApproval   *ThirdPartyApprovalWorkflow `protobuf:"bytes,2,opt,name=third_party_approval,json=thirdPartyApproval,proto3" json:"third_party_approval,omitempty"`
-	ComputedStatus       *types.ComputedStatus       `protobuf:"bytes,3,opt,name=computed_status,json=computedStatus,proto3" json:"computed_status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
-	XXX_unrecognized     []byte                      `json:"-"`
-	XXX_sizecache        int32                       `json:"-"`
+	ThirdPartyApproval   *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow `protobuf:"bytes,2,opt,name=third_party_approval,json=thirdPartyApproval,proto3" json:"third_party_approval,omitempty"`
+	ComputedStatus       *types.Status                                                          `protobuf:"bytes,3,opt,name=computed_status,json=computedStatus,proto3" json:"computed_status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                                               `json:"-"`
+	XXX_unrecognized     []byte                                                                 `json:"-"`
+	XXX_sizecache        int32                                                                  `json:"-"`
 }
 
 func (m *VirtualMeshCertificateSigningRequestStatus) Reset() {
@@ -310,7 +208,7 @@ func (m *VirtualMeshCertificateSigningRequestStatus) String() string {
 }
 func (*VirtualMeshCertificateSigningRequestStatus) ProtoMessage() {}
 func (*VirtualMeshCertificateSigningRequestStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_18059a2d427f053e, []int{4}
+	return fileDescriptor_18059a2d427f053e, []int{1}
 }
 func (m *VirtualMeshCertificateSigningRequestStatus) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus.Unmarshal(m, b)
@@ -330,34 +228,146 @@ func (m *VirtualMeshCertificateSigningRequestStatus) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus proto.InternalMessageInfo
 
-func (m *VirtualMeshCertificateSigningRequestStatus) GetResponse() *VirtualMeshCertificateSigningResponse {
+func (m *VirtualMeshCertificateSigningRequestStatus) GetResponse() *VirtualMeshCertificateSigningRequestStatus_Response {
 	if m != nil {
 		return m.Response
 	}
 	return nil
 }
 
-func (m *VirtualMeshCertificateSigningRequestStatus) GetThirdPartyApproval() *ThirdPartyApprovalWorkflow {
+func (m *VirtualMeshCertificateSigningRequestStatus) GetThirdPartyApproval() *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow {
 	if m != nil {
 		return m.ThirdPartyApproval
 	}
 	return nil
 }
 
-func (m *VirtualMeshCertificateSigningRequestStatus) GetComputedStatus() *types.ComputedStatus {
+func (m *VirtualMeshCertificateSigningRequestStatus) GetComputedStatus() *types.Status {
 	if m != nil {
 		return m.ComputedStatus
 	}
 	return nil
 }
 
+type VirtualMeshCertificateSigningRequestStatus_Response struct {
+	// If request was approved, the controller will place the issued certificate here.
+	CaCertificate []byte `protobuf:"bytes,1,opt,name=ca_certificate,json=caCertificate,proto3" json:"ca_certificate,omitempty"`
+	// root cert shared by all clusters, safe to send over the wire
+	RootCertificate      []byte   `protobuf:"bytes,2,opt,name=root_certificate,json=rootCertificate,proto3" json:"root_certificate,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) Reset() {
+	*m = VirtualMeshCertificateSigningRequestStatus_Response{}
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) String() string {
+	return proto.CompactTextString(m)
+}
+func (*VirtualMeshCertificateSigningRequestStatus_Response) ProtoMessage() {}
+func (*VirtualMeshCertificateSigningRequestStatus_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_18059a2d427f053e, []int{1, 0}
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response.Unmarshal(m, b)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response.Marshal(b, m, deterministic)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response.Merge(m, src)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response.Size(m)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_Response proto.InternalMessageInfo
+
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) GetCaCertificate() []byte {
+	if m != nil {
+		return m.CaCertificate
+	}
+	return nil
+}
+
+func (m *VirtualMeshCertificateSigningRequestStatus_Response) GetRootCertificate() []byte {
+	if m != nil {
+		return m.RootCertificate
+	}
+	return nil
+}
+
+type VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow struct {
+	// time when the status was last updated
+	LastUpdatedTime *types1.Timestamp `protobuf:"bytes,2,opt,name=last_updated_time,json=lastUpdatedTime,proto3" json:"last_updated_time,omitempty"`
+	// a user readable message regarding the status of the CSR
+	Message              string                                                                               `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	ApprovalStatus       VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus `protobuf:"varint,4,opt,name=approval_status,json=approvalStatus,proto3,enum=security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus" json:"approval_status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                                                             `json:"-"`
+	XXX_unrecognized     []byte                                                                               `json:"-"`
+	XXX_sizecache        int32                                                                                `json:"-"`
+}
+
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) Reset() {
+	*m = VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow{}
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) String() string {
+	return proto.CompactTextString(m)
+}
+func (*VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) ProtoMessage() {}
+func (*VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) Descriptor() ([]byte, []int) {
+	return fileDescriptor_18059a2d427f053e, []int{1, 1}
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow.Unmarshal(m, b)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow.Marshal(b, m, deterministic)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow.Merge(m, src)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) XXX_Size() int {
+	return xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow.Size(m)
+}
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) XXX_DiscardUnknown() {
+	xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow proto.InternalMessageInfo
+
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) GetLastUpdatedTime() *types1.Timestamp {
+	if m != nil {
+		return m.LastUpdatedTime
+	}
+	return nil
+}
+
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+func (m *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) GetApprovalStatus() VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus {
+	if m != nil {
+		return m.ApprovalStatus
+	}
+	return VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_PENDING
+}
+
 func init() {
-	proto.RegisterEnum("security.zephyr.solo.io.ThirdPartyApprovalWorkflow_ApprovalStatus", ThirdPartyApprovalWorkflow_ApprovalStatus_name, ThirdPartyApprovalWorkflow_ApprovalStatus_value)
+	proto.RegisterEnum("security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus", VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus_name, VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow_ApprovalStatus_value)
 	proto.RegisterType((*VirtualMeshCertificateSigningRequestSpec)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec")
-	proto.RegisterType((*CertConfig)(nil), "security.zephyr.solo.io.CertConfig")
-	proto.RegisterType((*VirtualMeshCertificateSigningResponse)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningResponse")
-	proto.RegisterType((*ThirdPartyApprovalWorkflow)(nil), "security.zephyr.solo.io.ThirdPartyApprovalWorkflow")
+	proto.RegisterType((*VirtualMeshCertificateSigningRequestSpec_CertConfig)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningRequestSpec.CertConfig")
 	proto.RegisterType((*VirtualMeshCertificateSigningRequestStatus)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus")
+	proto.RegisterType((*VirtualMeshCertificateSigningRequestStatus_Response)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.Response")
+	proto.RegisterType((*VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow)(nil), "security.zephyr.solo.io.VirtualMeshCertificateSigningRequestStatus.ThirdPartyApprovalWorkflow")
 }
 
 func init() {
@@ -365,50 +375,50 @@ func init() {
 }
 
 var fileDescriptor_18059a2d427f053e = []byte{
-	// 674 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xdd, 0x6e, 0xd3, 0x30,
-	0x18, 0xa5, 0x2d, 0xdb, 0x3a, 0x77, 0xb4, 0xc5, 0x9a, 0x44, 0xa9, 0xc4, 0xa8, 0x8a, 0x26, 0x75,
-	0x13, 0x4b, 0xb4, 0xed, 0x02, 0x89, 0x0b, 0xa4, 0x6d, 0x2d, 0x68, 0x08, 0xb6, 0xca, 0xfb, 0x41,
-	0xda, 0x4d, 0xe4, 0xb9, 0x4e, 0x62, 0x96, 0xd4, 0xc6, 0x76, 0x8a, 0xca, 0xf3, 0x70, 0xc1, 0x4b,
-	0xf0, 0x1c, 0xdc, 0xf3, 0x24, 0xc8, 0x89, 0xb3, 0xae, 0xdb, 0xaa, 0x4e, 0xdc, 0x7d, 0x9f, 0x7d,
-	0x7c, 0x4e, 0x7c, 0xbe, 0x13, 0x83, 0xc3, 0x80, 0xe9, 0x30, 0xb9, 0x74, 0x08, 0x8f, 0x5d, 0xc5,
-	0x23, 0xbe, 0xc5, 0xb8, 0x1b, 0x53, 0x15, 0x6e, 0x09, 0xc9, 0xbf, 0x52, 0xa2, 0x95, 0x8b, 0x05,
-	0x73, 0x15, 0x25, 0x89, 0x64, 0x7a, 0xec, 0x8e, 0xb6, 0x71, 0x24, 0x42, 0xbc, 0xed, 0x12, 0x2a,
-	0x35, 0xf3, 0x19, 0xc1, 0x9a, 0x2a, 0x47, 0x48, 0xae, 0x39, 0x7c, 0x96, 0xa3, 0x9c, 0x1f, 0x54,
-	0x84, 0x63, 0xe9, 0x18, 0x3e, 0x87, 0xf1, 0xe6, 0xc6, 0x5d, 0x42, 0xc2, 0x25, 0x9d, 0x90, 0x49,
-	0xea, 0x67, 0x1c, 0xcd, 0xd7, 0xf3, 0xa0, 0x4a, 0x63, 0x9d, 0x58, 0xc5, 0xe6, 0xe6, 0x3c, 0xb4,
-	0xd9, 0xb7, 0xd8, 0x97, 0x01, 0xe7, 0x41, 0x44, 0xdd, 0xb4, 0xbb, 0x4c, 0x7c, 0x57, 0xb3, 0x98,
-	0x2a, 0x8d, 0x63, 0x61, 0x01, 0x6b, 0xb7, 0x01, 0x83, 0x44, 0x62, 0xcd, 0xf8, 0xd0, 0xee, 0xaf,
-	0x06, 0x3c, 0xe0, 0x69, 0xe9, 0x9a, 0x2a, 0x5b, 0x6d, 0xff, 0x29, 0x80, 0xce, 0x39, 0x93, 0x3a,
-	0xc1, 0xd1, 0x67, 0xaa, 0xc2, 0x83, 0x89, 0x2d, 0x27, 0x2c, 0x18, 0xb2, 0x61, 0x80, 0xe8, 0xb7,
-	0x84, 0x2a, 0x7d, 0x22, 0x28, 0x81, 0xcf, 0x41, 0x99, 0x28, 0xe9, 0x0d, 0xb0, 0xc6, 0x8d, 0x42,
-	0xab, 0xd0, 0x59, 0x41, 0x4b, 0x44, 0xc9, 0x2e, 0xd6, 0x18, 0x76, 0x41, 0xc5, 0x58, 0xea, 0x11,
-	0x3e, 0xf4, 0x59, 0xd0, 0x28, 0xb6, 0x0a, 0x9d, 0xca, 0xce, 0x2b, 0x67, 0x86, 0xa5, 0x8e, 0xd1,
-	0x39, 0x48, 0xa1, 0x08, 0x90, 0xeb, 0x1a, 0x7e, 0x04, 0xf5, 0x51, 0xf6, 0x31, 0x9e, 0xb9, 0xba,
-	0x27, 0xa9, 0xdf, 0x28, 0xa5, 0x54, 0x2d, 0xc7, 0x38, 0x73, 0x9b, 0x06, 0x51, 0xc5, 0x13, 0x49,
-	0x28, 0xa2, 0x3e, 0xaa, 0x8e, 0x26, 0xd7, 0x40, 0xd4, 0x6f, 0x0b, 0x00, 0x26, 0x2a, 0x70, 0x15,
-	0x2c, 0x84, 0x5c, 0x69, 0xd5, 0x28, 0xb6, 0x4a, 0x9d, 0x65, 0x94, 0x35, 0xb0, 0x0e, 0x4a, 0x5c,
-	0x06, 0xa9, 0xc4, 0x32, 0x32, 0x25, 0x7c, 0x0b, 0x96, 0x53, 0x65, 0x3d, 0x16, 0xb4, 0xb1, 0xd0,
-	0x2a, 0x74, 0xaa, 0x3b, 0x2f, 0xee, 0x95, 0x36, 0x32, 0xa7, 0x63, 0x41, 0x51, 0x39, 0xb6, 0x55,
-	0x7b, 0x0c, 0xd6, 0xe7, 0x58, 0xa9, 0x04, 0x1f, 0x2a, 0x0a, 0xd7, 0x41, 0x95, 0x60, 0xef, 0x46,
-	0x04, 0xad, 0x9b, 0x4f, 0x08, 0xbe, 0x71, 0x0a, 0x6e, 0x80, 0xba, 0xe4, 0x5c, 0x4f, 0x01, 0x8b,
-	0x29, 0xb0, 0x66, 0xd6, 0x6f, 0x40, 0xdb, 0x3f, 0x8b, 0xa0, 0x79, 0x1a, 0x32, 0x39, 0xe8, 0x63,
-	0xa9, 0xc7, 0x7b, 0x42, 0x48, 0x3e, 0xc2, 0xd1, 0x17, 0x2e, 0xaf, 0xfc, 0x88, 0x7f, 0x87, 0xef,
-	0xc1, 0xd3, 0x08, 0x2b, 0xed, 0x25, 0x62, 0x80, 0x35, 0x1d, 0x78, 0x26, 0x3b, 0x76, 0x46, 0x4d,
-	0x27, 0xcb, 0x8d, 0x93, 0xe7, 0xc6, 0x39, 0xcd, 0x83, 0x85, 0x6a, 0xe6, 0xd0, 0x59, 0x76, 0xc6,
-	0xac, 0xc2, 0x06, 0x58, 0x8a, 0xa9, 0x52, 0x38, 0xa0, 0xd6, 0xb3, 0xbc, 0x85, 0x57, 0xa0, 0x86,
-	0xad, 0xaa, 0x97, 0x65, 0xbc, 0xf1, 0x38, 0x75, 0x6f, 0x7f, 0x66, 0x06, 0x66, 0x7f, 0xaf, 0x93,
-	0x2f, 0x9c, 0xa4, 0x4c, 0xa8, 0x8a, 0xa7, 0xfa, 0xf6, 0x1b, 0x50, 0x9d, 0x46, 0xc0, 0x0a, 0x58,
-	0xea, 0xf7, 0x8e, 0xba, 0x87, 0x47, 0x1f, 0xea, 0x8f, 0xe0, 0x0a, 0x28, 0xef, 0xf5, 0xfb, 0xe8,
-	0xf8, 0xbc, 0xd7, 0xad, 0x17, 0x20, 0x00, 0x8b, 0xdd, 0xde, 0xd1, 0x61, 0xaf, 0x5b, 0x2f, 0xb6,
-	0x7f, 0x17, 0xc1, 0xe6, 0x83, 0xd2, 0x9e, 0xb1, 0x5e, 0x80, 0xb2, 0xb4, 0x33, 0x4b, 0x27, 0x54,
-	0xd9, 0x79, 0x37, 0xf3, 0x36, 0x0f, 0x9a, 0x3c, 0xba, 0xe6, 0x83, 0x14, 0xac, 0x6a, 0x63, 0x80,
-	0x27, 0x8c, 0x03, 0x5e, 0x7e, 0x43, 0x3b, 0x95, 0xdd, 0xff, 0x70, 0x0d, 0x41, 0x7d, 0x67, 0x0f,
-	0x7e, 0x02, 0x35, 0xc2, 0x63, 0x91, 0x98, 0xa9, 0xdb, 0xb9, 0x94, 0xec, 0xbf, 0x79, 0x5f, 0xaa,
-	0x0f, 0x2c, 0x36, 0x37, 0x9e, 0x4c, 0xf5, 0xfb, 0x67, 0xbf, 0xfe, 0xae, 0x15, 0x2e, 0x8e, 0xe7,
-	0xbe, 0xb9, 0xe2, 0x2a, 0x98, 0x7a, 0x77, 0x6f, 0xc9, 0x4c, 0x1e, 0x38, 0xf3, 0x9b, 0xa9, 0xcb,
-	0xc5, 0x34, 0x7b, 0xbb, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff, 0xb8, 0x83, 0xe2, 0x3d, 0xcd, 0x05,
-	0x00, 0x00,
+	// 679 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x54, 0xdb, 0x6e, 0x13, 0x3b,
+	0x14, 0x3d, 0x93, 0x9e, 0xb6, 0xe9, 0x6e, 0x4f, 0x92, 0x63, 0x55, 0x3a, 0x39, 0x83, 0x28, 0x51,
+	0x25, 0xa4, 0xb4, 0xa2, 0x33, 0x6a, 0x79, 0x40, 0xe2, 0xad, 0x34, 0x01, 0x15, 0x41, 0x1b, 0xb9,
+	0x17, 0x24, 0x84, 0x18, 0xb9, 0x8e, 0x67, 0xc6, 0x34, 0x13, 0x1b, 0xdb, 0x13, 0x14, 0xbe, 0x82,
+	0x27, 0x9e, 0x79, 0xe4, 0x73, 0xf8, 0x06, 0x3e, 0x81, 0x2f, 0x40, 0x9e, 0x4b, 0xd3, 0xf4, 0xa2,
+	0x56, 0x02, 0xde, 0xf6, 0xb6, 0xd7, 0xac, 0x35, 0x5e, 0xfb, 0x02, 0xbb, 0x11, 0x37, 0x71, 0x7a,
+	0xe2, 0x51, 0x91, 0xf8, 0x5a, 0x0c, 0xc4, 0x06, 0x17, 0x7e, 0xc2, 0x74, 0xbc, 0x21, 0x95, 0x78,
+	0xc7, 0xa8, 0xd1, 0x3e, 0x91, 0xdc, 0xd7, 0x8c, 0xa6, 0x8a, 0x9b, 0xb1, 0x3f, 0xda, 0x24, 0x03,
+	0x19, 0x93, 0x4d, 0x9f, 0x32, 0x65, 0x78, 0xc8, 0x29, 0x31, 0x4c, 0x7b, 0x52, 0x09, 0x23, 0xd0,
+	0x7f, 0x25, 0xca, 0xfb, 0xc8, 0x64, 0x3c, 0x56, 0x9e, 0xe5, 0xf3, 0xb8, 0x70, 0xd7, 0x2e, 0x13,
+	0x52, 0xa1, 0xd8, 0x84, 0x4c, 0xb1, 0x30, 0xe7, 0x70, 0x1f, 0xdc, 0x04, 0xd5, 0x86, 0x98, 0xb4,
+	0x50, 0x74, 0xd7, 0x6f, 0x42, 0xdb, 0xfb, 0x02, 0x7b, 0x2f, 0x12, 0x22, 0x1a, 0x30, 0x3f, 0xcb,
+	0x4e, 0xd2, 0xd0, 0x37, 0x3c, 0x61, 0xda, 0x90, 0x44, 0x16, 0x80, 0x95, 0x8b, 0x80, 0x7e, 0xaa,
+	0x88, 0xe1, 0x62, 0x58, 0xdc, 0x2f, 0x47, 0x22, 0x12, 0x59, 0xe8, 0xdb, 0x28, 0x3f, 0x5d, 0xfd,
+	0x51, 0x81, 0xf6, 0x31, 0x57, 0x26, 0x25, 0x83, 0x97, 0x4c, 0xc7, 0x3b, 0x13, 0x5b, 0x0e, 0x78,
+	0x34, 0xe4, 0xc3, 0x08, 0xb3, 0xf7, 0x29, 0xd3, 0xe6, 0x40, 0x32, 0x8a, 0xfe, 0x87, 0x2a, 0xd5,
+	0x2a, 0xe8, 0x13, 0x43, 0x9a, 0x4e, 0xcb, 0x69, 0x2f, 0xe1, 0x79, 0xaa, 0x55, 0x87, 0x18, 0x82,
+	0x12, 0x58, 0xb4, 0x96, 0x06, 0x54, 0x0c, 0x43, 0x1e, 0x35, 0x2b, 0x2d, 0xa7, 0xbd, 0xb8, 0xf5,
+	0xc2, 0xbb, 0xc6, 0x52, 0xef, 0xb6, 0x92, 0x9e, 0xbd, 0xdd, 0xc9, 0x38, 0x31, 0xd0, 0xb3, 0x18,
+	0x3d, 0x87, 0xc6, 0x28, 0xa7, 0x08, 0xac, 0x47, 0x81, 0x62, 0x61, 0x73, 0x26, 0xd3, 0x6c, 0x79,
+	0xd6, 0xc2, 0x8b, 0x7a, 0x98, 0x69, 0x91, 0x2a, 0xca, 0x30, 0x0b, 0x71, 0x6d, 0x34, 0x11, 0xc7,
+	0x2c, 0x74, 0x25, 0xc0, 0x44, 0x05, 0x2d, 0xc3, 0x6c, 0x2c, 0xb4, 0xd1, 0xcd, 0x4a, 0x6b, 0xa6,
+	0xbd, 0x80, 0xf3, 0x04, 0x35, 0x60, 0x46, 0xa8, 0x28, 0x93, 0x58, 0xc0, 0x36, 0x44, 0x8f, 0x61,
+	0x21, 0x53, 0x36, 0x63, 0xc9, 0x9a, 0xb3, 0x2d, 0xa7, 0x5d, 0xdb, 0xba, 0x7b, 0xa5, 0xb4, 0x95,
+	0x39, 0x1c, 0x4b, 0x86, 0xab, 0x49, 0x11, 0xad, 0x7e, 0x99, 0x83, 0xf5, 0x5b, 0x39, 0x90, 0x35,
+	0x0b, 0x8a, 0xa1, 0xaa, 0x98, 0x96, 0x62, 0xa8, 0x59, 0x66, 0xfb, 0x2f, 0x1b, 0x9b, 0xf7, 0x20,
+	0x2e, 0x38, 0xf1, 0x19, 0x3b, 0xfa, 0xe4, 0xc0, 0xb2, 0x89, 0xb9, 0xea, 0x07, 0x92, 0x28, 0x33,
+	0x0e, 0x88, 0x94, 0x4a, 0x8c, 0xc8, 0xa0, 0xa8, 0xe7, 0xdb, 0xdf, 0x21, 0x7b, 0x68, 0xf9, 0x7b,
+	0x96, 0x7e, 0xbb, 0x60, 0x7f, 0x25, 0xd4, 0x69, 0x38, 0x10, 0x1f, 0x30, 0x32, 0x97, 0xee, 0x50,
+	0x07, 0xea, 0x54, 0x24, 0x32, 0x35, 0xac, 0x1f, 0xe4, 0xc3, 0x53, 0x14, 0xfa, 0xce, 0x95, 0x6e,
+	0xe7, 0x22, 0xb8, 0x56, 0x7e, 0x93, 0xe7, 0xee, 0x1b, 0xa8, 0x96, 0xcf, 0x45, 0xf7, 0xa1, 0x46,
+	0x49, 0x70, 0x6e, 0x01, 0x14, 0xbd, 0xfc, 0x0f, 0x25, 0xe7, 0xfe, 0x1d, 0xad, 0x41, 0x43, 0x09,
+	0x61, 0xa6, 0x80, 0x95, 0x0c, 0x58, 0xb7, 0xe7, 0xe7, 0xa0, 0xee, 0xb7, 0x0a, 0xb8, 0xd7, 0x3f,
+	0x0b, 0x3d, 0x85, 0x7f, 0x07, 0x44, 0x9b, 0x20, 0x95, 0x7d, 0x62, 0x9f, 0x61, 0x27, 0xb7, 0x70,
+	0xd4, 0xf5, 0xf2, 0xa9, 0xf5, 0xca, 0xa9, 0xf5, 0x0e, 0xcb, 0xb1, 0xc6, 0x75, 0xfb, 0xd1, 0x51,
+	0xfe, 0x8d, 0x3d, 0x45, 0x4d, 0x98, 0x4f, 0x98, 0xd6, 0x24, 0x62, 0x45, 0x23, 0x96, 0x29, 0xfa,
+	0xec, 0x40, 0xbd, 0xac, 0x55, 0xe9, 0xd2, 0xdf, 0x59, 0x4f, 0x26, 0x7f, 0xb6, 0x64, 0x5e, 0x79,
+	0x50, 0xfa, 0x4e, 0xa6, 0xf2, 0xd5, 0x47, 0x50, 0x9b, 0x46, 0xa0, 0x45, 0x98, 0xef, 0x75, 0xf7,
+	0x3a, 0xbb, 0x7b, 0xcf, 0x1a, 0x7f, 0xa1, 0x25, 0xa8, 0x6e, 0xf7, 0x7a, 0x78, 0xff, 0xb8, 0xdb,
+	0x69, 0x38, 0x08, 0x60, 0xae, 0xd3, 0xdd, 0xdb, 0xed, 0x76, 0x1a, 0x95, 0x27, 0x47, 0x5f, 0xbf,
+	0xaf, 0x38, 0xaf, 0xf7, 0x6f, 0xdc, 0xee, 0xf2, 0x34, 0x9a, 0xda, 0xf0, 0x17, 0x5e, 0x39, 0x59,
+	0xa5, 0x76, 0x4e, 0xf5, 0xc9, 0x5c, 0xe6, 0xf3, 0xc3, 0x9f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xbd,
+	0xa6, 0xf1, 0x0e, 0x37, 0x06, 0x00, 0x00,
 }
 
 func (this *VirtualMeshCertificateSigningRequestSpec) Equal(that interface{}) bool {
@@ -444,14 +454,14 @@ func (this *VirtualMeshCertificateSigningRequestSpec) Equal(that interface{}) bo
 	}
 	return true
 }
-func (this *CertConfig) Equal(that interface{}) bool {
+func (this *VirtualMeshCertificateSigningRequestSpec_CertConfig) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*CertConfig)
+	that1, ok := that.(*VirtualMeshCertificateSigningRequestSpec_CertConfig)
 	if !ok {
-		that2, ok := that.(CertConfig)
+		that2, ok := that.(VirtualMeshCertificateSigningRequestSpec_CertConfig)
 		if ok {
 			that1 = &that2
 		} else {
@@ -475,69 +485,6 @@ func (this *CertConfig) Equal(that interface{}) bool {
 		return false
 	}
 	if this.MeshType != that1.MeshType {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *VirtualMeshCertificateSigningResponse) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*VirtualMeshCertificateSigningResponse)
-	if !ok {
-		that2, ok := that.(VirtualMeshCertificateSigningResponse)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !bytes.Equal(this.CaCertificate, that1.CaCertificate) {
-		return false
-	}
-	if !bytes.Equal(this.RootCertificate, that1.RootCertificate) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *ThirdPartyApprovalWorkflow) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*ThirdPartyApprovalWorkflow)
-	if !ok {
-		that2, ok := that.(ThirdPartyApprovalWorkflow)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.LastUpdatedTime.Equal(that1.LastUpdatedTime) {
-		return false
-	}
-	if this.Message != that1.Message {
-		return false
-	}
-	if this.ApprovalStatus != that1.ApprovalStatus {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -571,6 +518,69 @@ func (this *VirtualMeshCertificateSigningRequestStatus) Equal(that interface{}) 
 		return false
 	}
 	if !this.ComputedStatus.Equal(that1.ComputedStatus) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *VirtualMeshCertificateSigningRequestStatus_Response) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualMeshCertificateSigningRequestStatus_Response)
+	if !ok {
+		that2, ok := that.(VirtualMeshCertificateSigningRequestStatus_Response)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.CaCertificate, that1.CaCertificate) {
+		return false
+	}
+	if !bytes.Equal(this.RootCertificate, that1.RootCertificate) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow)
+	if !ok {
+		that2, ok := that.(VirtualMeshCertificateSigningRequestStatus_ThirdPartyApprovalWorkflow)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.LastUpdatedTime.Equal(that1.LastUpdatedTime) {
+		return false
+	}
+	if this.Message != that1.Message {
+		return false
+	}
+	if this.ApprovalStatus != that1.ApprovalStatus {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

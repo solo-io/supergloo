@@ -38,7 +38,7 @@ func (m *MockRootCertGenerator) EXPECT() *MockRootCertGeneratorMockRecorder {
 }
 
 // GenRootCertAndKey mocks base method.
-func (m *MockRootCertGenerator) GenRootCertAndKey(builtinCA *types.CertificateAuthority_Builtin) (*cert_secrets.RootCAData, error) {
+func (m *MockRootCertGenerator) GenRootCertAndKey(builtinCA *types.VirtualMeshSpec_CertificateAuthority_Builtin) (*cert_secrets.RootCAData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenRootCertAndKey", builtinCA)
 	ret0, _ := ret[0].(*cert_secrets.RootCAData)

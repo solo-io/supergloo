@@ -240,21 +240,21 @@ func (t *translatorLoop) setStatus(
 	translatorErrors []*types.AccessControlPolicyStatus_TranslatorError,
 	acp *networking_v1alpha1.AccessControlPolicy) {
 	if err != nil {
-		acp.Status.TranslationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while processing TrafficPolicy: %s", err.Error()),
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil
 	} else if translatorErrors != nil {
-		acp.Status.TranslationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		acp.Status.TranslationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 		}
 		acp.Status.TranslatorErrors = translatorErrors
 	} else {
-		acp.Status.TranslationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		acp.Status.TranslationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		// Clear any prior TranslatorErrors
 		acp.Status.TranslatorErrors = nil

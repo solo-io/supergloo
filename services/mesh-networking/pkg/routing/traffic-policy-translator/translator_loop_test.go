@@ -89,8 +89,8 @@ var _ = Describe("Translator", func() {
 		BeforeEach(func() {
 			triggeringTP = &networking_v1alpha1.TrafficPolicy{
 				Status: networking_v1alpha1_types.TrafficPolicyStatus{
-					TranslationStatus: &core_types.ComputedStatus{
-						Status:  core_types.ComputedStatus_ACCEPTED,
+					TranslationStatus: &core_types.Status{
+						State:   core_types.Status_ACCEPTED,
 						Message: "",
 					},
 				},
@@ -186,8 +186,8 @@ var _ = Describe("Translator", func() {
 			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
 			expectedTP := &networking_v1alpha1.TrafficPolicy{}
-			expectedTP.Status.TranslationStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+			expectedTP.Status.TranslationStatus = &core_types.Status{
+				State:   core_types.Status_PROCESSING_ERROR,
 				Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 			}
 			expectedTP.Status.TranslatorErrors = expectedMeshTypeStatuses
@@ -205,8 +205,8 @@ var _ = Describe("Translator", func() {
 		BeforeEach(func() {
 			triggerMeshService = &discovery_v1alpha1.MeshService{
 				Status: discovery_v1alpha1_types.MeshServiceStatus{
-					FederationStatus: &core_types.ComputedStatus{
-						Status:  core_types.ComputedStatus_ACCEPTED,
+					FederationStatus: &core_types.Status{
+						State:   core_types.Status_ACCEPTED,
 						Message: "",
 					},
 				},

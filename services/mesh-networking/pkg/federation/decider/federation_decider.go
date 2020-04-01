@@ -67,8 +67,8 @@ func (f *federationDecider) DecideFederation(ctx context.Context, networkingSnap
 	// log and update the status just for the ones that failed, then continue
 	if len(errorReports) > 0 {
 		for _, failedVirtualMeshReport := range errorReports {
-			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &core_types.ComputedStatus{
-				Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+			failedVirtualMeshReport.VirtualMesh.Status.FederationStatus = &core_types.Status{
+				State:   core_types.Status_PROCESSING_ERROR,
 				Message: ErrorLoadingMeshMetadata(failedVirtualMeshReport.Err),
 			}
 
@@ -102,8 +102,8 @@ func (f *federationDecider) federateVirtualMesh(
 	// determine what strategy we should use to federate
 	federationStrategy, err := f.federationStrategyChooser(federationMode, f.meshServiceClient)
 	if err != nil {
-		vm.Status.FederationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_INVALID,
+		vm.Status.FederationStatus = &core_types.Status{
+			State:   core_types.Status_INVALID,
 			Message: UnsupportedFederationMode,
 		}
 		f.updateVirtualMeshStatus(ctx, vm)
@@ -113,13 +113,13 @@ func (f *federationDecider) federateVirtualMesh(
 	// actually write our federation decision to the mesh services
 	err = federationStrategy.WriteFederationToServices(ctx, vm, perMeshMetadata.MeshNameToMetadata)
 	if err == nil {
-		vm.Status.FederationStatus = &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		vm.Status.FederationStatus = &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 	} else {
 		logger.Debugf("Recording error to virtual mesh %s.%s", vm.Name, vm.Namespace, zap.Error(err))
-		vm.Status.FederationStatus = &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		vm.Status.FederationStatus = &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: ErrorUpdatingMeshServices(err),
 		}
 	}

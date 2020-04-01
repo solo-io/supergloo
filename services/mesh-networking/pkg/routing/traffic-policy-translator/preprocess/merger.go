@@ -109,7 +109,7 @@ func mergeTrafficPoliciesByMeshService(
 		var mergeableHttpTrafficPolicies []*MergeableHttpTrafficPolicy
 		for _, trafficPolicy := range trafficPolicies {
 			// ignore TrafficPolicy with bad statuses
-			if trafficPolicy.Status.GetTranslationStatus().GetStatus() == core_types.ComputedStatus_ACCEPTED {
+			if trafficPolicy.Status.GetTranslationStatus().GetState() == core_types.Status_ACCEPTED {
 				mergedHttpTrafficPolicies, conflictErr := mergeHttpTrafficPolicies(trafficPolicy, mergeableHttpTrafficPolicies)
 				mergeableHttpTrafficPolicies = mergedHttpTrafficPolicies
 				if conflictErr != nil {

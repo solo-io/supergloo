@@ -129,7 +129,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"version":              "v1",
@@ -144,7 +144,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			}
 			meshWorkloadEventV2 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"version":              "v2",
@@ -238,7 +238,7 @@ var _ = Describe("Mesh Service Finder", func() {
 						Labels:    mesh_service.DiscoveryLabels(clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							Ref: &core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
@@ -246,7 +246,7 @@ var _ = Describe("Mesh Service Finder", func() {
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
 							Labels:                 rightService.GetLabels(),
-							Ports: []*discovery_types.KubeServicePort{{
+							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "correct-service-port",
 								Port:     443,
 								Protocol: "TCP",
@@ -284,7 +284,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
@@ -331,7 +331,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: nil,
 					},
 					Mesh: &core_types.ResourceRef{
@@ -363,7 +363,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
@@ -420,7 +420,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			meshWorkloadEvent := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"label":                "value",
 							"istio-injected-label": "doesn't matter",
@@ -494,14 +494,14 @@ var _ = Describe("Mesh Service Finder", func() {
 						Namespace: env.DefaultWriteNamespace,
 					},
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							Ref: &core_types.ResourceRef{
 								Name:      rightService.GetName(),
 								Namespace: rightService.GetNamespace(),
 								Cluster:   clusterName,
 							},
 							WorkloadSelectorLabels: rightService.Spec.Selector,
-							Ports: []*discovery_types.KubeServicePort{{
+							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "port-1",
 								Port:     80,
 								Protocol: "TCP",
@@ -559,7 +559,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			wrongWorkload := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",
@@ -573,7 +573,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			}
 			rightWorkloadV1 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":     "test-app",
 							"track":   "canary",
@@ -588,7 +588,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			}
 			rightWorkloadV2 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":     "test-app",
 							"track":   "canary",
@@ -641,7 +641,7 @@ var _ = Describe("Mesh Service Finder", func() {
 						Labels:    mesh_service.DiscoveryLabels(clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							Ref: &core_types.ResourceRef{
 								Name:      serviceEvent.GetName(),
 								Namespace: serviceEvent.GetNamespace(),
@@ -649,7 +649,7 @@ var _ = Describe("Mesh Service Finder", func() {
 							},
 							WorkloadSelectorLabels: serviceEvent.Spec.Selector,
 							Labels:                 serviceEvent.GetLabels(),
-							Ports: []*discovery_types.KubeServicePort{{
+							Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{{
 								Name:     "port-1",
 								Port:     80,
 								Protocol: "TCP",
@@ -700,7 +700,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			wrongWorkload1 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",
@@ -714,7 +714,7 @@ var _ = Describe("Mesh Service Finder", func() {
 			}
 			wrongWorkload2 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-other-unrelated-app",
 							"track": "canary",
@@ -781,7 +781,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			wrongWorkload1 := &v1alpha1.MeshWorkload{
 				Spec: discovery_types.MeshWorkloadSpec{
-					KubePod: &discovery_types.KubePod{
+					KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
 						Labels: map[string]string{
 							"app":   "test-app",
 							"track": "production",

@@ -32,11 +32,9 @@ reference object for kubernetes objects, support multi cluster
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| aPIGroup | [google.protobuf.StringValue](#google.protobuf.StringValue) |  | The kubernetes kind of the object Up to the user to decide whether or not to use this field, can be implicit or explicit depending on the use case. |
-| kind | [google.protobuf.StringValue](#google.protobuf.StringValue) |  |  |
-| name | [string](#string) |  |  |
-| namespace | [string](#string) |  | The namespace in which the object lives if left empty it will default to the namespace of the object referencing it. |
-| cluster | [string](#string) |  | Required: the cluster on which the object exists. |
+| name | [string](#string) |  | The name of the object |
+| namespace | [string](#string) |  | The namespace in which the object lives |
+| cluster | [string](#string) |  | The cluster on which the object exists. This should be the name under which the cluster was registered in Service Mesh Hub, e.g. through `meshctl cluster register`. That name also will correspond to a KubernetesCluster resource in the management plane cluster.<br>This field not being set will result in an error if the object in question lives on a remote cluster (i.e., not a Service Mesh Hub resource). |
 
 
 

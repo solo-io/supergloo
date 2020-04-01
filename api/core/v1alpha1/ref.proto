@@ -9,26 +9,19 @@ option (gogoproto.equal_all) = true;
 
 // reference object for kubernetes objects, support multi cluster
 message ResourceRef {
+    // The name of the object
+    string name = 1;
 
-    /*
-        The kubernetes kind of the object
-        Up to the user to decide whether or not to use this field, can be implicit
-        or explicit depending on the use case.
+    // The namespace in which the object lives
+    string namespace = 2;
+
+    /**
+        The cluster on which the object exists. This should be the name under which the cluster
+        was registered in Service Mesh Hub, e.g. through `meshctl cluster register`. That name also
+        will correspond to a KubernetesCluster resource in the management plane cluster.
+
+        This field not being set will result in an error if the object in question lives on a remote cluster
+        (i.e., not a Service Mesh Hub resource).
     */
-    google.protobuf.StringValue APIGroup = 1;
-
-    google.protobuf.StringValue kind = 2;
-
-    string name = 3;
-
-    /*
-        The namespace in which the object lives
-        if left empty it will default to the namespace of the object referencing it.
-    */
-    string namespace = 4;
-
-    /*
-        Required: the cluster on which the object exists.
-    */
-    string cluster = 5;
+    string cluster = 3;
 }

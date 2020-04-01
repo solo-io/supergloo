@@ -409,7 +409,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 	This is the value which needs to be matched as well as translate into outbound_9080_v2_._review.default.svc.cluster.local
 	on the target cluster.
 */
-func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.Federation) string {
+func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServiceSpec_Federation) string {
 	return fmt.Sprintf("*.%s", federationInfo.GetMulticlusterDnsName())
 }
 

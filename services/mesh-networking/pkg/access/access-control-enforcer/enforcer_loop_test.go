@@ -112,8 +112,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		expectedVMStatus := &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		err := virtualMeshHandler.Create(vm)
 		Expect(err).ToNot(HaveOccurred())
@@ -143,8 +143,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.ComputedStatus{
-			Status: core_types.ComputedStatus_ACCEPTED,
+		expectedVMStatus := &core_types.Status{
+			State: core_types.Status_ACCEPTED,
 		}
 		err := virtualMeshHandler.Create(vm)
 		Expect(err).ToNot(HaveOccurred())
@@ -173,8 +173,8 @@ var _ = Describe("EnforcerLoop", func() {
 				capturedVM = virtualMesh
 				return nil
 			})
-		expectedVMStatus := &core_types.ComputedStatus{
-			Status:  core_types.ComputedStatus_PROCESSING_ERROR,
+		expectedVMStatus := &core_types.Status{
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
 		err := virtualMeshHandler.Create(vm)

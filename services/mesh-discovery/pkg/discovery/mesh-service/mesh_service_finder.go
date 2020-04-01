@@ -120,7 +120,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *corev1.Service) error {
 
 // handle non-delete events
 func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *v1alpha1.MeshWorkload) error {
-	podLabels := meshWorkload.Spec.GetKubePod().GetLabels()
+	podLabels := meshWorkload.Spec.GetKubeController().GetLabels()
 
 	// the `AreLabelsInWhiteList` check later on has undesirable behavior when the "whitelist" is empty,
 	// so just handle that manually now- if the pod has no labels, the service cannot select it
@@ -167,7 +167,7 @@ func (m *meshServiceFinder) findSubsets(
 		if !m.isServiceBackedByWorkload(service, &workload, mesh) {
 			continue
 		}
-		for key, val := range workload.Spec.GetKubePod().GetLabels() {
+		for key, val := range workload.Spec.GetKubeController().GetLabels() {
 			// skip known kubernetes values
 			if skippedLabels.Has(key) {
 				continue
@@ -213,11 +213,11 @@ func (m *meshServiceFinder) isServiceBackedByWorkload(
 	// if either the service has no selector labels or the mesh workload's corresponding pod has no labels,
 	// then this service cannot be backed by this mesh workload
 	// the library call below returns true for either case, so we explicitly check for it here
-	if len(service.Spec.Selector) == 0 || len(meshWorkload.Spec.GetKubePod().GetLabels()) == 0 {
+	if len(service.Spec.Selector) == 0 || len(meshWorkload.Spec.GetKubeController().GetLabels()) == 0 {
 		return false
 	}
 
-	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.GetKubePod().GetLabels())
+	return labels.AreLabelsInWhiteList(service.Spec.Selector, meshWorkload.Spec.GetKubeController().GetLabels())
 }
 
 func (m *meshServiceFinder) buildMeshService(
@@ -233,7 +233,7 @@ func (m *meshServiceFinder) buildMeshService(
 			Labels:    DiscoveryLabels(clusterName, service.GetName(), service.GetNamespace()),
 		},
 		Spec: discovery_types.MeshServiceSpec{
-			KubeService: &discovery_types.KubeService{
+			KubeService: &discovery_types.MeshServiceSpec_KubeService{
 				Ref: &core_types.ResourceRef{
 					Name:      service.GetName(),
 					Namespace: service.GetNamespace(),
@@ -249,9 +249,9 @@ func (m *meshServiceFinder) buildMeshService(
 	}
 }
 
-func (m *meshServiceFinder) convertPorts(service *corev1.Service) (ports []*discovery_types.KubeServicePort) {
+func (m *meshServiceFinder) convertPorts(service *corev1.Service) (ports []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-		ports = append(ports, &discovery_types.KubeServicePort{
+		ports = append(ports, &discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 			Port:     uint32(kubePort.Port),
 			Name:     kubePort.Name,
 			Protocol: string(kubePort.Protocol),

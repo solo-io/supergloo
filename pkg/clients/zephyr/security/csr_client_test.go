@@ -59,7 +59,7 @@ var _ = Describe("csr client", func() {
 						Name:      "name",
 					},
 					Status: security_types.VirtualMeshCertificateSigningRequestStatus{
-						Response: &security_types.VirtualMeshCertificateSigningResponse{},
+						Response: &security_types.VirtualMeshCertificateSigningRequestStatus_Response{},
 					},
 				}
 				mockClient.EXPECT().Status().Return(mockStatusWriter)

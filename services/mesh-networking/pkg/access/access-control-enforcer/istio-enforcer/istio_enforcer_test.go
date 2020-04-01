@@ -57,8 +57,8 @@ var _ = Describe("IstioEnforcer", func() {
 						Name: clusterNames[0],
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{
-							Installation: &discovery_types.MeshInstallation{
+						Istio: &discovery_types.MeshSpec_IstioMesh{
+							Installation: &discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: installationNamespace[0],
 							},
 						},
@@ -71,8 +71,8 @@ var _ = Describe("IstioEnforcer", func() {
 						Name: clusterNames[1],
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{
-							Installation: &discovery_types.MeshInstallation{
+						Istio: &discovery_types.MeshSpec_IstioMesh{
+							Installation: &discovery_types.MeshSpec_MeshInstallation{
 								InstallationNamespace: installationNamespace[1],
 							},
 						},

@@ -88,8 +88,8 @@ var _ = Describe("IstioTranslator", func() {
 		istioMesh1 := &discovery_v1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
 					},
 				},
 				Cluster: &core_types.ResourceRef{Name: clusterNames[0]},
@@ -98,8 +98,8 @@ var _ = Describe("IstioTranslator", func() {
 		istioMesh2 := &discovery_v1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{
-						CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[1]},
+					Istio: &discovery_types.MeshSpec_IstioMesh{
+						CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[1]},
 					},
 				},
 				Cluster: &core_types.ResourceRef{Name: clusterNames[1]},
@@ -128,7 +128,7 @@ var _ = Describe("IstioTranslator", func() {
 			{
 				MeshService: &discovery_v1alpha1.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
 								"k1a": "v1a", "k1b": "v1b",
 							},
@@ -144,7 +144,7 @@ var _ = Describe("IstioTranslator", func() {
 						Namespace: "namespace2",
 					},
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
 								"k2a": "v2a", "k2b": "v2b",
 							},
@@ -297,7 +297,7 @@ var _ = Describe("IstioTranslator", func() {
 			{
 				MeshService: &discovery_v1alpha1.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
 								"k1a": "v1a", "k1b": "v1b",
 							},
@@ -308,8 +308,8 @@ var _ = Describe("IstioTranslator", func() {
 				Mesh: &discovery_v1alpha1.Mesh{
 					Spec: discovery_types.MeshSpec{
 						MeshType: &discovery_types.MeshSpec_Istio{
-							Istio: &discovery_types.IstioMesh{
-								CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+							Istio: &discovery_types.MeshSpec_IstioMesh{
+								CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
 							},
 						},
 						Cluster: &core_types.ResourceRef{Name: clusterNames[0]},
@@ -375,7 +375,7 @@ var _ = Describe("IstioTranslator", func() {
 			{
 				MeshService: &discovery_v1alpha1.MeshService{
 					Spec: discovery_types.MeshServiceSpec{
-						KubeService: &discovery_types.KubeService{
+						KubeService: &discovery_types.MeshServiceSpec_KubeService{
 							WorkloadSelectorLabels: map[string]string{
 								"k1a": "v1a", "k1b": "v1b",
 							},
@@ -386,8 +386,8 @@ var _ = Describe("IstioTranslator", func() {
 				Mesh: &discovery_v1alpha1.Mesh{
 					Spec: discovery_types.MeshSpec{
 						MeshType: &discovery_types.MeshSpec_Istio{
-							Istio: &discovery_types.IstioMesh{
-								CitadelInfo: &discovery_types.IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
+							Istio: &discovery_types.MeshSpec_IstioMesh{
+								CitadelInfo: &discovery_types.MeshSpec_IstioMesh_CitadelInfo{TrustDomain: trustDomains[0]},
 							},
 						},
 						Cluster: &core_types.ResourceRef{Name: clusterNames[0]},

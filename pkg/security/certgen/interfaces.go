@@ -13,7 +13,7 @@ import (
 // Certificate generation methods
 type RootCertGenerator interface {
 	// Generate a new private key and use it to create a self-signed root certificate
-	GenRootCertAndKey(builtinCA *networking_types.CertificateAuthority_Builtin) (*cert_secrets.RootCAData, error)
+	GenRootCertAndKey(builtinCA *networking_types.VirtualMeshSpec_CertificateAuthority_Builtin) (*cert_secrets.RootCAData, error)
 }
 
 // Signer is a higher level abstraction around complex certificate workflows

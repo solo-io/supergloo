@@ -36,8 +36,8 @@ func NewVirtualMeshCSRDataSource(
 				logger.Debugw("csr event was not processed")
 				return nil
 			}
-			if status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_INVALID ||
-				status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_PROCESSING_ERROR {
+			if status.GetComputedStatus().GetState() == core_types.Status_INVALID ||
+				status.GetComputedStatus().GetState() == core_types.Status_PROCESSING_ERROR {
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			obj.Status = *status
@@ -54,8 +54,8 @@ func NewVirtualMeshCSRDataSource(
 				logger.Debugw("csr event was not processed")
 				return nil
 			}
-			if status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_INVALID ||
-				status.GetComputedStatus().GetStatus() == core_types.ComputedStatus_PROCESSING_ERROR {
+			if status.GetComputedStatus().GetState() == core_types.Status_INVALID ||
+				status.GetComputedStatus().GetState() == core_types.Status_PROCESSING_ERROR {
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			new.Status = *status

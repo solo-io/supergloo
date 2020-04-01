@@ -53,8 +53,8 @@ var _ = Describe("validator", func() {
 				Meshes: []*core_types.ResourceRef{ref},
 			},
 			Status: v1alpha1_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: testErr.Error(),
 				},
 			},
@@ -90,8 +90,8 @@ var _ = Describe("validator", func() {
 				Meshes: []*core_types.ResourceRef{ref},
 			},
 			Status: v1alpha1_types.VirtualMeshStatus{
-				CertificateStatus: &core_types.ComputedStatus{
-					Status:  core_types.ComputedStatus_INVALID,
+				CertificateStatus: &core_types.Status{
+					State:   core_types.Status_INVALID,
 					Message: vm_validation.OnlyIstioSupportedError(mesh.Name).Error(),
 				},
 			},
@@ -121,7 +121,7 @@ var _ = Describe("validator", func() {
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{
-					Istio: &discovery_types.IstioMesh{},
+					Istio: &discovery_types.MeshSpec_IstioMesh{},
 				},
 			},
 		}

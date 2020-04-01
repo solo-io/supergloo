@@ -3,7 +3,6 @@ package discovery.zephyr.solo.io;
 option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
 
 import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "mesh-projects/api/core/v1alpha1/health.proto";
 import "google/protobuf/wrappers.proto";
 
 import "gogoproto/gogo.proto";
@@ -13,6 +12,62 @@ option (gogoproto.equal_all) = true;
     Meshes represent a currently registered service mesh.
 */
 message MeshSpec {
+    message MeshInstallation {
+        // Namespace in which the control plane has been installed.
+        string installation_namespace = 1;
+
+        /*
+            version of the mesh which has been installed
+            Note that the version may be "latest"
+        */
+        string version = 2;
+    }
+
+    // Mesh object representing an installed Istio control plane
+    message IstioMesh {
+        message CitadelInfo {
+            /*
+                Istio trust domain used for https/spiffe identity.
+                https://spiffe.io/spiffe/concepts/#trust-domain
+                https://istio.io/docs/reference/glossary/#identity
+
+                If empty will default to "cluster.local"
+            */
+            string trust_domain = 1;
+
+            /*
+                istio-citadel namespace, used to determine identity for the Istio CA cert.
+                If empty will default to MeshInstallation.installation_namespace
+            */
+            string citadel_namespace = 2;
+
+            /*
+                istio-citadel service account, used to determine identity for the Istio CA cert.
+                If empty will default to "istio-citadel"
+            */
+            string citadel_service_account = 3;
+        }
+
+        MeshInstallation installation = 1;
+        CitadelInfo citadel_info = 2;
+    }
+
+    // Mesh object representing AWS App Mesh
+    message AwsAppMesh {
+        MeshInstallation installation = 1;
+        // The AWS region the AWS App Mesh control plane resources exist in.
+        string region = 2;
+    }
+
+    // Mesh object representing an installed Linkerd control plane
+    message LinkerdMesh {
+        MeshInstallation installation = 1;
+    }
+
+    message ConsulConnectMesh {
+        MeshInstallation installation = 1;
+    }
+
     oneof mesh_type {
         IstioMesh istio = 1;
         AwsAppMesh aws_app_mesh = 2;
@@ -20,67 +75,10 @@ message MeshSpec {
         ConsulConnectMesh consul_connect = 4;
     }
 
+    // The cluster on which this mesh resides.
     core.zephyr.solo.io.ResourceRef cluster = 5;
 }
 
 message MeshStatus {
 
 }
-
-message MeshInstallation {
-    // where the control plane has been installed
-    string installation_namespace = 1;
-
-    /*
-        version of the mesh which has been installed
-        Note that the version may be "latest"
-    */
-    string version = 2;
-}
-
-// Mesh object representing an installed Istio control plane
-message IstioMesh {
-    MeshInstallation installation = 1;
-
-    message CitadelInfo {
-        /*
-            istio trust domain used for https/spiffe identity.
-            https://spiffe.io/spiffe/concepts/#trust-domain
-            https://istio.io/docs/reference/glossary/#identity
-
-            If empty will default to "cluster.local"
-        */
-        string trust_domain = 1;
-
-        /*
-            istio-citadel namespace, used to determine identity for istio CA cert.
-            If empty will default to MeshInstallation.installation_namespace
-        */
-        string citadel_namespace = 2;
-
-        /*
-            istio-citadel service account, used to determine identity for istio CA cert.
-            If empty will default to "istio-citadel"
-        */
-        string citadel_service_account = 3;
-    }
-
-    CitadelInfo citadel_info = 2;
-}
-
-// Mesh object representing AWS App Mesh
-message AwsAppMesh {
-    MeshInstallation installation = 1;
-    // The AWS region the AWS App Mesh control plane resources exist in.
-    string region = 2;
-}
-
-// Mesh object representing an installed Linkerd control plane
-message LinkerdMesh {
-    MeshInstallation installation = 1;
-}
-
-message ConsulConnectMesh {
-    MeshInstallation installation = 1;
-}
-

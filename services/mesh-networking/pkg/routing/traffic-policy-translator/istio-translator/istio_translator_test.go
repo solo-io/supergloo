@@ -95,20 +95,20 @@ var _ = Describe("IstioTranslator", func() {
 						Name:      meshObjKey.Name,
 						Namespace: meshObjKey.Namespace,
 					},
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      kubeServiceObjKey.Name,
 							Namespace: kubeServiceObjKey.Namespace,
 							Cluster:   clusterName,
 						},
-						Ports: []*discovery_types.KubeServicePort{
+						Ports: []*discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 							{
 								Port: 9080,
 								Name: "http",
 							},
 						},
 					},
-					Federation: &discovery_types.Federation{
+					Federation: &discovery_types.MeshServiceSpec_Federation{
 						MulticlusterDnsName: meshServiceFederationMCDnsName,
 					},
 				},
@@ -119,7 +119,7 @@ var _ = Describe("IstioTranslator", func() {
 						Name: clusterName,
 					},
 					MeshType: &discovery_types.MeshSpec_Istio{
-						Istio: &discovery_types.IstioMesh{},
+						Istio: &discovery_types.MeshSpec_IstioMesh{},
 					},
 				},
 			}
@@ -215,7 +215,7 @@ var _ = Describe("IstioTranslator", func() {
 		It("should error if no destination is specified, and multiple ports are available on service", func() {
 			testContext := setupTestContext()
 			testContext.meshService.Spec.KubeService.Ports =
-				append(testContext.meshService.Spec.KubeService.Ports, &discovery_types.KubeServicePort{
+				append(testContext.meshService.Spec.KubeService.Ports, &discovery_types.MeshServiceSpec_KubeService_KubeServicePort{
 					Port: 8080,
 					Name: "will fail",
 				})
@@ -341,7 +341,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
@@ -384,13 +384,13 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockMeshServiceSelector.
@@ -728,13 +728,13 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockMeshServiceSelector.
@@ -785,13 +785,13 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockMeshServiceSelector.
@@ -840,7 +840,7 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
@@ -908,13 +908,13 @@ var _ = Describe("IstioTranslator", func() {
 			}
 			backingMeshService := &discovery_v1alpha1.MeshService{
 				Spec: discovery_types.MeshServiceSpec{
-					KubeService: &discovery_types.KubeService{
+					KubeService: &discovery_types.MeshServiceSpec_KubeService{
 						Ref: &core_types.ResourceRef{
 							Name:      destName,
 							Namespace: destNamespace,
 						},
 					},
-					Federation: &discovery_types.Federation{MulticlusterDnsName: multiClusterDnsName},
+					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
 			mockMeshServiceSelector.
