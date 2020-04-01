@@ -14,7 +14,9 @@ import (
 	"github.com/solo-io/mesh-projects/services/common/constants"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	istio_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
+	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	security_v1beta1 "istio.io/api/security/v1beta1"
+	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,6 +103,24 @@ var _ = Describe("IstioEnforcer", func() {
 				EXPECT().
 				UpsertSpec(ctx, globalAuthPolicy).
 				Return(nil)
+			ingressAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      istio_enforcer.IngressGatewayAuthPolicy,
+					Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+					Labels:    constants.OwnedBySMHLabel,
+				},
+				Spec: security_v1beta1.AuthorizationPolicy{
+					Action: security_v1beta1.AuthorizationPolicy_ALLOW,
+					Selector: &v1beta1.WorkloadSelector{
+						MatchLabels: istio_federation.BuildGatewayWorkloadSelector(),
+					},
+					Rules: []*security_v1beta1.Rule{{}},
+				},
+			}
+			authPolicyClient.
+				EXPECT().
+				UpsertSpec(ctx, ingressAuthPolicy).
+				Return(nil)
 		}
 		err := istioEnforcer.StartEnforcing(ctx, meshes)
 		Expect(err).ToNot(HaveOccurred())
@@ -113,28 +133,47 @@ var _ = Describe("IstioEnforcer", func() {
 				EXPECT().
 				GetClientForCluster(mesh.Spec.GetCluster().GetName()).
 				Return(nil, nil)
-			authPolicyKey := client.ObjectKey{
+			globalAuthPolicyKey := client.ObjectKey{
 				Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,
+				Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
+			}
+			ingressAuthPolicyKey := client.ObjectKey{
+				Name:      istio_enforcer.IngressGatewayAuthPolicy,
 				Namespace: mesh.Spec.GetIstio().GetInstallation().GetInstallationNamespace(),
 			}
 			// test
 			if i != 0 {
 				authPolicyClient.
 					EXPECT().
-					Get(ctx, authPolicyKey).
+					Get(ctx, globalAuthPolicyKey).
 					Return(nil, nil)
 				authPolicyClient.
 					EXPECT().
 					Delete(ctx,
-						authPolicyKey,
+						globalAuthPolicyKey,
 					).
 					Return(nil)
+				authPolicyClient.
+					EXPECT().
+					Get(ctx, ingressAuthPolicyKey).
+					Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			} else {
 				// Delete should not be called if no global auth policy exists
 				authPolicyClient.
 					EXPECT().
-					Get(ctx, authPolicyKey).
+					Get(ctx, globalAuthPolicyKey).
 					Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
+
+				authPolicyClient.
+					EXPECT().
+					Get(ctx, ingressAuthPolicyKey).
+					Return(nil, nil)
+				authPolicyClient.
+					EXPECT().
+					Delete(ctx,
+						ingressAuthPolicyKey,
+					).
+					Return(nil)
 			}
 		}
 		err := istioEnforcer.StopEnforcing(ctx, meshes)

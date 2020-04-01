@@ -1,0 +1,4 @@
+changelog:
+- type: FIX
+  description: Create an AuthPolicy to allow all traffic through the ingress when AccessControl is enforced.
+  issueLink:  https://github.com/solo-io/mesh-projects/issues/352
