@@ -117,7 +117,7 @@ package-index-csr-agent-helm: package-index-components-helm copy-dependencies-cs
 .PHONY: save-helm
 save-helm:
 ifeq ($(RELEASE),"true")
-	gsutil -m rsync -r $(HELM_OUTPUT_DIR)/charts gs://service-mesh-hub/
+	gsutil -m rsync -r -d $(HELM_OUTPUT_DIR)/charts gs://service-mesh-hub/
 else
 	echo "Not a release, skipping uploading to GCS."
 endif
@@ -125,8 +125,8 @@ endif
 # must be executed during build prior to indexing helm repo to maintain prior versions in repo
 .PHONY: fetch-helm
 fetch-helm:
-	mkdir -p $(HELM_OUTPUT_DIR)
-	gsutil -m rsync -r gs://service-mesh-hub/ $(HELM_OUTPUT_DIR)
+	mkdir -p $(HELM_OUTPUT_DIR)/charts
+	gsutil -m rsync -r gs://service-mesh-hub/ $(HELM_OUTPUT_DIR)/charts
 
 # upload Helm chart to GCR as an OCI image
 .PHONY: push-chart-to-registry

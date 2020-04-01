@@ -5,21 +5,26 @@
 ROOTDIR := $(shell pwd)
 OUTPUT_DIR ?= $(ROOTDIR)/_output
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
+
+# Kind of a hack to make sure _output exists
+z := $(shell mkdir -p $(OUTPUT_DIR))
+
+COMPONENTS := mesh-discovery mesh-networking
+# include helm Makefile so it can be ran from the root
+include install/helm/helm.mk
+
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 	TAGGED_VERSION := $(shell git describe --tags --dirty)
 	RELEASE := "false"
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
-# Kind of a hack to make sure _output exists
-z := $(shell mkdir -p $(OUTPUT_DIR))
 
 LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
-COMPONENTS := mesh-discovery mesh-networking
-# include helm Makefile so it can be ran from the root
-include install/helm/helm.mk
+GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64
+
 
 #----------------------------------------------------------------------------------
 # Clean
@@ -143,7 +148,7 @@ csr-agent-docker: $(CSR_AGENT_OUTPUT_DIR)/csr-agent-linux-amd64
 CLI_DIR=cli
 
 $(OUTPUT_DIR)/meshctl: $(SOURCES)
-	GO111MODULE=on go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
+	$(GO_BUILD_FLAGS) go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
 
 $(OUTPUT_DIR)/meshctl-linux-amd64: $(SOURCES)
 	$(GO_BUILD_FLAGS) GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(CLI_DIR)/cmd/main.go
@@ -201,3 +206,4 @@ endef
 # docker-push is intended to be run by CI
 docker-push: docker
 	$(foreach component,$(COMPONENTS),$(call docker_push,$(component)))
+	$(call docker_push,csr-agent)
