@@ -124,7 +124,7 @@ func (t *trafficPolicyPrinter) Print(out io.Writer, printMode PrintMode, traffic
 	return nil
 }
 
-func (t *trafficPolicyPrinter) headerManipulationToCell(headerManipulation *types.HeaderManipulation) string {
+func (t *trafficPolicyPrinter) headerManipulationToCell(headerManipulation *types.TrafficPolicySpec_HeaderManipulation) string {
 	str := ""
 	if len(headerManipulation.RemoveResponseHeaders) > 0 {
 		str += fmt.Sprintf("Remove response headers:\n%s\n\n", strings.Join(headerManipulation.RemoveResponseHeaders, "\n"))
@@ -155,7 +155,7 @@ func (t *trafficPolicyPrinter) headerManipulationToCell(headerManipulation *type
 	return str
 }
 
-func (t *trafficPolicyPrinter) mirrorToCell(mirror *types.Mirror) string {
+func (t *trafficPolicyPrinter) mirrorToCell(mirror *types.TrafficPolicySpec_Mirror) string {
 	return fmt.Sprintf("%.2f%% to:\nName: %s\nNamespace: %s\nCluster: %s",
 		mirror.Percentage,
 		mirror.Destination.GetName(),
@@ -164,7 +164,7 @@ func (t *trafficPolicyPrinter) mirrorToCell(mirror *types.Mirror) string {
 	)
 }
 
-func (t *trafficPolicyPrinter) corsToCell(corsPolicy *types.CorsPolicy) string {
+func (t *trafficPolicyPrinter) corsToCell(corsPolicy *types.TrafficPolicySpec_CorsPolicy) string {
 	var corsString string
 	if len(corsPolicy.GetAllowOrigins()) > 0 {
 		origins := []string{}
@@ -206,7 +206,7 @@ func (t *trafficPolicyPrinter) corsToCell(corsPolicy *types.CorsPolicy) string {
 	return corsString
 }
 
-func (t *trafficPolicyPrinter) retriesToCell(retries *types.RetryPolicy) string {
+func (t *trafficPolicyPrinter) retriesToCell(retries *types.TrafficPolicySpec_RetryPolicy) string {
 	str := fmt.Sprintf("%d attempts", retries.Attempts)
 	if retries.GetPerTryTimeout() != nil {
 		str += fmt.Sprintf(" with per-try timeout: %ds %dns", retries.PerTryTimeout.Seconds, retries.PerTryTimeout.Nanos)
@@ -219,10 +219,10 @@ func (t *trafficPolicyPrinter) requestTimeoutToCell(requestTimeout *types2.Durat
 	return fmt.Sprintf("%ds %dns", requestTimeout.Seconds, requestTimeout.Nanos)
 }
 
-func (t *trafficPolicyPrinter) faultInjectionToCell(faultInjection *types.FaultInjection) (string, error) {
+func (t *trafficPolicyPrinter) faultInjectionToCell(faultInjection *types.TrafficPolicySpec_FaultInjection) (string, error) {
 	var injectionType string
 	switch faultInjection.GetFaultInjectionType().(type) {
-	case *types.FaultInjection_Delay_:
+	case *types.TrafficPolicySpec_FaultInjection_Delay_:
 		delay := faultInjection.GetDelay()
 		if delay.GetFixedDelay() != nil {
 			injectionType = fmt.Sprintf("Delay (Fixed: %ds %dns)", delay.GetFixedDelay().Seconds, delay.GetFixedDelay().Nanos)
@@ -231,7 +231,7 @@ func (t *trafficPolicyPrinter) faultInjectionToCell(faultInjection *types.FaultI
 		} else {
 			injectionType = "Delay"
 		}
-	case *types.FaultInjection_Abort_:
+	case *types.TrafficPolicySpec_FaultInjection_Abort_:
 		abort := faultInjection.GetAbort()
 		if abort.GetHttpStatus() != 0 {
 			injectionType = fmt.Sprintf("Abort with HTTP %d", abort.GetHttpStatus())
@@ -245,7 +245,7 @@ func (t *trafficPolicyPrinter) faultInjectionToCell(faultInjection *types.FaultI
 	return fmt.Sprintf("%s\nOn %.2f%% requests", injectionType, faultInjection.GetPercentage()), nil
 }
 
-func (t *trafficPolicyPrinter) matchersToCell(matchers []*types.HttpMatcher) (string, error) {
+func (t *trafficPolicyPrinter) matchersToCell(matchers []*types.TrafficPolicySpec_HttpMatcher) (string, error) {
 	var matcherStrings []string
 	for _, matcher := range matchers {
 		var headerStrings []string
@@ -262,11 +262,11 @@ func (t *trafficPolicyPrinter) matchersToCell(matchers []*types.HttpMatcher) (st
 		var pathSpecifier string
 		if matcher.GetPathSpecifier() != nil {
 			switch matcher.GetPathSpecifier().(type) {
-			case *types.HttpMatcher_Prefix:
+			case *types.TrafficPolicySpec_HttpMatcher_Prefix:
 				pathSpecifier = matcher.GetPrefix() + "*"
-			case *types.HttpMatcher_Exact:
+			case *types.TrafficPolicySpec_HttpMatcher_Exact:
 				pathSpecifier = matcher.GetExact()
-			case *types.HttpMatcher_Regex:
+			case *types.TrafficPolicySpec_HttpMatcher_Regex:
 				pathSpecifier = matcher.GetExact()
 			default:
 				return "", eris.Errorf("Unhandled matcher path specifier type: %+v", matcher)
@@ -298,7 +298,7 @@ func (t *trafficPolicyPrinter) matchersToCell(matchers []*types.HttpMatcher) (st
 	return strings.Join(matcherStrings, "\n--------------\n"), nil
 }
 
-func (t *trafficPolicyPrinter) trafficShiftToCell(trafficShift *types.MultiDestination) string {
+func (t *trafficPolicyPrinter) trafficShiftToCell(trafficShift *types.TrafficPolicySpec_MultiDestination) string {
 	var destinations []string
 	for _, destination := range trafficShift.Destinations {
 		var subsets []string

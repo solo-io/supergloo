@@ -67,14 +67,14 @@ var _ = Describe("Merger", func() {
 		destLabels1 := map[string]string{"k1": "v1"}
 		destNamespaces2 := []string{"namespace2"}
 		destLabels2 := map[string]string{"k2": "v2"}
-		httpMatcher1 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
+		httpMatcher1 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
+			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
 		}
-		httpMatcher2 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_POST},
+		httpMatcher2 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
+			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_POST},
 		}
-		httpMatcher3 := &networking_v1alpha1_types.HttpMatcher{
-			Method: &networking_v1alpha1_types.HttpMethod{Method: core_types.HttpMethodValue_PUT},
+		httpMatcher3 := &networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{
+			Method: &networking_v1alpha1_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_PUT},
 		}
 		tp1 := networking_v1alpha1.TrafficPolicy{
 			Spec: networking_v1alpha1_types.TrafficPolicySpec{
@@ -92,7 +92,7 @@ var _ = Describe("Merger", func() {
 					},
 				},
 				RequestTimeout:      &types1.Duration{Seconds: 1},
-				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
+				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				TranslationStatus: &core_types.Status{
@@ -118,7 +118,7 @@ var _ = Describe("Merger", func() {
 					},
 				},
 				RequestTimeout:      &types1.Duration{Seconds: 1},
-				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
+				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				TranslationStatus: &core_types.Status{
@@ -142,8 +142,8 @@ var _ = Describe("Merger", func() {
 						},
 					},
 				},
-				Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
-				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
+				Retries:             &networking_v1alpha1_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
+				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				TranslationStatus: &core_types.Status{
@@ -167,10 +167,10 @@ var _ = Describe("Merger", func() {
 						},
 					},
 				},
-				FaultInjection: &networking_v1alpha1_types.FaultInjection{
+				FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 50,
 				},
-				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
+				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				TranslationStatus: &core_types.Status{
@@ -194,10 +194,10 @@ var _ = Describe("Merger", func() {
 						},
 					},
 				},
-				FaultInjection: &networking_v1alpha1_types.FaultInjection{
+				FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
 					Percentage: 50,
 				},
-				HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
+				HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 			},
 			Status: networking_v1alpha1_types.TrafficPolicyStatus{
 				TranslationStatus: &core_types.Status{
@@ -292,9 +292,9 @@ var _ = Describe("Merger", func() {
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1},
+					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
-					FaultInjection: &networking_v1alpha1_types.FaultInjection{
+					FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
 						Percentage: 50,
 					},
 				},
@@ -305,7 +305,7 @@ var _ = Describe("Merger", func() {
 						Namespaces: destNamespaces2,
 						Labels:     destLabels2,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
+					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
 				},
 			},
@@ -315,8 +315,8 @@ var _ = Describe("Merger", func() {
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher3},
-					FaultInjection: &networking_v1alpha1_types.FaultInjection{
+					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher3},
+					FaultInjection: &networking_v1alpha1_types.TrafficPolicySpec_FaultInjection{
 						Percentage: 50,
 					},
 				},
@@ -329,7 +329,7 @@ var _ = Describe("Merger", func() {
 						Namespaces: destNamespaces2,
 						Labels:     destLabels2,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher2},
+					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher2},
 					RequestTimeout:      &types1.Duration{Seconds: 1},
 				},
 			},
@@ -339,8 +339,8 @@ var _ = Describe("Merger", func() {
 						Namespaces: destNamespaces1,
 						Labels:     destLabels1,
 					},
-					HttpRequestMatchers: []*networking_v1alpha1_types.HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
-					Retries:             &networking_v1alpha1_types.RetryPolicy{Attempts: 2},
+					HttpRequestMatchers: []*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{httpMatcher1, httpMatcher2, httpMatcher3},
+					Retries:             &networking_v1alpha1_types.TrafficPolicySpec_RetryPolicy{Attempts: 2},
 				},
 			},
 		}

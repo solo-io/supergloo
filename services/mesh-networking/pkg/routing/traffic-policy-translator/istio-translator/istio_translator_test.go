@@ -128,8 +128,9 @@ var _ = Describe("IstioTranslator", func() {
 					SourceSelector: &core_types.WorkloadSelector{
 						Namespaces: []string{sourceNamespace},
 					},
-					HttpRequestMatchers: []*networking_types.HttpMatcher{
-						{}, {}, {}},
+					HttpRequestMatchers: []*networking_types.TrafficPolicySpec_HttpMatcher{
+						{}, {}, {},
+					},
 				}},
 			}
 			baseMatchRequest := &api_v1alpha3.HTTPMatchRequest{SourceNamespace: sourceNamespace}
@@ -230,7 +231,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate Retries", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.Retries = &networking_types.RetryPolicy{
+			testContext.trafficPolicy[0].Spec.Retries = &networking_types.TrafficPolicySpec_RetryPolicy{
 				Attempts:      5,
 				PerTryTimeout: &types.Duration{Seconds: 2},
 			}
@@ -251,11 +252,11 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate CorsPolicy", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.CorsPolicy = &networking_types.CorsPolicy{
-				AllowOrigins: []*networking_types.StringMatch{
-					{MatchType: &networking_types.StringMatch_Exact{Exact: "exact"}},
-					{MatchType: &networking_types.StringMatch_Prefix{Prefix: "prefix"}},
-					{MatchType: &networking_types.StringMatch_Regex{Regex: "regex"}},
+			testContext.trafficPolicy[0].Spec.CorsPolicy = &networking_types.TrafficPolicySpec_CorsPolicy{
+				AllowOrigins: []*networking_types.TrafficPolicySpec_StringMatch{
+					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Exact{Exact: "exact"}},
+					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Prefix{Prefix: "prefix"}},
+					{MatchType: &networking_types.TrafficPolicySpec_StringMatch_Regex{Regex: "regex"}},
 				},
 				AllowMethods:     []string{"GET", "POST"},
 				AllowHeaders:     []string{"Header1", "Header2"},
@@ -288,7 +289,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HeaderManipulation", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HeaderManipulation = &networking_types.HeaderManipulation{
+			testContext.trafficPolicy[0].Spec.HeaderManipulation = &networking_types.TrafficPolicySpec_HeaderManipulation{
 				AppendRequestHeaders:  map[string]string{"a": "b"},
 				RemoveRequestHeaders:  []string{"3", "4"},
 				AppendResponseHeaders: map[string]string{"foo": "bar"},
@@ -321,7 +322,7 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			port := uint32(9080)
 			destCluster := testContext.clusterName
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
@@ -368,7 +369,7 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			remoteClusterName := "remote-cluster"
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
@@ -408,10 +409,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Abort", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
-				FaultInjectionType: &networking_types.FaultInjection_Abort_{
-					Abort: &networking_types.FaultInjection_Abort{
-						ErrorType: &networking_types.FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_{
+					Abort: &networking_types.TrafficPolicySpec_FaultInjection_Abort{
+						ErrorType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus{HttpStatus: 404},
 					},
 				},
 				Percentage: 50,
@@ -435,10 +436,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Delay of type Fixed", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
-				FaultInjectionType: &networking_types.FaultInjection_Delay_{
-					Delay: &networking_types.FaultInjection_Delay{
-						HttpDelayType: &networking_types.FaultInjection_Delay_FixedDelay{
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+					Delay: &networking_types.TrafficPolicySpec_FaultInjection_Delay{
+						HttpDelayType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 							FixedDelay: &types.Duration{Seconds: 2},
 						},
 					},
@@ -464,10 +465,10 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate FaultInjection of type Delay of type Exponential", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.FaultInjection{
-				FaultInjectionType: &networking_types.FaultInjection_Delay_{
-					Delay: &networking_types.FaultInjection_Delay{
-						HttpDelayType: &networking_types.FaultInjection_Delay_ExponentialDelay{
+			testContext.trafficPolicy[0].Spec.FaultInjection = &networking_types.TrafficPolicySpec_FaultInjection{
+				FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+					Delay: &networking_types.TrafficPolicySpec_FaultInjection_Delay{
+						HttpDelayType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay{
 							ExponentialDelay: &types.Duration{Seconds: 2},
 						},
 					},
@@ -493,7 +494,7 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate Retries", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.Retries = &networking_types.RetryPolicy{
+			testContext.trafficPolicy[0].Spec.Retries = &networking_types.TrafficPolicySpec_RetryPolicy{
 				Attempts:      5,
 				PerTryTimeout: &types.Duration{Seconds: 2},
 			}
@@ -514,9 +515,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HeaderMatchers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				Headers: []*networking_types.HeaderMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
 					{
 						Name:        "name1",
 						Value:       "value1",
@@ -558,9 +559,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.HttpMatcher_Regex{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
@@ -579,9 +580,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.HttpMatcher_Prefix{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
@@ -600,9 +601,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate QueryParamMatchers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				QueryParameters: []*networking_types.QueryParameterMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				QueryParameters: []*networking_types.TrafficPolicySpec_QueryParameterMatcher{
 					{
 						Name:  "qp1",
 						Value: "qpv1",
@@ -637,9 +638,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher regex path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.HttpMatcher_Regex{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 					Regex: "*",
 				},
 			}
@@ -658,9 +659,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher prefix path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.HttpMatcher_Prefix{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 					Prefix: "prefix",
 				},
 			}
@@ -679,9 +680,9 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should translate HttpMatcher exact path specifiers", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.HttpMatcher{
-				Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
-				PathSpecifier: &networking_types.HttpMatcher_Exact{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers[0] = &networking_types.TrafficPolicySpec_HttpMatcher{
+				Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
+				PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 					Exact: "path",
 				},
 			}
@@ -704,8 +705,8 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			multiClusterDnsName := "multicluster-dns-name"
 			destCluster := "remote-cluster-1"
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
-				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					{
 						Destination: &core_types.ResourceRef{
 							Name:      destName,
@@ -757,8 +758,8 @@ var _ = Describe("IstioTranslator", func() {
 			multiClusterDnsName := "multicluster-dns-name"
 			port := uint32(9080)
 			destCluster := "remote-cluster-1"
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
-				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					{
 						Destination: &core_types.ResourceRef{
 							Name:      destName,
@@ -813,7 +814,7 @@ var _ = Describe("IstioTranslator", func() {
 			destNamespace := "namespace"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
 			expectedSubsetName := "env-dev_version-v1"
-			destination := &networking_types.MultiDestination_WeightedDestination{
+			destination := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
@@ -822,8 +823,8 @@ var _ = Describe("IstioTranslator", func() {
 				Subset: declaredSubset,
 				Weight: 50,
 			}
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
-				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					destination,
 				},
 			}
@@ -892,7 +893,7 @@ var _ = Describe("IstioTranslator", func() {
 			multiClusterDnsName := "multicluster-dns-name"
 			destCluster := "remote-cluster-1"
 			declaredSubset := map[string]string{"env": "dev", "version": "v1"}
-			destination := &networking_types.MultiDestination_WeightedDestination{
+			destination := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
@@ -901,8 +902,8 @@ var _ = Describe("IstioTranslator", func() {
 				Subset: declaredSubset,
 				Weight: 50,
 			}
-			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.MultiDestination{
-				Destinations: []*networking_types.MultiDestination_WeightedDestination{
+			testContext.trafficPolicy[0].Spec.TrafficShift = &networking_types.TrafficPolicySpec_MultiDestination{
+				Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 					destination,
 				},
 			}
@@ -933,7 +934,7 @@ var _ = Describe("IstioTranslator", func() {
 			destName := "name"
 			destNamespace := "namespace"
 			remoteClusterName := "remote-cluster"
-			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.Mirror{
+			testContext.trafficPolicy[0].Spec.Mirror = &networking_types.TrafficPolicySpec_Mirror{
 				Destination: &core_types.ResourceRef{
 					Name:      destName,
 					Namespace: destNamespace,
@@ -959,15 +960,15 @@ var _ = Describe("IstioTranslator", func() {
 				Labels:     labels,
 				Namespaces: namespaces,
 			}
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "path",
 					},
-					Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_GET},
+					Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_GET},
 				},
 				{
-					Headers: []*networking_types.HeaderMatcher{
+					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "name3",
 							Value:       "[a-z]+",
@@ -975,7 +976,7 @@ var _ = Describe("IstioTranslator", func() {
 							InvertMatch: true,
 						},
 					},
-					Method: &networking_types.HttpMethod{Method: core_types.HttpMethodValue_POST},
+					Method: &networking_types.TrafficPolicySpec_HttpMethod{Method: core_types.HttpMethodValue_POST},
 				},
 			}
 			testContext.computedVirtualService.Spec.Http = []*api_v1alpha3.HTTPRoute{
@@ -1039,46 +1040,46 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should deterministically order HTTPRoutes according to decreasing specificity", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/prefix",
 					},
-					Method: &networking_types.HttpMethod{
+					Method: &networking_types.TrafficPolicySpec_HttpMethod{
 						Method: core_types.HttpMethodValue_GET,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
-					Method: &networking_types.HttpMethod{
+					Method: &networking_types.TrafficPolicySpec_HttpMethod{
 						Method: core_types.HttpMethodValue_GET,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "exact-path",
 					},
-					Method: &networking_types.HttpMethod{
+					Method: &networking_types.TrafficPolicySpec_HttpMethod{
 						Method: core_types.HttpMethodValue_PUT,
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Regex{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "www*",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/",
 					},
-					Headers: []*networking_types.HeaderMatcher{
+					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "set-cookie",
 							Value:       "foo=bar",
@@ -1087,10 +1088,10 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/",
 					},
-					Headers: []*networking_types.HeaderMatcher{
+					Headers: []*networking_types.TrafficPolicySpec_HeaderMatcher{
 						{
 							Name:        "content-type",
 							Value:       "text/html",
@@ -1184,34 +1185,34 @@ var _ = Describe("IstioTranslator", func() {
 
 		It("should order longer prefixes, regexes, and exact URI matchers before shorter ones", func() {
 			testContext := setupTestContext()
-			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.HttpMatcher{
+			testContext.trafficPolicy[0].Spec.HttpRequestMatchers = []*networking_types.TrafficPolicySpec_HttpMatcher{
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "short",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Exact{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Exact{
 						Exact: "longer",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/short",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Prefix{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Prefix{
 						Prefix: "/longer",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Regex{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "short*",
 					},
 				},
 				{
-					PathSpecifier: &networking_types.HttpMatcher_Regex{
+					PathSpecifier: &networking_types.TrafficPolicySpec_HttpMatcher_Regex{
 						Regex: "longer*",
 					},
 				},

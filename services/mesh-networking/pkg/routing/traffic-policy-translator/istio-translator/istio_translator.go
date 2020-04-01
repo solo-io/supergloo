@@ -60,7 +60,7 @@ var (
 		return eris.Errorf("Mesh service %s.%s ports list does not include just one entry, so no default can be used. "+
 			"Must specify a destination with a port", svc.Name, svc.Namespace)
 	}
-	MultiClusterSubsetsNotSupported = func(dest *networking_types.MultiDestination_WeightedDestination) error {
+	MultiClusterSubsetsNotSupported = func(dest *networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination) error {
 		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
 	}
 )
@@ -309,14 +309,14 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatchers(
 	return translatedRequestMatchers, nil
 }
 
-func (i *istioTrafficPolicyTranslator) translateRequestMatcherPathSpecifier(matcher *networking_types.HttpMatcher) (*api_v1alpha3.StringMatch, error) {
+func (i *istioTrafficPolicyTranslator) translateRequestMatcherPathSpecifier(matcher *networking_types.TrafficPolicySpec_HttpMatcher) (*api_v1alpha3.StringMatch, error) {
 	if matcher != nil && matcher.GetPathSpecifier() != nil {
 		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
-		case *networking_types.HttpMatcher_Exact:
+		case *networking_types.TrafficPolicySpec_HttpMatcher_Exact:
 			return &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: matcher.GetExact()}}, nil
-		case *networking_types.HttpMatcher_Prefix:
+		case *networking_types.TrafficPolicySpec_HttpMatcher_Prefix:
 			return &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: matcher.GetPrefix()}}, nil
-		case *networking_types.HttpMatcher_Regex:
+		case *networking_types.TrafficPolicySpec_HttpMatcher_Regex:
 			return &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: matcher.GetRegex()}}, nil
 		default:
 			return nil, eris.Errorf("RequestMatchers[].PathSpecifier has unexpected type %T", pathSpecifierType)
@@ -325,7 +325,7 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatcherPathSpecifier(matc
 	return nil, nil
 }
 
-func (i *istioTrafficPolicyTranslator) translateRequestMatcherQueryParams(matchers []*networking_types.QueryParameterMatcher) map[string]*api_v1alpha3.StringMatch {
+func (i *istioTrafficPolicyTranslator) translateRequestMatcherQueryParams(matchers []*networking_types.TrafficPolicySpec_QueryParameterMatcher) map[string]*api_v1alpha3.StringMatch {
 	var translatedQueryParamMatcher map[string]*api_v1alpha3.StringMatch
 	if matchers != nil {
 		translatedQueryParamMatcher = map[string]*api_v1alpha3.StringMatch{}
@@ -344,7 +344,7 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatcherQueryParams(matche
 	return translatedQueryParamMatcher
 }
 
-func (i *istioTrafficPolicyTranslator) translateRequestMatcherHeaders(matchers []*networking_types.HeaderMatcher) (
+func (i *istioTrafficPolicyTranslator) translateRequestMatcherHeaders(matchers []*networking_types.TrafficPolicySpec_HeaderMatcher) (
 	map[string]*api_v1alpha3.StringMatch, map[string]*api_v1alpha3.StringMatch,
 ) {
 	headerMatchers := map[string]*api_v1alpha3.StringMatch{}
@@ -381,7 +381,7 @@ func (i *istioTrafficPolicyTranslator) translateRequestMatcherHeaders(matchers [
 // return name of Subset declared in DestinationRule
 func (i *istioTrafficPolicyTranslator) translateSubset(
 	ctx context.Context,
-	destination *networking_types.MultiDestination_WeightedDestination,
+	destination *networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination,
 ) (string, error) {
 	// fetch client for destination's cluster
 	clusterName := destination.GetDestination().GetCluster()
@@ -496,10 +496,10 @@ func (i *istioTrafficPolicyTranslator) translateFaultInjection(trafficPolicy *ne
 	faultInjection := trafficPolicy.Spec.GetFaultInjection()
 	if faultInjection != nil {
 		switch injectionType := faultInjection.GetFaultInjectionType().(type) {
-		case *networking_types.FaultInjection_Abort_:
+		case *networking_types.TrafficPolicySpec_FaultInjection_Abort_:
 			abort := faultInjection.GetAbort()
 			switch abortType := abort.GetErrorType().(type) {
-			case *networking_types.FaultInjection_Abort_HttpStatus:
+			case *networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus:
 				translatedFaultInjection = &api_v1alpha3.HTTPFaultInjection{
 					Abort: &api_v1alpha3.HTTPFaultInjection_Abort{
 						ErrorType:  &api_v1alpha3.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: abort.GetHttpStatus()},
@@ -508,16 +508,16 @@ func (i *istioTrafficPolicyTranslator) translateFaultInjection(trafficPolicy *ne
 			default:
 				return nil, eris.Errorf("Abort.ErrorType has unexpected type %T", abortType)
 			}
-		case *networking_types.FaultInjection_Delay_:
+		case *networking_types.TrafficPolicySpec_FaultInjection_Delay_:
 			delay := faultInjection.GetDelay()
 			switch delayType := delay.GetHttpDelayType().(type) {
-			case *networking_types.FaultInjection_Delay_FixedDelay:
+			case *networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay:
 				translatedFaultInjection = &api_v1alpha3.HTTPFaultInjection{
 					Delay: &api_v1alpha3.HTTPFaultInjection_Delay{
 						HttpDelayType: &api_v1alpha3.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: delay.GetFixedDelay()},
 						Percentage:    &api_v1alpha3.Percent{Value: faultInjection.GetPercentage()},
 					}}
-			case *networking_types.FaultInjection_Delay_ExponentialDelay:
+			case *networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay:
 				translatedFaultInjection = &api_v1alpha3.HTTPFaultInjection{
 					Delay: &api_v1alpha3.HTTPFaultInjection_Delay{
 						HttpDelayType: &api_v1alpha3.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: delay.GetExponentialDelay()},
@@ -590,11 +590,11 @@ func (i *istioTrafficPolicyTranslator) translateCorsPolicy(trafficPolicy *networ
 		for i, allowOrigin := range corsPolicy.GetAllowOrigins() {
 			var stringMatch *api_v1alpha3.StringMatch
 			switch matchType := allowOrigin.GetMatchType().(type) {
-			case *networking_types.StringMatch_Exact:
+			case *networking_types.TrafficPolicySpec_StringMatch_Exact:
 				stringMatch = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Exact{Exact: allowOrigin.GetExact()}}
-			case *networking_types.StringMatch_Prefix:
+			case *networking_types.TrafficPolicySpec_StringMatch_Prefix:
 				stringMatch = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Prefix{Prefix: allowOrigin.GetPrefix()}}
-			case *networking_types.StringMatch_Regex:
+			case *networking_types.TrafficPolicySpec_StringMatch_Regex:
 				stringMatch = &api_v1alpha3.StringMatch{MatchType: &api_v1alpha3.StringMatch_Regex{Regex: allowOrigin.GetRegex()}}
 			default:
 				return nil, eris.Errorf("AllowOrigins[%d].MatchType has unexpected type %T", i, matchType)

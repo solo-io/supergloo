@@ -56,8 +56,8 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					TrafficShift: &types.MultiDestination{
-						Destinations: []*types.MultiDestination_WeightedDestination{
+					TrafficShift: &types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 							{
 								Destination: &core_types.ResourceRef{
 									Cluster:   "target-cluster",
@@ -79,12 +79,12 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					HttpRequestMatchers: []*types.HttpMatcher{
+					HttpRequestMatchers: []*types.TrafficPolicySpec_HttpMatcher{
 						{
-							PathSpecifier: &types.HttpMatcher_Prefix{
+							PathSpecifier: &types.TrafficPolicySpec_HttpMatcher_Prefix{
 								Prefix: "/static",
 							},
-							QueryParameters: []*types.QueryParameterMatcher{
+							QueryParameters: []*types.TrafficPolicySpec_QueryParameterMatcher{
 								{
 									Name:  "param1",
 									Value: "value1",
@@ -95,7 +95,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 									Regex: true,
 								},
 							},
-							Headers: []*types.HeaderMatcher{
+							Headers: []*types.TrafficPolicySpec_HeaderMatcher{
 								{
 									Name:        "header1",
 									Value:       "value1",
@@ -110,11 +110,11 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					FaultInjection: &types.FaultInjection{
+					FaultInjection: &types.TrafficPolicySpec_FaultInjection{
 						Percentage: 25,
-						FaultInjectionType: &types.FaultInjection_Delay_{
-							Delay: &types.FaultInjection_Delay{
-								HttpDelayType: &types.FaultInjection_Delay_FixedDelay{
+						FaultInjectionType: &types.TrafficPolicySpec_FaultInjection_Delay_{
+							Delay: &types.TrafficPolicySpec_FaultInjection_Delay{
+								HttpDelayType: &types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 									FixedDelay: &types2.Duration{
 										Seconds: 3,
 									},
@@ -125,10 +125,10 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 					RequestTimeout: &types2.Duration{
 						Seconds: 4,
 					},
-					Retries: &types.RetryPolicy{
+					Retries: &types.TrafficPolicySpec_RetryPolicy{
 						Attempts: 10,
 					},
-					CorsPolicy: &types.CorsPolicy{
+					CorsPolicy: &types.TrafficPolicySpec_CorsPolicy{
 						AllowHeaders: []string{"x-auth"},
 						AllowMethods: []string{"get"},
 					},
@@ -150,8 +150,8 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					TrafficShift: &types.MultiDestination{
-						Destinations: []*types.MultiDestination_WeightedDestination{
+					TrafficShift: &types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 							{
 								Destination: &core_types.ResourceRef{
 									Cluster:   "target-cluster",
@@ -173,12 +173,12 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					HttpRequestMatchers: []*types.HttpMatcher{
+					HttpRequestMatchers: []*types.TrafficPolicySpec_HttpMatcher{
 						{
-							PathSpecifier: &types.HttpMatcher_Prefix{
+							PathSpecifier: &types.TrafficPolicySpec_HttpMatcher_Prefix{
 								Prefix: "/static",
 							},
-							QueryParameters: []*types.QueryParameterMatcher{
+							QueryParameters: []*types.TrafficPolicySpec_QueryParameterMatcher{
 								{
 									Name:  "param1",
 									Value: "value1",
@@ -189,7 +189,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 									Regex: true,
 								},
 							},
-							Headers: []*types.HeaderMatcher{
+							Headers: []*types.TrafficPolicySpec_HeaderMatcher{
 								{
 									Name:        "header1",
 									Value:       "value1",
@@ -204,7 +204,7 @@ var _ = Describe("Traffic Policy Table Printer", func() {
 							},
 						},
 					},
-					Mirror: &types.Mirror{
+					Mirror: &types.TrafficPolicySpec_Mirror{
 						Percentage: 10,
 						Destination: &core_types.ResourceRef{
 							Name:      "other-svc",

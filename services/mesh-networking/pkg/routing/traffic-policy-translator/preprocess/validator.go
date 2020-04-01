@@ -91,7 +91,7 @@ func (t *trafficPolicyValidator) validateDestination(ctx context.Context, select
 
 // Validate that the TrafficShift destination k8s Service exist
 // and if subsets are specified, that they exist on the k8s Service
-func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, trafficShift *networking_types.MultiDestination) error {
+func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, trafficShift *networking_types.TrafficPolicySpec_MultiDestination) error {
 	if trafficShift == nil {
 		return nil
 	}
@@ -110,7 +110,7 @@ func (t *trafficPolicyValidator) validateTrafficShift(ctx context.Context, traff
 	return nil
 }
 
-func (t *trafficPolicyValidator) validateMirror(ctx context.Context, mirror *networking_types.Mirror) error {
+func (t *trafficPolicyValidator) validateMirror(ctx context.Context, mirror *networking_types.TrafficPolicySpec_Mirror) error {
 	if mirror == nil {
 		return nil
 	}
@@ -128,7 +128,7 @@ func (t *trafficPolicyValidator) validateRequestTimeout(requestTimeout *types.Du
 	return t.validateDuration(requestTimeout)
 }
 
-func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *networking_types.FaultInjection) error {
+func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *networking_types.TrafficPolicySpec_FaultInjection) error {
 	if faultInjection == nil {
 		return nil
 	}
@@ -137,20 +137,20 @@ func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *networki
 		return err
 	}
 	switch injectionType := faultInjection.GetFaultInjectionType().(type) {
-	case *networking_types.FaultInjection_Abort_:
+	case *networking_types.TrafficPolicySpec_FaultInjection_Abort_:
 		abort := faultInjection.GetAbort()
 		switch abortType := abort.GetErrorType().(type) {
-		case *networking_types.FaultInjection_Abort_HttpStatus:
+		case *networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus:
 			return t.validateHttpStatus(abort.GetHttpStatus())
 		default:
 			return eris.Errorf("TrafficPolicy.Spec.FaultInjection.Abort.ErrorType has unexpected type %T", abortType)
 		}
-	case *networking_types.FaultInjection_Delay_:
+	case *networking_types.TrafficPolicySpec_FaultInjection_Delay_:
 		delay := faultInjection.GetDelay()
 		switch delayType := delay.GetHttpDelayType().(type) {
-		case *networking_types.FaultInjection_Delay_FixedDelay:
+		case *networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay:
 			return t.validateDuration(delay.GetFixedDelay())
-		case *networking_types.FaultInjection_Delay_ExponentialDelay:
+		case *networking_types.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay:
 			return t.validateDuration(delay.GetExponentialDelay())
 		default:
 			return eris.Errorf("TrafficPolicy.Spec.FaultInjection.Delay.HTTPDelayType has unexpected type %T", delayType)
@@ -160,7 +160,7 @@ func (t *trafficPolicyValidator) validateFaultInjection(faultInjection *networki
 	}
 }
 
-func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *networking_types.RetryPolicy) error {
+func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *networking_types.TrafficPolicySpec_RetryPolicy) error {
 	if retryPolicy == nil {
 		return nil
 	}
@@ -170,7 +170,7 @@ func (t *trafficPolicyValidator) validateRetryPolicy(retryPolicy *networking_typ
 	return t.validateDuration(retryPolicy.GetPerTryTimeout())
 }
 
-func (t *trafficPolicyValidator) validateCorsPolicy(corsPolicy *networking_types.CorsPolicy) error {
+func (t *trafficPolicyValidator) validateCorsPolicy(corsPolicy *networking_types.TrafficPolicySpec_CorsPolicy) error {
 	if corsPolicy == nil {
 		return nil
 	}

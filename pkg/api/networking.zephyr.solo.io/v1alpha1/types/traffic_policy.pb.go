@@ -59,7 +59,7 @@ type TrafficPolicySpec struct {
 	//Within a single matcher, all conditions must be satisfied for a match to occur.
 	//Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
 	//NB: Linkerd only supports matching on Request Path and Method
-	HttpRequestMatchers []*HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
+	HttpRequestMatchers []*TrafficPolicySpec_HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
 	//
 	//A routing rule can have one of several types.
 	//Note: types imported from Istio will be replaced with our own
@@ -67,25 +67,25 @@ type TrafficPolicySpec struct {
 	//
 	//Enables traffic shifting, i.e. to reroute requests to a different service,
 	//to a subset of pods based on their label, and/or split traffic between multiple services.
-	TrafficShift *MultiDestination `protobuf:"bytes,4,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
+	TrafficShift *TrafficPolicySpec_MultiDestination `protobuf:"bytes,4,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
 	// Enable fault injection on requests.
-	FaultInjection *FaultInjection `protobuf:"bytes,5,opt,name=fault_injection,json=faultInjection,proto3" json:"fault_injection,omitempty"`
+	FaultInjection *TrafficPolicySpec_FaultInjection `protobuf:"bytes,5,opt,name=fault_injection,json=faultInjection,proto3" json:"fault_injection,omitempty"`
 	// Set a timeout on requests.
 	RequestTimeout *types1.Duration `protobuf:"bytes,6,opt,name=request_timeout,json=requestTimeout,proto3" json:"request_timeout,omitempty"`
 	// Set a retry policy on requests.
-	Retries *RetryPolicy `protobuf:"bytes,7,opt,name=retries,proto3" json:"retries,omitempty"`
+	Retries *TrafficPolicySpec_RetryPolicy `protobuf:"bytes,7,opt,name=retries,proto3" json:"retries,omitempty"`
 	//
 	//Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
 	//https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
 	//for further details about cross origin resource sharing.
-	CorsPolicy *CorsPolicy `protobuf:"bytes,8,opt,name=cors_policy,json=corsPolicy,proto3" json:"cors_policy,omitempty"`
+	CorsPolicy *TrafficPolicySpec_CorsPolicy `protobuf:"bytes,8,opt,name=cors_policy,json=corsPolicy,proto3" json:"cors_policy,omitempty"`
 	// Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal.
-	Mirror *Mirror `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
+	Mirror *TrafficPolicySpec_Mirror `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
 	// Manipulate request and response headers.
-	HeaderManipulation   *HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
-	XXX_unrecognized     []byte              `json:"-"`
-	XXX_sizecache        int32               `json:"-"`
+	HeaderManipulation   *TrafficPolicySpec_HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                              `json:"-"`
+	XXX_unrecognized     []byte                                `json:"-"`
+	XXX_sizecache        int32                                 `json:"-"`
 }
 
 func (m *TrafficPolicySpec) Reset()         { *m = TrafficPolicySpec{} }
@@ -126,21 +126,21 @@ func (m *TrafficPolicySpec) GetDestinationSelector() *types.ServiceSelector {
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetHttpRequestMatchers() []*HttpMatcher {
+func (m *TrafficPolicySpec) GetHttpRequestMatchers() []*TrafficPolicySpec_HttpMatcher {
 	if m != nil {
 		return m.HttpRequestMatchers
 	}
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetTrafficShift() *MultiDestination {
+func (m *TrafficPolicySpec) GetTrafficShift() *TrafficPolicySpec_MultiDestination {
 	if m != nil {
 		return m.TrafficShift
 	}
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetFaultInjection() *FaultInjection {
+func (m *TrafficPolicySpec) GetFaultInjection() *TrafficPolicySpec_FaultInjection {
 	if m != nil {
 		return m.FaultInjection
 	}
@@ -154,32 +154,1072 @@ func (m *TrafficPolicySpec) GetRequestTimeout() *types1.Duration {
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetRetries() *RetryPolicy {
+func (m *TrafficPolicySpec) GetRetries() *TrafficPolicySpec_RetryPolicy {
 	if m != nil {
 		return m.Retries
 	}
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetCorsPolicy() *CorsPolicy {
+func (m *TrafficPolicySpec) GetCorsPolicy() *TrafficPolicySpec_CorsPolicy {
 	if m != nil {
 		return m.CorsPolicy
 	}
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetMirror() *Mirror {
+func (m *TrafficPolicySpec) GetMirror() *TrafficPolicySpec_Mirror {
 	if m != nil {
 		return m.Mirror
 	}
 	return nil
 }
 
-func (m *TrafficPolicySpec) GetHeaderManipulation() *HeaderManipulation {
+func (m *TrafficPolicySpec) GetHeaderManipulation() *TrafficPolicySpec_HeaderManipulation {
 	if m != nil {
 		return m.HeaderManipulation
 	}
 	return nil
+}
+
+//
+//RetryPolicy contains mesh-specific retry configuration
+//Different meshes support different Retry features
+//Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
+//Allowing the same TrafficPolicy to apply retries to different mesh types
+//The configuration applied to the target mesh will use the corresponding
+//config for each type, while other config types will be ignored
+type TrafficPolicySpec_RetryPolicy struct {
+	// Number of retries for a given request
+	Attempts int32 `protobuf:"varint,1,opt,name=attempts,proto3" json:"attempts,omitempty"`
+	// Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
+	PerTryTimeout        *types1.Duration `protobuf:"bytes,2,opt,name=per_try_timeout,json=perTryTimeout,proto3" json:"per_try_timeout,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *TrafficPolicySpec_RetryPolicy) Reset()         { *m = TrafficPolicySpec_RetryPolicy{} }
+func (m *TrafficPolicySpec_RetryPolicy) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_RetryPolicy) ProtoMessage()    {}
+func (*TrafficPolicySpec_RetryPolicy) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 0}
+}
+func (m *TrafficPolicySpec_RetryPolicy) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_RetryPolicy.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_RetryPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_RetryPolicy.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_RetryPolicy) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_RetryPolicy.Merge(m, src)
+}
+func (m *TrafficPolicySpec_RetryPolicy) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_RetryPolicy.Size(m)
+}
+func (m *TrafficPolicySpec_RetryPolicy) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_RetryPolicy.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_RetryPolicy proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_RetryPolicy) GetAttempts() int32 {
+	if m != nil {
+		return m.Attempts
+	}
+	return 0
+}
+
+func (m *TrafficPolicySpec_RetryPolicy) GetPerTryTimeout() *types1.Duration {
+	if m != nil {
+		return m.PerTryTimeout
+	}
+	return nil
+}
+
+type TrafficPolicySpec_MultiDestination struct {
+	Destinations         []*TrafficPolicySpec_MultiDestination_WeightedDestination `protobuf:"bytes,1,rep,name=destinations,proto3" json:"destinations,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                                                  `json:"-"`
+	XXX_unrecognized     []byte                                                    `json:"-"`
+	XXX_sizecache        int32                                                     `json:"-"`
+}
+
+func (m *TrafficPolicySpec_MultiDestination) Reset()         { *m = TrafficPolicySpec_MultiDestination{} }
+func (m *TrafficPolicySpec_MultiDestination) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_MultiDestination) ProtoMessage()    {}
+func (*TrafficPolicySpec_MultiDestination) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 1}
+}
+func (m *TrafficPolicySpec_MultiDestination) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_MultiDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_MultiDestination) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_MultiDestination.Merge(m, src)
+}
+func (m *TrafficPolicySpec_MultiDestination) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination.Size(m)
+}
+func (m *TrafficPolicySpec_MultiDestination) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_MultiDestination.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_MultiDestination proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_MultiDestination) GetDestinations() []*TrafficPolicySpec_MultiDestination_WeightedDestination {
+	if m != nil {
+		return m.Destinations
+	}
+	return nil
+}
+
+type TrafficPolicySpec_MultiDestination_WeightedDestination struct {
+	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
+	// Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route.
+	Weight uint32 `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
+	// Subset routing is currently only supported on Istio.
+	Subset map[string]string `protobuf:"bytes,3,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
+	// then the configuration will be considered invalid
+	Port                 uint32   `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Reset() {
+	*m = TrafficPolicySpec_MultiDestination_WeightedDestination{}
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) String() string {
+	return proto.CompactTextString(m)
+}
+func (*TrafficPolicySpec_MultiDestination_WeightedDestination) ProtoMessage() {}
+func (*TrafficPolicySpec_MultiDestination_WeightedDestination) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 1, 0}
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination.Merge(m, src)
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination.Size(m)
+}
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_MultiDestination_WeightedDestination proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) GetDestination() *types.ResourceRef {
+	if m != nil {
+		return m.Destination
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) GetWeight() uint32 {
+	if m != nil {
+		return m.Weight
+	}
+	return 0
+}
+
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) GetSubset() map[string]string {
+	if m != nil {
+		return m.Subset
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+//
+//FaultInjection can be used to specify one or more faults to inject
+//while forwarding http requests to the destination specified in a route.
+//Faults include aborting the Http request from downstream service, and/or delaying
+//proxying of requests. A fault rule MUST HAVE delay or abort.
+type TrafficPolicySpec_FaultInjection struct {
+	// Types that are valid to be assigned to FaultInjectionType:
+	//	*TrafficPolicySpec_FaultInjection_Delay_
+	//	*TrafficPolicySpec_FaultInjection_Abort_
+	FaultInjectionType isTrafficPolicySpec_FaultInjection_FaultInjectionType `protobuf_oneof:"fault_injection_type"`
+	// Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
+	Percentage           float64  `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicySpec_FaultInjection) Reset()         { *m = TrafficPolicySpec_FaultInjection{} }
+func (m *TrafficPolicySpec_FaultInjection) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_FaultInjection) ProtoMessage()    {}
+func (*TrafficPolicySpec_FaultInjection) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 2}
+}
+func (m *TrafficPolicySpec_FaultInjection) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_FaultInjection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_FaultInjection) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection.Merge(m, src)
+}
+func (m *TrafficPolicySpec_FaultInjection) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection.Size(m)
+}
+func (m *TrafficPolicySpec_FaultInjection) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_FaultInjection proto.InternalMessageInfo
+
+type isTrafficPolicySpec_FaultInjection_FaultInjectionType interface {
+	isTrafficPolicySpec_FaultInjection_FaultInjectionType()
+	Equal(interface{}) bool
+}
+
+type TrafficPolicySpec_FaultInjection_Delay_ struct {
+	Delay *TrafficPolicySpec_FaultInjection_Delay `protobuf:"bytes,1,opt,name=delay,proto3,oneof" json:"delay,omitempty"`
+}
+type TrafficPolicySpec_FaultInjection_Abort_ struct {
+	Abort *TrafficPolicySpec_FaultInjection_Abort `protobuf:"bytes,2,opt,name=abort,proto3,oneof" json:"abort,omitempty"`
+}
+
+func (*TrafficPolicySpec_FaultInjection_Delay_) isTrafficPolicySpec_FaultInjection_FaultInjectionType() {
+}
+func (*TrafficPolicySpec_FaultInjection_Abort_) isTrafficPolicySpec_FaultInjection_FaultInjectionType() {
+}
+
+func (m *TrafficPolicySpec_FaultInjection) GetFaultInjectionType() isTrafficPolicySpec_FaultInjection_FaultInjectionType {
+	if m != nil {
+		return m.FaultInjectionType
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection) GetDelay() *TrafficPolicySpec_FaultInjection_Delay {
+	if x, ok := m.GetFaultInjectionType().(*TrafficPolicySpec_FaultInjection_Delay_); ok {
+		return x.Delay
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection) GetAbort() *TrafficPolicySpec_FaultInjection_Abort {
+	if x, ok := m.GetFaultInjectionType().(*TrafficPolicySpec_FaultInjection_Abort_); ok {
+		return x.Abort
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection) GetPercentage() float64 {
+	if m != nil {
+		return m.Percentage
+	}
+	return 0
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TrafficPolicySpec_FaultInjection) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TrafficPolicySpec_FaultInjection_Delay_)(nil),
+		(*TrafficPolicySpec_FaultInjection_Abort_)(nil),
+	}
+}
+
+//
+//The _fixedDelay_ field is used to indicate the amount of delay in seconds.
+//The optional _percentage_ field can be used to only delay a certain
+//percentage of requests. If left unspecified, all request will be delayed.
+type TrafficPolicySpec_FaultInjection_Delay struct {
+	// Types that are valid to be assigned to HttpDelayType:
+	//	*TrafficPolicySpec_FaultInjection_Delay_FixedDelay
+	//	*TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay
+	HttpDelayType        isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
+	XXX_NoUnkeyedLiteral struct{}                                               `json:"-"`
+	XXX_unrecognized     []byte                                                 `json:"-"`
+	XXX_sizecache        int32                                                  `json:"-"`
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Delay) Reset() {
+	*m = TrafficPolicySpec_FaultInjection_Delay{}
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_FaultInjection_Delay) ProtoMessage()    {}
+func (*TrafficPolicySpec_FaultInjection_Delay) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 2, 0}
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay.Merge(m, src)
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay.Size(m)
+}
+func (m *TrafficPolicySpec_FaultInjection_Delay) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_FaultInjection_Delay proto.InternalMessageInfo
+
+type isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType interface {
+	isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType()
+	Equal(interface{}) bool
+}
+
+type TrafficPolicySpec_FaultInjection_Delay_FixedDelay struct {
+	FixedDelay *types1.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,proto3,oneof" json:"fixed_delay,omitempty"`
+}
+type TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay struct {
+	ExponentialDelay *types1.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof" json:"exponential_delay,omitempty"`
+}
+
+func (*TrafficPolicySpec_FaultInjection_Delay_FixedDelay) isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType() {
+}
+func (*TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay) isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType() {
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Delay) GetHttpDelayType() isTrafficPolicySpec_FaultInjection_Delay_HttpDelayType {
+	if m != nil {
+		return m.HttpDelayType
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Delay) GetFixedDelay() *types1.Duration {
+	if x, ok := m.GetHttpDelayType().(*TrafficPolicySpec_FaultInjection_Delay_FixedDelay); ok {
+		return x.FixedDelay
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Delay) GetExponentialDelay() *types1.Duration {
+	if x, ok := m.GetHttpDelayType().(*TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay); ok {
+		return x.ExponentialDelay
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TrafficPolicySpec_FaultInjection_Delay) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TrafficPolicySpec_FaultInjection_Delay_FixedDelay)(nil),
+		(*TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay)(nil),
+	}
+}
+
+//
+//The _httpStatus_ field is used to indicate the HTTP status code to
+//return to the caller. The optional _percentage_ field can be used to only
+//abort a certain percentage of requests. If not specified, all requests are
+//aborted.
+type TrafficPolicySpec_FaultInjection_Abort struct {
+	// Types that are valid to be assigned to ErrorType:
+	//	*TrafficPolicySpec_FaultInjection_Abort_HttpStatus
+	ErrorType            isTrafficPolicySpec_FaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
+	XXX_NoUnkeyedLiteral struct{}                                           `json:"-"`
+	XXX_unrecognized     []byte                                             `json:"-"`
+	XXX_sizecache        int32                                              `json:"-"`
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Abort) Reset() {
+	*m = TrafficPolicySpec_FaultInjection_Abort{}
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_FaultInjection_Abort) ProtoMessage()    {}
+func (*TrafficPolicySpec_FaultInjection_Abort) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 2, 1}
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort.Merge(m, src)
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort.Size(m)
+}
+func (m *TrafficPolicySpec_FaultInjection_Abort) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_FaultInjection_Abort proto.InternalMessageInfo
+
+type isTrafficPolicySpec_FaultInjection_Abort_ErrorType interface {
+	isTrafficPolicySpec_FaultInjection_Abort_ErrorType()
+	Equal(interface{}) bool
+}
+
+type TrafficPolicySpec_FaultInjection_Abort_HttpStatus struct {
+	HttpStatus int32 `protobuf:"varint,4,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
+}
+
+func (*TrafficPolicySpec_FaultInjection_Abort_HttpStatus) isTrafficPolicySpec_FaultInjection_Abort_ErrorType() {
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Abort) GetErrorType() isTrafficPolicySpec_FaultInjection_Abort_ErrorType {
+	if m != nil {
+		return m.ErrorType
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_FaultInjection_Abort) GetHttpStatus() int32 {
+	if x, ok := m.GetErrorType().(*TrafficPolicySpec_FaultInjection_Abort_HttpStatus); ok {
+		return x.HttpStatus
+	}
+	return 0
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TrafficPolicySpec_FaultInjection_Abort) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TrafficPolicySpec_FaultInjection_Abort_HttpStatus)(nil),
+	}
+}
+
+// Manipulate request and response headers.
+type TrafficPolicySpec_HeaderManipulation struct {
+	// HTTP headers to remove before returning a response to the caller.
+	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
+	// Additional HTTP headers to add before returning a response to the caller.
+	AppendResponseHeaders map[string]string `protobuf:"bytes,13,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// HTTP headers to remove before forwarding a request to the destination service.
+	RemoveRequestHeaders []string `protobuf:"bytes,14,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
+	// Additional HTTP headers to add before forwarding a request to the destination service.
+	AppendRequestHeaders map[string]string `protobuf:"bytes,15,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *TrafficPolicySpec_HeaderManipulation) Reset()         { *m = TrafficPolicySpec_HeaderManipulation{} }
+func (m *TrafficPolicySpec_HeaderManipulation) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_HeaderManipulation) ProtoMessage()    {}
+func (*TrafficPolicySpec_HeaderManipulation) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 3}
+}
+func (m *TrafficPolicySpec_HeaderManipulation) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderManipulation.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_HeaderManipulation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderManipulation.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_HeaderManipulation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_HeaderManipulation.Merge(m, src)
+}
+func (m *TrafficPolicySpec_HeaderManipulation) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderManipulation.Size(m)
+}
+func (m *TrafficPolicySpec_HeaderManipulation) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_HeaderManipulation.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_HeaderManipulation proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_HeaderManipulation) GetRemoveResponseHeaders() []string {
+	if m != nil {
+		return m.RemoveResponseHeaders
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HeaderManipulation) GetAppendResponseHeaders() map[string]string {
+	if m != nil {
+		return m.AppendResponseHeaders
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HeaderManipulation) GetRemoveRequestHeaders() []string {
+	if m != nil {
+		return m.RemoveRequestHeaders
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HeaderManipulation) GetAppendRequestHeaders() map[string]string {
+	if m != nil {
+		return m.AppendRequestHeaders
+	}
+	return nil
+}
+
+type TrafficPolicySpec_CorsPolicy struct {
+	//
+	//String patterns that match allowed origins.
+	//An origin is allowed if any of the string matchers match.
+	//If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+	AllowOrigins []*TrafficPolicySpec_StringMatch `protobuf:"bytes,7,rep,name=allow_origins,json=allowOrigins,proto3" json:"allow_origins,omitempty"`
+	//
+	//List of HTTP methods allowed to access the resource. The content will
+	//be serialized into the Access-Control-Allow-Methods header.
+	AllowMethods []string `protobuf:"bytes,2,rep,name=allow_methods,json=allowMethods,proto3" json:"allow_methods,omitempty"`
+	//
+	//List of HTTP headers that can be used when requesting the
+	//resource. Serialized to Access-Control-Allow-Headers header.
+	AllowHeaders []string `protobuf:"bytes,3,rep,name=allow_headers,json=allowHeaders,proto3" json:"allow_headers,omitempty"`
+	//
+	//A white list of HTTP headers that the browsers are allowed to
+	//access. Serialized into Access-Control-Expose-Headers header.
+	ExposeHeaders []string `protobuf:"bytes,4,rep,name=expose_headers,json=exposeHeaders,proto3" json:"expose_headers,omitempty"`
+	//
+	//Specifies how long the results of a preflight request can be
+	//cached. Translates to the `Access-Control-Max-Age` header.
+	MaxAge *types1.Duration `protobuf:"bytes,5,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`
+	//
+	//Indicates whether the caller is allowed to send the actual request
+	//(not the preflight) using credentials. Translates to
+	//`Access-Control-Allow-Credentials` header.
+	AllowCredentials     *types1.BoolValue `protobuf:"bytes,6,opt,name=allow_credentials,json=allowCredentials,proto3" json:"allow_credentials,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) Reset()         { *m = TrafficPolicySpec_CorsPolicy{} }
+func (m *TrafficPolicySpec_CorsPolicy) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_CorsPolicy) ProtoMessage()    {}
+func (*TrafficPolicySpec_CorsPolicy) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 4}
+}
+func (m *TrafficPolicySpec_CorsPolicy) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_CorsPolicy.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_CorsPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_CorsPolicy.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_CorsPolicy) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_CorsPolicy.Merge(m, src)
+}
+func (m *TrafficPolicySpec_CorsPolicy) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_CorsPolicy.Size(m)
+}
+func (m *TrafficPolicySpec_CorsPolicy) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_CorsPolicy.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_CorsPolicy proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_CorsPolicy) GetAllowOrigins() []*TrafficPolicySpec_StringMatch {
+	if m != nil {
+		return m.AllowOrigins
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) GetAllowMethods() []string {
+	if m != nil {
+		return m.AllowMethods
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) GetAllowHeaders() []string {
+	if m != nil {
+		return m.AllowHeaders
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) GetExposeHeaders() []string {
+	if m != nil {
+		return m.ExposeHeaders
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) GetMaxAge() *types1.Duration {
+	if m != nil {
+		return m.MaxAge
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_CorsPolicy) GetAllowCredentials() *types1.BoolValue {
+	if m != nil {
+		return m.AllowCredentials
+	}
+	return nil
+}
+
+// Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
+type TrafficPolicySpec_HttpMatcher struct {
+	// Types that are valid to be assigned to PathSpecifier:
+	//	*TrafficPolicySpec_HttpMatcher_Prefix
+	//	*TrafficPolicySpec_HttpMatcher_Exact
+	//	*TrafficPolicySpec_HttpMatcher_Regex
+	PathSpecifier isTrafficPolicySpec_HttpMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
+	// Specifies a set of headers which requests must match in entirety (all headers must match).
+	Headers []*TrafficPolicySpec_HeaderMatcher `protobuf:"bytes,6,rep,name=headers,proto3" json:"headers,omitempty"`
+	//
+	//Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
+	//The router will check the query string from the *path* header against all the specified query parameters
+	QueryParameters []*TrafficPolicySpec_QueryParameterMatcher `protobuf:"bytes,7,rep,name=query_parameters,json=queryParameters,proto3" json:"query_parameters,omitempty"`
+	// HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
+	Method               *TrafficPolicySpec_HttpMethod `protobuf:"bytes,8,opt,name=method,proto3" json:"method,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) Reset()         { *m = TrafficPolicySpec_HttpMatcher{} }
+func (m *TrafficPolicySpec_HttpMatcher) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_HttpMatcher) ProtoMessage()    {}
+func (*TrafficPolicySpec_HttpMatcher) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 5}
+}
+func (m *TrafficPolicySpec_HttpMatcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMatcher.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_HttpMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMatcher.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_HttpMatcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_HttpMatcher.Merge(m, src)
+}
+func (m *TrafficPolicySpec_HttpMatcher) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMatcher.Size(m)
+}
+func (m *TrafficPolicySpec_HttpMatcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_HttpMatcher.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_HttpMatcher proto.InternalMessageInfo
+
+type isTrafficPolicySpec_HttpMatcher_PathSpecifier interface {
+	isTrafficPolicySpec_HttpMatcher_PathSpecifier()
+	Equal(interface{}) bool
+}
+
+type TrafficPolicySpec_HttpMatcher_Prefix struct {
+	Prefix string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
+}
+type TrafficPolicySpec_HttpMatcher_Exact struct {
+	Exact string `protobuf:"bytes,2,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
+}
+type TrafficPolicySpec_HttpMatcher_Regex struct {
+	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
+}
+
+func (*TrafficPolicySpec_HttpMatcher_Prefix) isTrafficPolicySpec_HttpMatcher_PathSpecifier() {}
+func (*TrafficPolicySpec_HttpMatcher_Exact) isTrafficPolicySpec_HttpMatcher_PathSpecifier()  {}
+func (*TrafficPolicySpec_HttpMatcher_Regex) isTrafficPolicySpec_HttpMatcher_PathSpecifier()  {}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetPathSpecifier() isTrafficPolicySpec_HttpMatcher_PathSpecifier {
+	if m != nil {
+		return m.PathSpecifier
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetPrefix() string {
+	if x, ok := m.GetPathSpecifier().(*TrafficPolicySpec_HttpMatcher_Prefix); ok {
+		return x.Prefix
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetExact() string {
+	if x, ok := m.GetPathSpecifier().(*TrafficPolicySpec_HttpMatcher_Exact); ok {
+		return x.Exact
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetRegex() string {
+	if x, ok := m.GetPathSpecifier().(*TrafficPolicySpec_HttpMatcher_Regex); ok {
+		return x.Regex
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetHeaders() []*TrafficPolicySpec_HeaderMatcher {
+	if m != nil {
+		return m.Headers
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetQueryParameters() []*TrafficPolicySpec_QueryParameterMatcher {
+	if m != nil {
+		return m.QueryParameters
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_HttpMatcher) GetMethod() *TrafficPolicySpec_HttpMethod {
+	if m != nil {
+		return m.Method
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TrafficPolicySpec_HttpMatcher) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TrafficPolicySpec_HttpMatcher_Prefix)(nil),
+		(*TrafficPolicySpec_HttpMatcher_Exact)(nil),
+		(*TrafficPolicySpec_HttpMatcher_Regex)(nil),
+	}
+}
+
+//
+//Describes how to match a given string in HTTP headers. Match is
+//case-sensitive.
+type TrafficPolicySpec_StringMatch struct {
+	// Types that are valid to be assigned to MatchType:
+	//	*TrafficPolicySpec_StringMatch_Exact
+	//	*TrafficPolicySpec_StringMatch_Prefix
+	//	*TrafficPolicySpec_StringMatch_Regex
+	MatchType            isTrafficPolicySpec_StringMatch_MatchType `protobuf_oneof:"match_type"`
+	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
+	XXX_unrecognized     []byte                                    `json:"-"`
+	XXX_sizecache        int32                                     `json:"-"`
+}
+
+func (m *TrafficPolicySpec_StringMatch) Reset()         { *m = TrafficPolicySpec_StringMatch{} }
+func (m *TrafficPolicySpec_StringMatch) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_StringMatch) ProtoMessage()    {}
+func (*TrafficPolicySpec_StringMatch) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 6}
+}
+func (m *TrafficPolicySpec_StringMatch) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_StringMatch.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_StringMatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_StringMatch.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_StringMatch) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_StringMatch.Merge(m, src)
+}
+func (m *TrafficPolicySpec_StringMatch) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_StringMatch.Size(m)
+}
+func (m *TrafficPolicySpec_StringMatch) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_StringMatch.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_StringMatch proto.InternalMessageInfo
+
+type isTrafficPolicySpec_StringMatch_MatchType interface {
+	isTrafficPolicySpec_StringMatch_MatchType()
+	Equal(interface{}) bool
+}
+
+type TrafficPolicySpec_StringMatch_Exact struct {
+	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
+}
+type TrafficPolicySpec_StringMatch_Prefix struct {
+	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
+}
+type TrafficPolicySpec_StringMatch_Regex struct {
+	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
+}
+
+func (*TrafficPolicySpec_StringMatch_Exact) isTrafficPolicySpec_StringMatch_MatchType()  {}
+func (*TrafficPolicySpec_StringMatch_Prefix) isTrafficPolicySpec_StringMatch_MatchType() {}
+func (*TrafficPolicySpec_StringMatch_Regex) isTrafficPolicySpec_StringMatch_MatchType()  {}
+
+func (m *TrafficPolicySpec_StringMatch) GetMatchType() isTrafficPolicySpec_StringMatch_MatchType {
+	if m != nil {
+		return m.MatchType
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_StringMatch) GetExact() string {
+	if x, ok := m.GetMatchType().(*TrafficPolicySpec_StringMatch_Exact); ok {
+		return x.Exact
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_StringMatch) GetPrefix() string {
+	if x, ok := m.GetMatchType().(*TrafficPolicySpec_StringMatch_Prefix); ok {
+		return x.Prefix
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_StringMatch) GetRegex() string {
+	if x, ok := m.GetMatchType().(*TrafficPolicySpec_StringMatch_Regex); ok {
+		return x.Regex
+	}
+	return ""
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*TrafficPolicySpec_StringMatch) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*TrafficPolicySpec_StringMatch_Exact)(nil),
+		(*TrafficPolicySpec_StringMatch_Prefix)(nil),
+		(*TrafficPolicySpec_StringMatch_Regex)(nil),
+	}
+}
+
+type TrafficPolicySpec_HeaderMatcher struct {
+	// Specifies the name of the header in the request.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	//
+	//Specifies the value of the header. If the value is absent a request that
+	//has the name header will match, regardless of the header’s value.
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	// Specifies whether the header value should be treated as regex or not.
+	Regex bool `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
+	//
+	//If set to true, the result of the match will be inverted. Defaults to false.
+	//
+	//Examples:
+	// name=foo, invert_match=true: matches if no header named `foo` is present
+	// name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+	// name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+	InvertMatch          bool     `protobuf:"varint,4,opt,name=invert_match,json=invertMatch,proto3" json:"invert_match,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicySpec_HeaderMatcher) Reset()         { *m = TrafficPolicySpec_HeaderMatcher{} }
+func (m *TrafficPolicySpec_HeaderMatcher) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_HeaderMatcher) ProtoMessage()    {}
+func (*TrafficPolicySpec_HeaderMatcher) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 7}
+}
+func (m *TrafficPolicySpec_HeaderMatcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderMatcher.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_HeaderMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderMatcher.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_HeaderMatcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_HeaderMatcher.Merge(m, src)
+}
+func (m *TrafficPolicySpec_HeaderMatcher) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_HeaderMatcher.Size(m)
+}
+func (m *TrafficPolicySpec_HeaderMatcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_HeaderMatcher.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_HeaderMatcher proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_HeaderMatcher) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_HeaderMatcher) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_HeaderMatcher) GetRegex() bool {
+	if m != nil {
+		return m.Regex
+	}
+	return false
+}
+
+func (m *TrafficPolicySpec_HeaderMatcher) GetInvertMatch() bool {
+	if m != nil {
+		return m.InvertMatch
+	}
+	return false
+}
+
+//
+//Query parameter matching treats the query string of a request's :path header
+//as an ampersand-separated list of keys and/or key=value elements.
+type TrafficPolicySpec_QueryParameterMatcher struct {
+	//
+	//Specifies the name of a key that must be present in the requested
+	//path*'s query string.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	//
+	//Specifies the value of the key. If the value is absent, a request
+	//that contains the key in its query string will match, whether the
+	//key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	//
+	//Specifies whether the query parameter value is a regular expression.
+	//Defaults to false. The entire query parameter value (i.e., the part to
+	//the right of the equals sign in "key=value") must match the regex.
+	//E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
+	Regex                bool     `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicySpec_QueryParameterMatcher) Reset() {
+	*m = TrafficPolicySpec_QueryParameterMatcher{}
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_QueryParameterMatcher) ProtoMessage()    {}
+func (*TrafficPolicySpec_QueryParameterMatcher) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 8}
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher.Merge(m, src)
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher.Size(m)
+}
+func (m *TrafficPolicySpec_QueryParameterMatcher) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_QueryParameterMatcher proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_QueryParameterMatcher) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_QueryParameterMatcher) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *TrafficPolicySpec_QueryParameterMatcher) GetRegex() bool {
+	if m != nil {
+		return m.Regex
+	}
+	return false
+}
+
+type TrafficPolicySpec_Mirror struct {
+	// Destination to mirror traffic to
+	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
+	//
+	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
+	//Values range between 0 and 100
+	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
+	// then the configuration will be considered invalid.
+	Port                 uint32   `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TrafficPolicySpec_Mirror) Reset()         { *m = TrafficPolicySpec_Mirror{} }
+func (m *TrafficPolicySpec_Mirror) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_Mirror) ProtoMessage()    {}
+func (*TrafficPolicySpec_Mirror) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 9}
+}
+func (m *TrafficPolicySpec_Mirror) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_Mirror.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_Mirror) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_Mirror.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_Mirror) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_Mirror.Merge(m, src)
+}
+func (m *TrafficPolicySpec_Mirror) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_Mirror.Size(m)
+}
+func (m *TrafficPolicySpec_Mirror) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_Mirror.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_Mirror proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_Mirror) GetDestination() *types.ResourceRef {
+	if m != nil {
+		return m.Destination
+	}
+	return nil
+}
+
+func (m *TrafficPolicySpec_Mirror) GetPercentage() float64 {
+	if m != nil {
+		return m.Percentage
+	}
+	return 0
+}
+
+func (m *TrafficPolicySpec_Mirror) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+// Express an optional HttpMethod by wrapping it in a nillable message.
+type TrafficPolicySpec_HttpMethod struct {
+	Method               types.HttpMethodValue `protobuf:"varint,1,opt,name=method,proto3,enum=core.zephyr.solo.io.HttpMethodValue" json:"method,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *TrafficPolicySpec_HttpMethod) Reset()         { *m = TrafficPolicySpec_HttpMethod{} }
+func (m *TrafficPolicySpec_HttpMethod) String() string { return proto.CompactTextString(m) }
+func (*TrafficPolicySpec_HttpMethod) ProtoMessage()    {}
+func (*TrafficPolicySpec_HttpMethod) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b17dd687e09d519b, []int{0, 10}
+}
+func (m *TrafficPolicySpec_HttpMethod) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMethod.Unmarshal(m, b)
+}
+func (m *TrafficPolicySpec_HttpMethod) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMethod.Marshal(b, m, deterministic)
+}
+func (m *TrafficPolicySpec_HttpMethod) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TrafficPolicySpec_HttpMethod.Merge(m, src)
+}
+func (m *TrafficPolicySpec_HttpMethod) XXX_Size() int {
+	return xxx_messageInfo_TrafficPolicySpec_HttpMethod.Size(m)
+}
+func (m *TrafficPolicySpec_HttpMethod) XXX_DiscardUnknown() {
+	xxx_messageInfo_TrafficPolicySpec_HttpMethod.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TrafficPolicySpec_HttpMethod proto.InternalMessageInfo
+
+func (m *TrafficPolicySpec_HttpMethod) GetMethod() types.HttpMethodValue {
+	if m != nil {
+		return m.Method
+	}
+	return types.HttpMethodValue_GET
 }
 
 type TrafficPolicyStatus struct {
@@ -275,1051 +1315,27 @@ func (m *TrafficPolicyStatus_TranslatorError) GetErrorMessage() string {
 	return ""
 }
 
-//
-//RetryPolicy contains mesh-specific retry configuration
-//Different meshes support different Retry features
-//Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
-//Allowing the same TrafficPolicy to apply retries to different mesh types
-//The configuration applied to the target mesh will use the corresponding
-//config for each type, while other config types will be ignored
-type RetryPolicy struct {
-	// Number of retries for a given request
-	Attempts int32 `protobuf:"varint,1,opt,name=attempts,proto3" json:"attempts,omitempty"`
-	// Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
-	PerTryTimeout        *types1.Duration `protobuf:"bytes,2,opt,name=per_try_timeout,json=perTryTimeout,proto3" json:"per_try_timeout,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
-}
-
-func (m *RetryPolicy) Reset()         { *m = RetryPolicy{} }
-func (m *RetryPolicy) String() string { return proto.CompactTextString(m) }
-func (*RetryPolicy) ProtoMessage()    {}
-func (*RetryPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{2}
-}
-func (m *RetryPolicy) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RetryPolicy.Unmarshal(m, b)
-}
-func (m *RetryPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RetryPolicy.Marshal(b, m, deterministic)
-}
-func (m *RetryPolicy) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RetryPolicy.Merge(m, src)
-}
-func (m *RetryPolicy) XXX_Size() int {
-	return xxx_messageInfo_RetryPolicy.Size(m)
-}
-func (m *RetryPolicy) XXX_DiscardUnknown() {
-	xxx_messageInfo_RetryPolicy.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RetryPolicy proto.InternalMessageInfo
-
-func (m *RetryPolicy) GetAttempts() int32 {
-	if m != nil {
-		return m.Attempts
-	}
-	return 0
-}
-
-func (m *RetryPolicy) GetPerTryTimeout() *types1.Duration {
-	if m != nil {
-		return m.PerTryTimeout
-	}
-	return nil
-}
-
-type MultiDestination struct {
-	Destinations         []*MultiDestination_WeightedDestination `protobuf:"bytes,1,rep,name=destinations,proto3" json:"destinations,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                `json:"-"`
-	XXX_unrecognized     []byte                                  `json:"-"`
-	XXX_sizecache        int32                                   `json:"-"`
-}
-
-func (m *MultiDestination) Reset()         { *m = MultiDestination{} }
-func (m *MultiDestination) String() string { return proto.CompactTextString(m) }
-func (*MultiDestination) ProtoMessage()    {}
-func (*MultiDestination) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{3}
-}
-func (m *MultiDestination) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MultiDestination.Unmarshal(m, b)
-}
-func (m *MultiDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MultiDestination.Marshal(b, m, deterministic)
-}
-func (m *MultiDestination) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MultiDestination.Merge(m, src)
-}
-func (m *MultiDestination) XXX_Size() int {
-	return xxx_messageInfo_MultiDestination.Size(m)
-}
-func (m *MultiDestination) XXX_DiscardUnknown() {
-	xxx_messageInfo_MultiDestination.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MultiDestination proto.InternalMessageInfo
-
-func (m *MultiDestination) GetDestinations() []*MultiDestination_WeightedDestination {
-	if m != nil {
-		return m.Destinations
-	}
-	return nil
-}
-
-type MultiDestination_WeightedDestination struct {
-	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	// Routing to each destination will be balanced by the ratio of the destination's weight to the total weight on a route.
-	Weight uint32 `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
-	// Subset routing is currently only supported on Istio.
-	Subset map[string]string `protobuf:"bytes,3,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
-	// then the configuration will be considered invalid
-	Port                 uint32   `protobuf:"varint,4,opt,name=port,proto3" json:"port,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *MultiDestination_WeightedDestination) Reset()         { *m = MultiDestination_WeightedDestination{} }
-func (m *MultiDestination_WeightedDestination) String() string { return proto.CompactTextString(m) }
-func (*MultiDestination_WeightedDestination) ProtoMessage()    {}
-func (*MultiDestination_WeightedDestination) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{3, 0}
-}
-func (m *MultiDestination_WeightedDestination) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MultiDestination_WeightedDestination.Unmarshal(m, b)
-}
-func (m *MultiDestination_WeightedDestination) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MultiDestination_WeightedDestination.Marshal(b, m, deterministic)
-}
-func (m *MultiDestination_WeightedDestination) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MultiDestination_WeightedDestination.Merge(m, src)
-}
-func (m *MultiDestination_WeightedDestination) XXX_Size() int {
-	return xxx_messageInfo_MultiDestination_WeightedDestination.Size(m)
-}
-func (m *MultiDestination_WeightedDestination) XXX_DiscardUnknown() {
-	xxx_messageInfo_MultiDestination_WeightedDestination.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MultiDestination_WeightedDestination proto.InternalMessageInfo
-
-func (m *MultiDestination_WeightedDestination) GetDestination() *types.ResourceRef {
-	if m != nil {
-		return m.Destination
-	}
-	return nil
-}
-
-func (m *MultiDestination_WeightedDestination) GetWeight() uint32 {
-	if m != nil {
-		return m.Weight
-	}
-	return 0
-}
-
-func (m *MultiDestination_WeightedDestination) GetSubset() map[string]string {
-	if m != nil {
-		return m.Subset
-	}
-	return nil
-}
-
-func (m *MultiDestination_WeightedDestination) GetPort() uint32 {
-	if m != nil {
-		return m.Port
-	}
-	return 0
-}
-
-//
-//FaultInjection can be used to specify one or more faults to inject
-//while forwarding http requests to the destination specified in a route.
-//Faults include aborting the Http request from downstream service, and/or delaying
-//proxying of requests. A fault rule MUST HAVE delay or abort.
-type FaultInjection struct {
-	// Types that are valid to be assigned to FaultInjectionType:
-	//	*FaultInjection_Delay_
-	//	*FaultInjection_Abort_
-	FaultInjectionType isFaultInjection_FaultInjectionType `protobuf_oneof:"fault_injection_type"`
-	// Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
-	Percentage           float64  `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FaultInjection) Reset()         { *m = FaultInjection{} }
-func (m *FaultInjection) String() string { return proto.CompactTextString(m) }
-func (*FaultInjection) ProtoMessage()    {}
-func (*FaultInjection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{4}
-}
-func (m *FaultInjection) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FaultInjection.Unmarshal(m, b)
-}
-func (m *FaultInjection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FaultInjection.Marshal(b, m, deterministic)
-}
-func (m *FaultInjection) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FaultInjection.Merge(m, src)
-}
-func (m *FaultInjection) XXX_Size() int {
-	return xxx_messageInfo_FaultInjection.Size(m)
-}
-func (m *FaultInjection) XXX_DiscardUnknown() {
-	xxx_messageInfo_FaultInjection.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FaultInjection proto.InternalMessageInfo
-
-type isFaultInjection_FaultInjectionType interface {
-	isFaultInjection_FaultInjectionType()
-	Equal(interface{}) bool
-}
-
-type FaultInjection_Delay_ struct {
-	Delay *FaultInjection_Delay `protobuf:"bytes,1,opt,name=delay,proto3,oneof" json:"delay,omitempty"`
-}
-type FaultInjection_Abort_ struct {
-	Abort *FaultInjection_Abort `protobuf:"bytes,2,opt,name=abort,proto3,oneof" json:"abort,omitempty"`
-}
-
-func (*FaultInjection_Delay_) isFaultInjection_FaultInjectionType() {}
-func (*FaultInjection_Abort_) isFaultInjection_FaultInjectionType() {}
-
-func (m *FaultInjection) GetFaultInjectionType() isFaultInjection_FaultInjectionType {
-	if m != nil {
-		return m.FaultInjectionType
-	}
-	return nil
-}
-
-func (m *FaultInjection) GetDelay() *FaultInjection_Delay {
-	if x, ok := m.GetFaultInjectionType().(*FaultInjection_Delay_); ok {
-		return x.Delay
-	}
-	return nil
-}
-
-func (m *FaultInjection) GetAbort() *FaultInjection_Abort {
-	if x, ok := m.GetFaultInjectionType().(*FaultInjection_Abort_); ok {
-		return x.Abort
-	}
-	return nil
-}
-
-func (m *FaultInjection) GetPercentage() float64 {
-	if m != nil {
-		return m.Percentage
-	}
-	return 0
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*FaultInjection) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*FaultInjection_Delay_)(nil),
-		(*FaultInjection_Abort_)(nil),
-	}
-}
-
-//
-//The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-//The optional _percentage_ field can be used to only delay a certain
-//percentage of requests. If left unspecified, all request will be delayed.
-type FaultInjection_Delay struct {
-	// Types that are valid to be assigned to HttpDelayType:
-	//	*FaultInjection_Delay_FixedDelay
-	//	*FaultInjection_Delay_ExponentialDelay
-	HttpDelayType        isFaultInjection_Delay_HttpDelayType `protobuf_oneof:"http_delay_type"`
-	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
-	XXX_unrecognized     []byte                               `json:"-"`
-	XXX_sizecache        int32                                `json:"-"`
-}
-
-func (m *FaultInjection_Delay) Reset()         { *m = FaultInjection_Delay{} }
-func (m *FaultInjection_Delay) String() string { return proto.CompactTextString(m) }
-func (*FaultInjection_Delay) ProtoMessage()    {}
-func (*FaultInjection_Delay) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{4, 0}
-}
-func (m *FaultInjection_Delay) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FaultInjection_Delay.Unmarshal(m, b)
-}
-func (m *FaultInjection_Delay) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FaultInjection_Delay.Marshal(b, m, deterministic)
-}
-func (m *FaultInjection_Delay) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FaultInjection_Delay.Merge(m, src)
-}
-func (m *FaultInjection_Delay) XXX_Size() int {
-	return xxx_messageInfo_FaultInjection_Delay.Size(m)
-}
-func (m *FaultInjection_Delay) XXX_DiscardUnknown() {
-	xxx_messageInfo_FaultInjection_Delay.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FaultInjection_Delay proto.InternalMessageInfo
-
-type isFaultInjection_Delay_HttpDelayType interface {
-	isFaultInjection_Delay_HttpDelayType()
-	Equal(interface{}) bool
-}
-
-type FaultInjection_Delay_FixedDelay struct {
-	FixedDelay *types1.Duration `protobuf:"bytes,2,opt,name=fixed_delay,json=fixedDelay,proto3,oneof" json:"fixed_delay,omitempty"`
-}
-type FaultInjection_Delay_ExponentialDelay struct {
-	ExponentialDelay *types1.Duration `protobuf:"bytes,3,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof" json:"exponential_delay,omitempty"`
-}
-
-func (*FaultInjection_Delay_FixedDelay) isFaultInjection_Delay_HttpDelayType()       {}
-func (*FaultInjection_Delay_ExponentialDelay) isFaultInjection_Delay_HttpDelayType() {}
-
-func (m *FaultInjection_Delay) GetHttpDelayType() isFaultInjection_Delay_HttpDelayType {
-	if m != nil {
-		return m.HttpDelayType
-	}
-	return nil
-}
-
-func (m *FaultInjection_Delay) GetFixedDelay() *types1.Duration {
-	if x, ok := m.GetHttpDelayType().(*FaultInjection_Delay_FixedDelay); ok {
-		return x.FixedDelay
-	}
-	return nil
-}
-
-func (m *FaultInjection_Delay) GetExponentialDelay() *types1.Duration {
-	if x, ok := m.GetHttpDelayType().(*FaultInjection_Delay_ExponentialDelay); ok {
-		return x.ExponentialDelay
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*FaultInjection_Delay) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*FaultInjection_Delay_FixedDelay)(nil),
-		(*FaultInjection_Delay_ExponentialDelay)(nil),
-	}
-}
-
-//
-//The _httpStatus_ field is used to indicate the HTTP status code to
-//return to the caller. The optional _percentage_ field can be used to only
-//abort a certain percentage of requests. If not specified, all requests are
-//aborted.
-type FaultInjection_Abort struct {
-	// Types that are valid to be assigned to ErrorType:
-	//	*FaultInjection_Abort_HttpStatus
-	ErrorType            isFaultInjection_Abort_ErrorType `protobuf_oneof:"error_type"`
-	XXX_NoUnkeyedLiteral struct{}                         `json:"-"`
-	XXX_unrecognized     []byte                           `json:"-"`
-	XXX_sizecache        int32                            `json:"-"`
-}
-
-func (m *FaultInjection_Abort) Reset()         { *m = FaultInjection_Abort{} }
-func (m *FaultInjection_Abort) String() string { return proto.CompactTextString(m) }
-func (*FaultInjection_Abort) ProtoMessage()    {}
-func (*FaultInjection_Abort) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{4, 1}
-}
-func (m *FaultInjection_Abort) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FaultInjection_Abort.Unmarshal(m, b)
-}
-func (m *FaultInjection_Abort) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FaultInjection_Abort.Marshal(b, m, deterministic)
-}
-func (m *FaultInjection_Abort) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FaultInjection_Abort.Merge(m, src)
-}
-func (m *FaultInjection_Abort) XXX_Size() int {
-	return xxx_messageInfo_FaultInjection_Abort.Size(m)
-}
-func (m *FaultInjection_Abort) XXX_DiscardUnknown() {
-	xxx_messageInfo_FaultInjection_Abort.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FaultInjection_Abort proto.InternalMessageInfo
-
-type isFaultInjection_Abort_ErrorType interface {
-	isFaultInjection_Abort_ErrorType()
-	Equal(interface{}) bool
-}
-
-type FaultInjection_Abort_HttpStatus struct {
-	HttpStatus int32 `protobuf:"varint,4,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
-}
-
-func (*FaultInjection_Abort_HttpStatus) isFaultInjection_Abort_ErrorType() {}
-
-func (m *FaultInjection_Abort) GetErrorType() isFaultInjection_Abort_ErrorType {
-	if m != nil {
-		return m.ErrorType
-	}
-	return nil
-}
-
-func (m *FaultInjection_Abort) GetHttpStatus() int32 {
-	if x, ok := m.GetErrorType().(*FaultInjection_Abort_HttpStatus); ok {
-		return x.HttpStatus
-	}
-	return 0
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*FaultInjection_Abort) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*FaultInjection_Abort_HttpStatus)(nil),
-	}
-}
-
-// Manipulate request and response headers.
-type HeaderManipulation struct {
-	// HTTP headers to remove before returning a response to the caller.
-	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
-	// Additional HTTP headers to add before returning a response to the caller.
-	AppendResponseHeaders map[string]string `protobuf:"bytes,13,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// HTTP headers to remove before forwarding a request to the destination service.
-	RemoveRequestHeaders []string `protobuf:"bytes,14,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
-	// Additional HTTP headers to add before forwarding a request to the destination service.
-	AppendRequestHeaders map[string]string `protobuf:"bytes,15,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *HeaderManipulation) Reset()         { *m = HeaderManipulation{} }
-func (m *HeaderManipulation) String() string { return proto.CompactTextString(m) }
-func (*HeaderManipulation) ProtoMessage()    {}
-func (*HeaderManipulation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{5}
-}
-func (m *HeaderManipulation) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HeaderManipulation.Unmarshal(m, b)
-}
-func (m *HeaderManipulation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HeaderManipulation.Marshal(b, m, deterministic)
-}
-func (m *HeaderManipulation) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HeaderManipulation.Merge(m, src)
-}
-func (m *HeaderManipulation) XXX_Size() int {
-	return xxx_messageInfo_HeaderManipulation.Size(m)
-}
-func (m *HeaderManipulation) XXX_DiscardUnknown() {
-	xxx_messageInfo_HeaderManipulation.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HeaderManipulation proto.InternalMessageInfo
-
-func (m *HeaderManipulation) GetRemoveResponseHeaders() []string {
-	if m != nil {
-		return m.RemoveResponseHeaders
-	}
-	return nil
-}
-
-func (m *HeaderManipulation) GetAppendResponseHeaders() map[string]string {
-	if m != nil {
-		return m.AppendResponseHeaders
-	}
-	return nil
-}
-
-func (m *HeaderManipulation) GetRemoveRequestHeaders() []string {
-	if m != nil {
-		return m.RemoveRequestHeaders
-	}
-	return nil
-}
-
-func (m *HeaderManipulation) GetAppendRequestHeaders() map[string]string {
-	if m != nil {
-		return m.AppendRequestHeaders
-	}
-	return nil
-}
-
-type CorsPolicy struct {
-	//
-	//String patterns that match allowed origins.
-	//An origin is allowed if any of the string matchers match.
-	//If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
-	AllowOrigins []*StringMatch `protobuf:"bytes,7,rep,name=allow_origins,json=allowOrigins,proto3" json:"allow_origins,omitempty"`
-	//
-	//List of HTTP methods allowed to access the resource. The content will
-	//be serialized into the Access-Control-Allow-Methods header.
-	AllowMethods []string `protobuf:"bytes,2,rep,name=allow_methods,json=allowMethods,proto3" json:"allow_methods,omitempty"`
-	//
-	//List of HTTP headers that can be used when requesting the
-	//resource. Serialized to Access-Control-Allow-Headers header.
-	AllowHeaders []string `protobuf:"bytes,3,rep,name=allow_headers,json=allowHeaders,proto3" json:"allow_headers,omitempty"`
-	//
-	//A white list of HTTP headers that the browsers are allowed to
-	//access. Serialized into Access-Control-Expose-Headers header.
-	ExposeHeaders []string `protobuf:"bytes,4,rep,name=expose_headers,json=exposeHeaders,proto3" json:"expose_headers,omitempty"`
-	//
-	//Specifies how long the results of a preflight request can be
-	//cached. Translates to the `Access-Control-Max-Age` header.
-	MaxAge *types1.Duration `protobuf:"bytes,5,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`
-	//
-	//Indicates whether the caller is allowed to send the actual request
-	//(not the preflight) using credentials. Translates to
-	//`Access-Control-Allow-Credentials` header.
-	AllowCredentials     *types1.BoolValue `protobuf:"bytes,6,opt,name=allow_credentials,json=allowCredentials,proto3" json:"allow_credentials,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *CorsPolicy) Reset()         { *m = CorsPolicy{} }
-func (m *CorsPolicy) String() string { return proto.CompactTextString(m) }
-func (*CorsPolicy) ProtoMessage()    {}
-func (*CorsPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{6}
-}
-func (m *CorsPolicy) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CorsPolicy.Unmarshal(m, b)
-}
-func (m *CorsPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CorsPolicy.Marshal(b, m, deterministic)
-}
-func (m *CorsPolicy) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CorsPolicy.Merge(m, src)
-}
-func (m *CorsPolicy) XXX_Size() int {
-	return xxx_messageInfo_CorsPolicy.Size(m)
-}
-func (m *CorsPolicy) XXX_DiscardUnknown() {
-	xxx_messageInfo_CorsPolicy.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CorsPolicy proto.InternalMessageInfo
-
-func (m *CorsPolicy) GetAllowOrigins() []*StringMatch {
-	if m != nil {
-		return m.AllowOrigins
-	}
-	return nil
-}
-
-func (m *CorsPolicy) GetAllowMethods() []string {
-	if m != nil {
-		return m.AllowMethods
-	}
-	return nil
-}
-
-func (m *CorsPolicy) GetAllowHeaders() []string {
-	if m != nil {
-		return m.AllowHeaders
-	}
-	return nil
-}
-
-func (m *CorsPolicy) GetExposeHeaders() []string {
-	if m != nil {
-		return m.ExposeHeaders
-	}
-	return nil
-}
-
-func (m *CorsPolicy) GetMaxAge() *types1.Duration {
-	if m != nil {
-		return m.MaxAge
-	}
-	return nil
-}
-
-func (m *CorsPolicy) GetAllowCredentials() *types1.BoolValue {
-	if m != nil {
-		return m.AllowCredentials
-	}
-	return nil
-}
-
-// Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
-type HttpMatcher struct {
-	// Types that are valid to be assigned to PathSpecifier:
-	//	*HttpMatcher_Prefix
-	//	*HttpMatcher_Exact
-	//	*HttpMatcher_Regex
-	PathSpecifier isHttpMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
-	// Specifies a set of headers which requests must match in entirety (all headers must match).
-	Headers []*HeaderMatcher `protobuf:"bytes,6,rep,name=headers,proto3" json:"headers,omitempty"`
-	//
-	//Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
-	//The router will check the query string from the *path* header against all the specified query parameters
-	QueryParameters []*QueryParameterMatcher `protobuf:"bytes,7,rep,name=query_parameters,json=queryParameters,proto3" json:"query_parameters,omitempty"`
-	// HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
-	Method               *HttpMethod `protobuf:"bytes,8,opt,name=method,proto3" json:"method,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *HttpMatcher) Reset()         { *m = HttpMatcher{} }
-func (m *HttpMatcher) String() string { return proto.CompactTextString(m) }
-func (*HttpMatcher) ProtoMessage()    {}
-func (*HttpMatcher) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{7}
-}
-func (m *HttpMatcher) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HttpMatcher.Unmarshal(m, b)
-}
-func (m *HttpMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HttpMatcher.Marshal(b, m, deterministic)
-}
-func (m *HttpMatcher) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HttpMatcher.Merge(m, src)
-}
-func (m *HttpMatcher) XXX_Size() int {
-	return xxx_messageInfo_HttpMatcher.Size(m)
-}
-func (m *HttpMatcher) XXX_DiscardUnknown() {
-	xxx_messageInfo_HttpMatcher.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HttpMatcher proto.InternalMessageInfo
-
-type isHttpMatcher_PathSpecifier interface {
-	isHttpMatcher_PathSpecifier()
-	Equal(interface{}) bool
-}
-
-type HttpMatcher_Prefix struct {
-	Prefix string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
-}
-type HttpMatcher_Exact struct {
-	Exact string `protobuf:"bytes,2,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
-}
-type HttpMatcher_Regex struct {
-	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
-}
-
-func (*HttpMatcher_Prefix) isHttpMatcher_PathSpecifier() {}
-func (*HttpMatcher_Exact) isHttpMatcher_PathSpecifier()  {}
-func (*HttpMatcher_Regex) isHttpMatcher_PathSpecifier()  {}
-
-func (m *HttpMatcher) GetPathSpecifier() isHttpMatcher_PathSpecifier {
-	if m != nil {
-		return m.PathSpecifier
-	}
-	return nil
-}
-
-func (m *HttpMatcher) GetPrefix() string {
-	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Prefix); ok {
-		return x.Prefix
-	}
-	return ""
-}
-
-func (m *HttpMatcher) GetExact() string {
-	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Exact); ok {
-		return x.Exact
-	}
-	return ""
-}
-
-func (m *HttpMatcher) GetRegex() string {
-	if x, ok := m.GetPathSpecifier().(*HttpMatcher_Regex); ok {
-		return x.Regex
-	}
-	return ""
-}
-
-func (m *HttpMatcher) GetHeaders() []*HeaderMatcher {
-	if m != nil {
-		return m.Headers
-	}
-	return nil
-}
-
-func (m *HttpMatcher) GetQueryParameters() []*QueryParameterMatcher {
-	if m != nil {
-		return m.QueryParameters
-	}
-	return nil
-}
-
-func (m *HttpMatcher) GetMethod() *HttpMethod {
-	if m != nil {
-		return m.Method
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*HttpMatcher) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*HttpMatcher_Prefix)(nil),
-		(*HttpMatcher_Exact)(nil),
-		(*HttpMatcher_Regex)(nil),
-	}
-}
-
-//
-//Describes how to match a given string in HTTP headers. Match is
-//case-sensitive.
-type StringMatch struct {
-	// Types that are valid to be assigned to MatchType:
-	//	*StringMatch_Exact
-	//	*StringMatch_Prefix
-	//	*StringMatch_Regex
-	MatchType            isStringMatch_MatchType `protobuf_oneof:"match_type"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
-}
-
-func (m *StringMatch) Reset()         { *m = StringMatch{} }
-func (m *StringMatch) String() string { return proto.CompactTextString(m) }
-func (*StringMatch) ProtoMessage()    {}
-func (*StringMatch) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{8}
-}
-func (m *StringMatch) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StringMatch.Unmarshal(m, b)
-}
-func (m *StringMatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StringMatch.Marshal(b, m, deterministic)
-}
-func (m *StringMatch) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StringMatch.Merge(m, src)
-}
-func (m *StringMatch) XXX_Size() int {
-	return xxx_messageInfo_StringMatch.Size(m)
-}
-func (m *StringMatch) XXX_DiscardUnknown() {
-	xxx_messageInfo_StringMatch.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StringMatch proto.InternalMessageInfo
-
-type isStringMatch_MatchType interface {
-	isStringMatch_MatchType()
-	Equal(interface{}) bool
-}
-
-type StringMatch_Exact struct {
-	Exact string `protobuf:"bytes,1,opt,name=exact,proto3,oneof" json:"exact,omitempty"`
-}
-type StringMatch_Prefix struct {
-	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
-}
-type StringMatch_Regex struct {
-	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof" json:"regex,omitempty"`
-}
-
-func (*StringMatch_Exact) isStringMatch_MatchType()  {}
-func (*StringMatch_Prefix) isStringMatch_MatchType() {}
-func (*StringMatch_Regex) isStringMatch_MatchType()  {}
-
-func (m *StringMatch) GetMatchType() isStringMatch_MatchType {
-	if m != nil {
-		return m.MatchType
-	}
-	return nil
-}
-
-func (m *StringMatch) GetExact() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Exact); ok {
-		return x.Exact
-	}
-	return ""
-}
-
-func (m *StringMatch) GetPrefix() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Prefix); ok {
-		return x.Prefix
-	}
-	return ""
-}
-
-func (m *StringMatch) GetRegex() string {
-	if x, ok := m.GetMatchType().(*StringMatch_Regex); ok {
-		return x.Regex
-	}
-	return ""
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*StringMatch) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*StringMatch_Exact)(nil),
-		(*StringMatch_Prefix)(nil),
-		(*StringMatch_Regex)(nil),
-	}
-}
-
-type HeaderMatcher struct {
-	// Specifies the name of the header in the request.
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	//
-	//Specifies the value of the header. If the value is absent a request that
-	//has the name header will match, regardless of the header’s value.
-	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	// Specifies whether the header value should be treated as regex or not.
-	Regex bool `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
-	//
-	//If set to true, the result of the match will be inverted. Defaults to false.
-	//
-	//Examples:
-	// name=foo, invert_match=true: matches if no header named `foo` is present
-	// name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-	// name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
-	InvertMatch          bool     `protobuf:"varint,4,opt,name=invert_match,json=invertMatch,proto3" json:"invert_match,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *HeaderMatcher) Reset()         { *m = HeaderMatcher{} }
-func (m *HeaderMatcher) String() string { return proto.CompactTextString(m) }
-func (*HeaderMatcher) ProtoMessage()    {}
-func (*HeaderMatcher) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{9}
-}
-func (m *HeaderMatcher) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HeaderMatcher.Unmarshal(m, b)
-}
-func (m *HeaderMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HeaderMatcher.Marshal(b, m, deterministic)
-}
-func (m *HeaderMatcher) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HeaderMatcher.Merge(m, src)
-}
-func (m *HeaderMatcher) XXX_Size() int {
-	return xxx_messageInfo_HeaderMatcher.Size(m)
-}
-func (m *HeaderMatcher) XXX_DiscardUnknown() {
-	xxx_messageInfo_HeaderMatcher.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HeaderMatcher proto.InternalMessageInfo
-
-func (m *HeaderMatcher) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *HeaderMatcher) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
-}
-
-func (m *HeaderMatcher) GetRegex() bool {
-	if m != nil {
-		return m.Regex
-	}
-	return false
-}
-
-func (m *HeaderMatcher) GetInvertMatch() bool {
-	if m != nil {
-		return m.InvertMatch
-	}
-	return false
-}
-
-//
-//Query parameter matching treats the query string of a request's :path header
-//as an ampersand-separated list of keys and/or key=value elements.
-type QueryParameterMatcher struct {
-	//
-	//Specifies the name of a key that must be present in the requested
-	//path*'s query string.
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	//
-	//Specifies the value of the key. If the value is absent, a request
-	//that contains the key in its query string will match, whether the
-	//key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
-	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	//
-	//Specifies whether the query parameter value is a regular expression.
-	//Defaults to false. The entire query parameter value (i.e., the part to
-	//the right of the equals sign in "key=value") must match the regex.
-	//E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
-	Regex                bool     `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *QueryParameterMatcher) Reset()         { *m = QueryParameterMatcher{} }
-func (m *QueryParameterMatcher) String() string { return proto.CompactTextString(m) }
-func (*QueryParameterMatcher) ProtoMessage()    {}
-func (*QueryParameterMatcher) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{10}
-}
-func (m *QueryParameterMatcher) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_QueryParameterMatcher.Unmarshal(m, b)
-}
-func (m *QueryParameterMatcher) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_QueryParameterMatcher.Marshal(b, m, deterministic)
-}
-func (m *QueryParameterMatcher) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryParameterMatcher.Merge(m, src)
-}
-func (m *QueryParameterMatcher) XXX_Size() int {
-	return xxx_messageInfo_QueryParameterMatcher.Size(m)
-}
-func (m *QueryParameterMatcher) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryParameterMatcher.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryParameterMatcher proto.InternalMessageInfo
-
-func (m *QueryParameterMatcher) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *QueryParameterMatcher) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
-}
-
-func (m *QueryParameterMatcher) GetRegex() bool {
-	if m != nil {
-		return m.Regex
-	}
-	return false
-}
-
-type Mirror struct {
-	// Destination to mirror traffic to
-	Destination *types.ResourceRef `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	//
-	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
-	//Values range between 0 and 100
-	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	// Port on the destination service to receive traffic. If multiple are found, and none are specified,
-	// then the configuration will be considered invalid.
-	Port                 uint32   `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Mirror) Reset()         { *m = Mirror{} }
-func (m *Mirror) String() string { return proto.CompactTextString(m) }
-func (*Mirror) ProtoMessage()    {}
-func (*Mirror) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{11}
-}
-func (m *Mirror) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Mirror.Unmarshal(m, b)
-}
-func (m *Mirror) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Mirror.Marshal(b, m, deterministic)
-}
-func (m *Mirror) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Mirror.Merge(m, src)
-}
-func (m *Mirror) XXX_Size() int {
-	return xxx_messageInfo_Mirror.Size(m)
-}
-func (m *Mirror) XXX_DiscardUnknown() {
-	xxx_messageInfo_Mirror.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Mirror proto.InternalMessageInfo
-
-func (m *Mirror) GetDestination() *types.ResourceRef {
-	if m != nil {
-		return m.Destination
-	}
-	return nil
-}
-
-func (m *Mirror) GetPercentage() float64 {
-	if m != nil {
-		return m.Percentage
-	}
-	return 0
-}
-
-func (m *Mirror) GetPort() uint32 {
-	if m != nil {
-		return m.Port
-	}
-	return 0
-}
-
-type HttpMethod struct {
-	Method               types.HttpMethodValue `protobuf:"varint,1,opt,name=method,proto3,enum=core.zephyr.solo.io.HttpMethodValue" json:"method,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
-	XXX_unrecognized     []byte                `json:"-"`
-	XXX_sizecache        int32                 `json:"-"`
-}
-
-func (m *HttpMethod) Reset()         { *m = HttpMethod{} }
-func (m *HttpMethod) String() string { return proto.CompactTextString(m) }
-func (*HttpMethod) ProtoMessage()    {}
-func (*HttpMethod) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b17dd687e09d519b, []int{12}
-}
-func (m *HttpMethod) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HttpMethod.Unmarshal(m, b)
-}
-func (m *HttpMethod) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HttpMethod.Marshal(b, m, deterministic)
-}
-func (m *HttpMethod) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HttpMethod.Merge(m, src)
-}
-func (m *HttpMethod) XXX_Size() int {
-	return xxx_messageInfo_HttpMethod.Size(m)
-}
-func (m *HttpMethod) XXX_DiscardUnknown() {
-	xxx_messageInfo_HttpMethod.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HttpMethod proto.InternalMessageInfo
-
-func (m *HttpMethod) GetMethod() types.HttpMethodValue {
-	if m != nil {
-		return m.Method
-	}
-	return types.HttpMethodValue_GET
-}
-
 func init() {
 	proto.RegisterType((*TrafficPolicySpec)(nil), "networking.zephyr.solo.io.TrafficPolicySpec")
+	proto.RegisterType((*TrafficPolicySpec_RetryPolicy)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.RetryPolicy")
+	proto.RegisterType((*TrafficPolicySpec_MultiDestination)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.MultiDestination")
+	proto.RegisterType((*TrafficPolicySpec_MultiDestination_WeightedDestination)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination")
+	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.SubsetEntry")
+	proto.RegisterType((*TrafficPolicySpec_FaultInjection)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.FaultInjection")
+	proto.RegisterType((*TrafficPolicySpec_FaultInjection_Delay)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.FaultInjection.Delay")
+	proto.RegisterType((*TrafficPolicySpec_FaultInjection_Abort)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.FaultInjection.Abort")
+	proto.RegisterType((*TrafficPolicySpec_HeaderManipulation)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HeaderManipulation")
+	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry")
+	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry")
+	proto.RegisterType((*TrafficPolicySpec_CorsPolicy)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.CorsPolicy")
+	proto.RegisterType((*TrafficPolicySpec_HttpMatcher)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HttpMatcher")
+	proto.RegisterType((*TrafficPolicySpec_StringMatch)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.StringMatch")
+	proto.RegisterType((*TrafficPolicySpec_HeaderMatcher)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HeaderMatcher")
+	proto.RegisterType((*TrafficPolicySpec_QueryParameterMatcher)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.QueryParameterMatcher")
+	proto.RegisterType((*TrafficPolicySpec_Mirror)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.Mirror")
+	proto.RegisterType((*TrafficPolicySpec_HttpMethod)(nil), "networking.zephyr.solo.io.TrafficPolicySpec.HttpMethod")
 	proto.RegisterType((*TrafficPolicyStatus)(nil), "networking.zephyr.solo.io.TrafficPolicyStatus")
 	proto.RegisterType((*TrafficPolicyStatus_TranslatorError)(nil), "networking.zephyr.solo.io.TrafficPolicyStatus.TranslatorError")
-	proto.RegisterType((*RetryPolicy)(nil), "networking.zephyr.solo.io.RetryPolicy")
-	proto.RegisterType((*MultiDestination)(nil), "networking.zephyr.solo.io.MultiDestination")
-	proto.RegisterType((*MultiDestination_WeightedDestination)(nil), "networking.zephyr.solo.io.MultiDestination.WeightedDestination")
-	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.MultiDestination.WeightedDestination.SubsetEntry")
-	proto.RegisterType((*FaultInjection)(nil), "networking.zephyr.solo.io.FaultInjection")
-	proto.RegisterType((*FaultInjection_Delay)(nil), "networking.zephyr.solo.io.FaultInjection.Delay")
-	proto.RegisterType((*FaultInjection_Abort)(nil), "networking.zephyr.solo.io.FaultInjection.Abort")
-	proto.RegisterType((*HeaderManipulation)(nil), "networking.zephyr.solo.io.HeaderManipulation")
-	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.HeaderManipulation.AppendRequestHeadersEntry")
-	proto.RegisterMapType((map[string]string)(nil), "networking.zephyr.solo.io.HeaderManipulation.AppendResponseHeadersEntry")
-	proto.RegisterType((*CorsPolicy)(nil), "networking.zephyr.solo.io.CorsPolicy")
-	proto.RegisterType((*HttpMatcher)(nil), "networking.zephyr.solo.io.HttpMatcher")
-	proto.RegisterType((*StringMatch)(nil), "networking.zephyr.solo.io.StringMatch")
-	proto.RegisterType((*HeaderMatcher)(nil), "networking.zephyr.solo.io.HeaderMatcher")
-	proto.RegisterType((*QueryParameterMatcher)(nil), "networking.zephyr.solo.io.QueryParameterMatcher")
-	proto.RegisterType((*Mirror)(nil), "networking.zephyr.solo.io.Mirror")
-	proto.RegisterType((*HttpMethod)(nil), "networking.zephyr.solo.io.HttpMethod")
 }
 
 func init() {
@@ -1327,101 +1343,102 @@ func init() {
 }
 
 var fileDescriptor_b17dd687e09d519b = []byte{
-	// 1504 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0xfb, 0x6e, 0x1b, 0xc5,
-	0x17, 0xae, 0xed, 0xd8, 0x49, 0x8e, 0x63, 0x3b, 0x99, 0x5c, 0xea, 0xfa, 0x27, 0x55, 0xa9, 0x7f,
-	0x14, 0xa5, 0x40, 0xd7, 0xb4, 0xa0, 0xd2, 0xa2, 0x72, 0x89, 0x7b, 0x49, 0xda, 0x2a, 0xd0, 0x6e,
-	0x2a, 0x22, 0xb5, 0x12, 0xab, 0xcd, 0xfa, 0xd8, 0x5e, 0xb2, 0xde, 0xd9, 0xce, 0x8c, 0x93, 0x18,
-	0x09, 0xa9, 0x6f, 0xc1, 0x9f, 0x48, 0x48, 0x08, 0x24, 0x9e, 0x80, 0x27, 0x40, 0xbc, 0x06, 0x4f,
-	0x82, 0xe6, 0xb2, 0xf6, 0xfa, 0x12, 0xbb, 0xa1, 0xfc, 0xb7, 0x73, 0xe6, 0x7c, 0xdf, 0x9c, 0x39,
-	0xf3, 0x9d, 0x33, 0x63, 0xc3, 0x5e, 0xcb, 0x17, 0xed, 0xee, 0xa1, 0xe5, 0xd1, 0x4e, 0x8d, 0xd3,
-	0x80, 0x5e, 0xf7, 0x69, 0xad, 0x83, 0xbc, 0x7d, 0x3d, 0x62, 0xf4, 0x3b, 0xf4, 0x04, 0xaf, 0xb9,
-	0x91, 0x5f, 0x0b, 0x51, 0x9c, 0x50, 0x76, 0xe4, 0x87, 0xad, 0xda, 0xf1, 0x0d, 0x37, 0x88, 0xda,
-	0xee, 0x8d, 0x9a, 0x60, 0x6e, 0xb3, 0xe9, 0x7b, 0x4e, 0x44, 0x03, 0xdf, 0xeb, 0x59, 0x11, 0xa3,
-	0x82, 0x92, 0x4b, 0x03, 0x4f, 0xeb, 0x7b, 0x8c, 0xda, 0x3d, 0x66, 0x49, 0x56, 0xcb, 0xa7, 0x95,
-	0xcb, 0x2d, 0x4a, 0x5b, 0x01, 0xd6, 0x94, 0xe3, 0x61, 0xb7, 0x59, 0x6b, 0x74, 0x99, 0x2b, 0x7c,
-	0x1a, 0x6a, 0xe8, 0xf8, 0xfc, 0x09, 0x73, 0xa3, 0x08, 0x19, 0x37, 0xf3, 0xef, 0x8d, 0x87, 0xe5,
-	0x51, 0x86, 0x83, 0x80, 0xda, 0x42, 0x44, 0xc6, 0xf7, 0xda, 0x2c, 0x5f, 0x86, 0x4d, 0xe3, 0x7a,
-	0x6b, 0x96, 0x2b, 0x47, 0x76, 0xec, 0x7b, 0xe8, 0x70, 0x0c, 0xd0, 0x13, 0x94, 0x19, 0xdc, 0x27,
-	0xb3, 0x70, 0x32, 0x0d, 0x01, 0x75, 0x1b, 0xa3, 0xc0, 0x0f, 0x66, 0x2e, 0x28, 0x5c, 0xd1, 0x8d,
-	0x77, 0xbd, 0xd6, 0xa2, 0x2d, 0xaa, 0x3e, 0x6b, 0xf2, 0x4b, 0x5b, 0xab, 0xbf, 0xe6, 0x60, 0xe5,
-	0xb9, 0xce, 0xff, 0x53, 0x95, 0xfe, 0xfd, 0x08, 0x3d, 0xf2, 0x15, 0x94, 0x38, 0xed, 0xb2, 0x44,
-	0xac, 0xe5, 0xd4, 0x66, 0x6a, 0x2b, 0x7f, 0xf3, 0xaa, 0x25, 0x57, 0x18, 0x39, 0x10, 0xeb, 0xc0,
-	0x04, 0xb8, 0x6f, 0x9c, 0xed, 0xa2, 0x46, 0xc7, 0x63, 0x72, 0x00, 0x6b, 0x0d, 0xe4, 0xc2, 0x0f,
-	0xd5, 0x31, 0x0d, 0x48, 0xd3, 0x8a, 0xf4, 0x9d, 0x89, 0xa4, 0xfb, 0x3a, 0x5b, 0x7d, 0xce, 0xd5,
-	0x04, 0x43, 0x9f, 0xf8, 0x05, 0xac, 0xcb, 0xc3, 0x72, 0x18, 0xbe, 0xea, 0x22, 0x17, 0x4e, 0xc7,
-	0x15, 0x5e, 0x1b, 0x19, 0x2f, 0x67, 0x36, 0x33, 0x5b, 0xf9, 0x9b, 0xef, 0x5a, 0x67, 0xaa, 0xc8,
-	0xda, 0x15, 0x22, 0xda, 0xd3, 0xee, 0xf6, 0xaa, 0x24, 0xb1, 0x35, 0x87, 0xb1, 0x71, 0xf2, 0x14,
-	0x0a, 0xb1, 0x32, 0x79, 0xdb, 0x6f, 0x8a, 0xf2, 0x9c, 0x8a, 0xf6, 0xfd, 0x29, 0x9c, 0x7b, 0xdd,
-	0x40, 0xf8, 0xf7, 0x07, 0x71, 0xda, 0x4b, 0x86, 0x61, 0x5f, 0x12, 0x10, 0x1b, 0x4a, 0x4d, 0xb7,
-	0x1b, 0x08, 0xc7, 0x0f, 0xe5, 0x91, 0xf9, 0x34, 0x2c, 0x67, 0x15, 0xe7, 0xb5, 0x29, 0x9c, 0x0f,
-	0x25, 0xe2, 0x51, 0x0c, 0xb0, 0x8b, 0xcd, 0xa1, 0x31, 0xa9, 0x43, 0x29, 0xde, 0xbc, 0xf0, 0x3b,
-	0x48, 0xbb, 0xa2, 0x9c, 0x53, 0x9c, 0x97, 0x2c, 0x5d, 0x06, 0x56, 0x5c, 0x06, 0xd6, 0x7d, 0x53,
-	0x26, 0x76, 0xd1, 0x20, 0x9e, 0x6b, 0x00, 0xf9, 0x12, 0xe6, 0x19, 0x0a, 0xe6, 0x23, 0x2f, 0xcf,
-	0x2b, 0xec, 0xb4, 0xbc, 0xd9, 0x28, 0x58, 0x4f, 0x6b, 0xc5, 0x8e, 0x61, 0xe4, 0x21, 0xe4, 0x3d,
-	0xca, 0xb8, 0x29, 0xe1, 0xf2, 0x82, 0x11, 0xcb, 0xd9, 0x2c, 0xf7, 0x28, 0xe3, 0x86, 0x04, 0xbc,
-	0xfe, 0x37, 0xb9, 0x03, 0xb9, 0x8e, 0xcf, 0x18, 0x65, 0xe5, 0x45, 0x45, 0x71, 0x65, 0x5a, 0xb2,
-	0x95, 0xa3, 0x6d, 0x00, 0xe4, 0x5b, 0x58, 0x6d, 0xa3, 0xdb, 0x40, 0xe6, 0x74, 0xdc, 0xd0, 0x8f,
-	0xba, 0x81, 0xda, 0x6b, 0x19, 0x14, 0xcf, 0xf5, 0x69, 0x42, 0x50, 0xa8, 0xbd, 0x04, 0xc8, 0x26,
-	0xed, 0x31, 0x5b, 0xf5, 0xf7, 0x34, 0xac, 0x0e, 0x57, 0x8a, 0xaa, 0x2e, 0xf2, 0x18, 0x88, 0x60,
-	0x6e, 0xc8, 0x03, 0xa3, 0x6d, 0x65, 0x35, 0xe5, 0xf2, 0xbf, 0xc9, 0xca, 0x56, 0x2e, 0xf6, 0x4a,
-	0x02, 0x66, 0xb8, 0x8e, 0xa0, 0x6f, 0xa4, 0xcc, 0x41, 0xb9, 0x2f, 0x5e, 0x4e, 0x2b, 0x29, 0x7f,
-	0x3e, 0x65, 0x07, 0x13, 0xc2, 0x92, 0x36, 0xc3, 0xf3, 0x40, 0xa5, 0x69, 0x59, 0x0c, 0x1b, 0x78,
-	0xe5, 0x25, 0x94, 0x46, 0x9c, 0xc8, 0xff, 0x95, 0xe4, 0xe3, 0xf5, 0xfd, 0x86, 0xda, 0xc6, 0xa2,
-	0x52, 0xb1, 0x31, 0x3e, 0x6a, 0x48, 0x27, 0x15, 0x99, 0xd3, 0x41, 0xce, 0xdd, 0x16, 0xaa, 0x2a,
-	0x5e, 0xb4, 0x97, 0x94, 0x71, 0x4f, 0xdb, 0xaa, 0x01, 0xe4, 0x13, 0x42, 0x21, 0x15, 0x58, 0x70,
-	0x85, 0xc0, 0x4e, 0x24, 0x74, 0x6a, 0xb2, 0x76, 0x7f, 0x4c, 0xb6, 0xa1, 0x14, 0x21, 0x73, 0x04,
-	0xeb, 0xf5, 0x15, 0x9c, 0x9e, 0xa5, 0xe0, 0x42, 0x84, 0xec, 0x39, 0xeb, 0x19, 0x01, 0x57, 0x7f,
-	0xca, 0xc0, 0xf2, 0x68, 0xed, 0x11, 0x0f, 0x96, 0x12, 0x2d, 0x43, 0xae, 0x2b, 0xf3, 0xf8, 0xc5,
-	0x39, 0xca, 0xd7, 0x3a, 0x40, 0xbf, 0xd5, 0x16, 0xd8, 0x18, 0x2a, 0xe9, 0x24, 0x69, 0xe5, 0x97,
-	0x34, 0xac, 0x4e, 0xf0, 0x22, 0x75, 0xc8, 0x27, 0xfc, 0x8c, 0x1c, 0x36, 0x27, 0xca, 0xc1, 0x46,
-	0xdd, 0x2d, 0x6d, 0x6c, 0xda, 0x49, 0x10, 0xd9, 0x80, 0xdc, 0x89, 0xa2, 0x56, 0xf9, 0x28, 0xd8,
-	0x66, 0x44, 0x3c, 0xc8, 0xf1, 0xee, 0x21, 0x47, 0x61, 0xba, 0xdc, 0x93, 0xb7, 0xdc, 0x92, 0xb5,
-	0xaf, 0xd8, 0x1e, 0x84, 0x82, 0xf5, 0x6c, 0x43, 0x4d, 0x08, 0xcc, 0x45, 0x94, 0xe9, 0xa6, 0x57,
-	0xb0, 0xd5, 0x77, 0xe5, 0x0e, 0xe4, 0x13, 0xae, 0x64, 0x19, 0x32, 0x47, 0xd8, 0x33, 0x1a, 0x91,
-	0x9f, 0x64, 0x0d, 0xb2, 0xc7, 0x6e, 0xd0, 0x8d, 0x25, 0xa1, 0x07, 0x9f, 0xa6, 0x6f, 0xa7, 0xaa,
-	0x7f, 0x64, 0xa0, 0x38, 0xdc, 0xc9, 0xc8, 0x0e, 0x64, 0x1b, 0x18, 0xb8, 0x3d, 0x93, 0x9c, 0xda,
-	0x1b, 0xf7, 0x40, 0xeb, 0xbe, 0x84, 0xed, 0x5e, 0xb0, 0x35, 0x5e, 0x12, 0xb9, 0x87, 0x32, 0xd6,
-	0xf4, 0x79, 0x89, 0xb6, 0x25, 0x4c, 0x12, 0x29, 0x3c, 0xb9, 0x0c, 0x10, 0x21, 0xf3, 0x30, 0x14,
-	0x52, 0xd6, 0xb2, 0x35, 0xa7, 0xec, 0x84, 0xa5, 0xf2, 0x73, 0x0a, 0xb2, 0x6a, 0x6d, 0x72, 0x17,
-	0xf2, 0x4d, 0xff, 0x14, 0x1b, 0x8e, 0xde, 0xc1, 0x2c, 0xbd, 0xee, 0x5e, 0xb0, 0x41, 0xf9, 0x6b,
-	0xf4, 0x2e, 0xac, 0xe0, 0x69, 0x44, 0x43, 0x0c, 0x85, 0xef, 0x06, 0x86, 0x23, 0x33, 0x9b, 0x63,
-	0x39, 0x81, 0x52, 0x4c, 0xf5, 0x15, 0x28, 0xa9, 0xfb, 0x4f, 0x51, 0x38, 0xa2, 0x17, 0x61, 0xe5,
-	0x36, 0x64, 0xd5, 0xb6, 0xc8, 0x15, 0xc8, 0xab, 0x39, 0xd3, 0x91, 0xe4, 0x41, 0x66, 0x65, 0x20,
-	0xd2, 0xa8, 0x9b, 0x44, 0x7d, 0x09, 0x40, 0x97, 0xb2, 0x44, 0xd6, 0x37, 0x60, 0x6d, 0xe4, 0x7a,
-	0x52, 0xf6, 0xea, 0x8f, 0x73, 0x40, 0xc6, 0x9b, 0x24, 0xb9, 0x05, 0x17, 0x19, 0x76, 0xe8, 0x31,
-	0x3a, 0x0c, 0x79, 0x44, 0x43, 0x8e, 0x8e, 0x6e, 0x9b, 0xbc, 0xbc, 0xb4, 0x99, 0xd9, 0x5a, 0xb4,
-	0xd7, 0xf5, 0xb4, 0x6d, 0x66, 0x35, 0x05, 0x27, 0xaf, 0x53, 0x70, 0x51, 0xbe, 0xc7, 0xc2, 0xc6,
-	0x38, 0xb0, 0xa0, 0x04, 0xbd, 0x7b, 0xae, 0x6e, 0x6d, 0x6d, 0x2b, 0xb2, 0x91, 0x65, 0xb4, 0x9a,
-	0xd7, 0xdd, 0x49, 0x73, 0xe4, 0x63, 0xd8, 0xe8, 0x87, 0xae, 0xef, 0xce, 0x38, 0x80, 0xa2, 0x8a,
-	0x7c, 0x2d, 0x8e, 0x5c, 0x4d, 0xc6, 0xa8, 0x1f, 0x60, 0xa3, 0x1f, 0xf7, 0x30, 0xaa, 0xa4, 0xc2,
-	0xde, 0xf9, 0x77, 0x61, 0x27, 0xd7, 0xd0, 0x51, 0xaf, 0xb9, 0x13, 0xa6, 0x2a, 0xbb, 0x50, 0x39,
-	0x7b, 0xa7, 0xe7, 0x29, 0xc6, 0xca, 0x0e, 0x5c, 0x3a, 0x73, 0xf1, 0x73, 0x55, 0xf5, 0x9f, 0x69,
-	0x80, 0xc1, 0x4d, 0x4e, 0x9e, 0x40, 0xc1, 0x0d, 0x02, 0x7a, 0xe2, 0x50, 0xe6, 0xb7, 0xfc, 0x50,
-	0xbe, 0x26, 0x66, 0xbd, 0xc2, 0xf6, 0x05, 0xf3, 0xc3, 0x96, 0x7a, 0x73, 0xd9, 0x4b, 0x0a, 0xfc,
-	0xb5, 0xc6, 0xca, 0x6b, 0x46, 0x93, 0x75, 0x50, 0xb4, 0x69, 0x43, 0xdf, 0x83, 0x8b, 0xc6, 0x69,
-	0x4f, 0xdb, 0x06, 0x4e, 0xf1, 0x49, 0x64, 0x12, 0x4e, 0xf1, 0xb9, 0x5d, 0x85, 0xa2, 0x2c, 0x9c,
-	0x84, 0xcc, 0xe6, 0x94, 0x57, 0x41, 0x5b, 0x63, 0xb7, 0x9b, 0x30, 0xdf, 0x71, 0x4f, 0x9d, 0xb8,
-	0xf4, 0xa7, 0xde, 0x3f, 0xb9, 0x8e, 0x7b, 0xba, 0xdd, 0x42, 0xb2, 0x03, 0x2b, 0x7a, 0x7d, 0x8f,
-	0x61, 0x43, 0x17, 0x26, 0x37, 0xef, 0xaf, 0xca, 0x18, 0xba, 0x4e, 0x69, 0xf0, 0x8d, 0xcc, 0x9d,
-	0xbd, 0xac, 0x40, 0xf7, 0x06, 0x98, 0xea, 0x5f, 0x69, 0xc8, 0x27, 0x5e, 0xa4, 0xa4, 0x0c, 0xb9,
-	0x88, 0x61, 0xd3, 0x3f, 0xd5, 0x07, 0xb1, 0x7b, 0xc1, 0x36, 0x63, 0xb2, 0x01, 0x59, 0x3c, 0x75,
-	0x3d, 0xdd, 0xed, 0xe4, 0x84, 0x1e, 0x4a, 0x3b, 0xc3, 0x16, 0x9e, 0xaa, 0x46, 0xa2, 0xec, 0x6a,
-	0x48, 0xea, 0x30, 0x1f, 0x6f, 0x3b, 0xa7, 0x8e, 0x63, 0xeb, 0x0d, 0x64, 0xaa, 0x9f, 0xc5, 0x31,
-	0x90, 0xbc, 0x84, 0xe5, 0x57, 0x5d, 0x64, 0x3d, 0x27, 0x72, 0x99, 0xdb, 0x41, 0x21, 0xc9, 0xf4,
-	0xd9, 0x7e, 0x38, 0x85, 0xec, 0x99, 0x84, 0x3c, 0x8d, 0x11, 0x31, 0x69, 0xe9, 0xd5, 0x90, 0x99,
-	0x93, 0xcf, 0x20, 0xa7, 0x8f, 0xf8, 0x0d, 0x9e, 0x8d, 0x2a, 0x45, 0xca, 0xd9, 0x36, 0xa0, 0xfa,
-	0x32, 0x14, 0x23, 0x57, 0xb4, 0x1d, 0x1e, 0xa1, 0xe7, 0x37, 0x7d, 0x64, 0x55, 0x84, 0x7c, 0x42,
-	0x56, 0x83, 0x84, 0xa5, 0x86, 0x13, 0x36, 0x48, 0x71, 0x7a, 0x3c, 0xc5, 0x93, 0x52, 0x29, 0xdb,
-	0xa5, 0xfa, 0x81, 0xa1, 0xdb, 0x22, 0x83, 0xc2, 0x50, 0xba, 0xe4, 0x95, 0x19, 0xba, 0x1d, 0x34,
-	0xa5, 0xa3, 0xbe, 0x27, 0xd7, 0x8e, 0xb4, 0x0e, 0x16, 0x58, 0x88, 0x4f, 0xea, 0x0a, 0x2c, 0xf9,
-	0xe1, 0x31, 0x32, 0xf3, 0x33, 0x46, 0x75, 0xec, 0x05, 0x3b, 0xaf, 0x6d, 0x6a, 0x91, 0xea, 0x01,
-	0xac, 0x4f, 0xcc, 0xea, 0xdb, 0xae, 0x5d, 0x7d, 0x9d, 0x82, 0x9c, 0x7e, 0x50, 0xff, 0x27, 0x4f,
-	0x97, 0xe1, 0x9b, 0x34, 0x3d, 0x7a, 0x93, 0xf6, 0x5f, 0x17, 0x99, 0xc1, 0xeb, 0xa2, 0xfa, 0x18,
-	0x60, 0x70, 0xbc, 0xe4, 0x6e, 0x5f, 0x15, 0x32, 0x80, 0xe2, 0x19, 0x3f, 0x12, 0x07, 0x00, 0x5d,
-	0x58, 0xb1, 0x28, 0x0e, 0x7e, 0xfb, 0xfb, 0x72, 0xea, 0xc5, 0xb3, 0x99, 0x7f, 0x49, 0x44, 0x47,
-	0xad, 0x91, 0xbf, 0x25, 0x46, 0x56, 0x48, 0xfc, 0x4b, 0xd1, 0x8b, 0x90, 0x1f, 0xe6, 0x54, 0x35,
-	0x7f, 0xf4, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6a, 0xe1, 0x8a, 0xc8, 0xee, 0x10, 0x00, 0x00,
+	// 1508 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0xdd, 0x6e, 0x1b, 0x45,
+	0x14, 0xae, 0xed, 0xd8, 0x49, 0x8e, 0xff, 0x92, 0xc9, 0x4f, 0xdd, 0x45, 0x54, 0x69, 0xa1, 0x52,
+	0x41, 0x74, 0xad, 0xa6, 0xa8, 0x2d, 0xa5, 0x80, 0xe2, 0xb6, 0x34, 0x2d, 0x0a, 0x6d, 0x27, 0x11,
+	0xa1, 0x45, 0xd5, 0x6a, 0x63, 0x1f, 0xdb, 0x4b, 0xd6, 0x3b, 0xdb, 0x99, 0x71, 0x12, 0x73, 0xc5,
+	0x1b, 0x20, 0xf1, 0x08, 0x5c, 0x21, 0xf1, 0x00, 0xdc, 0x70, 0xc7, 0x53, 0xf4, 0x82, 0x1b, 0x5e,
+	0x04, 0x34, 0x33, 0xbb, 0xf6, 0xfa, 0x27, 0x18, 0x37, 0xbd, 0xdb, 0x39, 0x73, 0xce, 0x77, 0xe6,
+	0xfc, 0xcf, 0x2c, 0xec, 0xb4, 0x3c, 0xd9, 0xee, 0x1e, 0xd8, 0x75, 0xd6, 0xa9, 0x0a, 0xe6, 0xb3,
+	0x6b, 0x1e, 0xab, 0x76, 0x50, 0xb4, 0xaf, 0x85, 0x9c, 0x7d, 0x8f, 0x75, 0x29, 0xaa, 0x6e, 0xe8,
+	0x55, 0x03, 0x94, 0xc7, 0x8c, 0x1f, 0x7a, 0x41, 0xab, 0x7a, 0x74, 0xdd, 0xf5, 0xc3, 0xb6, 0x7b,
+	0xbd, 0x2a, 0xb9, 0xdb, 0x6c, 0x7a, 0x75, 0x27, 0x64, 0xbe, 0x57, 0xef, 0xd9, 0x21, 0x67, 0x92,
+	0x91, 0x0b, 0x03, 0x4e, 0xfb, 0x07, 0x0c, 0xdb, 0x3d, 0x6e, 0x2b, 0x54, 0xdb, 0x63, 0xd6, 0xc5,
+	0x16, 0x63, 0x2d, 0x1f, 0xab, 0x9a, 0xf1, 0xa0, 0xdb, 0xac, 0x36, 0xba, 0xdc, 0x95, 0x1e, 0x0b,
+	0x8c, 0xe8, 0xf8, 0xfe, 0x31, 0x77, 0xc3, 0x10, 0xb9, 0x88, 0xf6, 0x3f, 0x1c, 0x3f, 0x56, 0x9d,
+	0x71, 0x1c, 0x1c, 0xa8, 0x2d, 0x65, 0x18, 0xf1, 0x7e, 0x30, 0x8d, 0x97, 0x63, 0x33, 0x62, 0xbd,
+	0x39, 0x8d, 0x55, 0x20, 0x3f, 0xf2, 0xea, 0xe8, 0x08, 0xf4, 0xb1, 0x2e, 0x19, 0x8f, 0xe4, 0x6e,
+	0x4d, 0x93, 0x53, 0x6e, 0xf0, 0x99, 0xdb, 0x18, 0x15, 0xfc, 0x68, 0xaa, 0x42, 0xe9, 0xca, 0x6e,
+	0x6c, 0xf5, 0x6a, 0x8b, 0xb5, 0x98, 0xfe, 0xac, 0xaa, 0x2f, 0x43, 0xbd, 0xfc, 0xfa, 0x5d, 0x58,
+	0xde, 0x33, 0xfe, 0x7f, 0xaa, 0xdd, 0xbf, 0x1b, 0x62, 0x9d, 0x7c, 0x0d, 0x65, 0xc1, 0xba, 0x3c,
+	0x71, 0xd6, 0x4a, 0x6a, 0x23, 0x75, 0x35, 0xbf, 0x79, 0xc5, 0x56, 0x1a, 0x46, 0x02, 0x62, 0xef,
+	0x47, 0x07, 0xdc, 0x8d, 0x98, 0x69, 0xc9, 0x48, 0xc7, 0x6b, 0xb2, 0x0f, 0xab, 0x0d, 0x14, 0xd2,
+	0x0b, 0x74, 0x98, 0x06, 0xa0, 0x69, 0x0d, 0xfa, 0xfe, 0x44, 0xd0, 0x5d, 0xe3, 0xad, 0x3e, 0xe6,
+	0x4a, 0x02, 0xa1, 0x0f, 0xec, 0xc3, 0x9a, 0x0a, 0x96, 0xc3, 0xf1, 0x55, 0x17, 0x85, 0x74, 0x3a,
+	0xae, 0xac, 0xb7, 0x91, 0x8b, 0x4a, 0x66, 0x23, 0x73, 0x35, 0xbf, 0x79, 0xdb, 0x3e, 0x35, 0x8b,
+	0xec, 0x31, 0xab, 0xed, 0x6d, 0x29, 0xc3, 0x1d, 0x03, 0x40, 0x57, 0x14, 0x2c, 0x35, 0xa8, 0x11,
+	0x4d, 0x90, 0x03, 0x28, 0xc6, 0xb9, 0x2a, 0xda, 0x5e, 0x53, 0x56, 0xe6, 0xf4, 0xf9, 0x3f, 0x9b,
+	0x49, 0xcb, 0x4e, 0xd7, 0x97, 0xde, 0xfd, 0x81, 0x2d, 0xb4, 0x10, 0x61, 0xee, 0x2a, 0x48, 0xd2,
+	0x80, 0x72, 0xd3, 0xed, 0xfa, 0xd2, 0xf1, 0x02, 0x15, 0x56, 0x8f, 0x05, 0x95, 0xac, 0xd6, 0xf2,
+	0xe9, 0x4c, 0x5a, 0xbe, 0x54, 0x18, 0x8f, 0x62, 0x08, 0x5a, 0x6a, 0x0e, 0xad, 0x49, 0x0d, 0xca,
+	0xb1, 0xcb, 0xa4, 0xd7, 0x41, 0xd6, 0x95, 0x95, 0x9c, 0xd6, 0x72, 0xc1, 0x36, 0xc5, 0x63, 0xc7,
+	0xc5, 0x63, 0xdf, 0x8f, 0x8a, 0x8b, 0x96, 0x22, 0x89, 0x3d, 0x23, 0x40, 0x28, 0xcc, 0x73, 0x94,
+	0xdc, 0x43, 0x51, 0x99, 0xd7, 0xb2, 0xb3, 0x79, 0x9b, 0xa2, 0xe4, 0x3d, 0xb3, 0xa6, 0x31, 0x10,
+	0xf9, 0x16, 0xf2, 0x75, 0xc6, 0x45, 0xd4, 0x0a, 0x2a, 0x0b, 0x1a, 0xf7, 0xd6, 0x4c, 0xb8, 0xf7,
+	0x18, 0x17, 0x11, 0x2c, 0xd4, 0xfb, 0xdf, 0xe4, 0x2b, 0xc8, 0x75, 0x3c, 0xce, 0x19, 0xaf, 0x2c,
+	0x6a, 0xd0, 0x1b, 0xb3, 0x05, 0x4d, 0x8b, 0xd2, 0x08, 0x82, 0x84, 0xb0, 0xd2, 0x46, 0xb7, 0x81,
+	0xdc, 0xe9, 0xb8, 0x81, 0x17, 0x76, 0x7d, 0xed, 0xa1, 0x0a, 0x68, 0xe4, 0x2f, 0x66, 0x4b, 0x3a,
+	0x8d, 0xb3, 0x93, 0x80, 0xa1, 0xa4, 0x3d, 0x46, 0xb3, 0x7c, 0xc8, 0x27, 0x1c, 0x46, 0x2c, 0x58,
+	0x70, 0xa5, 0xc4, 0x4e, 0x28, 0x85, 0xae, 0xcc, 0x2c, 0xed, 0xaf, 0xc9, 0x16, 0x94, 0x43, 0xe4,
+	0x8e, 0xe4, 0xbd, 0x7e, 0x6c, 0xd3, 0xd3, 0x62, 0x5b, 0x0c, 0x91, 0xef, 0xf1, 0x5e, 0x14, 0x5a,
+	0xeb, 0xcf, 0x0c, 0x2c, 0x8d, 0xe6, 0x29, 0xe9, 0x42, 0x21, 0x51, 0x82, 0x4a, 0xaf, 0x2a, 0xb1,
+	0x67, 0x67, 0x4a, 0x7e, 0x7b, 0x1f, 0xbd, 0x56, 0x5b, 0x62, 0x63, 0xa8, 0x20, 0x92, 0x6a, 0xac,
+	0xdf, 0xd3, 0xb0, 0x32, 0x81, 0x8b, 0xd4, 0x20, 0x9f, 0xe0, 0x8b, 0xfa, 0xd3, 0xc6, 0xc4, 0x56,
+	0x42, 0xd1, 0xf4, 0x23, 0x8a, 0x4d, 0x9a, 0x14, 0x22, 0xeb, 0x90, 0x3b, 0xd6, 0xd0, 0xda, 0x43,
+	0x45, 0x1a, 0xad, 0x48, 0x17, 0x72, 0xa2, 0x7b, 0x20, 0x50, 0x46, 0x7d, 0xe4, 0xe5, 0x5b, 0x37,
+	0xd2, 0xde, 0xd5, 0xf8, 0x0f, 0x02, 0xc9, 0x7b, 0x34, 0x52, 0x46, 0x08, 0xcc, 0x85, 0x8c, 0x9b,
+	0xb6, 0x52, 0xa4, 0xfa, 0xdb, 0xfa, 0x04, 0xf2, 0x09, 0x56, 0xb2, 0x04, 0x99, 0x43, 0xec, 0x69,
+	0x6b, 0x17, 0xa9, 0xfa, 0x24, 0xab, 0x90, 0x3d, 0x72, 0xfd, 0x2e, 0x6a, 0x13, 0x16, 0xa9, 0x59,
+	0xdc, 0x49, 0xdf, 0x4e, 0x59, 0x7f, 0x65, 0xa0, 0x34, 0xdc, 0x07, 0xc8, 0x73, 0xc8, 0x36, 0xd0,
+	0x77, 0x7b, 0x91, 0xbb, 0xb6, 0xce, 0xd0, 0x53, 0xec, 0xfb, 0x0a, 0x68, 0xfb, 0x1c, 0x35, 0x88,
+	0x0a, 0xda, 0x3d, 0x50, 0xa7, 0x4f, 0x9f, 0x1d, 0x7a, 0x4b, 0x01, 0x29, 0x68, 0x8d, 0x48, 0x2e,
+	0x02, 0x84, 0xc8, 0xeb, 0x18, 0x48, 0xb7, 0x85, 0xba, 0x1d, 0xa6, 0x68, 0x82, 0x62, 0xfd, 0x92,
+	0x82, 0xac, 0x3e, 0x0d, 0xb9, 0x0b, 0xf9, 0xa6, 0x77, 0x82, 0x0d, 0xc7, 0x58, 0x39, 0x2d, 0xef,
+	0xb7, 0xcf, 0x51, 0xd0, 0xfc, 0x46, 0x7a, 0x1b, 0x96, 0xf1, 0x24, 0x64, 0x01, 0x06, 0xd2, 0x73,
+	0xfd, 0x08, 0x23, 0x33, 0x1d, 0x63, 0x29, 0x21, 0xa5, 0x91, 0x6a, 0xcb, 0x50, 0xd6, 0x73, 0x49,
+	0x43, 0x38, 0xb2, 0x17, 0xa2, 0x75, 0x1b, 0xb2, 0xda, 0x2c, 0x72, 0x09, 0xf2, 0x7a, 0xcf, 0x4c,
+	0x67, 0x1d, 0xec, 0xac, 0x3a, 0x88, 0x22, 0xee, 0x6a, 0x5a, 0xad, 0x00, 0x80, 0xaa, 0xd1, 0x68,
+	0xc9, 0xda, 0x3a, 0xac, 0x8e, 0x8c, 0x04, 0x83, 0xf8, 0xc7, 0x1c, 0x90, 0xf1, 0xf6, 0x41, 0x6e,
+	0xc2, 0x79, 0x8e, 0x1d, 0x76, 0x84, 0x0e, 0x47, 0x11, 0xb2, 0x40, 0xa0, 0x63, 0x1a, 0x8a, 0xa8,
+	0x14, 0x36, 0x32, 0x57, 0x17, 0xe9, 0x9a, 0xd9, 0xa6, 0xd1, 0xae, 0x81, 0x10, 0xe4, 0xe7, 0x14,
+	0x9c, 0x57, 0xf7, 0xa4, 0xa0, 0x31, 0x2e, 0x58, 0xd4, 0x65, 0xf0, 0xe2, 0x8c, 0x9d, 0xcd, 0xde,
+	0xd2, 0xf0, 0x23, 0x8a, 0x4d, 0x0d, 0xac, 0xb9, 0x93, 0xf6, 0xc8, 0xc7, 0xb0, 0xde, 0x37, 0xc6,
+	0xcc, 0xab, 0xf8, 0x48, 0x25, 0x6d, 0xcb, 0x6a, 0x6c, 0x8b, 0xde, 0x8c, 0xa5, 0x7e, 0x4a, 0xc1,
+	0x7a, 0xdf, 0x94, 0x61, 0xb1, 0xb2, 0xb6, 0xe4, 0xf9, 0xdb, 0xb2, 0x24, 0xa9, 0xd6, 0x18, 0xb2,
+	0xea, 0x4e, 0xd8, 0xb2, 0xb6, 0xc1, 0x3a, 0xdd, 0xf8, 0x99, 0xaa, 0xfa, 0x21, 0x5c, 0x38, 0x55,
+	0xf9, 0x4c, 0x40, 0xaf, 0xd3, 0x00, 0x83, 0x61, 0x49, 0x5e, 0x42, 0xd1, 0xf5, 0x7d, 0x76, 0xec,
+	0x30, 0xee, 0xb5, 0xbc, 0x40, 0x0d, 0xf5, 0xd9, 0xaf, 0x50, 0xbb, 0x92, 0x7b, 0x41, 0x4b, 0x5f,
+	0x98, 0x68, 0x41, 0xc3, 0x3d, 0x31, 0x68, 0xe4, 0xbd, 0x18, 0xbe, 0x83, 0xb2, 0xcd, 0x1a, 0xa2,
+	0x92, 0xd6, 0xf1, 0x33, 0x4c, 0x3b, 0x86, 0x36, 0x60, 0x8a, 0xa3, 0x95, 0x49, 0x30, 0xc5, 0xc1,
+	0xbd, 0x02, 0x25, 0x55, 0x6f, 0x89, 0xec, 0x9c, 0xd3, 0x5c, 0x45, 0x43, 0x8d, 0xd9, 0x36, 0x61,
+	0xbe, 0xe3, 0x9e, 0x38, 0x71, 0xc7, 0xf8, 0xcf, 0xf1, 0x97, 0xeb, 0xb8, 0x27, 0x5b, 0x2d, 0x24,
+	0x0f, 0x61, 0xd9, 0xe8, 0xaf, 0x73, 0x6c, 0x98, 0x7a, 0x16, 0xd1, 0xc5, 0xc8, 0x1a, 0x93, 0xae,
+	0x31, 0xe6, 0x7f, 0xa3, 0xbc, 0x49, 0x97, 0xb4, 0xd0, 0xbd, 0x81, 0x8c, 0xf5, 0x4f, 0x1a, 0xf2,
+	0x89, 0xeb, 0x24, 0xa9, 0x40, 0x2e, 0xe4, 0xd8, 0xf4, 0x4e, 0x4c, 0x68, 0xb6, 0xcf, 0xd1, 0x68,
+	0x4d, 0xd6, 0x21, 0x8b, 0x27, 0x6e, 0xdd, 0xb4, 0x4d, 0xb5, 0x61, 0x96, 0x8a, 0xce, 0xb1, 0x85,
+	0x27, 0xba, 0xff, 0x68, 0xba, 0x5e, 0x92, 0x3d, 0x98, 0x8f, 0xcd, 0xce, 0xe9, 0x00, 0xdd, 0x79,
+	0xa3, 0x54, 0x36, 0xb7, 0xdc, 0x18, 0x8a, 0x74, 0x60, 0xe9, 0x55, 0x17, 0x79, 0xcf, 0x09, 0x5d,
+	0xee, 0x76, 0x50, 0x2a, 0x78, 0x13, 0xff, 0xda, 0x4c, 0xf0, 0xcf, 0x14, 0xc8, 0xd3, 0x18, 0x23,
+	0x56, 0x53, 0x7e, 0x35, 0x44, 0x16, 0xe4, 0x09, 0xe4, 0x4c, 0x1a, 0xbc, 0xd1, 0x0d, 0x4f, 0x3b,
+	0x56, 0x8b, 0xd3, 0x08, 0xa6, 0xb6, 0x04, 0xa5, 0xd0, 0x95, 0x6d, 0x47, 0x84, 0x58, 0xf7, 0x9a,
+	0x1e, 0x72, 0x0b, 0x21, 0x9f, 0x48, 0xc6, 0x81, 0x9b, 0x53, 0xc3, 0x6e, 0x1e, 0x04, 0x26, 0x3d,
+	0x1e, 0x98, 0x49, 0x01, 0x50, 0xbd, 0x59, 0xbf, 0x32, 0x4c, 0x0f, 0xe6, 0x50, 0x1c, 0x72, 0xa9,
+	0x9a, 0xe1, 0x81, 0xdb, 0xc1, 0xa8, 0x04, 0xf5, 0xf7, 0xe4, 0x1a, 0x54, 0xd4, 0x81, 0x82, 0x85,
+	0x38, 0xbe, 0x97, 0xa0, 0xe0, 0x05, 0x47, 0xc8, 0xa3, 0xb7, 0x8c, 0x1e, 0x0f, 0x0b, 0x34, 0x6f,
+	0x68, 0x5a, 0x89, 0xb5, 0x0f, 0x6b, 0x13, 0xfd, 0x7c, 0x56, 0xdd, 0xd6, 0x8f, 0x29, 0xc8, 0x99,
+	0x9b, 0xee, 0x5b, 0xb9, 0x5d, 0x0d, 0x8f, 0xed, 0xf4, 0xe8, 0xd8, 0xee, 0x5f, 0x77, 0x32, 0x89,
+	0xeb, 0xce, 0x63, 0x80, 0x41, 0x78, 0xc9, 0xdd, 0x7e, 0x9e, 0xa8, 0x03, 0x94, 0x4e, 0x79, 0x29,
+	0x0e, 0x04, 0x4c, 0x39, 0x46, 0x32, 0x97, 0x7f, 0x4b, 0xc3, 0xca, 0x70, 0xf6, 0xe8, 0xe9, 0x4a,
+	0x1e, 0x03, 0x91, 0xdc, 0x0d, 0x84, 0x1f, 0xbd, 0x46, 0xcd, 0x1c, 0x36, 0x26, 0xbe, 0x33, 0xf9,
+	0x2d, 0xaa, 0x59, 0xe8, 0x72, 0x42, 0x2c, 0xc2, 0x3a, 0x84, 0x3e, 0x91, 0x71, 0x47, 0x0f, 0x6d,
+	0xd3, 0xda, 0xf2, 0x9b, 0x9f, 0xff, 0xef, 0xa4, 0x36, 0xcf, 0xf4, 0xbd, 0x3e, 0xce, 0x03, 0xfd,
+	0xd8, 0x58, 0x92, 0xc3, 0x04, 0x61, 0x7d, 0x07, 0xe5, 0x11, 0x26, 0xd5, 0x31, 0x13, 0xfa, 0xbd,
+	0x46, 0x14, 0xfb, 0xc2, 0x80, 0xf8, 0xa8, 0xa1, 0x98, 0xcc, 0x75, 0xa2, 0x83, 0x42, 0xc4, 0xb1,
+	0x58, 0xa4, 0x05, 0x4d, 0xdc, 0x31, 0xb4, 0xda, 0xfe, 0xaf, 0x7f, 0x5f, 0x4c, 0xbd, 0x78, 0x36,
+	0xf5, 0x2f, 0x4e, 0x78, 0xd8, 0x1a, 0xf9, 0x93, 0x33, 0x62, 0x5c, 0xe2, 0xc7, 0x4e, 0x2f, 0x44,
+	0x71, 0x90, 0xd3, 0x1d, 0xf3, 0xc6, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xee, 0xff, 0x44, 0x3d,
+	0x21, 0x12, 0x00, 0x00,
 }
 
 func (this *TrafficPolicySpec) Equal(that interface{}) bool {
@@ -1476,6 +1493,807 @@ func (this *TrafficPolicySpec) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.HeaderManipulation.Equal(that1.HeaderManipulation) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_RetryPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_RetryPolicy)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_RetryPolicy)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Attempts != that1.Attempts {
+		return false
+	}
+	if !this.PerTryTimeout.Equal(that1.PerTryTimeout) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_MultiDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_MultiDestination)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_MultiDestination)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.Destinations) != len(that1.Destinations) {
+		return false
+	}
+	for i := range this.Destinations {
+		if !this.Destinations[i].Equal(that1.Destinations[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Destination.Equal(that1.Destination) {
+		return false
+	}
+	if this.Weight != that1.Weight {
+		return false
+	}
+	if len(this.Subset) != len(that1.Subset) {
+		return false
+	}
+	for i := range this.Subset {
+		if this.Subset[i] != that1.Subset[i] {
+			return false
+		}
+	}
+	if this.Port != that1.Port {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.FaultInjectionType == nil {
+		if this.FaultInjectionType != nil {
+			return false
+		}
+	} else if this.FaultInjectionType == nil {
+		return false
+	} else if !this.FaultInjectionType.Equal(that1.FaultInjectionType) {
+		return false
+	}
+	if this.Percentage != that1.Percentage {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Delay_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Delay_)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Delay_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Delay.Equal(that1.Delay) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Abort_) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Abort_)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Abort_)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Abort.Equal(that1.Abort) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Delay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Delay)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Delay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.HttpDelayType == nil {
+		if this.HttpDelayType != nil {
+			return false
+		}
+	} else if this.HttpDelayType == nil {
+		return false
+	} else if !this.HttpDelayType.Equal(that1.HttpDelayType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Delay_FixedDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Delay_FixedDelay)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Delay_FixedDelay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.FixedDelay.Equal(that1.FixedDelay) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.ExponentialDelay.Equal(that1.ExponentialDelay) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Abort) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Abort)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Abort)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.ErrorType == nil {
+		if this.ErrorType != nil {
+			return false
+		}
+	} else if this.ErrorType == nil {
+		return false
+	} else if !this.ErrorType.Equal(that1.ErrorType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_FaultInjection_Abort_HttpStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_FaultInjection_Abort_HttpStatus)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_FaultInjection_Abort_HttpStatus)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.HttpStatus != that1.HttpStatus {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HeaderManipulation) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HeaderManipulation)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HeaderManipulation)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
+		return false
+	}
+	for i := range this.RemoveResponseHeaders {
+		if this.RemoveResponseHeaders[i] != that1.RemoveResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendResponseHeaders) != len(that1.AppendResponseHeaders) {
+		return false
+	}
+	for i := range this.AppendResponseHeaders {
+		if this.AppendResponseHeaders[i] != that1.AppendResponseHeaders[i] {
+			return false
+		}
+	}
+	if len(this.RemoveRequestHeaders) != len(that1.RemoveRequestHeaders) {
+		return false
+	}
+	for i := range this.RemoveRequestHeaders {
+		if this.RemoveRequestHeaders[i] != that1.RemoveRequestHeaders[i] {
+			return false
+		}
+	}
+	if len(this.AppendRequestHeaders) != len(that1.AppendRequestHeaders) {
+		return false
+	}
+	for i := range this.AppendRequestHeaders {
+		if this.AppendRequestHeaders[i] != that1.AppendRequestHeaders[i] {
+			return false
+		}
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_CorsPolicy) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_CorsPolicy)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_CorsPolicy)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if len(this.AllowOrigins) != len(that1.AllowOrigins) {
+		return false
+	}
+	for i := range this.AllowOrigins {
+		if !this.AllowOrigins[i].Equal(that1.AllowOrigins[i]) {
+			return false
+		}
+	}
+	if len(this.AllowMethods) != len(that1.AllowMethods) {
+		return false
+	}
+	for i := range this.AllowMethods {
+		if this.AllowMethods[i] != that1.AllowMethods[i] {
+			return false
+		}
+	}
+	if len(this.AllowHeaders) != len(that1.AllowHeaders) {
+		return false
+	}
+	for i := range this.AllowHeaders {
+		if this.AllowHeaders[i] != that1.AllowHeaders[i] {
+			return false
+		}
+	}
+	if len(this.ExposeHeaders) != len(that1.ExposeHeaders) {
+		return false
+	}
+	for i := range this.ExposeHeaders {
+		if this.ExposeHeaders[i] != that1.ExposeHeaders[i] {
+			return false
+		}
+	}
+	if !this.MaxAge.Equal(that1.MaxAge) {
+		return false
+	}
+	if !this.AllowCredentials.Equal(that1.AllowCredentials) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HttpMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HttpMatcher)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HttpMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.PathSpecifier == nil {
+		if this.PathSpecifier != nil {
+			return false
+		}
+	} else if this.PathSpecifier == nil {
+		return false
+	} else if !this.PathSpecifier.Equal(that1.PathSpecifier) {
+		return false
+	}
+	if len(this.Headers) != len(that1.Headers) {
+		return false
+	}
+	for i := range this.Headers {
+		if !this.Headers[i].Equal(that1.Headers[i]) {
+			return false
+		}
+	}
+	if len(this.QueryParameters) != len(that1.QueryParameters) {
+		return false
+	}
+	for i := range this.QueryParameters {
+		if !this.QueryParameters[i].Equal(that1.QueryParameters[i]) {
+			return false
+		}
+	}
+	if !this.Method.Equal(that1.Method) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HttpMatcher_Prefix) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HttpMatcher_Prefix)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HttpMatcher_Prefix)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Prefix != that1.Prefix {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HttpMatcher_Exact) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HttpMatcher_Exact)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HttpMatcher_Exact)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Exact != that1.Exact {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HttpMatcher_Regex) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HttpMatcher_Regex)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HttpMatcher_Regex)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_StringMatch) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_StringMatch)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_StringMatch)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.MatchType == nil {
+		if this.MatchType != nil {
+			return false
+		}
+	} else if this.MatchType == nil {
+		return false
+	} else if !this.MatchType.Equal(that1.MatchType) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_StringMatch_Exact) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_StringMatch_Exact)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_StringMatch_Exact)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Exact != that1.Exact {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_StringMatch_Prefix) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_StringMatch_Prefix)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_StringMatch_Prefix)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Prefix != that1.Prefix {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_StringMatch_Regex) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_StringMatch_Regex)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_StringMatch_Regex)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HeaderMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HeaderMatcher)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HeaderMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if this.InvertMatch != that1.InvertMatch {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_QueryParameterMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_QueryParameterMatcher)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_QueryParameterMatcher)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Name != that1.Name {
+		return false
+	}
+	if this.Value != that1.Value {
+		return false
+	}
+	if this.Regex != that1.Regex {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_Mirror) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_Mirror)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_Mirror)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Destination.Equal(that1.Destination) {
+		return false
+	}
+	if this.Percentage != that1.Percentage {
+		return false
+	}
+	if this.Port != that1.Port {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *TrafficPolicySpec_HttpMethod) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TrafficPolicySpec_HttpMethod)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_HttpMethod)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Method != that1.Method {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -1541,807 +2359,6 @@ func (this *TrafficPolicyStatus_TranslatorError) Equal(that interface{}) bool {
 		return false
 	}
 	if this.ErrorMessage != that1.ErrorMessage {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *RetryPolicy) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*RetryPolicy)
-	if !ok {
-		that2, ok := that.(RetryPolicy)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Attempts != that1.Attempts {
-		return false
-	}
-	if !this.PerTryTimeout.Equal(that1.PerTryTimeout) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *MultiDestination) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*MultiDestination)
-	if !ok {
-		that2, ok := that.(MultiDestination)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.Destinations) != len(that1.Destinations) {
-		return false
-	}
-	for i := range this.Destinations {
-		if !this.Destinations[i].Equal(that1.Destinations[i]) {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *MultiDestination_WeightedDestination) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*MultiDestination_WeightedDestination)
-	if !ok {
-		that2, ok := that.(MultiDestination_WeightedDestination)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Destination.Equal(that1.Destination) {
-		return false
-	}
-	if this.Weight != that1.Weight {
-		return false
-	}
-	if len(this.Subset) != len(that1.Subset) {
-		return false
-	}
-	for i := range this.Subset {
-		if this.Subset[i] != that1.Subset[i] {
-			return false
-		}
-	}
-	if this.Port != that1.Port {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection)
-	if !ok {
-		that2, ok := that.(FaultInjection)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.FaultInjectionType == nil {
-		if this.FaultInjectionType != nil {
-			return false
-		}
-	} else if this.FaultInjectionType == nil {
-		return false
-	} else if !this.FaultInjectionType.Equal(that1.FaultInjectionType) {
-		return false
-	}
-	if this.Percentage != that1.Percentage {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Delay_) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Delay_)
-	if !ok {
-		that2, ok := that.(FaultInjection_Delay_)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Delay.Equal(that1.Delay) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Abort_) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Abort_)
-	if !ok {
-		that2, ok := that.(FaultInjection_Abort_)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Abort.Equal(that1.Abort) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Delay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Delay)
-	if !ok {
-		that2, ok := that.(FaultInjection_Delay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.HttpDelayType == nil {
-		if this.HttpDelayType != nil {
-			return false
-		}
-	} else if this.HttpDelayType == nil {
-		return false
-	} else if !this.HttpDelayType.Equal(that1.HttpDelayType) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Delay_FixedDelay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Delay_FixedDelay)
-	if !ok {
-		that2, ok := that.(FaultInjection_Delay_FixedDelay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.FixedDelay.Equal(that1.FixedDelay) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Delay_ExponentialDelay) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Delay_ExponentialDelay)
-	if !ok {
-		that2, ok := that.(FaultInjection_Delay_ExponentialDelay)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.ExponentialDelay.Equal(that1.ExponentialDelay) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Abort) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Abort)
-	if !ok {
-		that2, ok := that.(FaultInjection_Abort)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.ErrorType == nil {
-		if this.ErrorType != nil {
-			return false
-		}
-	} else if this.ErrorType == nil {
-		return false
-	} else if !this.ErrorType.Equal(that1.ErrorType) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *FaultInjection_Abort_HttpStatus) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*FaultInjection_Abort_HttpStatus)
-	if !ok {
-		that2, ok := that.(FaultInjection_Abort_HttpStatus)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.HttpStatus != that1.HttpStatus {
-		return false
-	}
-	return true
-}
-func (this *HeaderManipulation) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HeaderManipulation)
-	if !ok {
-		that2, ok := that.(HeaderManipulation)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.RemoveResponseHeaders) != len(that1.RemoveResponseHeaders) {
-		return false
-	}
-	for i := range this.RemoveResponseHeaders {
-		if this.RemoveResponseHeaders[i] != that1.RemoveResponseHeaders[i] {
-			return false
-		}
-	}
-	if len(this.AppendResponseHeaders) != len(that1.AppendResponseHeaders) {
-		return false
-	}
-	for i := range this.AppendResponseHeaders {
-		if this.AppendResponseHeaders[i] != that1.AppendResponseHeaders[i] {
-			return false
-		}
-	}
-	if len(this.RemoveRequestHeaders) != len(that1.RemoveRequestHeaders) {
-		return false
-	}
-	for i := range this.RemoveRequestHeaders {
-		if this.RemoveRequestHeaders[i] != that1.RemoveRequestHeaders[i] {
-			return false
-		}
-	}
-	if len(this.AppendRequestHeaders) != len(that1.AppendRequestHeaders) {
-		return false
-	}
-	for i := range this.AppendRequestHeaders {
-		if this.AppendRequestHeaders[i] != that1.AppendRequestHeaders[i] {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *CorsPolicy) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*CorsPolicy)
-	if !ok {
-		that2, ok := that.(CorsPolicy)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if len(this.AllowOrigins) != len(that1.AllowOrigins) {
-		return false
-	}
-	for i := range this.AllowOrigins {
-		if !this.AllowOrigins[i].Equal(that1.AllowOrigins[i]) {
-			return false
-		}
-	}
-	if len(this.AllowMethods) != len(that1.AllowMethods) {
-		return false
-	}
-	for i := range this.AllowMethods {
-		if this.AllowMethods[i] != that1.AllowMethods[i] {
-			return false
-		}
-	}
-	if len(this.AllowHeaders) != len(that1.AllowHeaders) {
-		return false
-	}
-	for i := range this.AllowHeaders {
-		if this.AllowHeaders[i] != that1.AllowHeaders[i] {
-			return false
-		}
-	}
-	if len(this.ExposeHeaders) != len(that1.ExposeHeaders) {
-		return false
-	}
-	for i := range this.ExposeHeaders {
-		if this.ExposeHeaders[i] != that1.ExposeHeaders[i] {
-			return false
-		}
-	}
-	if !this.MaxAge.Equal(that1.MaxAge) {
-		return false
-	}
-	if !this.AllowCredentials.Equal(that1.AllowCredentials) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HttpMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HttpMatcher)
-	if !ok {
-		that2, ok := that.(HttpMatcher)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.PathSpecifier == nil {
-		if this.PathSpecifier != nil {
-			return false
-		}
-	} else if this.PathSpecifier == nil {
-		return false
-	} else if !this.PathSpecifier.Equal(that1.PathSpecifier) {
-		return false
-	}
-	if len(this.Headers) != len(that1.Headers) {
-		return false
-	}
-	for i := range this.Headers {
-		if !this.Headers[i].Equal(that1.Headers[i]) {
-			return false
-		}
-	}
-	if len(this.QueryParameters) != len(that1.QueryParameters) {
-		return false
-	}
-	for i := range this.QueryParameters {
-		if !this.QueryParameters[i].Equal(that1.QueryParameters[i]) {
-			return false
-		}
-	}
-	if !this.Method.Equal(that1.Method) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HttpMatcher_Prefix) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HttpMatcher_Prefix)
-	if !ok {
-		that2, ok := that.(HttpMatcher_Prefix)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Prefix != that1.Prefix {
-		return false
-	}
-	return true
-}
-func (this *HttpMatcher_Exact) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HttpMatcher_Exact)
-	if !ok {
-		that2, ok := that.(HttpMatcher_Exact)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Exact != that1.Exact {
-		return false
-	}
-	return true
-}
-func (this *HttpMatcher_Regex) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HttpMatcher_Regex)
-	if !ok {
-		that2, ok := that.(HttpMatcher_Regex)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Regex != that1.Regex {
-		return false
-	}
-	return true
-}
-func (this *StringMatch) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch)
-	if !ok {
-		that2, ok := that.(StringMatch)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.MatchType == nil {
-		if this.MatchType != nil {
-			return false
-		}
-	} else if this.MatchType == nil {
-		return false
-	} else if !this.MatchType.Equal(that1.MatchType) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Exact) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Exact)
-	if !ok {
-		that2, ok := that.(StringMatch_Exact)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Exact != that1.Exact {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Prefix) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Prefix)
-	if !ok {
-		that2, ok := that.(StringMatch_Prefix)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Prefix != that1.Prefix {
-		return false
-	}
-	return true
-}
-func (this *StringMatch_Regex) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*StringMatch_Regex)
-	if !ok {
-		that2, ok := that.(StringMatch_Regex)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Regex != that1.Regex {
-		return false
-	}
-	return true
-}
-func (this *HeaderMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HeaderMatcher)
-	if !ok {
-		that2, ok := that.(HeaderMatcher)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Name != that1.Name {
-		return false
-	}
-	if this.Value != that1.Value {
-		return false
-	}
-	if this.Regex != that1.Regex {
-		return false
-	}
-	if this.InvertMatch != that1.InvertMatch {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *QueryParameterMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*QueryParameterMatcher)
-	if !ok {
-		that2, ok := that.(QueryParameterMatcher)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Name != that1.Name {
-		return false
-	}
-	if this.Value != that1.Value {
-		return false
-	}
-	if this.Regex != that1.Regex {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *Mirror) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Mirror)
-	if !ok {
-		that2, ok := that.(Mirror)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Destination.Equal(that1.Destination) {
-		return false
-	}
-	if this.Percentage != that1.Percentage {
-		return false
-	}
-	if this.Port != that1.Port {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *HttpMethod) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HttpMethod)
-	if !ok {
-		that2, ok := that.(HttpMethod)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Method != that1.Method {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {

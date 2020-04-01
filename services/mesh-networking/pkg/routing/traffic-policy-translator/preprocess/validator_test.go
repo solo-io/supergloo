@@ -74,7 +74,7 @@ var _ = Describe("Validator", func() {
 	It("should return error for RetryPolicy with negative num attempts", func() {
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				Retries: &networking_types.RetryPolicy{Attempts: -1},
+				Retries: &networking_types.TrafficPolicySpec_RetryPolicy{Attempts: -1},
 			},
 		}
 		err := validator.Validate(ctx, tp)
@@ -86,7 +86,7 @@ var _ = Describe("Validator", func() {
 	It("should return error for RetryPolicy with negative per retry timeout", func() {
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				Retries: &networking_types.RetryPolicy{PerTryTimeout: &types1.Duration{Seconds: -1}},
+				Retries: &networking_types.TrafficPolicySpec_RetryPolicy{PerTryTimeout: &types1.Duration{Seconds: -1}},
 			},
 		}
 		err := validator.Validate(ctx, tp)
@@ -106,8 +106,8 @@ var _ = Describe("Validator", func() {
 		}
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				TrafficShift: &networking_types.MultiDestination{
-					Destinations: []*networking_types.MultiDestination_WeightedDestination{
+				TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
+					Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 						{
 							Destination: serviceRef,
 							Weight:      1,
@@ -138,8 +138,8 @@ var _ = Describe("Validator", func() {
 		subset := map[string]string{"env": "dev", "version": "v1"}
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				TrafficShift: &networking_types.MultiDestination{
-					Destinations: []*networking_types.MultiDestination_WeightedDestination{
+				TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
+					Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 						{
 							Destination: serviceRef,
 							Subset:      subset,
@@ -169,7 +169,7 @@ var _ = Describe("Validator", func() {
 		invalidPct := 101.0
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
+				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
 					Percentage: invalidPct,
 				},
 			},
@@ -184,10 +184,10 @@ var _ = Describe("Validator", func() {
 		invalidHttpStatus := int32(432)
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
-					FaultInjectionType: &networking_types.FaultInjection_Abort_{
-						Abort: &networking_types.FaultInjection_Abort{
-							ErrorType: &networking_types.FaultInjection_Abort_HttpStatus{
+				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
+					FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_{
+						Abort: &networking_types.TrafficPolicySpec_FaultInjection_Abort{
+							ErrorType: &networking_types.TrafficPolicySpec_FaultInjection_Abort_HttpStatus{
 								HttpStatus: invalidHttpStatus,
 							},
 						},
@@ -205,10 +205,10 @@ var _ = Describe("Validator", func() {
 	It("should return error if FaultInjection Delay has invalid duration", func() {
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				FaultInjection: &networking_types.FaultInjection{
-					FaultInjectionType: &networking_types.FaultInjection_Delay_{
-						Delay: &networking_types.FaultInjection_Delay{
-							HttpDelayType: &networking_types.FaultInjection_Delay_FixedDelay{
+				FaultInjection: &networking_types.TrafficPolicySpec_FaultInjection{
+					FaultInjectionType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_{
+						Delay: &networking_types.TrafficPolicySpec_FaultInjection_Delay{
+							HttpDelayType: &networking_types.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
 								FixedDelay: &types1.Duration{Seconds: -1},
 							},
 						},
@@ -238,7 +238,7 @@ var _ = Describe("Validator", func() {
 	It("should return error if CorsPolicy has an invalid max age duration", func() {
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				CorsPolicy: &networking_types.CorsPolicy{
+				CorsPolicy: &networking_types.TrafficPolicySpec_CorsPolicy{
 					MaxAge: &types1.Duration{Seconds: 0, Nanos: 999999},
 				},
 			},
@@ -258,7 +258,7 @@ var _ = Describe("Validator", func() {
 		invalidPct := 101.0
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				Mirror: &networking_types.Mirror{
+				Mirror: &networking_types.TrafficPolicySpec_Mirror{
 					Destination: serviceRef,
 					Percentage:  invalidPct,
 				},
@@ -282,7 +282,7 @@ var _ = Describe("Validator", func() {
 		}
 		tp := &networking_v1alpha1.TrafficPolicy{
 			Spec: networking_types.TrafficPolicySpec{
-				Mirror: &networking_types.Mirror{
+				Mirror: &networking_types.TrafficPolicySpec_Mirror{
 					Destination: serviceRef,
 					Percentage:  50,
 				},

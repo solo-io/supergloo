@@ -152,7 +152,7 @@ func mergeTrafficPoliciesByMeshService(
 				*/
 				if mergeableHttpTp.HttpMatcher != nil {
 					newMergedTrafficPolicy.Spec.HttpRequestMatchers =
-						[]*networking_v1alpha1_types.HttpMatcher{mergeableHttpTp.HttpMatcher}
+						[]*networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher{mergeableHttpTp.HttpMatcher}
 				}
 			}
 		}
@@ -204,7 +204,7 @@ func mergeHttpTrafficPolicies(
 func attemptTrafficPolicyMerge(
 	trafficPolicy *networking_v1alpha1.TrafficPolicy,
 	mergeableTrafficPolicies []*MergeableHttpTrafficPolicy,
-	httpMatcher *networking_v1alpha1_types.HttpMatcher,
+	httpMatcher *networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher,
 ) (*MergeableHttpTrafficPolicy, error) {
 	var merged bool
 	for _, mergeableTp := range mergeableTrafficPolicies {
@@ -310,7 +310,7 @@ func areTrafficPolicyActionsEqual(
 }
 
 type MergeableHttpTrafficPolicy struct {
-	HttpMatcher       *networking_v1alpha1_types.HttpMatcher
+	HttpMatcher       *networking_v1alpha1_types.TrafficPolicySpec_HttpMatcher
 	SourceSelector    *core_types.WorkloadSelector
 	TrafficPolicySpec *networking_v1alpha1_types.TrafficPolicySpec
 }
