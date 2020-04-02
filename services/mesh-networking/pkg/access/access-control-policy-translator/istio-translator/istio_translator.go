@@ -28,7 +28,7 @@ const (
 
 var (
 	ACPProcessingError = func(err error, acp *networking_v1alpha1.AccessControlPolicy) error {
-		return eris.Wrapf(err, "Error processing AccessControlPolicy: %+v", acp)
+		return eris.Wrapf(err, "Error processing AccessControlPolicy: %s.%s", acp.GetName(), acp.GetNamespace())
 	}
 	AuthPolicyUpsertError = func(err error, authPolicy *client_security_v1beta1.AuthorizationPolicy) error {
 		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
@@ -37,8 +37,8 @@ var (
 	EmptyTrustDomainForMeshError = func(mesh *discovery_v1alpha1.Mesh) error {
 		return eris.Errorf("Empty trust domain for Istio Mesh: %+v", mesh)
 	}
-	EmptyTrustDomainForCluster = func(clusterName string) error {
-		return eris.Errorf("No trust domain found for cluster: %s", clusterName)
+	ServiceAccountRefNonexistent = func(saRef *core_types.ResourceRef) error {
+		return eris.Errorf("Service account ref did not match a real service account: %s.%s.%s", saRef.Name, saRef.Namespace, saRef.Cluster)
 	}
 )
 
@@ -207,7 +207,11 @@ func (i *istioTranslator) buildSources(
 			if err != nil {
 				return nil, err
 			}
-			// If no error thrown, trustDomains is guaranteed to be of length 1.
+			if len(trustDomains) == 0 {
+				return nil, ServiceAccountRefNonexistent(serviceAccountRef)
+			}
+
+			// at this point, trustDomains is guaranteed to be of length at least 1.
 			uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.GetNamespace(), serviceAccountRef.GetName())
 			if err != nil {
 				return nil, err

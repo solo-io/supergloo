@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix panic when access control source selector has a service account ref with a nonexistent cluster
+    issueLink:  https://github.com/solo-io/mesh-projects/issues/360
