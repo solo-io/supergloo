@@ -15,7 +15,7 @@ import (
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking_clients "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	mock_traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/mocks"

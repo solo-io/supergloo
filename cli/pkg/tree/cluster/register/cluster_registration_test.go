@@ -418,7 +418,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
 				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
 
-			Expect(err).To(HaveInErrorChain(register.FailedLoadingMasterConfig(testErr)))
+			Expect(err).To(HaveInErrorChain(common.FailedLoadingMasterConfig(testErr)))
 
 			configVerifier.EXPECT().Verify(localKubeConfig, "").Return(nil)
 			kubeLoader.

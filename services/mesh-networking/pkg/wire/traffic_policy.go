@@ -8,8 +8,8 @@ import (
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
@@ -29,7 +29,7 @@ var (
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
-		selector.NewMeshServiceSelector,
+		selector.NewResourceSelector,
 		preprocess.NewTrafficPolicyValidator,
 	)
 )

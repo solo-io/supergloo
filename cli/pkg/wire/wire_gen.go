@@ -27,11 +27,13 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
 	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
 	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
@@ -77,7 +79,10 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	podClient := kubernetes_core.NewGeneratedPodClient(clientset)
 	meshServiceClient := zephyr_discovery.NewGeneratedMeshServiceClient(masterConfig)
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
-	deploymentClient := kubernetes_apps.NewGeneratedDeploymentClient(clientset)
+	deploymentClient, err := kubernetes_apps.NewGeneratedDeploymentClient(masterConfig)
+	if err != nil {
+		return nil, err
+	}
 	imageNameParser := docker.NewImageNameParser()
 	deployedVersionFinder := version.NewDeployedVersionFinder(deploymentClient, imageNameParser)
 	generatedCrdClientFactory := kubernetes_apiext.NewGeneratedCrdClientFactory()
@@ -86,8 +91,10 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	uninstallClients := common.UninstallClientsProvider(crdRemover, secretToConfigConverter)
 	inMemoryRESTClientGetterFactory := common_config.NewInMemoryRESTClientGetterFactory()
 	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
-	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(secretsClient, secretToConfigConverter, crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient)
+	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretsClient, secretToConfigConverter)
+	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
+	generatedMeshServiceClientFactory := zephyr_discovery.NewGeneratedMeshServiceClientFactory()
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, generatedMeshServiceClientFactory)
 	return kubeClients, nil
 }
 
@@ -130,11 +137,12 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
+	exploreCommand := explore.ExploreCmd()
 	runner := exec.NewShellRunner(in, out)
 	initCmd := demo_init.DemoInitCmd(ctx, runner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, demoCommand)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand)
 	return command
 }
 
@@ -151,9 +159,10 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
+	exploreCommand := explore.ExploreCmd()
 	initCmd := demo_init.DemoInitCmd(ctx, runnner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runnner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, demoCommand)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand)
 	return command
 }

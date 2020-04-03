@@ -16,8 +16,8 @@ import (
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mock"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
+	mock_selector "github.com/solo-io/mesh-projects/pkg/selector/mocks"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -48,7 +48,7 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshServiceClient        *mock_core.MockMeshServiceClient
 		mockVirtualServiceClient     *mock_istio_networking.MockVirtualServiceClient
 		mockDestinationRuleClient    *mock_istio_networking.MockDestinationRuleClient
-		mockMeshServiceSelector      *mock_selector.MockMeshServiceSelector
+		mockResourceSelector         *mock_selector.MockResourceSelector
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
@@ -57,13 +57,13 @@ var _ = Describe("IstioTranslator", func() {
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
 		mockVirtualServiceClient = mock_istio_networking.NewMockVirtualServiceClient(ctrl)
-		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
+		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
 		mockDestinationRuleClient = mock_istio_networking.NewMockDestinationRuleClient(ctrl)
 		istioTrafficPolicyTranslator = istio_translator.NewIstioTrafficPolicyTranslator(
 			mockDynamicClientGetter,
 			mockMeshClient,
 			mockMeshServiceClient,
-			mockMeshServiceSelector,
+			mockResourceSelector,
 			func(client client.Client) istio_networking.VirtualServiceClient {
 				return mockVirtualServiceClient
 			},
@@ -350,9 +350,9 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -394,9 +394,9 @@ var _ = Describe("IstioTranslator", func() {
 					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, remoteClusterName).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -738,9 +738,9 @@ var _ = Describe("IstioTranslator", func() {
 					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -795,9 +795,9 @@ var _ = Describe("IstioTranslator", func() {
 					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			mockVirtualServiceClient.
 				EXPECT().
@@ -860,9 +860,9 @@ var _ = Describe("IstioTranslator", func() {
 					},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, testContext.clusterName).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, testContext.clusterName).
 				Return(backingMeshService, nil)
 
 			mockDynamicClientGetter.
@@ -918,9 +918,9 @@ var _ = Describe("IstioTranslator", func() {
 					Federation: &discovery_types.MeshServiceSpec_Federation{MulticlusterDnsName: multiClusterDnsName},
 				},
 			}
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, destCluster).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, destCluster).
 				Return(backingMeshService, nil)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)
@@ -943,9 +943,9 @@ var _ = Describe("IstioTranslator", func() {
 				Percentage: 50,
 			}
 			err := eris.New("mesh-service-selector-error")
-			mockMeshServiceSelector.
+			mockResourceSelector.
 				EXPECT().
-				GetBackingMeshService(ctx, destName, destNamespace, remoteClusterName).
+				GetMeshServiceByRefSelector(ctx, destName, destNamespace, remoteClusterName).
 				Return(nil, err)
 			translatorError := istioTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx, testContext.meshService, testContext.mesh, testContext.trafficPolicy)

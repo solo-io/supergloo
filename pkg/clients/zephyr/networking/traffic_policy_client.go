@@ -37,9 +37,9 @@ func (d *trafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolicy *v
 	return d.client.Status().Update(ctx, trafficPolicy, options...)
 }
 
-func (d *trafficPolicyClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.TrafficPolicyList, error) {
+func (d *trafficPolicyClient) List(ctx context.Context, options ...client.ListOption) (*v1alpha1.TrafficPolicyList, error) {
 	list := v1alpha1.TrafficPolicyList{}
-	err := d.client.List(ctx, &list, opts...)
+	err := d.client.List(ctx, &list, options...)
 	if err != nil {
 		return nil, err
 	}

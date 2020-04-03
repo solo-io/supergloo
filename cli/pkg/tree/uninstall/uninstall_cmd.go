@@ -26,9 +26,6 @@ var (
 		UninstallCmd,
 	)
 
-	FailedLoadingMasterConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load kube config from fielsystem")
-	}
 	FailedToSetUpUninstallClient = func(err error) error {
 		return eris.Wrap(err, "Unexpected error while setting up Helm uninstall client")
 	}
@@ -143,11 +140,11 @@ func UninstallCmd(
 func buildMasterKubeClients(opts *options.Options, kubeLoader common_config.KubeLoader, kubeClientsFactory common.KubeClientsFactory) (*rest.Config, *common.KubeClients, error) {
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
-		return nil, nil, FailedLoadingMasterConfig(err)
+		return nil, nil, common.FailedLoadingMasterConfig(err)
 	}
 	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
 	if err != nil {
-		return nil, nil, FailedLoadingMasterConfig(err)
+		return nil, nil, common.FailedLoadingMasterConfig(err)
 	}
 	return masterCfg, masterKubeClients, nil
 }

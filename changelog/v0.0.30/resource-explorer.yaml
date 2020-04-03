@@ -1,0 +1,5 @@
+changelog:
+- type: NEW_FEATURE
+  description: Implement a component that can look up all the config applying to a service or workload
+  issueLink: https://github.com/solo-io/mesh-projects/issues/299
+  resolvesIssue: false

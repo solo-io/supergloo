@@ -13,7 +13,7 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 )
 
 var (
@@ -38,17 +38,17 @@ var (
 )
 
 type trafficPolicyValidator struct {
-	meshServiceClient   zephyr_discovery.MeshServiceClient
-	meshServiceSelector selector.MeshServiceSelector
+	meshServiceClient zephyr_discovery.MeshServiceClient
+	resourceSelector  selector.ResourceSelector
 }
 
 func NewTrafficPolicyValidator(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshServiceSelector selector.MeshServiceSelector,
+	resourceSelector selector.ResourceSelector,
 ) TrafficPolicyValidator {
 	return &trafficPolicyValidator{
-		meshServiceClient:   meshServiceClient,
-		meshServiceSelector: meshServiceSelector,
+		meshServiceClient: meshServiceClient,
+		resourceSelector:  resourceSelector,
 	}
 }
 
@@ -82,7 +82,7 @@ func (t *trafficPolicyValidator) validateDestination(ctx context.Context, select
 	if selector == nil {
 		return nil
 	}
-	_, err := t.meshServiceSelector.GetMatchingMeshServices(ctx, selector)
+	_, err := t.resourceSelector.GetMeshServicesByServiceSelector(ctx, selector)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (t *trafficPolicyValidator) validateKubeService(
 	if ref == nil {
 		return nil, NilDestinationRef
 	}
-	meshService, err := t.meshServiceSelector.GetBackingMeshService(ctx, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
+	meshService, err := t.resourceSelector.GetMeshServiceByRefSelector(ctx, ref.GetName(), ref.GetNamespace(), ref.GetCluster())
 	if err != nil {
 		return nil, err
 	}

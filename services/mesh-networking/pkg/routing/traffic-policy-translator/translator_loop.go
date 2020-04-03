@@ -15,7 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/logging"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	"sigs.k8s.io/controller-runtime/pkg/client"

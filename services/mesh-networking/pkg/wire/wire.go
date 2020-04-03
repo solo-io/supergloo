@@ -6,9 +6,12 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
+	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/security/certgen"
 	multicluster_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
@@ -27,6 +30,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		kubernetes_core.NewPodClientFactory,
 		kubernetes_core.NewNodeClientFactory,
 		discovery_core.NewMeshWorkloadClient,
+		discovery_core.NewControllerRuntimeKubernetesClusterClient,
+		kubernetes_apps.GeneratedDeploymentClientFactoryProvider,
+		kubeconfig.SecretToConfigConverterProvider,
+		config_lookup.NewKubeConfigLookup,
 		zephyr_networking.NewVirtualMeshClient,
 		discovery_core.NewMeshClient,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,

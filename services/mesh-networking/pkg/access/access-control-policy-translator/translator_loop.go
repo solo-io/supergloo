@@ -15,7 +15,7 @@ import (
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/logging"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 )
 
 func NewAcpTranslatorLoop(
@@ -23,7 +23,7 @@ func NewAcpTranslatorLoop(
 	meshServiceController discovery_controller.MeshServiceController,
 	meshClient zephyr_discovery.MeshClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
-	meshServiceSelector selector.MeshServiceSelector,
+	resourceSelector selector.ResourceSelector,
 	meshTranslators []AcpMeshTranslator,
 ) AcpTranslatorLoop {
 	return &translatorLoop{
@@ -31,7 +31,7 @@ func NewAcpTranslatorLoop(
 		meshServiceController:     meshServiceController,
 		meshClient:                meshClient,
 		accessControlPolicyClient: accessControlPolicyClient,
-		meshServiceSelector:       meshServiceSelector,
+		resourceSelector:          resourceSelector,
 		meshTranslators:           meshTranslators,
 	}
 }
@@ -41,7 +41,7 @@ type translatorLoop struct {
 	meshServiceController     discovery_controller.MeshServiceController
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
-	meshServiceSelector       selector.MeshServiceSelector
+	resourceSelector          selector.ResourceSelector
 	meshTranslators           []AcpMeshTranslator
 }
 
@@ -181,7 +181,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 
 // Get all destination services' MeshService and backing Mesh selected by the AccessControlPolicy
 func (t *translatorLoop) getTargetServices(ctx context.Context, acp *networking_v1alpha1.AccessControlPolicy) ([]TargetService, error) {
-	meshServices, err := t.meshServiceSelector.GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector())
+	meshServices, err := t.resourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 	}
 	for _, acp := range acpList.Items {
 		acp := acp
-		meshServicesForACP, err := t.meshServiceSelector.GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector())
+		meshServicesForACP, err := t.resourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, err
 		}

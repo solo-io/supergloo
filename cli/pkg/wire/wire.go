@@ -22,10 +22,12 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
 	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
@@ -58,6 +60,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_core.NewGeneratedPodClient,
 		discovery_core.NewGeneratedMeshServiceClient,
 		kubernetes_apps.NewGeneratedDeploymentClient,
+		discovery_core.NewGeneratedMeshServiceClientFactory,
 		apiext2.NewGeneratedCrdClientFactory,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
@@ -73,6 +76,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.UninstallClientsProvider,
 		common_config.NewInMemoryRESTClientGetterFactory,
 		helm_uninstall.NewUninstallerFactory,
+		config_lookup.NewKubeConfigLookup,
 		deregister.NewClusterDeregistrationClient,
 		common.KubeClientsProvider,
 	)
@@ -118,6 +122,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		install.InstallSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
+		explore.ExploreSet,
 		cli.BuildCli,
 	)
 	return nil
@@ -147,6 +152,7 @@ func InitializeCLIWithMocks(
 		upgrade.UpgradeSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
+		explore.ExploreSet,
 		cli.BuildCli,
 	)
 	return nil

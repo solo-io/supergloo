@@ -17,6 +17,7 @@ type Options struct {
 	Istio        Istio
 	Check        Check
 	SmhUninstall SmhUninstall
+	Explore      Explore
 }
 
 type Root struct {
@@ -81,4 +82,8 @@ type SmhUninstall struct {
 
 type Check struct {
 	OutputFormat string
+}
+
+type Explore struct {
+	Policies string
 }

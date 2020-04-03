@@ -17,9 +17,9 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
+	mock_selector "github.com/solo-io/mesh-projects/pkg/selector/mocks"
 	access_control_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
 	mock_access_control_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator/mocks"
-	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
 	mock_zephyr_discovery "github.com/solo-io/mesh-projects/test/mocks/zephyr/discovery"
 	mock_zephyr_networking2 "github.com/solo-io/mesh-projects/test/mocks/zephyr/networking"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +33,7 @@ var _ = Describe("Translator", func() {
 		meshServiceController     *mock_zephyr_discovery.MockMeshServiceController
 		meshClient                *mock_core.MockMeshClient
 		accessControlPolicyClient *mock_zephyr_networking.MockAccessControlPolicyClient
-		meshServiceSelector       *mock_selector.MockMeshServiceSelector
+		resourceSelector          *mock_selector.MockResourceSelector
 		mockMeshTranslator1       *mock_access_control_policy_translator.MockAcpMeshTranslator
 		mockMeshTranslator2       *mock_access_control_policy_translator.MockAcpMeshTranslator
 		meshTranslators           []*mock_access_control_policy_translator.MockAcpMeshTranslator
@@ -51,7 +51,7 @@ var _ = Describe("Translator", func() {
 		meshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		accessControlPolicyClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
-		meshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
+		resourceSelector = mock_selector.NewMockResourceSelector(ctrl)
 		mockMeshTranslator1 = mock_access_control_policy_translator.NewMockAcpMeshTranslator(ctrl)
 		mockMeshTranslator2 = mock_access_control_policy_translator.NewMockAcpMeshTranslator(ctrl)
 		meshTranslators = []*mock_access_control_policy_translator.MockAcpMeshTranslator{
@@ -63,7 +63,7 @@ var _ = Describe("Translator", func() {
 			meshServiceController,
 			meshClient,
 			accessControlPolicyClient,
-			meshServiceSelector,
+			resourceSelector,
 			[]access_control_policy_translator.AcpMeshTranslator{
 				mockMeshTranslator1, mockMeshTranslator2,
 			},
@@ -123,9 +123,9 @@ var _ = Describe("Translator", func() {
 				{ObjectMeta: metav1.ObjectMeta{Name: "mesh-name-1", Namespace: "mesh-namespace-1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "mesh-name-22", Namespace: "mesh-namespace-22"}},
 			}
-			meshServiceSelector.
+			resourceSelector.
 				EXPECT().
-				GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector()).
+				GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 				Return(matchingMeshServices, nil)
 			var expectedTargetServices []access_control_policy_translator.TargetService
 			for i, meshService := range matchingMeshServices {
@@ -187,9 +187,9 @@ var _ = Describe("Translator", func() {
 				{ObjectMeta: metav1.ObjectMeta{Name: "mesh-name-1", Namespace: "mesh-namespace-1"}},
 				{ObjectMeta: metav1.ObjectMeta{Name: "mesh-name-22", Namespace: "mesh-namespace-22"}},
 			}
-			meshServiceSelector.
+			resourceSelector.
 				EXPECT().
-				GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector()).
+				GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 				Return(matchingMeshServices, nil)
 			var expectedTargetServices []access_control_policy_translator.TargetService
 			for i, meshService := range matchingMeshServices {
@@ -311,9 +311,9 @@ var _ = Describe("Translator", func() {
 			var capturedACPsWithStatus []*networking_v1alpha1.AccessControlPolicy
 			for _, acp := range acpList.Items {
 				acp := acp
-				meshServiceSelector.
+				resourceSelector.
 					EXPECT().
-					GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector()).
+					GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 					Return([]*discovery_v1alpha1.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
@@ -420,9 +420,9 @@ var _ = Describe("Translator", func() {
 			var capturedACPsWithStatus []*networking_v1alpha1.AccessControlPolicy
 			for _, acp := range acpList.Items {
 				acp := acp
-				meshServiceSelector.
+				resourceSelector.
 					EXPECT().
-					GetMatchingMeshServices(ctx, acp.Spec.GetDestinationSelector()).
+					GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector()).
 					Return([]*discovery_v1alpha1.MeshService{meshService}, nil)
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.

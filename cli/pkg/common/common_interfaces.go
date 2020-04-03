@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
@@ -13,6 +14,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
@@ -23,6 +25,12 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/version"
 	"k8s.io/client-go/rest"
+)
+
+var (
+	FailedLoadingMasterConfig = func(err error) error {
+		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
+	}
 )
 
 //go:generate mockgen -destination ../mocks/mock_common_interfaces.go -package cli_mocks -source ./common_interfaces.go
@@ -41,6 +49,8 @@ type KubeClients struct {
 	UninstallClients                UninstallClients
 	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
 	ClusterDeregistrationClient     deregister.ClusterDeregistrationClient
+	KubeConfigLookup                config_lookup.KubeConfigLookup
+	MeshServiceClientFactory        discovery_core.GeneratedMeshServiceClientFactory
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -135,6 +145,8 @@ func KubeClientsProvider(
 	uninstallClients UninstallClients,
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
 	clusterDeregistrationClient deregister.ClusterDeregistrationClient,
+	kubeConfigLookup config_lookup.KubeConfigLookup,
+	meshServiceClientFactory discovery_core.GeneratedMeshServiceClientFactory,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
@@ -149,6 +161,8 @@ func KubeClientsProvider(
 		UninstallClients:                uninstallClients,
 		InMemoryRESTClientGetterFactory: inMemoryRESTClientGetterFactory,
 		ClusterDeregistrationClient:     clusterDeregistrationClient,
+		KubeConfigLookup:                kubeConfigLookup,
+		MeshServiceClientFactory:        meshServiceClientFactory,
 	}
 }
 

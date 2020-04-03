@@ -11,6 +11,7 @@ import (
 
 type DeploymentClient interface {
 	Get(ctx context.Context, objectKey client.ObjectKey) (*appsv1.Deployment, error)
+	List(ctx context.Context, options ...client.ListOption) (*appsv1.DeploymentList, error)
 }
 
 type ReplicaSetClient interface {

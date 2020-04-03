@@ -15,27 +15,27 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
-	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
+	"github.com/solo-io/mesh-projects/pkg/selector"
+	mock_selector "github.com/solo-io/mesh-projects/pkg/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Validator", func() {
 	var (
-		ctrl                    *gomock.Controller
-		ctx                     context.Context
-		mockMeshServiceClient   *mock_core.MockMeshServiceClient
-		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
-		validator               preprocess.TrafficPolicyValidator
+		ctrl                  *gomock.Controller
+		ctx                   context.Context
+		mockMeshServiceClient *mock_core.MockMeshServiceClient
+		mockResourceSelector  *mock_selector.MockResourceSelector
+		validator             preprocess.TrafficPolicyValidator
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
-		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
-		validator = preprocess.NewTrafficPolicyValidator(mockMeshServiceClient, mockMeshServiceSelector)
+		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
+		validator = preprocess.NewTrafficPolicyValidator(mockMeshServiceClient, mockResourceSelector)
 	})
 
 	AfterEach(func() {
@@ -63,9 +63,9 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetMatchingMeshServices(ctx, tp.Spec.GetDestinationSelector()).
+			GetMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector()).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		expectSingleErrorOf(err, selector.MeshServiceNotFound(name, namespace, cluster))
@@ -116,9 +116,9 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, name, namespace, cluster).
+			GetMeshServiceByRefSelector(ctx, name, namespace, cluster).
 			Return(nil, selector.MeshServiceNotFound(name, namespace, cluster))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -155,9 +155,9 @@ var _ = Describe("Validator", func() {
 				"version": {Values: []string{"v2", "v3"}},
 			},
 		}}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
+			GetMeshServiceByRefSelector(ctx, serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetCluster()).
 			Return(backingMeshService, nil)
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -264,9 +264,9 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, serviceKey.Name, serviceKey.Namespace, "").
+			GetMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
 			Return(nil, nil)
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)
@@ -288,9 +288,9 @@ var _ = Describe("Validator", func() {
 				},
 			},
 		}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetBackingMeshService(ctx, serviceKey.Name, serviceKey.Namespace, "").
+			GetMeshServiceByRefSelector(ctx, serviceKey.Name, serviceKey.Namespace, "").
 			Return(nil, selector.MeshServiceNotFound(serviceKey.Name, serviceKey.Namespace, ""))
 		err := validator.Validate(ctx, tp)
 		multierr, ok := err.(*multierror.Error)

@@ -6,6 +6,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// returns true if the object metas seem to point to the same resource, in terms of name/namespace/cluster
+// (cluster probably isn't set on these objects, but this is just in the interest of future-proofing)
+func SameObject(this v1.ObjectMeta, that v1.ObjectMeta) bool {
+	return this.GetName() == that.GetName() && this.GetNamespace() == that.GetNamespace() && this.GetClusterName() == that.GetClusterName()
+}
+
 func ObjectMetaToResourceRef(objMeta v1.ObjectMeta) *core_types.ResourceRef {
 	return &core_types.ResourceRef{
 		Name:      objMeta.GetName(),

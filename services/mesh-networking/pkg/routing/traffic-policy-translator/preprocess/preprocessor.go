@@ -5,24 +5,24 @@ import (
 
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 )
 
 type trafficPolicyPreprocessor struct {
-	meshServiceSelector selector.MeshServiceSelector
-	merger              TrafficPolicyMerger
-	validator           TrafficPolicyValidator
+	resourceSelector selector.ResourceSelector
+	merger           TrafficPolicyMerger
+	validator        TrafficPolicyValidator
 }
 
 func NewTrafficPolicyPreprocessor(
-	meshServiceSelector selector.MeshServiceSelector,
+	resourceSelector selector.ResourceSelector,
 	merger TrafficPolicyMerger,
 	validator TrafficPolicyValidator,
 ) TrafficPolicyPreprocessor {
 	return &trafficPolicyPreprocessor{
-		meshServiceSelector: meshServiceSelector,
-		merger:              merger,
-		validator:           validator,
+		resourceSelector: resourceSelector,
+		merger:           merger,
+		validator:        validator,
 	}
 }
 
@@ -43,7 +43,7 @@ func (d *trafficPolicyPreprocessor) PreprocessTrafficPolicy(
 	if err != nil {
 		return nil, err
 	}
-	meshServices, err := d.meshServiceSelector.GetMatchingMeshServices(
+	meshServices, err := d.resourceSelector.GetMeshServicesByServiceSelector(
 		ctx,
 		trafficPolicy.Spec.GetDestinationSelector(),
 	)

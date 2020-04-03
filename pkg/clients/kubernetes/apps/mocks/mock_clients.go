@@ -51,6 +51,26 @@ func (mr *MockDeploymentClientMockRecorder) Get(ctx, objectKey interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeploymentClient)(nil).Get), ctx, objectKey)
 }
 
+// List mocks base method.
+func (m *MockDeploymentClient) List(ctx context.Context, options ...client.ListOption) (*v1.DeploymentList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1.DeploymentList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockDeploymentClientMockRecorder) List(ctx interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDeploymentClient)(nil).List), varargs...)
+}
+
 // MockReplicaSetClient is a mock of ReplicaSetClient interface.
 type MockReplicaSetClient struct {
 	ctrl     *gomock.Controller

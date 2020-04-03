@@ -1,6 +1,11 @@
 package cliconstants
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
 
 var (
 	RootCommand = cobra.Command{
@@ -65,5 +70,13 @@ var (
 	CheckCommand = cobra.Command{
 		Use:   "check",
 		Short: "Check the status of a Service Mesh Hub installation",
+	}
+
+	ExploreCommand = func(validResourceTypes []string) cobra.Command {
+		return cobra.Command{
+			Use: fmt.Sprintf("explore (%s) resource_name", strings.Join(validResourceTypes, "|")),
+			Short: "Explore policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). " +
+				"Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name",
+		}
 	}
 )

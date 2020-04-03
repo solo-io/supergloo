@@ -6,11 +6,10 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
 	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"
@@ -19,11 +18,8 @@ import (
 )
 
 var (
-	FailedToFindKubeConfigSecret = func(err error, clusterName string) error {
-		return eris.Wrapf(err, "Failed to find kube config secret for cluster %s", clusterName)
-	}
-	FailedToConvertSecretToKubeConfig = func(err error, clusterName string) error {
-		return eris.Wrapf(err, "Failed to convert kube config secret for cluster %s to REST config", clusterName)
+	FailedToFindClusterCredentials = func(err error, clusterName string) error {
+		return eris.Wrapf(err, "Failed to load credentials for cluster %s", clusterName)
 	}
 	FailedToUninstallCsrAgent = func(err error, clusterName string) error {
 		return eris.Wrapf(err, "Failed to uninstall CSR agent on cluster %s", clusterName)
@@ -39,40 +35,31 @@ var (
 )
 
 func NewClusterDeregistrationClient(
-	secretsClient kubernetes_core.SecretsClient,
-	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 	crdRemover crd_uninstall.CrdRemover,
 	inMemoryRESTClientFactory common_config.InMemoryRESTClientGetterFactory,
 	helmUninstallerClientFactory helm_uninstall.UninstallerFactory,
+	kubeConfigLookup config_lookup.KubeConfigLookup,
 ) ClusterDeregistrationClient {
 	return &clusterDeregistrationClient{
-		secretsClient:                secretsClient,
-		secretToConfigConverter:      secretToConfigConverter,
 		crdRemover:                   crdRemover,
 		inMemoryRESTClientFactory:    inMemoryRESTClientFactory,
 		helmUninstallerClientFactory: helmUninstallerClientFactory,
+		kubeConfigLookup:             kubeConfigLookup,
 	}
 }
 
 type clusterDeregistrationClient struct {
-	secretsClient                kubernetes_core.SecretsClient
-	secretToConfigConverter      kubeconfig.SecretToConfigConverter
 	crdRemover                   crd_uninstall.CrdRemover
 	kubeLoader                   common_config.KubeLoader
 	inMemoryRESTClientFactory    common_config.InMemoryRESTClientGetterFactory
 	helmUninstallerClientFactory helm_uninstall.UninstallerFactory
+	kubeConfigLookup             config_lookup.KubeConfigLookup
 }
 
 func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *discovery_v1alpha1.KubernetesCluster) error {
-	cfgSecretRef := kubeCluster.Spec.GetSecretRef()
-	secret, err := c.secretsClient.Get(ctx, cfgSecretRef.GetName(), cfgSecretRef.GetNamespace())
+	config, err := c.kubeConfigLookup.FromCluster(ctx, kubeCluster.GetName())
 	if err != nil {
-		return FailedToFindKubeConfigSecret(err, kubeCluster.GetName())
-	}
-
-	clusterName, config, err := c.secretToConfigConverter(secret)
-	if err != nil {
-		return FailedToConvertSecretToKubeConfig(err, kubeCluster.GetName())
+		return FailedToFindClusterCredentials(err, kubeCluster.GetName())
 	}
 
 	restClientGetter := c.inMemoryRESTClientFactory(config.RestConfig)
@@ -83,7 +70,7 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *disc
 
 	helmUninstaller, err := c.helmUninstallerClientFactory(helmRestClientGetter, kubeCluster.Spec.GetWriteNamespace(), noOpHelmLogger)
 	if err != nil {
-		return FailedToSetUpHelmUnintaller(err, clusterName)
+		return FailedToSetUpHelmUnintaller(err, kubeCluster.GetName())
 	}
 
 	_, err = helmUninstaller.Run(cliconstants.CsrAgentReleaseName)
@@ -91,7 +78,7 @@ func (c *clusterDeregistrationClient) Run(ctx context.Context, kubeCluster *disc
 		return FailedToUninstallCsrAgent(err, kubeCluster.GetName())
 	}
 
-	_, err = c.crdRemover.RemoveZephyrCrds(clusterName, config.RestConfig)
+	_, err = c.crdRemover.RemoveZephyrCrds(kubeCluster.GetName(), config.RestConfig)
 	if err != nil {
 		return FailedToRemoveCrds(err, kubeCluster.GetName())
 	}

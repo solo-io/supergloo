@@ -58,6 +58,12 @@ func (m *meshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alp
 	return m.client.Status().Update(ctx, meshService, options...)
 }
 
+type GeneratedMeshServiceClientFactory func(cfg *rest.Config) MeshServiceClient
+
+func NewGeneratedMeshServiceClientFactory() GeneratedMeshServiceClientFactory {
+	return NewGeneratedMeshServiceClient
+}
+
 func NewGeneratedMeshServiceClient(cfg *rest.Config) MeshServiceClient {
 	clientSet, _ := versioned.NewForConfig(cfg)
 
@@ -93,7 +99,15 @@ func (m *generatedMeshServiceClient) Update(ctx context.Context, meshService *v1
 }
 
 func (m *generatedMeshServiceClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.MeshServiceList, error) {
-	return m.client.MeshServices("").List(v1.ListOptions{})
+	listOptions := &client.ListOptions{}
+	for _, v := range opts {
+		v.ApplyToList(listOptions)
+	}
+	raw := v1.ListOptions{}
+	if converted := listOptions.AsListOptions(); converted != nil {
+		raw = *converted
+	}
+	return m.client.MeshServices(listOptions.Namespace).List(raw)
 }
 
 func (m *generatedMeshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alpha1.MeshService, options ...client.UpdateOption) error {

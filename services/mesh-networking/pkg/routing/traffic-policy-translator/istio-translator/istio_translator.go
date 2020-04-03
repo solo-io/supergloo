@@ -13,8 +13,9 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 	client_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -32,7 +33,7 @@ func NewIstioTrafficPolicyTranslator(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-	meshServiceSelector selector.MeshServiceSelector,
+	resourceSelector selector.ResourceSelector,
 	virtualServiceClientFactory istio_networking.VirtualServiceClientFactory,
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
 ) IstioTranslator {
@@ -40,7 +41,7 @@ func NewIstioTrafficPolicyTranslator(
 		dynamicClientGetter:          dynamicClientGetter,
 		meshClient:                   meshClient,
 		meshServiceClient:            meshServiceClient,
-		meshServiceSelector:          meshServiceSelector,
+		resourceSelector:             resourceSelector,
 		virtualServiceClientFactory:  virtualServiceClientFactory,
 		destinationRuleClientFactory: destinationRuleClientFactory,
 	}
@@ -52,7 +53,7 @@ type istioTrafficPolicyTranslator struct {
 	meshServiceClient            zephyr_discovery.MeshServiceClient
 	virtualServiceClientFactory  istio_networking.VirtualServiceClientFactory
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
-	meshServiceSelector          selector.MeshServiceSelector
+	resourceSelector             selector.ResourceSelector
 }
 
 var (
@@ -638,7 +639,7 @@ func (i *istioTrafficPolicyTranslator) getHostnameForKubeService(
 	meshService *discovery_v1alpha1.MeshService,
 	destination *core_types.ResourceRef,
 ) (hostname string, isMulticluster bool, err error) {
-	destinationMeshService, err := i.meshServiceSelector.GetBackingMeshService(
+	destinationMeshService, err := i.resourceSelector.GetMeshServiceByRefSelector(
 		ctx, destination.GetName(), destination.GetNamespace(), destination.GetCluster())
 	if err != nil {
 		return "", false, err

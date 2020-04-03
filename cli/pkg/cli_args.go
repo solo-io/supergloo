@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
 	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
@@ -30,6 +31,7 @@ func BuildCli(
 	installCmd install.InstallCommand,
 	uninstallCmd uninstall.UninstallCommand,
 	checkCommand check.CheckCommand,
+	exploreCommand explore.ExploreCommand,
 	demoCommand demo.DemoCommand,
 ) *cobra.Command {
 	cmd := &cobra.Command{
@@ -49,6 +51,7 @@ func BuildCli(
 		istioCmd,
 		uninstallCmd,
 		checkCommand,
+		exploreCommand,
 		demoCommand,
 	)
 	return cmd

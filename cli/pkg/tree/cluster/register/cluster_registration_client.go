@@ -35,9 +35,6 @@ var (
 	FailedLoadingRemoteConfig = func(err error) error {
 		return eris.Wrap(err, "Failed to load the kube config for the remote cluster")
 	}
-	FailedLoadingMasterConfig = func(err error) error {
-		return eris.Wrap(err, "Failed to load the kube config for the master cluster")
-	}
 	FailedToCreateAuthToken = func(saRef *core_types.ResourceRef, remoteKubeConfig, remoteContext string) string {
 		return fmt.Sprintf("Failed to create an auth token for service account %s.%s in cluster "+
 			"pointed to by kube config %s with context %s. This operation is not atomic, so the service account may "+
@@ -84,7 +81,7 @@ func RegisterCluster(
 	// set up kube clients for the master cluster
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
-		return FailedLoadingMasterConfig(err)
+		return common.FailedLoadingMasterConfig(err)
 	}
 	masterKubeClients, err := kubeClientsFactory(masterCfg, opts.Root.WriteNamespace)
 	if err != nil {

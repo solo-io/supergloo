@@ -10,19 +10,17 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
+	mock_config_lookup "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup/mocks"
 	mock_crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd/mocks"
 	helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm"
 	mock_helm_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/helm/mocks"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	mock_cli_runtime "github.com/solo-io/mesh-projects/test/mocks/cli_runtime"
 	"helm.sh/helm/v3/pkg/action"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/resource"
@@ -48,10 +46,10 @@ var _ = Describe("Cluster Deregistration", func() {
 	})
 
 	It("can deregister a cluster", func() {
-		secretsClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 		helmUninstaller := mock_helm_uninstall.NewMockUninstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
+		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.DefaultWriteNamespace,
@@ -68,29 +66,18 @@ var _ = Describe("Cluster Deregistration", func() {
 				WriteNamespace: remoteWriteNamespace,
 			},
 		}
-		kubeConfigSecret := &v1.Secret{
-			ObjectMeta: clients.ResourceRefToObjectMeta(kubeConfigSecretRef),
-		}
 
-		secretsClient.EXPECT().
-			Get(ctx, "kube-config-secret", env.DefaultWriteNamespace).
-			Return(kubeConfigSecret, nil)
-		var secretToConfigConverter kubeconfig.SecretToConfigConverter = func(secret *v1.Secret) (clusterName string, config *kubeconfig.Config, err error) {
-			Expect(secret).To(Equal(kubeConfigSecret))
-			return remoteClusterName, &kubeconfig.Config{
-				RestConfig: remoteRestConfig,
-			}, nil
-		}
 		helmUninstaller.EXPECT().
 			Run(cliconstants.CsrAgentReleaseName).
 			Return(nil, nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(remoteClusterName, remoteRestConfig).
 			Return(true, nil)
+		configLookup.EXPECT().
+			FromCluster(ctx, clusterToDeregister.GetName()).
+			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
-			secretsClient,
-			secretToConfigConverter,
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -101,16 +88,17 @@ var _ = Describe("Cluster Deregistration", func() {
 
 				return helmUninstaller, nil
 			},
+			configLookup,
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("responds with the appropriate error if it can't find the kube config secret", func() {
+	It("responds with the appropriate error if the config lookup fails", func() {
 		testErr := eris.New("test-err")
-		secretsClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
+		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.DefaultWriteNamespace,
@@ -128,38 +116,33 @@ var _ = Describe("Cluster Deregistration", func() {
 			},
 		}
 
-		secretsClient.EXPECT().
-			Get(ctx, "kube-config-secret", env.DefaultWriteNamespace).
+		configLookup.EXPECT().
+			FromCluster(ctx, clusterToDeregister.GetName()).
 			Return(nil, testErr)
-		var secretToConfigConverter kubeconfig.SecretToConfigConverter = func(secret *v1.Secret) (clusterName string, config *kubeconfig.Config, err error) {
-			Fail("Should not be called in this test")
-			return "", nil, nil
-		}
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
-			secretsClient,
-			secretToConfigConverter,
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
-				Fail("Should have called the rest client getter factory")
+				Fail("Should not have called the rest client getter factory")
 				return nil
 			},
 			func(getter genericclioptions.RESTClientGetter, namespace string, log action.DebugLog) (uninstaller helm_uninstall.Uninstaller, err error) {
 				Fail("Should not have called the helm uninstaller factory")
 				return nil, nil
 			},
+			configLookup,
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
-		Expect(err).To(testutils.HaveInErrorChain(deregister.FailedToFindKubeConfigSecret(testErr, remoteClusterName)))
+		Expect(err).To(testutils.HaveInErrorChain(deregister.FailedToFindClusterCredentials(testErr, remoteClusterName)))
 	})
 
 	It("responds with the appropriate error if CSR uninstallation fails", func() {
 		testErr := eris.New("test-err")
-		secretsClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 		helmUninstaller := mock_helm_uninstall.NewMockUninstaller(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
+		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.DefaultWriteNamespace,
@@ -176,26 +159,14 @@ var _ = Describe("Cluster Deregistration", func() {
 				WriteNamespace: remoteWriteNamespace,
 			},
 		}
-		kubeConfigSecret := &v1.Secret{
-			ObjectMeta: clients.ResourceRefToObjectMeta(kubeConfigSecretRef),
-		}
-
-		secretsClient.EXPECT().
-			Get(ctx, "kube-config-secret", env.DefaultWriteNamespace).
-			Return(kubeConfigSecret, nil)
-		var secretToConfigConverter kubeconfig.SecretToConfigConverter = func(secret *v1.Secret) (clusterName string, config *kubeconfig.Config, err error) {
-			Expect(secret).To(Equal(kubeConfigSecret))
-			return remoteClusterName, &kubeconfig.Config{
-				RestConfig: remoteRestConfig,
-			}, nil
-		}
 		helmUninstaller.EXPECT().
 			Run(cliconstants.CsrAgentReleaseName).
 			Return(nil, testErr)
+		configLookup.EXPECT().
+			FromCluster(ctx, clusterToDeregister.GetName()).
+			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
-			secretsClient,
-			secretToConfigConverter,
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -206,6 +177,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 				return helmUninstaller, nil
 			},
+			configLookup,
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)
@@ -214,10 +186,10 @@ var _ = Describe("Cluster Deregistration", func() {
 
 	It("responds with the appropriate error if CRD removal fails", func() {
 		testErr := eris.New("test-err")
-		secretsClient := mock_kubernetes_core.NewMockSecretsClient(ctrl)
 		helmUninstaller := mock_helm_uninstall.NewMockUninstaller(ctrl)
 		restClientGetter := mock_cli_runtime.NewMockRESTClientGetter(ctrl)
 		crdRemover := mock_crd_uninstall.NewMockCrdRemover(ctrl)
+		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
 			Namespace: env.DefaultWriteNamespace,
@@ -234,29 +206,17 @@ var _ = Describe("Cluster Deregistration", func() {
 				WriteNamespace: remoteWriteNamespace,
 			},
 		}
-		kubeConfigSecret := &v1.Secret{
-			ObjectMeta: clients.ResourceRefToObjectMeta(kubeConfigSecretRef),
-		}
-
-		secretsClient.EXPECT().
-			Get(ctx, "kube-config-secret", env.DefaultWriteNamespace).
-			Return(kubeConfigSecret, nil)
-		var secretToConfigConverter kubeconfig.SecretToConfigConverter = func(secret *v1.Secret) (clusterName string, config *kubeconfig.Config, err error) {
-			Expect(secret).To(Equal(kubeConfigSecret))
-			return remoteClusterName, &kubeconfig.Config{
-				RestConfig: remoteRestConfig,
-			}, nil
-		}
 		helmUninstaller.EXPECT().
 			Run(cliconstants.CsrAgentReleaseName).
 			Return(nil, nil)
+		configLookup.EXPECT().
+			FromCluster(ctx, clusterToDeregister.GetName()).
+			Return(&kubeconfig.Config{RestConfig: remoteRestConfig}, nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds(remoteClusterName, remoteRestConfig).
 			Return(false, testErr)
 
 		clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(
-			secretsClient,
-			secretToConfigConverter,
 			crdRemover,
 			func(cfg *rest.Config) resource.RESTClientGetter {
 				Expect(cfg).To(Equal(remoteRestConfig))
@@ -267,6 +227,7 @@ var _ = Describe("Cluster Deregistration", func() {
 
 				return helmUninstaller, nil
 			},
+			configLookup,
 		)
 
 		err := clusterDeregistrationClient.Run(ctx, clusterToDeregister)

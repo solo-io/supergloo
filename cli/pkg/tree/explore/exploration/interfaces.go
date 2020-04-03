@@ -9,8 +9,8 @@ import (
 )
 
 type ResourceExplorer interface {
-	ExploreService(ctx context.Context, smhWriteNamesapce string, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
-	ExploreWorkload(ctx context.Context, smhWriteNamesapce string, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
+	ExploreService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
+	ExploreWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
 }
 
 type Printer interface {
@@ -22,8 +22,8 @@ type ExplorationResult struct {
 }
 
 type Policies struct {
-	AccessControlPolicies []v1alpha1.AccessControlPolicy
-	TrafficPolicies       []v1alpha1.TrafficPolicy
+	AccessControlPolicies []*v1alpha1.AccessControlPolicy
+	TrafficPolicies       []*v1alpha1.TrafficPolicy
 }
 
 // the name/namespace/cluster of a kube-native resource, like a Service or a Pod

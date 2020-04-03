@@ -6,6 +6,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -19,7 +20,7 @@ func ControllerRuntimeDeploymentClientFactoryProvider() DeploymentClientFactory 
 	return NewControllerRuntimeDeploymentClient
 }
 
-type GeneratedDeploymentClientFactory func(client kubernetes.Interface) DeploymentClient
+type GeneratedDeploymentClientFactory func(cfg *rest.Config) (DeploymentClient, error)
 
 func GeneratedDeploymentClientFactoryProvider() GeneratedDeploymentClientFactory {
 	return NewGeneratedDeploymentClient
@@ -38,8 +39,21 @@ func (d *controllerRuntimeDeploymentClient) Get(ctx context.Context, objectKey c
 	return deployment, nil
 }
 
-func NewGeneratedDeploymentClient(client kubernetes.Interface) DeploymentClient {
-	return &generatedDeploymentClient{client: client}
+func (c *controllerRuntimeDeploymentClient) List(ctx context.Context, options ...client.ListOption) (*appsv1.DeploymentList, error) {
+	deploymentList := appsv1.DeploymentList{}
+	err := c.client.List(ctx, &deploymentList, options...)
+	if err != nil {
+		return &deploymentList, err
+	}
+	return &deploymentList, nil
+}
+
+func NewGeneratedDeploymentClient(cfg *rest.Config) (DeploymentClient, error) {
+	kubeInterface, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &generatedDeploymentClient{client: kubeInterface}, nil
 }
 
 type generatedDeploymentClient struct {
@@ -48,4 +62,16 @@ type generatedDeploymentClient struct {
 
 func (g *generatedDeploymentClient) Get(ctx context.Context, objectKey client.ObjectKey) (*appsv1.Deployment, error) {
 	return g.client.AppsV1().Deployments(objectKey.Namespace).Get(objectKey.Name, v1.GetOptions{})
+}
+
+func (g *generatedDeploymentClient) List(ctx context.Context, options ...client.ListOption) (*appsv1.DeploymentList, error) {
+	listOptions := &client.ListOptions{}
+	for _, v := range options {
+		v.ApplyToList(listOptions)
+	}
+	raw := v1.ListOptions{}
+	if converted := listOptions.AsListOptions(); converted != nil {
+		raw = *converted
+	}
+	return g.client.AppsV1().Deployments(listOptions.Namespace).List(raw)
 }

@@ -186,10 +186,10 @@ func (mr *MockTrafficPolicyClientMockRecorder) UpdateStatus(ctx, trafficPolicy i
 }
 
 // List mocks base method.
-func (m *MockTrafficPolicyClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.TrafficPolicyList, error) {
+func (m *MockTrafficPolicyClient) List(ctx context.Context, options ...client.ListOption) (*v1alpha1.TrafficPolicyList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
-	for _, a := range opts {
+	for _, a := range options {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "List", varargs...)
@@ -199,9 +199,9 @@ func (m *MockTrafficPolicyClient) List(ctx context.Context, opts ...client.ListO
 }
 
 // List indicates an expected call of List.
-func (mr *MockTrafficPolicyClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockTrafficPolicyClientMockRecorder) List(ctx interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
+	varargs := append([]interface{}{ctx}, options...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrafficPolicyClient)(nil).List), varargs...)
 }
 

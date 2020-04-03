@@ -14,8 +14,8 @@ import (
 	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
-	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
+	"github.com/solo-io/mesh-projects/pkg/selector"
+	mock_selector "github.com/solo-io/mesh-projects/pkg/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,7 +26,7 @@ var _ = Describe("Merger", func() {
 		ctrl                    *gomock.Controller
 		ctx                     context.Context
 		trafficPolicyMerger     preprocess.TrafficPolicyMerger
-		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
+		mockResourceSelector    *mock_selector.MockResourceSelector
 		mockMeshClient          *mock_core.MockMeshClient
 		mockTrafficPolicyClient *mock_zephyr_networking.MockTrafficPolicyClient
 	)
@@ -34,11 +34,11 @@ var _ = Describe("Merger", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
+		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockTrafficPolicyClient = mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
 		trafficPolicyMerger = preprocess.NewTrafficPolicyMerger(
-			mockMeshServiceSelector,
+			mockResourceSelector,
 			mockMeshClient,
 			mockTrafficPolicyClient,
 		)
@@ -264,21 +264,21 @@ var _ = Describe("Merger", func() {
 				},
 			},
 		}
-		/*** GetMatchingMeshServices() ***/
+		/*** GetMeshServicesByServiceSelector() ***/
 		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{
 			Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
 		mockTrafficPolicyClient.EXPECT().List(ctx).Return(trafficPolicyList, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp1.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp1.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp2.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp2.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp3.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp3.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[1]}, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp4.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp4.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, tp5.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp5.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
-		mockMeshServiceSelector.EXPECT().GetMatchingMeshServices(ctx, ignoredTP.Spec.GetDestinationSelector()).
+		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, ignoredTP.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0], meshServices[1]}, nil)
 		/*** buildKeyForMeshService ***/
 		mesh1 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}

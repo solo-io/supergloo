@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
+	selector "github.com/solo-io/mesh-projects/pkg/selector"
 )
 
 // MockTrafficPolicyPreprocessor is a mock of TrafficPolicyPreprocessor interface.

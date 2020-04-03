@@ -11,8 +11,8 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	networking_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector"
-	mock_selector "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/selector/mocks"
+	networking_selector "github.com/solo-io/mesh-projects/pkg/selector"
+	mock_selector "github.com/solo-io/mesh-projects/pkg/selector/mocks"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	mock_preprocess "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
@@ -21,22 +21,22 @@ import (
 
 var _ = Describe("Merger", func() {
 	var (
-		ctrl                    *gomock.Controller
-		ctx                     context.Context
-		mockMerger              *mock_preprocess.MockTrafficPolicyMerger
-		mockValidator           *mock_preprocess.MockTrafficPolicyValidator
-		mockMeshServiceSelector *mock_selector.MockMeshServiceSelector
-		preprocessor            preprocess.TrafficPolicyPreprocessor
+		ctrl                 *gomock.Controller
+		ctx                  context.Context
+		mockMerger           *mock_preprocess.MockTrafficPolicyMerger
+		mockValidator        *mock_preprocess.MockTrafficPolicyValidator
+		mockResourceSelector *mock_selector.MockResourceSelector
+		preprocessor         preprocess.TrafficPolicyPreprocessor
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		mockMeshServiceSelector = mock_selector.NewMockMeshServiceSelector(ctrl)
+		mockResourceSelector = mock_selector.NewMockResourceSelector(ctrl)
 		mockMerger = mock_preprocess.NewMockTrafficPolicyMerger(ctrl)
 		mockValidator = mock_preprocess.NewMockTrafficPolicyValidator(ctrl)
 		preprocessor = preprocess.NewTrafficPolicyPreprocessor(
-			mockMeshServiceSelector,
+			mockResourceSelector,
 			mockMerger,
 			mockValidator,
 		)
@@ -57,9 +57,9 @@ var _ = Describe("Merger", func() {
 		}
 		ms := []*discovery_v1alpha1.MeshService{}
 		expectedMergedTPs := map[networking_selector.MeshServiceId][]*networking_v1alpha1.TrafficPolicy{}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetMatchingMeshServices(ctx, selector).
+			GetMeshServicesByServiceSelector(ctx, selector).
 			Return(ms, nil)
 		mockMerger.
 			EXPECT().
@@ -81,9 +81,9 @@ var _ = Describe("Merger", func() {
 			ObjectMeta: v1.ObjectMeta{Namespace: namespace},
 		}
 		ms := []*discovery_v1alpha1.MeshService{}
-		mockMeshServiceSelector.
+		mockResourceSelector.
 			EXPECT().
-			GetMatchingMeshServices(ctx, selector).
+			GetMeshServicesByServiceSelector(ctx, selector).
 			Return(ms, nil)
 		mockMerger.
 			EXPECT().
