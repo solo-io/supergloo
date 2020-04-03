@@ -33,4 +33,4 @@ type MeshWorkloadScanner interface {
 }
 
 // these need to be constructed on the fly when a cluster is added, because the ownerFetcher will need to talk to that cluster
-type MeshWorkloadScannerFactory func(ownerFetcher OwnerFetcher) IstioMeshWorkloadScanner
+type MeshWorkloadScannerFactory func(ownerFetcher OwnerFetcher) MeshWorkloadScanner

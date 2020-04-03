@@ -9,6 +9,7 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/go-logr/zapr v0.1.1
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.0

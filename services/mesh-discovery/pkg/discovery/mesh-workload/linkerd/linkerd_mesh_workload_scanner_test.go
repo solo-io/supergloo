@@ -1,8 +1,10 @@
-package mesh_workload_test
+package linkerd_test
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -33,7 +35,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		pod                 = &corev1.Pod{
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
-					{Image: "istio-proxy"},
+					{Name: "linkerd-proxy"},
 				},
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
@@ -47,7 +49,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockOwnerFetcher = mock_mesh_workload.NewMockOwnerFetcher(ctrl)
-		meshWorkloadScanner = mesh_workload.NewIstioMeshWorkloadScanner(mockOwnerFetcher)
+		meshWorkloadScanner = linkerd.NewLinkerdMeshWorkloadScanner(mockOwnerFetcher)
 	})
 
 	AfterEach(func() {
@@ -57,9 +59,9 @@ var _ = Describe("MeshWorkloadScanner", func() {
 	It("should scan pod", func() {
 		expectedMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("istio-%s-%s-%s", deploymentName, namespace, clusterName),
+				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
 				Namespace: env.DefaultWriteNamespace,
-				Labels:    mesh_workload.DiscoveryLabels(),
+				Labels:    linkerd.DiscoveryLabels(),
 			},
 			Spec: discovery_types.MeshWorkloadSpec{
 				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
@@ -80,8 +82,8 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		Expect(meta).To(Equal(expectedMeshWorkload.ObjectMeta))
 	})
 
-	It("should return nil if not istio injected pod", func() {
-		nonIstioPod := &corev1.Pod{
+	It("should return nil if not linkerd injected pod", func() {
+		nonLinkerdPod := &corev1.Pod{
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{Image: "random-image"},
@@ -89,7 +91,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 			},
 			ObjectMeta: metav1.ObjectMeta{ClusterName: clusterName, Namespace: namespace},
 		}
-		meshWorkload, _, err := meshWorkloadScanner.ScanPod(ctx, nonIstioPod)
+		meshWorkload, _, err := meshWorkloadScanner.ScanPod(ctx, nonLinkerdPod)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshWorkload).To(BeNil())
 	})

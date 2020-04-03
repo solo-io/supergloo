@@ -3,6 +3,9 @@ package mesh_discovery
 import (
 	"context"
 
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
+	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
@@ -38,7 +41,8 @@ func Run(rootCtx context.Context) {
 			discoveryContext.MeshDiscovery.LinkerdMeshScanner,
 		},
 		[]mesh_workload.MeshWorkloadScannerFactory{
-			mesh_workload.NewIstioMeshWorkloadScanner,
+			istio.NewIstioMeshWorkloadScanner,
+			linkerd.NewLinkerdMeshWorkloadScanner,
 		},
 		discoveryContext,
 	)

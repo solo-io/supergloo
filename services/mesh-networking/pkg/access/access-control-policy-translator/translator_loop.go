@@ -65,7 +65,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			t.setStatus(err, translatorErrors, acp)
 			err = t.accessControlPolicyClient.UpdateStatus(ctx, acp)
 			if err != nil {
-				logger.Errorw("Error while handling AccessControlPolicy create event", err)
+				logger.Errorw("Error while handling AccessControlPolicy update event", err)
 			}
 			return nil
 		},

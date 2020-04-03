@@ -1,9 +1,10 @@
-package mesh_workload
+package linkerd
 
 import (
 	"context"
 	"fmt"
-	"strings"
+
+	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
 
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/env"
@@ -15,26 +16,24 @@ import (
 var (
 	DiscoveryLabels = func() map[string]string {
 		return map[string]string{
-			constants.MESH_TYPE: core_types.MeshType_ISTIO.String(),
+			constants.MESH_TYPE: core_types.MeshType_LINKERD.String(),
 		}
 	}
 )
 
-type IstioMeshWorkloadScanner MeshWorkloadScanner
-
 // visible for testing
-func NewIstioMeshWorkloadScanner(ownerFetcher OwnerFetcher) IstioMeshWorkloadScanner {
-	return &istioMeshWorkloadScanner{
+func NewLinkerdMeshWorkloadScanner(ownerFetcher mesh_workload.OwnerFetcher) mesh_workload.MeshWorkloadScanner {
+	return &linkerdMeshWorkloadScanner{
 		deploymentFetcher: ownerFetcher,
 	}
 }
 
-type istioMeshWorkloadScanner struct {
-	deploymentFetcher OwnerFetcher
+type linkerdMeshWorkloadScanner struct {
+	deploymentFetcher mesh_workload.OwnerFetcher
 }
 
-func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*core_types.ResourceRef, metav1.ObjectMeta, error) {
-	if !i.isIstioPod(pod) {
+func (i *linkerdMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod) (*core_types.ResourceRef, metav1.ObjectMeta, error) {
+	if !i.isLinkerdPod(pod) {
 		return nil, metav1.ObjectMeta{}, nil
 	}
 	deployment, err := i.deploymentFetcher.GetDeployment(ctx, pod)
@@ -47,22 +46,22 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 			Cluster:   pod.ClusterName,
 		}, metav1.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		}, nil
 }
 
-// iterate through pod's containers and check for one with name containing "istio" and "proxy"
-func (i *istioMeshWorkloadScanner) isIstioPod(pod *core_v1.Pod) bool {
+// iterate through pod's containers and check for one with name containing "linkerd" and "proxy"
+func (i *linkerdMeshWorkloadScanner) isLinkerdPod(pod *core_v1.Pod) bool {
 	for _, container := range pod.Spec.Containers {
-		if strings.Contains(container.Image, "istio") && strings.Contains(container.Image, "proxy") {
+		if container.Name == "linkerd-proxy" {
 			return true
 		}
 	}
 	return false
 }
 
-func (i *istioMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {
+func (i *linkerdMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {
 	// TODO: https://github.com/solo-io/mesh-projects/issues/141
-	return fmt.Sprintf("%s-%s-%s-%s", "istio", deploymentName, namespace, clusterName)
+	return fmt.Sprintf("%s-%s-%s-%s", "linkerd", deploymentName, namespace, clusterName)
 }
