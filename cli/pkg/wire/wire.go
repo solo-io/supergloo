@@ -11,6 +11,7 @@ import (
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -20,6 +21,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
@@ -107,6 +109,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		DefaultKubeClientsFactoryProvider,
 		DefaultClientsFactoryProvider,
 		usage.DefaultUsageReporterProvider,
+		exec.NewShellRunner,
+		demo.DemoSet,
 		upgrade.UpgradeSet,
 		cluster.ClusterSet,
 		version.VersionSet,
@@ -130,10 +134,12 @@ func InitializeCLIWithMocks(
 	imageNameParser docker.ImageNameParser,
 	fileReader common.FileReader,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	runnner exec.Runner,
 ) *cobra.Command {
 
 	wire.Build(
 		options.NewOptionsProvider,
+		demo.DemoSet,
 		cluster.ClusterSet,
 		version.VersionSet,
 		istio.IstioProviderSet,

@@ -42,6 +42,7 @@ func ClusterRegistrationCmd(
 			if !strings.Contains(binaryName, "meshctl") {
 				binaryName = cmd.Root().Name()
 			}
+
 			return RegisterCluster(ctx, binaryName, cmd.Flags(), clientsFactory, kubeClientsFactory, opts, out, kubeLoader)
 		},
 	}

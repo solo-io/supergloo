@@ -13,6 +13,7 @@ import (
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -23,6 +24,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
+	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
@@ -126,11 +130,15 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand)
+	runner := exec.NewShellRunner(in, out)
+	initCmd := demo_init.DemoInitCmd(ctx, runner)
+	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
+	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, demoCommand)
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, runnner exec.Runner) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
@@ -143,6 +151,9 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand)
+	initCmd := demo_init.DemoInitCmd(ctx, runnner)
+	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runnner)
+	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, demoCommand)
 	return command
 }

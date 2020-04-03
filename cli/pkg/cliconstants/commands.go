@@ -22,6 +22,26 @@ var (
 			"the latter selects which context should be used from that kubeconfig file",
 	}
 
+	DemoCommand = cobra.Command{
+		Use:   "demo",
+		Short: "Command line utilities for running/interacting with Service Mesh Hub demos",
+	}
+
+	DemoInitCommand = cobra.Command{
+		Use:   "init",
+		Short: "Bootstrap a new local Service Mesh Hub demo setup",
+		Long: "Running the Service Mesh Hub demo setup locally requires 4 tools to be installed, and accessible via the " +
+			"PATH. meshctl, kubectl, docker, and kind. This command will bootstrap 2 clusters, one of which will run " +
+			"the Service Mesh Hub management-plane as well as Istio, and the other will just run Istio.",
+	}
+
+	DemoCleanupCommand = cobra.Command{
+		Use:   "cleanup",
+		Short: "Delete the local Service Mesh Hub demo setup",
+		Long: "This will delete all kind clusters running locally, so make sure to only run this script if the only " +
+			"kind clusters running are those created by mesctl demo init.",
+	}
+
 	VersionCommand = cobra.Command{
 		Use:   "version",
 		Short: "Display the version of meshctl and Service Mesh Hub server components",

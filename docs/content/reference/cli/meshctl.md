@@ -25,6 +25,7 @@ CLI for Service Mesh Hub
 
 * [meshctl check](../meshctl_check)	 - Check the status of a Service Mesh Hub installation
 * [meshctl cluster](../meshctl_cluster)	 - Register and perform operations on clusters
+* [meshctl demo](../meshctl_demo)	 - Command line utilities for running/interacting with Service Mesh Hub demos
 * [meshctl install](../meshctl_install)	 - Install Service Mesh Hub
 * [meshctl istio](../meshctl_istio)	 - Manage installations of Istio
 * [meshctl uninstall](../meshctl_uninstall)	 - Completely uninstall Service Mesh Hub and remove associated CRDs
