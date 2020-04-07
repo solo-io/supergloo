@@ -17,8 +17,10 @@ func updateServices(ctx context.Context, federatedServices []*discovery_v1alpha1
 	for _, federatedService := range federatedServices {
 		err := meshServiceClient.Update(ctx, federatedService)
 		if err != nil {
-			logger.Errorw(fmt.Sprintf("Failed to set federation metadata on mesh service %s.%s",
-				federatedService.Name, federatedService.Namespace), zap.Error(err))
+			logger.Errorw(fmt.Sprintf("Failed to set federation metadata on mesh service"),
+				zap.Any("opbject_meta", federatedService.ObjectMeta),
+				zap.Error(err),
+			)
 			return err
 		}
 	}

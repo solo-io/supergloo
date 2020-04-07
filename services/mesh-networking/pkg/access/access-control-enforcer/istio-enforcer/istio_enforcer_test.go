@@ -35,7 +35,6 @@ var _ = Describe("IstioEnforcer", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
 		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		authPolicyClient = mock_istio_security.NewMockAuthorizationPolicyClient(ctrl)
 		istioEnforcer = istio_enforcer.NewIstioEnforcer(
@@ -43,6 +42,7 @@ var _ = Describe("IstioEnforcer", func() {
 			func(client client.Client) security.AuthorizationPolicyClient {
 				return authPolicyClient
 			})
+		ctx = context.TODO()
 	})
 
 	AfterEach(func() {
@@ -158,6 +158,7 @@ var _ = Describe("IstioEnforcer", func() {
 					Get(ctx, ingressAuthPolicyKey).
 					Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			} else {
+				gomock.Any()
 				// Delete should not be called if no global auth policy exists
 				authPolicyClient.
 					EXPECT().

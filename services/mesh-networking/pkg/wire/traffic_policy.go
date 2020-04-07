@@ -25,7 +25,6 @@ var (
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		LocalTrafficPolicyControllerProvider,
-		LocalMeshServiceControllerProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
@@ -42,8 +41,14 @@ func LocalMeshServiceControllerProvider(mgr mc_manager.AsyncManager) (discovery_
 	return discovery_controller.NewMeshServiceController("management-plane-mesh-service-controller", mgr.Manager())
 }
 
+func LocalMeshWorkloadControllerProvider(mgr mc_manager.AsyncManager) (discovery_controller.MeshWorkloadController, error) {
+	return discovery_controller.NewMeshWorkloadController("management-plane-mesh-workload-controller", mgr.Manager())
+}
+
 func TrafficPolicyMeshTranslatorsProvider(
 	istioTranslator istio_translator.IstioTranslator,
 ) []traffic_policy_translator.TrafficPolicyMeshTranslator {
-	return []traffic_policy_translator.TrafficPolicyMeshTranslator{istioTranslator}
+	return []traffic_policy_translator.TrafficPolicyMeshTranslator{
+		istioTranslator,
+	}
 }

@@ -27,7 +27,7 @@ var (
 func NewFederationSnapshotListener(decider FederationDecider) FederationDeciderSnapshotListener {
 	return &snapshot.MeshNetworkingSnapshotListenerFunc{
 		OnSync: func(ctx context.Context, snap *snapshot.MeshNetworkingSnapshot) {
-			decider.DecideFederation(ctx, snap)
+			decider.DecideFederation(contextutils.WithLogger(ctx, "federation_decider"), snap)
 		},
 	}
 }

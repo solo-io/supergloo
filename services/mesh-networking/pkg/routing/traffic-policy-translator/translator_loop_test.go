@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -53,7 +54,9 @@ var _ = Describe("Translator", func() {
 		mockMeshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
 		translator = traffic_policy_translator.NewTrafficPolicyTranslatorLoop(
 			mockPreprocessor,
-			[]traffic_policy_translator.TrafficPolicyMeshTranslator{mockIstioTranslator},
+			[]traffic_policy_translator.TrafficPolicyMeshTranslator{
+				mockIstioTranslator,
+			},
 			mockMeshClient,
 			mockMeshServiceClient,
 			mockTrafficPolicyClient,
@@ -134,8 +137,12 @@ var _ = Describe("Translator", func() {
 				Return(mergedTPsByMeshService, nil)
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(nil)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 			mockTrafficPolicyClient.EXPECT().UpdateStatus(ctx, triggeringTP).Return(nil)
 			trafficPolicyEventHandler.OnCreate(triggeringTP)
 		})
@@ -181,8 +188,12 @@ var _ = Describe("Translator", func() {
 			}
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(translatorError)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
 			expectedTP := &networking_v1alpha1.TrafficPolicy{}
@@ -248,8 +259,12 @@ var _ = Describe("Translator", func() {
 				Return(mergedTPsByMeshService, nil)
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(nil)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 
 			meshServiceEventHandler.OnCreate(triggerMeshService)
 		})

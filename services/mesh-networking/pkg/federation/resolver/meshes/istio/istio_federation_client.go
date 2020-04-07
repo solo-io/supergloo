@@ -266,13 +266,15 @@ func (i *istioFederationClient) determineExternalIpForGateway(
 	if len(gatewayServiceList.Items) == 0 {
 		return eap, eris.Errorf("No gateway for virtual mesh %s has been initialized yet", virtualMeshName)
 	} else if len(gatewayServiceList.Items) != 1 {
-		return eap, eris.Errorf("Istio gateway for virtual mesh %s is in an unknown state with multiple services for the ingress gateway", virtualMeshName)
+		return eap, eris.Errorf("Istio gateway for virtual mesh %s is in an unknown state with multiple services "+
+			"for the ingress gateway", virtualMeshName)
 	}
 
 	service := gatewayServiceList.Items[0]
 
 	if len(service.Spec.Ports) == 0 {
-		return eap, eris.Errorf("service %+v is missing ports", service.ObjectMeta)
+		return eap, eris.Errorf("service %s.%s in cluster %s is missing ports", service.ObjectMeta.Name,
+			service.ObjectMeta.Namespace, clusterName)
 	}
 
 	return i.externalAccessPointGetter.GetExternalAccessPointForService(ctx, &service, DefaultGatewayPortName, clusterName)

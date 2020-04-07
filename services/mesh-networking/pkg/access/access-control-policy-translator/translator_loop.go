@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -16,6 +17,7 @@ import (
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/logging"
 	"github.com/solo-io/mesh-projects/pkg/selector"
+	"go.uber.org/zap"
 )
 
 func NewAcpTranslatorLoop(
@@ -41,42 +43,56 @@ type translatorLoop struct {
 	meshServiceController     discovery_controller.MeshServiceController
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
-	resourceSelector          selector.ResourceSelector
 	meshTranslators           []AcpMeshTranslator
+	resourceSelector          selector.ResourceSelector
 }
 
 func (t *translatorLoop) Start(ctx context.Context) error {
 	err := t.acpController.AddEventHandler(ctx, &networking_controller.AccessControlPolicyEventHandlerFuncs{
-		OnCreate: func(acp *v1alpha1.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, acp)
-			logger.Debugf("Handling event: %+v", acp)
-			translatorErrors, err := t.translateAccessControlPolicy(ctx, acp)
-			t.setStatus(err, translatorErrors, acp)
-			err = t.accessControlPolicyClient.UpdateStatus(ctx, acp)
+		OnCreate: func(obj *v1alpha1.AccessControlPolicy) error {
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger.Debugw("event handler enter",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
+			translatorErrors, err := t.translateAccessControlPolicy(ctx, obj)
+			t.setStatus(err, translatorErrors, obj)
+			err = t.accessControlPolicyClient.UpdateStatus(ctx, obj)
 			if err != nil {
 				logger.Errorw("Error while handling AccessControlPolicy create event", err)
 			}
 			return nil
 		},
-		OnUpdate: func(_, acp *v1alpha1.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, acp)
-			logger.Debugf("Handling event: %+v", acp)
-			translatorErrors, err := t.translateAccessControlPolicy(ctx, acp)
-			t.setStatus(err, translatorErrors, acp)
-			err = t.accessControlPolicyClient.UpdateStatus(ctx, acp)
+		OnUpdate: func(old, new *v1alpha1.AccessControlPolicy) error {
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger.Debugw("event handler enter",
+				zap.Any("old_spec", old.Spec),
+				zap.Any("old_status", old.Status),
+				zap.Any("new_spec", new.Spec),
+				zap.Any("new_status", new.Status),
+			)
+			translatorErrors, err := t.translateAccessControlPolicy(ctx, new)
+			t.setStatus(err, translatorErrors, new)
+			err = t.accessControlPolicyClient.UpdateStatus(ctx, new)
 			if err != nil {
 				logger.Errorw("Error while handling AccessControlPolicy update event", err)
 			}
 			return nil
 		},
-		OnDelete: func(policy *v1alpha1.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, policy)
-			logger.Debugf("Ignoring event: %+v", policy)
+		OnDelete: func(obj *v1alpha1.AccessControlPolicy) error {
+			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, obj)
+			logger.Debugw("ignoring event",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
 			return nil
 		},
-		OnGeneric: func(policy *v1alpha1.AccessControlPolicy) error {
-			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, policy)
-			logger.Debugf("Ignoring event: %+v", policy)
+		OnGeneric: func(obj *v1alpha1.AccessControlPolicy) error {
+			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, obj)
+			logger.Debugw("ignoring event",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
 			return nil
 		},
 	})
@@ -84,10 +100,13 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 		return err
 	}
 	return t.meshServiceController.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
-		OnCreate: func(meshService *discovery_v1alpha1.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, meshService)
-			logger.Debugf("Handling event: %+v", meshService)
-			translatorErrorsForACPs, err := t.translateACPsForMeshService(ctx, meshService)
+		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger.Debugw("event handler enter",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
+			translatorErrorsForACPs, err := t.translateACPsForMeshService(ctx, obj)
 			// Update status for each ACP that was processed for MeshService
 			for _, translatorErrWithACP := range translatorErrorsForACPs {
 				t.setStatus(err, translatorErrWithACP.translatorErrors, translatorErrWithACP.accessControlPolicy)
@@ -98,10 +117,15 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnUpdate: func(_, meshService *discovery_v1alpha1.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, meshService)
-			logger.Debugf("Handling event: %+v", meshService)
-			translatorErrorsForACPs, err := t.translateACPsForMeshService(ctx, meshService)
+		OnUpdate: func(old, new *discovery_v1alpha1.MeshService) error {
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger.Debugw("event handler enter",
+				zap.Any("old_spec", old.Spec),
+				zap.Any("old_status", old.Status),
+				zap.Any("new_spec", new.Spec),
+				zap.Any("new_status", new.Status),
+			)
+			translatorErrorsForACPs, err := t.translateACPsForMeshService(ctx, new)
 			// Update status for each ACP that was processed for MeshService
 			for _, translatorErrWithACP := range translatorErrorsForACPs {
 				t.setStatus(err, translatorErrWithACP.translatorErrors, translatorErrWithACP.accessControlPolicy)
@@ -112,14 +136,20 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			}
 			return nil
 		},
-		OnDelete: func(meshService *discovery_v1alpha1.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, meshService)
-			logger.Debugf("Ignoring event: %+v", meshService)
+		OnDelete: func(obj *discovery_v1alpha1.MeshService) error {
+			logger := logging.BuildEventLogger(ctx, logging.DeleteEvent, obj)
+			logger.Debugw("ignoring event",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
 			return nil
 		},
-		OnGeneric: func(meshService *discovery_v1alpha1.MeshService) error {
-			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, meshService)
-			logger.Debugf("Ignoring event: %+v", meshService)
+		OnGeneric: func(obj *discovery_v1alpha1.MeshService) error {
+			logger := logging.BuildEventLogger(ctx, logging.GenericEvent, obj)
+			logger.Debugw("ignoring event",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
 			return nil
 		},
 	})
@@ -136,7 +166,12 @@ func (t *translatorLoop) translateAccessControlPolicy(
 	}
 	var translatorErrors []*types.AccessControlPolicyStatus_TranslatorError
 	for _, meshTranslator := range t.meshTranslators {
-		translatorError := meshTranslator.Translate(ctx, targetServices, acp)
+
+		translatorError := meshTranslator.Translate(
+			contextutils.WithLogger(ctx, meshTranslator.Name()),
+			targetServices,
+			acp)
+
 		if translatorError != nil {
 			translatorErrors = append(translatorErrors, translatorError)
 		}
@@ -166,7 +201,11 @@ func (t *translatorLoop) translateACPsForMeshService(
 	for _, acp := range acps {
 		var translatorErrors []*types.AccessControlPolicyStatus_TranslatorError
 		for _, meshTranslator := range t.meshTranslators {
-			translatorError := meshTranslator.Translate(ctx, []TargetService{targetService}, acp)
+			translatorError := meshTranslator.Translate(
+				contextutils.WithLogger(ctx, meshTranslator.Name()),
+				[]TargetService{targetService},
+				acp,
+			)
 			if translatorError != nil {
 				translatorErrors = append(translatorErrors, translatorError)
 			}

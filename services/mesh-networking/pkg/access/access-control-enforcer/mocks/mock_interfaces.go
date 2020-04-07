@@ -72,6 +72,20 @@ func (m *MockAccessPolicyMeshEnforcer) EXPECT() *MockAccessPolicyMeshEnforcerMoc
 	return m.recorder
 }
 
+// Name mocks base method.
+func (m *MockAccessPolicyMeshEnforcer) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).Name))
+}
+
 // StartEnforcing mocks base method.
 func (m *MockAccessPolicyMeshEnforcer) StartEnforcing(ctx context.Context, meshes []*v1alpha1.Mesh) error {
 	m.ctrl.T.Helper()

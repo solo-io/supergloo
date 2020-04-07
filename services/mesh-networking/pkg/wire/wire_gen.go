@@ -21,7 +21,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/selector"
 	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 	access_policy_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
 	acp_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
@@ -96,8 +95,10 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		return MeshNetworkingContext{}, err
 	}
 	trafficPolicyTranslatorLoop := traffic_policy_translator.NewTrafficPolicyTranslatorLoop(trafficPolicyPreprocessor, v, meshClient, meshServiceClient, trafficPolicyClient, trafficPolicyController, meshServiceController)
-	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
-	meshServiceControllerFactory := controllers.NewMeshServiceControllerFactory()
+	meshWorkloadController, err := LocalMeshWorkloadControllerProvider(asyncManager)
+	if err != nil {
+		return MeshNetworkingContext{}, err
+	}
 	virtualMeshController, err := controller_factories.NewLocalVirtualMeshController(asyncManager)
 	if err != nil {
 		return MeshNetworkingContext{}, err
@@ -110,7 +111,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	federationStrategyChooser := strategies.NewFederationStrategyChooser()
 	federationDecider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, federationStrategyChooser)
 	federationDeciderSnapshotListener := decider.NewFederationSnapshotListener(federationDecider)
-	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadControllerFactory, meshServiceControllerFactory, virtualMeshController, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)
+	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadController, meshServiceController, virtualMeshController, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)
 	accessControlPolicyController, err := LocalAccessControlPolicyControllerProvider(asyncManager)
 	if err != nil {
 		return MeshNetworkingContext{}, err

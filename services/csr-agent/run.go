@@ -20,7 +20,7 @@ func Run(ctx context.Context) {
 	}
 
 	istioCsrHandler := csrAgentContext.VirtualMeshCSRDataSourceFactory(
-		ctx,
+		contextutils.WithLogger(ctx, "csr_agent_data_source"),
 		csrAgentContext.CsrClient,
 		csrAgentContext.CsrAgentIstioProcessor,
 	)

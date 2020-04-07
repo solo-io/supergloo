@@ -10,6 +10,7 @@ import (
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	"go.uber.org/zap"
 )
 
 var (
@@ -94,6 +95,9 @@ func (m *virtualMeshValidator) updateVirtualMeshStatus(ctx context.Context, virt
 
 	err := m.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
 	if err != nil {
-		logger.Errorf("Error updating validation status on virtual mesh %+v", virtualMesh.ObjectMeta)
+		logger.Errorw("Error updating validation status on virtual mesh",
+			zap.Any("object_meta", virtualMesh.ObjectMeta),
+			zap.Any("status", virtualMesh.Status),
+		)
 	}
 }

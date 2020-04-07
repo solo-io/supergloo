@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -101,8 +102,12 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StartEnforcing(ctx, meshes).
+				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 				Return(nil)
+			meshEnforcer.
+				EXPECT().
+				Name().
+				Return("")
 		}
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
@@ -132,8 +137,12 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StopEnforcing(ctx, meshes).
+				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 				Return(nil)
+			meshEnforcer.
+				EXPECT().
+				Name().
+				Return("")
 		}
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
@@ -163,8 +172,12 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 		meshEnforcers[0].
 			EXPECT().
-			StopEnforcing(ctx, meshes).
+			StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 			Return(testErr)
+		meshEnforcers[0].
+			EXPECT().
+			Name().
+			Return("")
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
 			EXPECT().

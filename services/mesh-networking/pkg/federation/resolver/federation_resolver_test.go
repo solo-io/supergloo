@@ -19,6 +19,7 @@ import (
 	mock_discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
+	"github.com/solo-io/mesh-projects/pkg/logging"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver"
 	mock_meshes "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/mock"
@@ -208,18 +209,18 @@ var _ = Describe("Federation Decider", func() {
 			},
 			Status: discovery_types.MeshServiceStatus{},
 		}
-
+		eventCtx := logging.EventContext(ctx, logging.CreateEvent, service1)
 		meshWorkloadClient.EXPECT().
-			Get(ctx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
+			Get(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
 			Return(nil, testErr)
 
 		meshWorkloadClient.EXPECT().
-			Get(ctx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
+			Get(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
 			Return(nil, testErr)
 
 		meshServiceClient.EXPECT().
 			UpdateStatus(
-				ctx,
+				eventCtx,
 				&discovery_v1alpha1.MeshService{
 					Spec: service1.Spec,
 					Status: discovery_types.MeshServiceStatus{
@@ -239,15 +240,15 @@ var _ = Describe("Federation Decider", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		testLogger.EXPECT().
-			NumEntries(2)
+			NumEntries(4)
 		testLogger.EXPECT().
-			FirstEntry().
+			Entry(testLogger.NumLogEntries()-3).
 			Level(zapcore.WarnLevel).
 			HaveMessage(resolver.FailedToFederateServiceMessage).
 			Have("mesh_workload", fmt.Sprintf("%s.%s", workload1.Name, workload1.Namespace)).
 			Have("mesh_service", fmt.Sprintf("%s.%s", service1.Name, service1.Namespace))
 		testLogger.EXPECT().
-			LastEntry().
+			Entry(testLogger.NumLogEntries()-2).
 			HaveMessage(resolver.FailedToFederateServiceMessage).
 			Level(zapcore.WarnLevel).
 			Have("mesh_workload", fmt.Sprintf("%s.%s", workload2.Name, workload2.Namespace)).
@@ -358,17 +359,18 @@ var _ = Describe("Federation Decider", func() {
 		externalAddress := "255.255.255.255" // intentional garbage
 		port := uint32(32000)                // equally intentional garbage
 
+		eventCtx := logging.EventContext(ctx, logging.CreateEvent, federatedService)
 		meshWorkloadClient.EXPECT().
-			Get(ctx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
+			Get(eventCtx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
 			Return(federatedToWorkload, nil)
 		meshClient.EXPECT().
-			Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
+			Get(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
 			Return(clientMesh, nil)
 		meshClient.EXPECT().
-			Get(ctx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
+			Get(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
 			Return(serverMesh, nil)
 		virtualMeshClient.EXPECT().
-			List(ctx).
+			List(eventCtx).
 			Return(&networking_v1alpha1.VirtualMeshList{
 				Items: []networking_v1alpha1.VirtualMesh{*virtualMeshContainingService},
 			}, nil)
@@ -377,17 +379,17 @@ var _ = Describe("Federation Decider", func() {
 			Port:    port,
 		}
 		meshFederationClient.EXPECT().
-			FederateServiceSide(ctx, virtualMeshContainingService, federatedService).
+			FederateServiceSide(contextutils.WithLogger(eventCtx, "istio"), virtualMeshContainingService, federatedService).
 			Return(eap, nil)
 		meshFederationClient.EXPECT().
-			FederateClientSide(ctx, eap, federatedService, federatedToWorkload).
+			FederateClientSide(contextutils.WithLogger(eventCtx, "istio"), eap, federatedService, federatedToWorkload).
 			Return(nil)
 		serviceCopy := *federatedService
 		serviceCopy.Status.FederationStatus = &core_types.Status{
 			State: core_types.Status_ACCEPTED,
 		}
 		meshServiceClient.EXPECT().
-			UpdateStatus(ctx, &serviceCopy).
+			UpdateStatus(eventCtx, &serviceCopy).
 			Return(nil)
 
 		err := capturedEventHandler.OnCreate(federatedService)

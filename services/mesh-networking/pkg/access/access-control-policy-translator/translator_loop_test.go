@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
@@ -142,7 +143,8 @@ var _ = Describe("Translator", func() {
 				)
 			}
 			for _, meshTranslator := range meshTranslators {
-				meshTranslator.EXPECT().Translate(ctx, expectedTargetServices, acp).Return(nil)
+				meshTranslator.EXPECT().Translate(contextutils.WithLogger(ctx, ""), expectedTargetServices, acp).Return(nil)
+				meshTranslator.EXPECT().Name().Return("")
 			}
 			var capturedACPWithStatus *networking_v1alpha1.AccessControlPolicy
 			accessControlPolicyClient.
@@ -214,8 +216,9 @@ var _ = Describe("Translator", func() {
 				translatorErrors = append(translatorErrors, translatorErr)
 				meshTranslator.
 					EXPECT().
-					Translate(ctx, expectedTargetServices, acp).
+					Translate(contextutils.WithLogger(ctx, ""), expectedTargetServices, acp).
 					Return(translatorErr)
+				meshTranslator.EXPECT().Name().Return("")
 			}
 			var capturedACPWithStatus *networking_v1alpha1.AccessControlPolicy
 			accessControlPolicyClient.
@@ -318,8 +321,9 @@ var _ = Describe("Translator", func() {
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
 						EXPECT().
-						Translate(ctx, []access_control_policy_translator.TargetService{targetService}, &acp).
+						Translate(contextutils.WithLogger(ctx, ""), []access_control_policy_translator.TargetService{targetService}, &acp).
 						Return(nil)
+					meshTranslator.EXPECT().Name().Return("")
 				}
 				accessControlPolicyClient.
 					EXPECT().
@@ -427,8 +431,9 @@ var _ = Describe("Translator", func() {
 				for _, meshTranslator := range meshTranslators {
 					meshTranslator.
 						EXPECT().
-						Translate(ctx, []access_control_policy_translator.TargetService{targetService}, &acp).
+						Translate(contextutils.WithLogger(ctx, ""), []access_control_policy_translator.TargetService{targetService}, &acp).
 						Return(newTranslatorError())
+					meshTranslator.EXPECT().Name().Return("")
 				}
 				accessControlPolicyClient.
 					EXPECT().

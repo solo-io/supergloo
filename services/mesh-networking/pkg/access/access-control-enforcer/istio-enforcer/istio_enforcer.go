@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	EnforcerId                        = "istio_enforcer"
 	GlobalAccessControlAuthPolicyName = "global-access-control"
 	IngressGatewayAuthPolicy          = "ingress-policy"
 )
@@ -37,6 +38,10 @@ func NewIstioEnforcer(
 		authPolicyClientFactory: authPolicyClientFactory,
 		dynamicClientGetter:     dynamicClientGetter,
 	}
+}
+
+func (i *istioEnforcer) Name() string {
+	return EnforcerId
 }
 
 func (i *istioEnforcer) StartEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error {

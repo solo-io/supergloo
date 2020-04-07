@@ -11,6 +11,8 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
 type TrafficPolicyMeshTranslator interface {
+	// The name which will be used to identify the translator in the logs
+	Name() string
 	// translate a TrafficPolicy into mesh-specific resources and upsert
 	// the presence of a TranslatorError indicates an error during translation
 	TranslateTrafficPolicy(

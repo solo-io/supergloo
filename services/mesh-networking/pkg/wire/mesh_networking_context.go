@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	controller2 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/mesh-projects/services/common/multicluster"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
 	access_control_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer"
 	access_control_policy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
@@ -49,8 +49,8 @@ func MeshNetworkingContextProvider(
 }
 
 type MeshNetworkingSnapshotContext struct {
-	MeshWorkloadControllerFactory     controllers.MeshWorkloadControllerFactory
-	MeshServiceControllerFactory      controllers.MeshServiceControllerFactory
+	MeshWorkloadController            controller2.MeshWorkloadController
+	MeshServiceController             controller2.MeshServiceController
 	VirtualMeshController             controller.VirtualMeshController
 	SnapshotValidator                 snapshot.MeshNetworkingSnapshotValidator
 	VMCSRSnapshotListener             cert_manager.VMCSRSnapshotListener
@@ -58,16 +58,16 @@ type MeshNetworkingSnapshotContext struct {
 }
 
 func MeshNetworkingSnapshotContextProvider(
-	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
-	meshServiceControllerFactory controllers.MeshServiceControllerFactory,
+	meshWorkloadController controller2.MeshWorkloadController,
+	meshServiceController controller2.MeshServiceController,
 	virtualMeshController controller.VirtualMeshController,
 	snapshotValidator snapshot.MeshNetworkingSnapshotValidator,
 	vmcsrSnapshotListener cert_manager.VMCSRSnapshotListener,
 	federationDeciderSnapshotListener decider.FederationDeciderSnapshotListener,
 ) *MeshNetworkingSnapshotContext {
 	return &MeshNetworkingSnapshotContext{
-		MeshWorkloadControllerFactory:     meshWorkloadControllerFactory,
-		MeshServiceControllerFactory:      meshServiceControllerFactory,
+		MeshWorkloadController:            meshWorkloadController,
+		MeshServiceController:             meshServiceController,
 		VirtualMeshController:             virtualMeshController,
 		SnapshotValidator:                 snapshotValidator,
 		VMCSRSnapshotListener:             vmcsrSnapshotListener,
@@ -75,16 +75,14 @@ func MeshNetworkingSnapshotContextProvider(
 	}
 }
 
-func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context, mgr mc_manager.AsyncManager) error {
-	msCtrl, err := m.MeshServiceControllerFactory.Build(mgr, "mesh-service-controller")
-	if err != nil {
-		return err
-	}
-	mwCtrl, err := m.MeshWorkloadControllerFactory.Build(mgr, "mesh-workload-controller")
-	if err != nil {
-		return err
-	}
-	listenerGenerator, err := snapshot.NewMeshNetworkingSnapshotGenerator(ctx, m.SnapshotValidator, msCtrl, m.VirtualMeshController, mwCtrl)
+func (m *MeshNetworkingSnapshotContext) StartListening(ctx context.Context) error {
+	listenerGenerator, err := snapshot.NewMeshNetworkingSnapshotGenerator(
+		ctx,
+		m.SnapshotValidator,
+		m.MeshServiceController,
+		m.VirtualMeshController,
+		m.MeshWorkloadController,
+	)
 	if err != nil {
 		return err
 	}

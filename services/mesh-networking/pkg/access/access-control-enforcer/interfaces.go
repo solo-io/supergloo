@@ -15,6 +15,8 @@ type AccessPolicyEnforcerLoop interface {
 
 // Enforces global access control for a specific Mesh within a VirtualMesh
 type AccessPolicyMeshEnforcer interface {
+	// The name which will be used to identify the enforcer in the logs
+	Name() string
 	StartEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error
 	StopEnforcing(ctx context.Context, meshes []*discovery_v1alpha1.Mesh) error
 }

@@ -2,7 +2,6 @@ package mesh
 
 import (
 	"context"
-	"fmt"
 
 	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
@@ -75,16 +74,25 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 	deployment.SetClusterName(m.clusterName)
 	discoveredMesh, err := m.discoverMesh(deployment)
 	if err != nil && discoveredMesh == nil {
-		logger.Errorw("Error processing deployment for mesh discovery", zap.Error(err))
+		logger.Errorw("Error processing deployment for mesh discovery",
+			zap.Any("deployment", deployment),
+			zap.Error(err),
+		)
 		return err
 	} else if err != nil && discoveredMesh != nil {
-		logger.Warnw("Non-fatal error occurred while scanning for mesh installations", zap.Error(err))
+		logger.Warnw("Non-fatal error occurred while scanning for mesh installations",
+			zap.Any("deployment", deployment),
+			zap.Error(err),
+		)
 	} else if discoveredMesh == nil {
 		return nil
 	}
 	err = m.localMeshClient.UpsertSpec(m.ctx, discoveredMesh)
 	if err != nil {
-		logger.Errorw(fmt.Sprintf("Error creating Mesh CR for deployment %+v", deployment), zap.Error(err))
+		logger.Errorw("could not create Mesh CR for deployment",
+			zap.Any("deployment", deployment),
+			zap.Error(err),
+		)
 	}
 	return err
 }

@@ -3,6 +3,7 @@ package access_policy_enforcer
 import (
 	"context"
 
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -11,6 +12,7 @@ import (
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/logging"
+	"go.uber.org/zap"
 )
 
 type enforcerLoop struct {
@@ -36,23 +38,31 @@ func NewEnforcerLoop(
 
 func (e *enforcerLoop) Start(ctx context.Context) error {
 	return e.virtualMeshController.AddEventHandler(ctx, &controller.VirtualMeshEventHandlerFuncs{
-		OnCreate: func(virtualMesh *networking_v1alpha1.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, virtualMesh)
-			logger.Debugf("Handling event: %+v", virtualMesh)
-			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
-			err = e.setStatus(ctx, virtualMesh, err)
+		OnCreate: func(obj *networking_v1alpha1.VirtualMesh) error {
+			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
+			logger.Debugw("event handler enter",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
+			err := e.enforceGlobalAccessControl(ctx, obj)
+			err = e.setStatus(ctx, obj, err)
 			if err != nil {
 				logger.Errorw("Error while handling VirtualMesh create event", err)
 			}
 			return nil
 		},
-		OnUpdate: func(_, virtualMesh *networking_v1alpha1.VirtualMesh) error {
-			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, virtualMesh)
-			logger.Debugf("Handling event: %+v", virtualMesh)
-			err := e.enforceGlobalAccessControl(ctx, virtualMesh)
-			err = e.setStatus(ctx, virtualMesh, err)
+		OnUpdate: func(old, new *networking_v1alpha1.VirtualMesh) error {
+			logger := logging.BuildEventLogger(ctx, logging.UpdateEvent, new)
+			logger.Debugw("event handler enter",
+				zap.Any("old_spec", old.Spec),
+				zap.Any("old_status", old.Status),
+				zap.Any("new_spec", new.Spec),
+				zap.Any("new_status", new.Status),
+			)
+			err := e.enforceGlobalAccessControl(ctx, new)
+			err = e.setStatus(ctx, new, err)
 			if err != nil {
-				logger.Errorw("Error while handling VirtualMesh create event", err)
+				logger.Errorw("Error while handling VirtualMesh update event", err)
 			}
 			return nil
 		},
@@ -79,11 +89,17 @@ func (e *enforcerLoop) enforceGlobalAccessControl(
 	}
 	for _, meshEnforcer := range e.meshEnforcers {
 		if virtualMesh.Spec.GetEnforceAccessControl() {
-			if err := meshEnforcer.StartEnforcing(ctx, meshes); err != nil {
+			if err = meshEnforcer.StartEnforcing(
+				contextutils.WithLogger(ctx, meshEnforcer.Name()),
+				meshes,
+			); err != nil {
 				return err
 			}
 		} else {
-			if err := meshEnforcer.StopEnforcing(ctx, meshes); err != nil {
+			if err = meshEnforcer.StopEnforcing(
+				contextutils.WithLogger(ctx, meshEnforcer.Name()),
+				meshes,
+			); err != nil {
 				return err
 			}
 		}

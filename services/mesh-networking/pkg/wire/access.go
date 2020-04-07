@@ -34,11 +34,15 @@ func LocalAccessControlPolicyControllerProvider(mgr mc_manager.AsyncManager) (co
 func AccessControlPolicyMeshTranslatorsProvider(
 	istioTranslator istio_translator.IstioTranslator,
 ) []access_control_policy.AcpMeshTranslator {
-	return []access_control_policy.AcpMeshTranslator{istioTranslator}
+	return []access_control_policy.AcpMeshTranslator{
+		istioTranslator,
+	}
 }
 
 func GlobalAccessControlPolicyMeshEnforcersProvider(
 	istioEnforcer istio_enforcer.IstioEnforcer,
 ) []access_control_enforcer.AccessPolicyMeshEnforcer {
-	return []access_control_enforcer.AccessPolicyMeshEnforcer{istioEnforcer}
+	return []access_control_enforcer.AccessPolicyMeshEnforcer{
+		istioEnforcer,
+	}
 }

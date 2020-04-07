@@ -14,6 +14,8 @@ type AcpTranslatorLoop interface {
 }
 
 type AcpMeshTranslator interface {
+	// The name which will be used to identify the translator in the logs
+	Name() string
 	// Translate the given AccessControlPolicy applying to targetServices to mesh-specific configuration
 	Translate(
 		ctx context.Context,

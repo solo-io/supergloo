@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-
 	"github.com/solo-io/mesh-projects/pkg/selector"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -24,7 +23,7 @@ import (
 )
 
 const (
-	TranslatorId = "istio-translator"
+	TranslatorId = "istio_translator"
 )
 
 type IstioTranslator traffic_policy_translator.TrafficPolicyMeshTranslator
@@ -65,6 +64,10 @@ var (
 		return eris.Errorf("Multi cluster subsets are currently not supported, found one on destination: %+v", dest)
 	}
 )
+
+func (i *istioTrafficPolicyTranslator) Name() string {
+	return TranslatorId
+}
 
 /*
 	Translate a TrafficPolicy into the following Istio specific configuration:

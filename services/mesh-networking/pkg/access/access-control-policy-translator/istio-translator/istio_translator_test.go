@@ -507,24 +507,6 @@ var _ = Describe("IstioTranslator", func() {
 		Expect(translatorError).To(BeNil())
 	})
 
-	It("should error if a service account ref doesn't match a real service account", func() {
-		testData := initTestData()
-		fakeRef := &core_types.ResourceRef{
-			Name:      "name1",
-			Namespace: "namespace1",
-			Cluster:   "fake-cluster-name",
-		}
-		testData.accessControlPolicy.Spec.SourceSelector = &core_types.IdentitySelector{
-			IdentitySelectorType: &core_types.IdentitySelector_ServiceAccountRefs_{
-				ServiceAccountRefs: &core_types.IdentitySelector_ServiceAccountRefs{
-					ServiceAccounts: []*core_types.ResourceRef{fakeRef},
-				},
-			},
-		}
-		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
-		Expect(translatorError.ErrorMessage).To(ContainSubstring(istio_translator.ServiceAccountRefNonexistent(fakeRef).Error()))
-	})
-
 	It("should return ACP processing error", func() {
 		acp := &networking_v1alpha1.AccessControlPolicy{
 			Spec: networking_types.AccessControlPolicySpec{

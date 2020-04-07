@@ -74,6 +74,20 @@ func (m *MockAcpMeshTranslator) EXPECT() *MockAcpMeshTranslatorMockRecorder {
 	return m.recorder
 }
 
+// Name mocks base method.
+func (m *MockAcpMeshTranslator) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockAcpMeshTranslatorMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAcpMeshTranslator)(nil).Name))
+}
+
 // Translate mocks base method.
 func (m *MockAcpMeshTranslator) Translate(ctx context.Context, targetServices []acp_translator.TargetService, acp *v1alpha1.AccessControlPolicy) *types.AccessControlPolicyStatus_TranslatorError {
 	m.ctrl.T.Helper()
