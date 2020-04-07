@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
 )
 
@@ -96,7 +96,7 @@ func (f *federationDecider) federateVirtualMesh(
 
 	// if federation has not been explicitly set by the user, this expression will default the federation mode
 	// to PERMISSIVE, which probably isn't what we want long-term. Tracking that future change here:
-	// https://github.com/solo-io/mesh-projects/issues/222
+	// https://github.com/solo-io/service-mesh-hub/issues/222
 	federationMode := vm.Spec.GetFederation().GetMode()
 
 	// determine what strategy we should use to federate

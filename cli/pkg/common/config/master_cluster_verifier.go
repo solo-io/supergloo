@@ -25,7 +25,7 @@ var (
 )
 
 // Verify that the cluster pointed to by the given kube config is actually a Service Mesh Hub installation
-//go:generate mockgen -destination ../../mocks/mock_master_cluster_verifier.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common/config MasterKubeConfigVerifier
+//go:generate mockgen -destination ../../mocks/mock_master_cluster_verifier.go -package cli_mocks github.com/solo-io/service-mesh-hub/cli/pkg/common/config MasterKubeConfigVerifier
 type MasterKubeConfigVerifier interface {
 	Verify(masterKubeConfigPath string, masterContext string) (err error)
 }

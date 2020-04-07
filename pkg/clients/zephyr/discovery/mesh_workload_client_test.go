@@ -7,9 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

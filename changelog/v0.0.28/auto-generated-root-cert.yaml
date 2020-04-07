@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Update MeshGroup API to enable auto-generation of root certificate.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/259
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/259

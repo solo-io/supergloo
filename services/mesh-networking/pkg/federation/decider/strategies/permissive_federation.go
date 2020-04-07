@@ -3,11 +3,11 @@ package strategies
 import (
 	"context"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 )
 
 func NewPermissiveFederation(meshServiceClient discovery_core.MeshServiceClient) FederationStrategy {

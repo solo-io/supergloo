@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

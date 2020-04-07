@@ -3,8 +3,8 @@ package mesh_workload
 import (
 	"context"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
-	securityv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1"
-	fakesecurityv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1/fake"
+	clientset "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
+	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1"
+	fakesecurityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

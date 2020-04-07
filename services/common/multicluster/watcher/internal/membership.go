@@ -6,8 +6,8 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	v1 "k8s.io/api/core/v1"
 )
 

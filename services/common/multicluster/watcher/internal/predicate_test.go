@@ -3,9 +3,9 @@ package internal_watcher_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	. "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 )

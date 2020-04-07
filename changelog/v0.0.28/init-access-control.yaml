@@ -1,5 +1,5 @@
 changelog:
   - type: NON_USER_FACING
     description: Begin the Access Control Policy translator.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/238
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/238
     resolvesIssue: false

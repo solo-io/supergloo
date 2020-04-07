@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	mesh_networking "github.com/solo-io/mesh-projects/services/mesh-networking"
+	mesh_networking "github.com/solo-io/service-mesh-hub/services/mesh-networking"
 )
 
 func main() {

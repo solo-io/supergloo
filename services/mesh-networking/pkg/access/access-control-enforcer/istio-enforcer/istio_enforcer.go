@@ -3,12 +3,12 @@ package istio_enforcer
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
-	"github.com/solo-io/mesh-projects/services/common/constants"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	global_access_control_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	security_v1beta1 "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"

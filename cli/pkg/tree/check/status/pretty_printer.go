@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 )
 
 var (

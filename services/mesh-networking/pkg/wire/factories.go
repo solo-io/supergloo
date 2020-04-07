@@ -2,9 +2,9 @@ package wire
 
 import (
 	"github.com/google/wire"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	networking_multicluster "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster"
-	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
+	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
 )
 
 var (

@@ -7,14 +7,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
-	mock_status "github.com/solo-io/mesh-projects/cli/pkg/tree/check/status/mocks"
-	"github.com/solo-io/mesh-projects/pkg/env"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
+	mock_status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
 )
 
 var _ = Describe("Meshctl check command", func() {

@@ -2,4 +2,4 @@ changelog:
   - type: NEW_FEATURE
     description: "Impose a deterministic ordering on Istio's VirtualService HTTPRoutes,
     in decreasing order of specificity of the HTTP Route Matcher fields."
-    issueLink: https://github.com/solo-io/mesh-projects/issues/245
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/245

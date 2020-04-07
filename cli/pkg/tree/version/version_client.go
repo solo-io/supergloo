@@ -6,10 +6,10 @@ import (
 	"io"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
 const (

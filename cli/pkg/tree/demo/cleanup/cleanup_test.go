@@ -6,8 +6,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	mock_exec "github.com/solo-io/mesh-projects/cli/pkg/common/exec/mocks"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
+	mock_exec "github.com/solo-io/service-mesh-hub/cli/pkg/common/exec/mocks"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 )
 
 var _ = Describe("Demo init", func() {

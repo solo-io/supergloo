@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 )
 
 var _ = Describe("Cluster Root Cmd", func() {

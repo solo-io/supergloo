@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix a panic in meshctl caused by not actually running a callback
-    issueLink: https://github.com/solo-io/mesh-projects/issues/117
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/117

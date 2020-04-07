@@ -3,11 +3,11 @@ package csr_generator
 import (
 	"context"
 
-	security_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	security_types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
+	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_mesh_interfaces.go

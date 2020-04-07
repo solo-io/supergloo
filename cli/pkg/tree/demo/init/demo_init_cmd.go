@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/spf13/cobra"
 )
 

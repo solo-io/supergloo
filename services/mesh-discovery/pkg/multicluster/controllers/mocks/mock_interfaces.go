@@ -8,10 +8,10 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	controller0 "github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
-	controller1 "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
+	controller1 "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 // MockDeploymentControllerFactory is a mock of DeploymentControllerFactory interface.

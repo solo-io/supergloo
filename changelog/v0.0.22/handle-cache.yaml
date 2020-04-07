@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Register mesh bridge cache managers for teardown when cluster goes away.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/64
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/64

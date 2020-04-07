@@ -3,9 +3,9 @@ package meshes
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mock/mock_interfaces.go
