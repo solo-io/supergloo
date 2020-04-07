@@ -48,6 +48,7 @@ jobs:
     - name: Push Tagged
       # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
       run: cd docs &&  make tagged -B
+      if: github.ref != 'refs/heads/master'
       env:
-        TAGGED_VERSION: ${{ github.ref }}
+        TAGGED_VERSION: v${{ github.ref }}
 
