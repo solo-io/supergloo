@@ -49,5 +49,5 @@ jobs:
       # Found on github community: https://github.community/t5/GitHub-Actions/Github-Actions-GITHUB-EVENT-PATH-does-not-contain-relevant-PR/td-p/20835
       run: cd docs &&  make tagged -B
       env:
-        TAGGED_VERSION: github.ref
+        TAGGED_VERSION: ${{ github.ref }}
 
