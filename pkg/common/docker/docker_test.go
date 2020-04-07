@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 )
 
 var _ = Describe("Docker image name parser", func() {

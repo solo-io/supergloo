@@ -1,6 +1,6 @@
 
 ---
-title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto"
+title: "discovery.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh_service.proto"
 ---
 
 ## Package : `discovery.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto"></a>
+<a name="API Reference for github.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh_service.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto
+## github.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh_service.proto
 
 
 ## Table of Contents

@@ -53,7 +53,7 @@ version="dev"
 [[menu.shortcuts]]
 name = "<i class='fa fa-github'></i> Github Repo"
 identifier = "ds"
-url = "https://github.com/solo-io/mesh-projects"
+url = "https://github.com/solo-io/service-mesh-hub"
 weight = 10
 
 # [[menu.shortcuts]]

@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	csr "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	csr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 )
 
 // MockCsrAgentInstaller is a mock of CsrAgentInstaller interface.

@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Clarify Selector API semantics, cluster is now required and omission means selecting across all clusters.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/306
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/306

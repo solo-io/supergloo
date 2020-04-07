@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	options "github.com/solo-io/mesh-projects/cli/pkg/options"
+	options "github.com/solo-io/service-mesh-hub/cli/pkg/options"
 )
 
 // MockInstallerManifestBuilder is a mock of InstallerManifestBuilder interface.

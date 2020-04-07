@@ -3,7 +3,7 @@ package zephyr_networking
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

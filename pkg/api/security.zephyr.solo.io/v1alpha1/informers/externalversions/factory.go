@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
-	internalinterfaces "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
-	securityzephyrsoloio "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/security.zephyr.solo.io"
+	versioned "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
+	internalinterfaces "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
+	securityzephyrsoloio "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/security.zephyr.solo.io"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

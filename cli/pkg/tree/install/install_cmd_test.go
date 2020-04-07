@@ -10,11 +10,11 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"k8s.io/client-go/rest"
 )
 

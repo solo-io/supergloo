@@ -2,9 +2,9 @@ package istio
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/istio/install"
 	"github.com/spf13/cobra"
 )
 

@@ -5,7 +5,7 @@ name: service-mesh-hub
 version: %version%
 icon: ""
 sources:
-  - https://github.com/solo-io/mesh-projects
+  - https://github.com/solo-io/service-mesh-hub
 keywords:
   - kubernetes
   - istio

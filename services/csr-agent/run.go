@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/services/csr-agent/pkg/wire"
-	"github.com/solo-io/mesh-projects/services/internal/config"
+	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"go.uber.org/zap"
 )
 

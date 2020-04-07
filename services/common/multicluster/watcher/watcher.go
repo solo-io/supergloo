@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	internal_watcher "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
+	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	internal_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )

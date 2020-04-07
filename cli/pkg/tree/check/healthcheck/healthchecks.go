@@ -1,11 +1,11 @@
 package healthcheck
 
 import (
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/internal"
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 )
 
 var (

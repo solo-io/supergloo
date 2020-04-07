@@ -2,12 +2,12 @@ package wire
 
 import (
 	"github.com/google/wire"
-	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 )
 
 var (

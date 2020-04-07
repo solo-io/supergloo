@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

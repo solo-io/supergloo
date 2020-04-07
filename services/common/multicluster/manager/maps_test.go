@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	. "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 )
 
 var _ = Describe("sync maps", func() {

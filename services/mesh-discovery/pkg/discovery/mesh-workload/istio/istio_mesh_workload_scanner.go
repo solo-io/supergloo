@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	"github.com/solo-io/mesh-projects/services/common/constants"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	core_v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -63,6 +63,6 @@ func (i *istioMeshWorkloadScanner) isIstioPod(pod *core_v1.Pod) bool {
 }
 
 func (i *istioMeshWorkloadScanner) buildMeshWorkloadName(deploymentName string, namespace string, clusterName string) string {
-	// TODO: https://github.com/solo-io/mesh-projects/issues/141
+	// TODO: https://github.com/solo-io/service-mesh-hub/issues/141
 	return fmt.Sprintf("%s-%s-%s-%s", "istio", deploymentName, namespace, clusterName)
 }

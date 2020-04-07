@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
-	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	. "github.com/solo-io/mesh-projects/services/common/multicluster/watcher/internal"
+	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	. "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher/internal"
 	kubev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

@@ -4,7 +4,7 @@ package controller
 import (
 	"context"
 
-	networking_zephyr_solo_io_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_zephyr_solo_io_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/autopilot/pkg/events"

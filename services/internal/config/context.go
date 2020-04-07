@@ -8,7 +8,7 @@ import (
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"go.uber.org/zap"
 )
 

@@ -3,7 +3,7 @@ package multicluster
 import (
 	"context"
 
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 const (

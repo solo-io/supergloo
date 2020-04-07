@@ -3,12 +3,12 @@ package networking_multicluster
 import (
 	"context"
 
-	cert_controller "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	"github.com/solo-io/mesh-projects/pkg/security/certgen"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
-	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
+	cert_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
+	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 )
 
 // this is the main entrypoint for all virtual-mesh multi cluster logic

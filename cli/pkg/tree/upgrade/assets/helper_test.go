@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
-	mock_upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets/mocks"
+	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	mock_upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets/mocks"
 )
 
 var _ = Describe("upgrade assets helper", func() {

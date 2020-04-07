@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	security_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	"github.com/solo-io/mesh-projects/pkg/security/certgen"
-	csr_generator "github.com/solo-io/mesh-projects/services/csr-agent/pkg/csr-generator"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
 
 var (

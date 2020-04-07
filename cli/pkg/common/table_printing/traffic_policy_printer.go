@@ -7,9 +7,9 @@ import (
 
 	types2 "github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/internal"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
 func NewTrafficPolicyPrinter(tableBuilder TableBuilder) TrafficPolicyPrinter {

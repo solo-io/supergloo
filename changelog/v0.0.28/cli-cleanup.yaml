@@ -1,11 +1,11 @@
 changelog:
 - type: FIX
   description: clean up solo-kit code from CLI.
-  issueLink: https://github.com/solo-io/mesh-projects/issues/209
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/209
 - type: FIX
   description: Unify clients being used accross codebase
-  issueLink: https://github.com/solo-io/mesh-projects/issues/206
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/206
 - type: FIX
   description: have the CLI gracefully continue when cluster already exists.
-  issueLink: https://github.com/solo-io/mesh-projects/issues/224
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/224
 

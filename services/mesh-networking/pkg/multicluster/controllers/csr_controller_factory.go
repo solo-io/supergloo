@@ -1,8 +1,8 @@
 package controller_factories
 
 import (
-	cert_controller "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	cert_controller "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `CertificateSigningRequestController`

@@ -1,11 +1,11 @@
 syntax = "proto3";
 package networking.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types";
 
-import "mesh-projects/api/core/v1alpha1/http.proto";
-import "mesh-projects/api/core/v1alpha1/identity_selector.proto";
-import "mesh-projects/api/core/v1alpha1/service_selector.proto";
-import "mesh-projects/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/core/v1alpha1/http.proto";
+import "service-mesh-hub/api/core/v1alpha1/identity_selector.proto";
+import "service-mesh-hub/api/core/v1alpha1/service_selector.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 /*
     access control policies apply ALLOW policies to communication in a mesh

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"

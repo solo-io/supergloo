@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
 )
 
 func main() {

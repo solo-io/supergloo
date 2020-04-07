@@ -5,9 +5,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/internal"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 func NewAccessControlPolicyPrinter(tableBuilder TableBuilder) AccessControlPolicyPrinter {

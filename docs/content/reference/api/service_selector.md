@@ -1,6 +1,6 @@
 
 ---
-title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/service_selector.proto"
+title: "core.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/core/v1alpha1/service_selector.proto"
 ---
 
 ## Package : `core.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/se
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/core/v1alpha1/service_selector.proto"></a>
+<a name="API Reference for github.com/solo-io/service-mesh-hub/api/core/v1alpha1/service_selector.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/core/v1alpha1/service_selector.proto
+## github.com/solo-io/service-mesh-hub/api/core/v1alpha1/service_selector.proto
 
 
 ## Table of Contents

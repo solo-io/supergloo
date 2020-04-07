@@ -2,10 +2,10 @@ package server
 
 import (
 	"github.com/rotisserie/eris"
-	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
-	"github.com/solo-io/mesh-projects/pkg/env"
+	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

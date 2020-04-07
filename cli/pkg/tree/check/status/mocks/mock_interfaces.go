@@ -10,8 +10,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
-	status "github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
+	status "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/status"
 )
 
 // MockStatusClient is a mock of StatusClient interface.

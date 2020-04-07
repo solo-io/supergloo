@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	discoveryv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/pkg/logging"
+	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
+	"github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
 	"go.uber.org/zap"
 	apps_v1 "k8s.io/api/apps/v1"
 )

@@ -1,6 +1,6 @@
 
 ---
-title: "networking.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/networking/v1alpha1/access_control_policy.proto"
+title: "networking.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/networking/v1alpha1/access_control_policy.proto"
 ---
 
 ## Package : `networking.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "networking.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/networking
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/networking/v1alpha1/access_control_policy.proto"></a>
+<a name="API Reference for github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/access_control_policy.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/networking/v1alpha1/access_control_policy.proto
+## github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/access_control_policy.proto
 
 
 ## Table of Contents

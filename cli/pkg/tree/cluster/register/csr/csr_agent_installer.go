@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
 var (

@@ -3,7 +3,7 @@ package zephyr_security
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

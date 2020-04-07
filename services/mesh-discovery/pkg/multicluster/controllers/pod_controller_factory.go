@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	core_controllers "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 func NewPodControllerFactory() PodControllerFactory {

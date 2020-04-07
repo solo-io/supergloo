@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Update MeshWorkload resources instead of creating a new one.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/181
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/181

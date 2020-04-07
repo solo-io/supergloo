@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	apps_controllers "github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	apps_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 func NewDeploymentControllerFactory() DeploymentControllerFactory {
