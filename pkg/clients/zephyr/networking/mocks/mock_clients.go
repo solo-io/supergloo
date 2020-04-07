@@ -161,25 +161,6 @@ func (mr *MockTrafficPolicyClientMockRecorder) Create(ctx, trafficPolicy interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTrafficPolicyClient)(nil).Create), varargs...)
 }
 
-// Update mocks base method.
-func (m *MockTrafficPolicyClient) Update(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, trafficPolicy}
-	for _, a := range options {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "Update", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Update indicates an expected call of Update.
-func (mr *MockTrafficPolicyClientMockRecorder) Update(ctx, trafficPolicy interface{}, options ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, trafficPolicy}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTrafficPolicyClient)(nil).Update), varargs...)
-}
-
 // UpdateStatus mocks base method.
 func (m *MockTrafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()

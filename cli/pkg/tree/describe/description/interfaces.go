@@ -1,4 +1,4 @@
-package exploration
+package description
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
-type ResourceExplorer interface {
-	ExploreService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
-	ExploreWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
+type ResourceDescriber interface {
+	DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
+	DescribeWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
 }
 
 type Printer interface {

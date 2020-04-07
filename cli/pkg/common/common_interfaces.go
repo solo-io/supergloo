@@ -8,11 +8,13 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
@@ -24,6 +26,7 @@ import (
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	"github.com/solo-io/mesh-projects/pkg/version"
 	"k8s.io/client-go/rest"
 )
@@ -54,6 +57,13 @@ type KubeClients struct {
 	MeshServiceClientFactory        discovery_core.GeneratedMeshServiceClientFactory
 	MeshClient                      discovery_core.MeshClient
 	VirtualMeshClient               zephyr_networking.VirtualMeshClient
+	TrafficPolicyClient             zephyr_networking.TrafficPolicyClient
+	AccessControlPolicyClient       zephyr_networking.AccessControlPolicyClient
+	MeshWorkloadClient              discovery_core.MeshWorkloadClient
+	ResourceDescriber               description.ResourceDescriber
+	ResourceSelector                selector.ResourceSelector
+	AccessControlPolicyPrinter      table_printing.AccessControlPolicyPrinter
+	TrafficPolicyPrinter            table_printing.TrafficPolicyPrinter
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -152,6 +162,13 @@ func KubeClientsProvider(
 	meshServiceClientFactory discovery_core.GeneratedMeshServiceClientFactory,
 	meshClient discovery_core.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
+	resourceDescriber description.ResourceDescriber,
+	resourceSelector selector.ResourceSelector,
+	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
+	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
+	meshWorkloadClient discovery_core.MeshWorkloadClient,
+	accessControlPolicyPrinter table_printing.AccessControlPolicyPrinter,
+	trafficPolicyPrinter table_printing.TrafficPolicyPrinter,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
@@ -170,6 +187,13 @@ func KubeClientsProvider(
 		MeshServiceClientFactory:        meshServiceClientFactory,
 		MeshClient:                      meshClient,
 		VirtualMeshClient:               virtualMeshClient,
+		ResourceDescriber:               resourceDescriber,
+		ResourceSelector:                resourceSelector,
+		TrafficPolicyClient:             trafficPolicyClient,
+		AccessControlPolicyClient:       accessControlPolicyClient,
+		MeshWorkloadClient:              meshWorkloadClient,
+		AccessControlPolicyPrinter:      accessControlPolicyPrinter,
+		TrafficPolicyPrinter:            trafficPolicyPrinter,
 	}
 }
 

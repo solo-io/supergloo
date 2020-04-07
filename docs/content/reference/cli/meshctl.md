@@ -27,7 +27,7 @@ CLI for Service Mesh Hub
 * [meshctl cluster](../meshctl_cluster)	 - Register and perform operations on clusters
 * [meshctl create](../meshctl_create)	 - Create a Service Mesh Hub custom resource
 * [meshctl demo](../meshctl_demo)	 - Command line utilities for running/interacting with Service Mesh Hub demos
-* [meshctl explore](../meshctl_explore)	 - Explore policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name
+* [meshctl describe](../meshctl_describe)	 - Describe policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name
 * [meshctl install](../meshctl_install)	 - Install Service Mesh Hub
 * [meshctl istio](../meshctl_istio)	 - Manage installations of Istio
 * [meshctl uninstall](../meshctl_uninstall)	 - Completely uninstall Service Mesh Hub and remove associated CRDs

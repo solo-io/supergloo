@@ -29,10 +29,6 @@ func (d *trafficPolicyClient) Create(ctx context.Context, trafficPolicy *v1alpha
 	return d.client.Create(ctx, trafficPolicy, options...)
 }
 
-func (d *trafficPolicyClient) Update(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
-	return d.client.Update(ctx, trafficPolicy, options...)
-}
-
 func (d *trafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
 	return d.client.Status().Update(ctx, trafficPolicy, options...)
 }

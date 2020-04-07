@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
@@ -25,7 +26,8 @@ import (
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
@@ -46,6 +48,7 @@ import (
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	version2 "github.com/solo-io/mesh-projects/pkg/version"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
@@ -88,6 +91,15 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		config_lookup.NewKubeConfigLookup,
 		deregister.NewClusterDeregistrationClient,
 		common.KubeClientsProvider,
+		description.NewResourceDescriber,
+		selector.NewResourceSelector,
+		kubernetes_apps.GeneratedDeploymentClientFactoryProvider,
+		zephyr_networking.NewGeneratedAccessControlPolicyClient,
+		zephyr_networking.NewGeneratedTrafficPolicyClient,
+		discovery_core.NewGeneratedMeshWorkloadClient,
+		table_printing.NewTrafficPolicyPrinter,
+		table_printing.NewAccessControlPolicyPrinter,
+		table_printing.TableBuilderProvider,
 	)
 	return nil, nil
 }
@@ -131,7 +143,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		install.InstallSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
-		explore.ExploreSet,
+		describe.DescribeSet,
 		create.CreateSet,
 		cli.BuildCli,
 		interactive.NewSurveyInteractivePrompt,
@@ -165,7 +177,7 @@ func InitializeCLIWithMocks(
 		upgrade.UpgradeSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
-		explore.ExploreSet,
+		describe.DescribeSet,
 		create.CreateSet,
 		cli.BuildCli,
 	)

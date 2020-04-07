@@ -1,4 +1,4 @@
-package exploration_test
+package description_test
 
 import (
 	"testing"

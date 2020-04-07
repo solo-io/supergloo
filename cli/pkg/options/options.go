@@ -17,7 +17,7 @@ type Options struct {
 	Istio        Istio
 	Check        Check
 	SmhUninstall SmhUninstall
-	Explore      Explore
+	Describe     Describe
 	Create       Create
 }
 
@@ -87,7 +87,7 @@ type Check struct {
 	OutputFormat string
 }
 
-type Explore struct {
+type Describe struct {
 	Policies string
 }
 

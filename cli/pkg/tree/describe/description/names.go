@@ -1,4 +1,4 @@
-package exploration
+package description
 
 import (
 	"regexp"

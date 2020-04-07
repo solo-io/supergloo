@@ -1,4 +1,4 @@
-package exploration_test
+package description_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore/exploration"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -17,7 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("Resource explorer", func() {
+var _ = Describe("Resource describer", func() {
 	var (
 		ctrl *gomock.Controller
 		ctx  context.Context
@@ -32,7 +32,7 @@ var _ = Describe("Resource explorer", func() {
 		ctrl.Finish()
 	})
 
-	Describe("ExploreService", func() {
+	Describe("DescribeService", func() {
 		It("can find all the config that applies to a service", func() {
 			trafficPolicyClient := mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
 			accessControlPolicyClient := mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
@@ -52,7 +52,7 @@ var _ = Describe("Resource explorer", func() {
 					},
 				},
 			}
-			exploredMeshService := &discovery_v1alpha1.MeshService{
+			describedMeshService := &discovery_v1alpha1.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "expected-mesh-service",
 					Namespace: env.DefaultWriteNamespace,
@@ -94,7 +94,7 @@ var _ = Describe("Resource explorer", func() {
 
 			resourceSelector.EXPECT().
 				GetMeshServiceByRefSelector(ctx, serviceName, serviceNs, serviceCluster).
-				Return(exploredMeshService, nil)
+				Return(describedMeshService, nil)
 			accessControlPolicyClient.EXPECT().
 				List(ctx).
 				Return(accessControlPolices, nil)
@@ -107,18 +107,18 @@ var _ = Describe("Resource explorer", func() {
 				Times(2)
 			resourceSelector.EXPECT().
 				GetMeshServicesByServiceSelector(ctx, correctServiceSelector).
-				Return([]*discovery_v1alpha1.MeshService{exploredMeshService}, nil).
+				Return([]*discovery_v1alpha1.MeshService{describedMeshService}, nil).
 				Times(2)
 
-			explorer := exploration.NewResourceExplorer(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-			explorationResult, err := explorer.ExploreService(ctx, exploration.FullyQualifiedKubeResource{
+			describer := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
+			explorationResult, err := describer.DescribeService(ctx, description.FullyQualifiedKubeResource{
 				Name:        serviceName,
 				Namespace:   serviceNs,
 				ClusterName: serviceCluster,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(explorationResult).To(Equal(&exploration.ExplorationResult{
-				Policies: &exploration.Policies{
+			Expect(explorationResult).To(Equal(&description.ExplorationResult{
+				Policies: &description.Policies{
 					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
 					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
 				},
@@ -126,14 +126,14 @@ var _ = Describe("Resource explorer", func() {
 		})
 	})
 
-	Describe("ExploreWorkload", func() {
+	Describe("DescribeWorkload", func() {
 		It("can find all the config that applies to a service", func() {
 			trafficPolicyClient := mock_zephyr_networking.NewMockTrafficPolicyClient(ctrl)
 			accessControlPolicyClient := mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
 			resourceSelector := mock_selector.NewMockResourceSelector(ctrl)
 
 			controllerName, controllerNs, controllerCluster := "controller-name", "controller-ns", "controller-cluster"
-			exploredMeshWorkload := &discovery_v1alpha1.MeshWorkload{
+			describedMeshWorkload := &discovery_v1alpha1.MeshWorkload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-mesh-workload",
 					Namespace: env.DefaultWriteNamespace,
@@ -182,7 +182,7 @@ var _ = Describe("Resource explorer", func() {
 
 			resourceSelector.EXPECT().
 				GetMeshWorkloadByRefSelector(ctx, controllerName, controllerNs, controllerCluster).
-				Return(exploredMeshWorkload, nil)
+				Return(describedMeshWorkload, nil)
 			accessControlPolicyClient.EXPECT().
 				List(ctx).
 				Return(accessControlPolices, nil)
@@ -194,23 +194,23 @@ var _ = Describe("Resource explorer", func() {
 				Return([]*discovery_v1alpha1.MeshWorkload{}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByIdentitySelector(ctx, correctIdentitySelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{exploredMeshWorkload}, nil)
+				Return([]*discovery_v1alpha1.MeshWorkload{describedMeshWorkload}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByWorkloadSelector(ctx, wrongWorkloadSelector).
 				Return([]*discovery_v1alpha1.MeshWorkload{}, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByWorkloadSelector(ctx, correctWorkloadSelector).
-				Return([]*discovery_v1alpha1.MeshWorkload{exploredMeshWorkload}, nil)
+				Return([]*discovery_v1alpha1.MeshWorkload{describedMeshWorkload}, nil)
 
-			explorer := exploration.NewResourceExplorer(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
-			explorationResult, err := explorer.ExploreWorkload(ctx, exploration.FullyQualifiedKubeResource{
+			describer := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
+			explorationResult, err := describer.DescribeWorkload(ctx, description.FullyQualifiedKubeResource{
 				Name:        controllerName,
 				Namespace:   controllerNs,
 				ClusterName: controllerCluster,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(explorationResult).To(Equal(&exploration.ExplorationResult{
-				Policies: &exploration.Policies{
+			Expect(explorationResult).To(Equal(&description.ExplorationResult{
+				Policies: &description.Policies{
 					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
 					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
 				},

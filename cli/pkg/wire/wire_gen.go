@@ -17,6 +17,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
@@ -31,7 +32,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
 	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
 	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
@@ -54,6 +56,7 @@ import (
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	"github.com/solo-io/mesh-projects/pkg/selector"
 	"github.com/solo-io/mesh-projects/pkg/version"
 	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
@@ -106,7 +109,19 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	}
 	meshClient := zephyr_discovery.NewGeneratedMeshClient(versionedClientset)
 	virtualMeshClient := zephyr_networking.NewGeneratedVirtualMeshClient(masterConfig)
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, generatedMeshServiceClientFactory, meshClient, virtualMeshClient)
+	trafficPolicyClient := zephyr_networking.NewGeneratedTrafficPolicyClient(masterConfig)
+	accessControlPolicyClient, err := zephyr_networking.NewGeneratedAccessControlPolicyClient(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	meshWorkloadClient := zephyr_discovery.NewGeneratedMeshWorkloadClient(versionedClientset)
+	generatedDeploymentClientFactory := kubernetes_apps.GeneratedDeploymentClientFactoryProvider()
+	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, generatedDeploymentClientFactory, kubeConfigLookup)
+	resourceDescriber := description.NewResourceDescriber(trafficPolicyClient, accessControlPolicyClient, resourceSelector)
+	tableBuilder := table_printing.TableBuilderProvider()
+	accessControlPolicyPrinter := table_printing.NewAccessControlPolicyPrinter(tableBuilder)
+	trafficPolicyPrinter := table_printing.NewTrafficPolicyPrinter(tableBuilder)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, generatedMeshServiceClientFactory, meshClient, virtualMeshClient, resourceDescriber, resourceSelector, trafficPolicyClient, accessControlPolicyClient, meshWorkloadClient, accessControlPolicyPrinter, trafficPolicyPrinter)
 	return kubeClients, nil
 }
 
@@ -149,7 +164,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	exploreCommand := explore.ExploreCmd()
+	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, optionsOptions, out)
 	runner := exec.NewShellRunner(in, out)
 	initCmd := demo_init.DemoInitCmd(ctx, runner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
@@ -158,7 +173,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	resourcePrinter := resource_printing.NewResourcePrinter()
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand, createRootCmd)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
 	return command
 }
 
@@ -175,12 +190,12 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	prettyPrinter := status.NewPrettyPrinter()
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
-	exploreCommand := explore.ExploreCmd()
+	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, optionsOptions, out)
 	initCmd := demo_init.DemoInitCmd(ctx, runnner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runnner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand, createRootCmd)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
 	return command
 }

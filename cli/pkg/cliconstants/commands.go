@@ -72,10 +72,10 @@ var (
 		Short: "Check the status of a Service Mesh Hub installation",
 	}
 
-	ExploreCommand = func(validResourceTypes []string) cobra.Command {
+	DescribeCommand = func(validResourceTypes []string) cobra.Command {
 		return cobra.Command{
-			Use: fmt.Sprintf("explore (%s) resource_name", strings.Join(validResourceTypes, "|")),
-			Short: "Explore policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). " +
+			Use: fmt.Sprintf("describe (%s) resource_name", strings.Join(validResourceTypes, "|")),
+			Short: "Describe policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). " +
 				"Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name",
 		}
 	}

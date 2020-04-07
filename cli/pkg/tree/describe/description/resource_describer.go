@@ -1,4 +1,4 @@
-package exploration
+package description
 
 import (
 	"context"
@@ -26,26 +26,26 @@ var (
 	}
 )
 
-func NewResourceExplorer(
+func NewResourceDescriber(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 
 	resourceSelector selector.ResourceSelector,
-) ResourceExplorer {
-	return &resourceExplorer{
+) ResourceDescriber {
+	return &resourceDescriber{
 		trafficPolicyClient:       trafficPolicyClient,
 		accessControlPolicyClient: accessControlPolicyClient,
 		ResourceSelector:          resourceSelector,
 	}
 }
 
-type resourceExplorer struct {
+type resourceDescriber struct {
 	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
 	ResourceSelector          selector.ResourceSelector
 }
 
-func (r *resourceExplorer) ExploreService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
+func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
 	meshServiceForKubeService, err := r.ResourceSelector.GetMeshServiceByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (r *resourceExplorer) ExploreService(ctx context.Context, kubeResourceIdent
 	}, nil
 }
 
-func (r *resourceExplorer) ExploreWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
+func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
 	meshWorkloadForController, err := r.ResourceSelector.GetMeshWorkloadByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
 	if err != nil {
 		return nil, err

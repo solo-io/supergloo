@@ -120,10 +120,10 @@ func AddCheckFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string
 	flags.StringVarP(&opts.Check.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format for the report. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
 }
 
-func AddExploreResourceFlags(cmd *cobra.Command, opts *Options, defaultPolicySelector string, validPolicySelectors []string) {
+func AddDescribeResourceFlags(cmd *cobra.Command, opts *Options, defaultPolicySelector string, validPolicySelectors []string) {
 	flags := cmd.PersistentFlags()
 
-	flags.StringVar(&opts.Explore.Policies, "policies", defaultPolicySelector, fmt.Sprintf("Policies to view. Valid policies: [%s]", strings.Join(validPolicySelectors, ", ")))
+	flags.StringVar(&opts.Describe.Policies, "policies", defaultPolicySelector, fmt.Sprintf("Policies to view. Valid policies: [%s]", strings.Join(validPolicySelectors, ", ")))
 }
 
 func AddCreateFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {

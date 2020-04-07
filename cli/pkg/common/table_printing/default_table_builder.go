@@ -6,6 +6,10 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+func TableBuilderProvider() TableBuilder {
+	return DefaultTableBuilder
+}
+
 var DefaultTableBuilder TableBuilder = func(out io.Writer) *tablewriter.Table {
 	table := tablewriter.NewWriter(out)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
