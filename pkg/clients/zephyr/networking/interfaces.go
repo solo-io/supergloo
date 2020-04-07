@@ -13,6 +13,7 @@ type VirtualMeshClient interface {
 	Get(ctx context.Context, name, namespace string) (*networkingv1alpha1.VirtualMesh, error)
 	List(ctx context.Context, opts ...client.ListOption) (*networkingv1alpha1.VirtualMeshList, error)
 	UpdateStatus(ctx context.Context, virtualMesh *networkingv1alpha1.VirtualMesh, opts ...client.UpdateOption) error
+	Create(ctx context.Context, virtualMesh *networkingv1alpha1.VirtualMesh) error
 }
 
 type TrafficPolicyClient interface {

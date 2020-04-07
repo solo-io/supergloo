@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	DefaultRootCertTTL        = 365 * 24 * time.Hour
-	DefaultRootCertRsaKeySize = 4096
-	DefaultOrgName            = "service-mesh-hub"
+	DefaultRootCertTTLDays     = 365
+	DefaultRootCertTTLDuration = DefaultRootCertTTLDays * 24 * time.Hour
+	DefaultRootCertRsaKeySize  = 4096
+	DefaultOrgName             = "service-mesh-hub"
 )
 
 type rootCertGenerator struct{}
@@ -28,7 +29,7 @@ func (c *rootCertGenerator) GenRootCertAndKey(
 	if builtinCA.GetOrgName() != "" {
 		org = builtinCA.GetOrgName()
 	}
-	ttl := DefaultRootCertTTL
+	ttl := DefaultRootCertTTLDuration
 	if builtinCA.GetTtlDays() > 0 {
 		ttl = time.Duration(builtinCA.GetTtlDays()) * 24 * time.Hour
 	}

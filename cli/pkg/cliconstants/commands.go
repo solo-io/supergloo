@@ -79,4 +79,15 @@ var (
 				"Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name",
 		}
 	}
+
+	CreateCommand = cobra.Command{
+		Use:   "create",
+		Short: "Create a Service Mesh Hub custom resource",
+		Long:  "Utility for creating Service Mesh Hub custom resources",
+	}
+
+	CreateVirtualMeshCommand = cobra.Command{
+		Use:   "virtualmesh",
+		Short: "Create a VirtualMesh resource",
+	}
 )

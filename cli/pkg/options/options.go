@@ -18,6 +18,7 @@ type Options struct {
 	Check        Check
 	SmhUninstall SmhUninstall
 	Explore      Explore
+	Create       Create
 }
 
 type Root struct {
@@ -86,4 +87,17 @@ type Check struct {
 
 type Explore struct {
 	Policies string
+}
+
+type Create struct {
+	Interactive  bool
+	DryRun       bool
+	ResourceType string
+	VirtualMesh  CreateVirtualMesh
+	OutputFormat string
+}
+
+type CreateVirtualMesh struct {
+	ForAllMeshes bool
+	Meshes       []string
 }

@@ -10,6 +10,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
@@ -38,6 +40,9 @@ type MockMeshctl struct {
 	FileReader              common.FileReader
 	SecretToConfigConverter kubeconfig.SecretToConfigConverter
 	Runner                  exec.Runner
+
+	InteractivePrompt interactive.InteractivePrompt
+	ResourcePrinter   resource_printing.ResourcePrinter
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -74,6 +79,8 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.FileReader,
 		m.SecretToConfigConverter,
 		m.Runner,
+		m.InteractivePrompt,
+		m.ResourcePrinter,
 	)
 
 	splitArgs, err := shellwords.Parse(argString)

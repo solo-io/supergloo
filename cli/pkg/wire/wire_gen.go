@@ -14,7 +14,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
@@ -24,6 +26,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
 	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
@@ -40,12 +44,14 @@ import (
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
+	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/version"
@@ -94,7 +100,13 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretsClient, secretToConfigConverter)
 	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
 	generatedMeshServiceClientFactory := zephyr_discovery.NewGeneratedMeshServiceClientFactory()
-	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, generatedMeshServiceClientFactory)
+	versionedClientset, err := versioned.NewForConfig(masterConfig)
+	if err != nil {
+		return nil, err
+	}
+	meshClient := zephyr_discovery.NewGeneratedMeshClient(versionedClientset)
+	virtualMeshClient := zephyr_networking.NewGeneratedVirtualMeshClient(masterConfig)
+	kubeClients := common.KubeClientsProvider(clusterAuthorization, installer, helmClient, kubernetesClusterClient, clients, deployedVersionFinder, generatedCrdClientFactory, secretsClient, namespaceClient, uninstallClients, inMemoryRESTClientGetterFactory, clusterDeregistrationClient, kubeConfigLookup, generatedMeshServiceClientFactory, meshClient, virtualMeshClient)
 	return kubeClients, nil
 }
 
@@ -142,11 +154,15 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	initCmd := demo_init.DemoInitCmd(ctx, runner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand)
+	interactivePrompt := interactive.NewSurveyInteractivePrompt()
+	resourcePrinter := resource_printing.NewResourcePrinter()
+	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
+	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand, createRootCmd)
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, runnner exec.Runner) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, runnner exec.Runner, interactivePrompt interactive.InteractivePrompt, resourcePrinter resource_printing.ResourcePrinter) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
@@ -163,6 +179,8 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	initCmd := demo_init.DemoInitCmd(ctx, runnner)
 	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runnner)
 	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand)
+	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
+	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, exploreCommand, demoCommand, createRootCmd)
 	return command
 }

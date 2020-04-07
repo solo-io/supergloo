@@ -12,7 +12,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
@@ -21,6 +23,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
@@ -33,12 +36,14 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
+	discovery_versioned "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	apiext2 "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	version2 "github.com/solo-io/mesh-projects/pkg/version"
@@ -52,11 +57,15 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	wire.Build(
 		kubernetes.NewForConfig,
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
+		discovery_versioned.NewForConfig,
+		wire.Bind(new(discovery_versioned.Interface), new(*discovery_versioned.Clientset)),
 		kubernetes_core.NewGeneratedServiceAccountClient,
 		discovery_core.NewGeneratedKubernetesClusterClient,
+		discovery_core.NewGeneratedMeshClient,
 		kubernetes_core.NewGeneratedSecretsClient,
 		kubernetes_core.NewGeneratedNamespaceClient,
 		kubernetes_discovery.NewGeneratedServerVersionClient,
+		zephyr_networking.NewGeneratedVirtualMeshClient,
 		kubernetes_core.NewGeneratedPodClient,
 		discovery_core.NewGeneratedMeshServiceClient,
 		kubernetes_apps.NewGeneratedDeploymentClient,
@@ -123,7 +132,10 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		uninstall.UninstallSet,
 		check.CheckSet,
 		explore.ExploreSet,
+		create.CreateSet,
 		cli.BuildCli,
+		interactive.NewSurveyInteractivePrompt,
+		resource_printing.ResourcePrinterProviderSet,
 	)
 	return nil
 }
@@ -140,8 +152,9 @@ func InitializeCLIWithMocks(
 	fileReader common.FileReader,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 	runnner exec.Runner,
+	interactivePrompt interactive.InteractivePrompt,
+	resourcePrinter resource_printing.ResourcePrinter,
 ) *cobra.Command {
-
 	wire.Build(
 		options.NewOptionsProvider,
 		demo.DemoSet,
@@ -153,6 +166,7 @@ func InitializeCLIWithMocks(
 		uninstall.UninstallSet,
 		check.CheckSet,
 		explore.ExploreSet,
+		create.CreateSet,
 		cli.BuildCli,
 	)
 	return nil

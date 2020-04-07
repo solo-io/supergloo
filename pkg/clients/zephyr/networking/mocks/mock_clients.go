@@ -90,6 +90,20 @@ func (mr *MockVirtualMeshClientMockRecorder) UpdateStatus(ctx, virtualMesh inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockVirtualMeshClient)(nil).UpdateStatus), varargs...)
 }
 
+// Create mocks base method.
+func (m *MockVirtualMeshClient) Create(ctx context.Context, virtualMesh *v1alpha1.VirtualMesh) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, virtualMesh)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockVirtualMeshClientMockRecorder) Create(ctx, virtualMesh interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVirtualMeshClient)(nil).Create), ctx, virtualMesh)
+}
+
 // MockTrafficPolicyClient is a mock of TrafficPolicyClient interface.
 type MockTrafficPolicyClient struct {
 	ctrl     *gomock.Controller

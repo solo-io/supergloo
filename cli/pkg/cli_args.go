@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check"
 	clusterroot "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
@@ -33,6 +34,7 @@ func BuildCli(
 	checkCommand check.CheckCommand,
 	exploreCommand explore.ExploreCommand,
 	demoCommand demo.DemoCommand,
+	createCommand create.CreateRootCmd,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   cliconstants.RootCommand.Use,
@@ -53,6 +55,7 @@ func BuildCli(
 		checkCommand,
 		exploreCommand,
 		demoCommand,
+		createCommand,
 	)
 	return cmd
 }

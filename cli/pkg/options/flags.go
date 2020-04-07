@@ -19,7 +19,7 @@ func AddRootFlags(cmd *cobra.Command, options *Options) {
 	flags.StringVar(&options.Root.KubeContext, "context", "",
 		"Specify which context from the kubeconfig should be used; uses current context if none is specified")
 	flags.DurationVar(&options.Root.KubeTimeout, "kube-timeout", cliconstants.DefaultKubeClientTimeout,
-		"Specify the default timeout for requests to kubernetes API servers.")
+		"Specify the default timeout for requests to kubernetes API servers")
 	flags.BoolVarP(&options.Root.Verbose, "verbose", "v", false,
 		"Enable verbose mode, which outputs additional execution details that may be helpful for debugging")
 }
@@ -29,9 +29,9 @@ func AddUpgradeFlags(cmd *cobra.Command, opts *Upgrade) {
 	flags.StringVar(&opts.ReleaseTag, "release", cliconstants.DefaultReleaseTag,
 		"Which meshctl release to download. Specify a tag corresponding to the desired version of meshctl or \"latest\". "+
 			"Service Mesh Hub releases can be found here: https://github.com/solo-io/service-mesh-hub/releases. "+
-			"Omitting this tag defaults to \"latest\".")
+			"Omitting this tag defaults to \"latest\"")
 	flags.StringVar(&opts.DownloadPath, "path", "",
-		"Desired path for your upgraded meshctl binary. Defaults to the location of your currently executing binary.")
+		"Desired path for your upgraded meshctl binary. Defaults to the location of your currently executing binary")
 }
 
 func AddInstallFlags(cmd *cobra.Command, opts *Options) {
@@ -71,7 +71,7 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
 		"Set the context you would like to use for the remote cluster")
 	flags.StringVar(&opts.Cluster.Register.RemoteKubeConfig, remoteKubeconfig, "",
-		"Set the path to the kubeconfig you would like to use for the remote cluster. Leave empty to use the default.")
+		"Set the path to the kubeconfig you would like to use for the remote cluster. Leave empty to use the default")
 	flags.StringVar(&opts.Cluster.Register.LocalClusterDomainOverride, localClusterDomainOverride, "",
 		"Swap out the domain of the remote cluster's k8s API server for the value of this flag; used mainly for debugging locally in docker, where you may provide a value like 'host.docker.internal'")
 	flags.BoolVar(&opts.Cluster.Register.Overwrite, ClusterRegisterOverwriteFlag, false,
@@ -106,7 +106,6 @@ func AddUninstallFlags(cmd *cobra.Command, opts *Options) {
 
 func AddCheckFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {
 	flags := cmd.PersistentFlags()
-
 	flags.StringVarP(&opts.Check.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format for the report. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
 }
 
@@ -114,4 +113,12 @@ func AddExploreResourceFlags(cmd *cobra.Command, opts *Options, defaultPolicySel
 	flags := cmd.PersistentFlags()
 
 	flags.StringVar(&opts.Explore.Policies, "policies", defaultPolicySelector, fmt.Sprintf("Policies to view. Valid policies: [%s]", strings.Join(validPolicySelectors, ", ")))
+}
+
+func AddCreateFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {
+	flags := cmd.PersistentFlags()
+	// TODO: Restore interactive flag when non-interactive mode is implemented
+	//flags.BoolVarP(&opts.Create.Interactive, "interactive", "i", false, "Set true to use interactive mode")
+	flags.BoolVar(&opts.Create.DryRun, "dry-run", false, "Set true to output generated resource without writing to k8s")
+	flags.StringVarP(&opts.Create.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format for the report. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
 }

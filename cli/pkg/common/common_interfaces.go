@@ -22,6 +22,7 @@ import (
 	kubernetes_apiext "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/version"
 	"k8s.io/client-go/rest"
@@ -51,6 +52,8 @@ type KubeClients struct {
 	ClusterDeregistrationClient     deregister.ClusterDeregistrationClient
 	KubeConfigLookup                config_lookup.KubeConfigLookup
 	MeshServiceClientFactory        discovery_core.GeneratedMeshServiceClientFactory
+	MeshClient                      discovery_core.MeshClient
+	VirtualMeshClient               zephyr_networking.VirtualMeshClient
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -147,6 +150,8 @@ func KubeClientsProvider(
 	clusterDeregistrationClient deregister.ClusterDeregistrationClient,
 	kubeConfigLookup config_lookup.KubeConfigLookup,
 	meshServiceClientFactory discovery_core.GeneratedMeshServiceClientFactory,
+	meshClient discovery_core.MeshClient,
+	virtualMeshClient zephyr_networking.VirtualMeshClient,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
@@ -163,6 +168,8 @@ func KubeClientsProvider(
 		ClusterDeregistrationClient:     clusterDeregistrationClient,
 		KubeConfigLookup:                kubeConfigLookup,
 		MeshServiceClientFactory:        meshServiceClientFactory,
+		MeshClient:                      meshClient,
+		VirtualMeshClient:               virtualMeshClient,
 	}
 }
 
