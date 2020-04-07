@@ -1,6 +1,6 @@
 baseURL = "https://docs.solo.io"
 languageCode = "en-us"
-title = "WebAssembly Hub Docs"
+title = "Service Mesh Hub Docs"
 theme = "hugo-theme-soloio"
 
 contentDir = "content"
@@ -34,7 +34,7 @@ defaultMarkdownHandler = "blackfriday"
 
 [params]
 author = "Solo.io"
-description = "Documentation for WebAssembly Hub"
+description = "Documentation for Service Mesh Hub"
 disableSearch = false
 disableAssetsBusting = false
 disableInlineCopyToClipBoard = true
