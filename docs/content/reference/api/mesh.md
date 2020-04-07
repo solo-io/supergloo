@@ -123,6 +123,7 @@ Mesh object representing an installed Linkerd control plane
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+| clusterDomain | [string](#string) |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info |
 
 
 

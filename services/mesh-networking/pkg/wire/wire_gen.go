@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	"github.com/solo-io/mesh-projects/pkg/clients/linkerd/v1alpha2"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
@@ -34,6 +35,7 @@ import (
 	controller_factories "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/controllers"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	linkerd_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 	cert_manager "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-manager"
 	cert_signer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/security/cert-signer"
@@ -85,7 +87,9 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
 	destinationRuleClientFactory := istio_networking.DestinationRuleClientFactoryProvider()
 	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, resourceSelector, virtualServiceClientFactory, destinationRuleClientFactory)
-	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator)
+	serviceProfileClientFactory := v1alpha2.ServiceProfileClientFactoryProvider()
+	linkerdTranslator := linkerd_translator.NewLinkerdTrafficPolicyTranslator(dynamicClientGetter, meshClient, serviceProfileClientFactory)
+	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator, linkerdTranslator)
 	trafficPolicyController, err := LocalTrafficPolicyControllerProvider(asyncManager)
 	if err != nil {
 		return MeshNetworkingContext{}, err

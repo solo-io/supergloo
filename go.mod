@@ -23,6 +23,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
+	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-shellwords v1.0.7
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5
@@ -34,6 +35,7 @@ require (
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
+	github.com/servicemeshinterface/smi-sdk-go v0.3.0
 	github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca
 	github.com/solo-io/go-utils v0.15.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
@@ -48,12 +50,12 @@ require (
 	istio.io/api v0.0.0-20200218013118-7fd43ea7fc2b
 	istio.io/client-go v0.0.0-20200218195608-60c238c92aa0
 	istio.io/istio v0.0.0-20200215010343-d9274c558175
-	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.17.4
+	k8s.io/apiextensions-apiserver v0.17.4
+	k8s.io/apimachinery v0.17.4
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/code-generator v0.17.2
+	k8s.io/code-generator v0.17.4
 	sigs.k8s.io/controller-runtime v0.4.0
 )
 

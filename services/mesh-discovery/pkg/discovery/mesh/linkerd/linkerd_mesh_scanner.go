@@ -4,6 +4,11 @@ import (
 	"context"
 	"strings"
 
+	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/config"
+	"github.com/linkerd/linkerd2/pkg/config"
+	linkerdk8s "github.com/linkerd/linkerd2/pkg/k8s"
+	v1 "k8s.io/api/core/v1"
+
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
@@ -27,6 +32,8 @@ var (
 	UnexpectedControllerImageName = func(err error, imageName string) error {
 		return eris.Wrapf(err, "invalid or unexpected image name format for linkerd controller: %s", imageName)
 	}
+	LinkerdConfigMapName = linkerdk8s.ConfigConfigMapName
+	DefaultClusterDomain = "cluster.local"
 )
 
 // disambiguates this MeshScanner from the other MeshScanner implementations so that wire stays happy
@@ -42,7 +49,20 @@ type linkerdMeshScanner struct {
 	imageNameParser docker.ImageNameParser
 }
 
-func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_apps_v1.Deployment, _ client.Client) (*discoveryv1alpha1.Mesh, error) {
+func getLinkerdConfig(ctx context.Context, name, namespace string, kube client.Client) (*linkerdconfig.All, error) {
+	cm := &v1.ConfigMap{}
+	key := client.ObjectKey{Name: name, Namespace: namespace}
+	if err := kube.Get(ctx, key, cm); err != nil {
+		return nil, err
+	}
+	cfg, err := config.FromConfigMap(cm.Data)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s_apps_v1.Deployment, kube client.Client) (*discoveryv1alpha1.Mesh, error) {
 
 	linkerdController, err := l.detectLinkerdController(deployment)
 
@@ -52,6 +72,16 @@ func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_a
 
 	if linkerdController == nil {
 		return nil, nil
+	}
+
+	linkerdConfig, err := getLinkerdConfig(ctx, LinkerdConfigMapName, linkerdController.namespace, kube)
+	if err != nil {
+		return nil, err
+	}
+
+	clusterDomain := linkerdConfig.GetGlobal().GetClusterDomain()
+	if clusterDomain == "" {
+		clusterDomain = DefaultClusterDomain
 	}
 
 	return &discoveryv1alpha1.Mesh{
@@ -67,6 +97,7 @@ func (l *linkerdMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_a
 						InstallationNamespace: deployment.GetNamespace(),
 						Version:               linkerdController.version,
 					},
+					ClusterDomain: clusterDomain,
 				},
 			},
 			Cluster: &core_types.ResourceRef{

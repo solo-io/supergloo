@@ -6,12 +6,14 @@ import (
 	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	linkerd_networking "github.com/solo-io/mesh-projects/pkg/clients/linkerd/v1alpha2"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	"github.com/solo-io/mesh-projects/pkg/selector"
 	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
 	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	linkerd_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 )
 
@@ -22,7 +24,9 @@ var (
 		kubernetes_core.ServiceClientFactoryProvider,
 		istio_networking.VirtualServiceClientFactoryProvider,
 		istio_networking.DestinationRuleClientFactoryProvider,
+		linkerd_networking.ServiceProfileClientFactoryProvider,
 		istio_translator.NewIstioTrafficPolicyTranslator,
+		linkerd_translator.NewLinkerdTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		LocalTrafficPolicyControllerProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
@@ -47,8 +51,10 @@ func LocalMeshWorkloadControllerProvider(mgr mc_manager.AsyncManager) (discovery
 
 func TrafficPolicyMeshTranslatorsProvider(
 	istioTranslator istio_translator.IstioTranslator,
+	linkerdTranslator linkerd_translator.LinkerdTranslator,
 ) []traffic_policy_translator.TrafficPolicyMeshTranslator {
 	return []traffic_policy_translator.TrafficPolicyMeshTranslator{
 		istioTranslator,
+		linkerdTranslator,
 	}
 }

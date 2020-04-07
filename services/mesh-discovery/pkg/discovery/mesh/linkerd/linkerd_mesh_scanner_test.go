@@ -3,6 +3,11 @@ package linkerd_test
 import (
 	"context"
 
+	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/config"
+	"github.com/linkerd/linkerd2/pkg/config"
+	"github.com/solo-io/mesh-projects/test/fakes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,23 +20,24 @@ import (
 	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"
 	"github.com/solo-io/mesh-projects/pkg/env"
 	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/linkerd"
-	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
 	kubev1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("Istio Mesh Scanner", func() {
+var _ = Describe("Linkerd Mesh Scanner", func() {
 	var (
-		ctrl          *gomock.Controller
-		ctx           context.Context
-		linkerdNs     = "linkerd"
-		clusterClient = mock_controller_runtime.NewMockClient(ctrl)
+		ctrl      *gomock.Controller
+		ctx       context.Context
+		linkerdNs = "linkerd"
+		client    client.Client
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
+
+		client = fakes.InMemoryClient()
 	})
 
 	AfterEach(func() {
@@ -58,12 +64,36 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, clusterClient)
+		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(BeNil())
 	})
 
 	It("discovers linkerd", func() {
+
+		linkerdConfigMap := func() *kubev1.ConfigMap {
+			cfg := &linkerdconfig.All{
+				Global: &linkerdconfig.Global{
+					ClusterDomain: "applebees.com",
+				},
+				Proxy:   &linkerdconfig.Proxy{},
+				Install: &linkerdconfig.Install{},
+			}
+			global, proxy, install, err := config.ToJSON(cfg)
+			Expect(err).NotTo(HaveOccurred())
+			return &kubev1.ConfigMap{
+				ObjectMeta: k8s_meta_v1.ObjectMeta{Name: linkerd.LinkerdConfigMapName, Namespace: linkerdNs},
+				Data: map[string]string{
+					"global":  global,
+					"proxy":   proxy,
+					"install": install,
+				},
+			}
+		}()
+
+		err := client.Create(ctx, linkerdConfigMap)
+		Expect(err).NotTo(HaveOccurred())
+
 		imageParser := mock_docker.NewMockImageNameParser(ctrl)
 
 		scanner := linkerd.NewLinkerdMeshScanner(imageParser)
@@ -105,6 +135,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 							InstallationNamespace: deployment.GetNamespace(),
 							Version:               "0.6.9",
 						},
+						ClusterDomain: "applebees.com",
 					},
 				},
 				Cluster: &core_types.ResourceRef{
@@ -114,7 +145,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			},
 		}
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, clusterClient)
+		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(mesh).To(Equal(expectedMesh))
 	})
@@ -146,7 +177,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 			Parse("linkerd-io/controller:0.6.9").
 			Return(nil, testErr)
 
-		mesh, err := scanner.ScanDeployment(ctx, deployment, clusterClient)
+		mesh, err := scanner.ScanDeployment(ctx, deployment, client)
 		Expect(mesh).To(BeNil())
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
