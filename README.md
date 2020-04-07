@@ -12,7 +12,7 @@ Mesh Hub is engineered with a focus on its utility as an operational management
 tool, providing both graphical and command line UIs, observability features, and 
 debugging tools.
 
-<div align="center"><img src="https://www.solo.io/wp-content/uploads/2019/12/ServiceMesh_Diagram_AutoPilot_logo.png" width="800"></div>
+![Architecture](docs/content/img/smh-diagram.png)
 
 ## Features
 
