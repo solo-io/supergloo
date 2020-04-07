@@ -1,8 +1,8 @@
 package internal_watcher
 
 import (
-	"github.com/solo-io/mesh-projects/pkg/env"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 )

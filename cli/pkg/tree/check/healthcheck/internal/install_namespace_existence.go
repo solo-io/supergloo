@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 

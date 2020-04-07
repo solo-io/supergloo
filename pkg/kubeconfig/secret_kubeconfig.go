@@ -75,7 +75,8 @@ type Config struct {
 
 func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, err error) {
 	if len(secret.Data) > 1 {
-		return "", nil, eris.Errorf("kube config secret %s.%s has multiple keys in its data, this is unexpected", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
+		return "", nil, eris.Errorf("kube config secret %s.%s has multiple keys in its data, this is unexpected",
+			secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
 	}
 	for clusterName, dataEntry := range secret.Data {
 		clientConfig, err := clientcmd.NewClientConfigFromBytes(dataEntry)
@@ -90,7 +91,8 @@ func SecretToConfig(secret *kubev1.Secret) (clusterName string, config *Config, 
 
 		restConfig, err := clientConfig.ClientConfig()
 		if err != nil {
-			return clusterName, nil, eris.Wrapf(err, "Failed to convert secret %+v to rest config", secret.ObjectMeta)
+			return clusterName, nil, eris.Wrapf(err, "Failed to convert secret %s.%s to rest config",
+				secret.ObjectMeta.Name, secret.ObjectMeta.Namespace)
 		}
 		return clusterName, &Config{
 			ClientConfig: clientConfig,

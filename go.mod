@@ -1,4 +1,4 @@
-module github.com/solo-io/mesh-projects
+module github.com/solo-io/service-mesh-hub
 
 go 1.13
 

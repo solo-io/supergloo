@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/services/csr-agent/pkg/wire"
-	"github.com/solo-io/mesh-projects/services/internal/config"
+	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +20,7 @@ func Run(ctx context.Context) {
 	}
 
 	istioCsrHandler := csrAgentContext.VirtualMeshCSRDataSourceFactory(
-		ctx,
+		contextutils.WithLogger(ctx, "csr_agent_data_source"),
 		csrAgentContext.CsrClient,
 		csrAgentContext.CsrAgentIstioProcessor,
 	)

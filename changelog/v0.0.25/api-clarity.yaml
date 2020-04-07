@@ -1,6 +1,6 @@
 changelog:
 - type: FIX
   description: Bring more clarity to RoutingRule api and selectors
-  issueLink: https://github.com/solo-io/mesh-projects/issues/150
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/150
 
 

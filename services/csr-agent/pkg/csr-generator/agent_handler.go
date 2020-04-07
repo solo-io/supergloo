@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	securityv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	"github.com/solo-io/mesh-projects/pkg/logging"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"go.uber.org/zap"
 )
 

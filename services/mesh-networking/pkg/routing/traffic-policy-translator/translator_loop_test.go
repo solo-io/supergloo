@@ -6,22 +6,23 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	discovery_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	networking_v1alpha1_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking_clients "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	"github.com/solo-io/mesh-projects/pkg/selector"
-	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
-	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
-	mock_traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/mocks"
-	mock_processor "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
-	mock_zephyr_discovery "github.com/solo-io/mesh-projects/test/mocks/zephyr/discovery"
-	mock_zephyr_networking "github.com/solo-io/mesh-projects/test/mocks/zephyr/networking"
+	"github.com/solo-io/go-utils/contextutils"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	discovery_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	mock_zephyr_networking_clients "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
+	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	mock_traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/mocks"
+	mock_processor "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess/mocks"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -53,7 +54,9 @@ var _ = Describe("Translator", func() {
 		mockMeshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
 		translator = traffic_policy_translator.NewTrafficPolicyTranslatorLoop(
 			mockPreprocessor,
-			[]traffic_policy_translator.TrafficPolicyMeshTranslator{mockIstioTranslator},
+			[]traffic_policy_translator.TrafficPolicyMeshTranslator{
+				mockIstioTranslator,
+			},
 			mockMeshClient,
 			mockMeshServiceClient,
 			mockTrafficPolicyClient,
@@ -134,8 +137,12 @@ var _ = Describe("Translator", func() {
 				Return(mergedTPsByMeshService, nil)
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(nil)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 			mockTrafficPolicyClient.EXPECT().UpdateStatus(ctx, triggeringTP).Return(nil)
 			trafficPolicyEventHandler.OnCreate(triggeringTP)
 		})
@@ -181,8 +188,12 @@ var _ = Describe("Translator", func() {
 			}
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(translatorError)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 			expectedMeshTypeStatuses := []*networking_v1alpha1_types.TrafficPolicyStatus_TranslatorError{translatorError}
 
 			expectedTP := &networking_v1alpha1.TrafficPolicy{}
@@ -248,8 +259,12 @@ var _ = Describe("Translator", func() {
 				Return(mergedTPsByMeshService, nil)
 			mockIstioTranslator.
 				EXPECT().
-				TranslateTrafficPolicy(ctx, meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
+				TranslateTrafficPolicy(contextutils.WithLogger(ctx, ""), meshService, mesh, mergedTPsByMeshService[meshServiceMCKey]).
 				Return(nil)
+			mockIstioTranslator.
+				EXPECT().
+				Name().
+				Return("")
 
 			meshServiceEventHandler.OnCreate(triggerMeshService)
 		})

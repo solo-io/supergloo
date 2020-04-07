@@ -3,14 +3,16 @@ package traffic_policy_translator
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
 
 type TrafficPolicyMeshTranslator interface {
+	// The name which will be used to identify the translator in the logs
+	Name() string
 	// translate a TrafficPolicy into mesh-specific resources and upsert
 	// the presence of a TranslatorError indicates an error during translation
 	TranslateTrafficPolicy(

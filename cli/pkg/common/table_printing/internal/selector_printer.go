@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 )
 
 func WorkloadSelectorToCell(selector *core_types.WorkloadSelector) string {

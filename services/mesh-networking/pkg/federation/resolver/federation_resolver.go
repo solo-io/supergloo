@@ -6,15 +6,16 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -28,7 +29,10 @@ var (
 		meshService *discovery_v1alpha1.MeshService,
 		meshWorkloadRefs []*core_types.ResourceRef) string {
 		return fmt.Sprintf("Could not federate service %s.%s to mesh workloads %+v. Check logs for details",
-			meshService.Name, meshService.Namespace, meshWorkloadRefs)
+			meshService.Name,
+			meshService.Namespace,
+			meshWorkloadRefs,
+		)
 	}
 )
 
@@ -70,21 +74,33 @@ type federationResolver struct {
 func (f *federationResolver) Start(ctx context.Context) error {
 	return f.meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
-			return f.handleServiceUpsert(ctx, obj)
+			eventCtx := logging.EventContext(ctx, logging.CreateEvent, obj)
+			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
+				zap.Any("spec", obj.Spec),
+				zap.Any("status", obj.Status),
+			)
+			return f.handleServiceUpsert(eventCtx, obj)
 		},
 		OnUpdate: func(old, new *discovery_v1alpha1.MeshService) error {
+			eventCtx := logging.EventContext(ctx, logging.CreateEvent, new)
 			// for status-only updates, do nothing
 			// this is important to ensure that we eventually get into a consistent state, as
 			// this component is also responsible for writing mesh service statuses
+			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
+				zap.Any("old_spec", old.Spec),
+				zap.Any("old_status", old.Status),
+				zap.Any("new_spec", new.Spec),
+				zap.Any("new_status", new.Status),
+			)
 			if old.Spec.Equal(new.Spec) {
 				return nil
 			}
 
-			return f.handleServiceUpsert(ctx, new)
+			return f.handleServiceUpsert(eventCtx, new)
 		},
 		OnDelete: func(_ *discovery_v1alpha1.MeshService) error {
 			// ignoring delete
-			// https://github.com/solo-io/mesh-projects/issues/169
+			// https://github.com/solo-io/service-mesh-hub/issues/169
 			return nil
 		},
 		OnGeneric: nil,
@@ -124,8 +140,17 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 
 	// If the status is the same as the current, do not attempt to update
 	if meshService.Status.FederationStatus.Equal(federationStatus) {
+		logger.Debugw("federation status is equal, not updating",
+			zap.Any("existing_status", meshService.Status.FederationStatus),
+			zap.Any("new_status", federationStatus),
+		)
 		return nil
 	}
+	logger.Debugw("federation status equal,updating",
+		zap.Any("existing_status", meshService.Status.FederationStatus),
+		zap.Any("new_status", federationStatus),
+	)
+
 	meshService.Status.FederationStatus = federationStatus
 	err := f.meshServiceClient.UpdateStatus(ctx, meshService)
 	if err != nil {
@@ -135,7 +160,11 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	return nil
 }
 
-func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshService *discovery_v1alpha1.MeshService, meshWorkloadRef *core_types.ResourceRef) error {
+func (f *federationResolver) federateToRemoteWorkload(
+	ctx context.Context,
+	meshService *discovery_v1alpha1.MeshService,
+	meshWorkloadRef *core_types.ResourceRef,
+) error {
 	workload, err := f.meshWorkloadClient.Get(ctx, client.ObjectKey{
 		Name:      meshWorkloadRef.GetName(),
 		Namespace: meshWorkloadRef.GetNamespace(),
@@ -151,7 +180,9 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 	})
 	if err != nil {
 		return eris.Wrapf(err, "Could not load mesh for MeshWorkload %s.%s",
-			meshService.GetNamespace(), meshService.GetNamespace())
+			meshService.GetNamespace(),
+			meshService.GetNamespace(),
+		)
 	}
 
 	meshForService, err := f.meshClient.Get(ctx, client.ObjectKey{
@@ -159,7 +190,10 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 		Namespace: meshService.Spec.GetMesh().GetNamespace(),
 	})
 	if err != nil {
-		return eris.Wrapf(err, "Could not load mesh for MeshService %+v", meshService.ObjectMeta)
+		return eris.Wrapf(err, "Could not load mesh for MeshService %s.%s",
+			meshService.ObjectMeta.Name,
+			meshService.ObjectMeta.Namespace,
+		)
 	}
 
 	virtualMesh, err := f.getVirtualMeshContainingService(ctx, meshForService)
@@ -173,9 +207,13 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 	// set up gateway resources on the target cluster
 	switch meshForService.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio:
-		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(ctx, virtualMesh, meshService)
+		eap, err = f.perMeshFederationClients.Istio.FederateServiceSide(
+			contextutils.WithLogger(ctx, "istio"),
+			virtualMesh,
+			meshService,
+		)
 	default:
-		err = eris.Errorf("Unsupported mesh type for federation: %+v", meshForWorkload.Spec.MeshType)
+		err = eris.Errorf("Unsupported mesh type for federation: %T", meshForWorkload.Spec.MeshType)
 	}
 
 	if err != nil {
@@ -186,13 +224,13 @@ func (f *federationResolver) federateToRemoteWorkload(ctx context.Context, meshS
 	switch meshForWorkload.Spec.GetMeshType().(type) {
 	case *types.MeshSpec_Istio:
 		return f.perMeshFederationClients.Istio.FederateClientSide(
-			ctx,
+			contextutils.WithLogger(ctx, "istio"),
 			eap,
 			meshService,
 			workload,
 		)
 	default:
-		return eris.Errorf("Unsupported mesh type for federation: %+v", meshForWorkload.Spec.MeshType)
+		return eris.Errorf("Unsupported mesh type for federation: %T", meshForWorkload.Spec.MeshType)
 	}
 }
 

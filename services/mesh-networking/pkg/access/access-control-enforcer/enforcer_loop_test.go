@@ -7,17 +7,18 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	global_ac_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer"
-	mock_global_access_control_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
-	mock_zephyr_networking2 "github.com/solo-io/mesh-projects/test/mocks/zephyr/networking"
+	"github.com/solo-io/go-utils/contextutils"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
+	global_ac_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
+	mock_global_access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/mocks"
+	mock_zephyr_networking2 "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/networking"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -101,8 +102,12 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StartEnforcing(ctx, meshes).
+				StartEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 				Return(nil)
+			meshEnforcer.
+				EXPECT().
+				Name().
+				Return("")
 		}
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
@@ -132,8 +137,12 @@ var _ = Describe("EnforcerLoop", func() {
 		for _, meshEnforcer := range meshEnforcers {
 			meshEnforcer.
 				EXPECT().
-				StopEnforcing(ctx, meshes).
+				StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 				Return(nil)
+			meshEnforcer.
+				EXPECT().
+				Name().
+				Return("")
 		}
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
@@ -163,8 +172,12 @@ var _ = Describe("EnforcerLoop", func() {
 		}
 		meshEnforcers[0].
 			EXPECT().
-			StopEnforcing(ctx, meshes).
+			StopEnforcing(contextutils.WithLogger(ctx, ""), meshes).
 			Return(testErr)
+		meshEnforcers[0].
+			EXPECT().
+			Name().
+			Return("")
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
 			EXPECT().

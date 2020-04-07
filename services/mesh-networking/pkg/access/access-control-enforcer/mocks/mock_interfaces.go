@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 // MockAccessPolicyEnforcerLoop is a mock of AccessPolicyEnforcerLoop interface.
@@ -70,6 +70,20 @@ func NewMockAccessPolicyMeshEnforcer(ctrl *gomock.Controller) *MockAccessPolicyM
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAccessPolicyMeshEnforcer) EXPECT() *MockAccessPolicyMeshEnforcerMockRecorder {
 	return m.recorder
+}
+
+// Name mocks base method.
+func (m *MockAccessPolicyMeshEnforcer) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockAccessPolicyMeshEnforcerMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAccessPolicyMeshEnforcer)(nil).Name))
 }
 
 // StartEnforcing mocks base method.

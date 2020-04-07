@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/auth"
+	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	v1 "k8s.io/api/core/v1"
 	rbacapiv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

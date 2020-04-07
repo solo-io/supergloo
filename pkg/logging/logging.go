@@ -10,11 +10,18 @@ import (
 )
 
 const (
+	LOG_LEVEL  = "LOG_LEVEL"
+	DEBUG_MODE = "DEBUG_MODE"
+)
+
+const (
 	EventTypeKey      = "event_type"
 	ClusterNameKey    = "cluster_name"
-	GroupVersionKind  = "group_version_kind"
+	GroupVersion      = "group_version"
+	Kind              = "kind"
 	ResourceName      = "resource_name"
 	ResourceNamespace = "resource_namespace"
+	ResourceVersion   = "resource_version"
 )
 
 type EventType int
@@ -42,9 +49,11 @@ func (e EventType) String() string {
 }
 
 func EventContext(ctx context.Context, eventType EventType, obj runtime.Object) context.Context {
+	gvk := obj.GetObjectKind().GroupVersionKind()
 	ctx = contextutils.WithLoggerValues(ctx,
 		zap.String(EventTypeKey, eventType.String()),
-		zap.String(GroupVersionKind, obj.GetObjectKind().GroupVersionKind().String()),
+		zap.String(GroupVersion, gvk.GroupVersion().String()),
+		zap.String(Kind, gvk.Kind),
 	)
 	accessor := meta.NewAccessor()
 	name, err := accessor.Name(obj)
@@ -55,6 +64,11 @@ func EventContext(ctx context.Context, eventType EventType, obj runtime.Object) 
 	if err == nil {
 		ctx = contextutils.WithLoggerValues(ctx, zap.String(ResourceNamespace, namespace))
 	}
+	resourceVersion, err := accessor.ResourceVersion(obj)
+	if err == nil {
+		ctx = contextutils.WithLoggerValues(ctx, zap.String(ResourceVersion, resourceVersion))
+	}
+
 	return ctx
 }
 

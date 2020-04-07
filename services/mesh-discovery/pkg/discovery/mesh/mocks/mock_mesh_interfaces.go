@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	controller "github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	controller "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"

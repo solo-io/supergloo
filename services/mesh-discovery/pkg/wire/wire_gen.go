@@ -8,16 +8,16 @@ package wire
 import (
 	"context"
 
-	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
-	mc_wire "github.com/solo-io/mesh-projects/services/common/multicluster/wire"
-	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/consul"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/istio"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/linkerd"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
 )
 
 // Injectors from wire.go:

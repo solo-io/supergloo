@@ -1,6 +1,6 @@
 changelog:
 - type: NEW_FEATURE
   description: Replace dep with go.mod
-  issueLink: https://github.com/solo-io/mesh-projects/issues/77
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/77
 
 

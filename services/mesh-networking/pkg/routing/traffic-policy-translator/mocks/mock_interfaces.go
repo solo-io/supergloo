@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 )
 
 // MockTrafficPolicyMeshTranslator is a mock of TrafficPolicyMeshTranslator interface.
@@ -35,6 +35,20 @@ func NewMockTrafficPolicyMeshTranslator(ctrl *gomock.Controller) *MockTrafficPol
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTrafficPolicyMeshTranslator) EXPECT() *MockTrafficPolicyMeshTranslatorMockRecorder {
 	return m.recorder
+}
+
+// Name mocks base method.
+func (m *MockTrafficPolicyMeshTranslator) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockTrafficPolicyMeshTranslatorMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockTrafficPolicyMeshTranslator)(nil).Name))
 }
 
 // TranslateTrafficPolicy mocks base method.

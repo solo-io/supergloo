@@ -2,10 +2,10 @@ package demo
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
+	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
 	"github.com/spf13/cobra"
 )
 

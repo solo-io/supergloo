@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	table_printing "github.com/solo-io/mesh-projects/cli/pkg/common/table_printing"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 // MockTrafficPolicyPrinter is a mock of TrafficPolicyPrinter interface.

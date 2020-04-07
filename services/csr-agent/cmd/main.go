@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	csr_agent "github.com/solo-io/mesh-projects/services/csr-agent"
+	csr_agent "github.com/solo-io/service-mesh-hub/services/csr-agent"
 )
 
 func main() {

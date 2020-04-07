@@ -3,7 +3,7 @@ package cleanup
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 )
 
 func DemoCleanup(ctx context.Context, runner exec.Runner) error {

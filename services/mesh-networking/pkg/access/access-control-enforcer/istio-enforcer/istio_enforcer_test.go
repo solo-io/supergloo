@@ -6,15 +6,15 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
-	mock_istio_security "github.com/solo-io/mesh-projects/pkg/clients/istio/security/mock"
-	"github.com/solo-io/mesh-projects/services/common/constants"
-	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	istio_enforcer "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	mock_istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security/mock"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	security_v1beta1 "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -35,7 +35,6 @@ var _ = Describe("IstioEnforcer", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
 		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		authPolicyClient = mock_istio_security.NewMockAuthorizationPolicyClient(ctrl)
 		istioEnforcer = istio_enforcer.NewIstioEnforcer(
@@ -43,6 +42,7 @@ var _ = Describe("IstioEnforcer", func() {
 			func(client client.Client) security.AuthorizationPolicyClient {
 				return authPolicyClient
 			})
+		ctx = context.TODO()
 	})
 
 	AfterEach(func() {
@@ -158,6 +158,7 @@ var _ = Describe("IstioEnforcer", func() {
 					Get(ctx, ingressAuthPolicyKey).
 					Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			} else {
+				gomock.Any()
 				// Delete should not be called if no global auth policy exists
 				authPolicyClient.
 					EXPECT().

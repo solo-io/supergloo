@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	acp_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	acp_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 )
 
 // MockAcpTranslatorLoop is a mock of AcpTranslatorLoop interface.
@@ -72,6 +72,20 @@ func NewMockAcpMeshTranslator(ctrl *gomock.Controller) *MockAcpMeshTranslator {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAcpMeshTranslator) EXPECT() *MockAcpMeshTranslatorMockRecorder {
 	return m.recorder
+}
+
+// Name mocks base method.
+func (m *MockAcpMeshTranslator) Name() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Name")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Name indicates an expected call of Name.
+func (mr *MockAcpMeshTranslatorMockRecorder) Name() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAcpMeshTranslator)(nil).Name))
 }
 
 // Translate mocks base method.

@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	kubeconfig "github.com/solo-io/mesh-projects/pkg/kubeconfig"
+	kubeconfig "github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 )
 
 // MockKubeConfigLookup is a mock of KubeConfigLookup interface.

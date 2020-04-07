@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/explore/exploration"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/explore/exploration"
 )
 
 var _ = Describe("Resource name parser", func() {

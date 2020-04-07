@@ -1,9 +1,9 @@
 syntax = "proto3";
 package core.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types";
 
-import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "mesh-projects/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 

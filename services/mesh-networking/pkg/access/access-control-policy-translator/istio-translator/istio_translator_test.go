@@ -8,17 +8,17 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	istio_security "github.com/solo-io/mesh-projects/pkg/clients/istio/security"
-	mock_istio_security "github.com/solo-io/mesh-projects/pkg/clients/istio/security/mock"
-	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	access_control_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
-	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	mock_istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security/mock"
+	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
+	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	security_v1beta1 "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -505,24 +505,6 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
 		Expect(translatorError).To(BeNil())
-	})
-
-	It("should error if a service account ref doesn't match a real service account", func() {
-		testData := initTestData()
-		fakeRef := &core_types.ResourceRef{
-			Name:      "name1",
-			Namespace: "namespace1",
-			Cluster:   "fake-cluster-name",
-		}
-		testData.accessControlPolicy.Spec.SourceSelector = &core_types.IdentitySelector{
-			IdentitySelectorType: &core_types.IdentitySelector_ServiceAccountRefs_{
-				ServiceAccountRefs: &core_types.IdentitySelector_ServiceAccountRefs{
-					ServiceAccounts: []*core_types.ResourceRef{fakeRef},
-				},
-			},
-		}
-		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
-		Expect(translatorError.ErrorMessage).To(ContainSubstring(istio_translator.ServiceAccountRefNonexistent(fakeRef).Error()))
 	})
 
 	It("should return ACP processing error", func() {

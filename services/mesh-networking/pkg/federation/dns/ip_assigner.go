@@ -8,10 +8,10 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	"github.com/solo-io/mesh-projects/pkg/env"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -21,7 +21,7 @@ const (
 
 	// https://preliminary.istio.io/docs/setup/install/multicluster/gateways/#configure-the-example-services
 	// should pull IPs from this network
-	// TODO this should probably be configurable https://github.com/solo-io/mesh-projects/issues/236
+	// TODO this should probably be configurable https://github.com/solo-io/service-mesh-hub/issues/236
 	Subnet = "240.0.0.0/4"
 
 	unAssignedIp = ""

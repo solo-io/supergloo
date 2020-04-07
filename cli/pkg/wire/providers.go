@@ -1,7 +1,7 @@
 package wire
 
 import (
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 )
 
 // factory for clients that require kube clients

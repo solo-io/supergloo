@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
 type ResourceExplorer interface {

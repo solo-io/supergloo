@@ -2,17 +2,17 @@ package wire
 
 import (
 	"github.com/google/wire"
-	discovery_controller "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	networking_controller "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	networking_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/pkg/selector"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	traffic_policy_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator"
-	istio_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
+	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	networking_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/pkg/selector"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
+	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/istio-translator"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/preprocess"
 )
 
 var (
@@ -25,7 +25,6 @@ var (
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
 		LocalTrafficPolicyControllerProvider,
-		LocalMeshServiceControllerProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
@@ -42,8 +41,14 @@ func LocalMeshServiceControllerProvider(mgr mc_manager.AsyncManager) (discovery_
 	return discovery_controller.NewMeshServiceController("management-plane-mesh-service-controller", mgr.Manager())
 }
 
+func LocalMeshWorkloadControllerProvider(mgr mc_manager.AsyncManager) (discovery_controller.MeshWorkloadController, error) {
+	return discovery_controller.NewMeshWorkloadController("management-plane-mesh-workload-controller", mgr.Manager())
+}
+
 func TrafficPolicyMeshTranslatorsProvider(
 	istioTranslator istio_translator.IstioTranslator,
 ) []traffic_policy_translator.TrafficPolicyMeshTranslator {
-	return []traffic_policy_translator.TrafficPolicyMeshTranslator{istioTranslator}
+	return []traffic_policy_translator.TrafficPolicyMeshTranslator{
+		istioTranslator,
+	}
 }

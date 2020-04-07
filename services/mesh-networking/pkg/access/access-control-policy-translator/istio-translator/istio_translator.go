@@ -7,15 +7,16 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients/istio/security"
-	istio_security "github.com/solo-io/mesh-projects/pkg/clients/istio/security"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	access_control_policy "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/access/access-control-policy-translator"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	security_v1beta1 "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -23,22 +24,22 @@ import (
 )
 
 const (
-	TranslatorId = "istio-translator"
+	TranslatorId = "istio_translator"
 )
 
 var (
 	ACPProcessingError = func(err error, acp *networking_v1alpha1.AccessControlPolicy) error {
-		return eris.Wrapf(err, "Error processing AccessControlPolicy: %s.%s", acp.GetName(), acp.GetNamespace())
+		return eris.Wrapf(err, "Error processing AccessControlPolicy: %+v", acp)
 	}
 	AuthPolicyUpsertError = func(err error, authPolicy *client_security_v1beta1.AuthorizationPolicy) error {
 		return eris.Wrapf(err, "Error while upserting AuthorizationPolicy: %s.%s",
 			authPolicy.Name, authPolicy.Namespace)
 	}
-	EmptyTrustDomainForMeshError = func(mesh *discovery_v1alpha1.Mesh) error {
-		return eris.Errorf("Empty trust domain for Istio Mesh: %+v", mesh)
+	EmptyTrustDomainForMeshError = func(mesh *discovery_v1alpha1.Mesh, info *discovery_types.MeshSpec_IstioMesh_CitadelInfo) error {
+		return eris.Errorf("Empty trust domain for Istio Mesh: %s.%s, (%+v)", mesh.Name, mesh.Namespace, info)
 	}
-	ServiceAccountRefNonexistent = func(saRef *core_types.ResourceRef) error {
-		return eris.Errorf("Service account ref did not match a real service account: %s.%s.%s", saRef.Name, saRef.Namespace, saRef.Cluster)
+	EmptyTrustDomainForCluster = func(clusterName string) error {
+		return eris.Errorf("No trust domain found for cluster: %s", clusterName)
 	}
 )
 
@@ -60,6 +61,10 @@ func NewIstioTranslator(
 		meshClient:              meshClient,
 		dynamicClientGetter:     dynamicClientGetter,
 	}
+}
+
+func (i *istioTranslator) Name() string {
+	return TranslatorId
 }
 
 /*
@@ -207,11 +212,7 @@ func (i *istioTranslator) buildSources(
 			if err != nil {
 				return nil, err
 			}
-			if len(trustDomains) == 0 {
-				return nil, ServiceAccountRefNonexistent(serviceAccountRef)
-			}
-
-			// at this point, trustDomains is guaranteed to be of length at least 1.
+			// If no error thrown, trustDomains is guaranteed to be of length 1.
 			uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.GetNamespace(), serviceAccountRef.GetName())
 			if err != nil {
 				return nil, err
@@ -246,7 +247,7 @@ func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, cluster
 		}
 		trustDomain := mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain()
 		if trustDomain == "" {
-			return nil, EmptyTrustDomainForMeshError(&mesh)
+			return nil, EmptyTrustDomainForMeshError(&mesh, mesh.Spec.GetIstio().GetCitadelInfo())
 		}
 		trustDomains = append(trustDomains, trustDomain)
 	}

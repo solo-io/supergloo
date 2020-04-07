@@ -6,9 +6,9 @@ import (
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
 )
 
@@ -45,7 +45,8 @@ func NewVMCSRSnapshotListener(
 				virtualMesh.Status = status
 				err := virtualMeshClient.UpdateStatus(ctx, virtualMesh)
 				if err != nil {
-					logger.Errorf("Error updating certificate status on virtual mesh %+v", virtualMesh.ObjectMeta)
+					logger.Errorf("Error updating certificate status on virtual mesh %s.%s",
+						virtualMesh.Name, virtualMesh.Namespace)
 				}
 			}
 		},
