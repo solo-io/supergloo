@@ -1,6 +1,6 @@
 
 ---
-title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/workload_selector.proto"
+title: "workload_selector.proto"
 ---
 
 ## Package : `core.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/wo
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/core/v1alpha1/workload_selector.proto"></a>
+<a name="API Reference for workload_selector.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/core/v1alpha1/workload_selector.proto
+## workload_selector.proto
 
 
 ## Table of Contents

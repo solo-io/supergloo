@@ -1,6 +1,6 @@
 
 ---
-title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/identity_selector.proto"
+title: "identity_selector.proto"
 ---
 
 ## Package : `core.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/id
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/core/v1alpha1/identity_selector.proto"></a>
+<a name="API Reference for identity_selector.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/core/v1alpha1/identity_selector.proto
+## identity_selector.proto
 
 
 ## Table of Contents

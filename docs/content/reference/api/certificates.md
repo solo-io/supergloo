@@ -1,6 +1,6 @@
 
 ---
-title: "security.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/security/v1alpha1/certificates.proto"
+title: "certificates.proto"
 ---
 
 ## Package : `security.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "security.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/security/v1a
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/security/v1alpha1/certificates.proto"></a>
+<a name="API Reference for certificates.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/security/v1alpha1/certificates.proto
+## certificates.proto
 
 
 ## Table of Contents
