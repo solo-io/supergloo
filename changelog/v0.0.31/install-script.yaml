@@ -1,0 +1,5 @@
+changelog:
+- type: NEW_FEATURE
+  description: Add install script for meshctl
+  issueLink: https://github.com/solo-io/mesh-projects/issues/114
+  resolvesIssue: false
