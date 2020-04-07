@@ -34,6 +34,10 @@ func AddUpgradeFlags(cmd *cobra.Command, opts *Upgrade) {
 		"Desired path for your upgraded meshctl binary. Defaults to the location of your currently executing binary")
 }
 
+const (
+	DefaultManagementPlaneName = "management-plane"
+)
+
 func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.Flags()
 	flags.BoolVarP(&opts.SmhInstall.DryRun, "dry-run", "d", false,
@@ -49,6 +53,13 @@ func AddInstallFlags(cmd *cobra.Command, opts *Options) {
 		"Version to install (e.g. v1.2.0, defaults to latest)")
 	flags.BoolVar(&opts.SmhInstall.CreateNamespace, "create-namespace", true,
 		"Create the namespace to install Service Mesh Hub into")
+	flags.BoolVarP(&opts.SmhInstall.Register, "register", "r", false,
+		"Register the management plane cluster. This would be the same as running the meshctl cluster register "+
+			"command on the managemenent plane cluster after installing.")
+	flags.StringVar(&opts.SmhInstall.ClusterName, "cluster-name", DefaultManagementPlaneName,
+		"Name by which to register the management-plane cluster in Service Mesh Hub. This flag will only be "+
+			"considered if --register is set.")
+
 }
 
 const (

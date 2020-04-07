@@ -74,6 +74,8 @@ type SmhInstall struct {
 	HelmReleaseName         string
 	Version                 string
 	CreateNamespace         bool
+	Register                bool
+	ClusterName             string
 }
 
 type SmhUninstall struct {

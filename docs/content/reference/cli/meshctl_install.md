@@ -17,10 +17,12 @@ meshctl install [flags]
 ### Options
 
 ```
+      --cluster-name string   Name by which to register the management-plane cluster in Service Mesh Hub. This flag will only be considered if --register is set. (default "management-plane")
       --create-namespace      Create the namespace to install Service Mesh Hub into (default true)
   -d, --dry-run               Send the raw installation yaml to stdout instead of applying it to kubernetes
   -f, --file string           Install Service Mesh Hub from this Helm chart archive file rather than from a release
   -h, --help                  help for install
+  -r, --register              Register the management plane cluster. This would be the same as running the meshctl cluster register command on the managemenent plane cluster after installing.
       --release-name string   Helm release name (default "service-mesh-hub")
       --values strings        List of files with value overrides for the Service Mesh Hub Helm chart, (e.g. --values file1,file2 or --values file1 --values file2)
       --version string        Version to install (e.g. v1.2.0, defaults to latest)

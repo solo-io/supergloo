@@ -1,6 +1,7 @@
 package install
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/common/helmutil"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/semver"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )
@@ -41,7 +43,14 @@ func HelmInstallerProvider(helmClient types.HelmClient, kubeClient kubernetes.In
 	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), ioutil.Discard)
 }
 
-func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFactory, kubeLoader common_config.KubeLoader, out io.Writer) InstallCommand {
+func InstallCmd(
+	ctx context.Context,
+	opts *options.Options,
+	kubeClientsFactory common.KubeClientsFactory,
+	clientFactory common.ClientsFactory,
+	kubeLoader common_config.KubeLoader,
+	out io.Writer,
+) InstallCommand {
 	cmd := &cobra.Command{
 		Use:     cliconstants.InstallCommand.Use,
 		Short:   cliconstants.InstallCommand.Short,
@@ -76,6 +85,31 @@ func InstallCmd(opts *options.Options, kubeClientsFactory common.KubeClientsFact
 			}
 
 			fmt.Fprintf(out, "Service Mesh Hub has been installed to namespace %s\n", opts.Root.WriteNamespace)
+
+			// Register has been set by the user, therefore we will attempt to register the current cluster
+			if opts.SmhInstall.Register {
+				// need to fetch raw config in order to get current context to pass to registration client
+				raw, err := kubeLoader.GetRawConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
+				if err != nil {
+					return err
+				}
+				opts.Cluster.Register = options.Register{
+					RemoteClusterName:    opts.SmhInstall.ClusterName,
+					RemoteWriteNamespace: opts.Root.WriteNamespace,
+					RemoteContext:        raw.CurrentContext,
+					RemoteKubeConfig:     opts.Root.KubeConfig,
+				}
+				return register.RegisterCluster(
+					ctx,
+					common.GetBinaryName(cmd),
+					cmd.Flags(),
+					clientFactory,
+					kubeClientsFactory,
+					opts,
+					out,
+					kubeLoader,
+				)
+			}
 			return nil
 		},
 	}
