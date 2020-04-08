@@ -3,6 +3,9 @@ package multicluster
 import (
 	"context"
 
+	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
+
+	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	"github.com/rotisserie/eris"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
@@ -35,6 +38,22 @@ var AddAllIstioToScheme mc_manager.AsyncManagerStartOptionsFunc = func(_ context
 	addToSchemes := []func(scheme *k8s_runtime.Scheme) error{
 		security_v1beta1.AddToScheme,
 		networking_v1alpha3.AddToScheme,
+	}
+
+	var err error
+	for _, addToScheme := range addToSchemes {
+		err = addToScheme(mgr.GetScheme())
+		if err != nil {
+			return eris.Wrap(err, "failed to add istio CRDs to manager runtime scheme")
+		}
+	}
+	return nil
+}
+
+var AddAllLinkerdToScheme mc_manager.AsyncManagerStartOptionsFunc = func(_ context.Context, mgr manager.Manager) error {
+	addToSchemes := []func(scheme *k8s_runtime.Scheme) error{
+		linkerd_config.AddToScheme,
+		smi_config.AddToScheme,
 	}
 
 	var err error

@@ -7,6 +7,7 @@ import (
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
+	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
 	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -25,6 +26,7 @@ var (
 		istio_networking.VirtualServiceClientFactoryProvider,
 		istio_networking.DestinationRuleClientFactoryProvider,
 		linkerd_networking.ServiceProfileClientFactoryProvider,
+		smi_networking.TrafficSplitClientFactoryProvider,
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		linkerd_translator.NewLinkerdTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
