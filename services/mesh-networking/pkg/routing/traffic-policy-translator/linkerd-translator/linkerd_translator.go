@@ -3,13 +3,16 @@ package linkerd_translator
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"sort"
+
+	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
+	smi_networking "github.com/solo-io/mesh-projects/pkg/clients/smi/split/v1alpha1"
 
 	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
@@ -34,6 +37,8 @@ var (
 		return eris.Errorf("Subsets are currently not supported, found one on destination: %+v", dest)
 	}
 
+	CrossNamespaceSplitNotSupportedErr = eris.Errorf("Traffic Shifts are currently not supported across namespaces in Linkerd")
+
 	TrafficShiftRedefinedErr = func(meshService *discovery_v1alpha1.MeshService, trafficPoliciesWithTrafficShifts []core_types.ResourceRef) error {
 		return eris.Errorf("multiple traffic policies with traffic shifts (%+v) defined for a single mesh service (%s)", trafficPoliciesWithTrafficShifts, meshService.Name)
 	}
@@ -45,11 +50,13 @@ func NewLinkerdTrafficPolicyTranslator(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
 	meshClient zephyr_discovery.MeshClient,
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory,
+	trafficSplitClientFactory smi_networking.TrafficSplitClientFactory,
 ) LinkerdTranslator {
 	return &linkerdTrafficPolicyTranslator{
 		dynamicClientGetter:         dynamicClientGetter,
 		meshClient:                  meshClient,
 		serviceProfileClientFactory: serviceProfileClientFactory,
+		trafficSplitClientFactory:   trafficSplitClientFactory,
 	}
 }
 
@@ -57,6 +64,7 @@ type linkerdTrafficPolicyTranslator struct {
 	dynamicClientGetter         mc_manager.DynamicClientGetter
 	meshClient                  zephyr_discovery.MeshClient
 	serviceProfileClientFactory linkerd_client.ServiceProfileClientFactory
+	trafficSplitClientFactory   smi_networking.TrafficSplitClientFactory
 }
 
 func (i *linkerdTrafficPolicyTranslator) Name() string {
@@ -67,7 +75,8 @@ func (i *linkerdTrafficPolicyTranslator) Name() string {
 	Translate a TrafficPolicy into the following Linkerd specific configuration:
 	https://linkerd.io/docs/concepts/traffic-management/
 
-	1. ServiceProfile - routing rules (e.g. retries, fault injection, traffic shifts)
+	1. ServiceProfile - routing rules (retries, timeouts)
+	2. TrafficSplit - routing rules (traffic shifts)
 */
 func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 	ctx context.Context,
@@ -78,14 +87,18 @@ func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 	if mesh.Spec.GetLinkerd() == nil {
 		return nil
 	}
-	serviceProfileClient, err := i.fetchClientsForMeshService(ctx, meshService)
+	serviceProfileClient, trafficSplitClient, err := i.fetchClientsForMeshService(ctx, meshService)
 	if err != nil {
-		return i.errorToStatus(err)
+		return errorToStatus(err)
 	}
 
-	translatorError := i.ensureServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies, serviceProfileClient)
-	if translatorError != nil {
-		return translatorError
+	translatorErrs := i.ensureServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies, serviceProfileClient)
+	if trafficSplitError := i.ensureTrafficSplit(ctx, mesh, meshService, mergedTrafficPolicies, trafficSplitClient); trafficSplitError != nil {
+		translatorErrs = multierror.Append(translatorErrs, trafficSplitError)
+	}
+
+	if translatorErrs != nil {
+		return errorToStatus(translatorErrs)
 	}
 	return nil
 }
@@ -94,16 +107,16 @@ func (i *linkerdTrafficPolicyTranslator) TranslateTrafficPolicy(
 func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
-) (linkerd_client.ServiceProfileClient, error) {
+) (linkerd_client.ServiceProfileClient, smi_networking.TrafficSplitClient, error) {
 	mesh, err := i.getMesh(ctx, meshService)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(mesh.Spec.GetCluster().GetName())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return i.serviceProfileClientFactory(dynamicClient), nil
+	return i.serviceProfileClientFactory(dynamicClient), i.trafficSplitClientFactory(dynamicClient), nil
 }
 
 func (i *linkerdTrafficPolicyTranslator) getMesh(
@@ -123,11 +136,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	meshService *discovery_v1alpha1.MeshService,
 	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
 	serviceProfileClient linkerd_client.ServiceProfileClient,
-) *networking_types.TrafficPolicyStatus_TranslatorError {
-	computedServiceProfile, err := i.translateIntoServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies)
-	if err != nil {
-		return i.errorToStatus(err)
-	}
+) error {
+	computedServiceProfile := i.translateIntoServiceProfile(ctx, mesh, meshService, mergedTrafficPolicies)
+
 	// if service profile has no routes,
 	// no reason to write it
 	if len(computedServiceProfile.Spec.Routes) == 0 {
@@ -135,9 +146,9 @@ func (i *linkerdTrafficPolicyTranslator) ensureServiceProfile(
 	}
 
 	// Upsert computed ServiceProfile
-	err = serviceProfileClient.UpsertSpec(ctx, computedServiceProfile)
+	err := serviceProfileClient.UpsertSpec(ctx, computedServiceProfile)
 	if err != nil {
-		return i.errorToStatus(err)
+		return err
 	}
 	return nil
 }
@@ -147,32 +158,16 @@ func (i *linkerdTrafficPolicyTranslator) translateIntoServiceProfile(
 	mesh *discovery_v1alpha1.Mesh,
 	meshService *discovery_v1alpha1.MeshService,
 	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
-) (*linkerd_config.ServiceProfile, error) {
-
-	var errs error
-
-	dstOverrides, err := i.makeWeightedDestinations(mesh, meshService, trafficPolicies)
-	if err != nil {
-		errs = multierror.Append(errs, err)
-	}
+) *linkerd_config.ServiceProfile {
 
 	serviceProfile := &linkerd_config.ServiceProfile{
-		ObjectMeta: serviceProfileMeta(meshService.Spec.GetKubeService(), mesh.Spec.GetLinkerd()),
+		ObjectMeta: metaForMeshService(meshService.Spec.GetKubeService(), mesh.Spec.GetLinkerd()),
 		Spec: linkerd_config.ServiceProfileSpec{
-			Routes:       makeRoutes(ctx, trafficPolicies),
-			DstOverrides: dstOverrides,
+			Routes: makeRoutes(ctx, trafficPolicies),
 		},
 	}
 
-	return serviceProfile, errs
-}
-
-// get the service profile meta for the service
-func serviceProfileMeta(svc *types.MeshServiceSpec_KubeService, linkerd *types.MeshSpec_LinkerdMesh) metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Name:      fmt.Sprintf("%v.%v.%v", svc.GetRef().GetName(), svc.GetRef().GetNamespace(), linkerd.GetClusterDomain()),
-		Namespace: svc.GetRef().GetNamespace(),
-	}
+	return serviceProfile
 }
 
 func makeRoutes(
@@ -253,12 +248,67 @@ func getMatch(ctx context.Context, match *networking_types.TrafficPolicySpec_Htt
 	}
 }
 
-// For each Destination, create an Linkerd HTTPRouteDestination
-func (i *linkerdTrafficPolicyTranslator) makeWeightedDestinations(
+func errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorError {
+	return &networking_types.TrafficPolicyStatus_TranslatorError{
+		TranslatorId: TranslatorId,
+		ErrorMessage: err.Error(),
+	}
+}
+
+func (i *linkerdTrafficPolicyTranslator) ensureTrafficSplit(
+	ctx context.Context,
 	mesh *discovery_v1alpha1.Mesh,
 	meshService *discovery_v1alpha1.MeshService,
+	mergedTrafficPolicies []*networking_v1alpha1.TrafficPolicy,
+	trafficSplitClient smi_networking.TrafficSplitClient,
+) error {
+	computedTrafficSplit, err := i.translateIntoTrafficSplit(mesh, meshService, mergedTrafficPolicies)
+	if err != nil {
+		return err
+	}
+	// if traffic split has no splits,
+	// no reason to write it
+	if len(computedTrafficSplit.Spec.Backends) == 0 {
+		return nil
+	}
+
+	// Upsert computed TrafficSplit
+	err = trafficSplitClient.UpsertSpec(ctx, computedTrafficSplit)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *linkerdTrafficPolicyTranslator) translateIntoTrafficSplit(
+	mesh *discovery_v1alpha1.Mesh,
+	meshService *discovery_v1alpha1.MeshService,
+	trafficPolicies []*networking_v1alpha1.TrafficPolicy,
+) (*smi_config.TrafficSplit, error) {
+
+	var errs error
+
+	backends, err := i.makeBackends(meshService, trafficPolicies)
+	if err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	trafficSplit := &smi_config.TrafficSplit{
+		ObjectMeta: metaForMeshService(meshService.Spec.GetKubeService(), mesh.Spec.GetLinkerd()),
+		Spec: smi_config.TrafficSplitSpec{
+			Service:  meshService.Spec.KubeService.GetRef().GetName(),
+			Backends: backends,
+		},
+	}
+
+	return trafficSplit, errs
+}
+
+// For each Destination, create an Linkerd HTTPRouteDestination
+func (i *linkerdTrafficPolicyTranslator) makeBackends(
+	meshService *discovery_v1alpha1.MeshService,
 	policies []*networking_v1alpha1.TrafficPolicy,
-) ([]*linkerd_config.WeightedDst, error) {
+) ([]smi_config.TrafficSplitBackend, error) {
 
 	var trafficShift *networking_types.TrafficPolicySpec_MultiDestination
 	var policiesWithTrafficShifts []core_types.ResourceRef
@@ -275,47 +325,38 @@ func (i *linkerdTrafficPolicyTranslator) makeWeightedDestinations(
 	if len(policiesWithTrafficShifts) > 1 {
 		return nil, TrafficShiftRedefinedErr(meshService, policiesWithTrafficShifts)
 	}
-	var translatedRouteDestinations []*linkerd_config.WeightedDst
+	var translatedRouteDestinations []smi_config.TrafficSplitBackend
 	for _, dest := range trafficShift.GetDestinations() {
-		hostname := buildServiceHostname(dest.Destination, mesh.Spec.GetLinkerd().GetClusterDomain(), dest.Port)
+		if dest.Destination.GetNamespace() != meshService.Spec.KubeService.GetRef().GetNamespace() {
+			return nil, CrossNamespaceSplitNotSupportedErr
+		}
 		if dest.Subset != nil {
 			// subsets are currently unsupported, so return a status error to invalidate the TrafficPolicy
 			return nil, SubsetsNotSupportedErr(dest)
 		}
-		httpRouteDestination := &linkerd_config.WeightedDst{
-			Authority: hostname,
-			Weight:    convertWeightQuantity(trafficShift.GetDestinations(), dest.GetWeight()),
+		httpRouteDestination := smi_config.TrafficSplitBackend{
+			Service: dest.Destination.Name,
+			Weight:  convertWeightQuantity(trafficShift.GetDestinations(), dest.GetWeight()),
 		}
 		translatedRouteDestinations = append(translatedRouteDestinations, httpRouteDestination)
 	}
 	return translatedRouteDestinations, nil
 }
 
+// get the service profile meta for the service
+func metaForMeshService(svc *types.MeshServiceSpec_KubeService, linkerd *types.MeshSpec_LinkerdMesh) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      fmt.Sprintf("%v.%v.%v", svc.GetRef().GetName(), svc.GetRef().GetNamespace(), linkerd.GetClusterDomain()),
+		Namespace: svc.GetRef().GetNamespace(),
+	}
+}
+
 // convert a destination weight to a kube resource.Quantity
-func convertWeightQuantity(destinations []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) resource.Quantity {
+func convertWeightQuantity(destinations []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination, relativeWeight uint32) *resource.Quantity {
 	var total uint32
 	for _, dest := range destinations {
 		total += dest.GetWeight()
 	}
 	milliWeights := int64(relativeWeight * 1000 / total)
-	return *resource.NewScaledQuantity(milliWeights, resource.Milli)
-}
-
-func (i *linkerdTrafficPolicyTranslator) errorToStatus(err error) *networking_types.TrafficPolicyStatus_TranslatorError {
-	return &networking_types.TrafficPolicyStatus_TranslatorError{
-		TranslatorId: TranslatorId,
-		ErrorMessage: err.Error(),
-	}
-}
-
-func buildServiceHostname(kubeSvc *core_types.ResourceRef, clusterDnsName string, port uint32) string {
-	hostname := fmt.Sprintf("%v.%v.svc.%v",
-		kubeSvc.GetName(),
-		kubeSvc.GetNamespace(),
-		clusterDnsName,
-	)
-	if port != 0 {
-		hostname = fmt.Sprintf("%v:%v", hostname, port)
-	}
-	return hostname
+	return resource.NewScaledQuantity(milliWeights, resource.Milli)
 }

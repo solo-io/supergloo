@@ -14,6 +14,7 @@ import (
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	"github.com/solo-io/mesh-projects/pkg/clients/linkerd/v1alpha2"
+	"github.com/solo-io/mesh-projects/pkg/clients/smi/split/v1alpha1"
 	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
 	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
@@ -88,7 +89,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	destinationRuleClientFactory := istio_networking.DestinationRuleClientFactoryProvider()
 	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, resourceSelector, virtualServiceClientFactory, destinationRuleClientFactory)
 	serviceProfileClientFactory := v1alpha2.ServiceProfileClientFactoryProvider()
-	linkerdTranslator := linkerd_translator.NewLinkerdTrafficPolicyTranslator(dynamicClientGetter, meshClient, serviceProfileClientFactory)
+	trafficSplitClientFactory := v1alpha1.TrafficSplitClientFactoryProvider()
+	linkerdTranslator := linkerd_translator.NewLinkerdTrafficPolicyTranslator(dynamicClientGetter, meshClient, serviceProfileClientFactory, trafficSplitClientFactory)
 	v := TrafficPolicyMeshTranslatorsProvider(istioTranslator, linkerdTranslator)
 	trafficPolicyController, err := LocalTrafficPolicyControllerProvider(asyncManager)
 	if err != nil {

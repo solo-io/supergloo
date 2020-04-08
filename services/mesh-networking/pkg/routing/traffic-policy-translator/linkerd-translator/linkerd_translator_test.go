@@ -2,7 +2,10 @@ package linkerd_translator_test
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"time"
+
+	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
 
 	"github.com/solo-io/mesh-projects/test/fakes"
 
@@ -12,14 +15,13 @@ import (
 	linkerd_config "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	linkerd_networking "github.com/solo-io/mesh-projects/pkg/clients/linkerd/v1alpha2"
+	smi_networking "github.com/solo-io/mesh-projects/pkg/clients/smi/split/v1alpha1"
 	mock_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
 	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
 	linkerd_translator "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/routing/traffic-policy-translator/linkerd-translator"
@@ -78,6 +80,7 @@ var _ = Describe("LinkerdTranslator", func() {
 			},
 		}
 		serviceProfileClient linkerd_networking.ServiceProfileClient
+		trafficSplitClient   smi_networking.TrafficSplitClient
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
@@ -85,11 +88,15 @@ var _ = Describe("LinkerdTranslator", func() {
 		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		mockMeshClient = mock_core.NewMockMeshClient(ctrl)
 		serviceProfileClient = linkerd_networking.NewServiceProfileClient(fakes.InMemoryClient())
+		trafficSplitClient = smi_networking.NewTrafficSplitClient(fakes.InMemoryClient())
 		linkerdTrafficPolicyTranslator = linkerd_translator.NewLinkerdTrafficPolicyTranslator(
 			mockDynamicClientGetter,
 			mockMeshClient,
 			func(client client.Client) linkerd_networking.ServiceProfileClient {
 				return serviceProfileClient
+			},
+			func(client client.Client) smi_networking.TrafficSplitClient {
+				return trafficSplitClient
 			},
 		)
 		mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
@@ -213,14 +220,12 @@ var _ = Describe("LinkerdTranslator", func() {
 					TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
 						Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
 							{
-								Destination: &core_types.ResourceRef{Name: "foo-svc", Namespace: "foo-ns"},
+								Destination: &core_types.ResourceRef{Name: "foo-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
 								Weight:      5,
-								Port:        1234,
 							},
 							{
-								Destination: &core_types.ResourceRef{Name: "bar-svc", Namespace: "bar-ns", Cluster: "bar-cluster"},
+								Destination: &core_types.ResourceRef{Name: "bar-svc", Namespace: meshService.Spec.KubeService.Ref.Namespace},
 								Weight:      15,
-								Port:        3456,
 							},
 						},
 					},
@@ -228,7 +233,7 @@ var _ = Describe("LinkerdTranslator", func() {
 			},
 		}
 
-		It("creates sp with the corresponding traffic split", func() {
+		It("creates traffic split with the corresponding split", func() {
 
 			translatorError := linkerdTrafficPolicyTranslator.TranslateTrafficPolicy(
 				ctx,
@@ -237,20 +242,20 @@ var _ = Describe("LinkerdTranslator", func() {
 				trafficPolicy)
 			Expect(translatorError).To(BeNil())
 
-			serviceProfiles, err := serviceProfileClient.List(ctx)
+			trafficSplits, err := trafficSplitClient.List(ctx)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(serviceProfiles.Items).To(HaveLen(1))
+			Expect(trafficSplits.Items).To(HaveLen(1))
 
-			sp := &serviceProfiles.Items[0]
+			ts := &trafficSplits.Items[0]
 
-			Expect(sp.Spec.DstOverrides).To(Equal([]*linkerd_config.WeightedDst{
+			Expect(ts.Spec.Backends).To(Equal([]smi_config.TrafficSplitBackend{
 				{
-					Authority: "foo-svc.foo-ns.svc.cluster.domain:1234",
-					Weight:    resource.MustParse("250m"),
+					Service: "foo-svc",
+					Weight:  resource.NewScaledQuantity(250, resource.Milli),
 				},
 				{
-					Authority: "bar-svc.bar-ns.svc.cluster.domain:3456",
-					Weight:    resource.MustParse("750m"),
+					Service: "bar-svc",
+					Weight:  resource.NewScaledQuantity(750, resource.Milli),
 				},
 			}))
 
@@ -370,9 +375,41 @@ var _ = Describe("LinkerdTranslator", func() {
 			}))
 		})
 	})
+	Context("cross-namespace defined in destination", func() {
+
+		dest := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			Destination: &core_types.ResourceRef{Namespace: "another-namespace"},
+			Subset:      map[string]string{},
+		}
+		trafficPolicy := []*v1alpha1.TrafficPolicy{
+			{
+				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},
+				Spec: networking_types.TrafficPolicySpec{
+					TrafficShift: &networking_types.TrafficPolicySpec_MultiDestination{
+						Destinations: []*networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{dest},
+					},
+				},
+			},
+		}
+
+		It("returns a translator error", func() {
+			translatorError := linkerdTrafficPolicyTranslator.TranslateTrafficPolicy(
+				ctx,
+				meshService,
+				mesh,
+				trafficPolicy)
+			Expect(translatorError).To(Equal(&networking_types.TrafficPolicyStatus_TranslatorError{
+				TranslatorId: linkerd_translator.TranslatorId,
+				ErrorMessage: multierror.Append(nil, linkerd_translator.CrossNamespaceSplitNotSupportedErr).Error(),
+			}))
+		})
+	})
 	Context("subsets defined in destination", func() {
 
-		dest := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{Subset: map[string]string{}}
+		dest := &networking_types.TrafficPolicySpec_MultiDestination_WeightedDestination{
+			Destination: &core_types.ResourceRef{Namespace: meshService.Spec.KubeService.Ref.Namespace},
+			Subset:      map[string]string{},
+		}
 		trafficPolicy := []*v1alpha1.TrafficPolicy{
 			{
 				ObjectMeta: v1.ObjectMeta{Namespace: "ns", Name: "tp"},

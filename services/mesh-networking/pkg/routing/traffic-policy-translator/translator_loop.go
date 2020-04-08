@@ -180,7 +180,10 @@ func (t *trafficPolicyTranslatorLoop) upsertPolicyResourcesForMeshService(
 		return err
 	}
 	// ignore Mesh specific statuses because there's no triggering TrafficPolicy whose status we can update
-	_, err = t.translateMergedTrafficPolicies(ctx, mergedTrafficPoliciesByMeshService)
+	translatorErr, err := t.translateMergedTrafficPolicies(ctx, mergedTrafficPoliciesByMeshService)
+	if translatorErr != nil {
+		contextutils.LoggerFrom(ctx).Warnf("translator error: %v", translatorErr)
+	}
 	return err
 }
 
