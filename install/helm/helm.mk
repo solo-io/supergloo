@@ -13,7 +13,7 @@ RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 # TAGGED_VERSION := $(shell git describe --tags)
 # This doesn't work in CI, need to find another way...
-	TAGGED_VERSION := $(shell git describe --tags --dirty)
+	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
 	RELEASE := "false"
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
