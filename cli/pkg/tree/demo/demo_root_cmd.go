@@ -134,11 +134,15 @@ func istioMultiCluster(opts *options.Options, commandLineRunner CommandLineRunne
 				return err
 			}
 
-			devFlags := ""
+			csrFlag := ""
 			if opts.Demo.DevMode {
-				devFlags = "true"
+				csrFlag = "true"
 			}
-			if err := runBash(commandLineRunner, fmt.Sprintf(script.RegisterCluster, os.Args[0], remoteClusterName, remoteContext, devFlags)); err != nil {
+			kindFlag := ""
+			if opts.Demo.UseKind {
+				kindFlag = "true"
+			}
+			if err := runBash(commandLineRunner, fmt.Sprintf(script.RegisterCluster, os.Args[0], remoteClusterName, remoteContext, csrFlag, kindFlag)); err != nil {
 				return err
 			}
 
@@ -205,11 +209,15 @@ func initServiceMeshHubAndCluster(demoOpts options.Demo, commandLineRunner Comma
 		}
 	}
 
-	devFlags := ""
+	csrFlag := ""
 	if demoOpts.DevMode {
-		devFlags = "true"
+		csrFlag = "true"
 	}
-	if err := runBash(commandLineRunner, fmt.Sprintf(script.RegisterCluster, os.Args[0], clusterName, contextName, devFlags)); err != nil {
+	kindFlag := ""
+	if demoOpts.UseKind {
+		kindFlag = "true"
+	}
+	if err := runBash(commandLineRunner, fmt.Sprintf(script.RegisterCluster, os.Args[0], clusterName, contextName, csrFlag, kindFlag)); err != nil {
 		return err
 	}
 
