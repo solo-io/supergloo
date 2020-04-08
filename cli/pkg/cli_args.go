@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"io/ioutil"
 
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
@@ -18,6 +19,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/grpclog"
 )
 
 // build an instance of the meshctl implementation
@@ -40,6 +42,8 @@ func BuildCli(
 		Use:   cliconstants.RootCommand.Use,
 		Short: cliconstants.RootCommand.Short,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			//TODO: this is failing with transport: loopyWriter.run returning. connection error: desc = "transport is closing"
+			grpclog.SetLoggerV2(grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, ioutil.Discard))
 			usageReporter.StartReportingUsage(ctx, usage.UsageReportingInterval)
 			return nil
 		},
