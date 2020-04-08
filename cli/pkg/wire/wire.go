@@ -12,6 +12,7 @@ import (
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
@@ -142,7 +143,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		common.PrintersProvider,
 		usage.DefaultUsageReporterProvider,
 		interactive.NewSurveyInteractivePrompt,
-		demo.NewCommandLineRunner,
+		exec.NewShellRunner,
 		demo.DemoSet,
 		upgrade.UpgradeSet,
 		cluster.ClusterSet,
@@ -171,7 +172,7 @@ func InitializeCLIWithMocks(
 	fileReader common.FileReader,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 	printers common.Printers,
-	runnner demo.CommandLineRunner,
+	runner exec.Runner,
 	interactivePrompt interactive.InteractivePrompt,
 ) *cobra.Command {
 	wire.Build(
