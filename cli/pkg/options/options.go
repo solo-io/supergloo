@@ -14,10 +14,13 @@ type Options struct {
 	Cluster      Cluster
 	Upgrade      Upgrade
 	SmhInstall   SmhInstall
-	Istio        Istio
+	Mesh         Mesh
 	Check        Check
+	Get          Get
 	SmhUninstall SmhUninstall
-	Explore      Explore
+	Demo         Demo
+	Describe     Describe
+	Create       Create
 }
 
 type Root struct {
@@ -42,22 +45,19 @@ type Register struct {
 	UseDevCsrAgentChart        bool
 }
 
-type Istio struct {
-	Install IstioInstall
+type Mesh struct {
+	Install MeshInstall
 }
 
-type IstioInstall struct {
-	InstallationConfig        IstioInstallationConfig
-	DryRun                    bool
-	IstioOperatorManifestPath string
-	Profile                   string
+type MeshInstall struct {
+	InstallationConfig MeshInstallationConfig
+	DryRun             bool
+	ManifestPath       string
+	Profile            string
 }
 
-type IstioInstallationConfig struct {
-	CreateNamespace        bool
-	CreateIstioOperatorCRD bool
-
-	// will be defaulted to istio-operator if left blank
+type MeshInstallationConfig struct {
+	CreateNamespace  bool
 	InstallNamespace string
 }
 
@@ -73,6 +73,8 @@ type SmhInstall struct {
 	HelmReleaseName         string
 	Version                 string
 	CreateNamespace         bool
+	Register                bool
+	ClusterName             string
 }
 
 type SmhUninstall struct {
@@ -84,6 +86,37 @@ type Check struct {
 	OutputFormat string
 }
 
-type Explore struct {
+type Get struct {
+	OutputFormat string
+}
+
+type Describe struct {
 	Policies string
+}
+
+type Demo struct {
+	DemoLabel         string
+	UseKind           bool
+	ClusterName       string
+	IstioMulticluster IstioMulticluster
+	DevMode           bool
+	ContextName       string
+}
+
+type IstioMulticluster struct {
+	RemoteClusterName string
+	RemoteContextName string
+}
+
+type Create struct {
+	Interactive  bool
+	DryRun       bool
+	ResourceType string
+	VirtualMesh  CreateVirtualMesh
+	OutputFormat string
+}
+
+type CreateVirtualMesh struct {
+	ForAllMeshes bool
+	Meshes       []string
 }

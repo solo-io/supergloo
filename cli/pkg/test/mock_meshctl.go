@@ -9,10 +9,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
@@ -37,7 +38,10 @@ type MockMeshctl struct {
 	ImageNameParser         docker.ImageNameParser
 	FileReader              common.FileReader
 	SecretToConfigConverter kubeconfig.SecretToConfigConverter
-	Runner                  exec.Runner
+
+	Runner            demo.CommandLineRunner
+	Printers          common.Printers
+	InteractivePrompt interactive.InteractivePrompt
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -73,7 +77,9 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.ImageNameParser,
 		m.FileReader,
 		m.SecretToConfigConverter,
+		m.Printers,
 		m.Runner,
+		m.InteractivePrompt,
 	)
 
 	splitArgs, err := shellwords.Parse(argString)

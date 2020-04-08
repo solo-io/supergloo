@@ -48,10 +48,17 @@ func main() {
 				Module: "github.com/solo-io/service-mesh-hub",
 				Resources: []model.Resource{
 					{
-						Kind:                 "VirtualMeshCertificateSigningRequest",
-						RelativePathFromRoot: "pkg/api/security.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "VirtualMeshCertificateSigningRequestSpec"},
-						Status:               &model.Field{Type: "VirtualMeshCertificateSigningRequestStatus"},
+						Kind: "VirtualMeshCertificateSigningRequest",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "VirtualMeshCertificateSigningRequestSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "VirtualMeshCertificateSigningRequestStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 				},
 				RenderManifests:  true,
@@ -69,22 +76,43 @@ func main() {
 				Module: "github.com/solo-io/service-mesh-hub",
 				Resources: []model.Resource{
 					{
-						Kind:                 "TrafficPolicy",
-						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "TrafficPolicySpec"},
-						Status:               &model.Field{Type: "TrafficPolicyStatus"},
+						Kind: "TrafficPolicy",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "TrafficPolicySpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "TrafficPolicyStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 					{
-						Kind:                 "AccessControlPolicy",
-						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "AccessControlPolicySpec"},
-						Status:               &model.Field{Type: "AccessControlPolicyStatus"},
+						Kind: "AccessControlPolicy",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "AccessControlPolicySpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "AccessControlPolicyStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 					{
-						Kind:                 "VirtualMesh",
-						RelativePathFromRoot: "pkg/api/networking.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "VirtualMeshSpec"},
-						Status:               &model.Field{Type: "VirtualMeshStatus"},
+						Kind: "VirtualMesh",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "VirtualMeshSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "VirtualMeshStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 				},
 				RenderManifests:  true,
@@ -102,27 +130,52 @@ func main() {
 				Module: "github.com/solo-io/service-mesh-hub",
 				Resources: []model.Resource{
 					{
-						Kind:                 "KubernetesCluster",
-						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "KubernetesClusterSpec"},
+						Kind: "KubernetesCluster",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "KubernetesClusterSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							},
+						},
 					},
 					{
-						Kind:                 "MeshService",
-						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshServiceSpec"},
-						Status:               &model.Field{Type: "MeshServiceStatus"},
+						Kind: "MeshService",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "MeshServiceSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "MeshServiceStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 					{
-						Kind:                 "MeshWorkload",
-						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshWorkloadSpec"},
-						Status:               &model.Field{Type: "MeshWorkloadStatus"},
+						Kind: "MeshWorkload",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "MeshWorkloadSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "MeshWorkloadStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 					{
-						Kind:                 "Mesh",
-						RelativePathFromRoot: "pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
-						Spec:                 model.Field{Type: "MeshSpec"},
-						Status:               &model.Field{Type: "MeshStatus"},
+						Kind: "Mesh",
+						Spec: model.Field{
+							Type: model.Type{
+								Name:      "MeshSpec",
+								GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+							},
+						},
+						Status: &model.Field{Type: model.Type{
+							Name:      "MeshStatus",
+							GoPackage: "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types",
+						}},
 					},
 				},
 				RenderManifests:  true,

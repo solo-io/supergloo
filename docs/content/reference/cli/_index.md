@@ -8,5 +8,3 @@ weight: 2
 
 This section contains generated reference documentation for the `Service Mesh Hub` CLI.
 
-{{% children description="true" %}}
-

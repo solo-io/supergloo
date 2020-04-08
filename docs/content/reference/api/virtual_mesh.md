@@ -1,6 +1,6 @@
 
 ---
-title: "networking.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto"
+title: "virtual_mesh.proto"
 ---
 
 ## Package : `networking.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "networking.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/network
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto"></a>
+<a name="API Reference for virtual_mesh.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto
+## virtual_mesh.proto
 
 
 ## Table of Contents

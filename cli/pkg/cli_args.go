@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"io/ioutil"
 
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
@@ -9,14 +10,17 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check"
 	clusterroot "github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/explore"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/istio"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/grpclog"
 )
 
 // build an instance of the meshctl implementation
@@ -26,18 +30,22 @@ func BuildCli(
 	usageReporter usageclient.Client,
 	clusterCmd clusterroot.ClusterCommand,
 	versionCmd version.VersionCommand,
-	istioCmd istio.IstioCommand,
+	meshCmd mesh.MeshCommand,
 	upgradeCmd upgrade.UpgradeCommand,
 	installCmd install.InstallCommand,
 	uninstallCmd uninstall.UninstallCommand,
 	checkCommand check.CheckCommand,
-	exploreCommand explore.ExploreCommand,
+	describeCommand describe.DescribeCommand,
 	demoCommand demo.DemoCommand,
+	getCommand get.GetCommand,
+	createCommand create.CreateRootCmd,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   cliconstants.RootCommand.Use,
 		Short: cliconstants.RootCommand.Short,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			//TODO: this is failing with transport: loopyWriter.run returning. connection error: desc = "transport is closing"
+			grpclog.SetLoggerV2(grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, ioutil.Discard))
 			usageReporter.StartReportingUsage(ctx, usage.UsageReportingInterval)
 			return nil
 		},
@@ -48,11 +56,13 @@ func BuildCli(
 		versionCmd,
 		installCmd,
 		upgradeCmd,
-		istioCmd,
+		meshCmd,
 		uninstallCmd,
 		checkCommand,
-		exploreCommand,
+		describeCommand,
 		demoCommand,
+		createCommand,
+		getCommand,
 	)
 	return cmd
 }

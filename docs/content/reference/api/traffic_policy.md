@@ -1,6 +1,6 @@
 
 ---
-title: "networking.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto"
+title: "traffic_policy.proto"
 ---
 
 ## Package : `networking.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "networking.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/network
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto"></a>
+<a name="API Reference for traffic_policy.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/service-mesh-hub/api/networking/v1alpha1/traffic_policy.proto
+## traffic_policy.proto
 
 
 ## Table of Contents
@@ -51,7 +51,7 @@ A routing rule applies some L7 routing features to an existing mesh. Routing rul
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [core.zephyr.solo.io.WorkloadSelector](#core.zephyr.solo.io.WorkloadSelector) |  | Requests originating from these pods will have the rule applied. Leave empty to have all pods in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicys are applied to pods in a Linkerd mesh. TrafficPolicys will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
+| sourceSelector | [core.zephyr.solo.io.WorkloadSelector](#core.zephyr.solo.io.WorkloadSelector) |  | Requests originating from these pods will have the rule applied. Leave empty to have all pods in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
 | destinationSelector | [core.zephyr.solo.io.ServiceSelector](#core.zephyr.solo.io.ServiceSelector) |  | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
 | httpRequestMatchers | [][TrafficPolicySpec.HttpMatcher](#networking.zephyr.solo.io.TrafficPolicySpec.HttpMatcher) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method |
 | trafficShift | [TrafficPolicySpec.MultiDestination](#networking.zephyr.solo.io.TrafficPolicySpec.MultiDestination) |  | A routing rule can have one of several types. Note: types imported from Istio will be replaced with our own simpler types, this is just a place to start from.<br>Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |

@@ -99,17 +99,15 @@ var _ = Describe("csr client", func() {
 
 			It("can call list with the proper args, and return err", func() {
 				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
-				listOptions := metav1.ListOptions{}
-				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(testErr)
-				_, err := csrClient.List(ctx, listOptions)
+				mockClient.EXPECT().List(ctx, csr).Return(testErr)
+				_, err := csrClient.List(ctx)
 				Expect(err).To(Equal(testErr))
 			})
 
 			It("can call get with the proper args, and return non-err", func() {
 				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
-				listOptions := metav1.ListOptions{}
-				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(nil)
-				response, err := csrClient.List(ctx, listOptions)
+				mockClient.EXPECT().List(ctx, csr).Return(nil)
+				response, err := csrClient.List(ctx)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(response).NotTo(BeNil())
 			})

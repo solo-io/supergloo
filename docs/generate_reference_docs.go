@@ -34,8 +34,6 @@ weight: 2
 
 This section contains generated reference documentation for the ` + "`" + `Service Mesh Hub` + "`" + ` CLI.
 
-{{% children description="true" %}}
-
 `
 	protoDocTemplate  = filepath.Join(moduleRoot, "docs", "proto_docs_template.tmpl")
 	apiReferenceIndex = `
@@ -201,5 +199,8 @@ var templateFuncs = template.FuncMap{
 	"replaceNewLine": func(str string) string {
 		str = strings.ReplaceAll(str, "\n\n", "<br>")
 		return strings.ReplaceAll(str, "\n", " ")
+	},
+	"cleanFileName": func(str string) string {
+		return filepath.Base(str)
 	},
 }

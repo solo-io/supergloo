@@ -107,7 +107,7 @@ helmVersion=$(git describe --tags --dirty | sed -E 's|^v(.*$)|\1|')
   --local-cluster-domain-override host.docker.internal \
   --dev-csr-agent-chart
 
-./_output/meshctl istio install --context kind-$remoteCluster --operator-spec=- <<EOF
+./_output/meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -171,7 +171,7 @@ spec:
       selfSigned: false
 EOF
 
-./_output/meshctl istio install --context kind-$managementPlane --operator-spec=- <<EOF
+./_output/meshctl mesh install istio --context kind-$managementPlane --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:

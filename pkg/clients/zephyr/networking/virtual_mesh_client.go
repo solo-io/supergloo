@@ -15,13 +15,13 @@ type virtualMeshClient struct {
 	dynamicClient client.Client
 }
 
-func (m *virtualMeshClient) Get(
+func (v *virtualMeshClient) Get(
 	ctx context.Context,
 	name, namespace string,
 ) (*networkingv1alpha1.VirtualMesh, error) {
 
 	csr := networkingv1alpha1.VirtualMesh{}
-	err := m.dynamicClient.Get(ctx, client.ObjectKey{
+	err := v.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
 	}, &csr)
@@ -31,23 +31,27 @@ func (m *virtualMeshClient) Get(
 	return &csr, nil
 }
 
-func (m *virtualMeshClient) List(
+func (v *virtualMeshClient) List(
 	ctx context.Context,
 	opts ...client.ListOption,
 ) (*networkingv1alpha1.VirtualMeshList, error) {
 
 	list := networkingv1alpha1.VirtualMeshList{}
-	err := m.dynamicClient.List(ctx, &list, opts...)
+	err := v.dynamicClient.List(ctx, &list, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &list, nil
 }
 
-func (m *virtualMeshClient) UpdateStatus(
+func (v *virtualMeshClient) UpdateStatus(
 	ctx context.Context,
 	vm *networkingv1alpha1.VirtualMesh,
 	opts ...client.UpdateOption,
 ) error {
-	return m.dynamicClient.Status().Update(ctx, vm, opts...)
+	return v.dynamicClient.Status().Update(ctx, vm, opts...)
+}
+
+func (v *virtualMeshClient) Create(ctx context.Context, virtualMesh *networkingv1alpha1.VirtualMesh) error {
+	return v.dynamicClient.Create(ctx, virtualMesh)
 }

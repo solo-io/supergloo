@@ -425,7 +425,6 @@ func (i *istioTrafficPolicyTranslator) translateDestinationRoutes(
 	var translatedRouteDestinations []*api_v1alpha3.HTTPRouteDestination
 	trafficShift := trafficPolicy.Spec.GetTrafficShift()
 	if trafficShift != nil {
-		translatedRouteDestinations = []*api_v1alpha3.HTTPRouteDestination{}
 		for _, destination := range trafficShift.GetDestinations() {
 			hostnameForKubeService, isMulticluster, err := i.getHostnameForKubeService(
 				ctx,

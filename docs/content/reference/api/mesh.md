@@ -1,6 +1,6 @@
 
 ---
-title: "discovery.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh.proto"
+title: "mesh.proto"
 ---
 
 ## Package : `discovery.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "discovery.zephyr.solo.iogithub.com/solo-io/service-mesh-hub/api/discover
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh.proto"></a>
+<a name="API Reference for mesh.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/service-mesh-hub/api/discovery/v1alpha1/mesh.proto
+## mesh.proto
 
 
 ## Table of Contents
@@ -123,6 +123,7 @@ Mesh object representing an installed Linkerd control plane
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | installation | [MeshSpec.MeshInstallation](#discovery.zephyr.solo.io.MeshSpec.MeshInstallation) |  |  |
+| clusterDomain | [string](#string) |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info |
 
 
 

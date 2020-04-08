@@ -62,6 +62,10 @@ message MeshSpec {
     // Mesh object representing an installed Linkerd control plane
     message LinkerdMesh {
         MeshInstallation installation = 1;
+
+        // The cluster domain suffix this Linkerd mesh is configured with.
+        // See https://linkerd.io/2/tasks/using-custom-domain/ for info
+        string cluster_domain = 2;
     }
 
     message ConsulConnectMesh {

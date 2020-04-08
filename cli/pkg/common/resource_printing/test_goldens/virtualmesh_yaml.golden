@@ -1,0 +1,20 @@
+kind: VirtualMesh
+metadata:
+  creationTimestamp: null
+  name: test-vm
+  namespace: service-mesh-hub
+spec:
+  certificateAuthority:
+    builtin:
+      orgName: solo.io
+      rsaKeySizeBytes: 4096
+      ttlDays: 365
+  displayName: test-vm
+  federation: {}
+  meshes:
+  - name: istio-istio-system-management-plane-cluster
+    namespace: service-mesh-hub
+  - name: istio-istio-system-target-cluster
+    namespace: service-mesh-hub
+  shared: {}
+status: {}

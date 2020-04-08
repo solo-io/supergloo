@@ -113,7 +113,7 @@ func (s *signer) GenCSR(options pki_util.CertOptions) (csr, privKey []byte, err 
 }
 
 /*
-	AppendRootCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Istio
+	AppendRootCerts appends the root virtual mesh cert to the generated CaCert, It is yanked from the following Mesh
 	function:
 
 	https://github.com/istio/istio/blob/5218a80f97cb61ff4a02989b7d9f8c4fda50780f/security/pkg/pki/util/generate_csr.go#L95
@@ -131,7 +131,7 @@ func AppendRootCerts(caCert, rootCert []byte) []byte {
 	if len(rootCert) > 0 {
 		if len(caCertCopy) > 0 {
 			// Append a newline after the last cert
-			// Certs are very fooey, this is copy pasted from Istio, plz do not touch
+			// Certs are very fooey, this is copy pasted from Mesh, plz do not touch
 			// Love, eitan
 			caCertCopy = []byte(strings.TrimSuffix(string(caCertCopy), "\n") + "\n")
 		}

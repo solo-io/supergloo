@@ -44,8 +44,8 @@ type TrafficPolicySpec struct {
 	//Requests originating from these pods will have the rule applied.
 	//Leave empty to have all pods in the mesh apply these rules.
 	//
-	//Note: Source Selectors are ignored when TrafficPolicys are
-	//applied to pods in a Linkerd mesh. TrafficPolicys will apply to
+	//Note: Source Selectors are ignored when TrafficPolicies are
+	//applied to pods in a Linkerd mesh. TrafficPolicies will apply to
 	//all selected destinations in Linkerd, regardless of the source.
 	//
 	//Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.

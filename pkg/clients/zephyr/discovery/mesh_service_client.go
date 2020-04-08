@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned/typed/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -58,22 +57,14 @@ func (m *meshServiceClient) UpdateStatus(ctx context.Context, meshService *v1alp
 	return m.client.Status().Update(ctx, meshService, options...)
 }
 
-type GeneratedMeshServiceClientFactory func(cfg *rest.Config) MeshServiceClient
-
-func NewGeneratedMeshServiceClientFactory() GeneratedMeshServiceClientFactory {
-	return NewGeneratedMeshServiceClient
-}
-
-func NewGeneratedMeshServiceClient(cfg *rest.Config) MeshServiceClient {
-	clientSet, _ := versioned.NewForConfig(cfg)
-
+func NewGeneratedMeshServiceClient(disc versioned.Interface) MeshServiceClient {
 	return &generatedMeshServiceClient{
-		client: clientSet.DiscoveryV1alpha1(),
+		client: disc.DiscoveryV1alpha1(),
 	}
 }
 
 type generatedMeshServiceClient struct {
-	client discoveryv1alpha1.DiscoveryV1alpha1Interface
+	client discoveryv1alpha1.MeshServicesGetter
 }
 
 func (m *generatedMeshServiceClient) Get(ctx context.Context, key client.ObjectKey) (*v1alpha1.MeshService, error) {
