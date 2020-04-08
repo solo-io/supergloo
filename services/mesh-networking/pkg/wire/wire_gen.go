@@ -14,6 +14,7 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
