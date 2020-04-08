@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
@@ -19,21 +20,24 @@ import (
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	test_logging "github.com/solo-io/mesh-projects/test/logging"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Federation Decider", func() {
 	var (
-		ctrl *gomock.Controller
-		ctx  context.Context
+		ctrl   *gomock.Controller
+		ctx    context.Context
+		logger *test_logging.TestLogger
 
 		testErr = eris.New("hello")
 	)
 
 	BeforeEach(func() {
+		logger = test_logging.NewTestLogger()
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
+		ctx = contextutils.WithExistingLogger(ctx, logger.Logger())
 	})
 
 	AfterEach(func() {

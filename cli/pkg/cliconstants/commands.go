@@ -47,6 +47,52 @@ var (
 			"kind clusters running are those created by mesctl demo init.",
 	}
 
+	GetCommand = struct {
+		Root        cobra.Command
+		Mesh        cobra.Command
+		VirtualMesh cobra.Command
+		VMCSR       cobra.Command
+		Workload    cobra.Command
+		Service     cobra.Command
+		Cluster     cobra.Command
+	}{
+		Root: cobra.Command{
+			Use:     "get",
+			Aliases: []string{"g"},
+			Short:   "Examine Service Mesh Hub resources",
+		},
+		Mesh: cobra.Command{
+			Use:     "meshes",
+			Aliases: []string{"m", "mesh"},
+			Short:   "Examine discovered meshes",
+		},
+		Workload: cobra.Command{
+			Use:     "workloads",
+			Aliases: []string{"w", "workload"},
+			Short:   "Examine discovered mesh workloads",
+		},
+		Service: cobra.Command{
+			Use:     "services",
+			Aliases: []string{"s", "service"},
+			Short:   "Examine discovered mesh services",
+		},
+		Cluster: cobra.Command{
+			Use:     "clusters",
+			Aliases: []string{"k", "c", "kubernetescluster", "cluster"},
+			Short:   "Examine registered kubernetes clusters",
+		},
+		VirtualMesh: cobra.Command{
+			Use:     "virtualmeshes",
+			Aliases: []string{"vm", "vms", "virtualmesh"},
+			Short:   "Examine configured virtual meshes",
+		},
+		VMCSR: cobra.Command{
+			Use:     "virtualmeshcertificatesigningrequests",
+			Aliases: []string{"vmcsr", "vmcsrs", "virtualmeshcertificatesigningrequest"},
+			Short:   "Examine configured virtual mesh ceriticate signing request",
+		},
+	}
+
 	VersionCommand = cobra.Command{
 		Use:   "version",
 		Short: "Display the version of meshctl and Service Mesh Hub server components",

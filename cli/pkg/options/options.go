@@ -16,6 +16,7 @@ type Options struct {
 	SmhInstall   SmhInstall
 	Mesh         Mesh
 	Check        Check
+	Get          Get
 	SmhUninstall SmhUninstall
 	Demo         Demo
 	Describe     Describe
@@ -82,6 +83,10 @@ type SmhUninstall struct {
 }
 
 type Check struct {
+	OutputFormat string
+}
+
+type Get struct {
 	OutputFormat string
 }
 

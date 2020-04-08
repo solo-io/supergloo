@@ -1,0 +1,5 @@
+changelog:
+- type: NEW_FEATURE
+  description: Implement simple meshctl get * commands
+  issueLink: https://github.com/solo-io/mesh-projects/issues/294
+  resolvesIssue: false

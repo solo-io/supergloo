@@ -31,6 +31,7 @@ func DescribeCmd(
 	ctx context.Context,
 	kubeLoader common_config.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
+	printers common.Printers,
 	opts *options.Options,
 	out io.Writer,
 ) DescribeCommand {
@@ -78,12 +79,12 @@ func DescribeCmd(
 				return err
 			}
 			if opts.Describe.Policies == description.AccessPolicies {
-				masterKubeClients.AccessControlPolicyPrinter.Print(out, printMode, explorationResult.Policies.AccessControlPolicies)
+				printers.AccessControlPolicyPrinter.Print(out, printMode, explorationResult.Policies.AccessControlPolicies)
 			} else if opts.Describe.Policies == description.TrafficPolicies {
-				masterKubeClients.TrafficPolicyPrinter.Print(out, printMode, explorationResult.Policies.TrafficPolicies)
+				printers.TrafficPolicyPrinter.Print(out, printMode, explorationResult.Policies.TrafficPolicies)
 			} else {
-				masterKubeClients.AccessControlPolicyPrinter.Print(out, printMode, explorationResult.Policies.AccessControlPolicies)
-				masterKubeClients.TrafficPolicyPrinter.Print(out, printMode, explorationResult.Policies.TrafficPolicies)
+				printers.AccessControlPolicyPrinter.Print(out, printMode, explorationResult.Policies.AccessControlPolicies)
+				printers.TrafficPolicyPrinter.Print(out, printMode, explorationResult.Policies.TrafficPolicies)
 			}
 			return nil
 		},

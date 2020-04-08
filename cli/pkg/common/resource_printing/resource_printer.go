@@ -4,19 +4,29 @@ import (
 	"io"
 	"strings"
 
-	"github.com/google/wire"
 	"github.com/rotisserie/eris"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 )
 
+type OutputFormat string
+
+func (o OutputFormat) String() string {
+	return string(o)
+}
+
+const (
+	JSONFormat OutputFormat = "json"
+	YAMLFormat OutputFormat = "yaml"
+)
+
 var (
-	ValidFormats               = []string{JSONFormat, YAMLFormat}
-	ResourcePrinterProviderSet = wire.NewSet(
-		NewResourcePrinter,
-	)
-	InvalidOutputFormatError = func(format string) error {
-		return eris.Errorf("Invalid output format: %s. Must be one of (%s)", format, strings.Join([]string{JSONFormat, YAMLFormat}, "|"))
+	ValidFormats             = []string{JSONFormat.String(), YAMLFormat.String()}
+	InvalidOutputFormatError = func(format OutputFormat) error {
+		return eris.Errorf(
+			"Invalid output format: %s. Must be one of (%s)",
+			format.String(),
+			strings.Join(ValidFormats, "|"))
 	}
 )
 
@@ -32,7 +42,7 @@ func NewResourcePrinter() ResourcePrinter {
 	}
 }
 
-func (r *resourcePrinters) Print(out io.Writer, object runtime.Object, format string) error {
+func (r *resourcePrinters) Print(out io.Writer, object runtime.Object, format OutputFormat) error {
 	switch format {
 	case JSONFormat:
 		return r.jsonPrinter.PrintObj(object, out)

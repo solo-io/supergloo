@@ -9,17 +9,11 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/clients"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewGeneratedKubernetesClusterClient(config *rest.Config) (KubernetesClusterClient, error) {
-	clientSet, err := versioned.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &kubernetesClusterClient{clientSet: clientSet.DiscoveryV1alpha1()}, nil
+func NewGeneratedKubernetesClusterClient(disc versioned.Interface) (KubernetesClusterClient, error) {
+	return &kubernetesClusterClient{clientSet: disc.DiscoveryV1alpha1()}, nil
 }
 
 type kubernetesClusterClient struct {

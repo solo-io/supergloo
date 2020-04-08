@@ -3,10 +3,12 @@ package resource_printing_test
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/test_goldens"
 	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -25,15 +27,23 @@ var _ = Describe("JSONPrinter", func() {
 		resourcePrinter = resource_printing.NewResourcePrinter()
 	})
 
-	var runTest = func(printFormat string, fileName string, obj runtime.Object) {
-		goldenContents, err := ioutil.ReadFile("./test_goldens/" + fileName)
+	var runTest = func(printFormat resource_printing.OutputFormat, fileName string, obj runtime.Object) {
+		goldenFilename := test_goldens.GoldenFilePath("", fileName)
+		goldenContents, err := ioutil.ReadFile(goldenFilename)
 		Expect(err).NotTo(HaveOccurred())
 
 		output := &bytes.Buffer{}
 		err = resourcePrinter.Print(output, obj, printFormat)
 		Expect(err).ToNot(HaveOccurred())
-		s := output.String()
-		Expect(s).To(Equal(string(goldenContents)))
+
+		if test_goldens.UpdateGoldens() {
+			err = ioutil.WriteFile(goldenFilename, []byte(output.String()), os.ModeAppend)
+			Expect(err).NotTo(HaveOccurred(), "Failed to update the golden file")
+			Fail("Need to change UPDATE_GOLDENS back to false before committing")
+		} else {
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.String()).To(Equal(string(goldenContents)))
+		}
 	}
 
 	vm := &networking_v1alpha1.VirtualMesh{
@@ -72,13 +82,9 @@ var _ = Describe("JSONPrinter", func() {
 		},
 	}
 
-	table.DescribeTable("should print in specified format",
-		runTest,
-		table.Entry("should print VirtualMesh as json",
-			resource_printing.JSONFormat, "virtualmesh_json.txt", vm,
-		),
-		table.Entry("should print VirtualMesh as yaml",
-			resource_printing.YAMLFormat, "virtualmesh_yaml.txt", vm,
-		),
+	DescribeTable("Resource Printer", runTest,
+		Entry("should print VirtualMesh as json", resource_printing.JSONFormat, "virtualmesh_json", vm),
+		Entry("should print VirtualMesh as yaml", resource_printing.YAMLFormat, "virtualmesh_yaml", vm),
 	)
+
 })

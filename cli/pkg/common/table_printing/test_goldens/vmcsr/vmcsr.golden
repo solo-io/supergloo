@@ -1,0 +1,24 @@
++--------------------------------+--------------------------------+--------------------------------------------+
+|            METADATA            |              CSR               |                  RESPONSE                  |
++--------------------------------+--------------------------------+--------------------------------------------+
+| Name: vm-1                     | Certificate Config:            | Issuer Status:                             |
+| Namespace: service-mesh-hub    |   Hosts: [host1 host2]         |   State: ACCEPTED                          |
+| VirtualMesh:                   |   Org: my-org                  |                                            |
+|   Name: name-1                 |   Mesh Type: istio             | Approval Workflow:                         |
+|   Namespace: namespace-1       |                                |                                            |
+|                                | CSR Data: PRESENT (redacted)   |   Last Updated: (timestamp: nil Timestamp) |
+|                                |                                |   Status: APPROVED                         |
++--------------------------------+--------------------------------+--------------------------------------------+
+| Name: vm-2                     | Certificate Config:            | Issuer Status:                             |
+| Namespace: service-mesh-hub    |   Hosts: [host2 host4]         |   State: CONFLICT                          |
+| VirtualMesh:                   |   Org: linkerd-org             |   Message: there was a conflict            |
+|   Name: name-2                 |   Mesh Type: linkerd           |                                            |
+|   Namespace: namespace-2       |                                | Approval Workflow:                         |
+|                                | CSR Data: NOT PRESENT          |                                            |
+|                                |                                |   Last Updated: (timestamp: nil Timestamp) |
+|                                |                                |   Status: DENIED                           |
+|                                |                                |                                            |
+|                                |                                | Certificate Data:                          |
+|                                |                                |   Root Certificate: PRESENT (redacted)     |
+|                                |                                |   CA Certificate: PRESENT (redacted)       |
++--------------------------------+--------------------------------+--------------------------------------------+

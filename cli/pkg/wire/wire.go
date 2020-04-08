@@ -27,6 +27,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/get"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
@@ -38,6 +39,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
 	discovery_versioned "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
+	networking_versioned "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
+	security_versioned "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned"
 	"github.com/solo-io/mesh-projects/pkg/auth"
 	apiext2 "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
@@ -45,6 +48,7 @@ import (
 	kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/selector"
@@ -61,17 +65,24 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		wire.Bind(new(kubernetes.Interface), new(*kubernetes.Clientset)),
 		discovery_versioned.NewForConfig,
 		wire.Bind(new(discovery_versioned.Interface), new(*discovery_versioned.Clientset)),
+		networking_versioned.NewForConfig,
+		wire.Bind(new(networking_versioned.Interface), new(*networking_versioned.Clientset)),
+		security_versioned.NewForConfig,
+		wire.Bind(new(security_versioned.Interface), new(*security_versioned.Clientset)),
 		kubernetes_core.NewGeneratedServiceAccountClient,
 		discovery_core.NewGeneratedKubernetesClusterClient,
-		discovery_core.NewGeneratedMeshClient,
 		kubernetes_core.NewGeneratedSecretsClient,
 		kubernetes_core.NewGeneratedNamespaceClient,
 		kubernetes_discovery.NewGeneratedServerVersionClient,
-		zephyr_networking.NewGeneratedVirtualMeshClient,
 		kubernetes_core.NewGeneratedPodClient,
+		discovery_core.NewGeneratedMeshClient,
 		discovery_core.NewGeneratedMeshServiceClient,
+		zephyr_networking.NewGeneratedVirtualMeshClient,
+		zephyr_security.NewGeneratedVirtualMeshCSRClient,
 		kubernetes_apps.NewGeneratedDeploymentClient,
-		discovery_core.NewGeneratedMeshServiceClientFactory,
+		zephyr_networking.NewGeneratedAccessControlPolicyClient,
+		zephyr_networking.NewGeneratedTrafficPolicyClient,
+		discovery_core.NewGeneratedMeshWorkloadClient,
 		apiext2.NewGeneratedCrdClientFactory,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
@@ -93,12 +104,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
 		kubernetes_apps.GeneratedDeploymentClientFactoryProvider,
-		zephyr_networking.NewGeneratedAccessControlPolicyClient,
-		zephyr_networking.NewGeneratedTrafficPolicyClient,
-		discovery_core.NewGeneratedMeshWorkloadClient,
-		table_printing.NewTrafficPolicyPrinter,
-		table_printing.NewAccessControlPolicyPrinter,
-		table_printing.TableBuilderProvider,
 	)
 	return nil, nil
 }
@@ -132,7 +137,11 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		options.NewOptionsProvider,
 		DefaultKubeClientsFactoryProvider,
 		DefaultClientsFactoryProvider,
+		table_printing.TablePrintingSet,
+		resource_printing.NewResourcePrinter,
+		common.PrintersProvider,
 		usage.DefaultUsageReporterProvider,
+		interactive.NewSurveyInteractivePrompt,
 		demo.NewCommandLineRunner,
 		demo.DemoSet,
 		upgrade.UpgradeSet,
@@ -144,9 +153,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		check.CheckSet,
 		describe.DescribeSet,
 		create.CreateSet,
+		get.GetSet,
 		cli.BuildCli,
-		interactive.NewSurveyInteractivePrompt,
-		resource_printing.ResourcePrinterProviderSet,
 	)
 	return nil
 }
@@ -162,9 +170,9 @@ func InitializeCLIWithMocks(
 	imageNameParser docker.ImageNameParser,
 	fileReader common.FileReader,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
+	printers common.Printers,
 	runnner demo.CommandLineRunner,
 	interactivePrompt interactive.InteractivePrompt,
-	resourcePrinter resource_printing.ResourcePrinter,
 ) *cobra.Command {
 	wire.Build(
 		options.NewOptionsProvider,
@@ -176,6 +184,7 @@ func InitializeCLIWithMocks(
 		upgrade.UpgradeSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
+		get.GetSet,
 		describe.DescribeSet,
 		create.CreateSet,
 		cli.BuildCli,

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	resource_printing "github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -36,7 +37,7 @@ func (m *MockResourcePrinter) EXPECT() *MockResourcePrinterMockRecorder {
 }
 
 // Print mocks base method.
-func (m *MockResourcePrinter) Print(out io.Writer, object runtime.Object, format string) error {
+func (m *MockResourcePrinter) Print(out io.Writer, object runtime.Object, format resource_printing.OutputFormat) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Print", out, object, format)
 	ret0, _ := ret[0].(error)

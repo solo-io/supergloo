@@ -137,7 +137,14 @@ func AddUninstallFlags(cmd *cobra.Command, opts *Options) {
 
 func AddCheckFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {
 	flags := cmd.PersistentFlags()
+
 	flags.StringVarP(&opts.Check.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format for the report. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
+}
+
+func AddGetFlags(cmd *cobra.Command, opts *Options, defaultOutputFormat string, validOutputFormats []string) {
+	flags := cmd.PersistentFlags()
+
+	flags.StringVarP(&opts.Get.OutputFormat, "output", "o", defaultOutputFormat, fmt.Sprintf("Output format. Valid values: [%s]", strings.Join(validOutputFormats, ", ")))
 }
 
 func AddDescribeResourceFlags(cmd *cobra.Command, opts *Options, defaultPolicySelector string, validPolicySelectors []string) {

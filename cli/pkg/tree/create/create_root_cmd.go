@@ -28,7 +28,7 @@ func CreateRootCommand(
 		Short: cliconstants.CreateCommand.Short,
 		RunE:  common.NonTerminalCommand(cliconstants.CreateCommand.Use),
 	}
-	options.AddCreateFlags(cmd, opts, resource_printing.YAMLFormat, resource_printing.ValidFormats)
+	options.AddCreateFlags(cmd, opts, resource_printing.YAMLFormat.String(), resource_printing.ValidFormats)
 	cmd.AddCommand(createVirtualMeshCmd)
 	return cmd
 }

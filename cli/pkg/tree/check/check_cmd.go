@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/status"
 	"github.com/spf13/cobra"
@@ -21,7 +22,6 @@ var (
 )
 
 type CheckCommand *cobra.Command
-type OutputFormat string
 
 var CheckSet = wire.NewSet(
 	status.NewPrettyPrinter,
@@ -29,17 +29,12 @@ var CheckSet = wire.NewSet(
 	CheckCmd,
 )
 
-const (
-	prettyFormat = "pretty"
-	jsonFormat   = "json"
-)
-
 var (
 	FailedToSetUpClients = func(err error) error {
 		return eris.Wrapf(err, "Failed to set up meshctl check clients")
 	}
-
-	validOutputFormats = []string{prettyFormat, jsonFormat}
+	prettyOutput       = "pretty"
+	validOutputFormats = []string{prettyOutput, resource_printing.JSONFormat.String()}
 )
 
 func CheckCmd(
@@ -58,9 +53,9 @@ func CheckCmd(
 		RunE: func(_ *cobra.Command, _ []string) error {
 			var statusPrinter status.StatusPrinter
 			switch opts.Check.OutputFormat {
-			case prettyFormat:
+			case prettyOutput:
 				statusPrinter = prettyPrinter
-			case jsonFormat:
+			case resource_printing.JSONFormat.String():
 				statusPrinter = jsonPrinter
 			default:
 				return UnrecognizedPrintFormat(opts.Check.OutputFormat)
@@ -94,7 +89,7 @@ func CheckCmd(
 		},
 	}
 
-	options.AddCheckFlags(cmd, opts, prettyFormat, validOutputFormats)
+	options.AddCheckFlags(cmd, opts, prettyOutput, validOutputFormats)
 
 	// This is due to  a limitation of cobra; when `meshctl check` fails, we want to
 	// have the exit code of the process be nonzero. That's done in cobra by returning

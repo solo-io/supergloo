@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
+	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
@@ -25,6 +26,7 @@ import (
 	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
 	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
+	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
 	"github.com/solo-io/mesh-projects/pkg/selector"
 	"github.com/solo-io/mesh-projects/pkg/version"
@@ -45,6 +47,11 @@ type KubeClients struct {
 	HelmInstaller                   types.Installer
 	HelmClient                      types.HelmClient                       // used for uninstalling - the go-utils package is not laid out very well
 	KubeClusterClient               discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
+	MeshServiceClient               discovery_core.MeshServiceClient
+	MeshWorkloadClient              discovery_core.MeshWorkloadClient
+	MeshClient                      discovery_core.MeshClient
+	VirtualMeshClient               zephyr_networking.VirtualMeshClient
+	VirtualMeshCSRClient            zephyr_security.VirtualMeshCSRClient
 	DeployedVersionFinder           version.DeployedVersionFinder
 	CrdClientFactory                kubernetes_apiext.GeneratedCrdClientFactory
 	HealthCheckClients              healthcheck_types.Clients
@@ -54,16 +61,10 @@ type KubeClients struct {
 	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
 	ClusterDeregistrationClient     deregister.ClusterDeregistrationClient
 	KubeConfigLookup                config_lookup.KubeConfigLookup
-	MeshServiceClientFactory        discovery_core.GeneratedMeshServiceClientFactory
-	MeshClient                      discovery_core.MeshClient
-	VirtualMeshClient               zephyr_networking.VirtualMeshClient
 	TrafficPolicyClient             zephyr_networking.TrafficPolicyClient
 	AccessControlPolicyClient       zephyr_networking.AccessControlPolicyClient
-	MeshWorkloadClient              discovery_core.MeshWorkloadClient
 	ResourceDescriber               description.ResourceDescriber
 	ResourceSelector                selector.ResourceSelector
-	AccessControlPolicyPrinter      table_printing.AccessControlPolicyPrinter
-	TrafficPolicyPrinter            table_printing.TrafficPolicyPrinter
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -81,7 +82,10 @@ type Clients struct {
 	ClusterRegistrationClients ClusterRegistrationClients
 }
 
-func IstioClientsProvider(manifestBuilder operator.InstallerManifestBuilder, operatorManagerFactory operator.OperatorManagerFactory) IstioClients {
+func IstioClientsProvider(
+	manifestBuilder operator.InstallerManifestBuilder,
+	operatorManagerFactory operator.OperatorManagerFactory,
+) IstioClients {
 	return IstioClients{
 		OperatorManifestBuilder: manifestBuilder,
 		OperatorManagerFactory:  operatorManagerFactory,
@@ -108,7 +112,9 @@ func UninstallClientsProvider(
 	}
 }
 
-func ClusterRegistrationClientsProvider(csrAgentInstallerFactory register.CsrAgentInstallerFactory) ClusterRegistrationClients {
+func ClusterRegistrationClientsProvider(
+	csrAgentInstallerFactory register.CsrAgentInstallerFactory,
+) ClusterRegistrationClients {
 	return ClusterRegistrationClients{
 		CsrAgentInstallerFactory: csrAgentInstallerFactory,
 	}
@@ -159,7 +165,8 @@ func KubeClientsProvider(
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
 	clusterDeregistrationClient deregister.ClusterDeregistrationClient,
 	kubeConfigLookup config_lookup.KubeConfigLookup,
-	meshServiceClientFactory discovery_core.GeneratedMeshServiceClientFactory,
+	virtualMeshCsrClient zephyr_security.VirtualMeshCSRClient,
+	meshServiceClient discovery_core.MeshServiceClient,
 	meshClient discovery_core.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	resourceDescriber description.ResourceDescriber,
@@ -167,14 +174,14 @@ func KubeClientsProvider(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient discovery_core.MeshWorkloadClient,
-	accessControlPolicyPrinter table_printing.AccessControlPolicyPrinter,
-	trafficPolicyPrinter table_printing.TrafficPolicyPrinter,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
 		HelmInstaller:                   helmInstaller,
 		HelmClient:                      helmClient,
 		KubeClusterClient:               kubeClusterClient,
+		MeshServiceClient:               meshServiceClient,
+		VirtualMeshCSRClient:            virtualMeshCsrClient,
 		DeployedVersionFinder:           deployedVersionFinder,
 		CrdClientFactory:                crdClientFactory,
 		HealthCheckClients:              healthCheckClients,
@@ -184,7 +191,6 @@ func KubeClientsProvider(
 		InMemoryRESTClientGetterFactory: inMemoryRESTClientGetterFactory,
 		ClusterDeregistrationClient:     clusterDeregistrationClient,
 		KubeConfigLookup:                kubeConfigLookup,
-		MeshServiceClientFactory:        meshServiceClientFactory,
 		MeshClient:                      meshClient,
 		VirtualMeshClient:               virtualMeshClient,
 		ResourceDescriber:               resourceDescriber,
@@ -192,8 +198,42 @@ func KubeClientsProvider(
 		TrafficPolicyClient:             trafficPolicyClient,
 		AccessControlPolicyClient:       accessControlPolicyClient,
 		MeshWorkloadClient:              meshWorkloadClient,
-		AccessControlPolicyPrinter:      accessControlPolicyPrinter,
-		TrafficPolicyPrinter:            trafficPolicyPrinter,
+	}
+}
+
+type Printers struct {
+	MeshPrinter                table_printing.MeshPrinter
+	MeshServicePrinter         table_printing.MeshServicePrinter
+	MeshWorkloadPrinter        table_printing.MeshWorkloadPrinter
+	KubeClusterPrinter         table_printing.KubernetesClusterPrinter
+	VirtualMeshPrinter         table_printing.VirtualMeshPrinter
+	VirtualMeshCSRPrinter      table_printing.VirtualMeshCSRPrinter
+	TrafficPolicyPrinter       table_printing.TrafficPolicyPrinter
+	AccessControlPolicyPrinter table_printing.AccessControlPolicyPrinter
+	ResourcePrinter            resource_printing.ResourcePrinter
+}
+
+func PrintersProvider(
+	meshPrinter table_printing.MeshPrinter,
+	meshServicePrinter table_printing.MeshServicePrinter,
+	meshWorkloadPrinter table_printing.MeshWorkloadPrinter,
+	kubeClusterPrinter table_printing.KubernetesClusterPrinter,
+	trafficPolicyPrinter table_printing.TrafficPolicyPrinter,
+	accessControlPolicyPrinter table_printing.AccessControlPolicyPrinter,
+	virtualMeshPrinter table_printing.VirtualMeshPrinter,
+	vmcsrPrinter table_printing.VirtualMeshCSRPrinter,
+	resourcePrinter resource_printing.ResourcePrinter,
+) Printers {
+	return Printers{
+		MeshPrinter:                meshPrinter,
+		MeshServicePrinter:         meshServicePrinter,
+		MeshWorkloadPrinter:        meshWorkloadPrinter,
+		KubeClusterPrinter:         kubeClusterPrinter,
+		TrafficPolicyPrinter:       trafficPolicyPrinter,
+		AccessControlPolicyPrinter: accessControlPolicyPrinter,
+		VirtualMeshPrinter:         virtualMeshPrinter,
+		VirtualMeshCSRPrinter:      vmcsrPrinter,
+		ResourcePrinter:            resourcePrinter,
 	}
 }
 

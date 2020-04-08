@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/get"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
@@ -36,6 +37,7 @@ func BuildCli(
 	checkCommand check.CheckCommand,
 	describeCommand describe.DescribeCommand,
 	demoCommand demo.DemoCommand,
+	getCommand get.GetCommand,
 	createCommand create.CreateRootCmd,
 ) *cobra.Command {
 	cmd := &cobra.Command{
@@ -60,6 +62,7 @@ func BuildCli(
 		describeCommand,
 		demoCommand,
 		createCommand,
+		getCommand,
 	)
 	return cmd
 }

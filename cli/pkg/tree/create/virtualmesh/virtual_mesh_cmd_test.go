@@ -51,10 +51,12 @@ var _ = Describe("VirtualMeshCmd", func() {
 				VirtualMeshClient: mockVirtualMeshClient,
 				MeshClient:        mockMeshClient,
 			},
+			Printers: common.Printers{
+				ResourcePrinter: mockResourcePrinter,
+			},
 			KubeLoader:        mockKubeLoader,
 			Ctx:               ctx,
 			InteractivePrompt: mockInteractivePrompt,
-			ResourcePrinter:   mockResourcePrinter,
 		}
 	})
 

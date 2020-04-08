@@ -32,7 +32,10 @@ var (
 		}
 	}
 
-	skippedLabels = sets.NewString("pod-template-hash")
+	skippedLabels = sets.NewString(
+		"pod-template-hash",
+		"service.istio.io/canonical-revision",
+	)
 )
 
 func NewMeshServiceFinder(
@@ -43,7 +46,6 @@ func NewMeshServiceFinder(
 	meshWorkloadClient discovery_core.MeshWorkloadClient,
 	meshClient discovery_core.MeshClient,
 ) MeshServiceFinder {
-
 	return &meshServiceFinder{
 		ctx:                ctx,
 		writeNamespace:     writeNamespace,

@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
 	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned/typed/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -15,9 +14,8 @@ type generatedTrafficPolicyClient struct {
 	client networkingv1alpha1.NetworkingV1alpha1Interface
 }
 
-func NewGeneratedTrafficPolicyClient(cfg *rest.Config) TrafficPolicyClient {
-	clientSet, _ := versioned.NewForConfig(cfg)
-	return &generatedTrafficPolicyClient{client: clientSet.NetworkingV1alpha1()}
+func NewGeneratedTrafficPolicyClient(p versioned.Interface) TrafficPolicyClient {
+	return &generatedTrafficPolicyClient{client: p.NetworkingV1alpha1()}
 }
 
 func (g *generatedTrafficPolicyClient) Get(_ context.Context, name string, namespace string) (*networking_v1alpha1.TrafficPolicy, error) {
