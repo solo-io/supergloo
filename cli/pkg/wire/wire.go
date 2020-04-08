@@ -28,8 +28,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
@@ -138,7 +138,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 		upgrade.UpgradeSet,
 		cluster.ClusterSet,
 		version.VersionSet,
-		istio.IstioProviderSet,
+		mesh.MeshProviderSet,
 		install.InstallSet,
 		uninstall.UninstallSet,
 		check.CheckSet,
@@ -171,7 +171,7 @@ func InitializeCLIWithMocks(
 		demo.DemoSet,
 		cluster.ClusterSet,
 		version.VersionSet,
-		istio.IstioProviderSet,
+		mesh.MeshProviderSet,
 		install.InstallSet,
 		upgrade.UpgradeSet,
 		uninstall.UninstallSet,

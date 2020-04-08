@@ -16,20 +16,20 @@ import (
 
 var (
 	FailedToParseInstallManifest = func(err error) error {
-		return eris.Wrap(err, "Failed to parse the templated Istio operator manifest.")
+		return eris.Wrap(err, "Failed to parse the templated Mesh operator manifest.")
 	}
 	FailedToInstallOperator = func(err error) error {
-		return eris.Wrap(err, "Failed to install the Istio installation operator. Artifacts from the failed installation will be cleaned up.")
+		return eris.Wrap(err, "Failed to install the Mesh installation operator. Artifacts from the failed installation will be cleaned up.")
 	}
 	FailedToCleanFailedInstallation = func(err error) error {
-		return eris.Wrap(err, "Failed to clean up the failed Istio operator installation.")
+		return eris.Wrap(err, "Failed to clean up the failed Mesh operator installation.")
 	}
-	UnrecognizedOperatorInstance    = eris.New("This instance of the Istio operator is not recognized - cannot verify its version matches what you specified")
+	UnrecognizedOperatorInstance    = eris.New("This instance of the Mesh operator is not recognized - cannot verify its version matches what you specified")
 	FailedToGenerateInstallManifest = func(err error) error {
 		return eris.Wrap(err, "Install manifest template failed to render. This shouldn't happen")
 	}
 	FailedToValidateExistingOperator = func(err error, clusterName, namespace string) error {
-		return eris.Wrapf(err, "Failed to validate existing Istio operator deployment in cluster %s namespace %s", clusterName, namespace)
+		return eris.Wrapf(err, "Failed to validate existing Mesh operator deployment in cluster %s namespace %s", clusterName, namespace)
 	}
 	FailedToDetermineOperatorVersion = func(current string) error {
 		return eris.Errorf("Failed to determine whether the current operator running at version %s is the minimum version %s", current, MinimumOperatorVersion.String())
@@ -38,7 +38,7 @@ var (
 		return eris.Errorf("Found istio operator running at version %s, while %s is the minimum supported version", current, MinimumOperatorVersion.String())
 	}
 	FailedToCheckIfOperatorExists = func(err error, clusterName, namespace string) error {
-		return eris.Wrapf(err, "Failed to check whether the Istio operator is already installed to cluster %s in namespace %s", clusterName, namespace)
+		return eris.Wrapf(err, "Failed to check whether the Mesh operator is already installed to cluster %s in namespace %s", clusterName, namespace)
 	}
 
 	MinimumOperatorVersion = versionutils.Version{
@@ -50,11 +50,11 @@ var (
 
 //go:generate mockgen -source manager.go -destination ./mocks/mock_operator_manager.go
 type OperatorManager interface {
-	// install an instance of the Istio operator
+	// install an instance of the Mesh operator
 	// we try to make the install attempt atomic; if one of the resources fails to install, the previous successful ones are cleaned up
 	Install() error
 
-	// ensure that the given namespace is appropriate for installing an Istio operator
+	// ensure that the given namespace is appropriate for installing an Mesh operator
 	// will fail with an error if the operator is already present at a different version than we're specifying
 	// will return (true, nil) if no operator deployment is present yet
 	// (false, nil) indicates the operator is present already at an appropriate version, so no need to call .Install()
@@ -68,7 +68,7 @@ type OperatorManagerFactory func(
 	manifestBuilder InstallerManifestBuilder,
 	deploymentClient server.DeploymentClient,
 	imageNameParser docker.ImageNameParser,
-	installationConfig *options.IstioInstallationConfig,
+	installationConfig *options.MeshInstallationConfig,
 ) OperatorManager
 
 func NewOperatorManagerFactory() OperatorManagerFactory {
@@ -80,7 +80,7 @@ func NewManager(
 	manifestBuilder InstallerManifestBuilder,
 	deploymentClient server.DeploymentClient,
 	imageNameParser docker.ImageNameParser,
-	installationConfig *options.IstioInstallationConfig,
+	installationConfig *options.MeshInstallationConfig,
 ) OperatorManager {
 
 	setDefaults(installationConfig)
@@ -99,7 +99,7 @@ type manager struct {
 	manifestBuilder        InstallerManifestBuilder
 	deploymentClient       server.DeploymentClient
 	imageNameParser        docker.ImageNameParser
-	installationConfig     *options.IstioInstallationConfig
+	installationConfig     *options.MeshInstallationConfig
 }
 
 func (m *manager) Install() error {
@@ -155,7 +155,7 @@ func (m *manager) ValidateOperatorNamespace(clusterName string) (installNeeded b
 	return true, nil
 }
 
-func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *options.IstioInstallationConfig, deployment appsv1.Deployment) error {
+func (m *manager) validateExistingOperatorDeployment(clusterName string, installerOptions *options.MeshInstallationConfig, deployment appsv1.Deployment) error {
 	containers := deployment.Spec.Template.Spec.Containers
 	if len(containers) != 1 {
 		return UnrecognizedOperatorInstance
@@ -192,7 +192,7 @@ func (m *manager) validateExistingOperatorDeployment(clusterName string, install
 	return nil
 }
 
-func setDefaults(installerOptions *options.IstioInstallationConfig) {
+func setDefaults(installerOptions *options.MeshInstallationConfig) {
 	if installerOptions.InstallNamespace == "" {
 		installerOptions.InstallNamespace = cliconstants.DefaultIstioOperatorNamespace
 	}

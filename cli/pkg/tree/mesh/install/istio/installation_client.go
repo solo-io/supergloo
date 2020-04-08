@@ -1,4 +1,4 @@
-package install
+package install_istio
 
 import (
 	"fmt"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
+	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
+	"github.com/solo-io/mesh-projects/pkg/common/docker"
 )
 
 var (
-	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Istio profile and provide an IstioOperator Custom Resource")
+	ConflictingControlPlaneSettings   = eris.New("Cannot both use a pre-configured Mesh profile and provide an IstioOperator Custom Resource")
 	FailedToParseControlPlaneSettings = func(err error) error {
 		return eris.Wrap(err, "Failed to parse the provided IstioOperator resource")
 	}
@@ -29,6 +31,9 @@ var (
 	UnknownControlPlaneKind = func(kind string) error {
 		return eris.Errorf("Expected the manifest to contain an IstioOperator, but found %s", kind)
 	}
+	ContextNotFound = func(contextName string) error {
+		return eris.Errorf("Context '%s' not found in kubeconfig file", contextName)
+	}
 
 	istioControlPlaneKind = "IstioOperator"
 )
@@ -38,32 +43,63 @@ type IstioInstaller interface {
 }
 
 func NewIstioInstaller(
-	unstructuredKubeClient kube.UnstructuredKubeClient,
-	istioInstallOptions *options.IstioInstall,
-	clusterName string,
 	out io.Writer,
 	in io.Reader,
-	manifestBuilder operator.InstallerManifestBuilder,
-	operatorManager operator.OperatorManager,
+	clientfactory common.ClientsFactory,
+	opts *options.Options,
+	kubeConfigPath,
+	kubeContext string,
+	kubeLoader common_config.KubeLoader,
+	imageNameParser docker.ImageNameParser,
 	fileReader common.FileReader,
-) IstioInstaller {
+) (IstioInstaller, error) {
+
+	clients, err := clientfactory(opts)
+	if err != nil {
+		return nil, err
+	}
+	restClientGetter := kubeLoader.RESTClientGetter(kubeConfigPath, kubeContext)
+	unstructuredKubeClient := clients.UnstructuredKubeClientFactory(restClientGetter)
+
+	rawCfg, err := kubeLoader.GetRawConfigForContext(kubeConfigPath, kubeContext)
+	if err != nil {
+		return nil, err
+	}
+
+	contextName := kubeContext
+	if contextName == "" {
+		contextName = rawCfg.CurrentContext
+	}
+	context, ok := rawCfg.Contexts[contextName]
+	if !ok {
+		return nil, ContextNotFound(contextName)
+	}
+	clusterName := context.Cluster
+
+	operatorManager := clients.IstioClients.OperatorManagerFactory(
+		unstructuredKubeClient,
+		clients.IstioClients.OperatorManifestBuilder,
+		clients.DeploymentClient,
+		imageNameParser,
+		&opts.Mesh.Install.InstallationConfig,
+	)
 
 	return &istioInstaller{
 		unstructuredKubeClient: unstructuredKubeClient,
-		manifestBuilder:        manifestBuilder,
-		istioInstallOptions:    istioInstallOptions,
+		manifestBuilder:        clients.IstioClients.OperatorManifestBuilder,
+		istioInstallOptions:    &opts.Mesh.Install,
 		out:                    out,
 		in:                     in,
 		clusterName:            clusterName,
 		operatorManager:        operatorManager,
 		fileReader:             fileReader,
-	}
+	}, nil
 }
 
 type istioInstaller struct {
 	unstructuredKubeClient kube.UnstructuredKubeClient
 	manifestBuilder        operator.InstallerManifestBuilder
-	istioInstallOptions    *options.IstioInstall
+	istioInstallOptions    *options.MeshInstall
 	out                    io.Writer
 	in                     io.Reader
 	clusterName            string
@@ -109,26 +145,26 @@ func (i *istioInstaller) Install() error {
 func (i *istioInstaller) installOperator(namespace string) error {
 	installNeeded, err := i.operatorManager.ValidateOperatorNamespace(i.clusterName)
 	if err != nil {
-		return eris.Wrapf(err, "Istio operator namespace validation failed for cluster '%s' in namespace '%s'", i.clusterName, namespace)
+		return eris.Wrapf(err, "Mesh operator namespace validation failed for cluster '%s' in namespace '%s'", i.clusterName, namespace)
 	}
 
 	// install the operator if it didn't exist already
 	if installNeeded {
-		fmt.Fprintf(i.out, "Installing the Istio operator to cluster '%s' in namespace '%s'\n", i.clusterName, namespace)
+		fmt.Fprintf(i.out, "Installing the Mesh operator to cluster '%s' in namespace '%s'\n", i.clusterName, namespace)
 
 		err := i.operatorManager.Install()
 		if err != nil {
 			return err
 		}
 	} else {
-		fmt.Fprintf(i.out, "The Istio operator is already installed to cluster '%s' in namespace '%s' and is suitable for use. Continuing with the Istio installation.\n", i.clusterName, namespace)
+		fmt.Fprintf(i.out, "The Mesh operator is already installed to cluster '%s' in namespace '%s' and is suitable for use. Continuing with the Mesh installation.\n", i.clusterName, namespace)
 	}
 
 	return nil
 }
 
 func (i *istioInstaller) loadIstioOperator() (string, error) {
-	userPath := i.istioInstallOptions.IstioOperatorManifestPath
+	userPath := i.istioInstallOptions.ManifestPath
 	profile := i.istioInstallOptions.Profile
 
 	if userPath != "" && profile != "" {
@@ -154,7 +190,7 @@ func (i *istioInstaller) loadIstioOperator() (string, error) {
 
 // returns "", nil if the user did not provide an IstioOperator
 func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
-	path := i.istioInstallOptions.IstioOperatorManifestPath
+	path := i.istioInstallOptions.ManifestPath
 
 	var contents []byte
 	if path == "-" {
@@ -168,7 +204,7 @@ func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
 		if err != nil {
 			return "", eris.Wrapf(err, "Unexpected error while reading IstioControlPlane spec")
 		} else if !fileExists {
-			return "", eris.Errorf("Path to IstioOperator spec does not exist: %s", i.istioInstallOptions.IstioOperatorManifestPath)
+			return "", eris.Errorf("Path to IstioOperator spec does not exist: %s", i.istioInstallOptions.ManifestPath)
 		}
 
 		contents, err = i.fileReader.Read(path)
@@ -185,7 +221,7 @@ func (i *istioInstaller) loadControlPlaneFromUserFlagConfig() (string, error) {
 func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneToWrite string) error {
 	if istioControlPlaneToWrite == "" {
 		fmt.Fprintf(i.out,
-			"\nThe Istio operator has been installed to cluster '%s' in namespace '%s'. No IstioOperator custom resource was provided to meshctl, so Istio is currently not fully installed yet. Write a IstioOperator CR to cluster '%s' to complete your installation\n",
+			"\nThe Mesh operator has been installed to cluster '%s' in namespace '%s'. No IstioOperator custom resource was provided to meshctl, so Mesh is currently not fully installed yet. Write a IstioOperator CR to cluster '%s' to complete your installation\n",
 			i.clusterName,
 			namespace,
 			i.clusterName,
@@ -214,6 +250,6 @@ func (i *istioInstaller) writeControlPlaneResource(namespace, istioControlPlaneT
 		return FailedToWriteControlPlane(err)
 	}
 
-	fmt.Fprintf(i.out, "\nThe IstioOperator has been written to cluster '%s' in namespace '%s'. The Istio operator should process it momentarily and install Istio.\n", i.clusterName, namespace)
+	fmt.Fprintf(i.out, "\nThe IstioOperator has been written to cluster '%s' in namespace '%s'. The Mesh operator should process it momentarily and install Mesh.\n", i.clusterName, namespace)
 	return nil
 }

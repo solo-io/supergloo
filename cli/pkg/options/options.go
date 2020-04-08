@@ -14,7 +14,7 @@ type Options struct {
 	Cluster      Cluster
 	Upgrade      Upgrade
 	SmhInstall   SmhInstall
-	Istio        Istio
+	Mesh         Mesh
 	Check        Check
 	SmhUninstall SmhUninstall
 	Demo         Demo
@@ -44,22 +44,19 @@ type Register struct {
 	UseDevCsrAgentChart        bool
 }
 
-type Istio struct {
-	Install IstioInstall
+type Mesh struct {
+	Install MeshInstall
 }
 
-type IstioInstall struct {
-	InstallationConfig        IstioInstallationConfig
-	DryRun                    bool
-	IstioOperatorManifestPath string
-	Profile                   string
+type MeshInstall struct {
+	InstallationConfig MeshInstallationConfig
+	DryRun             bool
+	ManifestPath       string
+	Profile            string
 }
 
-type IstioInstallationConfig struct {
-	CreateNamespace        bool
-	CreateIstioOperatorCRD bool
-
-	// will be defaulted to istio-operator if left blank
+type MeshInstallationConfig struct {
+	CreateNamespace  bool
 	InstallNamespace string
 }
 

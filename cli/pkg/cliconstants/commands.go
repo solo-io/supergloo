@@ -80,6 +80,19 @@ var (
 		}
 	}
 
+	MeshCommand = cobra.Command{
+		Use:   "mesh",
+		Short: "Manage service meshes",
+	}
+
+	MeshInstallCommand = func(validMeshes []string) cobra.Command {
+		return cobra.Command{
+			Use:     fmt.Sprintf("install (%s)", strings.Join(validMeshes, "|")),
+			Aliases: []string{"i"},
+			Short:   "Install meshes using meshctl",
+		}
+	}
+
 	CreateCommand = cobra.Command{
 		Use:   "create",
 		Short: "Create a Service Mesh Hub custom resource",

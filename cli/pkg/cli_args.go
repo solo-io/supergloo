@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/version"
@@ -27,7 +27,7 @@ func BuildCli(
 	usageReporter usageclient.Client,
 	clusterCmd clusterroot.ClusterCommand,
 	versionCmd version.VersionCommand,
-	istioCmd istio.IstioCommand,
+	meshCmd mesh.MeshCommand,
 	upgradeCmd upgrade.UpgradeCommand,
 	installCmd install.InstallCommand,
 	uninstallCmd uninstall.UninstallCommand,
@@ -50,7 +50,7 @@ func BuildCli(
 		versionCmd,
 		installCmd,
 		upgradeCmd,
-		istioCmd,
+		meshCmd,
 		uninstallCmd,
 		checkCommand,
 		describeCommand,

@@ -1,4 +1,4 @@
-package istio_test
+package mesh_install_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestIstio(t *testing.T) {
+func TestInstall(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Istio Suite")
+	RunSpecs(t, "Install Suite")
 }

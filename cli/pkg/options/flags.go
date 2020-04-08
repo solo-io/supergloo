@@ -97,15 +97,14 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 	cobra.MarkFlagRequired(flags, remoteClusterName)
 }
 
-func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage string) {
+func AddMeshInstallFlags(cmd *cobra.Command, opts *Options) {
 	operatorNsFlag := "operator-namespace"
 	flags := cmd.PersistentFlags()
-	flags.StringVar(&opts.Istio.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Istio operator")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateIstioOperatorCRD, "create-operator-crd", true, "Register the IstioOperator CRD in the remote cluster")
-	flags.BoolVar(&opts.Istio.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
-	flags.BoolVar(&opts.Istio.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
-	flags.StringVar(&opts.Istio.Install.IstioOperatorManifestPath, "operator-spec", "", "Optional path to a YAML file containing an IstioOperator resource")
-	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
+	flags.StringVar(&opts.Mesh.Install.InstallationConfig.InstallNamespace, operatorNsFlag, cliconstants.DefaultIstioOperatorNamespace, "Namespace in which to install the Mesh operator")
+	flags.BoolVar(&opts.Mesh.Install.InstallationConfig.CreateNamespace, "create-operator-namespace", true, "Create the namespace specified by --"+operatorNsFlag)
+	flags.BoolVar(&opts.Mesh.Install.DryRun, "dry-run", false, "Dump the manifest that would be used to install the operator to stdout rather than apply it")
+	flags.StringVar(&opts.Mesh.Install.ManifestPath, "operator-spec", "", "Optional path to a YAML file containing an installation spec ('-' for stdin)")
+	flags.StringVar(&opts.Mesh.Install.Profile, "profile", "", "optional profile")
 }
 
 func AddDemoFlags(cmd *cobra.Command, opts *Options) {

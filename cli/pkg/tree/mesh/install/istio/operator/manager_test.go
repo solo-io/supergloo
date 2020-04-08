@@ -10,8 +10,8 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
 	mock_kube "github.com/solo-io/mesh-projects/cli/pkg/common/kube/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
-	mock_operator "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator/mocks"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
+	mock_operator "github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator/mocks"
 	mock_server "github.com/solo-io/mesh-projects/cli/pkg/tree/version/server/mocks"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	mock_docker "github.com/solo-io/mesh-projects/pkg/common/docker/mocks"
@@ -21,18 +21,17 @@ import (
 	"k8s.io/cli-runtime/pkg/resource"
 )
 
-var _ = Describe("Istio operator management", func() {
+var _ = Describe("Mesh operator management", func() {
 	var (
 		ctrl        *gomock.Controller
 		testErr     = eris.New("test-err")
 		clusterName = "cluster-name"
 	)
 
-	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *options.IstioInstallationConfig {
-		return &options.IstioInstallationConfig{
-			CreateNamespace:        createNamespace,
-			CreateIstioOperatorCRD: createCRD,
-			InstallNamespace:       cliconstants.DefaultIstioOperatorNamespace,
+	var buildInstallConfigWithDefaults = func(createNamespace, createCRD bool) *options.MeshInstallationConfig {
+		return &options.MeshInstallationConfig{
+			CreateNamespace:  createNamespace,
+			InstallNamespace: cliconstants.DefaultIstioOperatorNamespace,
 		}
 	}
 
@@ -51,10 +50,9 @@ var _ = Describe("Istio operator management", func() {
 			deploymentClient := mock_server.NewMockDeploymentClient(ctrl)
 			imageNameParser := mock_docker.NewMockImageNameParser(ctrl)
 
-			installConfig := &options.IstioInstallationConfig{
-				CreateNamespace:        true,
-				CreateIstioOperatorCRD: true,
-				InstallNamespace:       "", // purposely left empty
+			installConfig := &options.MeshInstallationConfig{
+				CreateNamespace:  true,
+				InstallNamespace: "", // purposely left empty
 			}
 
 			installWithDefaults := *installConfig

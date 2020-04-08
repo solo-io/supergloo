@@ -3,18 +3,30 @@ package operator
 import (
 	"bytes"
 	"html/template"
+	"strings"
 
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
 )
 
 //go:generate mockgen -source ./manifest.go -destination mocks/mock_manifest_builder.go
 type InstallerManifestBuilder interface {
 	// Based on the pending installation config, generate an appropriate installation manifest
-	Build(options *options.IstioInstallationConfig) (installationManifest string, err error)
+	Build(options *options.MeshInstallationConfig) (installationManifest string, err error)
 
-	// Generate an IstioOperator spec that sets up Istio with its demo profile
+	// Generate an IstioOperator spec that sets up Mesh with its demo profile
 	GetOperatorSpecWithProfile(profile, installationNamespace string) (string, error)
 }
+
+var (
+	InvalidProfileFound = func(profile string) error {
+		return eris.Errorf(
+			"invalid profile (%s) found, valid options are: [%s]",
+			profile,
+			strings.Join(ValidProfiles.List(), ","),
+		)
+	}
+)
 
 func NewInstallerManifestBuilder() InstallerManifestBuilder {
 	return &installerManifestBuilder{}
@@ -22,7 +34,7 @@ func NewInstallerManifestBuilder() InstallerManifestBuilder {
 
 type installerManifestBuilder struct{}
 
-func (i *installerManifestBuilder) Build(options *options.IstioInstallationConfig) (string, error) {
+func (i *installerManifestBuilder) Build(options *options.MeshInstallationConfig) (string, error) {
 	tmpl := template.New("")
 	tmpl, err := tmpl.Parse(installationManifestTemplate)
 	if err != nil {
@@ -40,8 +52,12 @@ func (i *installerManifestBuilder) Build(options *options.IstioInstallationConfi
 }
 
 func (i *installerManifestBuilder) GetOperatorSpecWithProfile(profile, namespace string) (string, error) {
+	if !ValidProfiles.Has(profile) {
+		return "", InvalidProfileFound(profile)
+	}
+
 	tmpl := template.New("")
-	tmpl, err := tmpl.Parse(istioControlPlaneWithProfile)
+	tmpl, err := tmpl.Parse(istioOperatorWithProfile)
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +90,6 @@ metadata:
   name: {{ .InstallNamespace }}
 ...
 {{- end }}
-{{- if .CreateIstioOperatorCRD }}
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -97,7 +112,6 @@ spec:
     shortNames:
     - iop
 ...
-{{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -297,7 +311,7 @@ spec:
 
 `
 
-var istioControlPlaneWithProfile = `
+var istioOperatorWithProfile = `
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:

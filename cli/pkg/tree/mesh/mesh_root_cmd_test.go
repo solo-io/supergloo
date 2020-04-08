@@ -1,4 +1,4 @@
-package istio_test
+package mesh_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
 )
 
-var _ = Describe("Istio Root Cmd", func() {
+var _ = Describe("Mesh Root Cmd", func() {
 	var ctrl *gomock.Controller
 
 	BeforeEach(func() {
@@ -23,10 +23,10 @@ var _ = Describe("Istio Root Cmd", func() {
 	})
 
 	It("complains if it is invoked without a subcommand", func() {
-		output, err := cli_test.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("istio --kubeconfig foo")
+		output, err := cli_test.MockMeshctl{MockController: ctrl, Ctx: context.TODO()}.Invoke("mesh")
 		Expect(output).To(BeEmpty())
 
-		nonTerminalCommandErrorBuilder := common.NonTerminalCommand("istio")
+		nonTerminalCommandErrorBuilder := common.NonTerminalCommand("mesh")
 		nonTerminalErr := nonTerminalCommandErrorBuilder(nil, nil)
 		Expect(err).To(testutils.HaveInErrorChain(nonTerminalErr))
 	})

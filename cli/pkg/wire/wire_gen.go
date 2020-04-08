@@ -32,9 +32,9 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio"
-	install2 "github.com/solo-io/mesh-projects/cli/pkg/tree/istio/install"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh"
+	mesh_install "github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
@@ -153,8 +153,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
 	imageNameParser := docker.NewImageNameParser()
 	fileReader := common.NewDefaultFileReader()
-	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
-	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
+	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
+	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
@@ -168,7 +168,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	resourcePrinter := resource_printing.NewResourcePrinter()
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
-	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
+	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
 	return command
 }
 
@@ -177,8 +177,8 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
 	versionCommand := version2.VersionCmd(out, clientsFactory, optionsOptions)
-	istioInstallationCmd := install2.BuildIstioInstallationCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
-	istioCommand := istio.IstioRootCmd(istioInstallationCmd, optionsOptions)
+	meshInstallCommand := mesh_install.MeshInstallRootCmd(clientsFactory, optionsOptions, out, in, kubeLoader, imageNameParser, fileReader)
+	meshCommand := mesh.MeshRootCmd(meshInstallCommand)
 	upgradeCommand := upgrade.UpgradeCmd(ctx, optionsOptions, out, clientsFactory)
 	installCommand := install.InstallCmd(ctx, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, out)
 	uninstallCommand := uninstall.UninstallCmd(ctx, out, optionsOptions, kubeClientsFactory, kubeLoader)
@@ -189,6 +189,6 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	demoCommand := demo.DemoRootCmd(optionsOptions, runnner)
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
-	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
+	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)
 	return command
 }

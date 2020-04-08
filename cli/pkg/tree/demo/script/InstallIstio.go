@@ -5,4 +5,4 @@ var InstallIstio = `#!/bin/bash
 
 meshctlBinaryName=%s
 
-$meshctlBinaryName istio install --profile=minimal`
+$meshctlBinaryName mesh install istio --profile=minimal`

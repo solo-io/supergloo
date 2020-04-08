@@ -1,4 +1,4 @@
-package install_test
+package install_istio_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestIstioInstall(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Istio Install Suite")
+	RunSpecs(t, "Mesh Install Suite")
 }

@@ -35,7 +35,7 @@ func (m *MockInstallerManifestBuilder) EXPECT() *MockInstallerManifestBuilderMoc
 }
 
 // Build mocks base method.
-func (m *MockInstallerManifestBuilder) Build(options *options.IstioInstallationConfig) (string, error) {
+func (m *MockInstallerManifestBuilder) Build(options *options.MeshInstallationConfig) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", options)
 	ret0, _ := ret[0].(string)

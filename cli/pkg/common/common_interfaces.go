@@ -15,7 +15,7 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/deregister"
 	register "github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/istio/operator"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
 	crd_uninstall "github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/crd"
 	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
