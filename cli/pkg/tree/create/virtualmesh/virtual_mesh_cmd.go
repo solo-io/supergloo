@@ -33,14 +33,11 @@ func CreateVirtualMeshCommand(
 	interactivePrompt interactive.InteractivePrompt,
 	printers common.Printers,
 ) CreateVirtualMeshCmd {
-	cmd := &cobra.Command{
-		Use:   cliconstants.CreateVirtualMeshCommand.Use,
-		Short: cliconstants.CreateVirtualMeshCommand.Short,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return createVirtualMesh(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
-		},
+	cmd := cliconstants.CreateVirtualMeshCommand
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return createVirtualMesh(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
 	}
-	return cmd
+	return &cmd
 }
 
 func createVirtualMesh(

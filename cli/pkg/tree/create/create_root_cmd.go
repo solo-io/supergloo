@@ -29,14 +29,11 @@ func CreateRootCommand(
 	createTrafficPolicyCmd traffic_policy.CreateTrafficPolicyCmd,
 	createAccessControlPolicyCmd access_control_policy.CreateAccessControlPolicyCmd,
 ) CreateRootCmd {
-	cmd := &cobra.Command{
-		Use:   cliconstants.CreateCommand.Use,
-		Short: cliconstants.CreateCommand.Short,
-		RunE:  common.NonTerminalCommand(cliconstants.CreateCommand.Use),
-	}
-	options.AddCreateFlags(cmd, opts, resource_printing.YAMLFormat.String(), resource_printing.ValidFormats)
+	cmd := cliconstants.CreateCommand
+	cmd.RunE = common.NonTerminalCommand(cliconstants.CreateCommand.Use)
+	options.AddCreateFlags(&cmd, opts, resource_printing.YAMLFormat.String(), resource_printing.ValidFormats)
 	cmd.AddCommand(createVirtualMeshCmd)
 	cmd.AddCommand(createTrafficPolicyCmd)
 	cmd.AddCommand(createAccessControlPolicyCmd)
-	return cmd
+	return &cmd
 }

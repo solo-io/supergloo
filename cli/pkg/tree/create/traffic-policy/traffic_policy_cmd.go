@@ -40,14 +40,11 @@ func CreateTrafficPolicyCommand(
 	interactivePrompt interactive.InteractivePrompt,
 	resourcePrinter resource_printing.ResourcePrinter,
 ) CreateTrafficPolicyCmd {
-	cmd := &cobra.Command{
-		Use:   cliconstants.CreateTrafficPolicyCommand.Use,
-		Short: cliconstants.CreateTrafficPolicyCommand.Short,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return createTrafficPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, resourcePrinter)
-		},
+	cmd := cliconstants.CreateTrafficPolicyCommand
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return createTrafficPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, resourcePrinter)
 	}
-	return cmd
+	return &cmd
 }
 
 func createTrafficPolicy(
