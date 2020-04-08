@@ -70,6 +70,26 @@ func (mr *MockTrafficSplitClientMockRecorder) Create(ctx, trafficSplitClient int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTrafficSplitClient)(nil).Create), varargs...)
 }
 
+// List mocks base method.
+func (m *MockTrafficSplitClient) List(ctx context.Context, options ...client.ListOption) (*v1alpha3.TrafficSplitList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(*v1alpha3.TrafficSplitList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockTrafficSplitClientMockRecorder) List(ctx interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrafficSplitClient)(nil).List), varargs...)
+}
+
 // Update mocks base method.
 func (m *MockTrafficSplitClient) Update(ctx context.Context, trafficSplitClient *v1alpha3.TrafficSplit, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
