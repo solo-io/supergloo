@@ -1,11 +1,11 @@
-package exec
+package demo
 
 import (
 	"io"
 	"os/exec"
 )
 
-func NewShellRunner(in io.Reader, out io.Writer) Runner {
+func NewCommandLineRunner(in io.Reader, out io.Writer) CommandLineRunner {
 	return &runner{
 		in:  in,
 		out: out,

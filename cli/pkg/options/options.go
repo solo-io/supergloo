@@ -17,6 +17,7 @@ type Options struct {
 	Istio        Istio
 	Check        Check
 	SmhUninstall SmhUninstall
+	Demo         Demo
 	Describe     Describe
 	Create       Create
 }
@@ -89,6 +90,20 @@ type Check struct {
 
 type Describe struct {
 	Policies string
+}
+
+type Demo struct {
+	DemoLabel         string
+	UseKind           bool
+	ClusterName       string
+	IstioMulticluster IstioMulticluster
+	DevMode           bool
+	ContextName       string
+}
+
+type IstioMulticluster struct {
+	RemoteClusterName string
+	RemoteContextName string
 }
 
 type Create struct {

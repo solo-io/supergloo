@@ -108,6 +108,27 @@ func AddIstioInstallFlags(cmd *cobra.Command, opts *Options, profilesUsage strin
 	flags.StringVar(&opts.Istio.Install.Profile, "profile", "", profilesUsage)
 }
 
+func AddDemoFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.PersistentFlags()
+	devCsrAgentChartName := "dev-csr-agent-chart"
+
+	flags.StringVar(&opts.Demo.DemoLabel, "demo-label", "", "Optionally label namespaces that are created during the demo with 'solo.io/hub-demo:$DEMO-LABEL' so they can be cleaned up later")
+	flags.BoolVar(&opts.Demo.UseKind, "use-kind", false, "If this is set, use KinD (Kubernetes in Docker) to stand up local clusters; can not set if --context")
+	flags.StringVar(&opts.Demo.ClusterName, "cluster-name", "", "Registers the cluster under this name")
+	flags.BoolVar(&opts.Demo.DevMode, devCsrAgentChartName, false, "Use a packaged CSR agent chart from ./_output rather than a release chart")
+
+	flags.StringVar(&opts.Demo.ContextName, "context", "", "The main kubeconfig context to use; this will be the context used for management plane installations")
+
+	flags.Lookup(devCsrAgentChartName).Hidden = true
+}
+
+func AddMulticlusterDemoFlags(cmd *cobra.Command, opts *Options) {
+	flags := cmd.PersistentFlags()
+
+	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteContextName, "remote-context", "", "In multicluster demos where --use-kind is not specified, use this flag to specify what context to use from your kubeconfig for the remote cluster")
+	flags.StringVar(&opts.Demo.IstioMulticluster.RemoteClusterName, "remote-cluster-name", "", "Name under which to register the second cluster")
+}
+
 func AddUninstallFlags(cmd *cobra.Command, opts *Options) {
 	flags := cmd.PersistentFlags()
 

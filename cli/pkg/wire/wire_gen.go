@@ -13,7 +13,6 @@ import (
 	cli "github.com/solo-io/mesh-projects/cli/pkg"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/kube"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
@@ -30,8 +29,6 @@ import (
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/create"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo/cleanup"
-	demo_init "github.com/solo-io/mesh-projects/cli/pkg/tree/demo/init"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/describe/description"
 	"github.com/solo-io/mesh-projects/cli/pkg/tree/install"
@@ -165,10 +162,8 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, optionsOptions, out)
-	runner := exec.NewShellRunner(in, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	commandLineRunner := demo.NewCommandLineRunner(in, out)
+	demoCommand := demo.DemoRootCmd(optionsOptions, commandLineRunner)
 	interactivePrompt := interactive.NewSurveyInteractivePrompt()
 	resourcePrinter := resource_printing.NewResourcePrinter()
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
@@ -177,7 +172,7 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, runnner exec.Runner, interactivePrompt interactive.InteractivePrompt, resourcePrinter resource_printing.ResourcePrinter) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, runnner demo.CommandLineRunner, interactivePrompt interactive.InteractivePrompt, resourcePrinter resource_printing.ResourcePrinter) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
@@ -191,9 +186,7 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	jsonPrinter := status.NewJsonPrinter()
 	checkCommand := check.CheckCmd(ctx, out, optionsOptions, kubeClientsFactory, clientsFactory, kubeLoader, prettyPrinter, jsonPrinter)
 	describeCommand := describe.DescribeCmd(ctx, kubeLoader, kubeClientsFactory, optionsOptions, out)
-	initCmd := demo_init.DemoInitCmd(ctx, runnner)
-	cleanupCmd := cleanup.DemoCleanupCmd(ctx, runnner)
-	demoCommand := demo.DemoRootCmd(initCmd, cleanupCmd)
+	demoCommand := demo.DemoRootCmd(optionsOptions, runnner)
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd)
 	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, istioCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, createRootCmd)

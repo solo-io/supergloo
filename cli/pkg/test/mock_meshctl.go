@@ -9,12 +9,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/mesh-projects/cli/pkg/common"
 	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/exec"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
 	"github.com/solo-io/mesh-projects/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/mesh-projects/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/mesh-projects/cli/pkg/tree/demo"
 	"github.com/solo-io/mesh-projects/cli/pkg/wire"
 	"github.com/solo-io/mesh-projects/pkg/common/docker"
 	"github.com/solo-io/mesh-projects/pkg/kubeconfig"
@@ -39,7 +39,7 @@ type MockMeshctl struct {
 	ImageNameParser         docker.ImageNameParser
 	FileReader              common.FileReader
 	SecretToConfigConverter kubeconfig.SecretToConfigConverter
-	Runner                  exec.Runner
+	Runner                  demo.CommandLineRunner
 
 	InteractivePrompt interactive.InteractivePrompt
 	ResourcePrinter   resource_printing.ResourcePrinter
