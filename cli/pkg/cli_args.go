@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 
+	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
@@ -18,7 +19,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
-	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/grpclog"
 )

@@ -10,6 +10,7 @@ import (
 	"io"
 
 	"github.com/solo-io/go-utils/installutils/helminstall"
+	"github.com/solo-io/reporting-client/pkg/client"
 	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
@@ -65,7 +66,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
-	"github.com/solo-io/reporting-client/pkg/client"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
