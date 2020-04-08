@@ -5,7 +5,7 @@ description: Understanding Service Mesh Hub Concepts
 weight: 25
 ---
 
-Service Mesh Hub is a management plane for service mesh to simplify operations and workflows of service mesh across multiple clusters and deployment footprints. With Service Mesh Hub, you can install, discover, and operate a service-mesh deployment across your enterprise, deployed on premises, or in the cloud, even across heterogeneous service-mesh implementations.
+Service Mesh Hub is a management plane that simplifies operations and workflows of service mesh installations across multiple clusters and deployment footprints. With Service Mesh Hub, you can install, discover, and operate a service-mesh deployment across your enterprise, deployed on premises, or in the cloud, even across heterogeneous service-mesh implementations.
 
 ## Why Service Mesh Hub
 
@@ -28,7 +28,7 @@ Managing a service mesh deployment that is consistent and secure across multiple
 
 Service Mesh Hub consists of a set of components that run on a single cluster, often referred to as your *management plane cluster*. The management plane components are stateless and rely exclusively on declarative CRDs.  Each service-mesh installation that spans a deployment footprint often has its own control plane. You can think of Service Mesh Hub as a management plane for multiple control planes.
 
-You can register a cluster with Service Mesh Hub, and it will handle the communication with other clusters - discovering what is running, pushing out configurations, unifying the trust model, scraping metrics, and more. 
+Once a cluster is registered with Service Mesh Hub, it can start managing that cluster - discovering service mesh workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
 
 Let's take a closer look at the Service Mesh Hub Concepts
 
@@ -46,7 +46,7 @@ At this point, the management plane has a complete view of the meshes, services,
 
 ### Virtual Meshes
 
-In order to enable multi-cluster configuration, users will group multiple meshes together into an object called a `VirtualMesh`. The virtual mesh contains a few pieces of configuration that facilitate cross-cluster communications. 
+In order to enable multi-cluster configuration, users will group multiple meshes together into an object called a `VirtualMesh`. The virtual mesh exposes configuration to facilitate cross-cluster communications. 
 
 In order for a virtual mesh to be considered valid, Service Mesh Hub will first try to establish trust based on the [trust model](https://spiffe.io/spiffe/concepts/#trust-domain) defined by the user -- is there complete shared trust and a common root and identity? Or is there limited trust between clusters and traffic is gated by egress and ingress gateways? Service Mesh Hub ships with an agent that helps facilitate cross-cluster certificate signing requests safely, to minimize the operational burden around managing certificates. 
 
@@ -64,5 +64,5 @@ With traffic and access policies, Service Mesh Hub gives users a powerful langua
 
 ### CLI Tooling
 
-Service Mesh Hub is tackling really hard problems related to multi-cluster networking and configuration, so to speed up your learning curve it comes with a command line tool called `meshctl`. This tool provides interactive commands to make it easier to author your first virtual mesh, register a cluster, or create a traffic or access policy. Once you’ve authored config, it also has a `describe` command to help understand how your workloads and services are affected by your policies. 
+Service Mesh Hub is tackling really hard problems related to multi-cluster networking and configuration, so to speed up your learning it comes with a command line tool called `meshctl`. This tool provides interactive commands to make it easier to author your first virtual mesh, register a cluster, or create a traffic or access policy. Once you’ve authored config, it also has a `describe` command to help understand how your workloads and services are affected by your policies. 
 
