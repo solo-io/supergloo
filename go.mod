@@ -37,7 +37,7 @@ require (
 	github.com/rotisserie/eris v0.2.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/servicemeshinterface/smi-sdk-go v0.3.0
-	github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca
+	github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 	github.com/solo-io/go-utils v0.15.1
 	github.com/solo-io/protoc-gen-ext v0.0.7
 	github.com/solo-io/reporting-client v0.1.3
@@ -68,7 +68,7 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
-	github.com/solo-io/autopilot => github.com/solo-io/autopilot v0.1.1-0.20200214195428-8aeb08a8feca
+	github.com/solo-io/autopilot => github.com/solo-io/autopilot v0.1.1-0.20200408023839-60594a597a66
 
 	k8s.io/api => k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2

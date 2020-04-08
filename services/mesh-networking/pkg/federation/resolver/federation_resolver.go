@@ -92,9 +92,6 @@ func (f *federationResolver) Start(ctx context.Context) error {
 				zap.Any("new_spec", new.Spec),
 				zap.Any("new_status", new.Status),
 			)
-			if old.Spec.Equal(new.Spec) {
-				return nil
-			}
 
 			return f.handleServiceUpsert(eventCtx, new)
 		},
