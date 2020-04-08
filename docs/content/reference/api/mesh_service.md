@@ -1,6 +1,6 @@
 
 ---
-title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto"
+title: "mesh_service.proto"
 ---
 
 ## Package : `discovery.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto"></a>
+<a name="API Reference for mesh_service.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_service.proto
+## mesh_service.proto
 
 
 ## Table of Contents
@@ -76,7 +76,7 @@ The MeshService is an abstraction for a service which we have discovered to be p
 | ----- | ---- | ----- | ----------- |
 | ref | [core.zephyr.solo.io.ResourceRef](#core.zephyr.solo.io.ResourceRef) |  | A reference to the kube-native service that this MeshService represents. |
 | workloadSelectorLabels | [][MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.zephyr.solo.io.MeshServiceSpec.KubeService.WorkloadSelectorLabelsEntry) | repeated | Selectors for the set of pods targeted by the k8s Service. |
-| labels | [][MeshServiceSpec.KubeService.LabelsEntry](#discovery.zephyr.solo.io.MeshServiceSpec.KubeService.LabelsEntry) | repeated | Labels on the underyling k8s Service itself. |
+| labels | [][MeshServiceSpec.KubeService.LabelsEntry](#discovery.zephyr.solo.io.MeshServiceSpec.KubeService.LabelsEntry) | repeated | Labels on the underlying k8s Service itself. |
 | ports | [][MeshServiceSpec.KubeService.KubeServicePort](#discovery.zephyr.solo.io.MeshServiceSpec.KubeService.KubeServicePort) | repeated | The ports exposed by the underlying service. |
 
 

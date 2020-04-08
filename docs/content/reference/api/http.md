@@ -1,6 +1,6 @@
 
 ---
-title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/http.proto"
+title: "http.proto"
 ---
 
 ## Package : `core.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "core.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/core/v1alpha1/ht
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/core/v1alpha1/http.proto"></a>
+<a name="API Reference for http.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/core/v1alpha1/http.proto
+## http.proto
 
 
 ## Table of Contents

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -14,7 +14,7 @@ import (
 
 // given a path to a kube config file, convert it into either creds for hitting the API server of the cluster it points to,
 // or return the contexts/clusters it is aware of
-//go:generate mockgen -destination ../../mocks/mock_kube_loader.go -package cli_mocks github.com/solo-io/mesh-projects/cli/pkg/common/config KubeLoader
+//go:generate mockgen -destination ../../mocks/mock_kube_loader.go -package cli_mocks github.com/solo-io/service-mesh-hub/cli/pkg/common/config KubeLoader
 type KubeLoader interface {
 	GetRestConfigForContext(path string, context string) (*rest.Config, error)
 	GetRawConfigForContext(path, context string) (clientcmdapi.Config, error)

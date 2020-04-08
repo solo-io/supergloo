@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	corev1_controllers "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
-	"github.com/solo-io/mesh-projects/services/common/constants"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	corev1_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +32,10 @@ var (
 		}
 	}
 
-	skippedLabels = sets.NewString("pod-template-hash")
+	skippedLabels = sets.NewString(
+		"pod-template-hash",
+		"service.istio.io/canonical-revision",
+	)
 )
 
 func NewMeshServiceFinder(
@@ -43,7 +46,6 @@ func NewMeshServiceFinder(
 	meshWorkloadClient discovery_core.MeshWorkloadClient,
 	meshClient discovery_core.MeshClient,
 ) MeshServiceFinder {
-
 	return &meshServiceFinder{
 		ctx:                ctx,
 		writeNamespace:     writeNamespace,
@@ -114,7 +116,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *corev1.Service) error {
 		}
 	}
 
-	// TODO: handle deletions https://github.com/solo-io/mesh-projects/issues/169
+	// TODO: handle deletions https://github.com/solo-io/service-mesh-hub/issues/169
 	return nil
 }
 

@@ -1,18 +1,18 @@
 
 ---
-title: "{{ .Package }}{{.Name}}"
+title: "{{ cleanFileName .Name}}"
 ---
 
 ## Package : `{{ .Package }}`
 
-{{$file_name := .Name}}
+{{$file_name := cleanFileName .Name}}
 
 <a name="top"></a>
 
-<a name="API Reference for {{.Name}}"></a>
+<a name="API Reference for {{ cleanFileName .Name }}"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## {{.Name}}
+## {{ cleanFileName .Name }}
 {{.Description}}
 
 ## Table of Contents

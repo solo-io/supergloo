@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	k8sapiv1 "k8s.io/api/core/v1"
 	rbactypes "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"

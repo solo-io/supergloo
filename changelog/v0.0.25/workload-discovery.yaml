@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Discovery of mesh-injected workloads. Currently only supports Istio.
-    issueLink: https://github.com/solo-io/mesh-projects/issues/128
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/128

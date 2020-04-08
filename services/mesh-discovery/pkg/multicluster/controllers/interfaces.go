@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	apps_controllers "github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller"
-	core_controllers "github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	apps_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
+	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-//go:generate mockgen -destination ./mocks/mock_deployment_controller.go -package mock_controllers github.com/solo-io/mesh-projects/services/common/cluster/apps/v1/controller DeploymentController
-//go:generate mockgen -destination ./mocks/mock_pod_controller.go -package mock_controllers github.com/solo-io/mesh-projects/services/common/cluster/core/v1/controller PodController
+//go:generate mockgen -destination ./mocks/mock_deployment_controller.go -package mock_controllers github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller DeploymentController
+//go:generate mockgen -destination ./mocks/mock_pod_controller.go -package mock_controllers github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller PodController
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go -package mock_controllers
 

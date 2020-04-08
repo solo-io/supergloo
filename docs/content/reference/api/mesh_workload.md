@@ -1,6 +1,6 @@
 
 ---
-title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_workload.proto"
+title: "mesh_workload.proto"
 ---
 
 ## Package : `discovery.zephyr.solo.io`
@@ -9,10 +9,10 @@ title: "discovery.zephyr.solo.iogithub.com/solo-io/mesh-projects/api/discovery/v
 
 <a name="top"></a>
 
-<a name="API Reference for github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_workload.proto"></a>
+<a name="API Reference for mesh_workload.proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## github.com/solo-io/mesh-projects/api/discovery/v1alpha1/mesh_workload.proto
+## mesh_workload.proto
 
 
 ## Table of Contents

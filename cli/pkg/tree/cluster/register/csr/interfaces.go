@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go

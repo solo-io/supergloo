@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	docker "github.com/solo-io/mesh-projects/pkg/common/docker"
+	docker "github.com/solo-io/service-mesh-hub/pkg/common/docker"
 )
 
 // MockImageNameParser is a mock of ImageNameParser interface.

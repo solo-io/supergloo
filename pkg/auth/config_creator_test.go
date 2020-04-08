@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/auth"
-	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	kubeapiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 )

@@ -9,8 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -110,18 +109,23 @@ func (mr *MockVirtualMeshCSRClientMockRecorder) Get(ctx, name, namespace interfa
 }
 
 // List mocks base method.
-func (m *MockVirtualMeshCSRClient) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.VirtualMeshCertificateSigningRequestList, error) {
+func (m *MockVirtualMeshCSRClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualMeshCertificateSigningRequestList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, opts)
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
 	ret0, _ := ret[0].(*v1alpha1.VirtualMeshCertificateSigningRequestList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockVirtualMeshCSRClientMockRecorder) List(ctx, opts interface{}) *gomock.Call {
+func (mr *MockVirtualMeshCSRClientMockRecorder) List(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).List), ctx, opts)
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockVirtualMeshCSRClient)(nil).List), varargs...)
 }
 
 // Delete mocks base method.

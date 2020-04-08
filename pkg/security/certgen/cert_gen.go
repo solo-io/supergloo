@@ -3,15 +3,16 @@ package certgen
 import (
 	"time"
 
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	"istio.io/istio/security/pkg/pki/util"
 )
 
 const (
-	DefaultRootCertTTL        = 365 * 24 * time.Hour
-	DefaultRootCertRsaKeySize = 4096
-	DefaultOrgName            = "service-mesh-hub"
+	DefaultRootCertTTLDays     = 365
+	DefaultRootCertTTLDuration = DefaultRootCertTTLDays * 24 * time.Hour
+	DefaultRootCertRsaKeySize  = 4096
+	DefaultOrgName             = "service-mesh-hub"
 )
 
 type rootCertGenerator struct{}
@@ -28,7 +29,7 @@ func (c *rootCertGenerator) GenRootCertAndKey(
 	if builtinCA.GetOrgName() != "" {
 		org = builtinCA.GetOrgName()
 	}
-	ttl := DefaultRootCertTTL
+	ttl := DefaultRootCertTTLDuration
 	if builtinCA.GetTtlDays() > 0 {
 		ttl = time.Duration(builtinCA.GetTtlDays()) * 24 * time.Hour
 	}

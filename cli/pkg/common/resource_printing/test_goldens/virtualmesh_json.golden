@@ -1,0 +1,31 @@
+{
+    "kind": "VirtualMesh",
+    "metadata": {
+        "name": "test-vm",
+        "namespace": "service-mesh-hub",
+        "creationTimestamp": null
+    },
+    "spec": {
+        "displayName": "test-vm",
+        "meshes": [
+            {
+                "name": "istio-istio-system-management-plane-cluster",
+                "namespace": "service-mesh-hub"
+            },
+            {
+                "name": "istio-istio-system-target-cluster",
+                "namespace": "service-mesh-hub"
+            }
+        ],
+        "certificateAuthority": {
+            "builtin": {
+                "ttlDays": 365,
+                "rsaKeySizeBytes": 4096,
+                "orgName": "solo.io"
+            }
+        },
+        "federation": {},
+        "shared": {}
+    },
+    "status": {}
+}

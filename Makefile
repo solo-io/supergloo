@@ -15,12 +15,12 @@ include install/helm/helm.mk
 
 RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
-	TAGGED_VERSION := $(shell git describe --tags --dirty)
+	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
 	RELEASE := "false"
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 
-LDFLAGS := "-X github.com/solo-io/mesh-projects/pkg/version.Version=$(VERSION)"
+LDFLAGS := "-X github.com/solo-io/service-mesh-hub/pkg/version.Version=$(VERSION)"
 GCFLAGS := all="-N -l"
 
 GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=amd64

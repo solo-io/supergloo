@@ -47,6 +47,52 @@ var (
 			"kind clusters running are those created by mesctl demo init.",
 	}
 
+	GetCommand = struct {
+		Root        cobra.Command
+		Mesh        cobra.Command
+		VirtualMesh cobra.Command
+		VMCSR       cobra.Command
+		Workload    cobra.Command
+		Service     cobra.Command
+		Cluster     cobra.Command
+	}{
+		Root: cobra.Command{
+			Use:     "get",
+			Aliases: []string{"g"},
+			Short:   "Examine Service Mesh Hub resources",
+		},
+		Mesh: cobra.Command{
+			Use:     "meshes",
+			Aliases: []string{"m", "mesh"},
+			Short:   "Examine discovered meshes",
+		},
+		Workload: cobra.Command{
+			Use:     "workloads",
+			Aliases: []string{"w", "workload"},
+			Short:   "Examine discovered mesh workloads",
+		},
+		Service: cobra.Command{
+			Use:     "services",
+			Aliases: []string{"s", "service"},
+			Short:   "Examine discovered mesh services",
+		},
+		Cluster: cobra.Command{
+			Use:     "clusters",
+			Aliases: []string{"k", "c", "kubernetescluster", "cluster"},
+			Short:   "Examine registered kubernetes clusters",
+		},
+		VirtualMesh: cobra.Command{
+			Use:     "virtualmeshes",
+			Aliases: []string{"vm", "vms", "virtualmesh"},
+			Short:   "Examine configured virtual meshes",
+		},
+		VMCSR: cobra.Command{
+			Use:     "virtualmeshcertificatesigningrequests",
+			Aliases: []string{"vmcsr", "vmcsrs", "virtualmeshcertificatesigningrequest"},
+			Short:   "Examine configured virtual mesh ceriticate signing request",
+		},
+	}
+
 	VersionCommand = cobra.Command{
 		Use:   "version",
 		Short: "Display the version of meshctl and Service Mesh Hub server components",
@@ -72,11 +118,35 @@ var (
 		Short: "Check the status of a Service Mesh Hub installation",
 	}
 
-	ExploreCommand = func(validResourceTypes []string) cobra.Command {
+	DescribeCommand = func(validResourceTypes []string) cobra.Command {
 		return cobra.Command{
-			Use: fmt.Sprintf("explore (%s) resource_name", strings.Join(validResourceTypes, "|")),
-			Short: "Explore policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). " +
+			Use: fmt.Sprintf("describe (%s) resource_name", strings.Join(validResourceTypes, "|")),
+			Short: "Describe policies affecting your Kubernetes services (kube-native services) or workloads (e.g., kube-native deployments). " +
 				"Format the `resource_name` arg as kube-name.kube-namespace.registered-cluster-name",
 		}
+	}
+
+	MeshCommand = cobra.Command{
+		Use:   "mesh",
+		Short: "Manage service meshes",
+	}
+
+	MeshInstallCommand = func(validMeshes []string) cobra.Command {
+		return cobra.Command{
+			Use:     fmt.Sprintf("install (%s)", strings.Join(validMeshes, "|")),
+			Aliases: []string{"i"},
+			Short:   "Install meshes using meshctl",
+		}
+	}
+
+	CreateCommand = cobra.Command{
+		Use:   "create",
+		Short: "Create a Service Mesh Hub custom resource",
+		Long:  "Utility for creating Service Mesh Hub custom resources",
+	}
+
+	CreateVirtualMeshCommand = cobra.Command{
+		Use:   "virtualmesh",
+		Short: "Create a VirtualMesh resource",
 	}
 )

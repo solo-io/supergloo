@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/wire"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	mc_watcher "github.com/solo-io/mesh-projects/services/common/multicluster/watcher"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	mc_watcher "github.com/solo-io/service-mesh-hub/services/common/multicluster/watcher"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8s_manager "sigs.k8s.io/controller-runtime/pkg/manager"

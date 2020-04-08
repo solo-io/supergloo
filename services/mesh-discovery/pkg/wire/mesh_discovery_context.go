@@ -1,15 +1,15 @@
 package wire
 
 import (
-	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
-	mesh_consul "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/consul"
-	mesh_istio "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/istio"
-	mesh_linkerd "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/linkerd"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster/controllers"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
+	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
+	mesh_istio "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/istio"
+	mesh_linkerd "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers"
 )
 
 // just used to package everything up for wire

@@ -7,33 +7,37 @@ import (
 	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	networking_types "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	mock_discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking/mocks"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/multicluster/snapshot"
+	"github.com/solo-io/go-utils/contextutils"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	mock_discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
+	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("Federation Decider", func() {
 	var (
-		ctrl *gomock.Controller
-		ctx  context.Context
+		ctrl   *gomock.Controller
+		ctx    context.Context
+		logger *test_logging.TestLogger
 
 		testErr = eris.New("hello")
 	)
 
 	BeforeEach(func() {
+		logger = test_logging.NewTestLogger()
 		ctrl = gomock.NewController(GinkgoT())
-		ctx = context.TODO()
+		ctx = contextutils.WithExistingLogger(ctx, logger.Logger())
 	})
 
 	AfterEach(func() {

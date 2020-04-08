@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dns "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	v1 "k8s.io/api/core/v1"
 )
 

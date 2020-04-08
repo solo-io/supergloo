@@ -7,10 +7,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	security_types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security"
-	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -99,17 +99,15 @@ var _ = Describe("csr client", func() {
 
 			It("can call list with the proper args, and return err", func() {
 				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
-				listOptions := metav1.ListOptions{}
-				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(testErr)
-				_, err := csrClient.List(ctx, listOptions)
+				mockClient.EXPECT().List(ctx, csr).Return(testErr)
+				_, err := csrClient.List(ctx)
 				Expect(err).To(Equal(testErr))
 			})
 
 			It("can call get with the proper args, and return non-err", func() {
 				csr := &v1alpha1.VirtualMeshCertificateSigningRequestList{}
-				listOptions := metav1.ListOptions{}
-				mockClient.EXPECT().List(ctx, csr, &client.ListOptions{Raw: &listOptions}).Return(nil)
-				response, err := csrClient.List(ctx, listOptions)
+				mockClient.EXPECT().List(ctx, csr).Return(nil)
+				response, err := csrClient.List(ctx)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(response).NotTo(BeNil())
 			})

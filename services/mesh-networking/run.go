@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/internal/config"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/internal/config"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/wire"
 	"go.uber.org/zap"
 )
 

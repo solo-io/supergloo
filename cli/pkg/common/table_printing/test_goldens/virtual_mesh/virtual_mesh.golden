@@ -1,0 +1,26 @@
++---------------------------------------------+--------------------------+--------------------------------------+---------------------------------------+
+|                  METADATA                   |          MESHES          |                CONFIG                |                STATUS                 |
++---------------------------------------------+--------------------------+--------------------------------------+---------------------------------------+
+| Name: vm-1                                  | - mesh-1                 | Trust Mode: Limited                  | Federation Status:                    |
+| Namespace: service-mesh-hub                 | - mesh-2                 |                                      |   State: CONFLICT                     |
+| Display Name: my favorite virtual mesh      | - mesh-3                 | Certificate Authority:               |   Message: This is a conflict         |
+|                                             |                          |   Type: Self Signed                  |                                       |
+|                                             |                          |   Org Name: my-org                   | Config Status:                        |
+|                                             |                          |   TTL: ŭ days                        |   State: ACCEPTED                     |
+|                                             |                          |   Key Size: 2048                     |                                       |
+|                                             |                          |                                      |                                       |
+|                                             |                          | Federation Mode: PERMISSIVE          |                                       |
+|                                             |                          |                                      |                                       |
+|                                             |                          | Access Control Enforcement: enabled  |                                       |
++---------------------------------------------+--------------------------+--------------------------------------+---------------------------------------+
+| Name: vm-2                                  | - mesh-1                 | Trust Mode: Shared                   | Certificate Status:                   |
+| Namespace: service-mesh-hub                 | - mesh-2                 |                                      |   State: INVALID                      |
+| Display Name: not as cool of a virtual mesh | - mesh-3                 | Certificate Authority:               |   Message: This is invalid            |
+|                                             |                          |   Type: Provided                     |                                       |
+|                                             |                          |   Secret Name: my-magic-cert         | Access Control Enforcement Status:    |
+|                                             |                          |   Secret Namespace: default          |   State: PROCESSING_ERROR             |
+|                                             |                          |                                      |   Message: This is a processing error |
+|                                             |                          | Federation Mode: PERMISSIVE          |                                       |
+|                                             |                          |                                      |                                       |
+|                                             |                          | Access Control Enforcement: disabled |                                       |
++---------------------------------------------+--------------------------+--------------------------------------+---------------------------------------+

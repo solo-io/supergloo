@@ -6,16 +6,16 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_controllers "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/mesh-projects/pkg/clients/zephyr/networking"
-	"github.com/solo-io/mesh-projects/pkg/logging"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -92,15 +92,12 @@ func (f *federationResolver) Start(ctx context.Context) error {
 				zap.Any("new_spec", new.Spec),
 				zap.Any("new_status", new.Status),
 			)
-			if old.Spec.Equal(new.Spec) {
-				return nil
-			}
 
 			return f.handleServiceUpsert(eventCtx, new)
 		},
 		OnDelete: func(_ *discovery_v1alpha1.MeshService) error {
 			// ignoring delete
-			// https://github.com/solo-io/mesh-projects/issues/169
+			// https://github.com/solo-io/service-mesh-hub/issues/169
 			return nil
 		},
 		OnGeneric: nil,

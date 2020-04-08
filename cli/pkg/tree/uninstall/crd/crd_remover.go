@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	kubernetes_apiext "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apiext"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	"k8s.io/client-go/rest"
 )
 

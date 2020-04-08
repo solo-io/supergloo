@@ -3,21 +3,15 @@ package zephyr_networking
 import (
 	"context"
 
-	networkingv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
-	networking_client "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned/typed/networking.zephyr.solo.io/v1alpha1"
+	networkingv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
+	networking_client "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned/typed/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewGeneratedAccessControlPolicyClient(config *rest.Config) (AccessControlPolicyClient, error) {
-	clientSet, err := versioned.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &generatedAccessControlPolicyClient{clientSet: clientSet.NetworkingV1alpha1()}, nil
+func NewGeneratedAccessControlPolicyClient(p versioned.Interface) AccessControlPolicyClient {
+	return &generatedAccessControlPolicyClient{clientSet: p.NetworkingV1alpha1()}
 }
 
 type generatedAccessControlPolicyClient struct {

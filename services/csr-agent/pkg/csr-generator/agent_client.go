@@ -3,10 +3,10 @@ package csr_generator
 import (
 	"context"
 
-	securityv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	"github.com/solo-io/mesh-projects/pkg/security/certgen"
-	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
+	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	kubeerrs "k8s.io/apimachinery/pkg/api/errors"
 )
 

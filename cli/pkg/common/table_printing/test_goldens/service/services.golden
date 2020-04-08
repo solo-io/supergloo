@@ -1,0 +1,28 @@
+
+Kubernetes Mesh Services:
++--------------+--------------------------------+--------------------------------+-----------------------------------+--------------------------------+
+|     MESH     |        SERVICE + PORTS         |        LABELS + SUBSETS        |          FEDERATION DATA          |             STATUS             |
++--------------+--------------------------------+--------------------------------+-----------------------------------+--------------------------------+
+| istio-mesh-1 | Name: mesh-service-1           | Service Labels:                | Multi Cluster DNS Name: mcDNSname | Federation Status:             |
+|              | Namespace: default             |   foo: bar                     |                                   |   State: INVALID               |
+|              | Cluster: cluster-1             | Workload Selector Labels:      |                                   |   Message: Should be printed   |
+|              |                                |   hello: world                 |                                   |                                |
+|              | Ports:                         |                                |                                   |                                |
+|              | - Name: fake                   | Subsets:                       |                                   |                                |
+|              |   Port: 9080                   |   subset-1:                    |                                   |                                |
+|              |   Protocol: HTTP4              |   - 1                          |                                   |                                |
+|              | - Name: fake-2                 |   - 2                          |                                   |                                |
+|              |   Port: 8080                   |   - 3                          |                                   |                                |
+|              |   Protocol: UDP7               |                                |                                   |                                |
++--------------+--------------------------------+--------------------------------+-----------------------------------+--------------------------------+
+| istio-mesh-1 | Name: mesh-service-2           | Workload Selector Labels:      | Multi Cluster DNS Name: mcDNSname | Federation Status:             |
+|              | Namespace: bookunfo            |   labels: wooho                | Accessible Via:                   |   State: ACCEPTED              |
+|              | Cluster: cluster-2             |   multiple: selector           |   - service-1                     |                                |
+|              |                                |   we: have                     |   - service-2                     |                                |
+|              | Ports:                         |                                |                                   |                                |
+|              | - Name: https                  | Subsets:                       |                                   |                                |
+|              |   Port: 15443                  |   subset-2:                    |                                   |                                |
+|              |   Protocol: IDK                |   - 4                          |                                   |                                |
+|              |                                |   - 5                          |                                   |                                |
+|              |                                |   - 6                          |                                   |                                |
++--------------+--------------------------------+--------------------------------+-----------------------------------+--------------------------------+

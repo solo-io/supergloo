@@ -12,7 +12,7 @@ Mesh Hub is engineered with a focus on its utility as an operational management
 tool, providing both graphical and command line UIs, observability features, and 
 debugging tools.
 
-<div align="center"><img src="https://www.solo.io/wp-content/uploads/2019/12/ServiceMesh_Diagram_AutoPilot_logo.png" width="800"></div>
+![Architecture](docs/content/img/smh-diagram.png)
 
 ## Features
 
@@ -39,6 +39,6 @@ representation supported by detailed, exhaustive documentation.
 ## Next Steps
 - Join us on our Slack channel: [https://slack.solo.io/](https://slack.solo.io/)
 - Follow us on Twitter: [https://twitter.com/soloio_inc](https://twitter.com/soloio_inc)
-- Check out the [docs](https://docs.solo.io/servicemeshhub)
+- Check out the [docs](https://docs.solo.io/service-mesh-hub/latest)
 - Check out the code and contribute: [Contribution Guide](CONTRIBUTING.md)
 - Contribute to the [Docs](docs/)

@@ -1,0 +1,17 @@
+
+Kubernetes Mesh Workloads:
++--------------------------------+---------+----------------------+-------------------+
+|           CONTROLLER           |  MESH   |        LABELS        |     IDENTITY      |
++--------------------------------+---------+----------------------+-------------------+
+| Name: deployment               | istio-1 |                      | service-account-1 |
+| Namespace: default             |         |                      |                   |
+| Cluster: management-plane      |         |                      |                   |
+| Type: Deployment               |         |                      |                   |
+|                                |         |                      |                   |
++--------------------------------+---------+----------------------+-------------------+
+| Name: deployment               | istio-1 | app: test            |                   |
+| Namespace: default             |         | version: v1          |                   |
+| Cluster: remote-cluster        |         |                      |                   |
+| Type: Deployment               |         |                      |                   |
+|                                |         |                      |                   |
++--------------------------------+---------+----------------------+-------------------+

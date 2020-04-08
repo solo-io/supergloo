@@ -3,7 +3,7 @@ package status
 import (
 	"context"
 
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
 )
 
 type StatusClientFactory func(healthCheckClients healthcheck_types.Clients) StatusClient

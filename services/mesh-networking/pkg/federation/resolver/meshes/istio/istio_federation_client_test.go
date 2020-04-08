@@ -9,23 +9,23 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	types2 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
-	mock_istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking/mock"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	mock_kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core/mocks"
-	mock_zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	mock_mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager/mocks"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	mock_dns "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns/mocks"
-	istio_federation "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes/istio"
-	mock_controller_runtime "github.com/solo-io/mesh-projects/test/mocks/controller-runtime"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
+	mock_istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking/mock"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	mock_dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns/mocks"
+	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
+	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
@@ -920,7 +920,7 @@ var _ = Describe("Istio Federation Decider", func() {
 					Host: serviceMulticlusterDnsName,
 					TrafficPolicy: &alpha3.TrafficPolicy{
 						Tls: &alpha3.TLSSettings{
-							// TODO this won't work with other mesh types https://github.com/solo-io/mesh-projects/issues/242
+							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
 							Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
 						},
 					},

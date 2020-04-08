@@ -4,9 +4,9 @@ import (
 	"io"
 
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 	"github.com/spf13/cobra"
 )
 

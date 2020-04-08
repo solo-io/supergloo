@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	types "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	cert_secrets "github.com/solo-io/mesh-projects/pkg/security/secrets"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 )
 
 // MockCertClient is a mock of CertClient interface.

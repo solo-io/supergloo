@@ -3,7 +3,7 @@ package zephyr_networking
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,10 +27,6 @@ func (d *trafficPolicyClient) Get(ctx context.Context, name string, namespace st
 
 func (d *trafficPolicyClient) Create(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.CreateOption) error {
 	return d.client.Create(ctx, trafficPolicy, options...)
-}
-
-func (d *trafficPolicyClient) Update(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {
-	return d.client.Update(ctx, trafficPolicy, options...)
 }
 
 func (d *trafficPolicyClient) UpdateStatus(ctx context.Context, trafficPolicy *v1alpha1.TrafficPolicy, options ...client.UpdateOption) error {

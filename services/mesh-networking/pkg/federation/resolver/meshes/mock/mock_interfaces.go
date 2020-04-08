@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	v1alpha10 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	dns "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha10 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 )
 
 // MockMeshFederationClient is a mock of MeshFederationClient interface.
