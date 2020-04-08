@@ -80,7 +80,7 @@ meshctl cluster register \
   --remote-cluster-name remote-cluster \
   --local-cluster-domain-override host.docker.internal
 
-meshctl istio install --context kind-$remoteCluster --operator-spec=- <<EOF
+meshctl mesh install istio --context kind-$remoteCluster --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -132,7 +132,7 @@ spec:
       selfSigned: false
 EOF
 
-meshctl istio install --context kind-$managementPlane --operator-spec=- <<EOF
+meshctl mesh install istio --context kind-$managementPlane --operator-spec=- <<EOF
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
