@@ -4,6 +4,8 @@ doc/site
 
 # IDEA files
 .idea
+# VSCODE
+.vscode
 
 # ignore intermediate files that gomock sometimes generates
 **/gomock_reflect*
