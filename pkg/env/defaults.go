@@ -4,13 +4,13 @@ import "os"
 
 const (
 	EnvPodNamespace       = "POD_NAMESPACE"
-	DefaultWriteNamespace = "service-mesh-hub"
+	defaultWriteNamespace = "service-mesh-hub"
 )
 
 func GetWriteNamespace() string {
 	writeNamespace := os.Getenv(EnvPodNamespace)
 	if writeNamespace == "" {
-		writeNamespace = DefaultWriteNamespace
+		writeNamespace = defaultWriteNamespace
 	}
 	return writeNamespace
 }

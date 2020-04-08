@@ -43,7 +43,7 @@ var _ = Describe("Meshctl check command", func() {
 
 		statusClient := mock_status.NewMockStatusClient(ctrl)
 		statusClient.EXPECT().
-			Check(ctx, env.DefaultWriteNamespace, healthCheckSuite).
+			Check(ctx, env.GetWriteNamespace(), healthCheckSuite).
 			Return(&status.StatusReport{
 				Success: true,
 			})
@@ -76,7 +76,7 @@ var _ = Describe("Meshctl check command", func() {
 
 		statusClient := mock_status.NewMockStatusClient(ctrl)
 		statusClient.EXPECT().
-			Check(ctx, env.DefaultWriteNamespace, healthCheckSuite).
+			Check(ctx, env.GetWriteNamespace(), healthCheckSuite).
 			Return(&status.StatusReport{
 				Success: true,
 			}).

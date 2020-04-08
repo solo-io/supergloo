@@ -35,7 +35,7 @@ var _ = Describe("K8s connectivity check", func() {
 			Get().
 			Return(nil, testErr)
 
-		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -50,7 +50,7 @@ var _ = Describe("K8s connectivity check", func() {
 			Get().
 			Return(nil, nil)
 
-		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewKubeConnectivityCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 

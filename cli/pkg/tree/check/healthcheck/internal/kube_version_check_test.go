@@ -38,7 +38,7 @@ var _ = Describe("K8s version check", func() {
 			Get().
 			Return(nil, testErr)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -55,7 +55,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: "abcd",
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -72,7 +72,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: fmt.Sprintf("%d+", version2.MinimumSupportedKubernetesMinorVersion), // for example: "15+"
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 
@@ -88,7 +88,7 @@ var _ = Describe("K8s version check", func() {
 				Minor: fmt.Sprintf("%d", version2.MinimumSupportedKubernetesMinorVersion+2), // for example: "15+"
 			}, nil)
 
-		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewK8sServerVersionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			ServerVersionClient: serverVersionClient,
 		})
 

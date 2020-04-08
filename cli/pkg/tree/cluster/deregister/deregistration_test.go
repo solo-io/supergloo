@@ -52,14 +52,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -101,14 +101,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		remoteWriteNamespace := "remote-write-namespace"
 		remoteClusterName := "remote-cluster-name"
 		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -145,14 +145,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,
@@ -192,14 +192,14 @@ var _ = Describe("Cluster Deregistration", func() {
 		configLookup := mock_config_lookup.NewMockKubeConfigLookup(ctrl)
 		kubeConfigSecretRef := &core_types.ResourceRef{
 			Name:      "kube-config-secret",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		remoteClusterName := "remote-cluster-name"
 		remoteWriteNamespace := "remote-write-namespace"
 		clusterToDeregister := &discovery_v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      remoteClusterName,
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.KubernetesClusterSpec{
 				SecretRef:      kubeConfigSecretRef,

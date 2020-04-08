@@ -38,7 +38,7 @@ var _ = Describe("Federation decision health check", func() {
 			List(ctx).
 			Return(&v1alpha1.MeshServiceList{}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -61,7 +61,7 @@ var _ = Describe("Federation decision health check", func() {
 				},
 			}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -94,7 +94,7 @@ var _ = Describe("Federation decision health check", func() {
 				},
 			}, nil)
 
-		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		})
 
@@ -109,7 +109,7 @@ var _ = Describe("Federation decision health check", func() {
 			Return(&v1alpha1.MeshServiceList{
 				Items: []v1alpha1.MeshService{
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: env.DefaultWriteNamespace},
+						ObjectMeta: metav1.ObjectMeta{Name: "test-1", Namespace: env.GetWriteNamespace()},
 						Status: discovery_types.MeshServiceStatus{
 							FederationStatus: &core_types.Status{
 								State: core_types.Status_ACCEPTED,
@@ -117,7 +117,7 @@ var _ = Describe("Federation decision health check", func() {
 						},
 					},
 					{
-						ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: env.DefaultWriteNamespace},
+						ObjectMeta: metav1.ObjectMeta{Name: "test-2", Namespace: env.GetWriteNamespace()},
 						Status: discovery_types.MeshServiceStatus{
 							FederationStatus: &core_types.Status{
 								State: core_types.Status_INVALID,
@@ -131,11 +131,11 @@ var _ = Describe("Federation decision health check", func() {
 		clients := healthcheck_types.Clients{
 			MeshServiceClient: meshServiceClient,
 		}
-		runFailure, checkApplies := federationChecker.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := federationChecker.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
-		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", env.DefaultWriteNamespace, core_types.Status_INVALID).Error()))
-		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", env.DefaultWriteNamespace, "test-2")))
+		Expect(runFailure.ErrorMessage).To(Equal(internal.FederationRecordingHasFailed("test-2", env.GetWriteNamespace(), core_types.Status_INVALID).Error()))
+		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("get details from the failing MeshService: `kubectl -n %s get meshservice %s -oyaml`", env.GetWriteNamespace(), "test-2")))
 	})
 })

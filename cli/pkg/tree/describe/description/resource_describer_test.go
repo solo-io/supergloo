@@ -55,7 +55,7 @@ var _ = Describe("Resource describer", func() {
 			describedMeshService := &discovery_v1alpha1.MeshService{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "expected-mesh-service",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			}
 
@@ -136,7 +136,7 @@ var _ = Describe("Resource describer", func() {
 			describedMeshWorkload := &discovery_v1alpha1.MeshWorkload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-mesh-workload",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			}
 			wrongIdentitySelector := &core_types.IdentitySelector{}

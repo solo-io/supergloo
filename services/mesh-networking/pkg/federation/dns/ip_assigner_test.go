@@ -25,7 +25,7 @@ var _ = Describe("Federation Decider", func() {
 		clusterName3 = "cluster-3"
 		cmRef        = &core_types.ResourceRef{
 			Name:      dns.IpRecordName,
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		mustMarshal = func(obj interface{}) string {
 			bytes, err := json.Marshal(obj)

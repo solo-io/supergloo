@@ -125,7 +125,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: k8s_meta_v1.ObjectMeta{
 				Name:      "linkerd-linkerd-test-cluster",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels,
 			},
 			Spec: discovery_types.MeshSpec{
@@ -140,7 +140,7 @@ var _ = Describe("Linkerd Mesh Scanner", func() {
 				},
 				Cluster: &core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}

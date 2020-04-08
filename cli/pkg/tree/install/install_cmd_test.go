@@ -165,7 +165,7 @@ var _ = Describe("Install", func() {
 
 		serviceAccountRef := &core_types.ResourceRef{
 			Name:      "test-cluster-name",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 
 		expectedKubeConfig := func(server string) string {
@@ -230,7 +230,7 @@ users:
 
 		namespaceClient.
 			EXPECT().
-			Get(ctx, env.DefaultWriteNamespace).
+			Get(ctx, env.GetWriteNamespace()).
 			Return(nil, nil)
 
 		csrAgentInstaller.EXPECT().
@@ -238,8 +238,8 @@ users:
 				KubeConfig:           "",
 				KubeContext:          contextABC,
 				ClusterName:          clusterName,
-				SmhInstallNamespace:  env.DefaultWriteNamespace,
-				RemoteWriteNamespace: env.DefaultWriteNamespace,
+				SmhInstallNamespace:  env.GetWriteNamespace(),
+				RemoteWriteNamespace: env.GetWriteNamespace(),
 				ReleaseName:          cliconstants.CsrAgentReleaseName,
 			}).
 			Return(nil)
@@ -247,14 +247,14 @@ users:
 		clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterName,
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: discovery_types.KubernetesClusterSpec{
 				SecretRef: &core_types.ResourceRef{
 					Name:      secret.GetName(),
 					Namespace: secret.GetNamespace(),
 				},
-				WriteNamespace: env.DefaultWriteNamespace,
+				WriteNamespace: env.GetWriteNamespace(),
 			},
 		}).Return(nil)
 

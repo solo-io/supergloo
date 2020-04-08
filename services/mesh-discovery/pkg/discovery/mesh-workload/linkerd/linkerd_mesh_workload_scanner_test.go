@@ -60,7 +60,7 @@ var _ = Describe("MeshWorkloadScanner", func() {
 		expectedMeshWorkload := &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("linkerd-%s-%s-%s", deploymentName, namespace, clusterName),
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 				Labels:    linkerd.DiscoveryLabels(),
 			},
 			Spec: discovery_types.MeshWorkloadSpec{

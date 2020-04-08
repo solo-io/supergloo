@@ -11,7 +11,7 @@ import (
 // as a multicluster secret
 func HasRequiredMetadata(metadata metav1.Object) bool {
 	val, ok := metadata.GetLabels()[multicluster.MultiClusterLabel]
-	return ok && val == "true" && metadata.GetNamespace() == env.DefaultWriteNamespace
+	return ok && val == "true" && metadata.GetNamespace() == env.GetWriteNamespace()
 }
 
 // This object is used as a prerdicate interface for the secret event handler above

@@ -50,7 +50,7 @@ var _ = Describe("Federation Decider", func() {
 				Spec: networking_types.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{{
 						Name:      "mesh-1",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					}},
 					Federation: &networking_types.VirtualMeshSpec_Federation{
 						Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
@@ -74,7 +74,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, client.ObjectKey{
 				Name:      "mesh-1",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&discovery_v1alpha1.Mesh{
 				ObjectMeta: v1.ObjectMeta{
@@ -104,12 +104,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService1 := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "mesh-service-1-mesh-1",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name:      "mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
@@ -122,12 +122,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService2 := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "mesh-service-2-mesh-2",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name:      "mesh-2",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
@@ -140,12 +140,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService3 := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "mesh-service-3-mesh-3",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name:      "mesh-3",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
@@ -158,12 +158,12 @@ var _ = Describe("Federation Decider", func() {
 		meshService4 := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "mesh-service-4-mesh-4",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: types.MeshServiceSpec{
 				Mesh: &core_types.ResourceRef{
 					Name:      "mesh-4",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				KubeService: &types.MeshServiceSpec_KubeService{
 					Ref: &core_types.ResourceRef{
@@ -181,15 +181,15 @@ var _ = Describe("Federation Decider", func() {
 						Meshes: []*core_types.ResourceRef{
 							{
 								Name:      "mesh-1",
-								Namespace: env.DefaultWriteNamespace,
+								Namespace: env.GetWriteNamespace(),
 							},
 							{
 								Name:      "mesh-2",
-								Namespace: env.DefaultWriteNamespace,
+								Namespace: env.GetWriteNamespace(),
 							},
 							{
 								Name:      "mesh-3",
-								Namespace: env.DefaultWriteNamespace,
+								Namespace: env.GetWriteNamespace(),
 							},
 						},
 						Federation: nil, // should default to the permissive mode for demo purposes
@@ -199,7 +199,7 @@ var _ = Describe("Federation Decider", func() {
 					Spec: networking_types.VirtualMeshSpec{
 						Meshes: []*core_types.ResourceRef{{
 							Name:      "mesh-4",
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						}},
 						Federation: &networking_types.VirtualMeshSpec_Federation{
 							Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,
@@ -212,48 +212,48 @@ var _ = Describe("Federation Decider", func() {
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      "mesh-workload-1-mesh-1",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: types.MeshWorkloadSpec{
 						Mesh: &core_types.ResourceRef{
 							Name:      "mesh-1",
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      "mesh-workload-2-mesh-2",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: types.MeshWorkloadSpec{
 						Mesh: &core_types.ResourceRef{
 							Name:      "mesh-2",
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      "mesh-workload-3-mesh-3",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: types.MeshWorkloadSpec{
 						Mesh: &core_types.ResourceRef{
 							Name:      "mesh-3",
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
 				{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      "mesh-workload-4-mesh-4",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: types.MeshWorkloadSpec{
 						Mesh: &core_types.ResourceRef{
 							Name:      "mesh-4",
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						},
 					},
 				},
@@ -286,7 +286,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, client.ObjectKey{
 				Name:      "mesh-1",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&discovery_v1alpha1.Mesh{
 				ObjectMeta: v1.ObjectMeta{
@@ -301,7 +301,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, client.ObjectKey{
 				Name:      "mesh-2",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&discovery_v1alpha1.Mesh{
 				ObjectMeta: v1.ObjectMeta{
@@ -316,7 +316,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, client.ObjectKey{
 				Name:      "mesh-3",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&discovery_v1alpha1.Mesh{
 				ObjectMeta: v1.ObjectMeta{
@@ -331,7 +331,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient.EXPECT().
 			Get(ctx, client.ObjectKey{
 				Name:      "mesh-4",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}).
 			Return(&discovery_v1alpha1.Mesh{
 				ObjectMeta: v1.ObjectMeta{
@@ -351,11 +351,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-2-mesh-2",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-3-mesh-3",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
@@ -370,11 +370,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-3-mesh-3",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
@@ -389,11 +389,11 @@ var _ = Describe("Federation Decider", func() {
 			FederatedToWorkloads: []*core_types.ResourceRef{
 				{
 					Name:      "mesh-workload-1-mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				{
 					Name:      "mesh-workload-2-mesh-2",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
@@ -423,15 +423,15 @@ var _ = Describe("Federation Decider", func() {
 				Meshes: []*core_types.ResourceRef{
 					{
 						Name:      "mesh-1",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					{
 						Name:      "mesh-2",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					{
 						Name:      "mesh-3",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 				},
 				Federation: nil, // should default to the permissive mode for demo purposes
@@ -444,7 +444,7 @@ var _ = Describe("Federation Decider", func() {
 			Spec: networking_types.VirtualMeshSpec{
 				Meshes: []*core_types.ResourceRef{{
 					Name:      "mesh-4",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}},
 				Federation: &networking_types.VirtualMeshSpec_Federation{
 					Mode: networking_types.VirtualMeshSpec_Federation_PERMISSIVE,

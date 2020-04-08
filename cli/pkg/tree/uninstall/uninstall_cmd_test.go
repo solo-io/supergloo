@@ -69,13 +69,13 @@ var _ = Describe("Crd Uninstaller", func() {
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.DefaultWriteNamespace).
+			NewUninstall("", "", env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1alpha1.KubernetesClusterList{
 				Items: []v1alpha1.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -140,13 +140,13 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.DefaultWriteNamespace).
+			NewUninstall("", "", env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, nil)
 		kubeClusterClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1alpha1.KubernetesClusterList{
 				Items: []v1alpha1.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -157,7 +157,7 @@ Service Mesh Hub has been uninstalled
 			Run(ctx, cluster2).
 			Return(nil)
 		namespaceClient.EXPECT().
-			Delete(ctx, env.DefaultWriteNamespace).
+			Delete(ctx, env.GetWriteNamespace()).
 			Return(nil)
 		crdRemover.EXPECT().
 			RemoveZephyrCrds("management plane cluster", masterRestCfg).
@@ -205,16 +205,16 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.DefaultWriteNamespace).
+			NewUninstall("", "", env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, eris.New(uninstall.ReleaseNotFoundHelmErrorMessage))
 		kubeClusterClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 		namespaceClient.EXPECT().
-			Delete(ctx, env.DefaultWriteNamespace).
+			Delete(ctx, env.GetWriteNamespace()).
 			Return(errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
 			RemoveZephyrCrds("management plane cluster", masterRestCfg).
@@ -265,16 +265,16 @@ Service Mesh Hub has been uninstalled
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.DefaultWriteNamespace).
+			NewUninstall("", "", env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, generateNewErr())
 		kubeClusterClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, generateNewErr())
 		namespaceClient.EXPECT().
-			Delete(ctx, env.DefaultWriteNamespace).
+			Delete(ctx, env.GetWriteNamespace()).
 			Return(generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds("management plane cluster", masterRestCfg).
@@ -340,13 +340,13 @@ Service Mesh Hub has been uninstalled with errors
 			GetRestConfigForContext("", "").
 			Return(masterRestCfg, nil)
 		helmClient.EXPECT().
-			NewUninstall("", "", env.DefaultWriteNamespace).
+			NewUninstall("", "", env.GetWriteNamespace()).
 			Return(helmUninstaller, nil)
 		helmUninstaller.EXPECT().
 			Run(releaseName).
 			Return(nil, generateNewErr())
 		kubeClusterClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1alpha1.KubernetesClusterList{
 				Items: []v1alpha1.KubernetesCluster{*cluster1, *cluster2},
 			}, nil)
@@ -354,7 +354,7 @@ Service Mesh Hub has been uninstalled with errors
 			Run(ctx, cluster1).
 			Return(generateNewErr())
 		namespaceClient.EXPECT().
-			Delete(ctx, env.DefaultWriteNamespace).
+			Delete(ctx, env.GetWriteNamespace()).
 			Return(generateNewErr())
 		crdRemover.EXPECT().
 			RemoveZephyrCrds("management plane cluster", masterRestCfg).

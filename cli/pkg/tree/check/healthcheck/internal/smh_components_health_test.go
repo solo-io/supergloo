@@ -36,14 +36,14 @@ var _ = Describe("SMH components check", func() {
 		testErr := eris.New("test-err")
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(nil, testErr)
 
 		check := internal.NewSmhComponentsHealthCheck()
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
@@ -53,14 +53,14 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if SMH is not installed", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1.PodList{}, nil)
 
 		check := internal.NewSmhComponentsHealthCheck()
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
@@ -71,12 +71,12 @@ var _ = Describe("SMH components check", func() {
 	It("reports an error if a pod is failing, and provides a helpful hint", func() {
 		podClient := mock_kubernetes_core.NewMockPodClient(ctrl)
 		podClient.EXPECT().
-			List(ctx, client.InNamespace(env.DefaultWriteNamespace)).
+			List(ctx, client.InNamespace(env.GetWriteNamespace())).
 			Return(&v1.PodList{
 				Items: []v1.Pod{{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "mesh-discovery-random-uuid",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Status: v1.PodStatus{
 						ContainerStatuses: []v1.ContainerStatus{{
@@ -97,11 +97,11 @@ var _ = Describe("SMH components check", func() {
 		clients := healthcheck_types.Clients{
 			PodClient: podClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
 		Expect(runFailure.ErrorMessage).To(Equal(eris.New(fmt.Sprintf("Container %s in pod %s is waiting: CrashLoopBackoff (back-off 1m20s)", "mesh-discovery", "mesh-discovery-random-uuid")).Error()))
-		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running either `kubectl -n %s describe pod %s` or `kubectl -n %s logs %s`", env.DefaultWriteNamespace, "mesh-discovery-random-uuid", env.DefaultWriteNamespace, "mesh-discovery-random-uuid")))
+		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running either `kubectl -n %s describe pod %s` or `kubectl -n %s logs %s`", env.GetWriteNamespace(), "mesh-discovery-random-uuid", env.GetWriteNamespace(), "mesh-discovery-random-uuid")))
 	})
 })

@@ -114,7 +114,7 @@ func (m *discoveryClusterHandler) ClusterAdded(ctx context.Context, mgr mc_manag
 	meshServiceFinder := mesh_service.NewMeshServiceFinder(
 		ctx,
 		clusterName,
-		env.DefaultWriteNamespace,
+		env.GetWriteNamespace(),
 		initializedDeps.serviceClient,
 		m.localMeshServiceClient,
 		m.localMeshWorkloadClient,

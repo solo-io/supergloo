@@ -249,7 +249,7 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 
 			csrClient.EXPECT().
-				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).
+				Get(ctx, "istio-name-cert-request", env.GetWriteNamespace()).
 				Return(nil, testErr)
 
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
@@ -307,14 +307,14 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).
+				Get(ctx, "istio-name-cert-request", env.GetWriteNamespace()).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				Create(ctx, &v1alpha1.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "istio-name-cert-request",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
 						VirtualMeshRef: &core_types.ResourceRef{
@@ -387,14 +387,14 @@ var _ = Describe("csr manager", func() {
 				Return(nil, nil)
 			statusErr := errors.NewNotFound(schema.GroupResource{}, "")
 			csrClient.EXPECT().
-				Get(ctx, "istio-name-cert-request", env.DefaultWriteNamespace).
+				Get(ctx, "istio-name-cert-request", env.GetWriteNamespace()).
 				Return(nil, statusErr)
 
 			csrClient.EXPECT().
 				Create(ctx, &v1alpha1.VirtualMeshCertificateSigningRequest{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "istio-name-cert-request",
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: security_types.VirtualMeshCertificateSigningRequestSpec{
 						VirtualMeshRef: &core_types.ResourceRef{

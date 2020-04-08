@@ -28,13 +28,13 @@ var _ = Describe("Networking Snapshot", func() {
 		meshService1 = &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-1",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 		}
 		meshService2 = &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-2",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 		}
 	)
@@ -277,7 +277,7 @@ var _ = Describe("Networking Snapshot", func() {
 		updatedService := &discovery_v1alpha1.MeshService{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "ms-2",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 		}
 

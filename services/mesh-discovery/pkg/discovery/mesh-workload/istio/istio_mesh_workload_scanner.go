@@ -47,7 +47,7 @@ func (i *istioMeshWorkloadScanner) ScanPod(ctx context.Context, pod *core_v1.Pod
 			Cluster:   pod.ClusterName,
 		}, metav1.ObjectMeta{
 			Name:      i.buildMeshWorkloadName(deployment.Name, deployment.Namespace, pod.ClusterName),
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels(),
 		}, nil
 }
