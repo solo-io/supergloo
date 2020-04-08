@@ -48,7 +48,7 @@ var _ = Describe("Federation Decider", func() {
 			deploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(&v1.Deployment{
 					Spec: v1.DeploymentSpec{
@@ -69,7 +69,7 @@ var _ = Describe("Federation Decider", func() {
 					Tag: "1.0.0",
 				}, nil)
 
-			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.DefaultWriteNamespace)
+			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(openSourceVersion).To(Equal("1.0.0"))
 		})
@@ -83,7 +83,7 @@ var _ = Describe("Federation Decider", func() {
 			deploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(&v1.Deployment{
 					Spec: v1.DeploymentSpec{
@@ -104,7 +104,7 @@ var _ = Describe("Federation Decider", func() {
 					Tag: "v1.0.0",
 				}, nil)
 
-			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.DefaultWriteNamespace)
+			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(openSourceVersion).To(Equal("1.0.0"))
 		})
@@ -118,11 +118,11 @@ var _ = Describe("Federation Decider", func() {
 			deploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-resource-name"))
 
-			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.DefaultWriteNamespace)
+			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
 			Expect(err).To(testutils.HaveInErrorChain(version.NoOpenSourceDeployment))
 			Expect(openSourceVersion).To(BeEmpty())
 		})
@@ -137,11 +137,11 @@ var _ = Describe("Federation Decider", func() {
 			deploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(nil, testErr)
 
-			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.DefaultWriteNamespace)
+			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
 			Expect(err).To(testutils.HaveInErrorChain(version.FailedToLookUpOpenSourceDeployemnt(testErr)))
 			Expect(openSourceVersion).To(BeEmpty())
 		})
@@ -155,7 +155,7 @@ var _ = Describe("Federation Decider", func() {
 			deploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      containerAndDeploymentName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(&v1.Deployment{
 					Spec: v1.DeploymentSpec{
@@ -170,7 +170,7 @@ var _ = Describe("Federation Decider", func() {
 					},
 				}, nil)
 
-			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.DefaultWriteNamespace)
+			openSourceVersion, err := deployedVersionFinder.OpenSourceVersion(ctx, env.GetWriteNamespace())
 			Expect(err).To(testutils.HaveInErrorChain(version.FailedToFindContainer(containerAndDeploymentName, containerAndDeploymentName)))
 			Expect(openSourceVersion).To(BeEmpty())
 		})

@@ -34,33 +34,33 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports an error if the namespace does not exist", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.DefaultWriteNamespace).
+			Get(ctx, env.GetWriteNamespace()).
 			Return(nil, errors.NewNotFound(controllerruntime.GroupResource{}, "test-resource"))
 
 		check := internal.NewInstallNamespaceExistenceCheck()
 		clients := healthcheck_types.Clients{
 			NamespaceClient: namespaceClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
-		Expect(runFailure.ErrorMessage).To(Equal(internal.NamespaceDoesNotExist(env.DefaultWriteNamespace).Error()))
-		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running `kubectl create namespace %s`", env.DefaultWriteNamespace)))
+		Expect(runFailure.ErrorMessage).To(Equal(internal.NamespaceDoesNotExist(env.GetWriteNamespace()).Error()))
+		Expect(runFailure.Hint).To(Equal(fmt.Sprintf("try running `kubectl create namespace %s`", env.GetWriteNamespace())))
 	})
 
 	It("reports a generic error if the client fails", func() {
 		testErr := eris.New("test-err")
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.DefaultWriteNamespace).
+			Get(ctx, env.GetWriteNamespace()).
 			Return(nil, testErr)
 
 		check := internal.NewInstallNamespaceExistenceCheck()
 		clients := healthcheck_types.Clients{
 			NamespaceClient: namespaceClient,
 		}
-		runFailure, checkApplies := check.Run(ctx, env.DefaultWriteNamespace, clients)
+		runFailure, checkApplies := check.Run(ctx, env.GetWriteNamespace(), clients)
 
 		Expect(checkApplies).To(BeTrue())
 		Expect(runFailure).NotTo(BeNil())
@@ -71,10 +71,10 @@ var _ = Describe("Install namespace existence check", func() {
 	It("reports success if the namespace exists", func() {
 		namespaceClient := mock_kubernetes_core.NewMockNamespaceClient(ctrl)
 		namespaceClient.EXPECT().
-			Get(ctx, env.DefaultWriteNamespace).
+			Get(ctx, env.GetWriteNamespace()).
 			Return(nil, nil)
 
-		runFailure, checkApplies := internal.NewInstallNamespaceExistenceCheck().Run(ctx, env.DefaultWriteNamespace, healthcheck_types.Clients{
+		runFailure, checkApplies := internal.NewInstallNamespaceExistenceCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
 			NamespaceClient: namespaceClient,
 		})
 

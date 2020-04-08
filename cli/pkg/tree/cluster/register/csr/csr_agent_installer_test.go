@@ -44,7 +44,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		releaseName := "csr-agent-release-name"
 
 		deployedVersionFinder.EXPECT().
-			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
+			OpenSourceVersion(ctx, env.GetWriteNamespace()).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
 			Install(&types.InstallerConfig{
@@ -63,7 +63,7 @@ var _ = Describe("CSR Agent Installer", func() {
 				KubeConfig:           kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
-				SmhInstallNamespace:  env.DefaultWriteNamespace,
+				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
 			},
@@ -82,7 +82,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		releaseName := "csr-agent-release-name"
 
 		deployedVersionFinder.EXPECT().
-			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
+			OpenSourceVersion(ctx, env.GetWriteNamespace()).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
 			Install(&types.InstallerConfig{
@@ -101,7 +101,7 @@ var _ = Describe("CSR Agent Installer", func() {
 				KubeConfig:           kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
-				SmhInstallNamespace:  env.DefaultWriteNamespace,
+				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
 				UseDevCsrAgentChart:  true,
@@ -121,7 +121,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		releaseName := "csr-agent-release-name"
 
 		deployedVersionFinder.EXPECT().
-			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
+			OpenSourceVersion(ctx, env.GetWriteNamespace()).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
 			Install(&types.InstallerConfig{
@@ -140,7 +140,7 @@ var _ = Describe("CSR Agent Installer", func() {
 				KubeConfig:           kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
-				SmhInstallNamespace:  env.DefaultWriteNamespace,
+				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
 				UseDevCsrAgentChart:  true,
@@ -160,7 +160,7 @@ var _ = Describe("CSR Agent Installer", func() {
 		releaseName := "csr-agent-release-name"
 
 		deployedVersionFinder.EXPECT().
-			OpenSourceVersion(ctx, env.DefaultWriteNamespace).
+			OpenSourceVersion(ctx, env.GetWriteNamespace()).
 			Return(openSourceVersion, nil)
 		helmInstaller.EXPECT().
 			Install(&types.InstallerConfig{
@@ -179,7 +179,7 @@ var _ = Describe("CSR Agent Installer", func() {
 				KubeConfig:           kubeConfig,
 				KubeContext:          kubeContext,
 				ClusterName:          "remote-cluster-name",
-				SmhInstallNamespace:  env.DefaultWriteNamespace,
+				SmhInstallNamespace:  env.GetWriteNamespace(),
 				ReleaseName:          releaseName,
 				RemoteWriteNamespace: remoteWriteNamespace,
 				UseDevCsrAgentChart:  true,

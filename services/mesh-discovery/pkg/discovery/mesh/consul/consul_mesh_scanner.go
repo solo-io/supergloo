@@ -69,7 +69,7 @@ func (c *consulMeshScanner) ScanDeployment(_ context.Context, deployment *k8s_ap
 			continue
 		}
 
-		return c.buildConsulMeshObject(deployment, container, env.DefaultWriteNamespace)
+		return c.buildConsulMeshObject(deployment, container, env.GetWriteNamespace())
 	}
 
 	return nil, nil
@@ -94,7 +94,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 	return &discoveryv1alpha1.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      buildMeshName(deployment, container),
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
 		Spec: discovery_types.MeshSpec{
@@ -108,7 +108,7 @@ func (c *consulMeshScanner) buildConsulMeshObject(
 			},
 			Cluster: &core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 		},
 	}, nil

@@ -82,11 +82,11 @@ var _ = Describe("multicluster-watcher", func() {
 				BeforeEach(func() {
 					oldSecret = &kubev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 							Labels:    map[string]string{multicluster.MultiClusterLabel: "true"},
 						},
 					}
-					secret.Namespace = env.DefaultWriteNamespace
+					secret.Namespace = env.GetWriteNamespace()
 				})
 				It("will return an error if resync is true", func() {
 					csh.EXPECT().DeleteMemberCluster(ctx, secret).Return(true, testErr)
@@ -104,10 +104,10 @@ var _ = Describe("multicluster-watcher", func() {
 				BeforeEach(func() {
 					oldSecret = &kubev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Namespace: env.DefaultWriteNamespace,
+							Namespace: env.GetWriteNamespace(),
 						},
 					}
-					secret.Namespace = env.DefaultWriteNamespace
+					secret.Namespace = env.GetWriteNamespace()
 					secret.Labels = map[string]string{multicluster.MultiClusterLabel: "true"}
 				})
 				It("will return an error if resync is true", func() {
@@ -126,11 +126,11 @@ var _ = Describe("multicluster-watcher", func() {
 			It("will return nil if metadata hasn't changed", func() {
 				oldSecret = &kubev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 						Labels:    map[string]string{multicluster.MultiClusterLabel: "true"},
 					},
 				}
-				secret.Namespace = env.DefaultWriteNamespace
+				secret.Namespace = env.GetWriteNamespace()
 				secret.Labels = map[string]string{multicluster.MultiClusterLabel: "true"}
 				err := mcHandler.Update(oldSecret, secret)
 				Expect(err).NotTo(HaveOccurred())

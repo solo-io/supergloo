@@ -83,7 +83,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceFinder := mesh_service.NewMeshServiceFinder(
 			ctx,
 			clusterName,
-			env.DefaultWriteNamespace,
+			env.GetWriteNamespace(),
 			serviceClient,
 			meshServiceClient,
 			meshWorkloadClient,
@@ -225,7 +225,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      meshServiceName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(nil, errors.NewNotFound(v1alpha1.Resource("meshservice"), meshServiceName))
 
@@ -234,7 +234,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				Create(ctx, &v1alpha1.MeshService{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 						Labels:    mesh_service.DiscoveryLabels(clusterName, rightService.GetName(), rightService.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{
@@ -486,12 +486,12 @@ var _ = Describe("Mesh Service Finder", func() {
 				EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      meshServiceName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(&v1alpha1.MeshService{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 					},
 					Spec: discovery_types.MeshServiceSpec{
 						KubeService: &discovery_types.MeshServiceSpec_KubeService{
@@ -628,7 +628,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				EXPECT().
 				Get(ctx, client.ObjectKey{
 					Name:      meshServiceName,
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				}).
 				Return(nil, errors.NewNotFound(v1alpha1.Resource("meshservice"), meshServiceName))
 
@@ -637,7 +637,7 @@ var _ = Describe("Mesh Service Finder", func() {
 				Create(ctx, &v1alpha1.MeshService{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
-						Namespace: env.DefaultWriteNamespace,
+						Namespace: env.GetWriteNamespace(),
 						Labels:    mesh_service.DiscoveryLabels(clusterName, serviceEvent.GetName(), serviceEvent.GetNamespace()),
 					},
 					Spec: discovery_types.MeshServiceSpec{

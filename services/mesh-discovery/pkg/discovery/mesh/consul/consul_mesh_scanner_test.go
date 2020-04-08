@@ -121,7 +121,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: k8s_meta_v1.ObjectMeta{
 				Name:      "consul-minidc-consul-ns",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 				Labels:    consul.DiscoveryLabels,
 			},
 			Spec: discovery_types.MeshSpec{
@@ -135,7 +135,7 @@ var _ = Describe("Consul Mesh Finder", func() {
 				},
 				Cluster: &core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}

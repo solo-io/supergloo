@@ -89,7 +89,7 @@ func NewServerVersionClient(namespace string, configClient DeploymentClient, ima
 }
 
 func (k *serverVersionClient) GetServerVersion() (*ServerVersion, error) {
-	deployments, err := k.configClient.GetDeployments(k.namespace, "app="+env.DefaultWriteNamespace)
+	deployments, err := k.configClient.GetDeployments(k.namespace, "app="+env.GetWriteNamespace())
 	if err != nil {
 		return nil, ConfigClientError(err)
 	}

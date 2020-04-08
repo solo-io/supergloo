@@ -12,7 +12,7 @@ import (
 
 func AddRootFlags(cmd *cobra.Command, options *Options) {
 	flags := cmd.PersistentFlags()
-	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", env.DefaultWriteNamespace,
+	flags.StringVarP(&options.Root.WriteNamespace, "namespace", "n", env.GetWriteNamespace(),
 		"Specify the namespace where Service Mesh Hub resources should be written")
 	flags.StringVar(&options.Root.KubeConfig, "kubeconfig", os.Getenv("KUBECONFIG"),
 		"Specify the kubeconfig for the current command")
@@ -77,7 +77,7 @@ func AddClusterRegisterFlags(cmd *cobra.Command, opts *Options) {
 
 	flags.StringVar(&opts.Cluster.Register.RemoteClusterName, remoteClusterName, "",
 		"Name of the cluster to be operated upon")
-	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, env.DefaultWriteNamespace,
+	flags.StringVar(&opts.Cluster.Register.RemoteWriteNamespace, remoteWriteNamespace, env.GetWriteNamespace(),
 		"Namespace in the remote cluster in which to write resources")
 	flags.StringVar(&opts.Cluster.Register.RemoteContext, remoteContext, "",
 		"Set the context you would like to use for the remote cluster")

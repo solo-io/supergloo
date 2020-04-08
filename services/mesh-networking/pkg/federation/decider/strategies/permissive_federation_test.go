@@ -35,7 +35,7 @@ var _ = Describe("Permissive Federation", func() {
 	It("doesn't federate anything for a virtual mesh with only one member", func() {
 		meshRef := &core_types.ResourceRef{
 			Name:      "mesh-1",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		vm := &networking_v1alpha1.VirtualMesh{
 			Spec: networking_types.VirtualMeshSpec{

@@ -116,7 +116,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istio-istio-system-test-cluster",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: discovery_types.MeshSpec{
@@ -135,7 +135,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 				Cluster: &core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}
@@ -182,7 +182,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 		expectedMesh := &discoveryv1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istio-istio-system-test-cluster",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 				Labels:    istio.DiscoveryLabels,
 			},
 			Spec: discovery_types.MeshSpec{
@@ -201,7 +201,7 @@ var _ = Describe("Istio Mesh Scanner", func() {
 				},
 				Cluster: &core_types.ResourceRef{
 					Name:      deployment.GetClusterName(),
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 			},
 		}

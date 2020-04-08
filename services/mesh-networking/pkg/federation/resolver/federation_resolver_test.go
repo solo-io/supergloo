@@ -287,7 +287,7 @@ var _ = Describe("Federation Decider", func() {
 
 		federatedServiceRef := &core_types.ResourceRef{
 			Name:      "federated-service",
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 		}
 		kubeServiceRef := &core_types.ResourceRef{
 			Name:      "test-svc",
@@ -304,7 +304,7 @@ var _ = Describe("Federation Decider", func() {
 		clientMesh := &discovery_v1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "client-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: discovery_types.MeshSpec{
 				Cluster: clientClusterRef,
@@ -320,7 +320,7 @@ var _ = Describe("Federation Decider", func() {
 		serverMesh := &discovery_v1alpha1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "server-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 			Spec: discovery_types.MeshSpec{
 				MeshType: &discovery_types.MeshSpec_Istio{

@@ -21,14 +21,14 @@ var _ = Describe("common", func() {
 		})
 		It("will not work with just namespace", func() {
 			meta = &metav1.ObjectMeta{
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			Expect(HasRequiredMetadata(meta)).To(BeFalse())
 		})
 		It("will not work with one condition", func() {
 			meta = &metav1.ObjectMeta{
 				Labels:    map[string]string{multicluster.MultiClusterLabel: "true"},
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			Expect(HasRequiredMetadata(meta)).To(BeTrue())
 		})
@@ -40,7 +40,7 @@ var _ = Describe("common", func() {
 
 			matchingMeta = &metav1.ObjectMeta{
 				Labels:    map[string]string{multicluster.MultiClusterLabel: "true"},
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 
 			badMeta = &metav1.ObjectMeta{

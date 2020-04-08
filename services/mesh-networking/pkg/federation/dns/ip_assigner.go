@@ -68,7 +68,7 @@ type ipAssigner struct {
 func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) (string, error) {
 	ipRecordRef := &core_types.ResourceRef{
 		Name:      IpRecordName,
-		Namespace: env.DefaultWriteNamespace,
+		Namespace: env.GetWriteNamespace(),
 	}
 
 	ipRecordConfigMap, err := i.configMapClient.Get(ctx, clients.ResourceRefToObjectKey(ipRecordRef))
@@ -106,7 +106,7 @@ func (i *ipAssigner) AssignIPOnCluster(ctx context.Context, clusterName string) 
 func (i *ipAssigner) UnAssignIPOnCluster(ctx context.Context, clusterName, ipToUnassign string) error {
 	ipRecordRef := &core_types.ResourceRef{
 		Name:      IpRecordName,
-		Namespace: env.DefaultWriteNamespace,
+		Namespace: env.GetWriteNamespace(),
 	}
 
 	var ipRecordConfigMap *corev1.ConfigMap

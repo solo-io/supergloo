@@ -87,7 +87,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			nonIstioMeshRef := &core_types.ResourceRef{
 				Name:      "linkerd-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			nonIstioMesh := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
@@ -158,7 +158,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -197,7 +197,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
@@ -345,7 +345,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -384,7 +384,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
@@ -532,7 +532,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			clusterName := "istio-cluster"
 			istioMeshRef := &core_types.ResourceRef{
 				Name:      "istio-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			istioMesh := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRef),
@@ -571,7 +571,7 @@ var _ = Describe("Istio Federation Decider", func() {
 			virtualMesh := &networking_v1alpha1.VirtualMesh{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "virtual-mesh-1",
-					Namespace: env.DefaultWriteNamespace,
+					Namespace: env.GetWriteNamespace(),
 				},
 				Spec: types2.VirtualMeshSpec{
 					Meshes: []*core_types.ResourceRef{istioMeshRef},
@@ -726,7 +726,7 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			nonIstioMeshRef := &core_types.ResourceRef{
 				Name:      "linkerd-mesh",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			nonIstioMesh := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(nonIstioMeshRef),
@@ -795,11 +795,11 @@ var _ = Describe("Istio Federation Decider", func() {
 
 			istioMeshRefService := &core_types.ResourceRef{
 				Name:      "istio-mesh-1",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			istioMeshRefWorkload := &core_types.ResourceRef{
 				Name:      "istio-mesh-2",
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			}
 			istioMeshForService := &discovery_v1alpha1.Mesh{
 				ObjectMeta: clients.ResourceRefToObjectMeta(istioMeshRefService),

@@ -87,7 +87,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s
 	return &discoveryv1alpha1.Mesh{
 		ObjectMeta: k8s_meta_v1.ObjectMeta{
 			Name:      linkerdController.name(),
-			Namespace: env.DefaultWriteNamespace,
+			Namespace: env.GetWriteNamespace(),
 			Labels:    DiscoveryLabels,
 		},
 		Spec: discovery_types.MeshSpec{
@@ -102,7 +102,7 @@ func (l *linkerdMeshScanner) ScanDeployment(ctx context.Context, deployment *k8s
 			},
 			Cluster: &core_types.ResourceRef{
 				Name:      deployment.GetClusterName(),
-				Namespace: env.DefaultWriteNamespace,
+				Namespace: env.GetWriteNamespace(),
 			},
 		},
 	}, nil
