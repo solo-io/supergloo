@@ -5,7 +5,7 @@ description: Understanding Service Mesh Hub Concepts
 weight: 25
 ---
 
-Service Mesh Hub (SMH) is a management plane for service mesh to simplify operations and workflows of service mesh across multiple clusters and deployment footprints. With SMH, you can install, discover, and operate a service-mesh deployment across your enterprise deployed on on premises or in the cloud, even across heterogeneous service-mesh implementations.
+Service Mesh Hub is a management plane for service mesh to simplify operations and workflows of service mesh across multiple clusters and deployment footprints. With Service Mesh Hub, you can install, discover, and operate a service-mesh deployment across your enterprise, deployed on premises, or in the cloud, even across heterogeneous service-mesh implementations.
 
 ## Why Service Mesh Hub
 
@@ -17,14 +17,20 @@ A service mesh provides powerful service-to-service communication capabilities l
 * scaling needs
 * geographic needs
 
-Managing a service mesh across this heterogeneous landscape that is consistent and secure is tedious and error prone at best. Service Mesh Hub provides a single unified pane of glass driven by a declarative API (CRDs in Kubernetes) that orchestrates and simplifies the operation of a multi-cluster service mesh. 
+Managing a service mesh deployment that is consistent and secure across multiple clusters is tedious and error prone at best. Service Mesh Hub provides a single unified pane of glass driven by a declarative API (CRDs in Kubernetes) that orchestrates and simplifies the operation of a multi-cluster service mesh including the following concerns:
 
+* Unifying/federating trust domains
+* Achieving a single pane of glass for operational observability
+* Multi-cluster routing
+* Access policy 
 
-## A multi-cluster management plane
+### A multi-cluster management plane
 
-Service Mesh Hub (SMH) consists of a set of components that run on a single cluster, often referred to as your *management plane cluster*. The management plane components are stateless and rely exclusively on declarative CRDs.  Each service-mesh installation that spans a deployment footprint often has its own control plane. You can think if SMH as a management plane for multiple control planes.
+Service Mesh Hub consists of a set of components that run on a single cluster, often referred to as your *management plane cluster*. The management plane components are stateless and rely exclusively on declarative CRDs.  Each service-mesh installation that spans a deployment footprint often has its own control plane. You can think of Service Mesh Hub as a management plane for multiple control planes.
 
-You can register a cluster with Service Mesh Hub, and it will handle the communications with other clusters - discovering what is running, pushing out configurations, unifying the trust model, scraping metrics, and more. 
+You can register a cluster with Service Mesh Hub, and it will handle the communication with other clusters - discovering what is running, pushing out configurations, unifying the trust model, scraping metrics, and more. 
+
+Let's take a closer look at the Service Mesh Hub Concepts
 
 ## Concepts
 
@@ -52,7 +58,7 @@ Service Mesh Hub enables users to write simple configuration objects to the mana
 
 A `TrafficPolicy` applies between a set of sources (mesh workloads) and destinations (mesh services), and is used to describe rules like “when A sends POST requests to B, add a header and set the timeout to 10 seconds”. Or “for every request to services on cluster C, increase the timeout and add retries”. As of this release, traffic policies support timeouts, retries, cors, traffic shifting, header manipulation, fault injection, subset routing, weighted destinations, and more. Note that some meshes don’t support all of these features; Service Mesh Hub will translate as best it can into the underlying mesh configuration, or report an error back to the user. 
 
-An `AccessPolicy` also applies between sources (this time representing identities) and destinations, and are used to finely control which services are allowed to communicate. On the virtual mesh, a user can specify a global policy to restrict access, and require users to specify access policies in order to enable communication to services. 
+An `AccessControlPolicy` also applies between sources (this time representing identities) and destinations, and are used to finely control which services are allowed to communicate. On the virtual mesh, a user can specify a global policy to restrict access, and require users to specify access policies in order to enable communication to services. 
 
 With traffic and access policies, Service Mesh Hub gives users a powerful language to dictate how services should communicate, even within complex multi-cluster, multi-mesh applications. 
 
