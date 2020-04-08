@@ -203,14 +203,14 @@ func InitializeCLI(ctx context.Context, out io.Writer, in io.Reader) *cobra.Comm
 	getCommand := get.GetRootCommand(getMeshCommand, getWorkloadCommand, getServiceCommand, getClusterCommand, getVirtualMeshCommand, getVirtualMeshCSRCommand, optionsOptions)
 	interactivePrompt := interactive.NewSurveyInteractivePrompt()
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
-	createTrafficPolicyCmd := traffic_policy.CreateTrafficPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
-	createAccessControlPolicyCmd := access_control_policy.CreateAccessControlPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
+	createTrafficPolicyCmd := traffic_policy.CreateTrafficPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
+	createAccessControlPolicyCmd := access_control_policy.CreateAccessControlPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd, createTrafficPolicyCmd, createAccessControlPolicyCmd)
 	command := cli.BuildCli(ctx, optionsOptions, client, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, getCommand, createRootCmd)
 	return command
 }
 
-func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt, resourcePrinter resource_printing.ResourcePrinter) *cobra.Command {
+func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, usageClient client.Client, kubeClientsFactory common.KubeClientsFactory, clientsFactory common.ClientsFactory, kubeLoader common_config.KubeLoader, imageNameParser docker.ImageNameParser, fileReader common.FileReader, secretToConfigConverter kubeconfig.SecretToConfigConverter, printers common.Printers, runner exec.Runner, interactivePrompt interactive.InteractivePrompt) *cobra.Command {
 	optionsOptions := options.NewOptionsProvider()
 	registrationCmd := register.ClusterRegistrationCmd(ctx, kubeClientsFactory, clientsFactory, optionsOptions, out, kubeLoader)
 	clusterCommand := cluster.ClusterRootCmd(registrationCmd)
@@ -235,8 +235,8 @@ func InitializeCLIWithMocks(ctx context.Context, out io.Writer, in io.Reader, us
 	getVirtualMeshCSRCommand := get_vmcsr.GetVirtualMeshCSRRootCommand(ctx, out, printers, kubeClientsFactory, kubeLoader, optionsOptions)
 	getCommand := get.GetRootCommand(getMeshCommand, getWorkloadCommand, getServiceCommand, getClusterCommand, getVirtualMeshCommand, getVirtualMeshCSRCommand, optionsOptions)
 	createVirtualMeshCmd := virtualmesh.CreateVirtualMeshCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
-	createTrafficPolicyCmd := traffic_policy.CreateTrafficPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
-	createAccessControlPolicyCmd := access_control_policy.CreateAccessControlPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, resourcePrinter)
+	createTrafficPolicyCmd := traffic_policy.CreateTrafficPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
+	createAccessControlPolicyCmd := access_control_policy.CreateAccessControlPolicyCommand(ctx, out, optionsOptions, kubeLoader, kubeClientsFactory, interactivePrompt, printers)
 	createRootCmd := create.CreateRootCommand(optionsOptions, createVirtualMeshCmd, createTrafficPolicyCmd, createAccessControlPolicyCmd)
 	command := cli.BuildCli(ctx, optionsOptions, usageClient, clusterCommand, versionCommand, meshCommand, upgradeCommand, installCommand, uninstallCommand, checkCommand, describeCommand, demoCommand, getCommand, createRootCmd)
 	return command

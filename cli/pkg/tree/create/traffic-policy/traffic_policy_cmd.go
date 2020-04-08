@@ -38,11 +38,11 @@ func CreateTrafficPolicyCommand(
 	kubeLoader common_config.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
 	interactivePrompt interactive.InteractivePrompt,
-	resourcePrinter resource_printing.ResourcePrinter,
+	printers common.Printers,
 ) CreateTrafficPolicyCmd {
 	cmd := cliconstants.CreateTrafficPolicyCommand
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return createTrafficPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, resourcePrinter)
+		return createTrafficPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
 	}
 	return &cmd
 }

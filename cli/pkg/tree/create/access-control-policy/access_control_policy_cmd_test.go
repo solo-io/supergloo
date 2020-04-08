@@ -59,7 +59,7 @@ var _ = Describe("AccessControlPolicy", func() {
 			KubeLoader:        mockKubeLoader,
 			Ctx:               ctx,
 			InteractivePrompt: mockInteractivePrompt,
-			ResourcePrinter:   mockResourcePrinter,
+			Printers:          common.Printers{ResourcePrinter: mockResourcePrinter},
 		}
 		targetRestConfig := &rest.Config{}
 		mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)

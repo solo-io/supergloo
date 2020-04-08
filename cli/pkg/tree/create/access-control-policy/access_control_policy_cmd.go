@@ -58,11 +58,11 @@ func CreateAccessControlPolicyCommand(
 	kubeLoader common_config.KubeLoader,
 	kubeClientsFactory common.KubeClientsFactory,
 	interactivePrompt interactive.InteractivePrompt,
-	resourcePrinter resource_printing.ResourcePrinter,
+	printers common.Printers,
 ) CreateAccessControlPolicyCmd {
 	cmd := cliconstants.CreateAccessControlPolicyCommand
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return createAccessControlPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, resourcePrinter)
+		return createAccessControlPolicy(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
 	}
 	return &cmd
 }

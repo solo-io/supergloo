@@ -11,7 +11,6 @@ import (
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/usage"
 	usage_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/common/usage/mocks"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
@@ -43,8 +42,6 @@ type MockMeshctl struct {
 	Runner            exec.Runner
 	Printers          common.Printers
 	InteractivePrompt interactive.InteractivePrompt
-
-	ResourcePrinter resource_printing.ResourcePrinter
 }
 
 // call with the same string you would pass to the meshctl binary, i.e. "cluster register --service-account-name test123"
@@ -83,7 +80,6 @@ func (m MockMeshctl) Invoke(argString string) (stdout string, err error) {
 		m.Printers,
 		m.Runner,
 		m.InteractivePrompt,
-		m.ResourcePrinter,
 	)
 
 	splitArgs, err := shellwords.Parse(argString)
