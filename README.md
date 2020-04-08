@@ -39,6 +39,6 @@ representation supported by detailed, exhaustive documentation.
 ## Next Steps
 - Join us on our Slack channel: [https://slack.solo.io/](https://slack.solo.io/)
 - Follow us on Twitter: [https://twitter.com/soloio_inc](https://twitter.com/soloio_inc)
-- Check out the [docs](https://docs.solo.io/servicemeshhub)
+- Check out the [docs](https://docs.solo.io/service-mesh-hub/latest)
 - Check out the code and contribute: [Contribution Guide](CONTRIBUTING.md)
 - Contribute to the [Docs](docs/)
