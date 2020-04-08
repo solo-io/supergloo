@@ -5,14 +5,14 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/stringutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/uninstall/config_lookup"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
-	zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/services/common/constants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

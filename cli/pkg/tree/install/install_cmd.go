@@ -10,13 +10,13 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/helmutil"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/semver"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/helmutil"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/semver"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )
@@ -30,7 +30,7 @@ var (
 	InvalidVersionErr = func(version string) error {
 		return eris.Errorf(
 			"Invalid version: %s. For a list of supported versions, "+
-				"see the releases page: https://github.com/solo-io/mesh-projects/releases", version)
+				"see the releases page: https://github.com/solo-io/service-mesh-hub/releases", version)
 	}
 	InstallSet = wire.NewSet(
 		InstallCmd,

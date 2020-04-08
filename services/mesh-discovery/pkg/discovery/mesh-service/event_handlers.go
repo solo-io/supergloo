@@ -3,8 +3,8 @@ package mesh_service
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/logging"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	corev1 "k8s.io/api/core/v1"
 )
 

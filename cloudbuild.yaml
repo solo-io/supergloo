@@ -53,21 +53,21 @@ steps:
   - "."
   - "--use-ssh"
   env:
-  - "PROJECT_ROOT=github.com/solo-io/mesh-projects"
+  - "PROJECT_ROOT=github.com/solo-io/service-mesh-hub"
   id: "prepare-workspace"
 
 # Helm setup steps
 - name: gcr.io/cloud-builders/gsutil
   entrypoint: mkdir
   args: ['-p', './_output/helm']
-  dir: &dir "/workspace/mesh-projects"
+  dir: &dir "/workspace/service-mesh-hub"
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['fetch-helm']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
   - 'TAGGED_VERSION=$TAG_NAME'
   dir: *dir
   id: 'fetch-helm'
@@ -76,7 +76,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['docker']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   dir: *dir
@@ -85,7 +85,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
   args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
@@ -103,7 +103,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['docker-push']
   env:
-    - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
     - 'TAGGED_VERSION=$TAG_NAME'
     - 'HELM_HOME=/root/.helm'
   dir: *dir
@@ -113,7 +113,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['release']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   dir: *dir
@@ -125,7 +125,7 @@ steps:
   args: ['release-helm']
   env:
     - 'TAGGED_VERSION=$TAG_NAME'
-    - 'PROJECT_ROOT=github.com/solo-io/mesh-projects'
+    - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
     - 'HELM_HOME=/root/.helm' # tell helm where to find data
   dir: *dir
   id: 'release-helm'
@@ -153,7 +153,7 @@ secrets:
     GITHUB_TOKEN: CiQAKyB5I9fr8p5nvPXPUGM9XiM+33WlWIsqpaTJv3+dHRnWwrcSUQCNH9Xw2VlfjBBwejOc6gsrxSpCBywVSl17DPIJ+D7a1ZUnqWftDabLyMCelzmVFYTZ/HMVycLntO+09UlXmpWKNR/Aly39oumqCMJkd1xTog==
     QUAY_IO_PASSWORD: CiQAKyB5I9JZaTwv2wu/GPqBN+tmY2/tx0L3Y2SIHmfGmINY/9ISaQCNH9Xw+TvaCHp5A/5cdmQTlSmgYVWgTDcYDNbgPinb0+VsaiBC61V6Zw7VhsKrfYTGw4KoMbFUrT/36Mqq1QXx2GjNJwdXv/sqJGZmrmGXutXXQ3OO4WcJs98+Ji749Z3XIm/QD38tag==
 timeout: 1800s
-tags: ['mesh-projects']
+tags: ['service-mesh-hub']
 options:
   machineType: 'N1_HIGHCPU_32'
   volumes:

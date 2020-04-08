@@ -21,10 +21,10 @@ package v1alpha1
 import (
 	time "time"
 
-	networkingzephyrsoloiov1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	versioned "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
-	internalinterfaces "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1/listers/networking.zephyr.solo.io/v1alpha1"
+	networkingzephyrsoloiov1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	versioned "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/clientset/versioned"
+	internalinterfaces "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/listers/networking.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

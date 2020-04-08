@@ -12,9 +12,9 @@ import (
 	"github.com/solo-io/go-utils/installutils/helminstall/types"
 	mock_types "github.com/solo-io/go-utils/installutils/helminstall/types/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/cluster/register/csr"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	mock_version "github.com/solo-io/mesh-projects/pkg/version/mocks"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_version "github.com/solo-io/service-mesh-hub/pkg/version/mocks"
 )
 
 var _ = Describe("CSR Agent Installer", func() {

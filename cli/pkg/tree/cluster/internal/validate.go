@@ -2,8 +2,8 @@ package cluster_internal
 
 import (
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 )
 
 var (

@@ -1,7 +1,7 @@
 package istio_translator
 
 import (
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	api_v1alpha3 "istio.io/api/networking/v1alpha3"
 )
 

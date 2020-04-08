@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Allow the user to optionally register the management plane cluster when installing SMH
-  issueLink: https://github.com/solo-io/mesh-projects/issues/284
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/284

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
 )
 
 //go:generate mockgen -source ./manifest.go -destination mocks/mock_manifest_builder.go

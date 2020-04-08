@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	resource_printing "github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
+	resource_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 

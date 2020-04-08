@@ -6,12 +6,12 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	mock_table_printing "github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/mocks"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	mock_security_config "github.com/solo-io/mesh-projects/pkg/clients/zephyr/security/mocks"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
+	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

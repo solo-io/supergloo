@@ -3,12 +3,12 @@ package consul_test
 import (
 	"errors"
 
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh/consul"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
 	kubev1 "k8s.io/api/core/v1"
 )
 

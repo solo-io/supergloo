@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/internal"
-	healthcheck_types "github.com/solo-io/mesh-projects/cli/pkg/tree/check/healthcheck/types"
-	mock_kubernetes_discovery "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/discovery/mocks"
-	"github.com/solo-io/mesh-projects/pkg/env"
-	version2 "github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/internal"
+	healthcheck_types "github.com/solo-io/service-mesh-hub/cli/pkg/tree/check/healthcheck/types"
+	mock_kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
+	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
 	"k8s.io/apimachinery/pkg/version"
 )
 

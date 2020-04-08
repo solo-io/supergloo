@@ -6,18 +6,18 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	core_types "github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	discovery_types "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	networking_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	istio_networking "github.com/solo-io/mesh-projects/pkg/clients/istio/networking"
-	kubernetes_core "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/mesh-projects/pkg/proto_conversion"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/dns"
-	"github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/resolver/meshes"
+	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
+	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes"
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/security/proto/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
@@ -179,7 +179,7 @@ func (i *istioFederationClient) setUpDestinationRule(
 				Host: serviceMulticlusterName,
 				TrafficPolicy: &alpha3.TrafficPolicy{
 					Tls: &alpha3.TLSSettings{
-						// TODO this won't work with other mesh types https://github.com/solo-io/mesh-projects/issues/242
+						// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
 						Mode: alpha3.TLSSettings_ISTIO_MUTUAL,
 					},
 				},
@@ -299,7 +299,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 		return err
 	}
 
-	// see https://github.com/solo-io/mesh-projects/issues/195 for details on this envoy filter config
+	// see https://github.com/solo-io/service-mesh-hub/issues/195 for details on this envoy filter config
 	return envoyFilterClient.UpsertSpec(ctx, &v1alpha3.EnvoyFilter{
 		ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
 		Spec: alpha3.EnvoyFilter{
@@ -442,7 +442,7 @@ func BuildGatewayWorkloadSelector() map[string]string {
 func BuildClusterReplacementPatch(clusterName string) (*types.Struct, error) {
 	clusterReplacement, err := proto_conversion.MessageToStruct(&v2alpha1.TcpClusterRewrite{
 		ClusterPattern:     fmt.Sprintf("\\.%s$", clusterName),
-		ClusterReplacement: ".svc.cluster.local", // TODO https://github.com/solo-io/mesh-projects/issues/240
+		ClusterReplacement: ".svc.cluster.local", // TODO https://github.com/solo-io/service-mesh-hub/issues/240
 	})
 	if err != nil {
 		return nil, err

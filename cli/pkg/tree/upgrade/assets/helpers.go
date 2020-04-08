@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	RepoName = "mesh-projects"
+	RepoName = "service-mesh-hub"
 	OrgName  = "solo-io"
 )
 

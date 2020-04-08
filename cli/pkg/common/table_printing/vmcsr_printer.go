@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	types2 "github.com/gogo/protobuf/types"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/internal"
-	security_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
+	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 )
 
 func NewVirtualMeshMCSRPrinter(tableBuilder TableBuilder) VirtualMeshCSRPrinter {

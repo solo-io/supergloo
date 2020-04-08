@@ -3,9 +3,9 @@ package selector
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	"github.com/solo-io/mesh-projects/pkg/clients"
-	discovery_core "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/clients"
+	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 )
 
 // Key that uniquely identifies a MeshService, used for equality checks between two MeshServices.

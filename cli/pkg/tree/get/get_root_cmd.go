@@ -2,16 +2,16 @@ package get
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/common/resource_printing"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	get_cluster "github.com/solo-io/mesh-projects/cli/pkg/tree/get/cluster"
-	get_mesh "github.com/solo-io/mesh-projects/cli/pkg/tree/get/mesh"
-	get_service "github.com/solo-io/mesh-projects/cli/pkg/tree/get/service"
-	get_virtual_mesh "github.com/solo-io/mesh-projects/cli/pkg/tree/get/virtual_mesh"
-	get_vmcsr "github.com/solo-io/mesh-projects/cli/pkg/tree/get/vmcsr"
-	get_workload "github.com/solo-io/mesh-projects/cli/pkg/tree/get/workload"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	get_cluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
+	get_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
+	get_service "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
+	get_virtual_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
+	get_vmcsr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
+	get_workload "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
 	"github.com/spf13/cobra"
 )
 

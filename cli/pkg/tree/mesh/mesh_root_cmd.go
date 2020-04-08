@@ -2,9 +2,9 @@ package mesh
 
 import (
 	"github.com/google/wire"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	mesh_install "github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 	"github.com/spf13/cobra"
 )
 

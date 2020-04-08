@@ -1,7 +1,7 @@
 changelog:
 - type: NEW_FEATURE
   description: Add in place upgrade command.
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/113
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/113
 - type: FIX
   description: Fix bug where meshctl version fails with no kubeconfig.
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/120
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/120

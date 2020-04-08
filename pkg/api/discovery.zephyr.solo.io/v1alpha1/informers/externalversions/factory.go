@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
-	discoveryzephyrsoloio "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/informers/externalversions/discovery.zephyr.solo.io"
-	internalinterfaces "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
+	versioned "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/clientset/versioned"
+	discoveryzephyrsoloio "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/informers/externalversions/discovery.zephyr.solo.io"
+	internalinterfaces "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

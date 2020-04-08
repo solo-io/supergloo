@@ -21,7 +21,7 @@ package versioned
 import (
 	"fmt"
 
-	securityv1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1"
+	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/clientset/versioned/typed/security.zephyr.solo.io/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

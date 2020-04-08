@@ -5,13 +5,13 @@ import (
 	"os"
 
 	"github.com/go-logr/zapr"
-	"github.com/solo-io/mesh-projects/pkg/logging"
+	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"go.uber.org/zap/zapcore"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	zaputil "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 	"go.uber.org/zap"
 )
 

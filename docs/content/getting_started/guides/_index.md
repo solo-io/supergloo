@@ -31,7 +31,7 @@ There are three pre-requisites to following these guides:
 1. Install `kubectl`
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
-    - https://github.com/solo-io/mesh-projects/releases
+    - https://github.com/solo-io/service-mesh-hub/releases
 3. Have multiple Kubernetes clusters ready to use, accessible in different kubeconfig contexts 
 
 There are several guides available. The complete list can be seen below. A reasonable

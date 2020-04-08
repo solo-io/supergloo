@@ -3,17 +3,17 @@ package mesh_discovery
 import (
 	"context"
 
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/istio"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/linkerd"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/mesh-projects/services/common/multicluster"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
-	"github.com/solo-io/mesh-projects/services/internal/config"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh"
-	mesh_workload "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/discovery/mesh-workload"
-	md_multicluster "github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/multicluster"
-	"github.com/solo-io/mesh-projects/services/mesh-discovery/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
+	"github.com/solo-io/service-mesh-hub/services/internal/config"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
+	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
+	md_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster"
+	"github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/wire"
 	"go.uber.org/zap"
 )
 

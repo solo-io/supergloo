@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	strategies "github.com/solo-io/mesh-projects/services/mesh-networking/pkg/federation/decider/strategies"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	strategies "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
 )
 
 // MockFederationStrategy is a mock of FederationStrategy interface.

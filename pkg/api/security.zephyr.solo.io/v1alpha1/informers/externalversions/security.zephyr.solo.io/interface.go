@@ -19,8 +19,8 @@ limitations under the License.
 package security
 
 import (
-	internalinterfaces "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/security.zephyr.solo.io/v1alpha1"
+	internalinterfaces "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/informers/externalversions/security.zephyr.solo.io/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

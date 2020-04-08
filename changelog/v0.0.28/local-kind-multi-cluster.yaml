@@ -1,7 +1,7 @@
 changelog:
 - type: FIX
   description: Create VirtualServices when no matchers are present.
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/291
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/291
 - type: NEW_FEATURE
   description: Figure out local cross-cluster communication.
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/239
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/239

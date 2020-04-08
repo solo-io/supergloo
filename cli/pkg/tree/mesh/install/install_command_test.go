@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/solo-io/go-utils/testutils"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	mesh_install "github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 )
 
 var _ = Describe("Install Root Cmd", func() {

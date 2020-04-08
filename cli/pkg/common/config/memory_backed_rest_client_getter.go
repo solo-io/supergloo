@@ -1,7 +1,7 @@
 package common_config
 
 import (
-	"github.com/solo-io/mesh-projects/cli/pkg/common/config/internal"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config/internal"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/cli-runtime/pkg/resource"
 	"k8s.io/client-go/discovery"

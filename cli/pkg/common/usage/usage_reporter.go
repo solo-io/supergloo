@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 	usageapi "github.com/solo-io/reporting-client/pkg/api/v1"
 	usageclient "github.com/solo-io/reporting-client/pkg/client"
 	"github.com/solo-io/reporting-client/pkg/signature"

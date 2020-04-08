@@ -6,13 +6,13 @@ import (
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	common_config "github.com/solo-io/mesh-projects/cli/pkg/common/config"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	install_istio "github.com/solo-io/mesh-projects/cli/pkg/tree/mesh/install/istio"
-	"github.com/solo-io/mesh-projects/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	install_istio "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/spf13/cobra"
 )
 

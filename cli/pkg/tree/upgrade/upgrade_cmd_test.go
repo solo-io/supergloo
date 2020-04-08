@@ -10,13 +10,13 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	. "github.com/solo-io/go-utils/testutils"
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	"github.com/solo-io/mesh-projects/cli/pkg/options"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade"
-	upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets"
-	mock_upgrade_assets "github.com/solo-io/mesh-projects/cli/pkg/tree/upgrade/assets/mocks"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
+	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	mock_upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets/mocks"
 )
 
 var _ = Describe("Upgrade", func() {

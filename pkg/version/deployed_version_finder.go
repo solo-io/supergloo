@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	kubernetes_apps "github.com/solo-io/mesh-projects/pkg/clients/kubernetes/apps"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

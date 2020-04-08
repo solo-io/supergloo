@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	interactive "github.com/solo-io/mesh-projects/cli/pkg/common/interactive"
+	interactive "github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 )
 
 // MockInteractivePrompt is a mock of InteractivePrompt interface.

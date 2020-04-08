@@ -10,7 +10,7 @@ import (
 
 	retry "github.com/avast/retry-go"
 	gomock "github.com/golang/mock/gomock"
-	mc_manager "github.com/solo-io/mesh-projects/services/common/multicluster/manager"
+	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	rest "k8s.io/client-go/rest"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 	manager "sigs.k8s.io/controller-runtime/pkg/manager"

@@ -6,12 +6,12 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	mock_table_printing "github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/mocks"
-	cli_mocks "github.com/solo-io/mesh-projects/cli/pkg/mocks"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_discovery "github.com/solo-io/mesh-projects/pkg/clients/zephyr/discovery/mocks"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	mock_table_printing "github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/mocks"
+	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -6,12 +6,12 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/mesh-projects/cli/pkg/common"
-	cli_test "github.com/solo-io/mesh-projects/cli/pkg/test"
-	"github.com/solo-io/mesh-projects/cli/pkg/tree/version/server"
-	mock_server "github.com/solo-io/mesh-projects/cli/pkg/tree/version/server/mocks"
-	"github.com/solo-io/mesh-projects/pkg/common/docker"
-	"github.com/solo-io/mesh-projects/pkg/version"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
+	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
+	mock_server "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
+	"github.com/solo-io/service-mesh-hub/pkg/version"
 )
 
 var _ = Describe("Version", func() {

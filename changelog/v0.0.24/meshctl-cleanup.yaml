@@ -1,18 +1,18 @@
 changelog:
 - type: FIX
   description: Apply timeout to kube list call to limit time to find server version in `meshctl version`
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/134
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/134
 - type: FIX
   description: Fix error which mentions old flag name --master-cluster
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/135
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/135
 - type: FIX
   description: >
     An invalid kubeconfig will now result in a timeout from the kube client after 5 seconds, resulting
     in a much more human readable error
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/136
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/136
 - type: FIX
   description: >
     Switch the language around the error when cluster register operations fail. Now, if the service account
     or cluster role binding cannot be created, a user friendly error will be printed, followed by the underlying
     error from kubernetes. Most likely a resource exists, or timeout error depending on the situation
-  issueLink:  https://github.com/solo-io/mesh-projects/issues/137
+  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/137

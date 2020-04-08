@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/cliconstants"
-	"github.com/solo-io/mesh-projects/pkg/env"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/spf13/cobra"
 )
 

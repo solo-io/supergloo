@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/solo-io/mesh-projects/cli/pkg/common/table_printing/internal"
-	discovery_v1alpha1 "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/common/table_printing/internal"
+	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 )
 
 func NewKubernetesClusterPrinter(tableBuilder TableBuilder) KubernetesClusterPrinter {

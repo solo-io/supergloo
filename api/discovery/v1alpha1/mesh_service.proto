@@ -1,9 +1,9 @@
 syntax = "proto3";
 package discovery.zephyr.solo.io;
-option go_package = "github.com/solo-io/mesh-projects/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types";
 
-import "mesh-projects/api/core/v1alpha1/ref.proto";
-import "mesh-projects/api/core/v1alpha1/status.proto";
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+import "service-mesh-hub/api/core/v1alpha1/status.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
