@@ -2,8 +2,9 @@ package linkerd_translator_test
 
 import (
 	"context"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"time"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
 
@@ -248,14 +249,20 @@ var _ = Describe("LinkerdTranslator", func() {
 
 			ts := &trafficSplits.Items[0]
 
+			makeQty := func(val int64) *resource.Quantity {
+				// annoying, we need to do this because un/marshalling the quantity changes its Go representation
+				q := resource.MustParse(resource.NewScaledQuantity(val, resource.Milli).String())
+				return &q
+			}
+
 			Expect(ts.Spec.Backends).To(Equal([]smi_config.TrafficSplitBackend{
 				{
 					Service: "foo-svc",
-					Weight:  resource.NewScaledQuantity(250, resource.Milli),
+					Weight:  makeQty(250),
 				},
 				{
 					Service: "bar-svc",
-					Weight:  resource.NewScaledQuantity(750, resource.Milli),
+					Weight:  makeQty(750),
 				},
 			}))
 

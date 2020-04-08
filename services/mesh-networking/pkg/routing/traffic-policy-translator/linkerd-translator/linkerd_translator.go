@@ -3,8 +3,9 @@ package linkerd_translator
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"sort"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	smi_config "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1"
 	smi_networking "github.com/solo-io/mesh-projects/pkg/clients/smi/split/v1alpha1"
