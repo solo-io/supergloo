@@ -27,3 +27,7 @@ func (a *accessControlPolicyClient) List(ctx context.Context, opts ...client.Lis
 func (a *accessControlPolicyClient) UpdateStatus(ctx context.Context, acp *v1alpha1.AccessControlPolicy, options ...client.UpdateOption) error {
 	return a.client.Status().Update(ctx, acp, options...)
 }
+
+func (a *accessControlPolicyClient) Create(ctx context.Context, acp *v1alpha1.AccessControlPolicy, options ...client.CreateOption) error {
+	return a.client.Create(ctx, acp, options...)
+}

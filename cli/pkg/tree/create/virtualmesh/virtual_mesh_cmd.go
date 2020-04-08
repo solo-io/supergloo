@@ -4,15 +4,14 @@ import (
 	"context"
 	"io"
 	"strconv"
-	"strings"
 
-	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
 	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/resource_printing"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/options"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/validate"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
@@ -21,7 +20,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 type CreateVirtualMeshCmd *cobra.Command
@@ -35,14 +33,11 @@ func CreateVirtualMeshCommand(
 	interactivePrompt interactive.InteractivePrompt,
 	printers common.Printers,
 ) CreateVirtualMeshCmd {
-	cmd := &cobra.Command{
-		Use:   cliconstants.CreateVirtualMeshCommand.Use,
-		Short: cliconstants.CreateVirtualMeshCommand.Short,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return createVirtualMesh(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
-		},
+	cmd := cliconstants.CreateVirtualMeshCommand
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return createVirtualMesh(ctx, out, kubeLoader, kubeClientsFactory, opts, interactivePrompt, printers.ResourcePrinter)
 	}
-	return cmd
+	return &cmd
 }
 
 func createVirtualMesh(
@@ -54,7 +49,6 @@ func createVirtualMesh(
 	interactivePrompt interactive.InteractivePrompt,
 	resourcePrinter resource_printing.ResourcePrinter,
 ) error {
-	// set up kube clients for the management cluster
 	masterCfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 	if err != nil {
 		return err
@@ -86,7 +80,7 @@ func populateVirtualMeshInteractive(
 	var displayName string
 	var selectedMeshes []*core_types.ResourceRef
 	var certificateAuthority *networking_types.VirtualMeshSpec_CertificateAuthority
-	if displayName, err = interactivePrompt.PromptValueWithValidator("Resource Name", "", validateK8sName); err != nil {
+	if displayName, err = interactivePrompt.PromptValueWithValidator("Resource Name", "", validate.K8sName); err != nil {
 		return nil, err
 	}
 	if selectedMeshes, err = selectVirtualMeshesInteractive(allMeshNames, interactivePrompt); err != nil {
@@ -148,7 +142,7 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 		if ttlString, err = interactivePrompt.PromptValueWithValidator(
 			"Root certificate TTL in days",
 			strconv.Itoa(certgen.DefaultRootCertTTLDays),
-			validatePositiveInteger,
+			validate.PositiveInteger,
 		); err != nil {
 			return nil, err
 		}
@@ -158,13 +152,13 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 		if rsaKeySizeString, err = interactivePrompt.PromptValueWithValidator(
 			"Root certificate RSA key size in bytes",
 			strconv.Itoa(certgen.DefaultRootCertRsaKeySize),
-			validatePositiveInteger); err != nil {
+			validate.PositiveInteger); err != nil {
 			return nil, err
 		}
 		if rsaKeySize, err = strconv.Atoi(rsaKeySizeString); err != nil {
 			return nil, err
 		}
-		if orgName, err = interactivePrompt.PromptValue("Root certificate organization name", ""); err != nil {
+		if orgName, err = interactivePrompt.PromptRequiredValue("Root certificate organization name"); err != nil {
 			return nil, err
 		}
 		return &networking_types.VirtualMeshSpec_CertificateAuthority{
@@ -179,10 +173,10 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 	} else {
 		var err error
 		var name, namespace string
-		if name, err = interactivePrompt.PromptValue("Root certificate k8s Secret name", ""); err != nil {
+		if name, err = interactivePrompt.PromptRequiredValue("Root certificate k8s Secret name"); err != nil {
 			return nil, err
 		}
-		if name, err = interactivePrompt.PromptValue("Root certificate k8s Secret namespace", ""); err != nil {
+		if name, err = interactivePrompt.PromptRequiredValue("Root certificate k8s Secret namespace"); err != nil {
 			return nil, err
 		}
 		return &networking_types.VirtualMeshSpec_CertificateAuthority{
@@ -209,26 +203,4 @@ func getAllMeshNames(ctx context.Context, meshClient zephyr_discovery.MeshClient
 		meshes = append(meshes, mesh.GetName())
 	}
 	return meshes, nil
-}
-
-// Ensure that user supplied name adheres to DNS subdomain name (RFC1123),
-// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names
-func validateK8sName(userInput interface{}) error {
-	// since we are validating an Input, the assertion will always succeed
-	errStrings := validation.IsDNS1123Subdomain(userInput.(string))
-	if len(errStrings) > 0 {
-		return eris.New(strings.Join(errStrings, ". "))
-	}
-	return nil
-}
-
-func validatePositiveInteger(userInput interface{}) error {
-	intString, err := strconv.Atoi(userInput.(string))
-	if err != nil {
-		return err
-	}
-	if intString < 1 {
-		return eris.Errorf("Invalid value: %d. Value must be positive", intString)
-	}
-	return nil
 }

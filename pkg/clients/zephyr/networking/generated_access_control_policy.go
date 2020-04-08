@@ -38,3 +38,12 @@ func (g *generatedAccessControlPolicyClient) UpdateStatus(ctx context.Context, a
 	acp.Status = updated.Status
 	return nil
 }
+
+func (g *generatedAccessControlPolicyClient) Create(_ context.Context, acp *networkingv1alpha1.AccessControlPolicy, _ ...client.CreateOption) error {
+	newACP, err := g.clientSet.AccessControlPolicies(acp.GetNamespace()).Create(acp)
+	if err != nil {
+		return err
+	}
+	*acp = *newACP
+	return nil
+}

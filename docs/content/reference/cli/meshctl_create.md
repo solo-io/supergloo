@@ -8,7 +8,7 @@ Create a Service Mesh Hub custom resource
 
 ### Synopsis
 
-Create a Service Mesh Hub custom resource
+Utility for creating Service Mesh Hub custom resources
 
 ```
 meshctl create [flags]
@@ -35,5 +35,7 @@ meshctl create [flags]
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - CLI for Service Mesh Hub
+* [meshctl create accesscontrolpolicy](../meshctl_create_accesscontrolpolicy)	 - Create an AccessControlPolicy resource
+* [meshctl create trafficpolicy](../meshctl_create_trafficpolicy)	 - Create a TrafficPolicy resource
 * [meshctl create virtualmesh](../meshctl_create_virtualmesh)	 - Create a VirtualMesh resource
 

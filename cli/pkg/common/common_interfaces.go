@@ -65,6 +65,7 @@ type KubeClients struct {
 	AccessControlPolicyClient       zephyr_networking.AccessControlPolicyClient
 	ResourceDescriber               description.ResourceDescriber
 	ResourceSelector                selector.ResourceSelector
+	ServiceAccountClient            kubernetes_core.ServiceAccountClient
 }
 
 type KubeClientsFactory func(masterConfig *rest.Config, writeNamespace string) (*KubeClients, error)
@@ -174,6 +175,7 @@ func KubeClientsProvider(
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	meshWorkloadClient discovery_core.MeshWorkloadClient,
+	serviceAccountClient kubernetes_core.ServiceAccountClient,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,
@@ -198,6 +200,7 @@ func KubeClientsProvider(
 		TrafficPolicyClient:             trafficPolicyClient,
 		AccessControlPolicyClient:       accessControlPolicyClient,
 		MeshWorkloadClient:              meshWorkloadClient,
+		ServiceAccountClient:            serviceAccountClient,
 	}
 }
 
