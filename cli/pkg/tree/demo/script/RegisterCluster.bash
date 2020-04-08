@@ -7,7 +7,7 @@ useDevCsrChart=%s
 kindNetwork=%s
 
 if [ -n "$useDevCsrChart" ]; then
-  csrChartArg='--dev-csr-agent-chart --local-cluster-domain-override=host.docker.internal'
+  csrChartArg='--dev-csr-agent-chart'
 fi
 
 if [ -n "$kindNetwork" ]; then
