@@ -149,4 +149,14 @@ var (
 		Use:   "virtualmesh",
 		Short: "Create a VirtualMesh resource",
 	}
+
+	CreateTrafficPolicyCommand = cobra.Command{
+		Use:   "trafficpolicy",
+		Short: "Create a TrafficPolicy resource",
+	}
+
+	CreateAccessControlPolicyCommand = cobra.Command{
+		Use:   "accesscontrolpolicy",
+		Short: "Create an AccessControlPolicy resource",
+	}
 )

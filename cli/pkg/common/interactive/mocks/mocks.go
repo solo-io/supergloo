@@ -49,6 +49,21 @@ func (mr *MockInteractivePromptMockRecorder) PromptValue(message, defaultValue i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptValue", reflect.TypeOf((*MockInteractivePrompt)(nil).PromptValue), message, defaultValue)
 }
 
+// PromptRequiredValue mocks base method.
+func (m *MockInteractivePrompt) PromptRequiredValue(message string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PromptRequiredValue", message)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PromptRequiredValue indicates an expected call of PromptRequiredValue.
+func (mr *MockInteractivePromptMockRecorder) PromptRequiredValue(message interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromptRequiredValue", reflect.TypeOf((*MockInteractivePrompt)(nil).PromptRequiredValue), message)
+}
+
 // PromptValueWithValidator mocks base method.
 func (m *MockInteractivePrompt) PromptValueWithValidator(message, defaultValue string, validator interactive.Validator) (string, error) {
 	m.ctrl.T.Helper()

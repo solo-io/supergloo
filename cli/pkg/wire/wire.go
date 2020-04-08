@@ -174,6 +174,7 @@ func InitializeCLIWithMocks(
 	printers common.Printers,
 	runner exec.Runner,
 	interactivePrompt interactive.InteractivePrompt,
+	resourcePrinter resource_printing.ResourcePrinter,
 ) *cobra.Command {
 	wire.Build(
 		options.NewOptionsProvider,

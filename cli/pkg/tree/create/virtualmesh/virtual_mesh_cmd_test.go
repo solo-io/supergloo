@@ -129,7 +129,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				Return(strconv.Itoa(int(expectedCA.GetBuiltin().GetRsaKeySizeBytes())), nil)
 			mockInteractivePrompt.
 				EXPECT().
-				PromptValue(gomock.Any(), gomock.Any()).
+				PromptRequiredValue(gomock.Any()).
 				Return(expectedCA.GetBuiltin().GetOrgName(), nil)
 
 			mockVirtualMeshClient.EXPECT().Create(ctx, expectedVM).Return(nil)
@@ -202,7 +202,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				Return(strconv.Itoa(int(expectedCA.GetBuiltin().GetRsaKeySizeBytes())), nil)
 			mockInteractivePrompt.
 				EXPECT().
-				PromptValue(gomock.Any(), gomock.Any()).
+				PromptRequiredValue(gomock.Any()).
 				Return(expectedCA.GetBuiltin().GetOrgName(), nil)
 
 			mockResourcePrinter.EXPECT().Print(gomock.Any(), expectedVM, resource_printing.JSONFormat).Return(nil)
@@ -275,7 +275,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				Return(strconv.Itoa(int(expectedCA.GetBuiltin().GetRsaKeySizeBytes())), nil)
 			mockInteractivePrompt.
 				EXPECT().
-				PromptValue(gomock.Any(), gomock.Any()).
+				PromptRequiredValue(gomock.Any()).
 				Return(expectedCA.GetBuiltin().GetOrgName(), nil)
 
 			mockResourcePrinter.EXPECT().Print(gomock.Any(), expectedVM, resource_printing.JSONFormat).Return(nil)

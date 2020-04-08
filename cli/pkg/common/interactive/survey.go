@@ -2,6 +2,7 @@ package interactive
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/rotisserie/eris"
 )
 
 type surveyInteractivePrompt struct{}
@@ -11,7 +12,13 @@ func NewSurveyInteractivePrompt() InteractivePrompt {
 }
 
 func (s *surveyInteractivePrompt) PromptValue(message, defaultValue string) (string, error) {
-	return s.PromptValueWithValidator(message, defaultValue, survey.Required)
+	return s.PromptValueWithValidator(message, defaultValue, nil)
+}
+
+func (s *surveyInteractivePrompt) PromptRequiredValue(message string) (string, error) {
+	return s.PromptValueWithValidator(message, "", func(userInput string) error {
+		return survey.Required(userInput)
+	})
 }
 
 func (s *surveyInteractivePrompt) PromptValueWithValidator(message, defaultValue string, validator Validator) (string, error) {
@@ -57,7 +64,14 @@ func (s *surveyInteractivePrompt) SelectMultipleValues(message string, options [
 
 func ensureValidatorNonNil(validator Validator) func(ans interface{}) error {
 	if validator != nil {
-		return validator
+		return func(ans interface{}) error {
+			s, ok := ans.(string)
+			if !ok {
+				return eris.New("User input string assertion failed.")
+			}
+			// ans is guaranteed to be a string by survey library
+			return validator(s)
+		}
 	}
 	return func(ans interface{}) error {
 		return nil
