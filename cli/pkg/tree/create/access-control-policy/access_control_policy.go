@@ -141,7 +141,7 @@ func selectSourcesInteractively(
 	if identitySelectorType, err = interactivePrompt.SelectValue("Select identity selector type", identitySelectorTypes); err != nil {
 		return nil, err
 	}
-	if identitySelectorType == identitySelectorTypes[0] {
+	if identitySelectorType == MatcherSelectorOptionName {
 		if namespaces, err = prompts.PromptCommaDelimitedValues(
 			"Specify namespaces for selecting source workloads, omit to permit workloads of any namespace", interactivePrompt); err != nil {
 			return nil, err

@@ -141,22 +141,26 @@ var (
 
 	CreateCommand = cobra.Command{
 		Use:   "create",
+		Aliases: []string{"c"},
 		Short: "Create a Service Mesh Hub custom resource",
 		Long:  "Utility for creating Service Mesh Hub custom resources",
 	}
 
 	CreateVirtualMeshCommand = cobra.Command{
 		Use:   "virtualmesh",
+		Aliases: []string{"vm"},
 		Short: "Create a VirtualMesh resource",
 	}
 
 	CreateTrafficPolicyCommand = cobra.Command{
 		Use:   "trafficpolicy",
+		Aliases: []string{"tp"},
 		Short: "Create a TrafficPolicy resource",
 	}
 
 	CreateAccessControlPolicyCommand = cobra.Command{
 		Use:   "accesscontrolpolicy",
+		Aliases: []string{"acp"},
 		Short: "Create an AccessControlPolicy resource",
 	}
 )
