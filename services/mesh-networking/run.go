@@ -62,6 +62,7 @@ func Run(ctx context.Context) {
 		[]mc_manager.AsyncManagerStartOptionsFunc{
 			multicluster.AddAllV1Alpha1ToScheme,
 			multicluster.AddAllIstioToScheme,
+			multicluster.AddAllLinkerdToScheme,
 		},
 		[]multicluster.NamedAsyncManagerHandler{{
 			Name:                "mesh-networking-multicluster-controller",
