@@ -38,11 +38,10 @@ type SecretsClient interface {
 type ServiceAccountClient interface {
 	// create the service account in the namespace on the resource's ObjectMeta
 	Create(ctx context.Context, serviceAccount *corev1.ServiceAccount) error
-
 	Get(ctx context.Context, name, namespace string) (*corev1.ServiceAccount, error)
-
 	// update the service account in the namespace on the resource's ObjectMeta
 	Update(ctx context.Context, serviceAccount *corev1.ServiceAccount) error
+	List(ctx context.Context, options ...client.ListOption) (*corev1.ServiceAccountList, error)
 }
 
 type ConfigMapClient interface {

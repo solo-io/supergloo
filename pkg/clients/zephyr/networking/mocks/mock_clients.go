@@ -223,6 +223,25 @@ func (m *MockAccessControlPolicyClient) EXPECT() *MockAccessControlPolicyClientM
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockAccessControlPolicyClient) Create(ctx context.Context, acp *v1alpha1.AccessControlPolicy, options ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, acp}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockAccessControlPolicyClientMockRecorder) Create(ctx, acp interface{}, options ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, acp}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccessControlPolicyClient)(nil).Create), varargs...)
+}
+
 // List mocks base method.
 func (m *MockAccessControlPolicyClient) List(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessControlPolicyList, error) {
 	m.ctrl.T.Helper()
