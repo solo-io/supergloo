@@ -39,7 +39,7 @@ message MeshServiceSpec {
         // Selectors for the set of pods targeted by the k8s Service.
         map<string, string> workload_selector_labels = 2;
 
-        // Labels on the underyling k8s Service itself.
+        // Labels on the underlying k8s Service itself.
         map<string, string> labels = 3;
 
         // The ports exposed by the underlying service.
