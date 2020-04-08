@@ -1,0 +1,6 @@
+changelog:
+- type: FIX
+  description: Fix kind host-networkingga
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/503
+
+
