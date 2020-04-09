@@ -15,14 +15,12 @@ message MeshWorkload {
     map<string, string> labels = 3;
 }
 
-message ListMeshWorkloadsRequest {
-    repeated MeshWorkload MeshWorkloads = 1;
-}
+message ListMeshWorkloadsRequest {}
 
 message ListMeshWorkloadsResponse {
-
+    repeated MeshWorkload mesh_workloads = 1;
 }
 
 service MeshWorkloadApi {
-    rpc ListClusters (ListMeshWorkloadsRequest) returns (ListMeshWorkloadsResponse) {}
+    rpc ListMeshWorkloads (ListMeshWorkloadsRequest) returns (ListMeshWorkloadsResponse) {}
 }
