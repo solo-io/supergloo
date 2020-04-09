@@ -1,0 +1,28 @@
+syntax = "proto3";
+package rpc.zephyr.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "service-mesh-hub/api/discovery/v1alpha1/kubernetes_cluster.proto";
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+
+
+message KubernetesCluster {
+    discovery.zephyr.solo.io.KubernetesClusterSpec spec = 1;
+    core.zephyr.solo.io.ResourceRef ref = 2;
+    map<string, string> labels = 3;
+}
+
+message ListKubernetesClustersRequest {
+    repeated KubernetesCluster clusters = 1;
+}
+
+message ListKubernetesClustersResponse {
+
+}
+
+service KubernetesClusterApi {
+    rpc ListClusters (ListKubernetesClustersRequest) returns (ListKubernetesClustersRequest) {}
+}
