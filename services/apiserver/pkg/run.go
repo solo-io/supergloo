@@ -9,6 +9,7 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/internal/config"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func Run(rootCtx context.Context) {
@@ -20,16 +21,25 @@ func Run(rootCtx context.Context) {
 	if err != nil {
 		logger.Fatalw("error initializing api server context", zap.Error(err))
 	}
-	localManager := apiserverContext.MultiClusterDeps.LocalManager
 
+	var eg *errgroup.Group
+	eg, ctx = errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		return apiserverContext.Server.Run()
+	})
+
+	eg.Go(func() error {
+		return multicluster.SetupAndStartLocalManager(
+			apiserverContext.MultiClusterDeps,
+			// need to be sure to register the v1alpha1 CRDs with the controller runtime
+			[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
+			[]multicluster.NamedAsyncManagerHandler{},
+		)
+	})
 
 	// block until we die; RIP
-	if err := multicluster.SetupAndStartLocalManager(
-		apiserverContext.MultiClusterDeps,
-		// need to be sure to register the v1alpha1 CRDs with the controller runtime
-		[]mc_manager.AsyncManagerStartOptionsFunc{multicluster.AddAllV1Alpha1ToScheme},
-		[]multicluster.NamedAsyncManagerHandler{},
-	); err != nil {
-		logger.Fatalw("the local manager instance failed to start up or died with an error", zap.Error(err))
+	if err := eg.Wait(); err != nil {
+		logger.Fatalw("The app has crashed", zap.Error(err))
 	}
 }

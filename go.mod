@@ -19,6 +19,7 @@ require (
 	github.com/google/wire v0.4.0
 	github.com/gophercloud/gophercloud v0.6.0 // indirect
 	github.com/gorilla/handlers v1.4.2 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4
 	github.com/hashicorp/consul v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
@@ -44,6 +45,7 @@ require (
 	github.com/solo-io/solo-kit v0.13.3
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
+	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.13.0
 	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect

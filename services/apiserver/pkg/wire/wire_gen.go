@@ -7,7 +7,10 @@ package wire
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 
 // Injectors from wire.go:
@@ -21,9 +24,15 @@ func InitializeApiServer(ctx context.Context) (ApiServerContext, error) {
 	if err != nil {
 		return ApiServerContext{}, err
 	}
+	client := mc_wire.DynamicClientProvider(asyncManager)
+	meshServiceClient := zephyr_discovery.NewMeshServiceClient(client)
+	meshWorkloadClient := zephyr_discovery.NewMeshWorkloadClient(client)
+	meshClient := zephyr_discovery.NewMeshClient(client)
+	kubernetesClusterClient := zephyr_discovery.NewControllerRuntimeKubernetesClusterClient(client)
+	grpcServer := server.NewGrpcServer(ctx)
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
-	apiServerContext := ApiServerContextProvider(multiClusterDependencies)
+	apiServerContext := ApiServerContextProvider(meshServiceClient, meshWorkloadClient, meshClient, kubernetesClusterClient, grpcServer, multiClusterDependencies)
 	return apiServerContext, nil
 }

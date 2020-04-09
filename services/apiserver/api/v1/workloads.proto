@@ -1,0 +1,28 @@
+syntax = "proto3";
+package rpc.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "service-mesh-hub/api/discovery/v1alpha1/mesh_workload.proto";
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+
+
+message MeshWorkload {
+    discovery.zephyr.solo.io.MeshWorkloadSpec spec = 1;
+    core.zephyr.solo.io.ResourceRef ref = 2;
+    map<string, string> labels = 3;
+}
+
+message ListMeshWorkloadsRequest {
+    repeated MeshWorkload MeshWorkloads = 1;
+}
+
+message ListMeshWorkloadsResponse {
+
+}
+
+service MeshWorkloadApi {
+    rpc ListClusters (ListMeshWorkloadsRequest) returns (ListMeshWorkloadsResponse) {}
+}

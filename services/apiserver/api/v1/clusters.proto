@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rpc.zephyr.solo.io;
+package rpc.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
@@ -15,14 +15,12 @@ message KubernetesCluster {
     map<string, string> labels = 3;
 }
 
-message ListKubernetesClustersRequest {
+message ListKubernetesClustersRequest {}
+
+message ListKubernetesClustersResponse {
     repeated KubernetesCluster clusters = 1;
 }
 
-message ListKubernetesClustersResponse {
-
-}
-
 service KubernetesClusterApi {
-    rpc ListClusters (ListKubernetesClustersRequest) returns (ListKubernetesClustersRequest) {}
+    rpc ListClusters (ListKubernetesClustersRequest) returns (ListKubernetesClustersResponse) {}
 }
