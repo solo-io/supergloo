@@ -19,14 +19,11 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -46,7 +43,6 @@ var (
 		core_types.HttpMethodValue_PATCH.String(),
 		core_types.HttpMethodValue_TRACE.String(),
 	}
-	IgnoredNamespaces = []string{"istio-operator", "istio-system", "kube-system", "kube-node-lease", "kube-public", "local-path-storage"}
 )
 
 type CreateAccessControlPolicyCmd *cobra.Command
@@ -90,7 +86,7 @@ func createAccessControlPolicy(
 	if masterKubeClients, err = kubeClientsFactory(masterCfg, opts.Root.WriteNamespace); err != nil {
 		return err
 	}
-	if sourceSelector, err = selectSourcesInteractively(ctx, masterKubeClients.ServiceAccountClient, prompt); err != nil {
+	if sourceSelector, err = selectSourcesInteractively(ctx, masterKubeClients.MeshWorkloadClient, prompt); err != nil {
 		return err
 	}
 	if targetSelector, err = selectTargetsInteractively(ctx, masterKubeClients.MeshServiceClient, prompt); err != nil {
@@ -126,7 +122,7 @@ func createAccessControlPolicy(
 
 func selectSourcesInteractively(
 	ctx context.Context,
-	serviceAccountClient kubernetes_core.ServiceAccountClient,
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	interactivePrompt interactive.InteractivePrompt,
 ) (*core_types.IdentitySelector, error) {
 	var err error
@@ -155,7 +151,7 @@ func selectSourcesInteractively(
 		}
 	} else {
 		var selections []string
-		if serviceAccountNames, serviceAccountNamesToRefs, err = fetchServiceAccountRefs(ctx, serviceAccountClient); err != nil {
+		if serviceAccountNames, serviceAccountNamesToRefs, err = fetchServiceAccountRefs(ctx, meshWorkloadClient); err != nil {
 			return nil, err
 		}
 		if selections, err = interactivePrompt.SelectMultipleValues(
@@ -243,49 +239,45 @@ func selectAllowedPortsInteractively(prompt interactive.InteractivePrompt) ([]ui
 	return ports, nil
 }
 
-// TODO fetch service accounts from all clusters, currently only fetches for cluster hosting mgmt plane
+// Fetch ServiceAccount names from MeshWorkload spec, thus avoiding having to look up ServiceAccounts in all remote clusters.
 func fetchServiceAccountRefs(
 	ctx context.Context,
-	serviceAccountClient kubernetes_core.ServiceAccountClient,
-) ([]string,
-	map[string]*core_types.ResourceRef,
-	error) {
-	// Ignore irrelevant namespaces
-	var ignoredNamespacesSelectors []fields.Selector
-	for _, ns := range IgnoredNamespaces {
-		ignoredNamespacesSelectors = append(ignoredNamespacesSelectors, fields.OneTermNotEqualSelector("metadata.namespace", ns))
-	}
-	serviceAccounts, err := serviceAccountClient.List(ctx, &client.ListOptions{
-		FieldSelector: fields.AndSelectors(ignoredNamespacesSelectors...),
-	})
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
+) ([]string, map[string]*core_types.ResourceRef, error) {
+	serviceAccountNamesToRef := map[string]*core_types.ResourceRef{}
+	meshWorkloadList, err := meshWorkloadClient.List(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	var serviceAccountNames []string
-	serviceAccountNamesToRef := map[string]*core_types.ResourceRef{}
-	for _, serviceAccount := range serviceAccounts.Items {
-		serviceAccount := serviceAccount
-		serviceAccountName := buildServiceAccountName(&serviceAccount)
-		serviceAccountNames = append(serviceAccountNames, serviceAccountName)
-		serviceAccountNamesToRef[serviceAccountName] = &core_types.ResourceRef{
-			Name:      serviceAccount.GetName(),
-			Namespace: serviceAccount.GetNamespace(),
-			Cluster:   serviceAccount.GetClusterName(),
+	serviceAccountNames := sets.NewString()
+	for _, meshWorkload := range meshWorkloadList.Items {
+		meshWorkload := meshWorkload
+		serviceAccountName := meshWorkload.Spec.GetKubeController().GetServiceAccountName()
+		namespace := meshWorkload.Spec.GetKubeController().GetKubeControllerRef().GetNamespace()
+		cluster := meshWorkload.Spec.GetMesh().GetCluster()
+
+		displayName := buildServiceAccountDisplayName(serviceAccountName, namespace, cluster)
+		serviceAccountNames.Insert(displayName)
+		_, ok := serviceAccountNamesToRef[displayName]
+		if !ok {
+			serviceAccountNamesToRef[displayName] = &core_types.ResourceRef{
+				Name:      serviceAccountName,
+				Namespace: namespace,
+				Cluster:   cluster,
+			}
 		}
 	}
-	return serviceAccountNames, serviceAccountNamesToRef, nil
+	return serviceAccountNames.List(), serviceAccountNamesToRef, nil
 }
 
-func buildServiceAccountName(serviceAccount *v1.ServiceAccount) string {
-	return fmt.Sprintf("%s.%s.%s", serviceAccount.GetName(), serviceAccount.GetNamespace(), serviceAccount.GetClusterName())
+func buildServiceAccountDisplayName(name, namespace, cluster string) string {
+	return fmt.Sprintf("%s.%s.%s", name, namespace, cluster)
 }
 
 func fetchMeshServiceRefs(
 	ctx context.Context,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
-) ([]string,
-	map[string]*core_types.ResourceRef,
-	error) {
+) ([]string, map[string]*core_types.ResourceRef, error) {
 	meshServices, err := meshServiceClient.List(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -294,9 +286,9 @@ func fetchMeshServiceRefs(
 	meshServiceNamesToRef := map[string]*core_types.ResourceRef{}
 	for _, meshService := range meshServices.Items {
 		meshService := meshService
-		meshServiceName := buildMeshServiceName(&meshService)
-		meshServiceNames = append(meshServiceNames, meshServiceName)
-		meshServiceNamesToRef[meshServiceName] = &core_types.ResourceRef{
+		serviceDisplayName := buildServiceDisplayName(&meshService)
+		meshServiceNames = append(meshServiceNames, serviceDisplayName)
+		meshServiceNamesToRef[serviceDisplayName] = &core_types.ResourceRef{
 			Name:      meshService.GetName(),
 			Namespace: meshService.GetNamespace(),
 			Cluster:   meshService.GetClusterName(),
@@ -305,6 +297,6 @@ func fetchMeshServiceRefs(
 	return meshServiceNames, meshServiceNamesToRef, nil
 }
 
-func buildMeshServiceName(meshService *discovery_v1alpha1.MeshService) string {
+func buildServiceDisplayName(meshService *discovery_v1alpha1.MeshService) string {
 	return fmt.Sprintf("%s.%s.%s", meshService.GetName(), meshService.GetNamespace(), meshService.Spec.GetKubeService().GetRef().GetCluster())
 }

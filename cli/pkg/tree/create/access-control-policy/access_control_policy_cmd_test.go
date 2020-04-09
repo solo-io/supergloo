@@ -18,33 +18,31 @@ import (
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	v1alpha12 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
-	v1 "k8s.io/api/core/v1"
 	k8s_meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
 
 var _ = Describe("AccessControlPolicy", func() {
 	var (
-		ctrl                     *gomock.Controller
-		ctx                      context.Context
-		mockKubeLoader           *cli_mocks.MockKubeLoader
-		mockServiceAccountClient *mock_kubernetes_core.MockServiceAccountClient
-		mockMeshServiceClient    *mock_core.MockMeshServiceClient
-		mockACPClient            *mock_zephyr_networking.MockAccessControlPolicyClient
-		mockInteractivePrompt    *mock_interactive.MockInteractivePrompt
-		mockResourcePrinter      *mock_resource_printing.MockResourcePrinter
-		meshctl                  *cli_test.MockMeshctl
+		ctrl                   *gomock.Controller
+		ctx                    context.Context
+		mockKubeLoader         *cli_mocks.MockKubeLoader
+		mockMeshServiceClient  *mock_core.MockMeshServiceClient
+		mockMeshWorkloadClient *mock_core.MockMeshWorkloadClient
+		mockACPClient          *mock_zephyr_networking.MockAccessControlPolicyClient
+		mockInteractivePrompt  *mock_interactive.MockInteractivePrompt
+		mockResourcePrinter    *mock_resource_printing.MockResourcePrinter
+		meshctl                *cli_test.MockMeshctl
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		mockKubeLoader = cli_mocks.NewMockKubeLoader(ctrl)
-		mockServiceAccountClient = mock_kubernetes_core.NewMockServiceAccountClient(ctrl)
 		mockMeshServiceClient = mock_core.NewMockMeshServiceClient(ctrl)
+		mockMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
 		mockACPClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
 		mockInteractivePrompt = mock_interactive.NewMockInteractivePrompt(ctrl)
 		mockResourcePrinter = mock_resource_printing.NewMockResourcePrinter(ctrl)
@@ -52,7 +50,7 @@ var _ = Describe("AccessControlPolicy", func() {
 			MockController: ctrl,
 			Clients:        common.Clients{},
 			KubeClients: common.KubeClients{
-				ServiceAccountClient:      mockServiceAccountClient,
+				MeshWorkloadClient:        mockMeshWorkloadClient,
 				MeshServiceClient:         mockMeshServiceClient,
 				AccessControlPolicyClient: mockACPClient,
 			},
@@ -79,27 +77,41 @@ var _ = Describe("AccessControlPolicy", func() {
 			Return(access_control_policy.RefSelectorOptionName, nil)
 		// select service accounts
 		saNames := []string{"sa1", "sa2"}
-		saDisplayNames := []string{"sa1.namespace1.", "sa2.namespace2."}
-		saList := &v1.ServiceAccountList{
-			Items: []v1.ServiceAccount{
+		saDisplayNames := []string{"sa1.namespace1.cluster1", "sa2.namespace2.cluster2"}
+		workloadList := &v1alpha1.MeshWorkloadList{
+			Items: []v1alpha1.MeshWorkload{
 				{
-					ObjectMeta: k8s_meta_v1.ObjectMeta{
-						Name:      saNames[0],
-						Namespace: "namespace1",
+					Spec: types2.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Cluster: "cluster1",
+						},
+						KubeController: &types2.MeshWorkloadSpec_KubeController{
+							ServiceAccountName: saNames[0],
+							KubeControllerRef: &core_types.ResourceRef{
+								Namespace: "namespace1",
+							},
+						},
 					},
 				},
 				{
-					ObjectMeta: k8s_meta_v1.ObjectMeta{
-						Name:      saNames[1],
-						Namespace: "namespace2",
+					Spec: types2.MeshWorkloadSpec{
+						Mesh: &core_types.ResourceRef{
+							Cluster: "cluster2",
+						},
+						KubeController: &types2.MeshWorkloadSpec_KubeController{
+							ServiceAccountName: saNames[1],
+							KubeControllerRef: &core_types.ResourceRef{
+								Namespace: "namespace2",
+							},
+						},
 					},
 				},
 			},
 		}
-		mockServiceAccountClient.
+		mockMeshWorkloadClient.
 			EXPECT().
 			List(ctx, gomock.Any()).
-			Return(saList, nil)
+			Return(workloadList, nil)
 		mockInteractivePrompt.
 			EXPECT().
 			SelectMultipleValues(gomock.Any(), saDisplayNames).
@@ -108,7 +120,7 @@ var _ = Describe("AccessControlPolicy", func() {
 			IdentitySelectorType: &core_types.IdentitySelector_ServiceAccountRefs_{
 				ServiceAccountRefs: &core_types.IdentitySelector_ServiceAccountRefs{
 					ServiceAccounts: []*core_types.ResourceRef{
-						{Name: saNames[1], Namespace: "namespace2"},
+						{Name: saNames[1], Namespace: "namespace2", Cluster: "cluster2"},
 					},
 				},
 			},
