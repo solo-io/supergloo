@@ -1,0 +1,26 @@
+syntax = "proto3";
+package rpc.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
+
+import "service-mesh-hub/api/networking/v1alpha1/virtual_mesh.proto";
+import "service-mesh-hub/api/core/v1alpha1/ref.proto";
+
+
+message VirtualMesh {
+    networking.zephyr.solo.io.VirtualMeshSpec spec = 1;
+    networking.zephyr.solo.io.VirtualMeshStatus status = 2;
+    core.zephyr.solo.io.ResourceRef ref = 3;
+    map<string, string> labels = 4;
+}
+
+message ListVirtualMeshesRequest {
+}
+
+message ListVirtualMeshesResponse {
+    repeated VirtualMesh virtual_meshes = 1;
+
+}
+
+service VirtualMeshApi {
+    rpc ListVirtualMeshes (ListVirtualMeshesRequest) returns (ListVirtualMeshesResponse) {}
+}

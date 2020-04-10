@@ -30,7 +30,7 @@ func (k *kubernetesClusterHandler) ListClusters(
 		return nil, err
 	}
 	return &rpc_v1.ListKubernetesClustersResponse{
-		Clusters:             BuildRpcKubernetesClusterList(clusters),
+		Clusters: BuildRpcKubernetesClusterList(clusters),
 	}, nil
 }
 
@@ -44,11 +44,11 @@ func BuildRpcKubernetesClusterList(cluster *discovery_v1alpha1.KubernetesCluster
 
 func BuildRpcKubernetesCluster(cluster *discovery_v1alpha1.KubernetesCluster) *rpc_v1.KubernetesCluster {
 	return &rpc_v1.KubernetesCluster{
-		Spec:                 &cluster.Spec,
-		Ref:                  &core_types.ResourceRef{
-			Name:                 cluster.GetName(),
-			Namespace:            cluster.GetNamespace(),
+		Spec: &cluster.Spec,
+		Ref: &core_types.ResourceRef{
+			Name:      cluster.GetName(),
+			Namespace: cluster.GetNamespace(),
 		},
-		Labels:               cluster.Labels,
+		Labels: cluster.Labels,
 	}
 }

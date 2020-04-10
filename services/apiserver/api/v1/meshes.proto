@@ -11,8 +11,10 @@ import "service-mesh-hub/api/core/v1alpha1/ref.proto";
 
 message Mesh {
     discovery.zephyr.solo.io.MeshSpec spec = 1;
-    core.zephyr.solo.io.ResourceRef ref = 2;
-    map<string, string> labels = 3;
+    // reserved for status
+    reserved 2;
+    core.zephyr.solo.io.ResourceRef ref = 3;
+    map<string, string> labels = 4;
 }
 
 message ListMeshesRequest {

@@ -7,13 +7,16 @@ package wire
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/kubernetes_cluster"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_service"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_workload"
+	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/virtual_mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 
 // Injectors from wire.go:
@@ -32,14 +35,16 @@ func InitializeApiServer(ctx context.Context) (ApiServerContext, error) {
 	meshWorkloadClient := zephyr_discovery.NewMeshWorkloadClient(client)
 	meshClient := zephyr_discovery.NewMeshClient(client)
 	kubernetesClusterClient := zephyr_discovery.NewControllerRuntimeKubernetesClusterClient(client)
+	virtualMeshClient := zephyr_networking.NewVirtualMeshClient(client)
 	kubernetesClusterApiServer := kubernetes_cluster.NewKubernetesClusterHandler(kubernetesClusterClient)
 	meshApiServer := mesh.NewMeshHandler(meshClient)
 	meshWorkloadApiServer := mesh_workload.NewMeshWorkloadHandler(meshWorkloadClient)
 	meshServiceApiServer := mesh_service.NewMeshServiceHandler(meshServiceClient)
-	grpcServer := server.NewGrpcServer(ctx, kubernetesClusterApiServer, meshApiServer, meshWorkloadApiServer, meshServiceApiServer)
+	virtualMeshApiServer := virtual_mesh.NewVirtualMeshHandler(virtualMeshClient)
+	grpcServer := server.NewGrpcServer(ctx, kubernetesClusterApiServer, meshApiServer, meshWorkloadApiServer, meshServiceApiServer, virtualMeshApiServer)
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
-	apiServerContext := ApiServerContextProvider(meshServiceClient, meshWorkloadClient, meshClient, kubernetesClusterClient, grpcServer, multiClusterDependencies)
+	apiServerContext := ApiServerContextProvider(meshServiceClient, meshWorkloadClient, meshClient, kubernetesClusterClient, virtualMeshClient, grpcServer, multiClusterDependencies)
 	return apiServerContext, nil
 }

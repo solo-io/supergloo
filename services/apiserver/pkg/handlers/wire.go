@@ -6,6 +6,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_service"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_workload"
+	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/virtual_mesh"
 )
 
 var HandlerSet = wire.NewSet(
@@ -13,4 +14,5 @@ var HandlerSet = wire.NewSet(
 	mesh.NewMeshHandler,
 	mesh_service.NewMeshServiceHandler,
 	mesh_workload.NewMeshWorkloadHandler,
+	virtual_mesh.NewVirtualMeshHandler,
 )

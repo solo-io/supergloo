@@ -35,6 +35,7 @@ func NewGrpcServer(
 	meshServer rpc_v1.MeshApiServer,
 	meshWorkloadApiServer rpc_v1.MeshWorkloadApiServer,
 	meshServiceApiServer rpc_v1.MeshServiceApiServer,
+	virtualMeshApiServer rpc_v1.VirtualMeshApiServer,
 ) GrpcServer {
 
 	logger := contextutils.LoggerFrom(ctx)
@@ -47,6 +48,7 @@ func NewGrpcServer(
 	rpc_v1.RegisterMeshApiServer(server, meshServer)
 	rpc_v1.RegisterMeshServiceApiServer(server, meshServiceApiServer)
 	rpc_v1.RegisterMeshWorkloadApiServer(server, meshWorkloadApiServer)
+	rpc_v1.RegisterVirtualMeshApiServer(server, virtualMeshApiServer)
 
 	return &grpcServer{server: server}
 }

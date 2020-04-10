@@ -13,19 +13,19 @@ func NewMeshWorkloadHandler(
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 ) rpc_v1.MeshWorkloadApiServer {
 	return &meshWorkloadApiServer{
-		kubeClusterClient: meshWorkloadClient,
+		meshWorkloadClient: meshWorkloadClient,
 	}
 }
 
 type meshWorkloadApiServer struct {
-	kubeClusterClient zephyr_discovery.MeshWorkloadClient
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient
 }
 
 func (k *meshWorkloadApiServer) ListMeshWorkloads(
 	ctx context.Context,
 	_ *rpc_v1.ListMeshWorkloadsRequest,
 ) (*rpc_v1.ListMeshWorkloadsResponse, error) {
-	clusters, err := k.kubeClusterClient.List(ctx)
+	clusters, err := k.meshWorkloadClient.List(ctx)
 	if err != nil {
 		return nil, err
 	}

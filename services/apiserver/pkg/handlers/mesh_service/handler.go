@@ -13,19 +13,19 @@ func NewMeshServiceHandler(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 ) rpc_v1.MeshServiceApiServer {
 	return &meshServiceApiServer{
-		kubeClusterClient: meshServiceClient,
+		meshServiceClient: meshServiceClient,
 	}
 }
 
 type meshServiceApiServer struct {
-	kubeClusterClient zephyr_discovery.MeshServiceClient
+	meshServiceClient zephyr_discovery.MeshServiceClient
 }
 
 func (k *meshServiceApiServer) ListMeshServices(
 	ctx context.Context,
 	_ *rpc_v1.ListMeshServicesRequest,
 ) (*rpc_v1.ListMeshServicesResponse, error) {
-	clusters, err := k.kubeClusterClient.List(ctx)
+	clusters, err := k.meshServiceClient.List(ctx)
 	if err != nil {
 		return nil, err
 	}

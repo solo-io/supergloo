@@ -3,6 +3,7 @@ package wire
 import (
 	"github.com/google/wire"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 )
@@ -19,6 +20,7 @@ var managementPlaneClientsSet = wire.NewSet(
 	zephyr_discovery.NewMeshWorkloadClient,
 	zephyr_discovery.NewMeshClient,
 	zephyr_discovery.NewControllerRuntimeKubernetesClusterClient,
+	zephyr_networking.NewVirtualMeshClient,
 )
 
 type ManagementPlaneClients struct {
@@ -26,6 +28,7 @@ type ManagementPlaneClients struct {
 	MeshWorkloadClient      zephyr_discovery.MeshWorkloadClient
 	MeshClient              zephyr_discovery.MeshClient
 	KubernetesClusterClient zephyr_discovery.KubernetesClusterClient
+	VirtualMeshClient       zephyr_networking.VirtualMeshClient
 }
 
 func ApiServerContextProvider(
@@ -33,6 +36,7 @@ func ApiServerContextProvider(
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 	meshClient zephyr_discovery.MeshClient,
 	kubernetesClusterClient zephyr_discovery.KubernetesClusterClient,
+	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	grpcServer server.GrpcServer,
 	multiClusterDeps multicluster.MultiClusterDependencies,
 ) ApiServerContext {
@@ -43,6 +47,7 @@ func ApiServerContextProvider(
 			MeshWorkloadClient:      meshWorkloadClient,
 			MeshClient:              meshClient,
 			KubernetesClusterClient: kubernetesClusterClient,
+			VirtualMeshClient:       virtualMeshClient,
 		},
 		Server:           grpcServer,
 		MultiClusterDeps: multiClusterDeps,
