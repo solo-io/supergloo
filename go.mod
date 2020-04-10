@@ -15,6 +15,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.0
 	github.com/golang/protobuf v1.3.2
+	github.com/golang/sync v0.0.0-20180314180146-1d60e4601c6f
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/wire v0.4.0
 	github.com/gophercloud/gophercloud v0.6.0 // indirect

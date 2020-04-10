@@ -2,6 +2,9 @@ package apiserver
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/wire"
@@ -28,6 +31,17 @@ func Run(rootCtx context.Context) {
 	eg.Go(func() error {
 		return apiserverContext.Server.Run()
 	})
+
+	go func() {
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		select {
+		case <-ctx.Done():
+			apiserverContext.Server.Stop()
+		case <-sigs:
+			apiserverContext.Server.Stop()
+		}
+	}()
 
 	eg.Go(func() error {
 		return multicluster.SetupAndStartLocalManager(

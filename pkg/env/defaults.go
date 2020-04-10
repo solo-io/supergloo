@@ -11,6 +11,9 @@ const (
 
 	EnvGrpcPort     = "GRPC_PORT"
 	defaultGrpcPort = 10101
+
+	EnvHealthCheckPort     = "HEALTH_CHECK_PORT"
+	defaultHealthCheckPort = 8081
 )
 
 func GetWriteNamespace() string {
@@ -29,6 +32,19 @@ func GetGrpcPort() int {
 	port, err := strconv.Atoi(stringPort)
 	if err != nil {
 		return defaultGrpcPort
+	}
+	return port
+}
+
+
+func GetHealthCheckPort() int {
+	stringPort := os.Getenv(EnvHealthCheckPort)
+	if stringPort == "" {
+		stringPort = strconv.Itoa(defaultHealthCheckPort)
+	}
+	port, err := strconv.Atoi(stringPort)
+	if err != nil {
+		return defaultHealthCheckPort
 	}
 	return port
 }

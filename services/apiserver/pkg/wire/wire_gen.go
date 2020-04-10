@@ -7,16 +7,16 @@ package wire
 
 import (
 	"context"
-
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	"github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/kubernetes_cluster"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_service"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_workload"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/virtual_mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
-	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server/health_check"
+	"github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 
 // Injectors from wire.go:
@@ -41,7 +41,8 @@ func InitializeApiServer(ctx context.Context) (ApiServerContext, error) {
 	meshWorkloadApiServer := mesh_workload.NewMeshWorkloadHandler(meshWorkloadClient)
 	meshServiceApiServer := mesh_service.NewMeshServiceHandler(meshServiceClient)
 	virtualMeshApiServer := virtual_mesh.NewVirtualMeshHandler(virtualMeshClient)
-	grpcServer := server.NewGrpcServer(ctx, kubernetesClusterApiServer, meshApiServer, meshWorkloadApiServer, meshServiceApiServer, virtualMeshApiServer)
+	healthChecker := health_check.NewHealthChecker()
+	grpcServer := server.NewGrpcServer(ctx, kubernetesClusterApiServer, meshApiServer, meshWorkloadApiServer, meshServiceApiServer, virtualMeshApiServer, healthChecker)
 	asyncManagerController := mc_wire.AsyncManagerControllerProvider(ctx, asyncManager)
 	asyncManagerStartOptionsFunc := mc_wire.LocalManagerStarterProvider(asyncManagerController)
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
