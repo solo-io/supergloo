@@ -7,8 +7,9 @@ package wire
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/kubernetes_cluster"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_service"
@@ -16,7 +17,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/virtual_mesh"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server/health_check"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 
 // Injectors from wire.go:

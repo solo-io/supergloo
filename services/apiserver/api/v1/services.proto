@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rpc.solo.io;
+package grpc.solo.io;
 option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
 
 import "service-mesh-hub/api/discovery/v1alpha1/mesh_service.proto";

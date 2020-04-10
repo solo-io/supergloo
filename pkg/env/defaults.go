@@ -36,7 +36,6 @@ func GetGrpcPort() int {
 	return port
 }
 
-
 func GetHealthCheckPort() int {
 	stringPort := os.Getenv(EnvHealthCheckPort)
 	if stringPort == "" {

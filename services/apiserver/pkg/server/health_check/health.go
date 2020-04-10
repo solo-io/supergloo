@@ -19,12 +19,12 @@ type HealthChecker interface {
 
 type healthChecker struct {
 	*health.Server
-	ok   uint32
+	ok uint32
 }
 
 func NewHealthChecker() HealthChecker {
 	ret := &healthChecker{
-		ok: 1,
+		ok:     1,
 		Server: health.NewServer(),
 	}
 	ret.Server.SetServingStatus("apiserver", healthpb.HealthCheckResponse_SERVING)

@@ -18,7 +18,6 @@ import (
 	"go.opencensus.io/stats/view"
 	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/reflection"
 )
 
 func init() {
@@ -59,9 +58,6 @@ func NewGrpcServer(
 	rpc_v1.RegisterMeshWorkloadApiServer(server, meshWorkloadApiServer)
 	rpc_v1.RegisterVirtualMeshApiServer(server, virtualMeshApiServer)
 
-	// enable reflection
-	reflection.Register(server)
-
 	return &grpcServer{
 		healthChecker: healthChecker,
 		server:        server,
@@ -92,5 +88,5 @@ func (g *grpcServer) Run(ctx context.Context) error {
 }
 
 func (g *grpcServer) Stop() {
-	g.server.GracefulStop()
+	g.server.Stop()
 }
