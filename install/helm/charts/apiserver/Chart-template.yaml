@@ -1,0 +1,14 @@
+apiVersion: v2
+description: apiserver Helm chart for Kubernetes
+name: apiserver
+version: %version%
+home: https://solo.io
+icon: ""
+sources:
+- https://github.com/solo-io/service-mesh-hub
+keywords:
+- kubernetes
+- istio
+- mesh
+- servicemesh
+- servicemeshhub

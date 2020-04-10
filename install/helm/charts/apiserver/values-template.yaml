@@ -1,0 +1,10 @@
+deployment:
+  image:
+    tag: %version%
+    repository: apiserver
+    registry: quay.io/solo-io
+    pullPolicy: IfNotPresent
+  stats:
+    enabled: true
+  grpcPort: 10101
+  healthCheckPort: 8081

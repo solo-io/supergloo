@@ -1,0 +1,54 @@
+{{- $image := .Values.deployment.image }}
+{{- $statsConfig := coalesce .Values.deployment.stats .Values.global.stats -}}
+{{- if .Values.global  }}
+{{- $image = merge .Values.deployment.image .Values.global.image }}
+{{- end }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: service-mesh-hub
+    service-mesh-hub: apiserver
+  name: apiserver
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-mesh-hub: apiserver
+  template:
+    metadata:
+      labels:
+        service-mesh-hub: apiserver
+    spec:
+      serviceAccountName: apiserver
+      containers:
+        - image: {{ template "image" $image }}
+          imagePullPolicy: {{ $image.pullPolicy }}
+          name: apiserver
+          env:
+            - name: GRPC_PORT
+              value: {{ .Values.deployment.grpcPort  }}
+            - name: HEALTH_CHECK_PORT
+              value: {{ .Values.deployment.healthCheckPort  }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if $statsConfig.enabled }}
+            - name: START_STATS_SERVER
+              value: "true"
+            {{- end}}
+          ports:
+          - name: readiness-port
+            containerPort: {{ .Values.deployment.healthCheckPort  }}
+            hostPort: {{ .Values.deployment.healthCheckPort  }}
+          - name: grpc-port
+            containerPort: {{ .Values.deployment.grpcPort  }}
+            hostPort: {{ .Values.deployment.grpcPort  }}
+          readinessProbe:
+            httpGet:
+              port: readiness-port
+            failureThreshold: 30
+            periodSeconds: 10

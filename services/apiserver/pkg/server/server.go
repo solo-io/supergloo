@@ -13,12 +13,11 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	rpc_v1 "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1"
-	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server/health_check"
-	"google.golang.org/grpc/health"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/stats/view"
 	"google.golang.org/grpc"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func init() {

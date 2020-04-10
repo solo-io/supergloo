@@ -29,7 +29,7 @@ func Run(rootCtx context.Context) {
 	eg, ctx = errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return apiserverContext.Server.Run()
+		return apiserverContext.Server.Run(ctx)
 	})
 
 	go func() {

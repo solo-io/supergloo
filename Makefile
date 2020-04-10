@@ -9,7 +9,7 @@ SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 # Kind of a hack to make sure _output exists
 z := $(shell mkdir -p $(OUTPUT_DIR))
 
-COMPONENTS := mesh-discovery mesh-networking
+COMPONENTS := mesh-discovery mesh-networking apiserver
 # include helm Makefile so it can be ran from the root
 include install/helm/helm.mk
 
@@ -128,6 +128,20 @@ $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64: $(MESH_NETWORKING_SOU
 .PHONY: mesh-networking-docker
 mesh-networking-docker: $(MESH_NETWORKING_OUTPUT_DIR)/mesh-networking-linux-amd64
 	$(call build_container,mesh-networking)
+
+#----------------------------------------------------------------------------------
+# APISERVER
+#----------------------------------------------------------------------------------
+APISERVER_DIR=services/apiserver
+APISERVER_OUTPUT_DIR=$(ROOTDIR)/$(APISERVER_DIR)/_output
+APISERVER_SOURCES=$(shell find $(APISERVER_DIR) -name "*.go" | grep -v test | grep -v generated.go)
+
+$(APISERVER_OUTPUT_DIR)/apiserver-linux-amd64: $(APISERVER_SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ $(APISERVER_DIR)/cmd/main.go
+
+.PHONY: apiserver-docker
+apiserver-docker: $(APISERVER_OUTPUT_DIR)/apiserver-linux-amd64
+	$(call build_container,apiserver)
 
 #----------------------------------------------------------------------------------
 # Csr Agent
