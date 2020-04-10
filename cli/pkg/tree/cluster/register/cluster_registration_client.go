@@ -126,34 +126,14 @@ func RegisterCluster(
 	if err != nil {
 		return err
 	}
-
 	fmt.Fprintf(out, "Successfully wrote service account to remote cluster...\n")
-
-	secret, err := writeKubeConfigToMaster(
-		ctx,
-		opts.Root.WriteNamespace,
-		registerOpts,
-		remoteConfigPath,
-		configForServiceAccount,
-		masterKubeClients,
-		kubeLoader,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = writeKubeClusterToMaster(ctx, masterKubeClients, opts.Root.WriteNamespace, registerOpts, secret)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
 
 	clients, err := clientsFactory(opts)
 	if err != nil {
 		return eris.Errorf("Unexpected error: Clients should have already been built, but failed to build again")
 	}
-
+	// Install CRDs to remote cluster. This must happen BEFORE kubeconfig Secret is written to master cluster because
+	// relevant CRDs must exist before SMH attempts any cross cluster functionality.
 	csrAgentInstaller := clients.ClusterRegistrationClients.CsrAgentInstallerFactory(remoteKubeClients.HelmInstaller, masterKubeClients.DeployedVersionFinder)
 	err = csrAgentInstaller.Install(
 		ctx,
@@ -170,8 +150,26 @@ func RegisterCluster(
 	if err != nil {
 		return err
 	}
-
 	fmt.Fprintf(out, "Successfully set up CSR agent...\n")
+
+	// Write kubeconfig Secret and KubeCluster CRD to master cluster
+	secret, err := writeKubeConfigToMaster(
+		ctx,
+		opts.Root.WriteNamespace,
+		registerOpts,
+		remoteConfigPath,
+		configForServiceAccount,
+		masterKubeClients,
+		kubeLoader,
+	)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "Successfully wrote kube config secret to master cluster...\n")
+	err = writeKubeClusterToMaster(ctx, masterKubeClients, opts.Root.WriteNamespace, registerOpts, secret)
+	if err != nil {
+		return err
+	}
 
 	fmt.Fprintf(
 		out,

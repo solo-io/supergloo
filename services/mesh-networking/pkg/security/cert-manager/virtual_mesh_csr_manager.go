@@ -68,14 +68,14 @@ func (m *virtualMeshCsrManager) InitializeCertificateForVirtualMesh(
 	meshes, err := m.meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 	if err != nil {
 		vm.Status.CertificateStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
 	}
 	if err = m.attemptCsrCreate(ctx, vm, meshes); err != nil {
 		vm.Status.CertificateStatus = &core_types.Status{
-			State:   core_types.Status_INVALID,
+			State:   core_types.Status_PROCESSING_ERROR,
 			Message: err.Error(),
 		}
 		return vm.Status
