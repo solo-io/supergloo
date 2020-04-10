@@ -1,0 +1,4 @@
+changelog:
+- type: NEW_FEATURE
+  description: Bootstrap a new API server for service-mesh-hub
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/551

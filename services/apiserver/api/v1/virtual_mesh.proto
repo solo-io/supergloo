@@ -18,7 +18,6 @@ message ListVirtualMeshesRequest {
 
 message ListVirtualMeshesResponse {
     repeated VirtualMesh virtual_meshes = 1;
-
 }
 
 service VirtualMeshApi {
