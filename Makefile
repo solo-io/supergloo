@@ -208,7 +208,7 @@ upload-github-release-assets: build-cli
 #---------
 
 .PHONY: docker docker-push
-docker: mesh-discovery-docker mesh-networking-docker csr-agent-docker
+docker: mesh-discovery-docker mesh-networking-docker mesh-apiserver-docker csr-agent-docker
 
 # $(1) name of component
 define docker_push
