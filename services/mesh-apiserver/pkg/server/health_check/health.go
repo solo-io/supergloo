@@ -27,15 +27,15 @@ func NewHealthChecker() HealthChecker {
 		ok:     1,
 		Server: health.NewServer(),
 	}
-	ret.Server.SetServingStatus("apiserver", healthpb.HealthCheckResponse_SERVING)
+	ret.Server.SetServingStatus("mesh-apiserver", healthpb.HealthCheckResponse_SERVING)
 
 	sigterm := make(chan os.Signal, 1)
-	signal.Notify(sigterm, syscall.SIGTERM)
+	signal.Notify(sigterm, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
 		<-sigterm
 		atomic.StoreUint32(&ret.ok, 0)
-		ret.Server.SetServingStatus("apiserver", healthpb.HealthCheckResponse_NOT_SERVING)
+		ret.Server.SetServingStatus("mesh-apiserver", healthpb.HealthCheckResponse_NOT_SERVING)
 	}()
 
 	return ret
@@ -52,5 +52,5 @@ func (hc *healthChecker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (hc *healthChecker) Fail() {
 	atomic.StoreUint32(&hc.ok, 0)
-	hc.Server.SetServingStatus("apiserver", healthpb.HealthCheckResponse_NOT_SERVING)
+	hc.Server.SetServingStatus("mesh-apiserver", healthpb.HealthCheckResponse_NOT_SERVING)
 }

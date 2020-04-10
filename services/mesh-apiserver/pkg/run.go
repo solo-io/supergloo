@@ -16,7 +16,7 @@ import (
 )
 
 func Run(rootCtx context.Context) {
-	ctx := config.CreateRootContext(rootCtx, "apiserver")
+	ctx := config.CreateRootContext(rootCtx, "mesh-apiserver")
 
 	logger := contextutils.LoggerFrom(ctx)
 
@@ -52,7 +52,6 @@ func Run(rootCtx context.Context) {
 		)
 	})
 
-	// block until we die; RIP
 	if err := eg.Wait(); err != nil {
 		logger.Fatalw("The app has crashed", zap.Error(err))
 	}

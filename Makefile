@@ -88,7 +88,7 @@ check-spelling:
 generated-code:
 	rm -rf vendor_any
 	CGO_ENABLED=0 go generate ./...
-	sh ./ci/proto-gen-rpc.sh
+	./ci/proto-gen-rpc.sh
 	goimports -w .
 
 #----------------------------------------------------------------------------------

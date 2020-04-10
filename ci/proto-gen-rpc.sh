@@ -3,6 +3,10 @@
 
 set -e
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 VENDOR_FOLDER=vendor_any
 PROTOC_IMPORT_PATH="${VENDOR_FOLDER}"
 
