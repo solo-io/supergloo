@@ -1,6 +1,6 @@
 syntax = "proto3";
 package grpc.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1";
+option go_package = "github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/api/v1";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;

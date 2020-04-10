@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/wire"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/wire"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/internal/config"

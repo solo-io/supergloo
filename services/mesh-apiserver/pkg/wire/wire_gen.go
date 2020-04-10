@@ -10,13 +10,13 @@ import (
 
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/kubernetes_cluster"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_service"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/mesh_workload"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers/virtual_mesh"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server/health_check"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers/kubernetes_cluster"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers/mesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers/mesh_service"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers/mesh_workload"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers/virtual_mesh"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/server"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/server/health_check"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 

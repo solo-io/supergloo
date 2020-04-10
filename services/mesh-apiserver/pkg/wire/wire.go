@@ -6,9 +6,9 @@ import (
 	"context"
 
 	"github.com/google/wire"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/handlers"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server/health_check"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/handlers"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/server"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/server/health_check"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 )
 

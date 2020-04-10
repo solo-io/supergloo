@@ -6,7 +6,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	rpc_v1 "github.com/solo-io/service-mesh-hub/services/apiserver/pkg/api/v1"
+	rpc_v1 "github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/api/v1"
 )
 
 func NewVirtualMeshHandler(

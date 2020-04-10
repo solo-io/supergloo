@@ -4,7 +4,7 @@ import (
 	"github.com/google/wire"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	"github.com/solo-io/service-mesh-hub/services/apiserver/pkg/server"
+	"github.com/solo-io/service-mesh-hub/services/mesh-apiserver/pkg/server"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 )
 

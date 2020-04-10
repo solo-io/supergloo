@@ -36,7 +36,7 @@ func main() {
 
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
-		"services/apiserver/**/*.proto",
+		"services/mesh-apiserver/**/*.proto",
 	})
 	autopilotCmd := codegen.Command{
 		AppName: "service-mesh-hub",
