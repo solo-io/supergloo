@@ -17,7 +17,7 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	wire.Build(
 		mc_wire.ClusterProviderSet,
 		certgen.NewSigner,
-		kubernetes_core.NewSecretsClient,
+		kubernetes_core.NewSecretClient,
 		csr_generator.NewCertClient,
 		zephyr_security.NewVirtualMeshCSRClient,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,

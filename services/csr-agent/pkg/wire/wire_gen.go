@@ -33,7 +33,7 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	virtualMeshCSRDataSourceFactory := csr_generator.NewVirtualMeshCSRDataSourceFactory()
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	virtualMeshCSRClient := zephyr_security.NewVirtualMeshCSRClient(client)
-	secretsClient := kubernetes_core.NewSecretsClient(client)
+	secretsClient := kubernetes_core.NewSecretClient(client)
 	signer := certgen.NewSigner()
 	privateKeyGenerator := csr_generator.NewPrivateKeyGenerator()
 	certClient := csr_generator.NewCertClient(secretsClient, signer, privateKeyGenerator)

@@ -24,7 +24,7 @@ import (
 
 func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error) {
 	wire.Build(
-		kubernetes_core.NewSecretsClient,
+		kubernetes_core.NewSecretClient,
 		kubernetes_core.NewConfigMapClient,
 		kubernetes_core.NewPodClientFactory,
 		kubernetes_core.NewNodeClientFactory,

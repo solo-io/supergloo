@@ -62,7 +62,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	virtualMeshCSRClientFactory := zephyr_security.VirtualMeshCSRClientFactoryProvider()
 	clientFactories := NewClientFactories(virtualMeshCSRClientFactory)
 	client := mc_wire.DynamicClientProvider(asyncManager)
-	secretsClient := kubernetes_core.NewSecretsClient(client)
+	secretsClient := kubernetes_core.NewSecretClient(client)
 	virtualMeshClient := zephyr_networking.NewVirtualMeshClient(client)
 	rootCertGenerator := certgen.NewRootCertGenerator()
 	virtualMeshCertClient := cert_signer.NewVirtualMeshCertClient(secretsClient, virtualMeshClient, rootCertGenerator)

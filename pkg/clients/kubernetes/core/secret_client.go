@@ -9,23 +9,23 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewSecretsClient(dynamicClient client.Client) SecretClient {
-	return &secretsClient{dynamicClient: dynamicClient}
+func NewSecretClient(dynamicClient client.Client) SecretClient {
+	return &secretClient{dynamicClient: dynamicClient}
 }
 
-type secretsClient struct {
+type secretClient struct {
 	dynamicClient client.Client
 }
 
-func (s *secretsClient) Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
+func (s *secretClient) Create(ctx context.Context, secret *corev1.Secret, opts ...client.CreateOption) error {
 	return s.dynamicClient.Create(ctx, secret, opts...)
 }
 
-func (s *secretsClient) Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
+func (s *secretClient) Update(ctx context.Context, secret *corev1.Secret, opts ...client.UpdateOption) error {
 	return s.dynamicClient.Update(ctx, secret, opts...)
 }
 
-func (s *secretsClient) UpsertData(ctx context.Context, secret *corev1.Secret) error {
+func (s *secretClient) UpsertData(ctx context.Context, secret *corev1.Secret) error {
 	existing, err := s.Get(ctx, secret.Name, secret.Namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -38,7 +38,7 @@ func (s *secretsClient) UpsertData(ctx context.Context, secret *corev1.Secret) e
 	return s.dynamicClient.Update(ctx, existing)
 }
 
-func (s *secretsClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
+func (s *secretClient) Get(ctx context.Context, name, namespace string) (*corev1.Secret, error) {
 	secret := corev1.Secret{}
 	err := s.dynamicClient.Get(ctx, client.ObjectKey{
 		Name:      name,
@@ -50,7 +50,7 @@ func (s *secretsClient) Get(ctx context.Context, name, namespace string) (*corev
 	return &secret, nil
 }
 
-func (c *secretsClient) List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error) {
+func (c *secretClient) List(ctx context.Context, namespace string, labels map[string]string) (*corev1.SecretList, error) {
 	list := corev1.SecretList{}
 	var opts = []client.ListOption{client.InNamespace(namespace), client.MatchingLabels(labels)}
 	err := c.dynamicClient.List(ctx, &list, opts...)
@@ -60,7 +60,7 @@ func (c *secretsClient) List(ctx context.Context, namespace string, labels map[s
 	return &list, nil
 }
 
-func (c *secretsClient) Delete(ctx context.Context, secret *corev1.Secret) error {
+func (c *secretClient) Delete(ctx context.Context, secret *corev1.Secret) error {
 	return c.dynamicClient.Delete(ctx, secret)
 }
 
@@ -69,5 +69,5 @@ func NewSecretsClientForConfig(cfg *rest.Config) (SecretClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &secretsClient{dynamicClient: dynamicClient}, nil
+	return &secretClient{dynamicClient: dynamicClient}, nil
 }
