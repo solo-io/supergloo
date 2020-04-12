@@ -99,7 +99,7 @@ func UninstallCmd(
 			}
 
 			// remove SMH CRDs from management plane cluster
-			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx,"management plane cluster", masterCfg)
+			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx, "management plane cluster", masterCfg)
 			if err == nil && deletedCrds {
 				fmt.Fprintf(out, "Service Mesh Hub CRDs have been de-registered from the management plane...\n")
 			} else if err == nil && !deletedCrds {

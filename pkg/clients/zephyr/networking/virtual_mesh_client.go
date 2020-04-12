@@ -9,7 +9,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 func NewVirtualMeshClientForConfig(cfg *rest.Config) (VirtualMeshClient, error) {
 	if err := networking_v1alpha1.AddToScheme(scheme.Scheme); err != nil {
 		return nil, err

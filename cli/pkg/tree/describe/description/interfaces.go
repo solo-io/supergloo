@@ -8,6 +8,8 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 )
 
+//go:generate mockgen -source ./interfaces.go -destination mocks/mock_interfaces.go
+
 type ResourceDescriber interface {
 	DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)
 	DescribeWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error)

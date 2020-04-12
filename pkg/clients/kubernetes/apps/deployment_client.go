@@ -32,7 +32,6 @@ func NewDeploymentClientForConfig(cfg *rest.Config) (DeploymentClient, error) {
 	return &deploymentClient{client: dynamicClient}, nil
 }
 
-
 func NewDeploymentClient(client client.Client) DeploymentClient {
 	return &deploymentClient{client: client}
 }

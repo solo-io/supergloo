@@ -6,10 +6,11 @@ package mock_kubernetes_apiext
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	version "k8s.io/apimachinery/pkg/version"
-	reflect "reflect"
 )
 
 // MockServerVersionClient is a mock of ServerVersionClient interface.

@@ -22,7 +22,6 @@ func NewKubernetesClusterClientForConfig(cfg *rest.Config) (KubernetesClusterCli
 	return &kubernetesClusterClient{client: dynamicClient}, nil
 }
 
-
 func NewKubernetesClusterClient(client client.Client) KubernetesClusterClient {
 	return &kubernetesClusterClient{client}
 }
