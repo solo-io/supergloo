@@ -45,7 +45,7 @@ type resourceDescriber struct {
 	ResourceSelector          selector.ResourceSelector
 }
 
-func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
+func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*DescriptionResult, error) {
 	meshServiceForKubeService, err := r.ResourceSelector.GetMeshServiceByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		}
 	}
 
-	return &ExplorationResult{
+	return &DescriptionResult{
 		Policies: &Policies{
 			AccessControlPolicies: relevantAccessControlPolicies,
 			TrafficPolicies:       relevantTrafficPolicies,
@@ -103,7 +103,7 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 	}, nil
 }
 
-func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*ExplorationResult, error) {
+func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier FullyQualifiedKubeResource) (*DescriptionResult, error) {
 	meshWorkloadForController, err := r.ResourceSelector.GetMeshWorkloadByRefSelector(ctx, kubeResourceIdentifier.Name, kubeResourceIdentifier.Namespace, kubeResourceIdentifier.ClusterName)
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		}
 	}
 
-	return &ExplorationResult{
+	return &DescriptionResult{
 		Policies: &Policies{
 			AccessControlPolicies: relevantAccessControlPolicies,
 			TrafficPolicies:       relevantTrafficPolicies,

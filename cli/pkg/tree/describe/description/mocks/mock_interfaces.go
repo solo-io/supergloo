@@ -37,10 +37,10 @@ func (m *MockResourceDescriber) EXPECT() *MockResourceDescriberMockRecorder {
 }
 
 // DescribeService mocks base method.
-func (m *MockResourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.ExplorationResult, error) {
+func (m *MockResourceDescriber) DescribeService(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.DescriptionResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeService", ctx, kubeResourceIdentifier)
-	ret0, _ := ret[0].(*description.ExplorationResult)
+	ret0, _ := ret[0].(*description.DescriptionResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,10 +52,10 @@ func (mr *MockResourceDescriberMockRecorder) DescribeService(ctx, kubeResourceId
 }
 
 // DescribeWorkload mocks base method.
-func (m *MockResourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.ExplorationResult, error) {
+func (m *MockResourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceIdentifier description.FullyQualifiedKubeResource) (*description.DescriptionResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeWorkload", ctx, kubeResourceIdentifier)
-	ret0, _ := ret[0].(*description.ExplorationResult)
+	ret0, _ := ret[0].(*description.DescriptionResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -90,7 +90,7 @@ func (m *MockPrinter) EXPECT() *MockPrinterMockRecorder {
 }
 
 // PrintForService mocks base method.
-func (m *MockPrinter) PrintForService(out io.Writer, serviceName *description.FullyQualifiedKubeResource, result *description.ExplorationResult) error {
+func (m *MockPrinter) PrintForService(out io.Writer, serviceName *description.FullyQualifiedKubeResource, result *description.DescriptionResult) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PrintForService", out, serviceName, result)
 	ret0, _ := ret[0].(error)

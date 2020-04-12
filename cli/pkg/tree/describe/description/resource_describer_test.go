@@ -117,7 +117,7 @@ var _ = Describe("Resource describer", func() {
 				ClusterName: serviceCluster,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(explorationResult).To(Equal(&description.ExplorationResult{
+			Expect(explorationResult).To(Equal(&description.DescriptionResult{
 				Policies: &description.Policies{
 					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
 					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
@@ -209,7 +209,7 @@ var _ = Describe("Resource describer", func() {
 				ClusterName: controllerCluster,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(explorationResult).To(Equal(&description.ExplorationResult{
+			Expect(explorationResult).To(Equal(&description.DescriptionResult{
 				Policies: &description.Policies{
 					AccessControlPolicies: []*networking_v1alpha1.AccessControlPolicy{&accessControlPolices.Items[1]},
 					TrafficPolicies:       []*networking_v1alpha1.TrafficPolicy{&trafficPolicies.Items[1]},
