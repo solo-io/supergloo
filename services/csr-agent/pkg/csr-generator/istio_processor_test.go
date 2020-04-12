@@ -28,7 +28,7 @@ var _ = Describe("csr processor", func() {
 		ctrl              *gomock.Controller
 		ctx               context.Context
 		csrClient         *mock_security_config.MockVirtualMeshCSRClient
-		secretClient      *mock_kubernetes_core.MockSecretsClient
+		secretClient      *mock_kubernetes_core.MockSecretClient
 		certClient        *mock_csr_agent_controller.MockCertClient
 		signer            *mock_certgen.MockSigner
 		istioCsrGenerator csr_generator.IstioCSRGenerator
@@ -40,7 +40,7 @@ var _ = Describe("csr processor", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		csrClient = mock_security_config.NewMockVirtualMeshCSRClient(ctrl)
-		secretClient = mock_kubernetes_core.NewMockSecretsClient(ctrl)
+		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		certClient = mock_csr_agent_controller.NewMockCertClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
 		istioCsrGenerator = csr_generator.NewIstioCSRGenerator(csrClient, secretClient, certClient, signer)

@@ -27,13 +27,6 @@ import (
 func main() {
 	log.Println("starting generate")
 
-	var renderClients bool
-	if os.Getenv("REGENERATE_CLIENTS") == "" {
-		log.Println("REGENERATE_CLIENTS is not set, skipping autopilot client gen")
-	} else {
-		renderClients = true
-	}
-
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
@@ -62,7 +55,6 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
@@ -116,7 +108,6 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
@@ -181,7 +172,6 @@ func main() {
 				RenderManifests:  true,
 				RenderTypes:      true,
 				RenderController: true,
-				RenderClients:    renderClients,
 				RenderProtos:     true,
 				ApiRoot:          "pkg/api",
 			},
