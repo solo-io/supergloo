@@ -55,7 +55,7 @@ var (
 func NewResourceSelector(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
-	deploymentClientFactory kubernetes_apps.GeneratedDeploymentClientFactory,
+	deploymentClientFactory kubernetes_apps.DeploymentClientFactoryForConfig,
 	kubeConfigLookup config_lookup.KubeConfigLookup,
 ) ResourceSelector {
 	return &resourceSelector{
@@ -69,7 +69,7 @@ func NewResourceSelector(
 type resourceSelector struct {
 	meshServiceClient       zephyr_discovery.MeshServiceClient
 	meshWorkloadClient      zephyr_discovery.MeshWorkloadClient
-	deploymentClientFactory kubernetes_apps.GeneratedDeploymentClientFactory
+	deploymentClientFactory kubernetes_apps.DeploymentClientFactoryForConfig
 	kubeConfigLookup        config_lookup.KubeConfigLookup
 }
 

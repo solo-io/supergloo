@@ -16,13 +16,13 @@ const (
 )
 
 type certClient struct {
-	secretClient        kubernetes_core.SecretsClient
+	secretClient        kubernetes_core.SecretClient
 	signer              certgen.Signer
 	privateKeyGenerator PrivateKeyGenerator
 }
 
 func NewCertClient(
-	secretClient kubernetes_core.SecretsClient,
+	secretClient kubernetes_core.SecretClient,
 	signer certgen.Signer,
 	privateKeyGenerator PrivateKeyGenerator,
 ) CertClient {

@@ -23,7 +23,7 @@ var _ = Describe("DeploymentClient", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockKubeClient = mock_controller_runtime.NewMockClient(ctrl)
-		deploymentClient = kubernetes_apps.NewControllerRuntimeDeploymentClient(mockKubeClient)
+		deploymentClient = kubernetes_apps.NewDeploymentClient(mockKubeClient)
 		ctx = context.TODO()
 	})
 

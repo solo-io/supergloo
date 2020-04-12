@@ -22,7 +22,7 @@ var (
 )
 
 func NewCrdRemover(
-	crdClientFactory kubernetes_apiext.GeneratedCrdClientFactory,
+	crdClientFactory kubernetes_apiext.CrdClientFactory,
 ) CrdRemover {
 	return &crdRemover{
 		crdClientFactory: crdClientFactory,
@@ -30,7 +30,7 @@ func NewCrdRemover(
 }
 
 type crdRemover struct {
-	crdClientFactory kubernetes_apiext.GeneratedCrdClientFactory
+	crdClientFactory kubernetes_apiext.CrdClientFactory
 }
 
 func (c *crdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {

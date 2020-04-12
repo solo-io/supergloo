@@ -22,7 +22,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			Host:        "example.com",
 			BearerToken: "service-account-token",
 		}
-		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext.GeneratedCrdClientFactory {
+		crdClientFactoryBuilder = func(crdClient kubernetes_apiext.CustomResourceDefinitionClient) kubernetes_apiext.CrdClientFactory {
 			return func(cfg *rest.Config) (client kubernetes_apiext.CustomResourceDefinitionClient, err error) {
 				Expect(cfg).To(Equal(restConfig))
 				return crdClient, nil

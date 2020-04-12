@@ -53,9 +53,9 @@ type KubeClients struct {
 	VirtualMeshClient               zephyr_networking.VirtualMeshClient
 	VirtualMeshCSRClient            zephyr_security.VirtualMeshCSRClient
 	DeployedVersionFinder           version.DeployedVersionFinder
-	CrdClientFactory                kubernetes_apiext.GeneratedCrdClientFactory
+	CrdClientFactory                kubernetes_apiext.CrdClientFactory
 	HealthCheckClients              healthcheck_types.Clients
-	SecretsClient                   kubernetes_core.SecretsClient
+	SecretsClient                   kubernetes_core.SecretClient
 	NamespaceClient                 kubernetes_core.NamespaceClient
 	UninstallClients                UninstallClients
 	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
@@ -158,8 +158,8 @@ func KubeClientsProvider(
 	kubeClusterClient discovery_core.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
-	crdClientFactory kubernetes_apiext.GeneratedCrdClientFactory,
-	secretsClient kubernetes_core.SecretsClient,
+	crdClientFactory kubernetes_apiext.CrdClientFactory,
+	secretsClient kubernetes_core.SecretClient,
 	namespaceClient kubernetes_core.NamespaceClient,
 	uninstallClients UninstallClients,
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,

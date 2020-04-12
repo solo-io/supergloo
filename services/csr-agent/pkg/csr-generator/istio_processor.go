@@ -58,14 +58,14 @@ func NewCsrAgentIstioProcessor(
 
 type istioCSRGenerator struct {
 	csrClient    zephyr_security.VirtualMeshCSRClient
-	secretClient kubernetes_core.SecretsClient
+	secretClient kubernetes_core.SecretClient
 	certClient   CertClient
 	signer       certgen.Signer
 }
 
 func NewIstioCSRGenerator(
 	csrClient zephyr_security.VirtualMeshCSRClient,
-	secretClient kubernetes_core.SecretsClient,
+	secretClient kubernetes_core.SecretClient,
 	certClient CertClient,
 	signer certgen.Signer,
 ) IstioCSRGenerator {

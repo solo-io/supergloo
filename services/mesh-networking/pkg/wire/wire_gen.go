@@ -74,8 +74,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	}
 	meshServiceClient := zephyr_discovery.NewMeshServiceClient(client)
 	meshWorkloadClient := zephyr_discovery.NewMeshWorkloadClient(client)
-	generatedDeploymentClientFactory := kubernetes_apps.GeneratedDeploymentClientFactoryProvider()
-	kubernetesClusterClient := zephyr_discovery.NewControllerRuntimeKubernetesClusterClient(client)
+	generatedDeploymentClientFactory := kubernetes_apps.DeploymentClientFactoryForConfigProvider()
+	kubernetesClusterClient := zephyr_discovery.NewKubernetesClusterClient(client)
 	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
 	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretsClient, secretToConfigConverter)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, generatedDeploymentClientFactory, kubeConfigLookup)

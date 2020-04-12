@@ -24,7 +24,7 @@ var (
 
 func NewKubeConfigLookup(
 	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
-	secrestClient kubernetes_core.SecretsClient,
+	secrestClient kubernetes_core.SecretClient,
 	secretToConfigConverter kubeconfig.SecretToConfigConverter,
 ) KubeConfigLookup {
 	return &kubeConfigLookup{
@@ -35,7 +35,7 @@ func NewKubeConfigLookup(
 }
 
 type kubeConfigLookup struct {
-	secretsClient           kubernetes_core.SecretsClient
+	secretsClient           kubernetes_core.SecretClient
 	secretToConfigConverter kubeconfig.SecretToConfigConverter
 	kubeClusterClient       zephyr_discovery.KubernetesClusterClient
 }

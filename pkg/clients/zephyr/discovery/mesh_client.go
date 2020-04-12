@@ -5,11 +5,24 @@ import (
 
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func NewMeshClientFactoryProvider() MeshClientFactory {
 	return NewMeshClient
+}
+
+func NewMeshClientForConfig(cfg *rest.Config) (MeshClient, error) {
+	if err := discovery_v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		return nil, err
+	}
+	dynamicClient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return nil, err
+	}
+	return &meshClient{client: dynamicClient}, nil
 }
 
 func NewMeshClient(client client.Client) MeshClient {
