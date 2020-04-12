@@ -1,6 +1,8 @@
 package crd_uninstall
 
 import (
+	"context"
+
 	"k8s.io/client-go/rest"
 )
 
@@ -12,5 +14,5 @@ type CrdRemover interface {
 	//  - (true, nil) if CRDs were found and deleted
 	//  - (false, nil) if no CRDs were found
 	//  - (_, err) if the operation failed
-	RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error)
+	RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error)
 }

@@ -1,6 +1,7 @@
 package crd_uninstall
 
 import (
+	"context"
 	"strings"
 
 	"github.com/rotisserie/eris"
@@ -33,13 +34,13 @@ type crdRemover struct {
 	crdClientFactory kubernetes_apiext.CrdClientFactory
 }
 
-func (c *crdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
+func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, remoteKubeConfig *rest.Config) (crdsDeleted bool, err error) {
 	crdClient, err := c.crdClientFactory(remoteKubeConfig)
 	if err != nil {
 		return false, FailedToBuildCrdClient(err, clusterName)
 	}
 
-	crds, err := crdClient.List()
+	crds, err := crdClient.List(ctx)
 	if err != nil {
 		return false, FailedToListCrds(err, clusterName)
 	}
@@ -48,7 +49,7 @@ func (c *crdRemover) RemoveZephyrCrds(clusterName string, remoteKubeConfig *rest
 	for _, crd := range crds.Items {
 		if strings.HasSuffix(crd.GetName(), cliconstants.ServiceMeshHubApiGroupSuffix) {
 			foundZephyrResources = true
-			err := crdClient.Delete(crd.GetName())
+			err := crdClient.Delete(ctx, &crd)
 			if err != nil {
 				return foundZephyrResources, FailedToDeleteCrd(err, clusterName, crd.GetName())
 			}

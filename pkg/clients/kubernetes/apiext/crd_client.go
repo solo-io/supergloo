@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,7 +34,7 @@ type crdClient struct {
 func (c *crdClient) Get(ctx context.Context, name string) (*v1beta1.CustomResourceDefinition, error) {
 	csr := v1beta1.CustomResourceDefinition{}
 	err := c.client.Get(ctx, client.ObjectKey{
-		Name:      name,
+		Name: name,
 	}, &csr)
 	if err != nil {
 		return nil, err

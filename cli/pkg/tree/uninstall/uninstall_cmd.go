@@ -99,7 +99,7 @@ func UninstallCmd(
 			}
 
 			// remove SMH CRDs from management plane cluster
-			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds("management plane cluster", masterCfg)
+			deletedCrds, err := masterKubeClients.UninstallClients.CrdRemover.RemoveZephyrCrds(ctx,"management plane cluster", masterCfg)
 			if err == nil && deletedCrds {
 				fmt.Fprintf(out, "Service Mesh Hub CRDs have been de-registered from the management plane...\n")
 			} else if err == nil && !deletedCrds {
@@ -184,12 +184,17 @@ func deregisterClusters(ctx context.Context, out io.Writer, kubeClusters *v1alph
 
 func removeManagementPlaneNamespace(ctx context.Context, out io.Writer, masterKubeClients *common.KubeClients, opts *options.Options) error {
 	if opts.SmhUninstall.RemoveNamespace {
-		err := masterKubeClients.NamespaceClient.Delete(ctx, opts.Root.WriteNamespace)
+
+		ns, err := masterKubeClients.NamespaceClient.Get(ctx, opts.Root.WriteNamespace)
 
 		// if the namespace is already gone then we shouldn't report an error
 		if errors.IsNotFound(err) {
 			return nil
 		} else if err != nil {
+			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
+		}
+
+		if err = masterKubeClients.NamespaceClient.Delete(ctx, ns); err != nil {
 			return FailedToRemoveNamespace(err, opts.Root.WriteNamespace)
 		}
 
