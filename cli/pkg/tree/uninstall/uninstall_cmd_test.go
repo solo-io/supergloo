@@ -86,7 +86,7 @@ var _ = Describe("Crd Uninstaller", func() {
 			Run(ctx, cluster2).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -160,7 +160,7 @@ Service Mesh Hub has been uninstalled
 			Delete(ctx, env.GetWriteNamespace()).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -217,7 +217,7 @@ Service Mesh Hub has been uninstalled
 			Delete(ctx, env.GetWriteNamespace()).
 			Return(errors.NewNotFound(schema.GroupResource{}, ""))
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(false, nil)
 
 		meshctl := cli_test.MockMeshctl{
@@ -277,7 +277,7 @@ Service Mesh Hub has been uninstalled
 			Delete(ctx, env.GetWriteNamespace()).
 			Return(generateNewErr())
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, generateNewErr())
 
 		meshctl := cli_test.MockMeshctl{
@@ -357,7 +357,7 @@ Service Mesh Hub has been uninstalled with errors
 			Delete(ctx, env.GetWriteNamespace()).
 			Return(generateNewErr())
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, generateNewErr())
 
 		meshctl := cli_test.MockMeshctl{
@@ -437,7 +437,7 @@ Service Mesh Hub has been uninstalled with errors
 			Delete(ctx, smhInstallNamespace).
 			Return(nil)
 		crdRemover.EXPECT().
-			RemoveZephyrCrds("management plane cluster", masterRestCfg).
+			RemoveZephyrCrds(ctx, "management plane cluster", masterRestCfg).
 			Return(true, nil)
 
 		meshctl := cli_test.MockMeshctl{
