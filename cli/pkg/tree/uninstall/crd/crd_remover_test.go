@@ -10,7 +10,9 @@ import (
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	mock_kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext/mocks"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 )
 
@@ -117,7 +119,43 @@ var _ = Describe("Crd Uninstaller", func() {
 			Return(testErr)
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds("cluster-1", restConfig)
-		Expect(removedCrds).To(BeTrue())
+		Expect(removedCrds).To(BeFalse())
 		Expect(err).To(testutils.HaveInErrorChain(crd_uninstall.FailedToDeleteCrd(testErr, "cluster-1", "test.abc.zephyr.solo.io")))
+	})
+
+	It("does not return an error if the CRDs have been deleted concurrently in the background", func() {
+		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crdClient.EXPECT().
+			List().
+			Return(&v1beta1.CustomResourceDefinitionList{
+				Items: []v1beta1.CustomResourceDefinition{
+					{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test.abc.zephyr.solo.io",
+						},
+					},
+					{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test.def.zephyr.solo.io",
+						},
+					},
+					{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "unrelated.crd",
+						},
+					},
+				},
+			}, nil)
+
+		crdClient.EXPECT().
+			Delete("test.abc.zephyr.solo.io").
+			Return(errors.NewNotFound(schema.GroupResource{}, "test-name"))
+		crdClient.EXPECT().
+			Delete("test.def.zephyr.solo.io").
+			Return(errors.NewNotFound(schema.GroupResource{}, "test-name"))
+
+		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds("cluster-1", restConfig)
+		Expect(removedCrds).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
