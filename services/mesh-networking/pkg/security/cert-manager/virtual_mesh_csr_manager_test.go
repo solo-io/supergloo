@@ -15,7 +15,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	mock_zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
@@ -41,8 +41,8 @@ var _ = Describe("csr manager", func() {
 		csrClient           *mock_zephyr_security.MockVirtualMeshCSRClient
 		certConfigProducer  *mock_cert_manager.MockCertConfigProducer
 
-		mockCsrClientFactory zephyr_security.VirtualMeshCSRClientFactory = func(
-			client client.Client) zephyr_security.VirtualMeshCSRClient {
+		mockCsrClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory = func(
+			client client.Client) zephyr_security.VirtualMeshCertificateSigningRequestClient {
 			return csrClient
 		}
 		testErr     = eris.New("hello")

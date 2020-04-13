@@ -24,7 +24,7 @@ func Run(ctx context.Context) {
 		csrAgentContext.CsrClient,
 		csrAgentContext.CsrAgentIstioProcessor,
 	)
-	if err = csrAgentContext.CsrController.AddEventHandler(ctx, istioCsrHandler); err != nil {
+	if err = csrAgentContext.CsrEventWatcher.AddEventHandler(ctx, istioCsrHandler); err != nil {
 		logger.Fatalw("error VirtualMeshCSR handler", zap.Error(err))
 	}
 

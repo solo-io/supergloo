@@ -1,12 +1,12 @@
 package networking_multicluster
 
 import (
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
 )
 
 type ClientFactories struct {
-	VirtualMeshCSRClientFactory zephyr_security.VirtualMeshCSRClientFactory
+	VirtualMeshCSRClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory
 }
 
 type ControllerFactories struct {

@@ -6,7 +6,7 @@ import (
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 )
 
@@ -39,7 +39,7 @@ type IstioCSRGenerator interface {
 
 type VirtualMeshCSRDataSourceFactory func(
 	ctx context.Context,
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	processor VirtualMeshCSRProcessor,
 ) controller.VirtualMeshCertificateSigningRequestEventHandler
 

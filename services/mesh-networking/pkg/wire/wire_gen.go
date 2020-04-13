@@ -16,7 +16,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
@@ -57,7 +57,7 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	multiClusterDependencies := mc_wire.MulticlusterDependenciesProvider(ctx, asyncManager, asyncManagerController, asyncManagerStartOptionsFunc)
 	virtualMeshCSRControllerFactory := controller_factories.NewVirtualMeshCSRControllerFactory()
 	controllerFactories := NewControllerFactories(virtualMeshCSRControllerFactory)
-	virtualMeshCSRClientFactory := zephyr_security.VirtualMeshCSRClientFactoryProvider()
+	virtualMeshCSRClientFactory := zephyr_security.VirtualMeshCertificateSigningRequestClientFactoryProvider()
 	clientFactories := NewClientFactories(virtualMeshCSRClientFactory)
 	client := mc_wire.DynamicClientProvider(asyncManager)
 	secretClient := kubernetes_core.NewSecretClient(client)

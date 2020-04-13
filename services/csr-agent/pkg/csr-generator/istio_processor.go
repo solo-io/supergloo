@@ -11,7 +11,7 @@ import (
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	pki_util "istio.io/istio/security/pkg/pki/util"
@@ -57,14 +57,14 @@ func NewCsrAgentIstioProcessor(
 }
 
 type istioCSRGenerator struct {
-	csrClient    zephyr_security.VirtualMeshCSRClient
+	csrClient    zephyr_security.VirtualMeshCertificateSigningRequestClient
 	secretClient kubernetes_core.SecretClient
 	certClient   CertClient
 	signer       certgen.Signer
 }
 
 func NewIstioCSRGenerator(
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	secretClient kubernetes_core.SecretClient,
 	certClient CertClient,
 	signer certgen.Signer,
@@ -132,7 +132,7 @@ func (i *istioCSRGenerator) generateCsr(
 	}
 
 	obj.Spec.CsrData = csr
-	if err = i.csrClient.Update(ctx, obj); err != nil {
+	if err = i.csrClient.UpdateVirtualMeshCertificateSigningRequest(ctx, obj); err != nil {
 		wrapped := FailesToAddCsrToResource(err)
 		obj.Status.ComputedStatus = &core_types.Status{
 			State:   core_types.Status_INVALID,

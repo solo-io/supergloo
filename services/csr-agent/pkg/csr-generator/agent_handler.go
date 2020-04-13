@@ -7,7 +7,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"go.uber.org/zap"
@@ -15,8 +15,8 @@ import (
 
 func CsrControllerProviderLocal(
 	mgr mc_manager.AsyncManager,
-) (controller.VirtualMeshCertificateSigningRequestController, error) {
-	return controller.NewVirtualMeshCertificateSigningRequestController("local-csr-controller", mgr.Manager())
+) controller.VirtualMeshCertificateSigningRequestEventWatcher {
+	return controller.NewVirtualMeshCertificateSigningRequestEventWatcher("local-csr-controller", mgr.Manager())
 }
 
 func NewVirtualMeshCSRDataSourceFactory() VirtualMeshCSRDataSourceFactory {
@@ -25,7 +25,7 @@ func NewVirtualMeshCSRDataSourceFactory() VirtualMeshCSRDataSourceFactory {
 
 func NewVirtualMeshCSRDataSource(
 	ctx context.Context,
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	processor VirtualMeshCSRProcessor,
 ) controller.VirtualMeshCertificateSigningRequestEventHandler {
 	return &controller.VirtualMeshCertificateSigningRequestEventHandlerFuncs{
@@ -41,7 +41,7 @@ func NewVirtualMeshCSRDataSource(
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			obj.Status = *status
-			err := csrClient.UpdateStatus(ctx, obj)
+			err := csrClient.UpdateVirtualMeshCertificateSigningRequestStatus(ctx, obj)
 			if err != nil {
 				logger.Errorw("error updating csr status", zap.Error(err))
 			}
@@ -59,7 +59,7 @@ func NewVirtualMeshCSRDataSource(
 				logger.Debugw("error handling csr event", zap.Error(eris.New(status.GetComputedStatus().GetMessage())))
 			}
 			new.Status = *status
-			err := csrClient.UpdateStatus(ctx, new)
+			err := csrClient.UpdateVirtualMeshCertificateSigningRequestStatus(ctx, new)
 			if err != nil {
 				logger.Errorw("error updating csr status", zap.Error(err))
 			}

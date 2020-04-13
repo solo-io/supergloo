@@ -63,6 +63,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
 	"github.com/spf13/cobra"
 	"io"
 	"k8s.io/client-go/kubernetes"
@@ -90,11 +91,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	v1alpha1Clientset, err := NewDiscoveryClients(masterConfig)
+	v1alpha1Clientset, err := wire_providers.NewDiscoveryClients(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	kubernetesClusterClient := NewKubernetesClusterClient(v1alpha1Clientset)
+	kubernetesClusterClient := wire_providers.NewKubernetesClusterClient(v1alpha1Clientset)
 	namespaceClient, err := kubernetes_core.NewNamespaceClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
@@ -104,7 +105,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	if err != nil {
 		return nil, err
 	}
-	meshServiceClient := NewMeshServiceClient(v1alpha1Clientset)
+	meshServiceClient := wire_providers.NewMeshServiceClient(v1alpha1Clientset)
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
 	deploymentClient, err := kubernetes_apps.NewDeploymentClientForConfig(masterConfig)
 	if err != nil {
@@ -120,20 +121,20 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
 	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, secretToConfigConverter)
 	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
-	clientset2, err := NewSecurityClients(masterConfig)
+	clientset2, err := wire_providers.NewSecurityClients(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshCertificateSigningRequestClient := NewVirtualMeshCertificateSigningRequestClient(clientset2)
-	meshClient := NewMeshClient(v1alpha1Clientset)
-	clientset3, err := NewNetworkingClients(masterConfig)
+	virtualMeshCertificateSigningRequestClient := wire_providers.NewVirtualMeshCertificateSigningRequestClient(clientset2)
+	meshClient := wire_providers.NewMeshClient(v1alpha1Clientset)
+	clientset3, err := wire_providers.NewNetworkingClients(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshClient := NewVirtualMeshClient(clientset3)
-	trafficPolicyClient := NewTrafficPolicyClient(clientset3)
-	accessControlPolicyClient := NewAccessControlPolicyClient(clientset3)
-	meshWorkloadClient := NewMeshWorkloadClient(v1alpha1Clientset)
+	virtualMeshClient := wire_providers.NewVirtualMeshClient(clientset3)
+	trafficPolicyClient := wire_providers.NewTrafficPolicyClient(clientset3)
+	accessControlPolicyClient := wire_providers.NewAccessControlPolicyClient(clientset3)
+	meshWorkloadClient := wire_providers.NewMeshWorkloadClient(v1alpha1Clientset)
 	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)

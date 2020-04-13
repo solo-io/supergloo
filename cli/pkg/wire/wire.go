@@ -49,6 +49,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
+	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -86,17 +87,17 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
-		NewDiscoveryClients,
-		NewNetworkingClients,
-		NewSecurityClients,
-		NewKubernetesClusterClient,
-		NewMeshServiceClient,
-		NewMeshWorkloadClient,
-		NewMeshClient,
-		NewTrafficPolicyClient,
-		NewAccessControlPolicyClient,
-		NewVirtualMeshClient,
-		NewVirtualMeshCertificateSigningRequestClient,
+		wire_providers.NewDiscoveryClients,
+		wire_providers.NewNetworkingClients,
+		wire_providers.NewSecurityClients,
+		wire_providers.NewKubernetesClusterClient,
+		wire_providers.NewMeshServiceClient,
+		wire_providers.NewMeshWorkloadClient,
+		wire_providers.NewMeshClient,
+		wire_providers.NewTrafficPolicyClient,
+		wire_providers.NewAccessControlPolicyClient,
+		wire_providers.NewVirtualMeshClient,
+		wire_providers.NewVirtualMeshCertificateSigningRequestClient,
 	)
 	return nil, nil
 }

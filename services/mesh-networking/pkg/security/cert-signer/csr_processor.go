@@ -7,7 +7,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
@@ -36,13 +36,13 @@ func NewVirtualMeshCSRSigningProcessor(signer VirtualMeshCSRSigner) csr_generato
 
 type certSinger struct {
 	mgCertClient VirtualMeshCertClient
-	csrClient    zephyr_security.VirtualMeshCSRClient
+	csrClient    zephyr_security.VirtualMeshCertificateSigningRequestClient
 	signer       certgen.Signer
 }
 
 func NewVirtualMeshCSRSigner(
 	mgCertClient VirtualMeshCertClient,
-	csrClient zephyr_security.VirtualMeshCSRClient,
+	csrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
 	signer certgen.Signer,
 ) VirtualMeshCSRSigner {
 	return &certSinger{mgCertClient: mgCertClient, csrClient: csrClient, signer: signer}

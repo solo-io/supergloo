@@ -2,14 +2,14 @@ package wire
 
 import (
 	"github.com/google/wire"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	networking_multicluster "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster"
 	controller_factories "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/controllers"
 )
 
 var (
 	ClientFactoryProviderSet = wire.NewSet(
-		zephyr_security.VirtualMeshCSRClientFactoryProvider,
+		zephyr_security.VirtualMeshCertificateSigningRequestClientFactoryProvider,
 		NewClientFactories,
 	)
 
@@ -20,7 +20,7 @@ var (
 )
 
 func NewClientFactories(
-	VirtualMeshCertificateSigningRequestClientFactory zephyr_security.VirtualMeshCSRClientFactory,
+	VirtualMeshCertificateSigningRequestClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory,
 ) *networking_multicluster.ClientFactories {
 	return &networking_multicluster.ClientFactories{
 		VirtualMeshCSRClientFactory: VirtualMeshCertificateSigningRequestClientFactory,
