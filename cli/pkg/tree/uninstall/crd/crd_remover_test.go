@@ -12,7 +12,9 @@ import (
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	mock_kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext/mocks"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 )
 
@@ -69,8 +71,16 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
+			Get(ctx, crd1.GetName()).
+			Return(&crd1, nil)
+
+		crdClient.EXPECT().
 			Delete(ctx, &crd1).
 			Return(nil)
+
+		crdClient.EXPECT().
+			Get(ctx, crd2.GetName()).
+			Return(&crd2, nil)
 
 		crdClient.EXPECT().
 			Delete(ctx, &crd2).
@@ -121,11 +131,53 @@ var _ = Describe("Crd Uninstaller", func() {
 			}, nil)
 
 		crdClient.EXPECT().
+			Get(ctx, crd.GetName()).
+			Return(&crd, nil)
+
+		crdClient.EXPECT().
 			Delete(ctx, &crd).
 			Return(testErr)
 
 		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
-		Expect(removedCrds).To(BeTrue())
+		Expect(removedCrds).To(BeFalse())
 		Expect(err).To(testutils.HaveInErrorChain(crd_uninstall.FailedToDeleteCrd(testErr, "cluster-1", "test.abc.zephyr.solo.io")))
+	})
+
+	It("does not return an error if the CRDs have been deleted concurrently in the background", func() {
+		crdClient := mock_kubernetes_apiext.NewMockCustomResourceDefinitionClient(ctrl)
+		crd1 := v1beta1.CustomResourceDefinition{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test.abc.zephyr.solo.io",
+			},
+		}
+		crd2 := v1beta1.CustomResourceDefinition{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test.def.zephyr.solo.io",
+			},
+		}
+		crdClient.EXPECT().
+			List(ctx).
+			Return(&v1beta1.CustomResourceDefinitionList{
+				Items: []v1beta1.CustomResourceDefinition{
+					crd1,
+					crd2,
+					{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "unrelated.crd",
+						},
+					},
+				},
+			}, nil)
+
+		crdClient.EXPECT().
+			Get(ctx, crd1.GetName()).
+			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
+		crdClient.EXPECT().
+			Get(ctx, crd2.GetName()).
+			Return(nil, errors.NewNotFound(schema.GroupResource{}, "test-name"))
+
+		removedCrds, err := crd_uninstall.NewCrdRemover(crdClientFactoryBuilder(crdClient)).RemoveZephyrCrds(ctx, "cluster-1", restConfig)
+		Expect(removedCrds).To(BeTrue())
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
