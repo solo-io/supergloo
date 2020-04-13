@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	controller "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 

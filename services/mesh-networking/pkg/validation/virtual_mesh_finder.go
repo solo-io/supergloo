@@ -28,7 +28,7 @@ func (g *virtualMeshFinder) GetMeshesForVirtualMesh(
 	ctx context.Context,
 	virtualMesh *v1alpha1.VirtualMesh,
 ) ([]*discoveryv1alpha1.Mesh, error) {
-	meshList, err := g.meshClient.List(ctx)
+	meshList, err := g.MeshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

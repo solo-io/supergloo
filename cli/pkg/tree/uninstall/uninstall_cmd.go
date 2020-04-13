@@ -70,7 +70,7 @@ func UninstallCmd(
 			}
 
 			// find all the kube clusters that we need to de-register
-			kubeClusters, err := masterKubeClients.KubeClusterClient.List(ctx, client.InNamespace(opts.Root.WriteNamespace))
+			kubeClusters, err := masterKubeClients.KubeClusterClient.ListKubernetesCluster(ctx, client.InNamespace(opts.Root.WriteNamespace))
 
 			// List will only return a NotFound error if the CRD is not registered
 			// if there are no resources, then List returns an object with an empty .Items field and a nil error

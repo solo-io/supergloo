@@ -114,7 +114,7 @@ func createAccessControlPolicy(
 		},
 	}
 	if !opts.Create.DryRun {
-		return masterKubeClients.AccessControlPolicyClient.Create(ctx, accessControlPolicy)
+		return masterKubeClients.AccessControlPolicyClient.CreateAccessControlPolicy(ctx, accessControlPolicy)
 	} else {
 		return resourcePrinter.Print(out, accessControlPolicy, resource_printing.OutputFormat(opts.Create.OutputFormat))
 	}
@@ -245,7 +245,7 @@ func fetchServiceAccountRefs(
 	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 ) ([]string, map[string]*core_types.ResourceRef, error) {
 	serviceAccountNamesToRef := map[string]*core_types.ResourceRef{}
-	meshWorkloadList, err := meshWorkloadClient.List(ctx)
+	meshWorkloadList, err := meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -278,7 +278,7 @@ func fetchMeshServiceRefs(
 	ctx context.Context,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 ) ([]string, map[string]*core_types.ResourceRef, error) {
-	meshServices, err := meshServiceClient.List(ctx)
+	meshServices, err := meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

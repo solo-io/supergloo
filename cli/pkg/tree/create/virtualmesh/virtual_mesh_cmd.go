@@ -193,7 +193,7 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 }
 
 func getAllMeshNames(ctx context.Context, meshClient zephyr_discovery.MeshClient) ([]string, error) {
-	meshList, err := meshClient.List(ctx)
+	meshList, err := MeshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

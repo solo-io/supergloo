@@ -87,7 +87,7 @@ func (b *resourceSelector) GetMeshServiceByRefSelector(
 		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 		constants.CLUSTER:                kubeServiceCluster,
 	}
-	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx, destinationKey)
+	meshServiceList, err := b.meshServiceClient.ListMeshServiceMeshService(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (b *resourceSelector) GetMeshServicesByServiceSelector(
 	selector *core_types.ServiceSelector,
 ) ([]*discovery_v1alpha1.MeshService, error) {
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
-	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx)
+	meshServiceList, err := b.meshServiceClient.ListMeshServiceMeshService(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (b *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 	ctx context.Context,
 	identitySelector *core_types.IdentitySelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	ctx context.Context,
 	workloadSelector *core_types.WorkloadSelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -257,27 +257,27 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 
 func (b *resourceSelector) GetMeshWorkloadByRefSelector(
 	ctx context.Context,
-	podControllerName string,
-	podControllerNamespace string,
-	podControllerCluster string,
+	podEventWatcherName string,
+	podEventWatcherNamespace string,
+	podEventWatcherCluster string,
 ) (*discovery_v1alpha1.MeshWorkload, error) {
-	if podControllerCluster == "" {
-		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: podControllerName, Namespace: podControllerNamespace})
+	if podEventWatcherCluster == "" {
+		return nil, MustProvideClusterName(&core_types.ResourceRef{Name: podEventWatcherName, Namespace: podEventWatcherNamespace})
 	}
 	destinationKey := client.MatchingLabels{
-		constants.KUBE_CONTROLLER_NAME:      podControllerName,
-		constants.KUBE_CONTROLLER_NAMESPACE: podControllerNamespace,
-		constants.CLUSTER:                   podControllerCluster,
+		constants.KUBE_CONTROLLER_NAME:      podEventWatcherName,
+		constants.KUBE_CONTROLLER_NAMESPACE: podEventWatcherNamespace,
+		constants.CLUSTER:                   podEventWatcherCluster,
 	}
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx, destinationKey)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
 	// there should only be a single MeshService with the kube Service name/namespace/cluster key
 	if len(meshWorkloadList.Items) > 1 {
-		return nil, MultipleMeshWorkloadsFound(podControllerName, podControllerNamespace, podControllerCluster)
+		return nil, MultipleMeshWorkloadsFound(podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)
 	} else if len(meshWorkloadList.Items) < 1 {
-		return nil, MeshWorkloadNotFound(podControllerName, podControllerNamespace, podControllerCluster)
+		return nil, MeshWorkloadNotFound(podEventWatcherName, podEventWatcherNamespace, podEventWatcherCluster)
 	}
 	return &meshWorkloadList.Items[0], nil
 }

@@ -235,7 +235,7 @@ func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
 	meshForService *discovery_v1alpha1.Mesh,
 ) (*networking_v1alpha1.VirtualMesh, error) {
-	virtualMeshs, err := f.virtualMeshClient.List(ctx)
+	virtualMeshs, err := f.virtualMeshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

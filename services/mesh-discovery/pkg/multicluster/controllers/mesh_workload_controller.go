@@ -5,7 +5,7 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-func NewMeshWorkloadControllerFactory() MeshWorkloadControllerFactory {
+func NewMeshWorkloadControllerFactory() MeshWorkloadEventWatcherFactory {
 	return &meshWorkloadControllerFactory{}
 }
 

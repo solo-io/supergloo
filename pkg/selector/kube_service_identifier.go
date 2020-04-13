@@ -3,7 +3,7 @@ package selector
 import (
 	"context"
 
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 )
 
@@ -26,10 +26,10 @@ func (m *MeshServiceId) Equals(that *MeshServiceId) bool {
 // Construct a key uniquely identifying a MeshService, used to check equality between two MeshServices.
 func BuildIdForMeshService(
 	ctx context.Context,
-	meshClient discovery_core.MeshClient,
-	meshService *discovery_v1alpha1.MeshService,
+	meshClient zephyr_discovery.MeshClient,
+	meshService *zephyr_discovery.MeshService,
 ) (*MeshServiceId, error) {
-	mesh, err := meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}

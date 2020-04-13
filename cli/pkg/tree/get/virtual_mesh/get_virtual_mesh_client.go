@@ -27,7 +27,7 @@ func GetVirtualMeshes(
 	if err != nil {
 		return err
 	}
-	virtualMeshes, err := kubeClients.VirtualMeshClient.List(ctx)
+	virtualMeshes, err := kubeClients.VirtualMeshClient.ListMesh(ctx)
 	if err != nil {
 		return err
 	}

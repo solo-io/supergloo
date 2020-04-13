@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/go-multierror"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	core_controller "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -48,15 +48,15 @@ type meshWorkloadFinder struct {
 	localMeshClient         zephyr_core.MeshClient
 }
 
-func (d *meshWorkloadFinder) StartDiscovery(podController controller.PodController, predicates []predicate.Predicate) error {
-	return podController.AddEventHandler(
+func (d *meshWorkloadFinder) StartDiscovery(podEventWatcher core_controller.PodEventWatcher, predicates []predicate.Predicate) error {
+	return podEventWatcher.AddEventHandler(
 		d.ctx,
 		d,
 		predicates...,
 	)
 }
 
-func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) CreatePod(pod *corev1.Pod) error {
 	pod.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.CreateEvent, pod)
 
@@ -74,7 +74,7 @@ func (d *meshWorkloadFinder) Create(pod *corev1.Pod) error {
 	return d.createOrUpdateWorkload(discoveredMeshWorkload)
 }
 
-func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
+func (d *meshWorkloadFinder) UpdatePod(old, new *corev1.Pod) error {
 	old.SetClusterName(d.clusterName)
 	new.SetClusterName(d.clusterName)
 	logger := logging.BuildEventLogger(d.ctx, logging.UpdateEvent, new)
@@ -108,18 +108,18 @@ func (d *meshWorkloadFinder) Update(old, new *corev1.Pod) error {
 		if oldMeshWorkload.Spec.Equal(newMeshWorkload.Spec) {
 			return nil
 		} else {
-			return d.localMeshWorkloadClient.Update(d.ctx, newMeshWorkload)
+			return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, newMeshWorkload)
 		}
 	}
 }
 
-func (d *meshWorkloadFinder) Delete(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) DeletePod(pod *corev1.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.DeleteEvent, pod)
 	logger.Error("Deletion of MeshWorkloads is currently not supported")
 	return nil
 }
 
-func (d *meshWorkloadFinder) Generic(pod *corev1.Pod) error {
+func (d *meshWorkloadFinder) GenericPod(pod *corev1.Pod) error {
 	logger := logging.BuildEventLogger(d.ctx, logging.GenericEvent, pod)
 	logger.Error("MeshWorkload generic events are not currently supported")
 	return nil
@@ -181,10 +181,10 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discover
 	if err != nil {
 		return err
 	}
-	mw, err := d.localMeshWorkloadClient.Get(d.ctx, objectKey)
+	mw, err := d.localMeshWorkloadClient.GetMeshWorkload(d.ctx, objectKey)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return d.localMeshWorkloadClient.Create(d.ctx, discoveredWorkload)
+			return d.localMeshWorkloadClient.CreateMeshWorkload(d.ctx, discoveredWorkload)
 		}
 		return err
 	}
@@ -192,11 +192,11 @@ func (d *meshWorkloadFinder) createOrUpdateWorkload(discoveredWorkload *discover
 
 	mw.Spec = discoveredWorkload.Spec
 	mw.Labels = discoveredWorkload.Labels
-	return d.localMeshWorkloadClient.Update(d.ctx, mw)
+	return d.localMeshWorkloadClient.UpdateMeshWorkload(d.ctx, mw)
 }
 
 func (d *meshWorkloadFinder) createMeshResourceRef(ctx context.Context) (*core_types.ResourceRef, error) {
-	meshList, err := d.localMeshClient.List(ctx, &client.ListOptions{})
+	meshList, err := d.localMeshClient.ListMesh(ctx, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

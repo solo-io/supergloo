@@ -41,8 +41,8 @@ type ResourceSelector interface {
 	// get the Mesh Workload corresponding to the indicated pod controller (eg deployment)
 	GetMeshWorkloadByRefSelector(
 		ctx context.Context,
-		podControllerName string,
-		podControllerNamespace string,
-		podControllerCluster string,
+		podEventWatcherName string,
+		podEventWatcherNamespace string,
+		podEventWatcherCluster string,
 	) (*discovery_v1alpha1.MeshWorkload, error)
 }

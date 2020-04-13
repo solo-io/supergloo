@@ -3,8 +3,6 @@ package v1beta1
 import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "istio.io/client-go/pkg/apis/security/v1beta1"
 )
 
 // Provider for the security/v1beta1 Clientset from config

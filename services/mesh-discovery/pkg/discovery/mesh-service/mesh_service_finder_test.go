@@ -28,7 +28,7 @@ type mocks struct {
 	meshServiceClient      *discovery_mocks.MockMeshServiceClient
 	meshWorkloadClient     *discovery_mocks.MockMeshWorkloadClient
 	meshClient             *discovery_mocks.MockMeshClient
-	serviceController      *mock_corev1.MockServiceController
+	serviceEventWatcher    *mock_corev1.MockServiceController
 	meshWorkloadController *mock_zephyr_discovery.MockMeshWorkloadController
 
 	meshServiceFinder mesh_service.MeshServiceFinder
@@ -57,14 +57,14 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
-		serviceController := mock_corev1.NewMockServiceController(ctrl)
+		serviceEventWatcher := mock_corev1.NewMockServiceController(ctrl)
 		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
 
 		var serviceCallback func(service *corev1.Service) error
 		var meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error
 
 		// need to grab the callbacks so we can hook into them and send events
-		serviceController.
+		serviceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, serviceEventHandler *mesh_service.ServiceEventHandler) error {
@@ -91,7 +91,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		)
 
 		err := meshServiceFinder.StartDiscovery(
-			serviceController,
+			serviceEventWatcher,
 			meshWorkloadController,
 		)
 		Expect(err).NotTo(HaveOccurred())
@@ -99,7 +99,7 @@ var _ = Describe("Mesh Service Finder", func() {
 		return mocks{
 			serviceClient:          serviceClient,
 			meshServiceClient:      meshServiceClient,
-			serviceController:      serviceController,
+			serviceEventWatcher:    serviceEventWatcher,
 			meshWorkloadController: meshWorkloadController,
 			meshWorkloadClient:     meshWorkloadClient,
 			meshClient:             meshClient,

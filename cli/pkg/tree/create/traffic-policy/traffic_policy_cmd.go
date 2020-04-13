@@ -177,7 +177,7 @@ func fetchMeshServiceRefs(
 ) ([]string,
 	map[string]*core_types.ResourceRef,
 	error) {
-	meshServices, err := meshServiceClient.List(ctx)
+	meshServices, err := meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

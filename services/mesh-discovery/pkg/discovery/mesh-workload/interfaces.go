@@ -4,7 +4,7 @@ import (
 	"context"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +16,7 @@ import (
 // once StartDiscovery is invoked, MeshWorkloadFinder's PodEventHandler callbacks will start receiving PodEvents
 type MeshWorkloadFinder interface {
 	// an event is only received by our callbacks if all the given predicates return true
-	StartDiscovery(podController controller.PodController, predicates []predicate.Predicate) error
+	StartDiscovery(podEventWatcher controller.PodEventWatcher, predicates []predicate.Predicate) error
 
 	controller.PodEventHandler
 }

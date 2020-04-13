@@ -8,9 +8,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	corev1_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	corev1_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -57,11 +57,11 @@ func NewMeshServiceFinder(
 }
 
 func (m *meshServiceFinder) StartDiscovery(
-	serviceController corev1_controllers.ServiceController,
-	meshWorkloadController controller.MeshWorkloadController,
+	serviceEventWatcher corev1_controllers.ServiceController,
+	meshWorkloadController controller.MeshWorkloadEventWatcher,
 ) error {
 
-	err := serviceController.AddEventHandler(m.ctx, &ServiceEventHandler{
+	err := serviceEventWatcher.AddEventHandler(m.ctx, &ServiceEventHandler{
 		Ctx:                 m.ctx,
 		HandleServiceUpsert: m.handleServiceUpsert,
 	})
@@ -93,7 +93,7 @@ func (m *meshServiceFinder) handleServiceUpsert(service *corev1.Service) error {
 		return nil
 	}
 
-	meshWorkloads, err := m.meshWorkloadClient.List(m.ctx)
+	meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (m *meshServiceFinder) handleMeshWorkloadUpsert(meshWorkload *v1alpha1.Mesh
 
 	for _, service := range services.Items {
 		if m.isServiceBackedByWorkload(&service, meshWorkload, workloadMesh) {
-			meshWorkloads, err := m.meshWorkloadClient.List(m.ctx)
+			meshWorkloads, err := m.meshWorkloadClient.ListMeshWorkload(m.ctx)
 			if err != nil {
 				return err
 			}

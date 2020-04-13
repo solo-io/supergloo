@@ -8,9 +8,9 @@ package wire
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
-	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
@@ -28,12 +28,8 @@ func InitializeCsrAgent(ctx context.Context) (CsrAgentContext, error) {
 	}
 	virtualMeshCertificateSigningRequestEventWatcher := csr_generator.CsrControllerProviderLocal(asyncManager)
 	virtualMeshCSRDataSourceFactory := csr_generator.NewVirtualMeshCSRDataSourceFactory()
-	clientset, err := wire_providers.NewSecurityClients(config)
-	if err != nil {
-		return CsrAgentContext{}, err
-	}
-	virtualMeshCertificateSigningRequestClient := wire_providers.NewVirtualMeshCertificateSigningRequestClient(clientset)
 	client := mc_wire.DynamicClientProvider(asyncManager)
+	virtualMeshCertificateSigningRequestClient := v1alpha1.VirtualMeshCertificateSigningRequestClientProvider(client)
 	secretClient := kubernetes_core.NewSecretClient(client)
 	signer := certgen.NewSigner()
 	privateKeyGenerator := csr_generator.NewPrivateKeyGenerator()

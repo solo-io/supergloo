@@ -9,12 +9,12 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
-	controller0 "github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
-	controller1 "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
+	controller1 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-// MockDeploymentControllerFactory is a mock of DeploymentControllerFactory interface.
+// MockDeploymentControllerFactory is a mock of DeploymentEventWatcherFactory interface.
 type MockDeploymentControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentControllerFactoryMockRecorder
@@ -90,7 +90,7 @@ func (mr *MockPodControllerFactoryMockRecorder) Build(mgr, clusterName interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockPodControllerFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockMeshWorkloadControllerFactory is a mock of MeshWorkloadControllerFactory interface.
+// MockMeshWorkloadControllerFactory is a mock of MeshWorkloadEventWatcherFactory interface.
 type MockMeshWorkloadControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockMeshWorkloadControllerFactoryMockRecorder
@@ -114,10 +114,10 @@ func (m *MockMeshWorkloadControllerFactory) EXPECT() *MockMeshWorkloadController
 }
 
 // Build mocks base method.
-func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadController, error) {
+func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadEventWatcher, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller.MeshWorkloadController)
+	ret0, _ := ret[0].(controller.MeshWorkloadEventWatcher)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -152,12 +152,12 @@ func (m *MockMeshServiceEventWatcherFactory) EXPECT() *MockMeshServiceEventWatch
 }
 
 // Build mocks base method.
-func (m *MockMeshServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceEventWatcher, error) {
+func (m *MockMeshServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshServiceEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
 	ret0, _ := ret[0].(controller.MeshServiceEventWatcher)
 	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // Build indicates an expected call of Build.
@@ -166,7 +166,7 @@ func (mr *MockMeshServiceEventWatcherFactoryMockRecorder) Build(mgr, clusterName
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshServiceEventWatcherFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockServiceControllerFactory is a mock of ServiceControllerFactory interface.
+// MockServiceControllerFactory is a mock of ServiceEventWatcherFactory interface.
 type MockServiceControllerFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockServiceControllerFactoryMockRecorder

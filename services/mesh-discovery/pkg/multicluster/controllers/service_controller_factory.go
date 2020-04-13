@@ -1,16 +1,16 @@
 package controllers
 
 import (
-	core_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	core_controllers "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
 func NewServiceControllerFactory() ServiceControllerFactory {
-	return &serviceControllerFactory{}
+	return &serviceEventWatcherFactory{}
 }
 
-type serviceControllerFactory struct{}
+type serviceEventWatcherFactory struct{}
 
-func (d *serviceControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.ServiceController, error) {
+func (d *serviceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.ServiceEventWatcher, error) {
 	return core_controllers.NewServiceController(clusterName, mgr.Manager())
 }

@@ -3,8 +3,6 @@ package v1alpha3
 import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	. "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
 // Provider for the networking/v1alpha3 Clientset from config

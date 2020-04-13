@@ -4,13 +4,13 @@ import (
 	"context"
 
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	zephyr_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/apps/v1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/service-mesh-hub/services/common/cluster/apps/v1/controller"
 	"go.uber.org/zap"
 	apps_v1 "k8s.io/api/apps/v1"
 )
@@ -22,7 +22,7 @@ func NewMeshFinder(
 	ctx context.Context,
 	clusterName string,
 	meshScanners []MeshScanner,
-	localMeshClient zephyr_core.MeshClient,
+	localMeshClient zephyr_discovery.MeshClient,
 	clusterClient client.Client,
 ) MeshFinder {
 	return &meshFinder{
@@ -37,35 +37,35 @@ func NewMeshFinder(
 type meshFinder struct {
 	clusterName     string
 	meshScanners    []MeshScanner
-	localMeshClient zephyr_core.MeshClient
+	localMeshClient zephyr_discovery.MeshClient
 	ctx             context.Context
 	clusterClient   client.Client
 }
 
-func (m *meshFinder) StartDiscovery(deploymentController controller.DeploymentController, predicates []predicate.Predicate) error {
-	return deploymentController.AddEventHandler(
+func (m *meshFinder) StartDiscovery(deploymentEventWatcher controller.DeploymentEventWatcher, predicates []predicate.Predicate) error {
+	return deploymentEventWatcher.AddEventHandler(
 		m.ctx,
 		m,
 		predicates...,
 	)
 }
 
-func (m *meshFinder) Create(deployment *apps_v1.Deployment) error {
+func (m *meshFinder) CreateDeployment(deployment *apps_v1.Deployment) error {
 	logger := logging.BuildEventLogger(m.ctx, logging.CreateEvent, deployment)
 	return m.discoverAndUpsertMesh(deployment, logger)
 }
 
-func (m *meshFinder) Update(_, new *apps_v1.Deployment) error {
+func (m *meshFinder) UpdateDeployment(_, new *apps_v1.Deployment) error {
 	logger := logging.BuildEventLogger(m.ctx, logging.UpdateEvent, new)
 	return m.discoverAndUpsertMesh(new, logger)
 }
 
-func (m *meshFinder) Delete(deployment *apps_v1.Deployment) error {
+func (m *meshFinder) DeleteDeployment(deployment *apps_v1.Deployment) error {
 	// TODO: Not deleting any entities for now
 	return nil
 }
 
-func (m *meshFinder) Generic(deployment *apps_v1.Deployment) error {
+func (m *meshFinder) GenericDeployment(deployment *apps_v1.Deployment) error {
 	// not implemented- we haven't implemented generic events for this controller
 	return nil
 }
@@ -87,7 +87,7 @@ func (m *meshFinder) discoverAndUpsertMesh(deployment *apps_v1.Deployment, logge
 	} else if discoveredMesh == nil {
 		return nil
 	}
-	err = m.localMeshClient.UpsertSpec(m.ctx, discoveredMesh)
+	err = m.localMeshClient.UpsertMeshSpec(m.ctx, discoveredMesh)
 	if err != nil {
 		logger.Errorw("could not create Mesh CR for deployment",
 			zap.Any("deployment", deployment),
@@ -114,5 +114,5 @@ func (m *meshFinder) discoverMesh(deployment *apps_v1.Deployment) (discoveredMes
 }
 
 func (m *meshFinder) delete(mesh *discoveryv1alpha1.Mesh) error {
-	return m.localMeshClient.Delete(m.ctx, mesh)
+	return m.localMeshClient.DeleteMesh(m.ctx, client.ObjectKey{Name: mesh.GetName(), Namespace: mesh.GetNamespace()})
 }

@@ -27,7 +27,7 @@ func GetMeshes(
 	if err != nil {
 		return err
 	}
-	meshes, err := kubeClients.MeshClient.List(ctx)
+	meshes, err := kubeClients.MeshClient.ListMesh(ctx)
 	if err != nil {
 		return err
 	}

@@ -451,7 +451,7 @@ var _ = Describe("IstioTranslator", func() {
 				},
 			},
 		}
-		// a call to meshClient.List is already included in initTestData, so we only need len(serviceAccounts) - 1
+		// a call to MeshClient.ListMesh is already included in initTestData, so we only need len(serviceAccounts) - 1
 		meshClient.
 			EXPECT().
 			List(ctx).

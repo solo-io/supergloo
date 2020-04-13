@@ -46,11 +46,11 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
 	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
 	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
-	podControllerFactory := controllers.NewPodControllerFactory()
-	serviceControllerFactory := controllers.NewServiceControllerFactory()
+	podEventWatcherFactory := controllers.NewPodControllerFactory()
+	serviceEventWatcherFactory := controllers.NewServiceControllerFactory()
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
-	deploymentControllerFactory := controllers.NewDeploymentControllerFactory()
+	deploymentEventWatcherFactory := controllers.NewDeploymentControllerFactory()
 	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
-	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, deploymentControllerFactory, meshClientFactory)
+	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podEventWatcherFactory, serviceEventWatcherFactory, meshWorkloadControllerFactory, deploymentEventWatcherFactory, meshClientFactory)
 	return discoveryContext, nil
 }

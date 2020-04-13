@@ -19,7 +19,7 @@ func (*federationDecisionCheck) GetDescription() string {
 }
 
 func (s *federationDecisionCheck) Run(ctx context.Context, installNamespace string, clients healthcheck_types.Clients) (failure *healthcheck_types.RunFailure, checkApplies bool) {
-	meshServices, err := clients.MeshServiceClient.List(ctx)
+	meshServices, err := clients.MeshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return &healthcheck_types.RunFailure{
 			ErrorMessage: GenericCheckFailed(err).Error(),

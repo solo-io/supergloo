@@ -14,10 +14,10 @@ import (
 
 // just used to package everything up for wire
 type DiscoveryContext struct {
-	MultiClusterDeps    multicluster.MultiClusterDependencies
-	ClientFactories     ClientFactories
-	ControllerFactories ControllerFactories
-	MeshDiscovery       MeshDiscovery
+	MultiClusterDeps      multicluster.MultiClusterDependencies
+	ClientFactories       ClientFactories
+	EventWatcherFactories EventWatcherFactories
+	MeshDiscovery         MeshDiscovery
 }
 
 type ClientFactories struct {
@@ -30,11 +30,11 @@ type ClientFactories struct {
 	MeshClientFactory         zephyr_discovery.MeshClientFactory
 }
 
-type ControllerFactories struct {
-	DeploymentControllerFactory   controllers.DeploymentControllerFactory
-	PodControllerFactory          controllers.PodControllerFactory
-	ServiceControllerFactory      controllers.ServiceControllerFactory
-	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
+type EventWatcherFactories struct {
+	DeploymentEventWatcherFactory   controllers.DeploymentEventWatcherFactory
+	PodEventWatcherFactory          controllers.PodEventWatcherFactory
+	ServiceEventWatcherFactory      controllers.ServiceControllerFactory
+	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
 }
 
 type MeshDiscovery struct {
@@ -54,10 +54,10 @@ func DiscoveryContextProvider(
 	serviceClientFactory kubernetes_core.ServiceClientFactory,
 	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
 	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
-	podControllerFactory controllers.PodControllerFactory,
-	serviceControllerFactory controllers.ServiceControllerFactory,
-	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
-	deploymentControllerFactory controllers.DeploymentControllerFactory,
+	podEventWatcherFactory controllers.PodEventWatcherFactory,
+	serviceEventWatcherFactory controllers.ServiceControllerFactory,
+	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
+	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
 	meshClientFactory zephyr_discovery.MeshClientFactory,
 ) DiscoveryContext {
 
@@ -72,11 +72,11 @@ func DiscoveryContextProvider(
 			MeshWorkloadClientFactory: meshWorkloadClientFactory,
 			MeshClientFactory:         meshClientFactory,
 		},
-		ControllerFactories: ControllerFactories{
-			DeploymentControllerFactory:   deploymentControllerFactory,
-			PodControllerFactory:          podControllerFactory,
-			ServiceControllerFactory:      serviceControllerFactory,
-			MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
+		EventWatcherFactories: EventWatcherFactories{
+			DeploymentEventWatcherFactory:   deploymentEventWatcherFactory,
+			PodEventWatcherFactory:          podEventWatcherFactory,
+			ServiceEventWatcherFactory:      serviceEventWatcherFactory,
+			MeshWorkloadEventWatcherFactory: meshWorkloadControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
 			IstioMeshScanner:         istioMeshScanner,
