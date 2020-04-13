@@ -273,7 +273,7 @@ users:
 				HelmInstaller:        mockHelmInstaller,
 				KubeClusterClient:    clusterClient,
 				HealthCheckClients:   healthcheck_types.Clients{},
-				SecretsClient:        secretClient,
+				SecretClient:         secretClient,
 				NamespaceClient:      namespaceClient,
 				UninstallClients:     common.UninstallClients{},
 			},

@@ -24,9 +24,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
@@ -46,12 +46,12 @@ type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
 	HelmInstaller                   types.Installer
 	HelmClient                      types.HelmClient                       // used for uninstalling - the go-utils package is not laid out very well
-	KubeClusterClient               discovery_core.KubernetesClusterClient // client for KubernetesCluster custom resources
-	MeshServiceClient               discovery_core.MeshServiceClient
-	MeshWorkloadClient              discovery_core.MeshWorkloadClient
-	MeshClient                      discovery_core.MeshClient
+	KubeClusterClient               zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
+	MeshServiceClient               zephyr_discovery.MeshServiceClient
+	MeshWorkloadClient              zephyr_discovery.MeshWorkloadClient
+	MeshClient                      zephyr_discovery.MeshClient
 	VirtualMeshClient               zephyr_networking.VirtualMeshClient
-	VirtualMeshCSRClient            zephyr_security.VirtualMeshCSRClient
+	VirtualMeshCSRClient            zephyr_security.VirtualMeshCertificateSigningRequestClient
 	DeployedVersionFinder           version.DeployedVersionFinder
 	CrdClientFactory                kubernetes_apiext.CrdClientFactory
 	HealthCheckClients              healthcheck_types.Clients
@@ -155,7 +155,7 @@ func KubeClientsProvider(
 	authorization auth.ClusterAuthorization,
 	helmInstaller types.Installer,
 	helmClient types.HelmClient,
-	kubeClusterClient discovery_core.KubernetesClusterClient,
+	kubeClusterClient zephyr_discovery.KubernetesClusterClient,
 	healthCheckClients healthcheck_types.Clients,
 	deployedVersionFinder version.DeployedVersionFinder,
 	crdClientFactory kubernetes_apiext.CrdClientFactory,
@@ -165,15 +165,15 @@ func KubeClientsProvider(
 	inMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory,
 	clusterDeregistrationClient deregister.ClusterDeregistrationClient,
 	kubeConfigLookup config_lookup.KubeConfigLookup,
-	virtualMeshCsrClient zephyr_security.VirtualMeshCSRClient,
-	meshServiceClient discovery_core.MeshServiceClient,
-	meshClient discovery_core.MeshClient,
+	virtualMeshCsrClient zephyr_security.VirtualMeshCertificateSigningRequestClient,
+	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshClient zephyr_discovery.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	resourceDescriber description.ResourceDescriber,
 	resourceSelector selector.ResourceSelector,
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
-	meshWorkloadClient discovery_core.MeshWorkloadClient,
+	meshWorkloadClient zephyr_discovery.MeshWorkloadClient,
 ) *KubeClients {
 	return &KubeClients{
 		ClusterAuthorization:            authorization,

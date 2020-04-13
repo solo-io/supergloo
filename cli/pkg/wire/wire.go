@@ -45,9 +45,6 @@ import (
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
@@ -69,14 +66,6 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		kubernetes_apps.NewDeploymentClientForConfig,
 		kubernetes_apps.DeploymentClientFactoryProvider,
 		kubernetes_apiext.NewCrdClientFromConfigFactory,
-		discovery_core.NewKubernetesClusterClientForConfig,
-		discovery_core.NewMeshClientForConfig,
-		discovery_core.NewMeshServiceClientForConfig,
-		discovery_core.NewMeshWorkloadClientForConfig,
-		zephyr_security.NewVirtualMeshCSRClientForConfig,
-		zephyr_networking.NewVirtualMeshClientForConfig,
-		zephyr_networking.NewAccessControlPolicyClientForConfig,
-		zephyr_networking.NewTrafficPolicyClientForConfig,
 		auth.NewRemoteAuthorityConfigCreator,
 		auth.RbacClientProvider,
 		auth.NewRemoteAuthorityManager,
@@ -97,6 +86,17 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
+		NewDiscoveryClients,
+		NewNetworkingClients,
+		NewSecurityClients,
+		NewKubernetesClusterClient,
+		NewMeshServiceClient,
+		NewMeshWorkloadClient,
+		NewMeshClient,
+		NewTrafficPolicyClient,
+		NewAccessControlPolicyClient,
+		NewVirtualMeshClient,
+		NewVirtualMeshCertificateSigningRequestClient,
 	)
 	return nil, nil
 }

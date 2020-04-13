@@ -7,7 +7,7 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 )
 
@@ -51,12 +51,12 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 		return nil, err
 	}
 
-	allAccessControlPolicies, err := r.accessControlPolicyClient.List(ctx)
+	allAccessControlPolicies, err := r.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListAccessControlPolicies(err)
 	}
 
-	allTrafficControlPolicies, err := r.trafficPolicyClient.List(ctx)
+	allTrafficControlPolicies, err := r.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListTrafficPolicies(err)
 	}
@@ -111,12 +111,12 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 		return nil, err
 	}
 
-	allAccessControlPolicies, err := r.accessControlPolicyClient.List(ctx)
+	allAccessControlPolicies, err := r.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListAccessControlPolicies(err)
 	}
 
-	allTrafficControlPolicies, err := r.trafficPolicyClient.List(ctx)
+	allTrafficControlPolicies, err := r.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return nil, FailedToListTrafficPolicies(err)
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/rotisserie/eris"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 )
 
@@ -42,7 +42,7 @@ type kubeConfigLookup struct {
 
 func (k *kubeConfigLookup) FromCluster(ctx context.Context, clusterName string) (config *kubeconfig.Config, err error) {
 	var kubeCluster *discovery_v1alpha1.KubernetesCluster
-	allClusters, err := k.kubeClusterClient.List(ctx)
+	allClusters, err := k.kubeClusterClient.ListKubernetesCluster(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -87,7 +87,7 @@ func (b *resourceSelector) GetMeshServiceByRefSelector(
 		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 		constants.CLUSTER:                kubeServiceCluster,
 	}
-	meshServiceList, err := b.meshServiceClient.List(ctx, destinationKey)
+	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (b *resourceSelector) GetMeshServicesByServiceSelector(
 	selector *core_types.ServiceSelector,
 ) ([]*discovery_v1alpha1.MeshService, error) {
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
-	meshServiceList, err := b.meshServiceClient.List(ctx)
+	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (b *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 	ctx context.Context,
 	identitySelector *core_types.IdentitySelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.List(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	ctx context.Context,
 	workloadSelector *core_types.WorkloadSelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.List(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (b *resourceSelector) GetMeshWorkloadByRefSelector(
 		constants.KUBE_CONTROLLER_NAMESPACE: podControllerNamespace,
 		constants.CLUSTER:                   podControllerCluster,
 	}
-	meshWorkloadList, err := b.meshWorkloadClient.List(ctx, destinationKey)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
