@@ -1,15 +1,12 @@
 package main
 
 import (
-	"context"
+	"io/ioutil"
 	"log"
-	"os"
 
-	"github.com/solo-io/autopilot/codegen"
-	"github.com/solo-io/autopilot/codegen/model"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
-	docgen "github.com/solo-io/service-mesh-hub/docs"
+	"github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -27,17 +24,15 @@ import (
 func main() {
 	log.Println("starting generate")
 
-	var renderClients bool
-	if os.Getenv("REGENERATE_CLIENTS") == "" {
-		log.Println("REGENERATE_CLIENTS is not set, skipping autopilot client gen")
-	} else {
-		renderClients = true
+	customClientTemplateBytes, err := ioutil.ReadFile("custom_client.gotmpl")
+	customClientTemplate := string(customClientTemplateBytes)
+	if err != nil {
+		log.Fatal(err)
 	}
-
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
-	autopilotCmd := codegen.Command{
+	skv2Cmd := codegen.Command{
 		AppName: "service-mesh-hub",
 		Groups: []model.Group{
 			{
@@ -62,11 +57,13 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
-				ApiRoot:          "pkg/api",
+				CustomTemplates: map[string]string{
+					"clients.go": customClientTemplate,
+				},
+				ApiRoot: "pkg/api",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -116,11 +113,13 @@ func main() {
 					},
 				},
 				RenderManifests:  true,
-				RenderClients:    renderClients,
 				RenderTypes:      true,
 				RenderController: true,
 				RenderProtos:     true,
-				ApiRoot:          "pkg/api",
+				CustomTemplates: map[string]string{
+					"clients.go": customClientTemplate,
+				},
+				ApiRoot: "pkg/api",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -181,9 +180,11 @@ func main() {
 				RenderManifests:  true,
 				RenderTypes:      true,
 				RenderController: true,
-				RenderClients:    renderClients,
 				RenderProtos:     true,
-				ApiRoot:          "pkg/api",
+				CustomTemplates: map[string]string{
+					"clients.go": customClientTemplate,
+				},
+				ApiRoot: "pkg/api",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -204,7 +205,7 @@ func main() {
 				},
 				RenderController:      true,
 				CustomTypesImportPath: "k8s.io/api/core/v1",
-				ApiRoot:               "services/common/cluster",
+				ApiRoot:               "pkg/api/kubernetes",
 			},
 			{
 				GroupVersion: schema.GroupVersion{
@@ -219,35 +220,81 @@ func main() {
 				},
 				RenderController:      true,
 				CustomTypesImportPath: "k8s.io/api/apps/v1",
-				ApiRoot:               "services/common/cluster",
+				ApiRoot:               "pkg/api/kubernetes",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "networking",
+					Version: "v1alpha3",
+				},
+				Module: "istio.io/client-go/pkg/apis",
+				Resources: []model.Resource{
+					{
+						Kind: "DestinationRule",
+					},
+					{
+						Kind: "EnvoyFilter",
+					},
+					{
+						Kind: "Gateway",
+					},
+					{
+						Kind: "ServiceEntry",
+					},
+					{
+						Kind: "VirtualService",
+					},
+				},
+				CustomTypesImportPath: "istio.io/client-go/pkg/apis/networking/v1alpha3",
+				CustomTemplates: map[string]string{
+					"clients.go": customClientTemplate,
+				},
+				ApiRoot: "pkg/api/istio",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "security",
+					Version: "v1beta1",
+				},
+				Module: "istio.io/client-go/pkg/apis",
+				Resources: []model.Resource{
+					{
+						Kind: "AuthorizationPolicy",
+					},
+				},
+				CustomTypesImportPath: "istio.io/client-go/pkg/apis/security/v1beta1",
+				CustomTemplates: map[string]string{
+					"clients.go": customClientTemplate,
+				},
+				ApiRoot: "pkg/api/istio",
 			},
 		},
 		AnyVendorConfig: apImports,
 		ManifestRoot:    "install/helm/charts/custom-resource-definitions",
 	}
-	if err := autopilotCmd.Execute(); err != nil {
+	if err := skv2Cmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("Finished generating code\n")
-	log.Printf("Started docs generation\n")
 
-	// generate docs
-	rootCmd := wire.InitializeCLI(context.TODO(), os.Stdin, os.Stdout)
-	docsGen := docgen.Options{
-		Proto: docgen.ProtoOptions{
-			OutputDir: "content/reference/api",
-		},
-		Cli: docgen.CliOptions{
-			RootCmd:   rootCmd,
-			OutputDir: "content/reference/cli",
-		},
-		DocsRoot: "docs",
-	}
-
-	if err := docgen.Execute(docsGen); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Finished generating docs\n")
+	//log.Printf("Started docs generation\n")
+	//// generate docs
+	//rootCmd := wire.InitializeCLI(context.TODO(), os.Stdin, os.Stdout)
+	//docsGen := docgen.Options{
+	//	Proto: docgen.ProtoOptions{
+	//		OutputDir: "content/reference/api",
+	//	},
+	//	Cli: docgen.CliOptions{
+	//		RootCmd:   rootCmd,
+	//		OutputDir: "content/reference/cli",
+	//	},
+	//	DocsRoot: "docs",
+	//}
+	//
+	//if err := docgen.Execute(docsGen); err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//log.Printf("Finished generating docs\n")
 }
