@@ -113,7 +113,7 @@ func (i *linkerdTrafficPolicyTranslator) fetchClientsForMeshService(
 	if err != nil {
 		return nil, nil, err
 	}
-	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(mesh.Spec.GetCluster().GetName())
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName())
 	if err != nil {
 		return nil, nil, err
 	}

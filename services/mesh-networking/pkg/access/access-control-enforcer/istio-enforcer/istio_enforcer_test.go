@@ -89,7 +89,7 @@ var _ = Describe("IstioEnforcer", func() {
 		for _, mesh := range meshes {
 			dynamicClientGetter.
 				EXPECT().
-				GetClientForCluster(mesh.Spec.GetCluster().GetName()).
+				GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName()).
 				Return(nil, nil)
 			globalAuthPolicy := &client_security_v1beta1.AuthorizationPolicy{
 				ObjectMeta: v1.ObjectMeta{
@@ -131,7 +131,7 @@ var _ = Describe("IstioEnforcer", func() {
 		for i, mesh := range meshes {
 			dynamicClientGetter.
 				EXPECT().
-				GetClientForCluster(mesh.Spec.GetCluster().GetName()).
+				GetClientForCluster(ctx, mesh.Spec.GetCluster().GetName()).
 				Return(nil, nil)
 			globalAuthPolicyKey := client.ObjectKey{
 				Name:      istio_enforcer.GlobalAccessControlAuthPolicyName,

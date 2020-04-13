@@ -148,7 +148,7 @@ func (m *AsyncManagerController) ClusterRemoved(cluster string) error {
 // Both "" and common.LocalClusterName refer to the master (i.e. local) cluster.
 // This is due to the fact that internally common.LocalClusterName is used to represent the local cluster,
 // whereas in user-supplied config omission of the cluster name or "" refer to the local cluster.
-func (m *AsyncManagerController) GetClientForCluster(clusterName string, opts ...retry.Option) (client.Client, error) {
+func (m *AsyncManagerController) GetClientForCluster(_ context.Context, clusterName string, opts ...retry.Option) (client.Client, error) {
 	var mgr AsyncManager
 
 	// prepend default Option so it can be overridden by input opts

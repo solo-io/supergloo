@@ -109,7 +109,7 @@ func (i *istioTrafficPolicyTranslator) fetchClientsForMeshService(
 	if err != nil {
 		return nil, nil, err
 	}
-	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(clusterName)
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -389,7 +389,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 ) (string, error) {
 	// fetch client for destination's cluster
 	clusterName := destination.GetDestination().GetCluster()
-	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(clusterName)
+	dynamicClient, err := i.dynamicClientGetter.GetClientForCluster(ctx, clusterName)
 	if err != nil {
 		return "", err
 	}

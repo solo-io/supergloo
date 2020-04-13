@@ -14,7 +14,7 @@ type deploymentClient struct {
 
 type DeploymentClientFactory func(client client.Client) DeploymentClient
 
-func ControllerRuntimeDeploymentClientFactoryProvider() DeploymentClientFactory {
+func DeploymentClientFactoryProvider() DeploymentClientFactory {
 	return NewDeploymentClient
 }
 

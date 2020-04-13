@@ -7,31 +7,29 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/go-utils/testutils"
-	mock_config_lookup "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup/mocks"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps/mocks"
 	mock_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
+	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("ResourceSelector", func() {
 	var (
-		ctrl                   *gomock.Controller
-		ctx                    context.Context
-		mockMeshServiceClient  *mock_discovery.MockMeshServiceClient
-		mockMeshWorkloadClient *mock_discovery.MockMeshWorkloadClient
-		mockKubeConfigLookup   *mock_config_lookup.MockKubeConfigLookup
-		mockDeploymentClient   *mock_kubernetes_apps.MockDeploymentClient
-		resourceSelector       networking_selector.ResourceSelector
+		ctrl                    *gomock.Controller
+		ctx                     context.Context
+		mockMeshServiceClient   *mock_discovery.MockMeshServiceClient
+		mockMeshWorkloadClient  *mock_discovery.MockMeshWorkloadClient
+		mockDynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
+		mockDeploymentClient    *mock_kubernetes_apps.MockDeploymentClient
+		resourceSelector        networking_selector.ResourceSelector
 	)
 
 	BeforeEach(func() {
@@ -39,15 +37,15 @@ var _ = Describe("ResourceSelector", func() {
 		ctx = context.TODO()
 		mockMeshServiceClient = mock_discovery.NewMockMeshServiceClient(ctrl)
 		mockMeshWorkloadClient = mock_discovery.NewMockMeshWorkloadClient(ctrl)
-		mockKubeConfigLookup = mock_config_lookup.NewMockKubeConfigLookup(ctrl)
+		mockDynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		mockDeploymentClient = mock_kubernetes_apps.NewMockDeploymentClient(ctrl)
 		resourceSelector = networking_selector.NewResourceSelector(
 			mockMeshServiceClient,
 			mockMeshWorkloadClient,
-			func(_ *rest.Config) (deploymentClient kubernetes_apps.DeploymentClient, err error) {
-				return mockDeploymentClient, nil
+			func(client client.Client) kubernetes_apps.DeploymentClient {
+				return mockDeploymentClient
 			},
-			mockKubeConfigLookup,
+			mockDynamicClientGetter,
 		)
 	})
 
@@ -545,9 +543,6 @@ var _ = Describe("ResourceSelector", func() {
 					Name: "cluster-1",
 				},
 			}
-			cluster1RestConfig := &rest.Config{
-				Host: "cluster-1-host.com",
-			}
 			workload2 := &v1alpha1.MeshWorkload{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "my-workload-2",
@@ -570,9 +565,6 @@ var _ = Describe("ResourceSelector", func() {
 					Name: "cluster-2",
 				},
 			}
-			cluster2RestConfig := &rest.Config{
-				Host: "cluster-2-host.com",
-			}
 			workload2Controller := &apps_v1.Deployment{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "controller-2",
@@ -588,12 +580,12 @@ var _ = Describe("ResourceSelector", func() {
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
-			mockKubeConfigLookup.EXPECT().
-				FromCluster(ctx, cluster1.GetName()).
-				Return(&kubeconfig.Config{RestConfig: cluster1RestConfig}, nil)
-			mockKubeConfigLookup.EXPECT().
-				FromCluster(ctx, cluster2.GetName()).
-				Return(&kubeconfig.Config{RestConfig: cluster2RestConfig}, nil)
+			mockDynamicClientGetter.EXPECT().
+				GetClientForCluster(ctx, cluster1.GetName()).
+				Return(nil, nil)
+			mockDynamicClientGetter.EXPECT().
+				GetClientForCluster(ctx, cluster2.GetName()).
+				Return(nil, nil)
 			mockDeploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
 				Return(workload1Controller, nil)
@@ -641,9 +633,6 @@ var _ = Describe("ResourceSelector", func() {
 					Name: "cluster-1",
 				},
 			}
-			cluster1RestConfig := &rest.Config{
-				Host: "cluster-1-host.com",
-			}
 			workload2 := &v1alpha1.MeshWorkload{
 				ObjectMeta: v1.ObjectMeta{
 					Name: "my-workload-2",
@@ -666,9 +655,6 @@ var _ = Describe("ResourceSelector", func() {
 					Name: "cluster-2",
 				},
 			}
-			cluster2RestConfig := &rest.Config{
-				Host: "cluster-2-host.com",
-			}
 			workload2Controller := &apps_v1.Deployment{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "controller-2",
@@ -684,12 +670,12 @@ var _ = Describe("ResourceSelector", func() {
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
-			mockKubeConfigLookup.EXPECT().
-				FromCluster(ctx, cluster1.GetName()).
-				Return(&kubeconfig.Config{RestConfig: cluster1RestConfig}, nil)
-			mockKubeConfigLookup.EXPECT().
-				FromCluster(ctx, cluster2.GetName()).
-				Return(&kubeconfig.Config{RestConfig: cluster2RestConfig}, nil)
+			mockDynamicClientGetter.EXPECT().
+				GetClientForCluster(ctx, cluster1.GetName()).
+				Return(nil, nil)
+			mockDynamicClientGetter.EXPECT().
+				GetClientForCluster(ctx, cluster2.GetName()).
+				Return(nil, nil)
 			mockDeploymentClient.EXPECT().
 				Get(ctx, client.ObjectKey{Name: workload1Controller.GetName(), Namespace: workload1Controller.GetNamespace()}).
 				Return(workload1Controller, nil)

@@ -8,7 +8,6 @@ package wire
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
@@ -18,7 +17,6 @@ import (
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security"
-	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
@@ -74,17 +72,14 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	}
 	meshServiceClient := zephyr_discovery.NewMeshServiceClient(client)
 	meshWorkloadClient := zephyr_discovery.NewMeshWorkloadClient(client)
-	deploymentClientFactoryForConfig := kubernetes_apps.DeploymentClientFactoryForConfigProvider()
-	kubernetesClusterClient := zephyr_discovery.NewKubernetesClusterClient(client)
-	secretToConfigConverter := kubeconfig.SecretToConfigConverterProvider()
-	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, secretToConfigConverter)
-	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactoryForConfig, kubeConfigLookup)
+	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
+	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
+	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
 	meshClient := zephyr_discovery.NewMeshClient(client)
 	trafficPolicyClient := zephyr_networking.NewTrafficPolicyClient(client)
 	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(resourceSelector, meshClient, trafficPolicyClient)
 	trafficPolicyValidator := preprocess.NewTrafficPolicyValidator(meshServiceClient, resourceSelector)
 	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(resourceSelector, trafficPolicyMerger, trafficPolicyValidator)
-	dynamicClientGetter := mc_wire.DynamicClientGetterProvider(asyncManagerController)
 	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
 	destinationRuleClientFactory := istio_networking.DestinationRuleClientFactoryProvider()
 	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, resourceSelector, virtualServiceClientFactory, destinationRuleClientFactory)
