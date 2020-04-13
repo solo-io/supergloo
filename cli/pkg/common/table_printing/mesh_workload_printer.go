@@ -24,6 +24,9 @@ func (m *meshWorkloadPrintner) Print(
 	out io.Writer,
 	meshWorkloads []*discovery_v1alpha1.MeshWorkload,
 ) error {
+	if len(meshWorkloads) == 0 {
+		return nil
+	}
 
 	fmt.Fprintln(out, "\nKubernetes Mesh Workloads:")
 

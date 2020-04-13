@@ -62,7 +62,8 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 	}
 
 	var relevantAccessControlPolicies []*networking_v1alpha1.AccessControlPolicy
-	for _, acp := range allAccessControlPolicies.Items {
+	for _, acpIter := range allAccessControlPolicies.Items {
+		acp := acpIter
 		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, acp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, FailedToFindMeshServicesBySelector(err, acp.Spec.GetDestinationSelector())
@@ -79,7 +80,8 @@ func (r *resourceDescriber) DescribeService(ctx context.Context, kubeResourceIde
 	}
 
 	var relevantTrafficPolicies []*networking_v1alpha1.TrafficPolicy
-	for _, tp := range allTrafficControlPolicies.Items {
+	for _, tpIter := range allTrafficControlPolicies.Items {
+		tp := tpIter
 		matchingMeshServices, err := r.ResourceSelector.GetMeshServicesByServiceSelector(ctx, tp.Spec.GetDestinationSelector())
 		if err != nil {
 			return nil, FailedToFindMeshServicesBySelector(err, tp.Spec.GetDestinationSelector())
@@ -120,7 +122,8 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 	}
 
 	var relevantAccessControlPolicies []*networking_v1alpha1.AccessControlPolicy
-	for _, acp := range allAccessControlPolicies.Items {
+	for _, acpIter := range allAccessControlPolicies.Items {
+		acp := acpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByIdentitySelector(ctx, acp.Spec.GetSourceSelector())
 		if err != nil {
 			return nil, FailedToFindMeshWorkloadsByIdentity(err, acp.Spec.GetSourceSelector())
@@ -136,7 +139,8 @@ func (r *resourceDescriber) DescribeWorkload(ctx context.Context, kubeResourceId
 	}
 
 	var relevantTrafficPolicies []*networking_v1alpha1.TrafficPolicy
-	for _, tp := range allTrafficControlPolicies.Items {
+	for _, tpIter := range allTrafficControlPolicies.Items {
+		tp := tpIter
 		matchingMeshWorkloads, err := r.ResourceSelector.GetMeshWorkloadsByWorkloadSelector(ctx, tp.Spec.GetSourceSelector())
 		if err != nil {
 			return nil, FailedToFindMeshServicesBySelector(err, tp.Spec.GetDestinationSelector())

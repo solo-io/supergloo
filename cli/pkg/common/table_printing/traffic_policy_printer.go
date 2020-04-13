@@ -23,6 +23,10 @@ type trafficPolicyPrinter struct {
 }
 
 func (t *trafficPolicyPrinter) Print(out io.Writer, printMode PrintMode, trafficPolicies []*networking_v1alpha1.TrafficPolicy) error {
+	if len(trafficPolicies) == 0 {
+		return nil
+	}
+
 	table := t.tableBuilder(out)
 
 	// will always have these two - will add more as they become relevant
