@@ -20,7 +20,7 @@ make update-deps
 
 set +e
 
-make generated-code -B > /dev/null
+REGENERATE_CLIENTS=1 make generated-code -B > /dev/null
 if [[ $? -ne 0 ]]; then
   echo "Go code generation failed"
   exit 1;
