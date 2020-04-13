@@ -19,7 +19,9 @@ type kubernetesClusterPrinter struct {
 }
 
 func (m *kubernetesClusterPrinter) Print(out io.Writer, clusters []*discovery_v1alpha1.KubernetesCluster) error {
-
+	if len(clusters) == 0 {
+		return nil
+	}
 	fmt.Fprintln(out, "\nKubernetes Clusters:")
 
 	table := m.tableBuilder(out)

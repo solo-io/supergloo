@@ -26,6 +26,9 @@ func (m *virtualMeshPrinter) Print(
 	out io.Writer,
 	virtualMeshes []*networking_v1alpha1.VirtualMesh,
 ) error {
+	if len(virtualMeshes) == 0 {
+		return nil
+	}
 
 	table := m.tableBuilder(out)
 

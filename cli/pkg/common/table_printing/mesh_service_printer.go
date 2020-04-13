@@ -25,6 +25,9 @@ func (m *meshServicePrinter) Print(
 	out io.Writer,
 	meshServices []*discovery_v1alpha1.MeshService,
 ) error {
+	if len(meshServices) == 0 {
+		return nil
+	}
 
 	fmt.Fprintln(out, "\nKubernetes Mesh Services:")
 
