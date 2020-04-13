@@ -21,6 +21,10 @@ type accessControlPolicyPrinter struct {
 }
 
 func (a *accessControlPolicyPrinter) Print(out io.Writer, printMode PrintMode, accessControlPolicies []*networking_v1alpha1.AccessControlPolicy) error {
+	if len(accessControlPolicies) == 0 {
+		return nil
+	}
+
 	table := a.tableBuilder(out)
 
 	preFilteredHeaderRow := []string{

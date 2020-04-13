@@ -26,6 +26,9 @@ func (m *vmcsrPrinter) Print(
 	vmcsrs []*security_v1alpha1.VirtualMeshCertificateSigningRequest,
 ) error {
 
+	if len(vmcsrs) == 0 {
+		return nil
+	}
 	table := m.tableBuilder(out)
 
 	commonHeaderRows := []string{
