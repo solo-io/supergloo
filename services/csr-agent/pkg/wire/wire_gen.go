@@ -7,11 +7,12 @@ package wire
 
 import (
 	"context"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
-	"github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
-	"github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
+	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
+	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 )
 
 // Injectors from wire.go:

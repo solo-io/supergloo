@@ -28,11 +28,19 @@ import (
 func main() {
 	log.Println("starting generate")
 
+	// load custom client template
 	customClientTemplateBytes, err := ioutil.ReadFile("custom_client.gotmpl")
 	customClientTemplate := string(customClientTemplateBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
+	// load custom client providers template
+	customClientProvidersBytes, err := ioutil.ReadFile("custom_client_providers.gotmpl")
+	customClientProviders := string(customClientProvidersBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	apImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
 		"api/**/*.proto",
 	})
@@ -65,7 +73,8 @@ func main() {
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{
-					"clients.go": customClientTemplate,
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api",
 			},
@@ -121,7 +130,8 @@ func main() {
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{
-					"clients.go": customClientTemplate,
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api",
 			},
@@ -186,7 +196,8 @@ func main() {
 				RenderController: true,
 				RenderProtos:     true,
 				CustomTemplates: map[string]string{
-					"clients.go": customClientTemplate,
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api",
 			},
@@ -251,7 +262,8 @@ func main() {
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/networking/v1alpha3",
 				CustomTemplates: map[string]string{
-					"clients.go": customClientTemplate,
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api/istio",
 			},
@@ -268,7 +280,8 @@ func main() {
 				},
 				CustomTypesImportPath: "istio.io/client-go/pkg/apis/security/v1beta1",
 				CustomTemplates: map[string]string{
-					"clients.go": customClientTemplate,
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api/istio",
 			},

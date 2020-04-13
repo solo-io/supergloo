@@ -8,6 +8,7 @@ package wire
 import (
 	"context"
 
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
@@ -16,7 +17,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
-	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"

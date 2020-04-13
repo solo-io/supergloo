@@ -8,7 +8,6 @@ import (
 	"github.com/google/wire"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"

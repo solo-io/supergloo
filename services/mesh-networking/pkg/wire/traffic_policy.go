@@ -8,7 +8,6 @@ import (
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	networking_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"

@@ -21,12 +21,12 @@ import (
 	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
 	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
-	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/auth"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
@@ -45,7 +45,7 @@ var (
 type KubeClients struct {
 	ClusterAuthorization            auth.ClusterAuthorization
 	HelmInstaller                   types.Installer
-	HelmClient                      types.HelmClient                       // used for uninstalling - the go-utils package is not laid out very well
+	HelmClient                      types.HelmClient                         // used for uninstalling - the go-utils package is not laid out very well
 	KubeClusterClient               zephyr_discovery.KubernetesClusterClient // client for KubernetesCluster custom resources
 	MeshServiceClient               zephyr_discovery.MeshServiceClient
 	MeshWorkloadClient              zephyr_discovery.MeshWorkloadClient

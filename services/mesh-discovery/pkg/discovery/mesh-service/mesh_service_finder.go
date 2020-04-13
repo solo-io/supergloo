@@ -10,7 +10,6 @@ import (
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	corev1_controllers "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	corev1 "k8s.io/api/core/v1"

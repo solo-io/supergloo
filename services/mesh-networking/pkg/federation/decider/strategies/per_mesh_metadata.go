@@ -7,7 +7,6 @@ import (
 	"github.com/rotisserie/eris"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

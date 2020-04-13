@@ -13,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"

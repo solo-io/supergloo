@@ -1,9 +1,9 @@
 package wire
 
 import (
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	discovery_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/services/common/multicluster"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	mesh_consul "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/consul"
@@ -25,9 +25,9 @@ type ClientFactories struct {
 	DeploymentClientFactory   kubernetes_apps.DeploymentClientFactory
 	OwnerFetcherClientFactory mesh_workload.OwnerFetcherFactory
 	ServiceClientFactory      kubernetes_core.ServiceClientFactory
-	MeshServiceClientFactory  discovery_core.MeshServiceClientFactory
-	MeshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory
-	MeshClientFactory         discovery_core.MeshClientFactory
+	MeshServiceClientFactory  zephyr_discovery.MeshServiceClientFactory
+	MeshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory
+	MeshClientFactory         zephyr_discovery.MeshClientFactory
 }
 
 type ControllerFactories struct {
@@ -52,13 +52,13 @@ func DiscoveryContextProvider(
 	deploymentClientFactory kubernetes_apps.DeploymentClientFactory,
 	ownerFetcherClientFactory mesh_workload.OwnerFetcherFactory,
 	serviceClientFactory kubernetes_core.ServiceClientFactory,
-	meshServiceClientFactory discovery_core.MeshServiceClientFactory,
-	meshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory,
+	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
+	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
 	podControllerFactory controllers.PodControllerFactory,
 	serviceControllerFactory controllers.ServiceControllerFactory,
 	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
 	deploymentControllerFactory controllers.DeploymentControllerFactory,
-	meshClientFactory discovery_core.MeshClientFactory,
+	meshClientFactory zephyr_discovery.MeshClientFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{

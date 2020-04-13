@@ -40,6 +40,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
@@ -49,7 +52,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	version2 "github.com/solo-io/service-mesh-hub/pkg/version"
-	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -87,17 +89,17 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 		common.KubeClientsProvider,
 		description.NewResourceDescriber,
 		selector.NewResourceSelector,
-		wire_providers.NewDiscoveryClients,
-		wire_providers.NewNetworkingClients,
-		wire_providers.NewSecurityClients,
-		wire_providers.NewKubernetesClusterClient,
-		wire_providers.NewMeshServiceClient,
-		wire_providers.NewMeshWorkloadClient,
-		wire_providers.NewMeshClient,
-		wire_providers.NewTrafficPolicyClient,
-		wire_providers.NewAccessControlPolicyClient,
-		wire_providers.NewVirtualMeshClient,
-		wire_providers.NewVirtualMeshCertificateSigningRequestClient,
+		zephyr_discovery.ClientsetFromConfigProvider,
+		zephyr_networking.ClientsetFromConfigProvider,
+		zephyr_security.ClientsetFromConfigProvider,
+		zephyr_discovery.KubernetesClusterClientFromClientsetProvider,
+		zephyr_discovery.MeshServiceClientFromClientsetProvider,
+		zephyr_discovery.MeshWorkloadClientFromClientsetProvider,
+		zephyr_discovery.MeshClientFromClientsetProvider,
+		zephyr_networking.TrafficPolicyClientFromClientsetProvider,
+		zephyr_networking.AccessControlPolicyClientFromClientsetProvider,
+		zephyr_networking.VirtualMeshClientFromClientsetProvider,
+		zephyr_security.VirtualMeshCertificateSigningRequestClientFromClientsetProvider,
 	)
 	return nil, nil
 }

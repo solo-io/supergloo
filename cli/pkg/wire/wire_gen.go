@@ -7,11 +7,13 @@ package wire
 
 import (
 	"context"
+	"io"
+
 	"github.com/solo-io/go-utils/installutils/helminstall"
 	"github.com/solo-io/reporting-client/pkg/client"
-	"github.com/solo-io/service-mesh-hub/cli/pkg"
+	cli "github.com/solo-io/service-mesh-hub/cli/pkg"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
+	common_config "github.com/solo-io/service-mesh-hub/cli/pkg/common/config"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/exec"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/interactive"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/common/kube"
@@ -27,45 +29,46 @@ import (
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/cluster/register/csr"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
+	access_control_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/access-control-policy"
+	traffic_policy "github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/traffic-policy"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/create/virtualmesh"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/cleanup"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
+	demo_init "github.com/solo-io/service-mesh-hub/cli/pkg/tree/demo/init"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/describe/description"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
+	get_cluster "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/cluster"
+	get_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/mesh"
+	get_service "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/service"
+	get_virtual_mesh "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/virtual_mesh"
+	get_vmcsr "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/vmcsr"
+	get_workload "github.com/solo-io/service-mesh-hub/cli/pkg/tree/get/workload"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
+	mesh_install "github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/mesh/install/istio/operator"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/config_lookup"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
+	crd_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/crd"
+	helm_uninstall "github.com/solo-io/service-mesh-hub/cli/pkg/tree/uninstall/helm"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade"
-	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
+	upgrade_assets "github.com/solo-io/service-mesh-hub/cli/pkg/tree/upgrade/assets"
 	version2 "github.com/solo-io/service-mesh-hub/cli/pkg/tree/version"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/tree/version/server"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/auth"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
+	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
+	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
+	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
+	kubernetes_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
-	"github.com/solo-io/service-mesh-hub/pkg/wire_providers"
 	"github.com/spf13/cobra"
-	"io"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -91,11 +94,11 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	clusterAuthorization := auth.NewClusterAuthorization(remoteAuthorityConfigCreator, remoteAuthorityManager)
 	helmClient := helminstall.DefaultHelmClient()
 	installer := install.HelmInstallerProvider(helmClient, clientset)
-	v1alpha1Clientset, err := wire_providers.NewDiscoveryClients(masterConfig)
+	v1alpha1Clientset, err := v1alpha1.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	kubernetesClusterClient := wire_providers.NewKubernetesClusterClient(v1alpha1Clientset)
+	kubernetesClusterClient := v1alpha1.KubernetesClusterClientFromClientsetProvider(v1alpha1Clientset)
 	namespaceClient, err := kubernetes_core.NewNamespaceClientForConfig(masterConfig)
 	if err != nil {
 		return nil, err
@@ -105,7 +108,7 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	if err != nil {
 		return nil, err
 	}
-	meshServiceClient := wire_providers.NewMeshServiceClient(v1alpha1Clientset)
+	meshServiceClient := v1alpha1.MeshServiceClientFromClientsetProvider(v1alpha1Clientset)
 	clients := healthcheck.ClientsProvider(namespaceClient, serverVersionClient, podClient, meshServiceClient)
 	deploymentClient, err := kubernetes_apps.NewDeploymentClientForConfig(masterConfig)
 	if err != nil {
@@ -121,20 +124,20 @@ func DefaultKubeClientsFactory(masterConfig *rest.Config, writeNamespace string)
 	uninstallerFactory := helm_uninstall.NewUninstallerFactory()
 	kubeConfigLookup := config_lookup.NewKubeConfigLookup(kubernetesClusterClient, secretClient, secretToConfigConverter)
 	clusterDeregistrationClient := deregister.NewClusterDeregistrationClient(crdRemover, inMemoryRESTClientGetterFactory, uninstallerFactory, kubeConfigLookup)
-	clientset2, err := wire_providers.NewSecurityClients(masterConfig)
+	clientset2, err := v1alpha1_2.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshCertificateSigningRequestClient := wire_providers.NewVirtualMeshCertificateSigningRequestClient(clientset2)
-	meshClient := wire_providers.NewMeshClient(v1alpha1Clientset)
-	clientset3, err := wire_providers.NewNetworkingClients(masterConfig)
+	virtualMeshCertificateSigningRequestClient := v1alpha1_2.VirtualMeshCertificateSigningRequestClientFromClientsetProvider(clientset2)
+	meshClient := v1alpha1.MeshClientFromClientsetProvider(v1alpha1Clientset)
+	clientset3, err := v1alpha1_3.ClientsetFromConfigProvider(masterConfig)
 	if err != nil {
 		return nil, err
 	}
-	virtualMeshClient := wire_providers.NewVirtualMeshClient(clientset3)
-	trafficPolicyClient := wire_providers.NewTrafficPolicyClient(clientset3)
-	accessControlPolicyClient := wire_providers.NewAccessControlPolicyClient(clientset3)
-	meshWorkloadClient := wire_providers.NewMeshWorkloadClient(v1alpha1Clientset)
+	virtualMeshClient := v1alpha1_3.VirtualMeshClientFromClientsetProvider(clientset3)
+	trafficPolicyClient := v1alpha1_3.TrafficPolicyClientFromClientsetProvider(clientset3)
+	accessControlPolicyClient := v1alpha1_3.AccessControlPolicyClientFromClientsetProvider(clientset3)
+	meshWorkloadClient := v1alpha1.MeshWorkloadClientFromClientsetProvider(v1alpha1Clientset)
 	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
 	dynamicClientGetter := config_lookup.NewDynamicClientGetter(kubeConfigLookup)
 	resourceSelector := selector.NewResourceSelector(meshServiceClient, meshWorkloadClient, deploymentClientFactory, dynamicClientGetter)
