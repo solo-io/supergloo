@@ -6,8 +6,9 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/multicluster/snapshot"
 	"go.uber.org/zap"
@@ -38,8 +39,8 @@ type FederationDecider interface {
 }
 
 func NewFederationDecider(
-	meshServiceClient discovery_core.MeshServiceClient,
-	meshClient discovery_core.MeshClient,
+	meshServiceClient zephyr_discovery.MeshServiceClient,
+	meshClient zephyr_discovery.MeshClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	federationStrategyChooser strategies.FederationStrategyChooser,
 ) FederationDecider {
@@ -52,8 +53,8 @@ func NewFederationDecider(
 }
 
 type federationDecider struct {
-	meshServiceClient         discovery_core.MeshServiceClient
-	meshClient                discovery_core.MeshClient
+	meshServiceClient         zephyr_discovery.MeshServiceClient
+	meshClient                zephyr_discovery.MeshClient
 	virtualMeshClient         zephyr_networking.VirtualMeshClient
 	federationStrategyChooser strategies.FederationStrategyChooser
 }
@@ -130,7 +131,7 @@ func (f *federationDecider) federateVirtualMesh(
 func (f *federationDecider) updateVirtualMeshStatus(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	err := f.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
+	err := f.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)
 	if err != nil {
 		logger.Errorf("Error updating federation status on virtual mesh %s.%s", virtualMesh.Name, virtualMesh.Namespace)
 	}

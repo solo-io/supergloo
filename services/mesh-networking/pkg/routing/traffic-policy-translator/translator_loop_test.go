@@ -28,18 +28,18 @@ import (
 
 var _ = Describe("Translator", func() {
 	var (
-		ctx                         context.Context
-		ctrl                        *gomock.Controller
-		mockPreprocessor            *mock_processor.MockTrafficPolicyPreprocessor
-		mockIstioTranslator         *mock_traffic_policy_translator.MockTrafficPolicyMeshTranslator
-		mockMeshServiceClient       *mock_core.MockMeshServiceClient
-		mockMeshClient              *mock_core.MockMeshClient
-		mockTrafficPolicyClient     *mock_zephyr_networking_clients.MockTrafficPolicyClient
-		mockTrafficPolicyController *mock_zephyr_networking.MockTrafficPolicyController
-		mockMeshServiceController   *mock_zephyr_discovery.MockMeshServiceController
-		trafficPolicyEventHandler   *networking_controller.TrafficPolicyEventHandlerFuncs
-		meshServiceEventHandler     *discovery_controller.MeshServiceEventHandlerFuncs
-		translator                  traffic_policy_translator.TrafficPolicyTranslatorLoop
+		ctx                           context.Context
+		ctrl                          *gomock.Controller
+		mockPreprocessor              *mock_processor.MockTrafficPolicyPreprocessor
+		mockIstioTranslator           *mock_traffic_policy_translator.MockTrafficPolicyMeshTranslator
+		mockMeshServiceClient         *mock_core.MockMeshServiceClient
+		mockMeshClient                *mock_core.MockMeshClient
+		mockTrafficPolicyClient       *mock_zephyr_networking_clients.MockTrafficPolicyClient
+		mockTrafficPolicyEventWatcher *mock_zephyr_networking.MockTrafficPolicyEventWatcher
+		mockMeshServiceEventWatcher   *mock_zephyr_discovery.MockMeshServiceEventWatcher
+		trafficPolicyEventHandler     *networking_controller.TrafficPolicyEventHandlerFuncs
+		meshServiceEventHandler       *discovery_controller.MeshServiceEventHandlerFuncs
+		translator                    traffic_policy_translator.TrafficPolicyTranslatorLoop
 	)
 
 	BeforeEach(func() {
@@ -50,8 +50,8 @@ var _ = Describe("Translator", func() {
 		mockTrafficPolicyClient = mock_zephyr_networking_clients.NewMockTrafficPolicyClient(ctrl)
 		mockPreprocessor = mock_processor.NewMockTrafficPolicyPreprocessor(ctrl)
 		mockIstioTranslator = mock_traffic_policy_translator.NewMockTrafficPolicyMeshTranslator(ctrl)
-		mockTrafficPolicyController = mock_zephyr_networking.NewMockTrafficPolicyController(ctrl)
-		mockMeshServiceController = mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
+		mockTrafficPolicyEventWatcher = mock_zephyr_networking.NewMockTrafficPolicyEventWatcher(ctrl)
+		mockMeshServiceEventWatcher = mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		translator = traffic_policy_translator.NewTrafficPolicyTranslatorLoop(
 			mockPreprocessor,
 			[]traffic_policy_translator.TrafficPolicyMeshTranslator{
@@ -60,17 +60,17 @@ var _ = Describe("Translator", func() {
 			mockMeshClient,
 			mockMeshServiceClient,
 			mockTrafficPolicyClient,
-			mockTrafficPolicyController,
-			mockMeshServiceController,
+			mockTrafficPolicyEventWatcher,
+			mockMeshServiceEventWatcher,
 		)
-		mockTrafficPolicyController.
+		mockTrafficPolicyEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, eventHandler *networking_controller.TrafficPolicyEventHandlerFuncs) error {
 				trafficPolicyEventHandler = eventHandler
 				return nil
 			})
-		mockMeshServiceController.
+		mockMeshServiceEventWatcher.
 			EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, eventHandler *discovery_controller.MeshServiceEventHandlerFuncs) error {

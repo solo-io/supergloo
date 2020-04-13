@@ -45,7 +45,7 @@ type UpdatedResources struct {
 func NewMeshNetworkingSnapshotGenerator(
 	ctx context.Context,
 	snapshotValidator MeshNetworkingSnapshotValidator,
-	meshServiceController discovery_controllers.MeshServiceController,
+	MeshServiceEventWatcher discovery_controllers.MeshServiceEventWatcher,
 	virtualMeshController networking_controllers.VirtualMeshController,
 	meshWorkloadController discovery_controllers.MeshWorkloadController,
 ) (MeshNetworkingSnapshotGenerator, error) {
@@ -54,7 +54,7 @@ func NewMeshNetworkingSnapshotGenerator(
 		snapshot:          MeshNetworkingSnapshot{},
 	}
 
-	err := meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
+	err := MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()

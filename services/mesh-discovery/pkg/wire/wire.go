@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
@@ -25,13 +26,13 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 		kubernetes_apps.DeploymentClientFactoryProvider,
 		kubernetes_apps.ReplicaSetClientFactoryProvider,
 		kubernetes_core.ServiceClientFactoryProvider,
-		discovery_core.MeshServiceClientFactoryProvider,
-		discovery_core.MeshWorkloadClientFactoryProvider,
+		zephyr_discovery.MeshServiceClientFactoryProvider,
+		zephyr_discovery.MeshWorkloadClientFactoryProvider,
 		controllers.NewDeploymentControllerFactory,
 		controllers.NewPodControllerFactory,
 		controllers.NewServiceControllerFactory,
 		controllers.NewMeshWorkloadControllerFactory,
-		discovery_core.NewMeshClientFactoryProvider,
+		zephyr_discovery.MeshClientFactoryProvider,
 		kubernetes_core.ConfigMapClientFactoryProvider,
 		mesh_istio.WireProviderSet,
 		mesh_consul.WireProviderSet,

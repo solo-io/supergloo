@@ -2,13 +2,14 @@ package wire
 
 import (
 	"github.com/google/wire"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	linkerd_networking "github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
 	smi_networking "github.com/solo-io/service-mesh-hub/pkg/clients/smi/split/v1alpha1"
-	networking_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -19,8 +20,8 @@ import (
 
 var (
 	TrafficPolicyProviderSet = wire.NewSet(
-		discovery_core.NewMeshServiceClient,
-		networking_core.NewTrafficPolicyClient,
+		zephyr_discovery.NewMeshServiceClient,
+		zephyr_networking.NewTrafficPolicyClient,
 		kubernetes_core.ServiceClientFactoryProvider,
 		istio_networking.VirtualServiceClientFactoryProvider,
 		istio_networking.DestinationRuleClientFactoryProvider,
@@ -29,7 +30,7 @@ var (
 		istio_translator.NewIstioTrafficPolicyTranslator,
 		linkerd_translator.NewLinkerdTrafficPolicyTranslator,
 		TrafficPolicyMeshTranslatorsProvider,
-		LocalTrafficPolicyControllerProvider,
+		LocalTrafficPolicyEventWatcherProvider,
 		traffic_policy_translator.NewTrafficPolicyTranslatorLoop,
 		preprocess.NewTrafficPolicyPreprocessor,
 		preprocess.NewTrafficPolicyMerger,
@@ -38,16 +39,16 @@ var (
 	)
 )
 
-func LocalTrafficPolicyControllerProvider(mgr mc_manager.AsyncManager) (networking_controller.TrafficPolicyController, error) {
-	return networking_controller.NewTrafficPolicyController("management-plane-traffic-policy-controller", mgr.Manager())
+func LocalTrafficPolicyEventWatcherProvider(mgr mc_manager.AsyncManager) networking_controller.TrafficPolicyEventWatcher {
+	return networking_controller.NewTrafficPolicyEventWatcher("management-plane-traffic-policy-event-watcher", mgr.Manager())
 }
 
-func LocalMeshServiceControllerProvider(mgr mc_manager.AsyncManager) (discovery_controller.MeshServiceController, error) {
-	return discovery_controller.NewMeshServiceController("management-plane-mesh-service-controller", mgr.Manager())
+func LocalMeshServiceEventWatcherProvider(mgr mc_manager.AsyncManager) discovery_controller.MeshServiceEventWatcher {
+	return discovery_controller.NewMeshServiceEventWatcher("management-plane-mesh-service-event-watcher", mgr.Manager())
 }
 
-func LocalMeshWorkloadControllerProvider(mgr mc_manager.AsyncManager) (discovery_controller.MeshWorkloadController, error) {
-	return discovery_controller.NewMeshWorkloadController("management-plane-mesh-workload-controller", mgr.Manager())
+func LocalMeshWorkloadEventWatcherProvider(mgr mc_manager.AsyncManager) discovery_controller.MeshWorkloadEventWatcher {
+	return discovery_controller.NewMeshWorkloadEventWatcher("management-plane-mesh-workload-event-watcher", mgr.Manager())
 }
 
 func TrafficPolicyMeshTranslatorsProvider(

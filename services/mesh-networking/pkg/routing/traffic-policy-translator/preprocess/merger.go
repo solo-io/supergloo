@@ -6,23 +6,24 @@ import (
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	networking_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	networking_errors "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
 )
 
 type trafficPolicyMerger struct {
 	resourceSelector    selector.ResourceSelector
-	meshClient          discovery_core.MeshClient
-	trafficPolicyClient networking_core.TrafficPolicyClient
+	meshClient          zephyr_discovery.MeshClient
+	trafficPolicyClient zephyr_networking.TrafficPolicyClient
 }
 
 func NewTrafficPolicyMerger(
 	resourceSelector selector.ResourceSelector,
-	meshClient discovery_core.MeshClient,
-	trafficPolicyClient networking_core.TrafficPolicyClient,
+	meshClient zephyr_discovery.MeshClient,
+	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
 ) TrafficPolicyMerger {
 	return &trafficPolicyMerger{
 		resourceSelector:    resourceSelector,
@@ -61,7 +62,7 @@ func (t *trafficPolicyMerger) getTrafficPoliciesByMeshService(
 		trafficPoliciesByMeshService[*meshServiceKey] = []*networking_v1alpha1.TrafficPolicy{}
 	}
 	// List all TrafficPolicies, for each add to map if it applies to any MeshService in meshServices
-	trafficPolicyList, err := t.trafficPolicyClient.List(ctx)
+	trafficPolicyList, err := t.trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return nil, err
 	}

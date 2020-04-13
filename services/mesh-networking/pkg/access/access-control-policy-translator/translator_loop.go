@@ -7,22 +7,22 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"go.uber.org/zap"
 )
 
 func NewAcpTranslatorLoop(
-	acpController networking_controller.AccessControlPolicyController,
-	meshServiceController discovery_controller.MeshServiceController,
+	acpController networking_controller.AccessControlPolicyEventWatcher,
+	MeshServiceEventWatcher discovery_controller.MeshServiceEventWatcher,
 	meshClient zephyr_discovery.MeshClient,
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient,
 	resourceSelector selector.ResourceSelector,
@@ -30,7 +30,7 @@ func NewAcpTranslatorLoop(
 ) AcpTranslatorLoop {
 	return &translatorLoop{
 		acpController:             acpController,
-		meshServiceController:     meshServiceController,
+		MeshServiceEventWatcher:   MeshServiceEventWatcher,
 		meshClient:                meshClient,
 		accessControlPolicyClient: accessControlPolicyClient,
 		resourceSelector:          resourceSelector,
@@ -39,8 +39,8 @@ func NewAcpTranslatorLoop(
 }
 
 type translatorLoop struct {
-	acpController             networking_controller.AccessControlPolicyController
-	meshServiceController     discovery_controller.MeshServiceController
+	acpController             networking_controller.AccessControlPolicyEventWatcher
+	MeshServiceEventWatcher   discovery_controller.MeshServiceEventWatcher
 	meshClient                zephyr_discovery.MeshClient
 	accessControlPolicyClient zephyr_networking.AccessControlPolicyClient
 	meshTranslators           []AcpMeshTranslator
@@ -57,7 +57,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			)
 			translatorErrors, err := t.translateAccessControlPolicy(ctx, obj)
 			t.setStatus(err, translatorErrors, obj)
-			err = t.accessControlPolicyClient.UpdateStatus(ctx, obj)
+			err = t.accessControlPolicyClient.UpdateAccessControlPolicyStatus(ctx, obj)
 			if err != nil {
 				logger.Errorw("Error while handling AccessControlPolicy create event", err)
 			}
@@ -99,7 +99,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return t.meshServiceController.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
+	return t.MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, obj)
 			logger.Debugw("event handler enter",
@@ -110,7 +110,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			// Update status for each ACP that was processed for MeshService
 			for _, translatorErrWithACP := range translatorErrorsForACPs {
 				t.setStatus(err, translatorErrWithACP.translatorErrors, translatorErrWithACP.accessControlPolicy)
-				err = t.accessControlPolicyClient.UpdateStatus(ctx, translatorErrWithACP.accessControlPolicy)
+				err = t.accessControlPolicyClient.UpdateAccessControlPolicyStatus(ctx, translatorErrWithACP.accessControlPolicy)
 				if err != nil {
 					logger.Errorw("Error while handling MeshService create event", err)
 				}
@@ -129,7 +129,7 @@ func (t *translatorLoop) Start(ctx context.Context) error {
 			// Update status for each ACP that was processed for MeshService
 			for _, translatorErrWithACP := range translatorErrorsForACPs {
 				t.setStatus(err, translatorErrWithACP.translatorErrors, translatorErrWithACP.accessControlPolicy)
-				err = t.accessControlPolicyClient.UpdateStatus(ctx, translatorErrWithACP.accessControlPolicy)
+				err = t.accessControlPolicyClient.UpdateAccessControlPolicyStatus(ctx, translatorErrWithACP.accessControlPolicy)
 				if err != nil {
 					logger.Errorw("Error while handling MeshService create event", err)
 				}
@@ -185,7 +185,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 ) ([]translatorErrorForACP, error) {
-	mesh, err := t.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +226,7 @@ func (t *translatorLoop) getTargetServices(ctx context.Context, acp *networking_
 	}
 	var targetServices []TargetService
 	for _, meshService := range meshServices {
-		mesh, err := t.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}
@@ -244,7 +244,7 @@ func (t *translatorLoop) getApplicableAccessControlPolicies(
 	meshService *discovery_v1alpha1.MeshService,
 ) ([]*networking_v1alpha1.AccessControlPolicy, error) {
 	var applicableACPs []*networking_v1alpha1.AccessControlPolicy
-	acpList, err := t.accessControlPolicyClient.List(ctx)
+	acpList, err := t.accessControlPolicyClient.ListAccessControlPolicy(ctx)
 	if err != nil {
 		return nil, err
 	}

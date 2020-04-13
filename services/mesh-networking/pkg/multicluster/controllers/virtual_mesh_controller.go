@@ -5,6 +5,6 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-func NewLocalVirtualMeshController(mgr mc_manager.AsyncManager) (networking_controller.VirtualMeshController, error) {
-	return networking_controller.NewVirtualMeshController("management-plane-virtual-mesh-controller", mgr.Manager())
+func NewLocalVirtualMeshEventWatcher(mgr mc_manager.AsyncManager) networking_controller.VirtualMeshEventWatcher {
+	return networking_controller.NewVirtualMeshEventWatcher("management-plane-virtual-mesh-event-watcher", mgr.Manager())
 }

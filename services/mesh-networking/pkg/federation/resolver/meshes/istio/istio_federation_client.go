@@ -7,7 +7,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
@@ -25,10 +25,10 @@ import (
 )
 
 var (
-	ServiceNotInIstio = func(service *discovery_v1alpha1.MeshService) error {
+	ServiceNotInIstio = func(service *zephyr_discovery.MeshService) error {
 		return eris.Errorf("Service %s.%s does not belong to an Istio mesh", service.Name, service.Namespace)
 	}
-	WorkloadNotInIstio = func(workload *discovery_v1alpha1.MeshWorkload) error {
+	WorkloadNotInIstio = func(workload *zephyr_discovery.MeshWorkload) error {
 		return eris.Errorf("Workload %s.%s does not belong to an Istio mesh", workload.Name, workload.Namespace)
 	}
 	ClusterNotReady = func(clusterName string) error {
@@ -50,7 +50,7 @@ type IstioFederationClient meshes.MeshFederationClient
 // istio-specific implementation of federation resolution
 func NewIstioFederationClient(
 	dynamicClientGetter mc_manager.DynamicClientGetter,
-	meshClient discovery_core.MeshClient,
+	meshClient zephyr_discovery.MeshClient,
 	gatewayClientFactory istio_networking.GatewayClientFactory,
 	envoyFilterClientFactory istio_networking.EnvoyFilterClientFactory,
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory,
@@ -74,7 +74,7 @@ func NewIstioFederationClient(
 
 type istioFederationClient struct {
 	dynamicClientGetter          mc_manager.DynamicClientGetter
-	meshClient                   discovery_core.MeshClient
+	meshClient                   zephyr_discovery.MeshClient
 	gatewayClientFactory         istio_networking.GatewayClientFactory
 	envoyFilterClientFactory     istio_networking.EnvoyFilterClientFactory
 	destinationRuleClientFactory istio_networking.DestinationRuleClientFactory
@@ -87,7 +87,7 @@ type istioFederationClient struct {
 func (i *istioFederationClient) FederateServiceSide(
 	ctx context.Context,
 	virtualMesh *networking_v1alpha1.VirtualMesh,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 ) (eap dns.ExternalAccessPoint, err error) {
 	meshForService, dynamicClient, err := i.getClientForMesh(ctx, meshService.Spec.GetMesh())
 	if err != nil {
@@ -121,8 +121,8 @@ func (i *istioFederationClient) FederateServiceSide(
 func (i *istioFederationClient) FederateClientSide(
 	ctx context.Context,
 	eap dns.ExternalAccessPoint,
-	meshService *discovery_v1alpha1.MeshService,
-	meshWorkload *discovery_v1alpha1.MeshWorkload,
+	meshService *zephyr_discovery.MeshService,
+	meshWorkload *zephyr_discovery.MeshWorkload,
 ) error {
 	meshForWorkload, clientForWorkloadMesh, err := i.getClientForMesh(ctx, meshWorkload.Spec.GetMesh())
 	if err != nil {
@@ -192,7 +192,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 	ctx context.Context,
 	clientForWorkloadMesh client.Client,
 	eap dns.ExternalAccessPoint,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	installNamespace,
 	workloadClusterName string,
 ) error {
@@ -333,7 +333,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 	ctx context.Context,
 	dynamicClient client.Client,
 	virtualMeshName string,
-	meshService *discovery_v1alpha1.MeshService,
+	meshService *zephyr_discovery.MeshService,
 	installNamespace string,
 ) error {
 
@@ -414,8 +414,8 @@ func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServi
 	return fmt.Sprintf("*.%s", federationInfo.GetMulticlusterDnsName())
 }
 
-func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *core_types.ResourceRef) (*discovery_v1alpha1.Mesh, client.Client, error) {
-	mesh, err := i.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshRef))
+func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
+	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, nil, err
 	}

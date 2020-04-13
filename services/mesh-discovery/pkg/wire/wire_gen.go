@@ -8,9 +8,9 @@ package wire
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
 	"github.com/solo-io/service-mesh-hub/pkg/common/docker"
 	mc_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
@@ -44,13 +44,13 @@ func InitializeDiscovery(ctx context.Context) (DiscoveryContext, error) {
 	deploymentClientFactory := kubernetes_apps.DeploymentClientFactoryProvider()
 	ownerFetcherFactory := mesh_workload.OwnerFetcherFactoryProvider()
 	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
-	meshServiceClientFactory := zephyr_discovery.MeshServiceClientFactoryProvider()
-	meshWorkloadClientFactory := zephyr_discovery.MeshWorkloadClientFactoryProvider()
+	meshServiceClientFactory := v1alpha1.MeshServiceClientFactoryProvider()
+	meshWorkloadClientFactory := v1alpha1.MeshWorkloadClientFactoryProvider()
 	podControllerFactory := controllers.NewPodControllerFactory()
 	serviceControllerFactory := controllers.NewServiceControllerFactory()
 	meshWorkloadControllerFactory := controllers.NewMeshWorkloadControllerFactory()
 	deploymentControllerFactory := controllers.NewDeploymentControllerFactory()
-	meshClientFactory := zephyr_discovery.NewMeshClientFactoryProvider()
+	meshClientFactory := v1alpha1.MeshClientFactoryProvider()
 	discoveryContext := DiscoveryContextProvider(multiClusterDependencies, istioMeshScanner, consulConnectMeshScanner, linkerdMeshScanner, replicaSetClientFactory, deploymentClientFactory, ownerFetcherFactory, serviceClientFactory, meshServiceClientFactory, meshWorkloadClientFactory, podControllerFactory, serviceControllerFactory, meshWorkloadControllerFactory, deploymentControllerFactory, meshClientFactory)
 	return discoveryContext, nil
 }

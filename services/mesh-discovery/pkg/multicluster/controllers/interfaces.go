@@ -26,8 +26,8 @@ type MeshWorkloadControllerFactory interface {
 	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadController, error)
 }
 
-type MeshServiceControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceController, error)
+type MeshServiceEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshServiceEventWatcher, error)
 }
 
 type ServiceControllerFactory interface {

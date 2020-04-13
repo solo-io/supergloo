@@ -61,8 +61,8 @@ var _ = Describe("Federation Decider", func() {
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
 
-		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
-		meshServiceController.EXPECT().
+		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, funcs *controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
@@ -75,7 +75,7 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-			meshServiceController,
+			MeshServiceEventWatcher,
 		).Start(ctx)
 
 		oldMeshService := &discovery_v1alpha1.MeshService{
@@ -113,8 +113,8 @@ var _ = Describe("Federation Decider", func() {
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
 
-		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
-		meshServiceController.EXPECT().
+		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, funcs *controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
@@ -127,7 +127,7 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-			meshServiceController,
+			MeshServiceEventWatcher,
 		).Start(ctx)
 
 		service1 := &discovery_v1alpha1.MeshService{
@@ -156,8 +156,8 @@ var _ = Describe("Federation Decider", func() {
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
 
-		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
-		meshServiceController.EXPECT().
+		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, funcs *controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
@@ -170,7 +170,7 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-			meshServiceController,
+			MeshServiceEventWatcher,
 		).Start(ctx)
 
 		workload1 := &discovery_v1alpha1.MeshWorkload{
@@ -268,8 +268,8 @@ var _ = Describe("Federation Decider", func() {
 
 		var capturedEventHandler *controller.MeshServiceEventHandlerFuncs
 
-		meshServiceController := mock_zephyr_discovery.NewMockMeshServiceController(ctrl)
-		meshServiceController.EXPECT().
+		MeshServiceEventWatcher := mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
+		MeshServiceEventWatcher.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, funcs *controller.MeshServiceEventHandlerFuncs) error {
 				capturedEventHandler = funcs
@@ -282,7 +282,7 @@ var _ = Describe("Federation Decider", func() {
 			meshServiceClient,
 			virtualMeshClient,
 			federationClients,
-			meshServiceController,
+			MeshServiceEventWatcher,
 		).Start(ctx)
 
 		federatedServiceRef := &core_types.ResourceRef{

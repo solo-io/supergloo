@@ -6,9 +6,10 @@ import (
 	"context"
 
 	"github.com/google/wire"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	multicluster_wire "github.com/solo-io/service-mesh-hub/services/common/multicluster/wire"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
@@ -25,10 +26,13 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		kubernetes_core.NewConfigMapClient,
 		kubernetes_core.NewPodClientFactory,
 		kubernetes_core.NewNodeClientFactory,
-		discovery_core.NewMeshWorkloadClient,
 		kubernetes_apps.DeploymentClientFactoryProvider,
-		zephyr_networking.NewVirtualMeshClient,
-		discovery_core.NewMeshClient,
+		zephyr_discovery.MeshClientProvider,
+		zephyr_discovery.MeshServiceClientProvider,
+		zephyr_discovery.MeshWorkloadClientProvider,
+		zephyr_networking.VirtualMeshClientProvider,
+		zephyr_networking.TrafficPolicyClientProvider,
+		zephyr_networking.AccessControlPolicyClientProvider,
 		csr_generator.NewVirtualMeshCSRDataSourceFactory,
 		vm_validation.NewVirtualMeshFinder,
 		cert_signer.NewVirtualMeshCertClient,
@@ -36,15 +40,15 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 		multicluster_wire.DynamicClientGetterProvider,
 		certgen.NewSigner,
 		certgen.NewRootCertGenerator,
-		LocalMeshWorkloadControllerProvider,
-		LocalMeshServiceControllerProvider,
+		LocalMeshWorkloadEventWatcherProvider,
+		LocalMeshServiceEventWatcherProvider,
 		ClientFactoryProviderSet,
 		ControllerFactoryProviderSet,
 		TrafficPolicyProviderSet,
 		AccessControlPolicySet,
 		FederationProviderSet,
 		networking_multicluster.NewMeshNetworkingClusterHandler,
-		controller_factories.NewLocalVirtualMeshController,
+		controller_factories.NewLocalVirtualMeshEventWatcher,
 		vm_validation.NewVirtualMeshValidator,
 		cert_manager.VMCSRSnapshotListenerSet,
 		MeshNetworkingSnapshotContextProvider,

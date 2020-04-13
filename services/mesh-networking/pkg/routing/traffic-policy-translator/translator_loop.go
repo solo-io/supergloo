@@ -8,13 +8,13 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_controller "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator/errors"
@@ -29,32 +29,32 @@ func NewTrafficPolicyTranslatorLoop(
 	meshClient zephyr_discovery.MeshClient,
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	trafficPolicyClient zephyr_networking.TrafficPolicyClient,
-	trafficPolicyController networking_controller.TrafficPolicyController,
-	meshServiceController discovery_controller.MeshServiceController,
+	TrafficPolicyEventWatcher networking_controller.TrafficPolicyEventWatcher,
+	MeshServiceEventWatcher discovery_controller.MeshServiceEventWatcher,
 ) TrafficPolicyTranslatorLoop {
 	return &trafficPolicyTranslatorLoop{
-		preprocessor:            preprocessor,
-		meshTranslators:         meshTranslators,
-		meshClient:              meshClient,
-		meshServiceClient:       meshServiceClient,
-		trafficPolicyClient:     trafficPolicyClient,
-		trafficPolicyController: trafficPolicyController,
-		meshServiceController:   meshServiceController,
+		preprocessor:              preprocessor,
+		meshTranslators:           meshTranslators,
+		meshClient:                meshClient,
+		meshServiceClient:         meshServiceClient,
+		trafficPolicyClient:       trafficPolicyClient,
+		TrafficPolicyEventWatcher: TrafficPolicyEventWatcher,
+		MeshServiceEventWatcher:   MeshServiceEventWatcher,
 	}
 }
 
 type trafficPolicyTranslatorLoop struct {
-	preprocessor            preprocess.TrafficPolicyPreprocessor
-	meshTranslators         []TrafficPolicyMeshTranslator
-	meshClient              zephyr_discovery.MeshClient
-	meshServiceClient       zephyr_discovery.MeshServiceClient
-	trafficPolicyClient     zephyr_networking.TrafficPolicyClient
-	trafficPolicyController networking_controller.TrafficPolicyController
-	meshServiceController   discovery_controller.MeshServiceController
+	preprocessor              preprocess.TrafficPolicyPreprocessor
+	meshTranslators           []TrafficPolicyMeshTranslator
+	meshClient                zephyr_discovery.MeshClient
+	meshServiceClient         zephyr_discovery.MeshServiceClient
+	trafficPolicyClient       zephyr_networking.TrafficPolicyClient
+	TrafficPolicyEventWatcher networking_controller.TrafficPolicyEventWatcher
+	MeshServiceEventWatcher   discovery_controller.MeshServiceEventWatcher
 }
 
 func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
-	err := t.trafficPolicyController.AddEventHandler(ctx, &networking_controller.TrafficPolicyEventHandlerFuncs{
+	err := t.TrafficPolicyEventWatcher.AddEventHandler(ctx, &networking_controller.TrafficPolicyEventHandlerFuncs{
 		OnCreate: func(trafficPolicy *networking_v1alpha1.TrafficPolicy) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, trafficPolicy)
 			logger.Debugw("event handler enter",
@@ -63,7 +63,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			)
 			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(ctx, trafficPolicy)
 			t.setStatus(err, translatorErrors, trafficPolicy)
-			err = t.trafficPolicyClient.UpdateStatus(ctx, trafficPolicy)
+			err = t.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, trafficPolicy)
 			if err != nil {
 				logger.Errorw("Error while handling TrafficPolicy create event", err)
 			}
@@ -80,7 +80,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 			)
 			translatorErrors, err := t.upsertPolicyResourcesForTrafficPolicy(ctx, new)
 			t.setStatus(err, translatorErrors, new)
-			err = t.trafficPolicyClient.UpdateStatus(ctx, new)
+			err = t.trafficPolicyClient.UpdateTrafficPolicyStatus(ctx, new)
 			if err != nil {
 				logger.Errorw("Error while handling TrafficPolicy update event", err)
 			}
@@ -104,7 +104,7 @@ func (t *trafficPolicyTranslatorLoop) Start(ctx context.Context) error {
 		return err
 	}
 
-	err = t.meshServiceController.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
+	err = t.MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controller.MeshServiceEventHandlerFuncs{
 		OnCreate: func(meshService *v1alpha1.MeshService) error {
 			logger := logging.BuildEventLogger(ctx, logging.CreateEvent, meshService)
 			logger.Debugw("event handler enter",
@@ -194,11 +194,11 @@ func (t *trafficPolicyTranslatorLoop) translateMergedTrafficPolicies(
 	var meshTypeStatuses []*types.TrafficPolicyStatus_TranslatorError
 	for meshServiceKey, mergedTrafficPolicies := range mergedTrafficPoliciesByMeshService {
 		meshServiceObjectKey := client.ObjectKey{Name: meshServiceKey.Name, Namespace: meshServiceKey.Namespace}
-		meshService, err := t.meshServiceClient.Get(ctx, meshServiceObjectKey)
+		meshService, err := t.meshServiceClient.GetMeshService(ctx, meshServiceObjectKey)
 		if err != nil {
 			return nil, err
 		}
-		mesh, err := t.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}

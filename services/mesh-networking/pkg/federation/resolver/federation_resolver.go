@@ -8,11 +8,11 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
-	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery"
-	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
@@ -50,7 +50,7 @@ func NewFederationResolver(
 	meshServiceClient zephyr_discovery.MeshServiceClient,
 	virtualMeshClient zephyr_networking.VirtualMeshClient,
 	perMeshFederationClients PerMeshFederationClients,
-	meshServiceController discovery_controllers.MeshServiceController,
+	MeshServiceEventWatcher discovery_controllers.MeshServiceEventWatcher,
 ) FederationResolver {
 	return &federationResolver{
 		meshClient:               meshClient,
@@ -58,12 +58,12 @@ func NewFederationResolver(
 		meshServiceClient:        meshServiceClient,
 		virtualMeshClient:        virtualMeshClient,
 		perMeshFederationClients: perMeshFederationClients,
-		meshServiceController:    meshServiceController,
+		MeshServiceEventWatcher:  MeshServiceEventWatcher,
 	}
 }
 
 type federationResolver struct {
-	meshServiceController    discovery_controllers.MeshServiceController
+	MeshServiceEventWatcher  discovery_controllers.MeshServiceEventWatcher
 	meshClient               zephyr_discovery.MeshClient
 	meshWorkloadClient       zephyr_discovery.MeshWorkloadClient
 	meshServiceClient        zephyr_discovery.MeshServiceClient
@@ -72,7 +72,7 @@ type federationResolver struct {
 }
 
 func (f *federationResolver) Start(ctx context.Context) error {
-	return f.meshServiceController.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
+	return f.MeshServiceEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshServiceEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshService) error {
 			eventCtx := logging.EventContext(ctx, logging.CreateEvent, obj)
 			contextutils.LoggerFrom(eventCtx).Debugw("event handler enter",
