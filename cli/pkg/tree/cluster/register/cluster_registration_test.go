@@ -206,8 +206,8 @@ users:
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
-Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -299,8 +299,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				"%s --remote-cluster-name test-cluster-name", remoteKubeConfig))
 
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
-Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -394,8 +394,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				"--remote-context %s --remote-cluster-name test-cluster-name", remoteKubeConfig, contextDEF))
 
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
-Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -583,7 +583,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 `))
 		})
 
-		It("will fail if unable to write secret", func() {
+		It("will fail if unable install CSR agent", func() {
 			localKubeConfig := "~/.kube/master-config"
 			remoteKubeConfig := "~/.kube/target-config"
 			os.Setenv("KUBECONFIG", localKubeConfig)
@@ -604,29 +604,21 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
-			kubeLoader.
-				EXPECT().
-				GetRawConfigForContext(remoteKubeConfig, "").
-				Return(cxt, nil)
-
 			clusterClient.EXPECT().Get(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
 				}).Return(nil, errors.NewNotFound(schema.GroupResource{}, "name"))
 
-			secretClient.
+			csrAgentInstaller.
 				EXPECT().
-				UpsertData(ctx, &v1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels:    map[string]string{kubeconfig.KubeConfigSecretLabel: "true"},
-						Name:      serviceAccountRef.Name,
-						Namespace: env.GetWriteNamespace(),
-					},
-					Data: map[string][]byte{
-						"test-cluster-name": []byte(expectedKubeConfig(testServerABC)),
-					},
-					Type: v1.SecretTypeOpaque,
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					KubeContext:          "",
+					ClusterName:          "test-cluster-name",
+					SmhInstallNamespace:  env.GetWriteNamespace(),
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
+					RemoteWriteNamespace: env.GetWriteNamespace(),
 				}).
 				Return(testErr)
 
@@ -635,11 +627,10 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				Get(ctx, env.GetWriteNamespace()).
 				Return(nil, nil)
 
-			output, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
+			_, err := meshctl.Invoke(fmt.Sprintf("cluster register --remote-kubeconfig %s"+
 				" --kubeconfig %s --remote-cluster-name test-cluster-name", remoteKubeConfig, localKubeConfig))
 
-			Expect(output).To(ContainSubstring("Successfully wrote service account to remote cluster..."))
-			Expect(err).To(HaveInErrorChain(register.FailedToWriteSecret(testErr)))
+			Expect(err).To(HaveInErrorChain(testErr))
 		})
 
 		It("errors if a master or target cluster are not set", func() {
@@ -710,6 +701,18 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			testErr := eris.New("test")
 
+			csrAgentInstaller.
+				EXPECT().
+				Install(ctx, &csr.CsrAgentInstallOptions{
+					KubeConfig:           remoteKubeConfig,
+					KubeContext:          "",
+					ClusterName:          "test-cluster-name",
+					SmhInstallNamespace:  env.GetWriteNamespace(),
+					ReleaseName:          cliconstants.CsrAgentReleaseName,
+					RemoteWriteNamespace: env.GetWriteNamespace(),
+				}).
+				Return(nil)
+
 			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
@@ -728,7 +731,10 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				" --kubeconfig %s --remote-cluster-name %s", remoteKubeConfig, localKubeConfig, clusterName))
 
 			Expect(err).To(HaveInErrorChain(register.FailedToWriteKubeCluster(testErr)))
-			Expect(stdout).To(Equal("Successfully wrote service account to remote cluster...\n"))
+			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
+Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
+`))
 		})
 
 		It("can use the same kube config with different contexts", func() {
@@ -799,8 +805,8 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
-Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))
@@ -875,8 +881,8 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(stdout).To(Equal(`Successfully wrote service account to remote cluster...
-Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
+Successfully wrote kube config secret to master cluster...
 
 Cluster test-cluster-name is now registered in your Service Mesh Hub installation
 `))

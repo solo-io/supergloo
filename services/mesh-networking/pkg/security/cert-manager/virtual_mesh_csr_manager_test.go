@@ -86,7 +86,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: testErr.Error(),
 				},
 			}))
@@ -119,7 +119,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: cert_manager.UnsupportedMeshTypeError(mesh).Error(),
 				},
 			}))
@@ -159,7 +159,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: cert_manager.UnableToGatherCertConfigInfo(testErr, mesh, vm).Error(),
 				},
 			}))
@@ -203,7 +203,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: mc_manager.ClientNotFoundError(clusterName).Error(),
 				},
 			}))
@@ -255,7 +255,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: testErr.Error(),
 				},
 			}))
@@ -335,7 +335,7 @@ var _ = Describe("csr manager", func() {
 			status := csrProcessor.InitializeCertificateForVirtualMesh(ctx, vm)
 			Expect(status).To(Equal(networking_types.VirtualMeshStatus{
 				CertificateStatus: &core_types.Status{
-					State:   core_types.Status_INVALID,
+					State:   core_types.Status_PROCESSING_ERROR,
 					Message: testErr.Error(),
 				},
 			}))

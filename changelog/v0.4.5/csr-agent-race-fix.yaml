@@ -1,0 +1,9 @@
+changelog:
+  - type: FIX
+    description: >
+      Fix race where event handler on remote cluster for VirtualMesh CSR was being initialized before the VirtualMesh CRD was
+      registered.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/504
+  - type: FIX
+    description: Report "PROCESSING_ERROR" instead "INVALID" which was confusing for the user.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/559
