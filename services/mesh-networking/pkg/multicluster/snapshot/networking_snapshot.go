@@ -46,8 +46,8 @@ func NewMeshNetworkingSnapshotGenerator(
 	ctx context.Context,
 	snapshotValidator MeshNetworkingSnapshotValidator,
 	MeshServiceEventWatcher discovery_controllers.MeshServiceEventWatcher,
-	virtualMeshController networking_controllers.VirtualMeshController,
-	meshWorkloadController discovery_controllers.MeshWorkloadController,
+	virtualMeshEventWatcher networking_controllers.VirtualMeshEventWatcher,
+	meshWorkloadEventWatcher discovery_controllers.MeshWorkloadEventWatcher,
 ) (MeshNetworkingSnapshotGenerator, error) {
 	generator := &networkingSnapshotGenerator{
 		snapshotValidator: snapshotValidator,
@@ -125,7 +125,7 @@ func NewMeshNetworkingSnapshotGenerator(
 		return nil, err
 	}
 
-	err = virtualMeshController.AddEventHandler(ctx, &networking_controllers.VirtualMeshEventHandlerFuncs{
+	err = virtualMeshEventWatcher.AddEventHandler(ctx, &networking_controllers.VirtualMeshEventHandlerFuncs{
 		OnCreate: func(obj *networking_v1alpha1.VirtualMesh) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()
@@ -197,7 +197,7 @@ func NewMeshNetworkingSnapshotGenerator(
 		return nil, err
 	}
 
-	err = meshWorkloadController.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
+	err = meshWorkloadEventWatcher.AddEventHandler(ctx, &discovery_controllers.MeshWorkloadEventHandlerFuncs{
 		OnCreate: func(obj *discovery_v1alpha1.MeshWorkload) error {
 			generator.snapshotMutex.Lock()
 			defer generator.snapshotMutex.Unlock()

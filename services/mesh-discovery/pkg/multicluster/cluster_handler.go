@@ -46,9 +46,6 @@ func NewDiscoveryClusterHandler(
 	localMeshClient := discoveryContext.ClientFactories.MeshClientFactory(localClient)
 
 	localMeshWorkloadController := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
-	if err != nil {
-		return nil, err
-	}
 
 	// we don't store the local manager on the struct to avoid mistakenly conflating the local manager with the remote manager
 	handler := &discoveryClusterHandler{
@@ -146,19 +143,8 @@ func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
 
 func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.AsyncManager, clusterName string) (*clusterDependentDeps, error) {
 	deploymentEventWatcher := m.discoveryContext.EventWatcherFactories.DeploymentEventWatcherFactory.Build(mgr, clusterName)
-	if err != nil {
-		return nil, err
-	}
-
 	podEventWatcher := m.discoveryContext.EventWatcherFactories.PodEventWatcherFactory.Build(mgr, clusterName)
-	if err != nil {
-		return nil, err
-	}
-
 	serviceEventWatcher := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)
-	if err != nil {
-		return nil, err
-	}
 
 	remoteClient := mgr.Manager().GetClient()
 	var meshWorkloadScanners []mesh_workload.MeshWorkloadScanner

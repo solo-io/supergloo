@@ -24,11 +24,11 @@ func NewVirtualMeshFinder(meshClient zephyr_discovery.MeshClient) VirtualMeshFin
 	return &virtualMeshFinder{meshClient: meshClient}
 }
 
-func (g *virtualMeshFinder) GetMeshesForVirtualMesh(
+func (v *virtualMeshFinder) GetMeshesForVirtualMesh(
 	ctx context.Context,
 	virtualMesh *v1alpha1.VirtualMesh,
 ) ([]*discoveryv1alpha1.Mesh, error) {
-	meshList, err := g.MeshClient.ListMesh(ctx)
+	meshList, err := v.meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

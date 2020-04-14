@@ -36,15 +36,15 @@ func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher controller0.ServiceController, meshWorkloadController controller.MeshWorkloadEventWatcher) error {
+func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher controller0.ServiceEventWatcher, meshWorkloadEventWatcher controller.MeshWorkloadEventWatcher) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", serviceEventWatcher, meshWorkloadController)
+	ret := m.ctrl.Call(m, "StartDiscovery", serviceEventWatcher, meshWorkloadEventWatcher)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceEventWatcher, meshWorkloadController interface{}) *gomock.Call {
+func (mr *MockMeshServiceFinderMockRecorder) StartDiscovery(serviceEventWatcher, meshWorkloadEventWatcher interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceEventWatcher, meshWorkloadController)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshServiceFinder)(nil).StartDiscovery), serviceEventWatcher, meshWorkloadEventWatcher)
 }

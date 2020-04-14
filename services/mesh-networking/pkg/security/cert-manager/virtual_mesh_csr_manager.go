@@ -21,6 +21,7 @@ import (
 	vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -115,7 +116,13 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			return err
 		}
 		csrClient := m.csrClientFactory(dynamicClient)
-		_, err = csrClient.Get(ctx, m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()), env.GetWriteNamespace())
+		_, err = csrClient.GetVirtualMeshCertificateSigningRequest(
+			ctx,
+			client.ObjectKey{
+				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
+				Namespace: env.GetWriteNamespace(),
+			},
+		)
 		if !errors.IsNotFound(err) {
 			if err != nil {
 				return err
@@ -125,7 +132,7 @@ func (m *virtualMeshCsrManager) attemptCsrCreate(
 			continue
 		}
 
-		if err = csrClient.Create(ctx, &security_v1alpha1.VirtualMeshCertificateSigningRequest{
+		if err = csrClient.CreateVirtualMeshCertificateSigningRequest(ctx, &security_v1alpha1.VirtualMeshCertificateSigningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      m.buildCsrName(strings.ToLower(meshType.String()), vm.GetName()),
 				Namespace: env.GetWriteNamespace(),

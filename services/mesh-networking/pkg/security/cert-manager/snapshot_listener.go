@@ -43,7 +43,7 @@ func NewVMCSRSnapshotListener(
 					logger.Debugw("csr processor failed", zap.Error(eris.New(status.CertificateStatus.Message)))
 				}
 				virtualMesh.Status = status
-				err := virtualMeshClient.UpdateStatus(ctx, virtualMesh)
+				err := virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)
 				if err != nil {
 					logger.Errorf("Error updating certificate status on virtual mesh %s.%s",
 						virtualMesh.Name, virtualMesh.Namespace)

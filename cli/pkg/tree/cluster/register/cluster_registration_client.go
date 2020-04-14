@@ -203,7 +203,7 @@ func shouldOverwrite(
 	masterKubeClients *common.KubeClients,
 ) (ok bool, err error) {
 	if !opts.Cluster.Register.Overwrite {
-		_, err = masterKubeClients.KubeClusterClient.Get(
+		_, err = masterKubeClients.KubeClusterClient.GetKubernetesCluster(
 			ctx,
 			client.ObjectKey{
 				Name:      opts.Cluster.Register.RemoteClusterName,
@@ -325,7 +325,7 @@ func writeKubeClusterToMaster(
 			WriteNamespace: registerOpts.RemoteWriteNamespace,
 		},
 	}
-	err := masterKubeClients.KubeClusterClient.Upsert(ctx, cluster)
+	err := masterKubeClients.KubeClusterClient.UpsertKubernetesClusterSpec(ctx, cluster)
 	if err != nil {
 		return FailedToWriteKubeCluster(err)
 	}

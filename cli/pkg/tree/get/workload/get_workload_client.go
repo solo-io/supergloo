@@ -27,7 +27,7 @@ func GetMeshWorkloads(
 	if err != nil {
 		return err
 	}
-	meshWorkloads, err := kubeClients.MeshWorkloadClient.List(ctx)
+	meshWorkloads, err := kubeClients.MeshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return err
 	}

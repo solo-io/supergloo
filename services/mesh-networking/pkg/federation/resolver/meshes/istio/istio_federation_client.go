@@ -415,7 +415,7 @@ func BuildMatchingMultiClusterHostName(federationInfo *discovery_types.MeshServi
 }
 
 func (i *istioFederationClient) getClientForMesh(ctx context.Context, meshRef *core_types.ResourceRef) (*zephyr_discovery.Mesh, client.Client, error) {
-	mesh, err := i.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
+	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
 	if err != nil {
 		return nil, nil, err
 	}

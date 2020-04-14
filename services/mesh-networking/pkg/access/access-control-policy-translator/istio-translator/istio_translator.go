@@ -235,7 +235,7 @@ Fetch trust domains for the Istio mesh of the given cluster.
 Multiple mesh installations of the same type on the same cluster are unsupported, simply use the first Mesh encountered.
 */
 func (i *istioTranslator) getTrustDomainForClusters(ctx context.Context, clusterNames []string) ([]string, error) {
-	meshList, err := i.MeshClient.ListMesh(ctx)
+	meshList, err := i.meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

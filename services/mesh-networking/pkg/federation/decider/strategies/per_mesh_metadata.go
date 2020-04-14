@@ -50,7 +50,11 @@ type ErrorReport struct {
 	Err         error
 }
 
-func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.MeshNetworkingSnapshot, meshClient discovery_core.MeshClient) (PerMeshMetadata, []ErrorReport) {
+func BuildPerMeshMetadataFromSnapshot(
+	ctx context.Context,
+	snapshot *snapshot.MeshNetworkingSnapshot,
+	meshClient discovery_v1alpha1.MeshClient,
+) (PerMeshMetadata, []ErrorReport) {
 	var errors []ErrorReport
 
 	perMeshResources := PerMeshMetadata{

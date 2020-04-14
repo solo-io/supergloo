@@ -14,192 +14,150 @@ import (
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 )
 
-// MockDeploymentControllerFactory is a mock of DeploymentEventWatcherFactory interface.
-type MockDeploymentControllerFactory struct {
+// MockDeploymentEventWatcherFactory is a mock of DeploymentEventWatcherFactory interface.
+type MockDeploymentEventWatcherFactory struct {
 	ctrl     *gomock.Controller
-	recorder *MockDeploymentControllerFactoryMockRecorder
+	recorder *MockDeploymentEventWatcherFactoryMockRecorder
 }
 
-// MockDeploymentControllerFactoryMockRecorder is the mock recorder for MockDeploymentControllerFactory.
-type MockDeploymentControllerFactoryMockRecorder struct {
-	mock *MockDeploymentControllerFactory
+// MockDeploymentEventWatcherFactoryMockRecorder is the mock recorder for MockDeploymentEventWatcherFactory.
+type MockDeploymentEventWatcherFactoryMockRecorder struct {
+	mock *MockDeploymentEventWatcherFactory
 }
 
-// NewMockDeploymentControllerFactory creates a new mock instance.
-func NewMockDeploymentControllerFactory(ctrl *gomock.Controller) *MockDeploymentControllerFactory {
-	mock := &MockDeploymentControllerFactory{ctrl: ctrl}
-	mock.recorder = &MockDeploymentControllerFactoryMockRecorder{mock}
+// NewMockDeploymentEventWatcherFactory creates a new mock instance.
+func NewMockDeploymentEventWatcherFactory(ctrl *gomock.Controller) *MockDeploymentEventWatcherFactory {
+	mock := &MockDeploymentEventWatcherFactory{ctrl: ctrl}
+	mock.recorder = &MockDeploymentEventWatcherFactoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockDeploymentControllerFactory) EXPECT() *MockDeploymentControllerFactoryMockRecorder {
+func (m *MockDeploymentEventWatcherFactory) EXPECT() *MockDeploymentEventWatcherFactoryMockRecorder {
 	return m.recorder
 }
 
 // Build mocks base method.
-func (m *MockDeploymentControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller0.DeploymentController, error) {
+func (m *MockDeploymentEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller0.DeploymentEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller0.DeploymentController)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(controller0.DeploymentEventWatcher)
+	return ret0
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockDeploymentControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
+func (mr *MockDeploymentEventWatcherFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockDeploymentControllerFactory)(nil).Build), mgr, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockDeploymentEventWatcherFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockPodControllerFactory is a mock of PodControllerFactory interface.
-type MockPodControllerFactory struct {
+// MockPodEventWatcherFactory is a mock of PodEventWatcherFactory interface.
+type MockPodEventWatcherFactory struct {
 	ctrl     *gomock.Controller
-	recorder *MockPodControllerFactoryMockRecorder
+	recorder *MockPodEventWatcherFactoryMockRecorder
 }
 
-// MockPodControllerFactoryMockRecorder is the mock recorder for MockPodControllerFactory.
-type MockPodControllerFactoryMockRecorder struct {
-	mock *MockPodControllerFactory
+// MockPodEventWatcherFactoryMockRecorder is the mock recorder for MockPodEventWatcherFactory.
+type MockPodEventWatcherFactoryMockRecorder struct {
+	mock *MockPodEventWatcherFactory
 }
 
-// NewMockPodControllerFactory creates a new mock instance.
-func NewMockPodControllerFactory(ctrl *gomock.Controller) *MockPodControllerFactory {
-	mock := &MockPodControllerFactory{ctrl: ctrl}
-	mock.recorder = &MockPodControllerFactoryMockRecorder{mock}
+// NewMockPodEventWatcherFactory creates a new mock instance.
+func NewMockPodEventWatcherFactory(ctrl *gomock.Controller) *MockPodEventWatcherFactory {
+	mock := &MockPodEventWatcherFactory{ctrl: ctrl}
+	mock.recorder = &MockPodEventWatcherFactoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockPodControllerFactory) EXPECT() *MockPodControllerFactoryMockRecorder {
+func (m *MockPodEventWatcherFactory) EXPECT() *MockPodEventWatcherFactoryMockRecorder {
 	return m.recorder
 }
 
 // Build mocks base method.
-func (m *MockPodControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller1.PodController, error) {
+func (m *MockPodEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.PodEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller1.PodController)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(controller1.PodEventWatcher)
+	return ret0
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockPodControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
+func (mr *MockPodEventWatcherFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockPodControllerFactory)(nil).Build), mgr, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockPodEventWatcherFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockMeshWorkloadControllerFactory is a mock of MeshWorkloadEventWatcherFactory interface.
-type MockMeshWorkloadControllerFactory struct {
+// MockMeshWorkloadEventWatcherFactory is a mock of MeshWorkloadEventWatcherFactory interface.
+type MockMeshWorkloadEventWatcherFactory struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshWorkloadControllerFactoryMockRecorder
+	recorder *MockMeshWorkloadEventWatcherFactoryMockRecorder
 }
 
-// MockMeshWorkloadControllerFactoryMockRecorder is the mock recorder for MockMeshWorkloadControllerFactory.
-type MockMeshWorkloadControllerFactoryMockRecorder struct {
-	mock *MockMeshWorkloadControllerFactory
+// MockMeshWorkloadEventWatcherFactoryMockRecorder is the mock recorder for MockMeshWorkloadEventWatcherFactory.
+type MockMeshWorkloadEventWatcherFactoryMockRecorder struct {
+	mock *MockMeshWorkloadEventWatcherFactory
 }
 
-// NewMockMeshWorkloadControllerFactory creates a new mock instance.
-func NewMockMeshWorkloadControllerFactory(ctrl *gomock.Controller) *MockMeshWorkloadControllerFactory {
-	mock := &MockMeshWorkloadControllerFactory{ctrl: ctrl}
-	mock.recorder = &MockMeshWorkloadControllerFactoryMockRecorder{mock}
+// NewMockMeshWorkloadEventWatcherFactory creates a new mock instance.
+func NewMockMeshWorkloadEventWatcherFactory(ctrl *gomock.Controller) *MockMeshWorkloadEventWatcherFactory {
+	mock := &MockMeshWorkloadEventWatcherFactory{ctrl: ctrl}
+	mock.recorder = &MockMeshWorkloadEventWatcherFactoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMeshWorkloadControllerFactory) EXPECT() *MockMeshWorkloadControllerFactoryMockRecorder {
+func (m *MockMeshWorkloadEventWatcherFactory) EXPECT() *MockMeshWorkloadEventWatcherFactoryMockRecorder {
 	return m.recorder
 }
 
 // Build mocks base method.
-func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshWorkloadEventWatcher {
+func (m *MockMeshWorkloadEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshWorkloadEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
 	ret0, _ := ret[0].(controller.MeshWorkloadEventWatcher)
-	ret1, _ := ret[1].(error)
 	return ret0
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockMeshWorkloadControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadEventWatcherFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshWorkloadControllerFactory)(nil).Build), mgr, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshWorkloadEventWatcherFactory)(nil).Build), mgr, clusterName)
 }
 
-// MockMeshServiceEventWatcherFactory is a mock of MeshServiceEventWatcherFactory interface.
-type MockMeshServiceEventWatcherFactory struct {
+// MockServiceEventWatcherFactory is a mock of ServiceEventWatcherFactory interface.
+type MockServiceEventWatcherFactory struct {
 	ctrl     *gomock.Controller
-	recorder *MockMeshServiceEventWatcherFactoryMockRecorder
+	recorder *MockServiceEventWatcherFactoryMockRecorder
 }
 
-// MockMeshServiceEventWatcherFactoryMockRecorder is the mock recorder for MockMeshServiceEventWatcherFactory.
-type MockMeshServiceEventWatcherFactoryMockRecorder struct {
-	mock *MockMeshServiceEventWatcherFactory
+// MockServiceEventWatcherFactoryMockRecorder is the mock recorder for MockServiceEventWatcherFactory.
+type MockServiceEventWatcherFactoryMockRecorder struct {
+	mock *MockServiceEventWatcherFactory
 }
 
-// NewMockMeshServiceEventWatcherFactory creates a new mock instance.
-func NewMockMeshServiceEventWatcherFactory(ctrl *gomock.Controller) *MockMeshServiceEventWatcherFactory {
-	mock := &MockMeshServiceEventWatcherFactory{ctrl: ctrl}
-	mock.recorder = &MockMeshServiceEventWatcherFactoryMockRecorder{mock}
+// NewMockServiceEventWatcherFactory creates a new mock instance.
+func NewMockServiceEventWatcherFactory(ctrl *gomock.Controller) *MockServiceEventWatcherFactory {
+	mock := &MockServiceEventWatcherFactory{ctrl: ctrl}
+	mock.recorder = &MockServiceEventWatcherFactoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMeshServiceEventWatcherFactory) EXPECT() *MockMeshServiceEventWatcherFactoryMockRecorder {
+func (m *MockServiceEventWatcherFactory) EXPECT() *MockServiceEventWatcherFactoryMockRecorder {
 	return m.recorder
 }
 
 // Build mocks base method.
-func (m *MockMeshServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshServiceEventWatcher {
+func (m *MockServiceEventWatcherFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller1.ServiceEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller.MeshServiceEventWatcher)
-	ret1, _ := ret[1].(error)
+	ret0, _ := ret[0].(controller1.ServiceEventWatcher)
 	return ret0
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockMeshServiceEventWatcherFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
+func (mr *MockServiceEventWatcherFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockMeshServiceEventWatcherFactory)(nil).Build), mgr, clusterName)
-}
-
-// MockServiceControllerFactory is a mock of ServiceEventWatcherFactory interface.
-type MockServiceControllerFactory struct {
-	ctrl     *gomock.Controller
-	recorder *MockServiceControllerFactoryMockRecorder
-}
-
-// MockServiceControllerFactoryMockRecorder is the mock recorder for MockServiceControllerFactory.
-type MockServiceControllerFactoryMockRecorder struct {
-	mock *MockServiceControllerFactory
-}
-
-// NewMockServiceControllerFactory creates a new mock instance.
-func NewMockServiceControllerFactory(ctrl *gomock.Controller) *MockServiceControllerFactory {
-	mock := &MockServiceControllerFactory{ctrl: ctrl}
-	mock.recorder = &MockServiceControllerFactoryMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockServiceControllerFactory) EXPECT() *MockServiceControllerFactoryMockRecorder {
-	return m.recorder
-}
-
-// Build mocks base method.
-func (m *MockServiceControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller1.ServiceController, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
-	ret0, _ := ret[0].(controller1.ServiceController)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Build indicates an expected call of Build.
-func (mr *MockServiceControllerFactoryMockRecorder) Build(mgr, clusterName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockServiceControllerFactory)(nil).Build), mgr, clusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockServiceEventWatcherFactory)(nil).Build), mgr, clusterName)
 }

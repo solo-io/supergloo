@@ -66,7 +66,7 @@ func createVirtualMesh(
 		return err
 	}
 	if !opts.Create.DryRun {
-		return masterKubeClients.VirtualMeshClient.Create(ctx, vm)
+		return masterKubeClients.VirtualMeshClient.CreateVirtualMesh(ctx, vm)
 	} else {
 		return resourcePrinter.Print(out, vm, resource_printing.OutputFormat(opts.Create.OutputFormat))
 	}
@@ -193,7 +193,7 @@ func selectCertificateAuthority(interactivePrompt interactive.InteractivePrompt)
 }
 
 func getAllMeshNames(ctx context.Context, meshClient zephyr_discovery.MeshClient) ([]string, error) {
-	meshList, err := MeshClient.ListMesh(ctx)
+	meshList, err := meshClient.ListMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -4,24 +4,25 @@ import (
 	"context"
 
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
+	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
+	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
 )
 
-func NewPermissiveFederation(meshServiceClient discovery_core.MeshServiceClient) FederationStrategy {
+func NewPermissiveFederation(meshServiceClient zephyr_discovery.MeshServiceClient) FederationStrategy {
 	return &permissiveFederation{
 		meshServiceClient: meshServiceClient,
 	}
 }
 
 type permissiveFederation struct {
-	meshServiceClient discovery_core.MeshServiceClient
+	meshServiceClient zephyr_discovery.MeshServiceClient
 }
 
 func (p *permissiveFederation) WriteFederationToServices(
 	ctx context.Context,
-	vm *v1alpha1.VirtualMesh,
+	vm *zephyr_networking.VirtualMesh,
 	meshNameToMetadata MeshNameToMetadata,
 ) error {
 	for _, serverMeshRef := range vm.Spec.Meshes {

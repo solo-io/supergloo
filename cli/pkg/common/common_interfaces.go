@@ -55,7 +55,7 @@ type KubeClients struct {
 	DeployedVersionFinder           version.DeployedVersionFinder
 	CrdClientFactory                kubernetes_apiext.CrdClientFactory
 	HealthCheckClients              healthcheck_types.Clients
-	SecretsClient                   kubernetes_core.SecretClient
+	SecretClient                    kubernetes_core.SecretClient
 	NamespaceClient                 kubernetes_core.NamespaceClient
 	UninstallClients                UninstallClients
 	InMemoryRESTClientGetterFactory common_config.InMemoryRESTClientGetterFactory
@@ -185,7 +185,7 @@ func KubeClientsProvider(
 		DeployedVersionFinder:           deployedVersionFinder,
 		CrdClientFactory:                crdClientFactory,
 		HealthCheckClients:              healthCheckClients,
-		SecretsClient:                   secretsClient,
+		SecretClient:                    secretsClient,
 		NamespaceClient:                 namespaceClient,
 		UninstallClients:                uninstallClients,
 		InMemoryRESTClientGetterFactory: inMemoryRESTClientGetterFactory,

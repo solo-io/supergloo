@@ -27,7 +27,7 @@ func GetClusters(
 	if err != nil {
 		return err
 	}
-	clusters, err := kubeClients.KubeClusterClient.List(ctx)
+	clusters, err := kubeClients.KubeClusterClient.ListKubernetesCluster(ctx)
 	if err != nil {
 		return err
 	}

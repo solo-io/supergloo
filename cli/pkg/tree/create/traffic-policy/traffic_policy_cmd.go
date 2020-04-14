@@ -94,7 +94,7 @@ func createTrafficPolicy(
 		},
 	}
 	if !opts.Create.DryRun {
-		return masterKubeClients.TrafficPolicyClient.Create(ctx, trafficPolicy)
+		return masterKubeClients.TrafficPolicyClient.CreateTrafficPolicy(ctx, trafficPolicy)
 	} else {
 		return resourcePrinter.Print(out, trafficPolicy, resource_printing.OutputFormat(opts.Create.OutputFormat))
 	}

@@ -41,7 +41,7 @@ type meshNetworkingClusterHandler struct {
 }
 
 type clusterDependentDeps struct {
-	csrController cert_controller.VirtualMeshCertificateSigningRequestController
+	csrController cert_controller.VirtualMeshCertificateSigningRequestEventWatcher
 	csrClient     zephyr_security.VirtualMeshCertificateSigningRequestClient
 }
 
@@ -68,10 +68,7 @@ func (m *meshNetworkingClusterHandler) initializeClusterScopedDeps(
 	mgr mc_manager.AsyncManager,
 	clusterName string,
 ) (*clusterDependentDeps, error) {
-	csrController, err := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)
-	if err != nil {
-		return nil, err
-	}
+	csrController := m.controllerFactories.VirtualMeshCSRControllerFactory(mgr, clusterName)
 
 	csrClient := m.clientFactories.VirtualMeshCSRClientFactory(mgr.Manager().GetClient())
 

@@ -627,7 +627,7 @@ func (i *istioTrafficPolicyTranslator) getClusterNameForMeshService(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 ) (string, error) {
-	mesh, err := i.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return "", err
 	}

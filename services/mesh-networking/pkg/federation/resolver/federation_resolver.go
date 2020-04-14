@@ -149,7 +149,7 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	)
 
 	meshService.Status.FederationStatus = federationStatus
-	err := f.meshServiceClient.UpdateStatus(ctx, meshService)
+	err := f.meshServiceClient.UpdateMeshServiceStatus(ctx, meshService)
 	if err != nil {
 		logger.Warnw("Failed to update service status", zap.Error(err))
 	}
@@ -162,7 +162,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 	meshService *discovery_v1alpha1.MeshService,
 	meshWorkloadRef *core_types.ResourceRef,
 ) error {
-	workload, err := f.meshWorkloadClient.Get(ctx, client.ObjectKey{
+	workload, err := f.meshWorkloadClient.GetMeshWorkload(ctx, client.ObjectKey{
 		Name:      meshWorkloadRef.GetName(),
 		Namespace: meshWorkloadRef.GetNamespace(),
 	})
@@ -235,7 +235,7 @@ func (f *federationResolver) getVirtualMeshContainingService(
 	ctx context.Context,
 	meshForService *discovery_v1alpha1.Mesh,
 ) (*networking_v1alpha1.VirtualMesh, error) {
-	virtualMeshs, err := f.virtualMeshClient.ListMesh(ctx)
+	virtualMeshs, err := f.virtualMeshClient.ListVirtualMesh(ctx)
 	if err != nil {
 		return nil, err
 	}

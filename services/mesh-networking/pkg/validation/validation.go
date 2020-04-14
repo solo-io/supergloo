@@ -93,7 +93,7 @@ func (m *virtualMeshValidator) validate(ctx context.Context, vm *networking_v1al
 func (m *virtualMeshValidator) updateVirtualMeshStatus(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) {
 	logger := contextutils.LoggerFrom(ctx)
 
-	err := m.virtualMeshClient.UpdateStatus(ctx, virtualMesh)
+	err := m.virtualMeshClient.UpdateVirtualMeshStatus(ctx, virtualMesh)
 	if err != nil {
 		logger.Errorw("Error updating validation status on virtual mesh",
 			zap.Any("object_meta", virtualMesh.ObjectMeta),

@@ -27,7 +27,7 @@ func GetMeshServices(
 	if err != nil {
 		return err
 	}
-	services, err := kubeClients.MeshServiceClient.List(ctx)
+	services, err := kubeClients.MeshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return err
 	}

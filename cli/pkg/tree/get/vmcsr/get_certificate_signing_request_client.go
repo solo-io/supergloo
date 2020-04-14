@@ -27,7 +27,7 @@ func GetVirtualMeshCertificateSigningRequests(
 	if err != nil {
 		return err
 	}
-	virtualMeshCSRs, err := kubeClients.VirtualMeshCSRClient.List(ctx)
+	virtualMeshCSRs, err := kubeClients.VirtualMeshCSRClient.ListVirtualMeshCertificateSigningRequest(ctx)
 	if err != nil {
 		return err
 	}

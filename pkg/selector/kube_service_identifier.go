@@ -29,7 +29,7 @@ func BuildIdForMeshService(
 	meshClient zephyr_discovery.MeshClient,
 	meshService *zephyr_discovery.MeshService,
 ) (*MeshServiceId, error) {
-	mesh, err := meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
