@@ -306,7 +306,7 @@ func getMeshServicesBySelectorNamespace(
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
 	for _, meshService := range meshServices {
 		kubeService := meshService.Spec.GetKubeService()
-		if kubeServiceMatches(selectors, namespaces, clusters, kubeService) {
+		if KubeServiceMatches(selectors, namespaces, clusters, kubeService) {
 			selectedMeshServices = append(selectedMeshServices, meshService)
 		}
 	}
@@ -318,7 +318,7 @@ func getMeshServicesBySelectorNamespace(
 2) If namespaces is specified, the k8s must be in one of those namespaces
 3) The k8s Service must exist in the specified cluster. If cluster is empty, select across all clusters.
 */
-func kubeServiceMatches(
+func KubeServiceMatches(
 	labels map[string]string,
 	namespaces []string,
 	clusters []string,

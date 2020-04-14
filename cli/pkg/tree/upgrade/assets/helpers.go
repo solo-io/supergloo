@@ -28,7 +28,7 @@ func MeshctlBinaryName() string {
 
 //go:generate mockgen -destination ./mocks/helpers.go -source ./helpers.go
 var (
-	DefaultRequestTimeout = 5 * time.Second
+	DefaultRequestTimeout = 15 * time.Second
 
 	NoReleaseContainingAssetError = eris.New("couldn't find any release with the desired asset")
 )

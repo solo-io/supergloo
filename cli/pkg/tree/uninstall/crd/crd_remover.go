@@ -7,6 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
 	kubernetes_apiext "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apiext"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
 )
 
@@ -45,16 +46,23 @@ func (c *crdRemover) RemoveZephyrCrds(ctx context.Context, clusterName string, r
 		return false, FailedToListCrds(err, clusterName)
 	}
 
-	foundZephyrResources := false
 	for _, crd := range crds.Items {
 		if strings.HasSuffix(crd.GetName(), cliconstants.ServiceMeshHubApiGroupSuffix) {
-			foundZephyrResources = true
-			err := crdClient.Delete(ctx, &crd)
+			crdsDeleted = true
+			existing, err := crdClient.Get(ctx, crd.GetName())
 			if err != nil {
-				return foundZephyrResources, FailedToDeleteCrd(err, clusterName, crd.GetName())
+				if errors.IsNotFound(err) {
+					// may be a race condition elsewhere; the CRD was removed between when we listed it and when we came here to actually delete it
+					continue
+				}
+				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
+			}
+			err = crdClient.Delete(ctx, existing)
+			if err != nil {
+				return false, FailedToDeleteCrd(err, clusterName, crd.GetName())
 			}
 		}
 	}
 
-	return foundZephyrResources, nil
+	return crdsDeleted, nil
 }
