@@ -2,10 +2,8 @@ package mesh_workload_test
 
 import (
 	"context"
-	"errors"
 
 	"github.com/golang/mock/gomock"
-	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -13,18 +11,23 @@ import (
 	"github.com/solo-io/go-utils/testutils"
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discoveryv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	controller2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload"
 	mock_mesh_workload "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh-workload/mocks"
+	mock_controllers "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/multicluster/controllers/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/zephyr/discovery"
 	corev1 "k8s.io/api/core/v1"
 	k8s_errs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 var _ = Describe("MeshWorkloadFinder", func() {
@@ -35,11 +38,16 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient         *mock_core.MockMeshClient
 		mockMeshWorkloadScanner     *mock_mesh_workload.MockMeshWorkloadScanner
 		clusterName                 = "clusterName"
-		meshWorkloadFinder          controller.PodEventHandler
+		meshWorkloadFinder          mesh_workload.MeshWorkloadFinder
 		pod                         = &corev1.Pod{}
 		discoveredMeshWorkload      *discoveryv1alpha1.MeshWorkload
 		testLogger                  = test_logging.NewTestLogger()
 		notFoundErr                 = k8s_errs.NewNotFound(schema.GroupResource{}, "test-not-found-err")
+		podClient                   *mock_kubernetes_core.MockPodClient
+		podController               *mock_controllers.MockPodController
+		meshController              *mock_zephyr_discovery.MockMeshController
+		podEventHandlerFuncs        *controller.PodEventHandlerFuncs
+		meshEventHandlerFuncs       *controller2.MeshEventHandlerFuncs
 	)
 
 	BeforeEach(func() {
@@ -48,13 +56,34 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient = mock_core.NewMockMeshWorkloadClient(ctrl)
 		mockLocalMeshClient = mock_core.NewMockMeshClient(ctrl)
 		mockMeshWorkloadScanner = mock_mesh_workload.NewMockMeshWorkloadScanner(ctrl)
+		podClient = mock_kubernetes_core.NewMockPodClient(ctrl)
+		podController = mock_controllers.NewMockPodController(ctrl)
+		meshController = mock_zephyr_discovery.NewMockMeshController(ctrl)
+
+		podController.EXPECT().
+			AddEventHandler(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, h *controller.PodEventHandlerFuncs, predicates ...predicate.Predicate) error {
+				podEventHandlerFuncs = h
+				return nil
+			})
+
+		meshController.EXPECT().
+			AddEventHandler(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, h *controller2.MeshEventHandlerFuncs, predicates ...predicate.Predicate) error {
+				meshEventHandlerFuncs = h
+				return nil
+			})
 
 		meshWorkloadFinder = mesh_workload.NewMeshWorkloadFinder(
 			ctx,
 			clusterName,
 			mockLocalMeshWorkloadClient,
 			mockLocalMeshClient,
-			[]mesh_workload.MeshWorkloadScanner{mockMeshWorkloadScanner})
+			mesh_workload.MeshWorkloadScannerImplementations{
+				core_types.MeshType_ISTIO: mockMeshWorkloadScanner,
+			},
+			podClient,
+		)
 		discoveredMeshWorkload = &discoveryv1alpha1.MeshWorkload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
@@ -68,13 +97,16 @@ var _ = Describe("MeshWorkloadFinder", func() {
 				},
 			},
 		}
+
+		err := meshWorkloadFinder.StartDiscovery(podController, meshController)
+		Expect(err).NotTo(HaveOccurred(), "Should be able to start discovery")
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
-	It("should create MeshWorkload if Istio injected workload found", func() {
+	It("should create MeshWorkload if Istio injected workload is discovered simultaneously with Istio control plane", func() {
 		meshName := "meshName"
 		meshNamespace := "meshNamespace"
 		mesh := discoveryv1alpha1.Mesh{
@@ -89,8 +121,11 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Namespace: meshNamespace,
 			Cluster:   clusterName,
 		}
+
+		podCopy := *pod
+		podCopy.ClusterName = clusterName
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
+			ScanPod(ctx, &podCopy).
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
@@ -110,40 +145,40 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			Create(ctx, discoveredMeshWorkload).
 			Return(nil)
 
-		err := meshWorkloadFinder.Create(pod)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{*pod}}, nil)
 
-		Expect(pod.ClusterName).To(Equal(clusterName))
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("should return error if fatal error while scanning workloads", func() {
-		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
-		err := meshWorkloadFinder.Create(pod)
-		multierr, ok := err.(*multierror.Error)
-		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(HaveLen(1))
-		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
-	})
-
-	It("should log warning if non-fatal error while scanning workloads", func() {
+	It("should create MeshWorkload if Istio injected workload found later after Istio is discovered", func() {
+		meshName := "meshName"
+		meshNamespace := "meshNamespace"
 		mesh := discoveryv1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
 				Cluster: &core_types.ResourceRef{Name: clusterName},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
-		}
-		meshSpec := &core_types.ResourceRef{
-			Name:      mesh.Name,
-			Namespace: mesh.Namespace,
-			Cluster:   clusterName,
+			ObjectMeta: metav1.ObjectMeta{Name: meshName, Namespace: meshNamespace},
 		}
 		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
-		expectedErr := eris.New("error")
+		meshSpec := &core_types.ResourceRef{
+			Name:      mesh.Name,
+			Namespace: meshNamespace,
+			Cluster:   clusterName,
+		}
+
+		podCopy := *pod
+		podCopy.ClusterName = clusterName
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, expectedErr)
+			ScanPod(ctx, &podCopy).
+			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		discoveredMeshWorkload.Labels = map[string]string{
 			constants.DISCOVERED_BY:             constants.MESH_WORKLOAD_DISCOVERY,
 			constants.CLUSTER:                   clusterName,
@@ -161,8 +196,47 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			Create(ctx, discoveredMeshWorkload).
 			Return(nil)
-		_ = meshWorkloadFinder.Create(pod)
-		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingNonFatal))
+
+		// no pods when Istio is first discovered
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered, but no pods will be found yet
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// now the pod is created separately
+		err = podEventHandlerFuncs.OnCreate(pod)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("discovers no workload if no mesh has been discovered (prevents a race condition)", func() {
+		// no mesh has been discovered
+		err := podEventHandlerFuncs.OnCreate(pod)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("should return error if fatal error while scanning workloads", func() {
+		expectedErr := eris.New("error")
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{*pod}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+
+		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
 
 	It("should return error if fatal error while populating Mesh resource ref", func() {
@@ -171,12 +245,19 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ScanPod(ctx, pod).
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(nil, expectedErr)
-		err := meshWorkloadFinder.Create(pod)
-		multierr, ok := err.(*multierror.Error)
-		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(HaveLen(1))
-		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{*pod}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
 
 	It("should create new MeshWorkload if Istio injected workload updated", func() {
@@ -208,10 +289,22 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ScanPod(ctx, newPod).
 			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
-		err := meshWorkloadFinder.Update(pod, newPod)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
+		Expect(err).ToNot(HaveOccurred())
 		Expect(pod.ClusterName).To(Equal(clusterName))
 		Expect(newPod.ClusterName).To(Equal(clusterName))
-		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should do nothing if MeshWorkload unchanged", func() {
@@ -243,7 +336,19 @@ var _ = Describe("MeshWorkloadFinder", func() {
 			ScanPod(ctx, newPod).
 			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
-		err := meshWorkloadFinder.Update(pod, newPod)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -295,19 +400,41 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshWorkloadClient.EXPECT().
 			Update(ctx, newDiscoveredMeshWorkload).
 			Return(nil)
-		err := meshWorkloadFinder.Update(pod, newPod)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should return error if error processing old pod", func() {
 		expectedErr := eris.New("error")
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
-		err := meshWorkloadFinder.Update(pod, &corev1.Pod{})
-		multierr, ok := err.(*multierror.Error)
-		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(HaveLen(1))
-		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, &corev1.Pod{})
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
 
 	It("should return error if error processing new pod", func() {
@@ -315,17 +442,39 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		expectedErr := eris.New("error")
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, nil)
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, newPod).Return(nil, metav1.ObjectMeta{}, expectedErr)
-		err := meshWorkloadFinder.Update(pod, newPod)
-		multierr, ok := err.(*multierror.Error)
-		Expect(ok).To(BeTrue())
-		Expect(multierr.Errors).To(HaveLen(1))
-		Expect(multierr.Errors[0]).To(testutils.HaveInErrorChain(expectedErr))
-		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingError)
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(testutils.HaveInErrorChain(expectedErr))
+		Expect(testLogger.Sink().String()).To(ContainSubstring(mesh_workload.MeshWorkloadProcessingError))
 	})
 
 	It("should return nil if old and new Pods are not mesh injected", func() {
 		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, nil).Times(2)
-		err := meshWorkloadFinder.Update(pod, &corev1.Pod{})
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
+
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
+			Spec: discovery_types.MeshSpec{
+				MeshType: &discovery_types.MeshSpec_Istio{},
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, &corev1.Pod{})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -366,41 +515,19 @@ var _ = Describe("MeshWorkloadFinder", func() {
 		mockLocalMeshClient.EXPECT().
 			List(ctx, &client.ListOptions{}).
 			Return(meshList, nil)
-		err := meshWorkloadFinder.Update(pod, newPod)
-		Expect(err).ToNot(HaveOccurred())
-	})
+		podClient.EXPECT().
+			List(ctx).
+			Return(&corev1.PodList{Items: []corev1.Pod{}}, nil)
 
-	It("should log warnings for non-fatal errors on update", func() {
-		newDiscoveredMeshWorkload := &discoveryv1alpha1.MeshWorkload{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "name",
-				Namespace: "namespace",
-			},
-			Spec: discovery_types.MeshWorkloadSpec{
-				KubeController: &discovery_types.MeshWorkloadSpec_KubeController{
-					KubeControllerRef: &core_types.ResourceRef{
-						Namespace: "controller-namespace",
-					},
-				},
-			},
-		}
-		newPod := &corev1.Pod{}
-		mesh := discoveryv1alpha1.Mesh{
+		// Now Istio has been discovered
+		err := meshEventHandlerFuncs.OnCreate(&discoveryv1alpha1.Mesh{
 			Spec: discovery_types.MeshSpec{
-				Cluster: &core_types.ResourceRef{Name: clusterName},
+				MeshType: &discovery_types.MeshSpec_Istio{},
 			},
-			ObjectMeta: metav1.ObjectMeta{Name: "meshName", Namespace: "meshNamespace"},
-		}
-		meshList := &discoveryv1alpha1.MeshList{Items: []discoveryv1alpha1.Mesh{mesh}}
-		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
-			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, errors.New(""))
-		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, newPod).
-			Return(newDiscoveredMeshWorkload.Spec.KubeController.KubeControllerRef, newDiscoveredMeshWorkload.ObjectMeta, errors.New(""))
-		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(meshList, nil).Times(2)
-		err := meshWorkloadFinder.Update(pod, newPod)
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		err = podEventHandlerFuncs.OnUpdate(pod, newPod)
 		Expect(err).ToNot(HaveOccurred())
-		testLogger.EXPECT().LastEntry().HaveMessage(mesh_workload.MeshWorkloadProcessingNonFatal)
 	})
 })

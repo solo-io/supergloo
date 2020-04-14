@@ -10,11 +10,11 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
-	controller "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
+	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
 	v11 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // MockMeshWorkloadFinder is a mock of MeshWorkloadFinder interface.
@@ -41,73 +41,17 @@ func (m *MockMeshWorkloadFinder) EXPECT() *MockMeshWorkloadFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshWorkloadFinder) StartDiscovery(podController controller.PodController, predicates []predicate.Predicate) error {
+func (m *MockMeshWorkloadFinder) StartDiscovery(podController controller0.PodController, meshController controller.MeshController) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartDiscovery", podController, predicates)
+	ret := m.ctrl.Call(m, "StartDiscovery", podController, meshController)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartDiscovery indicates an expected call of StartDiscovery.
-func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podController, predicates interface{}) *gomock.Call {
+func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podController, meshController interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podController, predicates)
-}
-
-// Create mocks base method.
-func (m *MockMeshWorkloadFinder) Create(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Create indicates an expected call of Create.
-func (mr *MockMeshWorkloadFinderMockRecorder) Create(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Create), obj)
-}
-
-// Update mocks base method.
-func (m *MockMeshWorkloadFinder) Update(old, new *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", old, new)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Update indicates an expected call of Update.
-func (mr *MockMeshWorkloadFinderMockRecorder) Update(old, new interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Update), old, new)
-}
-
-// Delete mocks base method.
-func (m *MockMeshWorkloadFinder) Delete(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete.
-func (mr *MockMeshWorkloadFinderMockRecorder) Delete(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Delete), obj)
-}
-
-// Generic mocks base method.
-func (m *MockMeshWorkloadFinder) Generic(obj *v10.Pod) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic", obj)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Generic indicates an expected call of Generic.
-func (mr *MockMeshWorkloadFinderMockRecorder) Generic(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Generic), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podController, meshController)
 }
 
 // MockOwnerFetcher is a mock of OwnerFetcher interface.

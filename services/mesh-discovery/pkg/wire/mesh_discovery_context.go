@@ -28,6 +28,7 @@ type ClientFactories struct {
 	MeshServiceClientFactory  discovery_core.MeshServiceClientFactory
 	MeshWorkloadClientFactory discovery_core.MeshWorkloadClientFactory
 	MeshClientFactory         discovery_core.MeshClientFactory
+	PodClientFactory          kubernetes_core.PodClientFactory
 }
 
 type ControllerFactories struct {
@@ -35,6 +36,7 @@ type ControllerFactories struct {
 	PodControllerFactory          controllers.PodControllerFactory
 	ServiceControllerFactory      controllers.ServiceControllerFactory
 	MeshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory
+	MeshControllerFactory         controllers.MeshControllerFactory
 }
 
 type MeshDiscovery struct {
@@ -57,8 +59,10 @@ func DiscoveryContextProvider(
 	podControllerFactory controllers.PodControllerFactory,
 	serviceControllerFactory controllers.ServiceControllerFactory,
 	meshWorkloadControllerFactory controllers.MeshWorkloadControllerFactory,
+	meshControllerFactory controllers.MeshControllerFactory,
 	deploymentControllerFactory controllers.DeploymentControllerFactory,
 	meshClientFactory discovery_core.MeshClientFactory,
+	podClientFactory kubernetes_core.PodClientFactory,
 ) DiscoveryContext {
 
 	return DiscoveryContext{
@@ -71,12 +75,14 @@ func DiscoveryContextProvider(
 			MeshServiceClientFactory:  meshServiceClientFactory,
 			MeshWorkloadClientFactory: meshWorkloadClientFactory,
 			MeshClientFactory:         meshClientFactory,
+			PodClientFactory:          podClientFactory,
 		},
 		ControllerFactories: ControllerFactories{
 			DeploymentControllerFactory:   deploymentControllerFactory,
 			PodControllerFactory:          podControllerFactory,
 			ServiceControllerFactory:      serviceControllerFactory,
 			MeshWorkloadControllerFactory: meshWorkloadControllerFactory,
+			MeshControllerFactory:         meshControllerFactory,
 		},
 		MeshDiscovery: MeshDiscovery{
 			IstioMeshScanner:         istioMeshScanner,
