@@ -36,18 +36,18 @@ func (m *MockGatewayClient) EXPECT() *MockGatewayClientMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockGatewayClient) Create(ctx context.Context, gateway *v1alpha3.Gateway) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, gateway)
+	ret := m.ctrl.Call(m, "Create", ctx, gateway)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockGatewayClientMockRecorder) Create(ctx, gateway interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockGatewayClient)(nil).Create), ctx, gateway)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockGatewayClient)(nil).Create), ctx, gateway)
 }
 
 // Get mocks base method.
@@ -65,18 +65,18 @@ func (mr *MockGatewayClientMockRecorder) Get(ctx, objKey interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGatewayClient)(nil).Get), ctx, objKey)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockGatewayClient) Update(ctx context.Context, gateway *v1alpha3.Gateway) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateService", ctx, gateway)
+	ret := m.ctrl.Call(m, "Update", ctx, gateway)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockGatewayClientMockRecorder) Update(ctx, gateway interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockGatewayClient)(nil).Update), ctx, gateway)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockGatewayClient)(nil).Update), ctx, gateway)
 }
 
 // MockEnvoyFilterClient is a mock of EnvoyFilterClient interface.
@@ -102,18 +102,18 @@ func (m *MockEnvoyFilterClient) EXPECT() *MockEnvoyFilterClientMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockEnvoyFilterClient) Create(ctx context.Context, envoyFilter *v1alpha3.EnvoyFilter) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, envoyFilter)
+	ret := m.ctrl.Call(m, "Create", ctx, envoyFilter)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockEnvoyFilterClientMockRecorder) Create(ctx, envoyFilter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockEnvoyFilterClient)(nil).Create), ctx, envoyFilter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEnvoyFilterClient)(nil).Create), ctx, envoyFilter)
 }
 
 // Get mocks base method.
@@ -168,18 +168,18 @@ func (m *MockServiceEntryClient) EXPECT() *MockServiceEntryClientMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockServiceEntryClient) Create(ctx context.Context, serviceEntry *v1alpha3.ServiceEntry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, serviceEntry)
+	ret := m.ctrl.Call(m, "Create", ctx, serviceEntry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockServiceEntryClientMockRecorder) Create(ctx, serviceEntry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockServiceEntryClient)(nil).Create), ctx, serviceEntry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockServiceEntryClient)(nil).Create), ctx, serviceEntry)
 }
 
 // Get mocks base method.
@@ -197,18 +197,18 @@ func (mr *MockServiceEntryClientMockRecorder) Get(ctx, objKey interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockServiceEntryClient)(nil).Get), ctx, objKey)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockServiceEntryClient) Update(ctx context.Context, envoyFilter *v1alpha3.ServiceEntry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateService", ctx, envoyFilter)
+	ret := m.ctrl.Call(m, "Update", ctx, envoyFilter)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockServiceEntryClientMockRecorder) Update(ctx, envoyFilter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockServiceEntryClient)(nil).Update), ctx, envoyFilter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockServiceEntryClient)(nil).Update), ctx, envoyFilter)
 }
 
 // MockVirtualServiceClient is a mock of VirtualServiceClient interface.
@@ -249,42 +249,42 @@ func (mr *MockVirtualServiceClientMockRecorder) Get(ctx, key interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockVirtualServiceClient)(nil).Get), ctx, key)
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockVirtualServiceClient) Create(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, virtualService}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "Create", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockVirtualServiceClientMockRecorder) Create(ctx, virtualService interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, virtualService}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockVirtualServiceClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVirtualServiceClient)(nil).Create), varargs...)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockVirtualServiceClient) Update(ctx context.Context, virtualService *v1alpha3.VirtualService, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, virtualService}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateService", varargs...)
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockVirtualServiceClientMockRecorder) Update(ctx, virtualService interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, virtualService}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockVirtualServiceClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockVirtualServiceClient)(nil).Update), varargs...)
 }
 
 // UpsertSpec mocks base method.
@@ -339,37 +339,37 @@ func (mr *MockDestinationRuleClientMockRecorder) Get(ctx, key interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDestinationRuleClient)(nil).Get), ctx, key)
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockDestinationRuleClient) Create(ctx context.Context, destinationRule *v1alpha3.DestinationRule) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, destinationRule)
+	ret := m.ctrl.Call(m, "Create", ctx, destinationRule)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockDestinationRuleClientMockRecorder) Create(ctx, destinationRule interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockDestinationRuleClient)(nil).Create), ctx, destinationRule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDestinationRuleClient)(nil).Create), ctx, destinationRule)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockDestinationRuleClient) Update(ctx context.Context, destinationRule *v1alpha3.DestinationRule, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, destinationRule}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateService", varargs...)
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockDestinationRuleClientMockRecorder) Update(ctx, destinationRule interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, destinationRule}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockDestinationRuleClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDestinationRuleClient)(nil).Update), varargs...)
 }
 
 // UpsertSpec mocks base method.

@@ -51,42 +51,42 @@ func (mr *MockAuthorizationPolicyClientMockRecorder) Get(ctx, key interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Get), ctx, key)
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockAuthorizationPolicyClient) Create(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, authPolicy}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "Create", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockAuthorizationPolicyClientMockRecorder) Create(ctx, authPolicy interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, authPolicy}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Create), varargs...)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockAuthorizationPolicyClient) Update(ctx context.Context, authPolicy *v1beta1.AuthorizationPolicy, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, authPolicy}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateService", varargs...)
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockAuthorizationPolicyClientMockRecorder) Update(ctx, authPolicy interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, authPolicy}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Update), varargs...)
 }
 
 // UpsertSpec mocks base method.
@@ -103,16 +103,16 @@ func (mr *MockAuthorizationPolicyClientMockRecorder) UpsertSpec(ctx, authPolicy 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).UpsertSpec), ctx, authPolicy)
 }
 
-// DeleteService mocks base method.
+// Delete mocks base method.
 func (m *MockAuthorizationPolicyClient) Delete(ctx context.Context, key client.ObjectKey) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteService", ctx, key)
+	ret := m.ctrl.Call(m, "Delete", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteService indicates an expected call of DeleteService.
+// Delete indicates an expected call of Delete.
 func (mr *MockAuthorizationPolicyClientMockRecorder) Delete(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Delete), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAuthorizationPolicyClient)(nil).Delete), ctx, key)
 }

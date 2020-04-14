@@ -104,16 +104,16 @@ func (mr *MockCustomResourceDefinitionClientMockRecorder) List(ctx interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).List), ctx)
 }
 
-// DeleteService mocks base method.
+// Delete mocks base method.
 func (m *MockCustomResourceDefinitionClient) Delete(ctx context.Context, crd *v1beta1.CustomResourceDefinition) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteService", ctx, crd)
+	ret := m.ctrl.Call(m, "Delete", ctx, crd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteService indicates an expected call of DeleteService.
+// Delete indicates an expected call of Delete.
 func (mr *MockCustomResourceDefinitionClientMockRecorder) Delete(ctx, crd interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Delete), ctx, crd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomResourceDefinitionClient)(nil).Delete), ctx, crd)
 }

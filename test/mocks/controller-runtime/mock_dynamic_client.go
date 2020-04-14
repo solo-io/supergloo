@@ -37,42 +37,42 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockClient) Create(arg0 context.Context, arg1 runtime.Object, arg2 ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
+	ret := m.ctrl.Call(m, "Create", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockClientMockRecorder) Create(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockClient)(nil).Create), varargs...)
 }
 
-// DeleteService mocks base method.
+// Delete mocks base method.
 func (m *MockClient) Delete(arg0 context.Context, arg1 runtime.Object, arg2 ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteService", varargs...)
+	ret := m.ctrl.Call(m, "Delete", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteService indicates an expected call of DeleteService.
+// Delete indicates an expected call of Delete.
 func (mr *MockClientMockRecorder) Delete(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockClient)(nil).Delete), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockClient)(nil).Delete), varargs...)
 }
 
 // DeleteAllOf mocks base method.
@@ -160,23 +160,23 @@ func (mr *MockClientMockRecorder) Status() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockClient)(nil).Status))
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockClient) Update(arg0 context.Context, arg1 runtime.Object, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateService", varargs...)
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockClientMockRecorder) Update(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockClient)(nil).Update), varargs...)
 }
 
 // MockStatusWriter is a mock of StatusWriter interface.
@@ -221,21 +221,21 @@ func (mr *MockStatusWriterMockRecorder) Patch(arg0, arg1, arg2 interface{}, arg3
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Patch", reflect.TypeOf((*MockStatusWriter)(nil).Patch), varargs...)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockStatusWriter) Update(arg0 context.Context, arg1 runtime.Object, arg2 ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateService", varargs...)
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockStatusWriterMockRecorder) Update(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockStatusWriter)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockStatusWriter)(nil).Update), varargs...)
 }

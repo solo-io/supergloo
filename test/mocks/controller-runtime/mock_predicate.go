@@ -34,58 +34,58 @@ func (m *MockPredicate) EXPECT() *MockPredicateMockRecorder {
 	return m.recorder
 }
 
-// CreateMeshWorkload mocks base method.
+// Create mocks base method.
 func (m *MockPredicate) Create(arg0 event.CreateEvent) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMeshWorkload", arg0)
+	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
+// Create indicates an expected call of Create.
 func (mr *MockPredicateMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockPredicate)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPredicate)(nil).Create), arg0)
 }
 
-// DeleteService mocks base method.
+// Delete mocks base method.
 func (m *MockPredicate) Delete(arg0 event.DeleteEvent) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteService", arg0)
+	ret := m.ctrl.Call(m, "Delete", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// DeleteService indicates an expected call of DeleteService.
+// Delete indicates an expected call of Delete.
 func (mr *MockPredicateMockRecorder) Delete(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockPredicate)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPredicate)(nil).Delete), arg0)
 }
 
-// GenericService mocks base method.
+// Generic mocks base method.
 func (m *MockPredicate) Generic(arg0 event.GenericEvent) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenericService", arg0)
+	ret := m.ctrl.Call(m, "Generic", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// GenericService indicates an expected call of GenericService.
+// Generic indicates an expected call of Generic.
 func (mr *MockPredicateMockRecorder) Generic(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericService", reflect.TypeOf((*MockPredicate)(nil).Generic), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockPredicate)(nil).Generic), arg0)
 }
 
-// UpdateService mocks base method.
+// Update mocks base method.
 func (m *MockPredicate) Update(arg0 event.UpdateEvent) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateService", arg0)
+	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// UpdateService indicates an expected call of UpdateService.
+// Update indicates an expected call of Update.
 func (mr *MockPredicateMockRecorder) Update(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockPredicate)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPredicate)(nil).Update), arg0)
 }

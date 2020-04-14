@@ -149,7 +149,7 @@ func (f *federationResolver) handleServiceUpsert(ctx context.Context, meshServic
 	)
 
 	meshService.Status.FederationStatus = federationStatus
-	err := f.meshServiceClient.UpdateMeshServiceStatus(ctx, meshService)
+	err := f.meshServiceClient.UpdateMeshServiceMeshServiceStatus(ctx, meshService)
 	if err != nil {
 		logger.Warnw("Failed to update service status", zap.Error(err))
 	}
