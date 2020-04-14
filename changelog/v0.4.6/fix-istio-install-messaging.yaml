@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Fix several instances of the word "Istio" getting replaced to "Mesh" in string constants
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/564
