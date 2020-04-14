@@ -12,11 +12,11 @@ import (
 	securityv1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/controller"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/logging"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
 	test_logging "github.com/solo-io/service-mesh-hub/test/logging"
+	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
 	"go.uber.org/zap/zapcore"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -25,7 +25,7 @@ var _ = Describe("csr-agent controller", func() {
 	var (
 		ctrl       *gomock.Controller
 		ctx        context.Context
-		csrClient  *mock_security_config.MockVirtualMeshCSRClient
+		csrClient  *mock_security_config.MockVirtualMeshCertificateSigningRequestClient
 		csrHandler controller.VirtualMeshCertificateSigningRequestEventHandler
 		processor  *mock_csr_generator.MockVirtualMeshCSRProcessor
 		testLogger *test_logging.TestLogger
@@ -35,7 +35,7 @@ var _ = Describe("csr-agent controller", func() {
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		csrClient = mock_security_config.NewMockVirtualMeshCSRClient(ctrl)
+		csrClient = mock_security_config.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		processor = mock_csr_generator.NewMockVirtualMeshCSRProcessor(ctrl)
 		testLogger = test_logging.NewTestLogger()
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
@@ -58,7 +58,7 @@ var _ = Describe("csr-agent controller", func() {
 		)
 
 		It("delete", func() {
-			Expect(csrHandler.Delete(csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.DeleteVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 			testLogger.EXPECT().NumEntries(1).LastEntry().Level(zapcore.DebugLevel).
 				HaveMessage(csr_generator.UnexpectedEventMsg).
 				Have(logging.EventTypeKey, logging.DeleteEvent.String())
@@ -66,7 +66,7 @@ var _ = Describe("csr-agent controller", func() {
 		})
 
 		It("generic", func() {
-			Expect(csrHandler.Generic(csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.GenericVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 			testLogger.EXPECT().NumEntries(1).LastEntry().Level(zapcore.DebugLevel).
 				HaveMessage(csr_generator.UnexpectedEventMsg).
 				Have(logging.EventTypeKey, logging.GenericEvent.String())
@@ -84,7 +84,7 @@ var _ = Describe("csr-agent controller", func() {
 				ProcessUpsert(ctx, csr).
 				Return(nil)
 
-			Expect(csrHandler.Create(csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.CreateVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 
 			testLogger.EXPECT().
 				LastEntry().
@@ -107,10 +107,10 @@ var _ = Describe("csr-agent controller", func() {
 				Return(&csr.Status)
 
 			csrClient.EXPECT().
-				UpdateStatus(ctx, csr).
+				UpdateVirtualMeshCertificateSigningRequestStatus(ctx, csr).
 				Return(testErr)
 
-			Expect(csrHandler.Create(csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.CreateVirtualMeshCertificateSigningRequest(csr)).NotTo(HaveOccurred())
 
 			testLogger.EXPECT().LastEntry().
 				HaveError(testErr).
@@ -131,7 +131,7 @@ var _ = Describe("csr-agent controller", func() {
 				ProcessUpsert(ctx, csr).
 				Return(nil)
 
-			Expect(csrHandler.Update(csr, csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.UpdateVirtualMeshCertificateSigningRequest(csr, csr)).NotTo(HaveOccurred())
 
 			testLogger.EXPECT().
 				LastEntry().
@@ -154,10 +154,10 @@ var _ = Describe("csr-agent controller", func() {
 				Return(&csr.Status)
 
 			csrClient.EXPECT().
-				UpdateStatus(ctx, csr).
+				UpdateVirtualMeshCertificateSigningRequestStatus(ctx, csr).
 				Return(testErr)
 
-			Expect(csrHandler.Update(csr, csr)).NotTo(HaveOccurred())
+			Expect(csrHandler.UpdateVirtualMeshCertificateSigningRequest(csr, csr)).NotTo(HaveOccurred())
 
 			testLogger.EXPECT().LastEntry().
 				HaveError(testErr).

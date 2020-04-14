@@ -11,12 +11,12 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer"
 	mock_cert_signer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-signer/mocks"
 	. "github.com/solo-io/service-mesh-hub/test/logging"
+	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -26,7 +26,7 @@ var _ = Describe("csr processor", func() {
 		ctx          context.Context
 		testLogger   *TestLogger
 		mgCertClient *mock_cert_signer.MockVirtualMeshCertClient
-		csrClient    *mock_security_config.MockVirtualMeshCSRClient
+		csrClient    *mock_security_config.MockVirtualMeshCertificateSigningRequestClient
 		signer       *mock_certgen.MockSigner
 		csrProcessor cert_signer.VirtualMeshCSRSigner
 
@@ -38,7 +38,7 @@ var _ = Describe("csr processor", func() {
 		ctx = contextutils.WithExistingLogger(context.TODO(), testLogger.Logger())
 		ctrl = gomock.NewController(GinkgoT())
 		mgCertClient = mock_cert_signer.NewMockVirtualMeshCertClient(ctrl)
-		csrClient = mock_security_config.NewMockVirtualMeshCSRClient(ctrl)
+		csrClient = mock_security_config.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
 		csrProcessor = cert_signer.NewVirtualMeshCSRSigner(mgCertClient, csrClient, signer)
 	})

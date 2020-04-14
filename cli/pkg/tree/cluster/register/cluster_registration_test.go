@@ -24,10 +24,10 @@ import (
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -148,7 +148,7 @@ users:
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -187,7 +187,7 @@ users:
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -240,7 +240,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRawConfigForContext(remoteKubeConfig, "").
 				Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -280,7 +280,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Upsert(ctx, &v1alpha1.KubernetesCluster{
+				UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.GetWriteNamespace(),
@@ -334,7 +334,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRawConfigForContext(remoteKubeConfig, contextDEF).
 				Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -375,7 +375,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 
 			clusterClient.
 				EXPECT().
-				Upsert(ctx, &v1alpha1.KubernetesCluster{
+				UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-cluster-name",
 						Namespace: env.GetWriteNamespace(),
@@ -462,7 +462,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				Get(ctx, env.GetWriteNamespace()).
 				Return(nil, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -507,7 +507,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -537,7 +537,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRestConfigForContext(remoteKubeConfig, "").
 				Return(targetRestConfig, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -566,7 +566,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				GetRestConfigForContext(remoteKubeConfig, "").
 				Return(targetRestConfig, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -604,7 +604,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).
 				Return(configForServiceAccount, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      "test-cluster-name",
 					Namespace: env.GetWriteNamespace(),
@@ -671,7 +671,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -713,7 +713,7 @@ $ meshctl --kubeconfig ~/.kube/master-config --remote-cluster-name test-cluster-
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -748,7 +748,7 @@ Successfully wrote kube config secret to master cluster...
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(localKubeConfig, remoteContext).Return(cxt, nil)
 
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -787,7 +787,7 @@ Successfully wrote kube config secret to master cluster...
 					RemoteWriteNamespace: env.GetWriteNamespace(),
 				})
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -822,7 +822,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 			kubeLoader.EXPECT().GetRestConfigForContext(remoteKubeConfig, "").Return(targetRestConfig, nil)
 			authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 			kubeLoader.EXPECT().GetRawConfigForContext(remoteKubeConfig, "").Return(cxt, nil)
-			clusterClient.EXPECT().Get(ctx,
+			clusterClient.EXPECT().GetKubernetesCluster(ctx,
 				client.ObjectKey{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),
@@ -862,7 +862,7 @@ Cluster test-cluster-name is now registered in your Service Mesh Hub installatio
 				}).
 				Return(nil)
 
-			clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+			clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      clusterName,
 					Namespace: env.GetWriteNamespace(),

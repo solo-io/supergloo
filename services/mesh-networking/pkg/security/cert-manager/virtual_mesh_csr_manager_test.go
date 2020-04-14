@@ -15,14 +15,14 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	zephyr_security "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_security "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager"
 	mock_cert_manager "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/security/cert-manager/mocks"
 	mock_vm_validation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/validation/mocks"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_security "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -38,7 +38,7 @@ var _ = Describe("csr manager", func() {
 		meshClient          *mock_core.MockMeshClient
 		meshRefFinder       *mock_vm_validation.MockVirtualMeshFinder
 		dynamicClientGetter *mock_mc_manager.MockDynamicClientGetter
-		csrClient           *mock_zephyr_security.MockVirtualMeshCSRClient
+		csrClient           *mock_zephyr_security.MockVirtualMeshCertificateSigningRequestClient
 		certConfigProducer  *mock_cert_manager.MockCertConfigProducer
 
 		mockCsrClientFactory zephyr_security.VirtualMeshCertificateSigningRequestClientFactory = func(
@@ -55,7 +55,7 @@ var _ = Describe("csr manager", func() {
 		meshRefFinder = mock_vm_validation.NewMockVirtualMeshFinder(ctrl)
 		dynamicClientGetter = mock_mc_manager.NewMockDynamicClientGetter(ctrl)
 		certConfigProducer = mock_cert_manager.NewMockCertConfigProducer(ctrl)
-		csrClient = mock_zephyr_security.NewMockVirtualMeshCSRClient(ctrl)
+		csrClient = mock_zephyr_security.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		csrProcessor = cert_manager.NewVirtualMeshCsrProcessor(
 			dynamicClientGetter,
 			meshClient,

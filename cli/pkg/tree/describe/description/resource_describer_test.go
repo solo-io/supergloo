@@ -11,9 +11,9 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	mock_selector "github.com/solo-io/service-mesh-hub/pkg/selector/mocks"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -96,10 +96,10 @@ var _ = Describe("Resource describer", func() {
 				GetMeshServiceByRefSelector(ctx, serviceName, serviceNs, serviceCluster).
 				Return(describedMeshService, nil)
 			accessControlPolicyClient.EXPECT().
-				List(ctx).
+				ListAccessControlPolicy(ctx).
 				Return(accessControlPolices, nil)
 			trafficPolicyClient.EXPECT().
-				List(ctx).
+				ListTrafficPolicy(ctx).
 				Return(trafficPolicies, nil)
 			resourceSelector.EXPECT().
 				GetMeshServicesByServiceSelector(ctx, wrongServiceSelector).
@@ -184,10 +184,10 @@ var _ = Describe("Resource describer", func() {
 				GetMeshWorkloadByRefSelector(ctx, controllerName, controllerNs, controllerCluster).
 				Return(describedMeshWorkload, nil)
 			accessControlPolicyClient.EXPECT().
-				List(ctx).
+				ListAccessControlPolicy(ctx).
 				Return(accessControlPolices, nil)
 			trafficPolicyClient.EXPECT().
-				List(ctx).
+				ListTrafficPolicy(ctx).
 				Return(trafficPolicies, nil)
 			resourceSelector.EXPECT().
 				GetMeshWorkloadsByIdentitySelector(ctx, wrongIdentitySelector).

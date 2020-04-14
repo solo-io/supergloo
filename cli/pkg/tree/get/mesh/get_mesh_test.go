@@ -11,7 +11,7 @@ import (
 	cli_mocks "github.com/solo-io/service-mesh-hub/cli/pkg/mocks"
 	cli_test "github.com/solo-io/service-mesh-hub/cli/pkg/test"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -67,7 +67,7 @@ var _ = Describe("Get Mesh Cmd", func() {
 			GetRestConfigForContext("", "").
 			Return(nil, nil)
 		mockMeshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(&discovery_v1alpha1.MeshList{
 				Items: []discovery_v1alpha1.Mesh{*meshes[0], *meshes[1]},
 			}, nil)

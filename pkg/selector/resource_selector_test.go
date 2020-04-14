@@ -12,10 +12,10 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	mock_kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps/mocks"
-	mock_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	networking_selector "github.com/solo-io/service-mesh-hub/pkg/selector"
 	"github.com/solo-io/service-mesh-hub/services/common/constants"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
+	mock_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -132,7 +132,7 @@ var _ = Describe("ResourceSelector", func() {
 				}}
 			mockMeshServiceClient.
 				EXPECT().
-				List(ctx).
+				ListMeshService(ctx).
 				Return(&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{meshService1, meshService2, meshService3, meshService4, meshService5},
 				}, nil)

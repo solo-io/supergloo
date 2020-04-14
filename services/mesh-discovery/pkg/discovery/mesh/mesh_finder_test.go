@@ -10,9 +10,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/testutils"
 	mp_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh"
 	mock_discovery "github.com/solo-io/service-mesh-hub/services/mesh-discovery/pkg/discovery/mesh/mocks"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -72,10 +72,10 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, mesh).
+				UpsertMeshSpec(ctx, mesh).
 				Return(nil)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -103,7 +103,7 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, mesh).
+				UpsertMeshSpec(ctx, mesh).
 				Return(nil)
 
 			brokenMeshFinder.
@@ -111,7 +111,7 @@ var _ = Describe("Mesh Finder", func() {
 				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, testErr)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -134,7 +134,7 @@ var _ = Describe("Mesh Finder", func() {
 				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, testErr)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			multierr, ok := err.(*multierror.Error)
 			Expect(ok).To(BeTrue())
 			Expect(multierr.Errors).To(HaveLen(1))
@@ -160,7 +160,7 @@ var _ = Describe("Mesh Finder", func() {
 				ScanDeployment(ctx, deployment, clusterClient).
 				Return(nil, nil)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -187,10 +187,10 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, mesh).
+				UpsertMeshSpec(ctx, mesh).
 				Return(nil)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -217,10 +217,10 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, mesh).
+				UpsertMeshSpec(ctx, mesh).
 				Return(testErr)
 
-			err := eventHandler.Create(deployment)
+			err := eventHandler.CreateDeployment(deployment)
 			Expect(err).To(Equal(testErr))
 			Expect(deployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -249,10 +249,10 @@ var _ = Describe("Mesh Finder", func() {
 
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, mesh).
+				UpsertMeshSpec(ctx, mesh).
 				Return(nil)
 
-			err := eventHandler.Update(nil, newDeployment)
+			err := eventHandler.UpdateDeployment(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -275,7 +275,7 @@ var _ = Describe("Mesh Finder", func() {
 				ScanDeployment(ctx, newDeployment, clusterClient).
 				Return(nil, nil)
 
-			err := eventHandler.Update(nil, newDeployment)
+			err := eventHandler.UpdateDeployment(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})
@@ -300,9 +300,9 @@ var _ = Describe("Mesh Finder", func() {
 				Return(newMesh, nil)
 			localMeshClient.
 				EXPECT().
-				UpsertSpec(ctx, newMesh).
+				UpsertMeshSpec(ctx, newMesh).
 				Return(nil)
-			err := eventHandler.Update(nil, newDeployment)
+			err := eventHandler.UpdateDeployment(nil, newDeployment)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(newDeployment.GetClusterName()).To(Equal(clusterName))
 		})

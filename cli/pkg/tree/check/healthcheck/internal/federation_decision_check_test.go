@@ -12,8 +12,8 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
-	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -35,7 +35,7 @@ var _ = Describe("Federation decision health check", func() {
 	It("does not consider itself valid if there are no mesh services", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
-			List(ctx).
+			ListMeshService(ctx).
 			Return(&v1alpha1.MeshServiceList{}, nil)
 
 		runFailure, checkApplies := internal.NewFederationDecisionCheck().Run(ctx, env.GetWriteNamespace(), healthcheck_types.Clients{
@@ -49,7 +49,7 @@ var _ = Describe("Federation decision health check", func() {
 	It("does not consider itself valid if there are mesh services but they are not federated", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
-			List(ctx).
+			ListMeshService(ctx).
 			Return(&v1alpha1.MeshServiceList{
 				Items: []v1alpha1.MeshService{
 					{
@@ -72,7 +72,7 @@ var _ = Describe("Federation decision health check", func() {
 	It("reports no issues with successfully federated mesh services", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
-			List(ctx).
+			ListMeshService(ctx).
 			Return(&v1alpha1.MeshServiceList{
 				Items: []v1alpha1.MeshService{
 					{
@@ -105,7 +105,7 @@ var _ = Describe("Federation decision health check", func() {
 	It("reports an issue when federation has failed to be written to a mesh service", func() {
 		meshServiceClient := mock_zephyr_discovery.NewMockMeshServiceClient(ctrl)
 		meshServiceClient.EXPECT().
-			List(ctx).
+			ListMeshService(ctx).
 			Return(&v1alpha1.MeshServiceList{
 				Items: []v1alpha1.MeshService{
 					{

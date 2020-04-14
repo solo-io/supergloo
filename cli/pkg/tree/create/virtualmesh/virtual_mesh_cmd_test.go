@@ -17,9 +17,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
-	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/networking/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_zephyr_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/networking.zephyr.solo.io/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 )
@@ -106,7 +106,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -132,7 +132,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 				PromptRequiredValue(gomock.Any()).
 				Return(expectedCA.GetBuiltin().GetOrgName(), nil)
 
-			mockVirtualMeshClient.EXPECT().Create(ctx, expectedVM).Return(nil)
+			mockVirtualMeshClient.EXPECT().CreateVirtualMesh(ctx, expectedVM).Return(nil)
 
 			_, err := meshctl.Invoke("create virtualmesh")
 			Expect(err).ToNot(HaveOccurred())
@@ -179,7 +179,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -252,7 +252,7 @@ var _ = Describe("VirtualMeshCmd", func() {
 			}
 
 			mockKubeLoader.EXPECT().GetRestConfigForContext("", "").Return(targetRestConfig, nil)
-			mockMeshClient.EXPECT().List(ctx).Return(meshList, nil)
+			mockMeshClient.EXPECT().ListMesh(ctx).Return(meshList, nil)
 			mockInteractivePrompt.
 				EXPECT().
 				PromptValueWithValidator(gomock.Any(), gomock.Any(), gomock.Any()).

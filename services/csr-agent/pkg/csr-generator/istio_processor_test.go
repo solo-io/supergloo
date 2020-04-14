@@ -12,12 +12,12 @@ import (
 	security_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
 	security_types "github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1/types"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	mock_security_config "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/security/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/security/certgen"
 	mock_certgen "github.com/solo-io/service-mesh-hub/pkg/security/certgen/mocks"
 	cert_secrets "github.com/solo-io/service-mesh-hub/pkg/security/secrets"
 	csr_generator "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator"
 	mock_csr_agent_controller "github.com/solo-io/service-mesh-hub/services/csr-agent/pkg/csr-generator/mocks"
+	mock_security_config "github.com/solo-io/service-mesh-hub/test/mocks/clients/security.zephyr.solo.io/v1alpha1"
 	pki_util "istio.io/istio/security/pkg/pki/util"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,7 +27,7 @@ var _ = Describe("csr processor", func() {
 	var (
 		ctrl              *gomock.Controller
 		ctx               context.Context
-		csrClient         *mock_security_config.MockVirtualMeshCSRClient
+		csrClient         *mock_security_config.MockVirtualMeshCertificateSigningRequestClient
 		secretClient      *mock_kubernetes_core.MockSecretClient
 		certClient        *mock_csr_agent_controller.MockCertClient
 		signer            *mock_certgen.MockSigner
@@ -39,7 +39,7 @@ var _ = Describe("csr processor", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		csrClient = mock_security_config.NewMockVirtualMeshCSRClient(ctrl)
+		csrClient = mock_security_config.NewMockVirtualMeshCertificateSigningRequestClient(ctrl)
 		secretClient = mock_kubernetes_core.NewMockSecretClient(ctrl)
 		certClient = mock_csr_agent_controller.NewMockCertClient(ctrl)
 		signer = mock_certgen.NewMockSigner(ctrl)
@@ -131,7 +131,7 @@ var _ = Describe("csr processor", func() {
 			matchCsr := csr.DeepCopy()
 			matchCsr.Spec.CsrData = csrData
 			csrClient.EXPECT().
-				Update(ctx, matchCsr).
+				UpdateVirtualMeshCertificateSigningRequest(ctx, matchCsr).
 				Return(testErr)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)
@@ -173,7 +173,7 @@ var _ = Describe("csr processor", func() {
 			matchCsr := csr.DeepCopy()
 			matchCsr.Spec.CsrData = csrData
 			csrClient.EXPECT().
-				Update(ctx, matchCsr).
+				UpdateVirtualMeshCertificateSigningRequest(ctx, matchCsr).
 				Return(nil)
 
 			status := istioCsrGenerator.GenerateIstioCSR(ctx, csr)

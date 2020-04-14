@@ -23,10 +23,10 @@ import (
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
 	mock_auth "github.com/solo-io/service-mesh-hub/pkg/auth/mocks"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
-	mock_core "github.com/solo-io/service-mesh-hub/pkg/clients/zephyr/discovery/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
 	"github.com/solo-io/service-mesh-hub/pkg/kubeconfig"
 	"github.com/solo-io/service-mesh-hub/pkg/version"
+	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -205,7 +205,7 @@ users:
 		authClient.EXPECT().CreateAuthConfigForCluster(ctx, targetRestConfig, serviceAccountRef).Return(configForServiceAccount, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", "").Return(cxt, nil)
 		mockKubeLoader.EXPECT().GetRawConfigForContext("", contextABC).Return(cxt, nil)
-		clusterClient.EXPECT().Get(ctx,
+		clusterClient.EXPECT().GetKubernetesCluster(ctx,
 			client.ObjectKey{
 				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),
@@ -244,7 +244,7 @@ users:
 			}).
 			Return(nil)
 
-		clusterClient.EXPECT().Upsert(ctx, &v1alpha1.KubernetesCluster{
+		clusterClient.EXPECT().UpsertKubernetesClusterSpec(ctx, &v1alpha1.KubernetesCluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterName,
 				Namespace: env.GetWriteNamespace(),

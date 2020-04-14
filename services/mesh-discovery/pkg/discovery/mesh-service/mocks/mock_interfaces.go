@@ -5,11 +5,11 @@
 package service_discovery_mocks
 
 import (
-	UpdateMeshService "UpdateMeshService"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 	controller "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller"
+	controller0 "github.com/solo-io/service-mesh-hub/pkg/api/kubernetes/core/v1/controller"
 )
 
 // MockMeshServiceFinder is a mock of MeshServiceFinder interface.
@@ -36,7 +36,7 @@ func (m *MockMeshServiceFinder) EXPECT() *MockMeshServiceFinderMockRecorder {
 }
 
 // StartDiscovery mocks base method.
-func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher UpdateMeshService.ServiceEventWatcher, meshWorkloadEventWatcher controller.MeshWorkloadEventWatcher) error {
+func (m *MockMeshServiceFinder) StartDiscovery(serviceEventWatcher controller0.ServiceEventWatcher, meshWorkloadEventWatcher controller.MeshWorkloadEventWatcher) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartDiscovery", serviceEventWatcher, meshWorkloadEventWatcher)
 	ret0, _ := ret[0].(error)
