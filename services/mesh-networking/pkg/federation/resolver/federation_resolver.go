@@ -171,7 +171,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 			meshService.GetNamespace(), meshService.GetNamespace())
 	}
 
-	meshForWorkload, err := f.meshClient.Get(ctx, client.ObjectKey{
+	meshForWorkload, err := f.meshClient.GetMesh(ctx, client.ObjectKey{
 		Name:      workload.Spec.GetMesh().GetName(),
 		Namespace: workload.Spec.GetMesh().GetNamespace(),
 	})
@@ -182,7 +182,7 @@ func (f *federationResolver) federateToRemoteWorkload(
 		)
 	}
 
-	meshForService, err := f.meshClient.Get(ctx, client.ObjectKey{
+	meshForService, err := f.meshClient.GetMesh(ctx, client.ObjectKey{
 		Name:      meshService.Spec.GetMesh().GetName(),
 		Namespace: meshService.Spec.GetMesh().GetNamespace(),
 	})

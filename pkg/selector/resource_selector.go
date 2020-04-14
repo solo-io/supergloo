@@ -87,7 +87,7 @@ func (b *resourceSelector) GetMeshServiceByRefSelector(
 		constants.KUBE_SERVICE_NAMESPACE: kubeServiceNamespace,
 		constants.CLUSTER:                kubeServiceCluster,
 	}
-	meshServiceList, err := b.meshServiceClient.ListMeshServiceMeshService(ctx, destinationKey)
+	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (b *resourceSelector) GetMeshServicesByServiceSelector(
 	selector *core_types.ServiceSelector,
 ) ([]*discovery_v1alpha1.MeshService, error) {
 	var selectedMeshServices []*discovery_v1alpha1.MeshService
-	meshServiceList, err := b.meshServiceClient.ListMeshServiceMeshService(ctx)
+	meshServiceList, err := b.meshServiceClient.ListMeshService(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (b *resourceSelector) GetMeshWorkloadsByIdentitySelector(
 	ctx context.Context,
 	identitySelector *core_types.IdentitySelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (b *resourceSelector) GetMeshWorkloadsByWorkloadSelector(
 	ctx context.Context,
 	workloadSelector *core_types.WorkloadSelector,
 ) ([]*discovery_v1alpha1.MeshWorkload, error) {
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (b *resourceSelector) GetMeshWorkloadByRefSelector(
 		constants.KUBE_CONTROLLER_NAMESPACE: podEventWatcherNamespace,
 		constants.CLUSTER:                   podEventWatcherCluster,
 	}
-	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkloadMeshWorkload(ctx, destinationKey)
+	meshWorkloadList, err := b.meshWorkloadClient.ListMeshWorkload(ctx, destinationKey)
 	if err != nil {
 		return nil, err
 	}

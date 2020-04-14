@@ -185,7 +185,7 @@ func (t *translatorLoop) translateACPsForMeshService(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 ) ([]translatorErrorForACP, error) {
-	mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := t.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +226,7 @@ func (t *translatorLoop) getTargetServices(ctx context.Context, acp *networking_
 	}
 	var targetServices []TargetService
 	for _, meshService := range meshServices {
-		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}

@@ -54,60 +54,60 @@ func (mr *MockMeshWorkloadFinderMockRecorder) StartDiscovery(podEventWatcher, pr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDiscovery", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).StartDiscovery), podEventWatcher, predicates)
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockMeshWorkloadFinder) Create(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", obj)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockMeshWorkloadFinderMockRecorder) Create(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Create), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Create), obj)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockMeshWorkloadFinder) Update(old, new *v10.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", old, new)
+	ret := m.ctrl.Call(m, "UpdateService", old, new)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockMeshWorkloadFinderMockRecorder) Update(old, new interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Update), old, new)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Update), old, new)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockMeshWorkloadFinder) Delete(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", obj)
+	ret := m.ctrl.Call(m, "DeleteService", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockMeshWorkloadFinderMockRecorder) Delete(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Delete), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Delete), obj)
 }
 
-// Generic mocks base method.
+// GenericService mocks base method.
 func (m *MockMeshWorkloadFinder) Generic(obj *v10.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generic", obj)
+	ret := m.ctrl.Call(m, "GenericService", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Generic indicates an expected call of Generic.
+// GenericService indicates an expected call of GenericService.
 func (mr *MockMeshWorkloadFinderMockRecorder) Generic(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Generic), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericService", reflect.TypeOf((*MockMeshWorkloadFinder)(nil).Generic), obj)
 }
 
 // MockOwnerFetcher is a mock of OwnerFetcher interface.

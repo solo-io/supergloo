@@ -33,7 +33,7 @@ type ClientFactories struct {
 type EventWatcherFactories struct {
 	DeploymentEventWatcherFactory   controllers.DeploymentEventWatcherFactory
 	PodEventWatcherFactory          controllers.PodEventWatcherFactory
-	ServiceEventWatcherFactory      controllers.ServiceControllerFactory
+	ServiceEventWatcherFactory      controllers.ServiceEventWatcherFactory
 	MeshWorkloadEventWatcherFactory controllers.MeshWorkloadEventWatcherFactory
 }
 
@@ -55,7 +55,7 @@ func DiscoveryContextProvider(
 	meshServiceClientFactory zephyr_discovery.MeshServiceClientFactory,
 	meshWorkloadClientFactory zephyr_discovery.MeshWorkloadClientFactory,
 	podEventWatcherFactory controllers.PodEventWatcherFactory,
-	serviceEventWatcherFactory controllers.ServiceControllerFactory,
+	serviceEventWatcherFactory controllers.ServiceEventWatcherFactory,
 	meshWorkloadControllerFactory controllers.MeshWorkloadEventWatcherFactory,
 	deploymentEventWatcherFactory controllers.DeploymentEventWatcherFactory,
 	meshClientFactory zephyr_discovery.MeshClientFactory,

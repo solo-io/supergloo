@@ -14,18 +14,18 @@ import (
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `DeploymentController`
 type DeploymentEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (apps_controllers.DeploymentEventWatcher, error)
+	Build(mgr mc_manager.AsyncManager, clusterName string) apps_controllers.DeploymentEventWatcher
 }
 
 // given a manager that can talk to a cluster and a name for that cluster, produce a `PodController`
 type PodEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.PodEventWatcher, error)
+	Build(mgr mc_manager.AsyncManager, clusterName string) core_controllers.PodEventWatcher
 }
 
 type MeshWorkloadEventWatcherFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (discovery_controller.MeshWorkloadEventWatcher, error)
+	Build(mgr mc_manager.AsyncManager, clusterName string) discovery_controller.MeshWorkloadEventWatcher
 }
 
-type ServiceControllerFactory interface {
-	Build(mgr mc_manager.AsyncManager, clusterName string) (core_controllers.ServiceEventWatcher, error)
+type ServiceEventWatcherFactory interface {
+	Build(mgr mc_manager.AsyncManager, clusterName string) core_controllers.ServiceEventWatcher
 }

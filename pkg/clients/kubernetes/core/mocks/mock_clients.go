@@ -210,42 +210,42 @@ func (m *MockSecretClient) EXPECT() *MockSecretClientMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockSecretClient) Create(ctx context.Context, secret *v1.Secret, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, secret}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockSecretClientMockRecorder) Create(ctx, secret interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, secret}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSecretClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockSecretClient)(nil).Create), varargs...)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockSecretClient) Update(ctx context.Context, secret *v1.Secret, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, secret}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret := m.ctrl.Call(m, "UpdateService", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockSecretClientMockRecorder) Update(ctx, secret interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, secret}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockSecretClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockSecretClient)(nil).Update), varargs...)
 }
 
 // UpsertData mocks base method.
@@ -292,18 +292,18 @@ func (mr *MockSecretClientMockRecorder) List(ctx, namespace, labels interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSecretClient)(nil).List), ctx, namespace, labels)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockSecretClient) Delete(ctx context.Context, secret *v1.Secret) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, secret)
+	ret := m.ctrl.Call(m, "DeleteService", ctx, secret)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockSecretClientMockRecorder) Delete(ctx, secret interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSecretClient)(nil).Delete), ctx, secret)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockSecretClient)(nil).Delete), ctx, secret)
 }
 
 // MockServiceAccountClient is a mock of ServiceAccountClient interface.
@@ -329,18 +329,18 @@ func (m *MockServiceAccountClient) EXPECT() *MockServiceAccountClientMockRecorde
 	return m.recorder
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockServiceAccountClient) Create(ctx context.Context, serviceAccount *v1.ServiceAccount) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, serviceAccount)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, serviceAccount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockServiceAccountClientMockRecorder) Create(ctx, serviceAccount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockServiceAccountClient)(nil).Create), ctx, serviceAccount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockServiceAccountClient)(nil).Create), ctx, serviceAccount)
 }
 
 // Get mocks base method.
@@ -358,18 +358,18 @@ func (mr *MockServiceAccountClientMockRecorder) Get(ctx, name, namespace interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockServiceAccountClient)(nil).Get), ctx, name, namespace)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockServiceAccountClient) Update(ctx context.Context, serviceAccount *v1.ServiceAccount) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, serviceAccount)
+	ret := m.ctrl.Call(m, "UpdateService", ctx, serviceAccount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockServiceAccountClientMockRecorder) Update(ctx, serviceAccount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockServiceAccountClient)(nil).Update), ctx, serviceAccount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockServiceAccountClient)(nil).Update), ctx, serviceAccount)
 }
 
 // List mocks base method.
@@ -415,18 +415,18 @@ func (m *MockConfigMapClient) EXPECT() *MockConfigMapClientMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockConfigMapClient) Create(ctx context.Context, configMap *v1.ConfigMap) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, configMap)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, configMap)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockConfigMapClientMockRecorder) Create(ctx, configMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfigMapClient)(nil).Create), ctx, configMap)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockConfigMapClient)(nil).Create), ctx, configMap)
 }
 
 // Get mocks base method.
@@ -444,18 +444,18 @@ func (mr *MockConfigMapClientMockRecorder) Get(ctx, objKey interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfigMapClient)(nil).Get), ctx, objKey)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockConfigMapClient) Update(ctx context.Context, configMap *v1.ConfigMap) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, configMap)
+	ret := m.ctrl.Call(m, "UpdateService", ctx, configMap)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockConfigMapClientMockRecorder) Update(ctx, configMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConfigMapClient)(nil).Update), ctx, configMap)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockConfigMapClient)(nil).Update), ctx, configMap)
 }
 
 // MockNamespaceClient is a mock of NamespaceClient interface.
@@ -481,18 +481,18 @@ func (m *MockNamespaceClient) EXPECT() *MockNamespaceClientMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockNamespaceClient) Create(ctx context.Context, ns *v1.Namespace) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, ns)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", ctx, ns)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockNamespaceClientMockRecorder) Create(ctx, ns interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNamespaceClient)(nil).Create), ctx, ns)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockNamespaceClient)(nil).Create), ctx, ns)
 }
 
 // Get mocks base method.
@@ -510,16 +510,16 @@ func (mr *MockNamespaceClientMockRecorder) Get(ctx, name interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockNamespaceClient)(nil).Get), ctx, name)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockNamespaceClient) Delete(ctx context.Context, ns *v1.Namespace) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, ns)
+	ret := m.ctrl.Call(m, "DeleteService", ctx, ns)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockNamespaceClientMockRecorder) Delete(ctx, ns interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockNamespaceClient)(nil).Delete), ctx, ns)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockNamespaceClient)(nil).Delete), ctx, ns)
 }

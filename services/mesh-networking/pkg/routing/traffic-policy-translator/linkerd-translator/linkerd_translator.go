@@ -124,7 +124,7 @@ func (i *linkerdTrafficPolicyTranslator) getMesh(
 	ctx context.Context,
 	meshService *discovery_v1alpha1.MeshService,
 ) (*discovery_v1alpha1.Mesh, error) {
-	mesh, err := i.meshClient.Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+	mesh, err := i.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 	if err != nil {
 		return nil, err
 	}

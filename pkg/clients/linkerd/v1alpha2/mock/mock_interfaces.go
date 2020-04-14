@@ -71,42 +71,42 @@ func (mr *MockServiceProfileClientMockRecorder) List(ctx interface{}, options ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockServiceProfileClient)(nil).List), varargs...)
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockServiceProfileClient) Create(ctx context.Context, serviceProfile *v1alpha2.ServiceProfile, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, serviceProfile}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockServiceProfileClientMockRecorder) Create(ctx, serviceProfile interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, serviceProfile}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockServiceProfileClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockServiceProfileClient)(nil).Create), varargs...)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockServiceProfileClient) Update(ctx context.Context, serviceProfile *v1alpha2.ServiceProfile, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, serviceProfile}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret := m.ctrl.Call(m, "UpdateService", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockServiceProfileClientMockRecorder) Update(ctx, serviceProfile interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, serviceProfile}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockServiceProfileClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockServiceProfileClient)(nil).Update), varargs...)
 }
 
 // UpsertSpec mocks base method.
@@ -123,16 +123,16 @@ func (mr *MockServiceProfileClientMockRecorder) UpsertSpec(ctx, serviceProfile i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockServiceProfileClient)(nil).UpsertSpec), ctx, serviceProfile)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockServiceProfileClient) Delete(ctx context.Context, key client.ObjectKey) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, key)
+	ret := m.ctrl.Call(m, "DeleteService", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockServiceProfileClientMockRecorder) Delete(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockServiceProfileClient)(nil).Delete), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockServiceProfileClient)(nil).Delete), ctx, key)
 }

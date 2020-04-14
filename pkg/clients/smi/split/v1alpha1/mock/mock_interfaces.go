@@ -51,23 +51,23 @@ func (mr *MockTrafficSplitClientMockRecorder) Get(ctx, key interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTrafficSplitClient)(nil).Get), ctx, key)
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockTrafficSplitClient) Create(ctx context.Context, trafficSplitClient *v1alpha1.TrafficSplit, options ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, trafficSplitClient}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockTrafficSplitClientMockRecorder) Create(ctx, trafficSplitClient interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, trafficSplitClient}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTrafficSplitClient)(nil).Create), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockTrafficSplitClient)(nil).Create), varargs...)
 }
 
 // List mocks base method.
@@ -90,23 +90,23 @@ func (mr *MockTrafficSplitClientMockRecorder) List(ctx interface{}, options ...i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrafficSplitClient)(nil).List), varargs...)
 }
 
-// Update mocks base method.
+// UpdateService mocks base method.
 func (m *MockTrafficSplitClient) Update(ctx context.Context, trafficSplitClient *v1alpha1.TrafficSplit, options ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, trafficSplitClient}
 	for _, a := range options {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret := m.ctrl.Call(m, "UpdateService", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateService indicates an expected call of UpdateService.
 func (mr *MockTrafficSplitClientMockRecorder) Update(ctx, trafficSplitClient interface{}, options ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, trafficSplitClient}, options...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTrafficSplitClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateService", reflect.TypeOf((*MockTrafficSplitClient)(nil).Update), varargs...)
 }
 
 // UpsertSpec mocks base method.
@@ -123,16 +123,16 @@ func (mr *MockTrafficSplitClientMockRecorder) UpsertSpec(ctx, trafficSplitClient
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSpec", reflect.TypeOf((*MockTrafficSplitClient)(nil).UpsertSpec), ctx, trafficSplitClient)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockTrafficSplitClient) Delete(ctx context.Context, key client.ObjectKey) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, key)
+	ret := m.ctrl.Call(m, "DeleteService", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockTrafficSplitClientMockRecorder) Delete(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTrafficSplitClient)(nil).Delete), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockTrafficSplitClient)(nil).Delete), ctx, key)
 }

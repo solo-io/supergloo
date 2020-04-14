@@ -45,7 +45,7 @@ func NewDiscoveryClusterHandler(
 	localMeshWorkloadClient := discoveryContext.ClientFactories.MeshWorkloadClientFactory(localClient)
 	localMeshClient := discoveryContext.ClientFactories.MeshClientFactory(localClient)
 
-	localMeshWorkloadController, err := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
+	localMeshWorkloadController := discoveryContext.EventWatcherFactories.MeshWorkloadEventWatcherFactory.Build(localManager, "mesh-workload-apps_controller")
 	if err != nil {
 		return nil, err
 	}
@@ -145,17 +145,17 @@ func (m *discoveryClusterHandler) ClusterRemoved(cluster string) error {
 }
 
 func (m *discoveryClusterHandler) initializeClusterDependentDeps(mgr mc_manager.AsyncManager, clusterName string) (*clusterDependentDeps, error) {
-	deploymentEventWatcher, err := m.discoveryContext.EventWatcherFactories.DeploymentEventWatcherFactory.Build(mgr, clusterName)
+	deploymentEventWatcher := m.discoveryContext.EventWatcherFactories.DeploymentEventWatcherFactory.Build(mgr, clusterName)
 	if err != nil {
 		return nil, err
 	}
 
-	podEventWatcher, err := m.discoveryContext.EventWatcherFactories.PodEventWatcherFactory.Build(mgr, clusterName)
+	podEventWatcher := m.discoveryContext.EventWatcherFactories.PodEventWatcherFactory.Build(mgr, clusterName)
 	if err != nil {
 		return nil, err
 	}
 
-	serviceEventWatcher, err := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)
+	serviceEventWatcher := m.discoveryContext.EventWatcherFactories.ServiceEventWatcherFactory.Build(mgr, clusterName)
 	if err != nil {
 		return nil, err
 	}

@@ -85,7 +85,7 @@ func BuildPerMeshMetadataFromSnapshot(ctx context.Context, snapshot *snapshot.Me
 				continue
 			}
 
-			meshObj, err := meshClient.Get(ctx, client.ObjectKey{
+			meshObj, err := meshClient.GetMesh(ctx, client.ObjectKey{
 				Name:      memberMesh.GetName(),
 				Namespace: memberMesh.GetNamespace(),
 			})

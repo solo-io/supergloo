@@ -114,12 +114,12 @@ func (m *MockMeshWorkloadControllerFactory) EXPECT() *MockMeshWorkloadController
 }
 
 // Build mocks base method.
-func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) (controller.MeshWorkloadEventWatcher, error) {
+func (m *MockMeshWorkloadControllerFactory) Build(mgr mc_manager.AsyncManager, clusterName string) controller.MeshWorkloadEventWatcher {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", mgr, clusterName)
 	ret0, _ := ret[0].(controller.MeshWorkloadEventWatcher)
 	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // Build indicates an expected call of Build.

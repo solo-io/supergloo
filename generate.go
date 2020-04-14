@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/solo-io/service-mesh-hub/cli/pkg/cliconstants"
+	"github.com/solo-io/service-mesh-hub/cli/pkg/wire"
+	docgen "github.com/solo-io/service-mesh-hub/docs"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
@@ -12,6 +16,14 @@ import (
 )
 
 //go:generate go run generate.go
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_manager.go sigs.k8s.io/controller-runtime/pkg/manager Manager
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_predicate.go sigs.k8s.io/controller-runtime/pkg/predicate Predicate
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_cache.go sigs.k8s.io/controller-runtime/pkg/cache Cache
+//go:generate mockgen -package mock_controller_runtime -destination ./test/mocks/controller-runtime/mock_dynamic_client.go  sigs.k8s.io/controller-runtime/pkg/client Client,StatusWriter
+//go:generate mockgen -package mock_cli_runtime -destination ./test/mocks/cli_runtime/mock_rest_client_getter.go k8s.io/cli-runtime/pkg/resource RESTClientGetter
+//go:generate mockgen -package mock_corev1 -destination ./test/mocks/corev1/mock_service_controller.go github.com/solo-io/service-mesh-hub/services/common/cluster/core/v1/controller ServiceController
+//go:generate mockgen -package mock_zephyr_discovery -destination ./test/mocks/zephyr/discovery/mock_mesh_workload_controller.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/controller MeshWorkloadController,MeshServiceEventWatcher
+//go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_virtual_mesh_controller.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller VirtualMeshController,TrafficPolicyEventWatcher,AccessControlPolicyController
 
 func main() {
 	log.Println("starting generate")
@@ -282,4 +294,24 @@ func main() {
 	}
 
 	log.Printf("Finished generating code\n")
+
+	log.Printf("Started docs generation\n")
+	// generate docs
+	rootCmd := wire.InitializeCLI(context.TODO(), os.Stdin, os.Stdout)
+	docsGen := docgen.Options{
+		Proto: docgen.ProtoOptions{
+			OutputDir: "content/reference/api",
+		},
+		Cli: docgen.CliOptions{
+			RootCmd:   rootCmd,
+			OutputDir: "content/reference/cli",
+		},
+		DocsRoot: "docs",
+	}
+
+	if err := docgen.Execute(docsGen); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Finished generating docs\n")
 }

@@ -113,7 +113,7 @@ func (e *enforcerLoop) fetchMeshes(
 ) ([]*discovery_v1alpha1.Mesh, error) {
 	var meshes []*discovery_v1alpha1.Mesh
 	for _, meshRef := range virtualMesh.Spec.GetMeshes() {
-		mesh, err := e.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
+		mesh, err := e.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshRef))
 		if err != nil {
 			return nil, err
 		}

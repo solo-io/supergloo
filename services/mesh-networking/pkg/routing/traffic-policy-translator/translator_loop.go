@@ -194,11 +194,11 @@ func (t *trafficPolicyTranslatorLoop) translateMergedTrafficPolicies(
 	var meshTypeStatuses []*types.TrafficPolicyStatus_TranslatorError
 	for meshServiceKey, mergedTrafficPolicies := range mergedTrafficPoliciesByMeshService {
 		meshServiceObjectKey := client.ObjectKey{Name: meshServiceKey.Name, Namespace: meshServiceKey.Namespace}
-		meshService, err := t.meshServiceClient.GetMeshService(ctx, meshServiceObjectKey)
+		meshService, err := t.meshServiceClient.GetMeshServiceMeshService(ctx, meshServiceObjectKey)
 		if err != nil {
 			return nil, err
 		}
-		mesh, err := t.meshClient.GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
+		mesh, err := t.meshClient.GetMeshMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh()))
 		if err != nil {
 			return nil, err
 		}

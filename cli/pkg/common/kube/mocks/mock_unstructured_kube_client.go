@@ -49,32 +49,32 @@ func (mr *MockUnstructuredKubeClientMockRecorder) BuildResources(namespace, mani
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildResources", reflect.TypeOf((*MockUnstructuredKubeClient)(nil).BuildResources), namespace, manifest)
 }
 
-// Create mocks base method.
+// CreateMeshWorkload mocks base method.
 func (m *MockUnstructuredKubeClient) Create(namespace string, resources []*resource.Info) ([]*resource.Info, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", namespace, resources)
+	ret := m.ctrl.Call(m, "CreateMeshWorkload", namespace, resources)
 	ret0, _ := ret[0].([]*resource.Info)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create.
+// CreateMeshWorkload indicates an expected call of CreateMeshWorkload.
 func (mr *MockUnstructuredKubeClientMockRecorder) Create(namespace, resources interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUnstructuredKubeClient)(nil).Create), namespace, resources)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMeshWorkload", reflect.TypeOf((*MockUnstructuredKubeClient)(nil).Create), namespace, resources)
 }
 
-// Delete mocks base method.
+// DeleteService mocks base method.
 func (m *MockUnstructuredKubeClient) Delete(namespace string, resources []*resource.Info) ([]*resource.Info, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", namespace, resources)
+	ret := m.ctrl.Call(m, "DeleteService", namespace, resources)
 	ret0, _ := ret[0].([]*resource.Info)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Delete indicates an expected call of Delete.
+// DeleteService indicates an expected call of DeleteService.
 func (mr *MockUnstructuredKubeClientMockRecorder) Delete(namespace, resources interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUnstructuredKubeClient)(nil).Delete), namespace, resources)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteService", reflect.TypeOf((*MockUnstructuredKubeClient)(nil).Delete), namespace, resources)
 }

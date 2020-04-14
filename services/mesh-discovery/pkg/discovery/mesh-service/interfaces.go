@@ -8,5 +8,5 @@ import (
 //go:generate mockgen -source ./interfaces.go -destination ./mocks/mock_interfaces.go -package service_discovery_mocks
 
 type MeshServiceFinder interface {
-	StartDiscovery(serviceEventWatcher corev1_controllers.ServiceController, meshWorkloadController controller.MeshWorkloadEventWatcher) error
+	StartDiscovery(serviceEventWatcher corev1_controllers.ServiceEventWatcher, meshWorkloadController controller.MeshWorkloadEventWatcher) error
 }
