@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/google/wire"
 	"github.com/rotisserie/eris"
@@ -32,6 +33,8 @@ var (
 			"Invalid version: %s. For a list of supported versions, "+
 				"see the releases page: https://github.com/solo-io/service-mesh-hub/releases", version)
 	}
+	CannotRegisterInDryRunMode = eris.New("Cannot register the management plane cluster when --dry-run is specified")
+
 	InstallSet = wire.NewSet(
 		InstallCmd,
 	)
@@ -40,7 +43,7 @@ var (
 )
 
 func HelmInstallerProvider(helmClient types.HelmClient, kubeClient kubernetes.Interface) types.Installer {
-	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), ioutil.Discard)
+	return helminstall.NewInstaller(helmClient, kubeClient.CoreV1().Namespaces(), os.Stdout)
 }
 
 func InstallCmd(
@@ -56,6 +59,11 @@ func InstallCmd(
 		Short:   cliconstants.InstallCommand.Short,
 		PreRunE: validateArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.SmhInstall.DryRun {
+				// if we're running in dry-run mode, we may be piping into `kubectl apply -f -`, so don't print any of our own messages
+				out = ioutil.Discard
+			}
+
 			cfg, err := kubeLoader.GetRestConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 			if err != nil {
 				return err
@@ -87,7 +95,7 @@ func InstallCmd(
 			fmt.Fprintf(out, "Service Mesh Hub has been installed to namespace %s\n", opts.Root.WriteNamespace)
 
 			// Register has been set by the user, therefore we will attempt to register the current cluster
-			if opts.SmhInstall.Register {
+			if opts.SmhInstall.Register && !opts.SmhInstall.DryRun {
 				// need to fetch raw config in order to get current context to pass to registration client
 				raw, err := kubeLoader.GetRawConfigForContext(opts.Root.KubeConfig, opts.Root.KubeContext)
 				if err != nil {
@@ -109,6 +117,8 @@ func InstallCmd(
 					out,
 					kubeLoader,
 				)
+			} else if opts.SmhInstall.Register {
+				return CannotRegisterInDryRunMode
 			}
 			return nil
 		},
