@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Stop sending Helm dry-run output to /dev/null during `meshctl install`
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/510
