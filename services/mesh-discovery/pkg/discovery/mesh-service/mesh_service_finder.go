@@ -276,13 +276,15 @@ func (m *meshServiceFinder) upsertMeshService(
 	})
 	if errors.IsNotFound(err) {
 		err = m.meshServiceClient.Create(m.ctx, computedMeshService)
+	} else if err != nil {
+		return err
 	} else if !existingMeshService.Spec.Equal(computedMeshService.Spec) {
 		existingMeshService.Spec = computedMeshService.Spec
 		existingMeshService.Labels = computedMeshService.Labels
-		err = m.meshServiceClient.Update(m.ctx, existingMeshService)
+		return m.meshServiceClient.Update(m.ctx, existingMeshService)
 	}
 
-	return err
+	return nil
 }
 
 func (m *meshServiceFinder) buildMeshServiceName(service *corev1.Service, clusterName string) string {
