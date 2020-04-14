@@ -30,7 +30,7 @@ var _ = Describe("Translator", func() {
 	var (
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
-		acpController             *mock_zephyr_networking2.MockAccessControlPolicyController
+		acpController             *mock_zephyr_networking2.MockAccessControlPolicyEventWatcher
 		MeshServiceEventWatcher   *mock_zephyr_discovery.MockMeshServiceEventWatcher
 		meshClient                *mock_core.MockMeshClient
 		accessControlPolicyClient *mock_zephyr_networking.MockAccessControlPolicyClient
@@ -48,7 +48,7 @@ var _ = Describe("Translator", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
-		acpController = mock_zephyr_networking2.NewMockAccessControlPolicyController(ctrl)
+		acpController = mock_zephyr_networking2.NewMockAccessControlPolicyEventWatcher(ctrl)
 		MeshServiceEventWatcher = mock_zephyr_discovery.NewMockMeshServiceEventWatcher(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
 		accessControlPolicyClient = mock_zephyr_networking.NewMockAccessControlPolicyClient(ctrl)
@@ -132,7 +132,7 @@ var _ = Describe("Translator", func() {
 			for i, meshService := range matchingMeshServices {
 				meshClient.
 					EXPECT().
-					Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+					GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 					Return(meshesForService[i], nil)
 				expectedTargetServices = append(
 					expectedTargetServices,
@@ -149,7 +149,7 @@ var _ = Describe("Translator", func() {
 			var capturedACPWithStatus *networking_v1alpha1.AccessControlPolicy
 			accessControlPolicyClient.
 				EXPECT().
-				UpdateStatus(ctx, gomock.Any()).
+				UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, acp *networking_v1alpha1.AccessControlPolicy) error {
 					capturedACPWithStatus = acp
 					return nil
@@ -197,7 +197,7 @@ var _ = Describe("Translator", func() {
 			for i, meshService := range matchingMeshServices {
 				meshClient.
 					EXPECT().
-					Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+					GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 					Return(meshesForService[i], nil)
 				expectedTargetServices = append(
 					expectedTargetServices,
@@ -223,7 +223,7 @@ var _ = Describe("Translator", func() {
 			var capturedACPWithStatus *networking_v1alpha1.AccessControlPolicy
 			accessControlPolicyClient.
 				EXPECT().
-				UpdateStatus(ctx, gomock.Any()).
+				UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
 				DoAndReturn(func(ctx context.Context, acp *networking_v1alpha1.AccessControlPolicy) error {
 					capturedACPWithStatus = acp
 					return nil
@@ -264,7 +264,7 @@ var _ = Describe("Translator", func() {
 			}
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
 			acpList := &networking_v1alpha1.AccessControlPolicyList{
@@ -309,7 +309,7 @@ var _ = Describe("Translator", func() {
 			}
 			accessControlPolicyClient.
 				EXPECT().
-				List(ctx).
+				ListAccessControlPolicy(ctx).
 				Return(acpList, nil)
 			var capturedACPsWithStatus []*networking_v1alpha1.AccessControlPolicy
 			for _, acp := range acpList.Items {
@@ -327,7 +327,7 @@ var _ = Describe("Translator", func() {
 				}
 				accessControlPolicyClient.
 					EXPECT().
-					UpdateStatus(ctx, gomock.Any()).
+					UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
 					DoAndReturn(func(ctx context.Context, acp *networking_v1alpha1.AccessControlPolicy) error {
 						capturedACPsWithStatus = append(capturedACPsWithStatus, acp)
 						return nil
@@ -368,7 +368,7 @@ var _ = Describe("Translator", func() {
 			}
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshService.Spec.GetMesh())).
 				Return(mesh, nil).
 				Times(5)
 			acpList := &networking_v1alpha1.AccessControlPolicyList{
@@ -413,7 +413,7 @@ var _ = Describe("Translator", func() {
 			}
 			accessControlPolicyClient.
 				EXPECT().
-				List(ctx).
+				ListAccessControlPolicy(ctx).
 				Return(acpList, nil)
 			var newTranslatorError = func() *networking_types.AccessControlPolicyStatus_TranslatorError {
 				return &networking_types.AccessControlPolicyStatus_TranslatorError{
@@ -437,7 +437,7 @@ var _ = Describe("Translator", func() {
 				}
 				accessControlPolicyClient.
 					EXPECT().
-					UpdateStatus(ctx, gomock.Any()).
+					UpdateAccessControlPolicyStatus(ctx, gomock.Any()).
 					DoAndReturn(func(ctx context.Context, acp *networking_v1alpha1.AccessControlPolicy) error {
 						capturedACPsWithStatus = append(capturedACPsWithStatus, acp)
 						return nil

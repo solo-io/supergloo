@@ -73,7 +73,7 @@ var _ = Describe("Permissive Federation", func() {
 			MulticlusterDnsName: "application-svc.application-ns.application-cluster",
 		}
 		meshServiceClient.EXPECT().
-			Update(ctx, &serviceCopy).
+			UpdateMeshService(ctx, &serviceCopy).
 			Return(nil)
 
 		err := strategies.NewPermissiveFederation(meshServiceClient).WriteFederationToServices(ctx, vm, perMeshResources)

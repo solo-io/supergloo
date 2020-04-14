@@ -157,7 +157,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		meshClient.
 			EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(&discovery_v1alpha1.MeshList{
 				Items: []discovery_v1alpha1.Mesh{*istioMesh1, *istioMesh2},
 			}, nil)
@@ -454,7 +454,7 @@ var _ = Describe("IstioTranslator", func() {
 		// a call to MeshClient.ListMesh is already included in initTestData, so we only need len(serviceAccounts) - 1
 		meshClient.
 			EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(&discovery_v1alpha1.MeshList{
 				Items: []discovery_v1alpha1.Mesh{*testData.targetServices[0].Mesh, *testData.targetServices[1].Mesh},
 			}, nil)
@@ -524,7 +524,7 @@ var _ = Describe("IstioTranslator", func() {
 		testErr := eris.New("processing error")
 		meshClient.
 			EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(nil, testErr)
 		expectedTranslatorError := &networking_types.AccessControlPolicyStatus_TranslatorError{
 			TranslatorId: istio_translator.TranslatorId,

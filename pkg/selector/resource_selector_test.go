@@ -233,7 +233,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -271,7 +271,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -316,7 +316,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -361,7 +361,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -407,7 +407,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -457,7 +457,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -497,7 +497,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -576,7 +576,7 @@ var _ = Describe("ResourceSelector", func() {
 			}
 
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -666,7 +666,7 @@ var _ = Describe("ResourceSelector", func() {
 			}
 
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{*workload1, *workload2},
 				}, nil)
@@ -703,7 +703,7 @@ var _ = Describe("ResourceSelector", func() {
 				constants.CLUSTER:                serviceCluster,
 			})
 			expectedMeshService := v1alpha1.MeshService{}
-			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{expectedMeshService}}, nil)
 			meshService, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
@@ -720,7 +720,7 @@ var _ = Describe("ResourceSelector", func() {
 				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
 				constants.CLUSTER:                serviceCluster,
 			})
-			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{{}, {}}}, nil)
 			_, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
@@ -736,7 +736,7 @@ var _ = Describe("ResourceSelector", func() {
 				constants.KUBE_SERVICE_NAMESPACE: serviceNamespace,
 				constants.CLUSTER:                serviceCluster,
 			})
-			mockMeshServiceClient.EXPECT().List(ctx, destinationKey).Return(
+			mockMeshServiceClient.EXPECT().ListMeshService(ctx, destinationKey).Return(
 				&v1alpha1.MeshServiceList{
 					Items: []v1alpha1.MeshService{}}, nil)
 			_, err := resourceSelector.GetMeshServiceByRefSelector(ctx, serviceName, serviceNamespace, serviceCluster)
@@ -762,7 +762,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx, client.MatchingLabels{
+				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
 					constants.CLUSTER:                   cluster,
@@ -789,7 +789,7 @@ var _ = Describe("ResourceSelector", func() {
 				},
 			}
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx, client.MatchingLabels{
+				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
 					constants.CLUSTER:                   cluster,
@@ -806,7 +806,7 @@ var _ = Describe("ResourceSelector", func() {
 		It("returns the appropriate error if no mesh workload is found", func() {
 			controllerName, controllerNamespace, cluster := "test-name", "test-namespace", "test-cluster"
 			mockMeshWorkloadClient.EXPECT().
-				List(ctx, client.MatchingLabels{
+				ListMeshWorkload(ctx, client.MatchingLabels{
 					constants.KUBE_CONTROLLER_NAME:      controllerName,
 					constants.KUBE_CONTROLLER_NAMESPACE: controllerNamespace,
 					constants.CLUSTER:                   cluster,

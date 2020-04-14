@@ -267,7 +267,7 @@ var _ = Describe("Merger", func() {
 		/*** GetMeshServicesByServiceSelector() ***/
 		trafficPolicyList := &networking_v1alpha1.TrafficPolicyList{
 			Items: []networking_v1alpha1.TrafficPolicy{tp1, tp2, tp3, tp4, tp5, ignoredTP}}
-		mockTrafficPolicyClient.EXPECT().List(ctx).Return(trafficPolicyList, nil)
+		mockTrafficPolicyClient.EXPECT().ListTrafficPolicy(ctx).Return(trafficPolicyList, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp1.Spec.GetDestinationSelector()).
 			Return([]*v1alpha1.MeshService{meshServices[0]}, nil)
 		mockResourceSelector.EXPECT().GetMeshServicesByServiceSelector(ctx, tp2.Spec.GetDestinationSelector()).
@@ -283,8 +283,8 @@ var _ = Describe("Merger", func() {
 		/*** buildKeyForMeshService ***/
 		mesh1 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName1}}}
 		mesh2 := &v1alpha1.Mesh{Spec: types.MeshSpec{Cluster: &core_types.ResourceRef{Name: meshClusterName2}}}
-		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(6)
-		mockMeshClient.EXPECT().Get(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
+		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName1, Namespace: meshNamespace1}).Return(mesh1, nil).Times(6)
+		mockMeshClient.EXPECT().GetMesh(ctx, client.ObjectKey{Name: meshName2, Namespace: meshNamespace2}).Return(mesh2, nil).Times(4)
 		mergedTrafficPolicy1 := []*networking_v1alpha1.TrafficPolicy{
 			{
 				Spec: networking_v1alpha1_types.TrafficPolicySpec{

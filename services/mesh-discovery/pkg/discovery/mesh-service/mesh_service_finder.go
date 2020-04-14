@@ -278,7 +278,7 @@ func (m *meshServiceFinder) upsertMeshService(
 	} else if !existingMeshService.Spec.Equal(computedMeshService.Spec) {
 		existingMeshService.Spec = computedMeshService.Spec
 		existingMeshService.Labels = computedMeshService.Labels
-		err = m.meshServiceClient.UpdateMeshServiceMeshService(m.ctx, existingMeshService)
+		err = m.meshServiceClient.UpdateMeshService(m.ctx, existingMeshService)
 	}
 
 	return err

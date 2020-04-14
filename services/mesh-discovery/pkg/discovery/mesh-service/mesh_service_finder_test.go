@@ -24,12 +24,12 @@ import (
 )
 
 type mocks struct {
-	serviceClient          *mock_kubernetes_core.MockServiceClient
-	meshServiceClient      *discovery_mocks.MockMeshServiceClient
-	meshWorkloadClient     *discovery_mocks.MockMeshWorkloadClient
-	meshClient             *discovery_mocks.MockMeshClient
-	serviceEventWatcher    *mock_corev1.MockServiceController
-	meshWorkloadController *mock_zephyr_discovery.MockMeshWorkloadController
+	serviceClient            *mock_kubernetes_core.MockServiceClient
+	meshServiceClient        *discovery_mocks.MockMeshServiceClient
+	meshWorkloadClient       *discovery_mocks.MockMeshWorkloadClient
+	meshClient               *discovery_mocks.MockMeshClient
+	serviceEventWatcher      *mock_corev1.MockServiceEventWatcher
+	meshWorkloadEventWatcher *mock_zephyr_discovery.MockMeshWorkloadEventWatcher
 
 	meshServiceFinder mesh_service.MeshServiceFinder
 
@@ -57,8 +57,8 @@ var _ = Describe("Mesh Service Finder", func() {
 		meshServiceClient := discovery_mocks.NewMockMeshServiceClient(ctrl)
 		meshWorkloadClient := discovery_mocks.NewMockMeshWorkloadClient(ctrl)
 		meshClient := discovery_mocks.NewMockMeshClient(ctrl)
-		serviceEventWatcher := mock_corev1.NewMockServiceController(ctrl)
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		serviceEventWatcher := mock_corev1.NewMockServiceEventWatcher(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 
 		var serviceCallback func(service *corev1.Service) error
 		var meshWorkloadCallback func(meshWorkload *v1alpha1.MeshWorkload) error
@@ -97,12 +97,12 @@ var _ = Describe("Mesh Service Finder", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		return mocks{
-			serviceClient:          serviceClient,
-			meshServiceClient:      meshServiceClient,
-			serviceEventWatcher:    serviceEventWatcher,
-			meshWorkloadController: meshWorkloadController,
-			meshWorkloadClient:     meshWorkloadClient,
-			meshClient:             meshClient,
+			serviceClient:            serviceClient,
+			meshServiceClient:        meshServiceClient,
+			serviceEventWatcher:      serviceEventWatcher,
+			meshWorkloadEventWatcher: meshWorkloadController,
+			meshWorkloadClient:       meshWorkloadClient,
+			meshClient:               meshClient,
 
 			meshServiceFinder: meshServiceFinder,
 
@@ -210,7 +210,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{Items: []v1alpha1.MeshWorkload{
 					*meshWorkloadEvent,
 					*meshWorkloadEventV2,
@@ -218,12 +218,12 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -231,7 +231,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.MeshService{
+				CreateMeshService(ctx, &v1alpha1.MeshService{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
@@ -318,7 +318,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
@@ -395,7 +395,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			err := mocks.meshWorkloadCallback(meshWorkloadEvent)
@@ -474,17 +474,17 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{Items: nil}, nil)
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
+				GetMesh(ctx, clients.ObjectMetaToObjectKey(mesh.ObjectMeta)).
 				Return(mesh, nil)
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -606,7 +606,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).
@@ -615,7 +615,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{
 						*wrongWorkload,
@@ -626,7 +626,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMeshService(ctx, client.ObjectKey{
 					Name:      meshServiceName,
 					Namespace: env.GetWriteNamespace(),
 				}).
@@ -634,7 +634,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshServiceClient.
 				EXPECT().
-				Create(ctx, &v1alpha1.MeshService{
+				CreateMeshService(ctx, &v1alpha1.MeshService{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      meshServiceName,
 						Namespace: env.GetWriteNamespace(),
@@ -729,7 +729,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{
 						*wrongWorkload1,
@@ -739,7 +739,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).
@@ -796,7 +796,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshWorkloadClient.
 				EXPECT().
-				List(ctx).
+				ListMeshWorkload(ctx).
 				Return(&v1alpha1.MeshWorkloadList{
 					Items: []v1alpha1.MeshWorkload{
 						*wrongWorkload1,
@@ -805,7 +805,7 @@ var _ = Describe("Mesh Service Finder", func() {
 
 			mocks.meshClient.
 				EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetMesh(ctx, client.ObjectKey{
 					Name:      mesh.Name,
 					Namespace: mesh.Namespace,
 				}).

@@ -77,8 +77,8 @@ var _ = Describe("snapshot listener", func() {
 		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm1).Return(vm1.Status)
 		csrProcessor.EXPECT().InitializeCertificateForVirtualMesh(ctx, vm2).Return(vm2.Status)
 
-		virtualMeshClient.EXPECT().UpdateStatus(ctx, vm1).Return(nil)
-		virtualMeshClient.EXPECT().UpdateStatus(ctx, vm2).Return(nil)
+		virtualMeshClient.EXPECT().UpdateVirtualMeshStatus(ctx, vm1).Return(nil)
+		virtualMeshClient.EXPECT().UpdateVirtualMeshStatus(ctx, vm2).Return(nil)
 		csrSnapshotListener.Sync(ctx, snap)
 	})
 })

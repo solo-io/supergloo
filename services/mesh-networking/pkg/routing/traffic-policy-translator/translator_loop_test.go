@@ -125,11 +125,11 @@ var _ = Describe("Translator", func() {
 			}
 			mockMeshServiceClient.
 				EXPECT().
-				Get(ctx, meshServiceObjectKey).
+				GetMeshService(ctx, meshServiceObjectKey).
 				Return(meshService, nil)
 			mockMeshClient.
 				EXPECT().
-				Get(ctx, meshObjKey).
+				GetMesh(ctx, meshObjKey).
 				Return(mesh, nil)
 			mockPreprocessor.
 				EXPECT().
@@ -143,7 +143,7 @@ var _ = Describe("Translator", func() {
 				EXPECT().
 				Name().
 				Return("")
-			mockTrafficPolicyClient.EXPECT().UpdateStatus(ctx, triggeringTP).Return(nil)
+			mockTrafficPolicyClient.EXPECT().UpdateTrafficPolicyStatus(ctx, triggeringTP).Return(nil)
 			trafficPolicyEventHandler.OnCreate(triggeringTP)
 		})
 
@@ -172,11 +172,11 @@ var _ = Describe("Translator", func() {
 			}
 			mockMeshServiceClient.
 				EXPECT().
-				Get(ctx, meshServiceObjectKey).
+				GetMeshService(ctx, meshServiceObjectKey).
 				Return(meshService, nil)
 			mockMeshClient.
 				EXPECT().
-				Get(ctx, meshObjKey).
+				GetMesh(ctx, meshObjKey).
 				Return(mesh, nil)
 			mockPreprocessor.
 				EXPECT().
@@ -202,7 +202,7 @@ var _ = Describe("Translator", func() {
 				Message: fmt.Sprintf("Error while translating TrafficPolicy, check Status.TranslatorErrors for details"),
 			}
 			expectedTP.Status.TranslatorErrors = expectedMeshTypeStatuses
-			mockTrafficPolicyClient.EXPECT().UpdateStatus(ctx, expectedTP).Return(nil)
+			mockTrafficPolicyClient.EXPECT().UpdateTrafficPolicyStatus(ctx, expectedTP).Return(nil)
 
 			trafficPolicyEventHandler.OnCreate(triggeringTP)
 		})
@@ -247,11 +247,11 @@ var _ = Describe("Translator", func() {
 			}
 			mockMeshServiceClient.
 				EXPECT().
-				Get(ctx, meshServiceObjectKey).
+				GetMeshService(ctx, meshServiceObjectKey).
 				Return(meshService, nil)
 			mockMeshClient.
 				EXPECT().
-				Get(ctx, meshObjKey).
+				GetMesh(ctx, meshObjKey).
 				Return(mesh, nil)
 			mockPreprocessor.
 				EXPECT().

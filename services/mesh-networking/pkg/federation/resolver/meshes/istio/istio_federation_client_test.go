@@ -113,7 +113,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, "linkerd").
@@ -204,7 +204,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -391,7 +391,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -578,7 +578,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRef)).
 				Return(istioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, clusterName).
@@ -750,7 +750,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Spec: types.MeshServiceSpec{},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(nonIstioMeshRef)).
 				Return(nonIstioMesh, nil)
 			clientGetter.EXPECT().
 				GetClientForCluster(ctx, "linkerd").
@@ -865,7 +865,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			meshClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(istioMeshRefWorkload)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(istioMeshRefWorkload)).
 				Return(istioMeshForWorkload, nil)
 			workloadClient := mock_controller_runtime.NewMockClient(ctrl)
 			clientGetter.EXPECT().

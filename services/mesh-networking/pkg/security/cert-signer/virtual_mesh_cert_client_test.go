@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("virtual mesh cert client", func() {
@@ -47,7 +48,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			Name:      "name",
 			Namespace: "namespace",
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(nil, testErr)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(nil, testErr)
 		_, err := virtualMeshCertClient.GetRootCaBundle(ctx, meshRef)
 		Expect(err).To(HaveOccurred())
 		Expect(err).To(HaveInErrorChain(testErr))
@@ -76,7 +77,7 @@ var _ = Describe("virtual mesh cert client", func() {
 				},
 			},
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(vm, nil)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		secretClient.
 			EXPECT().
 			Get(ctx,
@@ -127,7 +128,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			},
 			Type: cert_secrets.RootCertSecretType,
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(vm, nil)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		secretClient.
 			EXPECT().
 			Get(ctx,
@@ -158,7 +159,7 @@ var _ = Describe("virtual mesh cert client", func() {
 				},
 			},
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(vm, nil)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		secretClient.
 			EXPECT().
 			Get(ctx, cert_signer.DefaultRootCaName(vm), env.GetWriteNamespace()).
@@ -195,7 +196,7 @@ var _ = Describe("virtual mesh cert client", func() {
 				},
 			},
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(vm, nil)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		secretClient.
 			EXPECT().
@@ -218,7 +219,7 @@ var _ = Describe("virtual mesh cert client", func() {
 			},
 			Spec: v1alpha1_types.VirtualMeshSpec{},
 		}
-		virtualMeshClient.EXPECT().Get(ctx, meshRef.Name, meshRef.Namespace).Return(vm, nil)
+		virtualMeshClient.EXPECT().GetVirtualMesh(ctx, client.ObjectKey{Name: meshRef.Name, Namespace: meshRef.Namespace}).Return(vm, nil)
 		expectedRootCaData := &cert_secrets.RootCAData{}
 		secretClient.
 			EXPECT().

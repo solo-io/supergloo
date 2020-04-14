@@ -96,7 +96,7 @@ var _ = Describe("Federation Decider", func() {
 				State: core_types.Status_INVALID,
 			},
 		}
-		err := capturedEventHandler.Update(oldMeshService, &newMeshService)
+		err := capturedEventHandler.UpdateMeshService(oldMeshService, &newMeshService)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -139,7 +139,7 @@ var _ = Describe("Federation Decider", func() {
 			Status: discovery_types.MeshServiceStatus{},
 		}
 
-		err := capturedEventHandler.Create(service1)
+		err := capturedEventHandler.CreateMeshService(service1)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -211,15 +211,15 @@ var _ = Describe("Federation Decider", func() {
 		}
 		eventCtx := logging.EventContext(ctx, logging.CreateEvent, service1)
 		meshWorkloadClient.EXPECT().
-			Get(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
+			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[0])).
 			Return(nil, testErr)
 
 		meshWorkloadClient.EXPECT().
-			Get(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
+			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(service1.Spec.GetFederation().GetFederatedToWorkloads()[1])).
 			Return(nil, testErr)
 
 		meshServiceClient.EXPECT().
-			UpdateStatus(
+			UpdateMeshServiceStatus(
 				eventCtx,
 				&discovery_v1alpha1.MeshService{
 					Spec: service1.Spec,
@@ -236,7 +236,7 @@ var _ = Describe("Federation Decider", func() {
 			).
 			Return(nil)
 
-		err := capturedEventHandler.Create(service1)
+		err := capturedEventHandler.CreateMeshService(service1)
 		Expect(err).NotTo(HaveOccurred())
 
 		testLogger.EXPECT().
@@ -361,16 +361,16 @@ var _ = Describe("Federation Decider", func() {
 
 		eventCtx := logging.EventContext(ctx, logging.CreateEvent, federatedService)
 		meshWorkloadClient.EXPECT().
-			Get(eventCtx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
+			GetMeshWorkload(eventCtx, clients.ResourceRefToObjectKey(meshWorkloadRef)).
 			Return(federatedToWorkload, nil)
 		meshClient.EXPECT().
-			Get(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
+			GetMesh(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(clientMesh.ObjectMeta))).
 			Return(clientMesh, nil)
 		meshClient.EXPECT().
-			Get(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
+			GetMesh(eventCtx, clients.ResourceRefToObjectKey(clients.ObjectMetaToResourceRef(serverMesh.ObjectMeta))).
 			Return(serverMesh, nil)
 		virtualMeshClient.EXPECT().
-			List(eventCtx).
+			ListVirtualMesh(eventCtx).
 			Return(&networking_v1alpha1.VirtualMeshList{
 				Items: []networking_v1alpha1.VirtualMesh{*virtualMeshContainingService},
 			}, nil)
@@ -389,7 +389,7 @@ var _ = Describe("Federation Decider", func() {
 			State: core_types.Status_ACCEPTED,
 		}
 		meshServiceClient.EXPECT().
-			UpdateStatus(eventCtx, &serviceCopy).
+			UpdateMeshServiceStatus(eventCtx, &serviceCopy).
 			Return(nil)
 
 		err := capturedEventHandler.OnCreate(federatedService)

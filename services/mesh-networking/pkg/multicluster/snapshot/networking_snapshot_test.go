@@ -65,12 +65,12 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -119,12 +119,12 @@ var _ = Describe("Networking Snapshot", func() {
 				return eventHandler.OnCreate(meshService1)
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -186,12 +186,12 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
@@ -255,12 +255,12 @@ var _ = Describe("Networking Snapshot", func() {
 				return nil
 			})
 
-		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshController(ctrl)
+		virtualMeshController := mock_zephyr_networking.NewMockVirtualMeshEventWatcher(ctrl)
 		virtualMeshController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)
 
-		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadController(ctrl)
+		meshWorkloadController := mock_zephyr_discovery.NewMockMeshWorkloadEventWatcher(ctrl)
 		meshWorkloadController.EXPECT().
 			AddEventHandler(ctx, gomock.Any()).
 			Return(nil)

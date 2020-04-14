@@ -41,7 +41,7 @@ var _ = Describe("mesh ref finder", func() {
 
 	It("will fail if initial mesh list fails", func() {
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(nil, testErr)
 
 		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
@@ -51,7 +51,7 @@ var _ = Describe("mesh ref finder", func() {
 
 	It("will reutrn nil, nil with no refs as input", func() {
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(nil, nil)
 		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, &networking_v1alpha1.VirtualMesh{})
 		Expect(err).NotTo(HaveOccurred())
@@ -76,7 +76,7 @@ var _ = Describe("mesh ref finder", func() {
 			},
 		}
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(meshList, nil)
 		_, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).To(HaveOccurred())
@@ -119,7 +119,7 @@ var _ = Describe("mesh ref finder", func() {
 			},
 		}
 		meshClient.EXPECT().
-			List(ctx).
+			ListMesh(ctx).
 			Return(meshList, nil)
 		list, err := meshRefFinder.GetMeshesForVirtualMesh(ctx, vm)
 		Expect(err).NotTo(HaveOccurred())

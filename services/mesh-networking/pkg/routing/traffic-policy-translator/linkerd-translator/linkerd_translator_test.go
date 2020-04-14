@@ -100,7 +100,7 @@ var _ = Describe("LinkerdTranslator", func() {
 				return trafficSplitClient
 			},
 		)
-		mockMeshClient.EXPECT().Get(ctx, meshObjKey).Return(mesh, nil)
+		mockMeshClient.EXPECT().GetMesh(ctx, meshObjKey).Return(mesh, nil)
 		mockDynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterName).Return(nil, nil)
 
 	})

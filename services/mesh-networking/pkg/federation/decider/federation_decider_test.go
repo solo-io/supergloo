@@ -66,12 +66,12 @@ var _ = Describe("Federation Decider", func() {
 			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, &vmCopy).
+			UpdateVirtualMeshStatus(ctx, &vmCopy).
 			Return(nil)
 
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshClient.EXPECT().
-			Get(ctx, client.ObjectKey{
+			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-1",
 				Namespace: env.GetWriteNamespace(),
 			}).
@@ -82,7 +82,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 
-		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
+		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_v1alpha1.MeshServiceClient) (strategies.FederationStrategy, error) {
 			return strategies.NewPermissiveFederation(meshServiceClient), nil
 		})
 		decider.DecideFederation(ctx, &snapshot)
@@ -269,7 +269,7 @@ var _ = Describe("Federation Decider", func() {
 			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, &vm1Copy).
+			UpdateVirtualMeshStatus(ctx, &vm1Copy).
 			Return(nil)
 
 		// EXPECTs for vm 2
@@ -278,12 +278,12 @@ var _ = Describe("Federation Decider", func() {
 			State: core_types.Status_ACCEPTED,
 		}
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, &vm2Copy).
+			UpdateVirtualMeshStatus(ctx, &vm2Copy).
 			Return(nil)
 
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		meshClient.EXPECT().
-			Get(ctx, client.ObjectKey{
+			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-1",
 				Namespace: env.GetWriteNamespace(),
 			}).
@@ -298,7 +298,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 		meshClient.EXPECT().
-			Get(ctx, client.ObjectKey{
+			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-2",
 				Namespace: env.GetWriteNamespace(),
 			}).
@@ -313,7 +313,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 		meshClient.EXPECT().
-			Get(ctx, client.ObjectKey{
+			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-3",
 				Namespace: env.GetWriteNamespace(),
 			}).
@@ -328,7 +328,7 @@ var _ = Describe("Federation Decider", func() {
 				},
 			}, nil)
 		meshClient.EXPECT().
-			Get(ctx, client.ObjectKey{
+			GetMesh(ctx, client.ObjectKey{
 				Name:      "mesh-4",
 				Namespace: env.GetWriteNamespace(),
 			}).
@@ -359,7 +359,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			Update(ctx, &meshService1Copy).
+			UpdateMeshService(ctx, &meshService1Copy).
 			Return(nil)
 
 		// EXPECTs for meshService2
@@ -378,7 +378,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			Update(ctx, &meshService2Copy).
+			UpdateMeshService(ctx, &meshService2Copy).
 			Return(nil)
 
 		// EXPECTs for meshService3
@@ -397,7 +397,7 @@ var _ = Describe("Federation Decider", func() {
 			},
 		}
 		meshServiceClient.EXPECT().
-			Update(ctx, &meshService3Copy).
+			UpdateMeshService(ctx, &meshService3Copy).
 			Return(nil)
 
 		// EXPECTs for meshService4
@@ -406,7 +406,7 @@ var _ = Describe("Federation Decider", func() {
 			MulticlusterDnsName: "application-svc4.application-ns4.cluster-4",
 		}
 		meshServiceClient.EXPECT().
-			Update(ctx, &meshService4Copy).
+			UpdateMeshService(ctx, &meshService4Copy).
 			Return(nil)
 
 		decider := decider.NewFederationDecider(meshServiceClient, meshClient, virtualMeshClient, strategies.GetFederationStrategyFromMode)
@@ -461,7 +461,7 @@ var _ = Describe("Federation Decider", func() {
 		meshClient := mock_discovery_core.NewMockMeshClient(ctrl)
 		virtualMeshClient := mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 
-		meshClient.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, testErr).AnyTimes()
+		meshClient.EXPECT().GetMesh(gomock.Any(), gomock.Any()).Return(nil, testErr).AnyTimes()
 
 		// this many errors happen, because every mesh is going to error out
 		var vm1MultiErr *multierror.Error
@@ -479,7 +479,7 @@ var _ = Describe("Federation Decider", func() {
 			Message: decider.ErrorLoadingMeshMetadata(vm1MultiErr),
 		}
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, &vm1Copy).
+			UpdateVirtualMeshStatus(ctx, &vm1Copy).
 			Return(nil)
 
 		vm2Copy := *vm2
@@ -488,10 +488,10 @@ var _ = Describe("Federation Decider", func() {
 			Message: decider.ErrorLoadingMeshMetadata(vm2MultiErr),
 		}
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, &vm2Copy).
+			UpdateVirtualMeshStatus(ctx, &vm2Copy).
 			Return(nil)
 
-		strategyDecider := func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_core.MeshServiceClient) (strategies.FederationStrategy, error) {
+		strategyDecider := func(mode networking_types.VirtualMeshSpec_Federation_Mode, meshServiceClient discovery_v1alpha1.MeshServiceClient) (strategies.FederationStrategy, error) {
 			// these don't matter, we'll bail out before this point
 			return nil, nil
 		}

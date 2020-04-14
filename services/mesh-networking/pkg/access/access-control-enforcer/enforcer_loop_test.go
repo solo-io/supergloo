@@ -26,7 +26,7 @@ var _ = Describe("EnforcerLoop", func() {
 	var (
 		ctrl                  *gomock.Controller
 		ctx                   context.Context
-		virtualMeshController *mock_zephyr_networking2.MockVirtualMeshController
+		virtualMeshController *mock_zephyr_networking2.MockVirtualMeshEventWatcher
 		virtualMeshClient     *mock_zephyr_networking.MockVirtualMeshClient
 		meshClient            *mock_core.MockMeshClient
 		meshEnforcers         []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer
@@ -40,7 +40,7 @@ var _ = Describe("EnforcerLoop", func() {
 		ctx = context.TODO()
 		virtualMeshClient = mock_zephyr_networking.NewMockVirtualMeshClient(ctrl)
 		meshClient = mock_core.NewMockMeshClient(ctrl)
-		virtualMeshController = mock_zephyr_networking2.NewMockVirtualMeshController(ctrl)
+		virtualMeshController = mock_zephyr_networking2.NewMockVirtualMeshEventWatcher(ctrl)
 		meshEnforcers = []*mock_global_access_control_enforcer.MockAccessPolicyMeshEnforcer{
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
 			mock_global_access_control_enforcer.NewMockAccessPolicyMeshEnforcer(ctrl),
@@ -96,7 +96,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -112,7 +112,7 @@ var _ = Describe("EnforcerLoop", func() {
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
@@ -120,7 +120,7 @@ var _ = Describe("EnforcerLoop", func() {
 		expectedVMStatus := &core_types.Status{
 			State: core_types.Status_ACCEPTED,
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
@@ -131,7 +131,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		for _, meshEnforcer := range meshEnforcers {
@@ -147,7 +147,7 @@ var _ = Describe("EnforcerLoop", func() {
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
@@ -155,7 +155,7 @@ var _ = Describe("EnforcerLoop", func() {
 		expectedVMStatus := &core_types.Status{
 			State: core_types.Status_ACCEPTED,
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})
@@ -167,7 +167,7 @@ var _ = Describe("EnforcerLoop", func() {
 		for i, meshRef := range vm.Spec.GetMeshes() {
 			meshClient.
 				EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(meshRef)).
+				GetMesh(ctx, clients.ResourceRefToObjectKey(meshRef)).
 				Return(meshes[i], nil)
 		}
 		meshEnforcers[0].
@@ -181,7 +181,7 @@ var _ = Describe("EnforcerLoop", func() {
 		var capturedVM *networking_v1alpha1.VirtualMesh
 		virtualMeshClient.
 			EXPECT().
-			UpdateStatus(ctx, gomock.Any()).
+			UpdateVirtualMeshStatus(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, virtualMesh *networking_v1alpha1.VirtualMesh) error {
 				capturedVM = virtualMesh
 				return nil
@@ -190,7 +190,7 @@ var _ = Describe("EnforcerLoop", func() {
 			State:   core_types.Status_PROCESSING_ERROR,
 			Message: testErr.Error(),
 		}
-		err := virtualMeshHandler.Create(vm)
+		err := virtualMeshHandler.CreateVirtualMesh(vm)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(capturedVM.Status.AccessControlEnforcementStatus).To(Equal(expectedVMStatus))
 	})

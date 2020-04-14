@@ -64,7 +64,7 @@ var _ = Describe("validator", func() {
 			Return(nil, testErr)
 
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, vm).
+			UpdateVirtualMeshStatus(ctx, vm).
 			Return(nil)
 
 		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
@@ -102,7 +102,7 @@ var _ = Describe("validator", func() {
 			Return([]*discoveryv1alpha1.Mesh{&mesh}, nil)
 
 		virtualMeshClient.EXPECT().
-			UpdateStatus(ctx, vm).
+			UpdateVirtualMeshStatus(ctx, vm).
 			Return(nil)
 
 		valid := validator.ValidateVirtualMeshUpsert(ctx, vm, nil)
