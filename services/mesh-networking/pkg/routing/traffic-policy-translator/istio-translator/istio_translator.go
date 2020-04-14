@@ -9,10 +9,10 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	"github.com/solo-io/service-mesh-hub/pkg/selector"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	traffic_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/routing/traffic-policy-translator"
@@ -133,7 +133,7 @@ func (i *istioTrafficPolicyTranslator) ensureDestinationRule(
 		},
 	}
 	// Only attempt to create if does not already exist
-	err := destinationRuleClient.Create(ctx, destinationRule)
+	err := destinationRuleClient.CreateDestinationRule(ctx, destinationRule)
 	if err != nil && !errors.IsAlreadyExists(err) {
 		return i.errorToStatus(err)
 	}
@@ -157,7 +157,7 @@ func (i *istioTrafficPolicyTranslator) ensureVirtualService(
 		return nil
 	}
 	// Upsert computed VirtualService
-	err = virtualServiceClient.UpsertSpec(ctx, computedVirtualService)
+	err = virtualServiceClient.UpsertVirtualServiceSpec(ctx, computedVirtualService)
 	if err != nil {
 		return i.errorToStatus(err)
 	}
@@ -394,7 +394,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 		return "", err
 	}
 	destinationRuleClient := i.destinationRuleClientFactory(dynamicClient)
-	destinationRule, err := destinationRuleClient.Get(ctx, clients.ResourceRefToObjectKey(destination.GetDestination()))
+	destinationRule, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destination.GetDestination()))
 	if err != nil {
 		return "", err
 	}
@@ -409,7 +409,7 @@ func (i *istioTrafficPolicyTranslator) translateSubset(
 		Name:   subsetName,
 		Labels: destination.GetSubset(),
 	})
-	err = destinationRuleClient.Update(ctx, destinationRule)
+	err = destinationRuleClient.UpdateDestinationRule(ctx, destinationRule)
 	if err != nil {
 		return "", err
 	}

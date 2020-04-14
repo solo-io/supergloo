@@ -12,11 +12,10 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	types2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
-	mock_istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking/mock"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	mock_kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/env"
@@ -25,6 +24,7 @@ import (
 	mock_dns "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns/mocks"
 	istio_federation "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/resolver/meshes/istio"
 	mock_zephyr_discovery "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_istio_networking "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/networking/v1beta1"
 	mock_controller_runtime "github.com/solo-io/service-mesh-hub/test/mocks/controller-runtime"
 	alpha3 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -210,13 +210,13 @@ var _ = Describe("Istio Federation Decider", func() {
 				GetClientForCluster(ctx, clusterName).
 				Return(nil, nil)
 			gatewayClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetGateway(ctx, client.ObjectKey{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			gatewayClient.EXPECT().
-				Create(ctx, &v1alpha3.Gateway{
+				CreateGateway(ctx, &v1alpha3.Gateway{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 						Namespace: "istio-system",
@@ -273,7 +273,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertSpec(ctx, envoyFilter).
+				UpsertEnvoyFilterSpec(ctx, envoyFilter).
 				Return(nil)
 
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
@@ -420,13 +420,13 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			gatewayClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetGateway(ctx, client.ObjectKey{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
 				Return(gateway, nil)
 			gatewayClient.EXPECT().
-				Update(ctx, gateway).
+				UpdateGateway(ctx, gateway).
 				Return(nil)
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
@@ -461,7 +461,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertSpec(ctx, envoyFilter).
+				UpsertEnvoyFilterSpec(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := corev1.Service{
@@ -604,7 +604,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			gatewayClient.EXPECT().
-				Get(ctx, client.ObjectKey{
+				GetGateway(ctx, client.ObjectKey{
 					Name:      fmt.Sprintf("smh-vm-%s-gateway", virtualMesh.GetName()),
 					Namespace: "istio-system",
 				}).
@@ -622,7 +622,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}}
 			gatewayClient.EXPECT().
-				Update(ctx, &updatedGateway).
+				UpdateGateway(ctx, &updatedGateway).
 				Return(nil)
 
 			envoyFilter := &v1alpha3.EnvoyFilter{
@@ -657,7 +657,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			envoyFilterClient.EXPECT().
-				UpsertSpec(ctx, envoyFilter).
+				UpsertEnvoyFilterSpec(ctx, envoyFilter).
 				Return(nil)
 			var labels client.MatchingLabels = istio_federation.BuildGatewayWorkloadSelector()
 			service := corev1.Service{
@@ -879,7 +879,7 @@ var _ = Describe("Istio Federation Decider", func() {
 				Namespace: "istio-system",
 			}
 			serviceEntryClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(serviceEntryRef)).
+				GetServiceEntry(ctx, clients.ResourceRefToObjectKey(serviceEntryRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
 			ipAssigner.EXPECT().
 				AssignIPOnCluster(ctx, istioMeshForWorkload.Spec.Cluster.Name).
@@ -905,16 +905,16 @@ var _ = Describe("Istio Federation Decider", func() {
 				},
 			}
 			serviceEntryClient.EXPECT().
-				Create(ctx, serviceEntry).
+				CreateServiceEntry(ctx, serviceEntry).
 				Return(nil)
 			destinationRuleRef := &core_types.ResourceRef{
 				Name:      serviceMulticlusterDnsName,
 				Namespace: "istio-system",
 			}
 			destinationRuleClient.EXPECT().
-				Get(ctx, clients.ResourceRefToObjectKey(destinationRuleRef)).
+				GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef)).
 				Return(nil, errors.NewNotFound(schema.GroupResource{}, ""))
-			destinationRuleClient.EXPECT().Create(ctx, &v1alpha3.DestinationRule{
+			destinationRuleClient.EXPECT().CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
 				ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
 				Spec: alpha3.DestinationRule{
 					Host: serviceMulticlusterDnsName,
@@ -925,8 +925,7 @@ var _ = Describe("Istio Federation Decider", func() {
 						},
 					},
 				},
-			}).
-				Return(nil)
+			}).Return(nil)
 
 			eap := dns.ExternalAccessPoint{
 				Address: externalAddress,

@@ -11,10 +11,9 @@ import (
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
-	istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	access_control_policy "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	security_v1beta1 "istio.io/api/security/v1beta1"
@@ -46,7 +45,7 @@ var (
 type IstioTranslator access_control_policy.AcpMeshTranslator
 
 type istioTranslator struct {
-	authPolicyClientFactory security.AuthorizationPolicyClientFactory
+	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory
 	meshClient              zephyr_discovery.MeshClient
 	dynamicClientGetter     mc_manager.DynamicClientGetter
 }
@@ -54,7 +53,7 @@ type istioTranslator struct {
 func NewIstioTranslator(
 	meshClient zephyr_discovery.MeshClient,
 	dynamicClientGetter mc_manager.DynamicClientGetter,
-	authPolicyClientFactory security.AuthorizationPolicyClientFactory,
+	authPolicyClientFactory istio_security.AuthorizationPolicyClientFactory,
 ) IstioTranslator {
 	return &istioTranslator{
 		authPolicyClientFactory: authPolicyClientFactory,
@@ -108,7 +107,7 @@ func (i *istioTranslator) Translate(
 	}
 	// upsert all computed AuthorizationPolicies
 	for _, authPolicyWithClient := range authPoliciesWithClients {
-		err := authPolicyWithClient.client.UpsertSpec(ctx, authPolicyWithClient.authPolicy)
+		err := authPolicyWithClient.client.UpsertAuthorizationPolicySpec(ctx, authPolicyWithClient.authPolicy)
 		if err != nil {
 			return &networking_types.AccessControlPolicyStatus_TranslatorError{
 				TranslatorId: TranslatorId,

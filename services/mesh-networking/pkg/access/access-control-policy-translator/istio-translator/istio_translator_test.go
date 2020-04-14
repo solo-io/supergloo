@@ -11,14 +11,14 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	discovery_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	istio_security "github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	networking_types "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/types"
-	istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
-	mock_istio_security "github.com/solo-io/service-mesh-hub/pkg/clients/istio/security/mock"
 	mock_mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager/mocks"
 	access_control_policy_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator"
 	istio_translator "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-policy-translator/istio-translator"
 	mock_core "github.com/solo-io/service-mesh-hub/test/mocks/clients/discovery.zephyr.solo.io/v1alpha1"
+	mock_istio_security "github.com/solo-io/service-mesh-hub/test/mocks/clients/istio/security/v1alpha3"
 	security_v1beta1 "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	client_security_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -223,7 +223,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
 			dynamicClientGetter.EXPECT().GetClientForCluster(ctx, testData.clusterNames[i]).Return(nil, nil)
-			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy)
+			authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicy)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
 		Expect(translatorError).To(BeNil())
@@ -277,7 +277,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
 			dynamicClientGetter.EXPECT().GetClientForCluster(ctx, testData.clusterNames[i]).Return(nil, nil)
-			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy)
+			authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicy)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
 		Expect(translatorError).To(BeNil())
@@ -348,7 +348,7 @@ var _ = Describe("IstioTranslator", func() {
 			},
 		}
 		dynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterNames[0]).Return(nil, nil)
-		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+		authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicy).Return(nil)
 		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
 		Expect(translatorError).To(BeNil())
 	})
@@ -426,7 +426,7 @@ var _ = Describe("IstioTranslator", func() {
 			},
 		}
 		dynamicClientGetter.EXPECT().GetClientForCluster(ctx, clusterNames[0]).Return(nil, nil)
-		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+		authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicy).Return(nil)
 		translatorError := istioTranslator.Translate(ctx, targetServices, acp)
 		Expect(translatorError).To(BeNil())
 	})
@@ -501,7 +501,7 @@ var _ = Describe("IstioTranslator", func() {
 		}
 		for i, expectedAuthPolicy := range expectedAuthPolicies {
 			dynamicClientGetter.EXPECT().GetClientForCluster(ctx, testData.clusterNames[i]).Return(nil, nil)
-			authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicy).Return(nil)
+			authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicy).Return(nil)
 		}
 		translatorError := istioTranslator.Translate(ctx, testData.targetServices, testData.accessControlPolicy)
 		Expect(translatorError).To(BeNil())
@@ -583,7 +583,7 @@ var _ = Describe("IstioTranslator", func() {
 		for i, _ := range testData.targetServices {
 			dynamicClientGetter.EXPECT().GetClientForCluster(ctx, testData.clusterNames[i]).Return(nil, nil)
 		}
-		authPolicyClient.EXPECT().UpsertSpec(ctx, expectedAuthPolicies[0]).Return(testErr)
+		authPolicyClient.EXPECT().UpsertAuthorizationPolicySpec(ctx, expectedAuthPolicies[0]).Return(testErr)
 		expectedTranslatorError := &networking_types.AccessControlPolicyStatus_TranslatorError{
 			TranslatorId: istio_translator.TranslatorId,
 			ErrorMessage: istio_translator.AuthPolicyUpsertError(testErr, expectedAuthPolicies[0]).Error(),

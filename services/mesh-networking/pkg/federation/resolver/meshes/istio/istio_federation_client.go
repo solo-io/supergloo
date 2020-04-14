@@ -9,9 +9,9 @@ import (
 	core_types "github.com/solo-io/service-mesh-hub/pkg/api/core.zephyr.solo.io/v1alpha1/types"
 	zephyr_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
 	discovery_types "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1/types"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	networking_v1alpha1 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/clients"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/proto_conversion"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
@@ -169,10 +169,10 @@ func (i *istioFederationClient) setUpDestinationRule(
 	}
 
 	destinationRuleClient := i.destinationRuleClientFactory(clientForWorkloadMesh)
-	_, err := destinationRuleClient.Get(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
+	_, err := destinationRuleClient.GetDestinationRule(ctx, clients.ResourceRefToObjectKey(destinationRuleRef))
 
 	if errors.IsNotFound(err) {
-		return destinationRuleClient.Create(ctx, &v1alpha3.DestinationRule{
+		return destinationRuleClient.CreateDestinationRule(ctx, &v1alpha3.DestinationRule{
 			ObjectMeta: clients.ResourceRefToObjectMeta(destinationRuleRef),
 			Spec: alpha3.DestinationRule{
 				Host: serviceMulticlusterName,
@@ -218,7 +218,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 	}
 	endpoints := []*alpha3.ServiceEntry_Endpoint{endpoint}
 
-	existing, err := serviceEntryClient.Get(ctx, clients.ResourceRefToObjectKey(computedRef))
+	existing, err := serviceEntryClient.GetServiceEntry(ctx, clients.ResourceRefToObjectKey(computedRef))
 	if errors.IsNotFound(err) {
 		// generate a unique IP within the workload cluster for the service entry to point to
 		newIp, err := i.ipAssigner.AssignIPOnCluster(ctx, workloadClusterName)
@@ -237,7 +237,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 			},
 		}
 
-		return serviceEntryClient.Create(ctx, serviceEntry)
+		return serviceEntryClient.CreateServiceEntry(ctx, serviceEntry)
 	} else if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func (i *istioFederationClient) setUpServiceEntry(
 	// if the service entry already exists, update it with all ports and endpoints found on the target service.
 	existing.Spec.Ports = ports
 	existing.Spec.Endpoints = endpoints
-	return serviceEntryClient.Update(ctx, existing)
+	return serviceEntryClient.UpdateServiceEntry(ctx, existing)
 }
 
 func (i *istioFederationClient) determineExternalIpForGateway(
@@ -299,7 +299,7 @@ func (i *istioFederationClient) ensureEnvoyFilterExists(
 	}
 
 	// see https://github.com/solo-io/service-mesh-hub/issues/195 for details on this envoy filter config
-	return envoyFilterClient.UpsertSpec(ctx, &v1alpha3.EnvoyFilter{
+	return envoyFilterClient.UpsertEnvoyFilterSpec(ctx, &v1alpha3.EnvoyFilter{
 		ObjectMeta: clients.ResourceRefToObjectMeta(computedRef),
 		Spec: alpha3.EnvoyFilter{
 			ConfigPatches: []*alpha3.EnvoyFilter_EnvoyConfigObjectPatch{{
@@ -344,11 +344,11 @@ func (i *istioFederationClient) ensureGatewayExists(
 		Namespace: installNamespace,
 	}
 
-	existingGateway, err := gatewayClient.Get(ctx, clients.ResourceRefToObjectKey(computedGatewayRef))
+	existingGateway, err := gatewayClient.GetGateway(ctx, clients.ResourceRefToObjectKey(computedGatewayRef))
 	serviceDnsName := BuildMatchingMultiClusterHostName(meshService.Spec.GetFederation())
 	if errors.IsNotFound(err) {
 		// if the gateway wasn't found, then create our initial state
-		return gatewayClient.Create(ctx, &v1alpha3.Gateway{
+		return gatewayClient.CreateGateway(ctx, &v1alpha3.Gateway{
 			ObjectMeta: clients.ResourceRefToObjectMeta(computedGatewayRef),
 			Spec: alpha3.Gateway{
 				Servers: []*alpha3.Server{{
@@ -389,7 +389,7 @@ func (i *istioFederationClient) ensureGatewayExists(
 		// update this gateway with the multicluster dns name for this mesh service
 		serverConfig.Hosts = append(serverConfig.GetHosts(), serviceDnsName)
 
-		err = gatewayClient.Update(ctx, existingGateway)
+		err = gatewayClient.UpdateGateway(ctx, existingGateway)
 		if err != nil {
 			return err
 		}

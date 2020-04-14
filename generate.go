@@ -26,9 +26,13 @@ import (
 //go:generate mockgen -package mock_zephyr_networking -destination ./test/mocks/zephyr/networking/mock_virtual_mesh_controller.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller VirtualMeshEventWatcher,TrafficPolicyEventWatcher,AccessControlPolicyEventWatcher
 
 // Generate mock clients
+// Zephyr clients
 //go:generate mockgen -package mock_zephyr_discovery_clients -destination ./test/mocks/clients/discovery.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1 KubernetesClusterClient,MeshClient,MeshServiceClient,MeshWorkloadClient
 //go:generate mockgen -package mock_zephyr_networking_clients -destination ./test/mocks/clients/networking.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1 TrafficPolicyClient,AccessControlPolicyClient,VirtualMeshClient
 //go:generate mockgen -package mock_zephyr_security_clients -destination ./test/mocks/clients/security.zephyr.solo.io/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1 VirtualMeshCertificateSigningRequestClient
+// Istio clients
+//go:generate mockgen -package mock_istio_security_clients -destination ./test/mocks/clients/istio/security/v1alpha3/clients.go github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1 AuthorizationPolicyClient
+//go:generate mockgen -package mock_istio_networking_clients -destination ./test/mocks/clients/istio/networking/v1beta1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3 DestinationRuleClient,EnvoyFilterClient,GatewayClient,ServiceEntryClient,VirtualServiceClient
 
 func main() {
 	log.Println("starting generate")

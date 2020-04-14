@@ -2,9 +2,9 @@ package wire
 
 import (
 	"github.com/google/wire"
+	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	zephyr_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1/controller"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
 	mc_manager "github.com/solo-io/service-mesh-hub/services/common/multicluster/manager"
 	access_control_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer"
 	istio_enforcer "github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/access/access-control-enforcer/istio-enforcer"
@@ -15,7 +15,7 @@ import (
 var (
 	AccessControlPolicySet = wire.NewSet(
 		LocalAccessControlPolicyEventWatcherProvider,
-		security.AuthorizationPolicyClientFactoryProvider,
+		v1beta1.AuthorizationPolicyClientFactoryProvider,
 		access_control_policy.NewAcpTranslatorLoop,
 		istio_translator.NewIstioTranslator,
 		AccessControlPolicyMeshTranslatorsProvider,

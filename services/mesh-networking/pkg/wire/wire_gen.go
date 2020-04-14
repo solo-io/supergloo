@@ -9,10 +9,10 @@ import (
 	"context"
 
 	v1alpha1_3 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.zephyr.solo.io/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
+	"github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1"
 	v1alpha1_2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.zephyr.solo.io/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/security.zephyr.solo.io/v1alpha1"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
-	"github.com/solo-io/service-mesh-hub/pkg/clients/istio/security"
 	kubernetes_apps "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/apps"
 	kubernetes_core "github.com/solo-io/service-mesh-hub/pkg/clients/kubernetes/core"
 	"github.com/solo-io/service-mesh-hub/pkg/clients/linkerd/v1alpha2"
@@ -80,8 +80,8 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	trafficPolicyMerger := preprocess.NewTrafficPolicyMerger(resourceSelector, meshClient, trafficPolicyClient)
 	trafficPolicyValidator := preprocess.NewTrafficPolicyValidator(meshServiceClient, resourceSelector)
 	trafficPolicyPreprocessor := preprocess.NewTrafficPolicyPreprocessor(resourceSelector, trafficPolicyMerger, trafficPolicyValidator)
-	virtualServiceClientFactory := istio_networking.VirtualServiceClientFactoryProvider()
-	destinationRuleClientFactory := istio_networking.DestinationRuleClientFactoryProvider()
+	virtualServiceClientFactory := v1alpha3.VirtualServiceClientFactoryProvider()
+	destinationRuleClientFactory := v1alpha3.DestinationRuleClientFactoryProvider()
 	istioTranslator := istio_translator.NewIstioTrafficPolicyTranslator(dynamicClientGetter, meshClient, meshServiceClient, resourceSelector, virtualServiceClientFactory, destinationRuleClientFactory)
 	serviceProfileClientFactory := v1alpha2.ServiceProfileClientFactoryProvider()
 	trafficSplitClientFactory := v1alpha1_4.TrafficSplitClientFactoryProvider()
@@ -103,16 +103,16 @@ func InitializeMeshNetworking(ctx context.Context) (MeshNetworkingContext, error
 	meshNetworkingSnapshotContext := MeshNetworkingSnapshotContextProvider(meshWorkloadEventWatcher, meshServiceEventWatcher, virtualMeshEventWatcher, meshNetworkingSnapshotValidator, vmcsrSnapshotListener, federationDeciderSnapshotListener)
 	accessControlPolicyEventWatcher := LocalAccessControlPolicyEventWatcherProvider(asyncManager)
 	accessControlPolicyClient := v1alpha1_2.AccessControlPolicyClientProvider(client)
-	authorizationPolicyClientFactory := security.AuthorizationPolicyClientFactoryProvider()
+	authorizationPolicyClientFactory := v1beta1.AuthorizationPolicyClientFactoryProvider()
 	istio_translatorIstioTranslator := istio_translator2.NewIstioTranslator(meshClient, dynamicClientGetter, authorizationPolicyClientFactory)
 	v2 := AccessControlPolicyMeshTranslatorsProvider(istio_translatorIstioTranslator)
 	acpTranslatorLoop := acp_translator.NewAcpTranslatorLoop(accessControlPolicyEventWatcher, meshServiceEventWatcher, meshClient, accessControlPolicyClient, resourceSelector, v2)
 	istioEnforcer := istio_enforcer.NewIstioEnforcer(dynamicClientGetter, authorizationPolicyClientFactory)
 	v3 := GlobalAccessControlPolicyMeshEnforcersProvider(istioEnforcer)
 	accessPolicyEnforcerLoop := access_policy_enforcer.NewEnforcerLoop(virtualMeshEventWatcher, virtualMeshClient, meshClient, v3)
-	gatewayClientFactory := istio_networking.NewGatewayClientFactory()
-	envoyFilterClientFactory := istio_networking.NewEnvoyFilterClientFactory()
-	serviceEntryClientFactory := istio_networking.NewServiceEntryClientFactory()
+	gatewayClientFactory := v1alpha3.GatewayClientFactoryProvider()
+	envoyFilterClientFactory := v1alpha3.EnvoyFilterClientFactoryProvider()
+	serviceEntryClientFactory := v1alpha3.ServiceEntryClientFactoryProvider()
 	serviceClientFactory := kubernetes_core.ServiceClientFactoryProvider()
 	configMapClient := kubernetes_core.NewConfigMapClient(client)
 	ipAssigner := dns.NewIpAssigner(configMapClient)

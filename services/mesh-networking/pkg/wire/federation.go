@@ -2,7 +2,7 @@ package wire
 
 import (
 	"github.com/google/wire"
-	istio_networking "github.com/solo-io/service-mesh-hub/pkg/clients/istio/networking"
+	istio_networking "github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/decider/strategies"
 	"github.com/solo-io/service-mesh-hub/services/mesh-networking/pkg/federation/dns"
@@ -19,9 +19,9 @@ var (
 		decider.NewFederationSnapshotListener,
 
 		// Resolver
-		istio_networking.NewGatewayClientFactory,
-		istio_networking.NewServiceEntryClientFactory,
-		istio_networking.NewEnvoyFilterClientFactory,
+		istio_networking.GatewayClientFactoryProvider,
+		istio_networking.ServiceEntryClientFactoryProvider,
+		istio_networking.EnvoyFilterClientFactoryProvider,
 		dns.NewIpAssigner,
 		dns.NewExternalAccessPointGetter,
 		istio_federation.NewIstioFederationClient,
