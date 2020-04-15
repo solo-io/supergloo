@@ -37,7 +37,10 @@ import (
 // Istio clients
 //go:generate mockgen -package mock_istio_security_clients -destination ./test/mocks/clients/istio/security/v1alpha3/clients.go github.com/solo-io/service-mesh-hub/pkg/api/istio/security/v1beta1 AuthorizationPolicyClient
 //go:generate mockgen -package mock_istio_networking_clients -destination ./test/mocks/clients/istio/networking/v1beta1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/istio/networking/v1alpha3 DestinationRuleClient,EnvoyFilterClient,GatewayClient,ServiceEntryClient,VirtualServiceClient
-
+// Linkerd clients
+//go:generate mockgen -package mock_linkerd_clients -destination ./test/mocks/clients/linkerd/v1alpha2/clients.go github.com/solo-io/service-mesh-hub/pkg/api/linkerd/v1alpha2 ServiceProfileClient
+// SMI clients
+//go:generate mockgen -package mock_smi_clients -destination ./test/mocks/clients/smi/split/v1alpha1/clients.go github.com/solo-io/service-mesh-hub/pkg/api/smi/split/v1alpha1 TrafficSplitClient
 func main() {
 	log.Println("starting generate")
 
@@ -338,6 +341,42 @@ func main() {
 					"client_providers.go": customClientProviders,
 				},
 				ApiRoot: "pkg/api/istio",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "",
+					Version: "v1alpha2",
+				},
+				Module: "github.com/linkerd/linkerd2",
+				Resources: []model.Resource{
+					{
+						Kind: "ServiceProfile",
+					},
+				},
+				CustomTypesImportPath: "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2",
+				CustomTemplates: map[string]string{
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
+				},
+				ApiRoot: "pkg/api/linkerd",
+			},
+			{
+				GroupVersion: schema.GroupVersion{
+					Group:   "split",
+					Version: "v1alpha1",
+				},
+				Module: "github.com/servicemeshinterface/smi-sdk-go",
+				Resources: []model.Resource{
+					{
+						Kind: "TrafficSplit",
+					},
+				},
+				CustomTypesImportPath: "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha1",
+				CustomTemplates: map[string]string{
+					"clients.go":          customClientTemplate,
+					"client_providers.go": customClientProviders,
+				},
+				ApiRoot: "pkg/api/smi",
 			},
 		},
 		AnyVendorConfig: apImports,
