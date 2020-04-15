@@ -223,7 +223,9 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should return error if fatal error while scanning workloads", func() {
 		expectedErr := eris.New("error")
-		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, pod).Return(nil, metav1.ObjectMeta{}, expectedErr)
+		podCopy := *pod
+		podCopy.ClusterName = clusterName
+		mockMeshWorkloadScanner.EXPECT().ScanPod(ctx, &podCopy).Return(nil, metav1.ObjectMeta{}, expectedErr)
 		podClient.EXPECT().
 			List(ctx).
 			Return(&corev1.PodList{Items: []corev1.Pod{*pod}}, nil)
@@ -241,8 +243,11 @@ var _ = Describe("MeshWorkloadFinder", func() {
 
 	It("should return error if fatal error while populating Mesh resource ref", func() {
 		expectedErr := eris.New("error")
+		pod := &corev1.Pod{}
+		podCopy := *pod
+		podCopy.ClusterName = clusterName
 		mockMeshWorkloadScanner.EXPECT().
-			ScanPod(ctx, pod).
+			ScanPod(ctx, &podCopy).
 			Return(discoveredMeshWorkload.Spec.KubeController.KubeControllerRef, discoveredMeshWorkload.ObjectMeta, nil)
 		mockLocalMeshClient.EXPECT().List(ctx, &client.ListOptions{}).Return(nil, expectedErr)
 		podClient.EXPECT().
